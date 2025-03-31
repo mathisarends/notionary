@@ -1,9 +1,9 @@
 from typing import Any, Dict, List, Optional
-from notionary.core.notion_client import AbstractNotionClient, HttpMethod
+from notionary.core.notion_client import NotionClient, HttpMethod
 from notionary.core.notion_content_converter import NotionContentConverter
 
 
-class NotionPageManager(AbstractNotionClient):
+class NotionPageManager(NotionClient):
     """Generische Klasse zum Schreiben und Verwalten von Notion-Seiten."""
     
     def __init__(self, page_id: str, token: Optional[str] = None):
