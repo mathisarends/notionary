@@ -333,7 +333,7 @@ async def demo():
     
     # Example markdown to append
     markdown = """
-# Test Code Blocks
+# Test Document
 
 Here's a paragraph with `inline code` inside it.
 
@@ -344,7 +344,15 @@ def hello_world():
     return True
 ```
 
-And another paragraph.
+## Bullet List
+* Item 1
+* Item 2
+* Item 3 with `code`
+
+## Numbered List
+1. First item
+2. Second item
+3. Third item with **bold text**
 
 ```javascript
 function sayHello() {

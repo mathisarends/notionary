@@ -9,12 +9,18 @@ class MarkdownElementParser(ABC):
     @abstractmethod
     def match(self, text: str) -> bool:
         """Check if this parser can handle the given text."""
-        pass
         
     @abstractmethod
     def parse(self, text: str) -> Optional[Dict[str, Any]]:
         """Parse the text into a Notion block structure."""
-        pass
+    
+    @property
+    def is_multiline(self) -> bool:
+        """
+        Indicates if this parser handles elements that span multiple lines.
+        Default is False (single-line elements).
+        """
+        return False
 
 
 class HeadingParser(MarkdownElementParser):
@@ -122,19 +128,19 @@ class CodeBlockParser(MarkdownElementParser):
         """Check if text contains a code block."""
         return bool(self.pattern.search(text))
     
-    def parse(self, text: str) -> Tuple[Optional[Dict[str, Any]], int, int]:
+    @property
+    def is_multiline(self) -> bool:
+        """Code blocks span multiple lines."""
+        return True
+    
+    def parse(self, text: str) -> Optional[Dict[str, Any]]:
         """
         Parse a code block into a Notion code block.
-        
-        Returns:
-            Tuple containing:
-            - The parsed block (or None if no match)
-            - Start position of the match
-            - End position of the match
+        This is a simplified version that doesn't return positions.
         """
         match = self.pattern.search(text)
         if not match:
-            return None, -1, -1
+            return None
             
         language = match.group(1) or "plain text"
         content = match.group(2)
@@ -143,7 +149,7 @@ class CodeBlockParser(MarkdownElementParser):
         if content.endswith('\n'):
             content = content[:-1]
             
-        block = {
+        return {
             "type": "code",
             "code": {
                 "rich_text": [
@@ -152,14 +158,51 @@ class CodeBlockParser(MarkdownElementParser):
                         "text": {
                             "content": content
                         },
-                        "annotations": MarkdownToNotionConverter._default_annotations()
+                        "annotations": MarkdownToNotionConverter.default_annotations()
                     }
                 ],
                 "language": language
             }
         }
+    
+    def find_matches(self, text: str) -> List[Tuple[Dict[str, Any], int, int]]:
+        """
+        Find all code block matches in the text and return their positions.
         
-        return block, match.start(), match.end()
+        Args:
+            text: The text to search in
+            
+        Returns:
+            List of tuples with (block, start_pos, end_pos)
+        """
+        matches = []
+        for match in self.pattern.finditer(text):
+            language = match.group(1) or "plain text"
+            content = match.group(2)
+            
+            # Remove trailing newline if present
+            if content.endswith('\n'):
+                content = content[:-1]
+                
+            block = {
+                "type": "code",
+                "code": {
+                    "rich_text": [
+                        {
+                            "type": "text",
+                            "text": {
+                                "content": content
+                            },
+                            "annotations": MarkdownToNotionConverter.default_annotations()
+                        }
+                    ],
+                    "language": language
+                }
+            }
+            
+            matches.append((block, match.start(), match.end()))
+            
+        return matches
 
 
 class ParagraphParser(MarkdownElementParser):
@@ -188,17 +231,14 @@ class MarkdownToNotionConverter:
     
     def __init__(self):
         """Initialize the converter with element parsers."""
-        # Register element parsers in order of preference
         self.element_parsers = [
+            CodeBlockParser(),
             HeadingParser(),
             BulletListParser(),
             NumberedListParser(),
-            InlineCodeParser(),  # For inline code detection
-            ParagraphParser()  # This should be last as it's the fallback
+            InlineCodeParser(),
+            ParagraphParser()
         ]
-        
-        # Special parser for code blocks that span multiple lines
-        self.code_block_parser = CodeBlockParser()
     
     def convert(self, markdown_text: str) -> List[Dict[str, Any]]:
         """
@@ -215,10 +255,10 @@ class MarkdownToNotionConverter:
             
         blocks = []
         
-        # First, extract and handle code blocks separately
-        segments = self._process_code_blocks(markdown_text, blocks)
+        # First, handle multi-line elements (like code blocks)
+        segments = self._process_multiline_elements(markdown_text, blocks)
         
-        # Process each non-code text segment
+        # Process each remaining text segment
         for segment in segments:
             if segment.strip():
                 segment_blocks = self._process_text_segment(segment)
@@ -226,32 +266,38 @@ class MarkdownToNotionConverter:
                     
         return blocks
     
-    def _process_code_blocks(self, text: str, blocks: List[Dict[str, Any]]) -> List[str]:
+    def _process_multiline_elements(self, text: str, blocks: List[Dict[str, Any]]) -> List[str]:
         """
-        Process and extract code blocks from the text.
+        Process and extract multi-line elements from the text.
         
         Args:
             text: The markdown text
-            blocks: List to append code blocks to
+            blocks: List to append blocks to
             
         Returns:
-            List of text segments without code blocks
+            List of text segments without the multiline elements
         """
-        if not self.code_block_parser.match(text):
+        # Get all multi-line parsers
+        multiline_parsers = [p for p in self.element_parsers if p.is_multiline]
+        
+        # If no multi-line parsers, return the whole text
+        if not multiline_parsers:
+            return [text]
+            
+        # Get code block parser specifically (since it's our only multi-line parser for now)
+        code_parser = next((p for p in multiline_parsers if isinstance(p, CodeBlockParser)), None)
+        if not code_parser or not code_parser.match(text):
+            return [text]
+            
+        # Extract code blocks
+        matches = code_parser.find_matches(text)
+        if not matches:
             return [text]
             
         segments = []
         last_end = 0
         
-        while True:
-            block, start, end = self.code_block_parser.parse(text[last_end:])
-            if start == -1:  # No more code blocks
-                break
-                
-            # Adjust positions to account for offset
-            start += last_end
-            end += last_end
-            
+        for block, start, end in matches:
             # Add text before code block
             if start > last_end:
                 segments.append(text[last_end:start])
@@ -292,7 +338,7 @@ class MarkdownToNotionConverter:
             if not line.strip():
                 continue
                 
-            # Try each parser to find a match
+            # Try each parser to find a match (skip multi-line parsers here)
             block = self._parse_line(line)
             
             # If it's a special block (not paragraph) and we have paragraph lines,
@@ -326,10 +372,10 @@ class MarkdownToNotionConverter:
         Returns:
             Notion block object
         """
-        # Try each parser in order (excluding InlineCodeParser which is for inline formatting)
+        # Try each parser in order (skipping multi-line parsers and inline code parser)
         for parser in self.element_parsers:
-            if isinstance(parser, InlineCodeParser):
-                continue  # Skip inline code parser for block-level parsing
+            if parser.is_multiline or isinstance(parser, InlineCodeParser):
+                continue
                 
             if parser.match(line):
                 block = parser.parse(line)
@@ -341,20 +387,12 @@ class MarkdownToNotionConverter:
     
     @staticmethod
     def parse_inline_formatting(text: str) -> List[Dict[str, Any]]:
-        """
-        Parse inline text formatting (bold, italic, code, etc.)
-        
-        Args:
-            text: Text to parse
-            
-        Returns:
-            List of Notion rich_text objects
-        """
+        """Parse inline text formatting (bold, italic, code, etc.)"""
         if not text:
             return []
 
         elements = []
-        segments = MarkdownToNotionConverter._split_text_into_segments(text)
+        segments = TextFormattingParser.split_text_into_segments(text)
         
         for segment in segments:
             element = MarkdownToNotionConverter._create_text_element(segment)
@@ -362,66 +400,6 @@ class MarkdownToNotionConverter:
                 elements.append(element)
                 
         return elements
-    
-    @staticmethod
-    def _split_text_into_segments(text: str) -> List[Tuple[str, Dict[str, Any]]]:
-        """
-        Split text into segments by formatting markers.
-        
-        Args:
-            text: Text to split
-            
-        Returns:
-            List of (text, formatting) tuples
-        """
-        # Define format patterns with their corresponding annotation settings
-        format_patterns = [
-            (r'\*\*(.+?)\*\*', {'bold': True}),
-            (r'\*(.+?)\*', {'italic': True}),
-            (r'_(.+?)_', {'italic': True}),
-            (r'__(.+?)__', {'underline': True}),
-            (r'~~(.+?)~~', {'strikethrough': True}),
-            (r'`(.+?)`', {'code': True}),  # Inline code
-            (r'\[(.+?)\]\((.+?)\)', {'link': True}),
-        ]
-        
-        segments = []
-        current_pos = 0
-        
-        while current_pos < len(text):
-            earliest_match = None
-            earliest_format = None
-            earliest_pos = len(text)
-            
-            # Find next formatting
-            for pattern, formatting in format_patterns:
-                match = re.search(pattern, text[current_pos:])
-                if match and (current_pos + match.start()) < earliest_pos:
-                    earliest_match = match
-                    earliest_format = formatting
-                    earliest_pos = current_pos + match.start()
-            
-            if not earliest_match:
-                # Add remaining text as plain segment
-                if current_pos < len(text):
-                    segments.append((text[current_pos:], {}))
-                break
-                
-            # Add text before formatting as plain segment
-            if earliest_pos > current_pos:
-                segments.append((text[current_pos:earliest_pos], {}))
-            
-            # Add formatted segment
-            content = earliest_match.group(1)
-            if 'link' in earliest_format:
-                url = earliest_match.group(2)
-                segments.append((content, {'url': url}))
-            else:
-                segments.append((content, earliest_format))
-            
-            current_pos = earliest_pos + len(earliest_match.group(0))
-            
-        return segments
     
     @staticmethod
     def _create_text_element(segment: Tuple[str, Dict[str, Any]]) -> Dict[str, Any]:
@@ -443,10 +421,10 @@ class MarkdownToNotionConverter:
                     "content": text,
                     "link": {"url": formatting['url']}
                 },
-                "annotations": MarkdownToNotionConverter._default_annotations()
+                "annotations": MarkdownToNotionConverter.default_annotations()
             }
             
-        annotations = MarkdownToNotionConverter._default_annotations()
+        annotations = MarkdownToNotionConverter.default_annotations()
         annotations.update(formatting)
         
         return {
@@ -456,7 +434,7 @@ class MarkdownToNotionConverter:
         }
     
     @staticmethod
-    def _default_annotations() -> Dict[str, bool]:
+    def default_annotations() -> Dict[str, bool]:
         """
         Create default annotations object.
         
@@ -471,3 +449,109 @@ class MarkdownToNotionConverter:
             "code": False,
             "color": "default"
         }
+        
+        
+class TextFormattingParser:
+    """
+    Helper class for parsing inline text formatting in markdown.
+    This class breaks down the complex task of parsing inline formatting
+    into smaller, more manageable methods.
+    """
+    
+    FORMAT_PATTERNS = [
+        (r'\*\*(.+?)\*\*', {'bold': True}),
+        (r'\*(.+?)\*', {'italic': True}),
+        (r'_(.+?)_', {'italic': True}),
+        (r'__(.+?)__', {'underline': True}),
+        (r'~~(.+?)~~', {'strikethrough': True}),
+        (r'`(.+?)`', {'code': True}),  # Inline code
+        (r'\[(.+?)\]\((.+?)\)', {'link': True}),
+    ]
+    
+    @classmethod
+    def split_text_into_segments(cls, text: str) -> List[Tuple[str, Dict[str, Any]]]:
+        """
+        Split text into segments by formatting markers.
+        
+        Args:
+            text: Text to split
+            
+        Returns:
+            List of (text, formatting) tuples
+        """
+        if not text:
+            return []
+            
+        segments = []
+        current_pos = 0
+        
+        while current_pos < len(text):
+            next_format = cls._find_next_format(text, current_pos)
+            
+            if next_format is None:
+                if current_pos < len(text):
+                    segments.append((text[current_pos:], {}))
+                break
+                
+            match, formatting, start_pos = next_format
+            
+            if start_pos > current_pos:
+                segments.append((text[current_pos:start_pos], {}))
+            
+            formatted_segment = cls._process_formatted_segment(match, formatting)
+            segments.append(formatted_segment)
+            
+            current_pos = start_pos + len(match.group(0))
+            
+        return segments
+    
+    @classmethod
+    def _find_next_format(cls, text: str, current_pos: int) -> Optional[Tuple[re.Match, Dict[str, Any], int]]:
+        """
+        Find the next formatting marker in the text.
+        
+        Args:
+            text: The text to search in
+            current_pos: Current position in the text
+            
+        Returns:
+            Tuple of (match object, formatting dict, absolute position) or None if no match
+        """
+        earliest_match = None
+        earliest_format = None
+        earliest_pos = len(text)
+        
+        # Check each pattern to find the earliest match
+        for pattern, formatting in cls.FORMAT_PATTERNS:
+            match = re.search(pattern, text[current_pos:])
+            if match:
+                absolute_pos = current_pos + match.start()
+                if absolute_pos < earliest_pos:
+                    earliest_match = match
+                    earliest_format = formatting
+                    earliest_pos = absolute_pos
+        
+        if earliest_match is None:
+            return None
+            
+        return earliest_match, earliest_format, earliest_pos
+    
+    @classmethod
+    def _process_formatted_segment(cls, match: re.Match, formatting: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
+        """
+        Process a formatted segment from a regex match.
+        
+        Args:
+            match: The regex match object
+            formatting: The formatting to apply
+            
+        Returns:
+            Tuple of (content, formatting)
+        """
+        content = match.group(1)
+        
+        if 'link' in formatting:
+            url = match.group(2)
+            return (content, {'url': url})
+        
+        return (content, formatting)
