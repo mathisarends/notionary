@@ -1,2 +1,5 @@
 [MESSAGES CONTROL]
 disable=missing-docstring
+
+[DESIGN]
+min-public-methods=1
