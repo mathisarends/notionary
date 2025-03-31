@@ -165,7 +165,7 @@ class CodeBlockParser(MarkdownElementParser):
             }
         }
     
-    def find_matches(self, text: str) -> List[Tuple[Dict[str, Any], int, int]]:
+    def find_matches(self, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
         Find all code block matches in the text and return their positions.
         
@@ -173,7 +173,7 @@ class CodeBlockParser(MarkdownElementParser):
             text: The text to search in
             
         Returns:
-            List of tuples with (block, start_pos, end_pos)
+            List of tuples with (start_pos, end_pos, block)
         """
         matches = []
         for match in self.pattern.finditer(text):
@@ -200,7 +200,7 @@ class CodeBlockParser(MarkdownElementParser):
                 }
             }
             
-            matches.append((block, match.start(), match.end()))
+            matches.append((match.start(), match.end(), block))
             
         return matches
 
@@ -252,65 +252,74 @@ class MarkdownToNotionConverter:
         """
         if not markdown_text:
             return []
-            
+        
+        # Get all segments with multi-line elements marked for special processing
+        # This approach preserves the original order of content
+        segments = self._split_with_multiline_markers(markdown_text)
+        
         blocks = []
         
-        # First, handle multi-line elements (like code blocks)
-        segments = self._process_multiline_elements(markdown_text, blocks)
-        
-        # Process each remaining text segment
-        for segment in segments:
-            if segment.strip():
-                segment_blocks = self._process_text_segment(segment)
+        # Process each segment in order
+        for segment_type, segment_text in segments:
+            if segment_type == "code_block":
+                # If it's a code block, parse it directly
+                code_parser = next((p for p in self.element_parsers if isinstance(p, CodeBlockParser)), None)
+                if code_parser:
+                    block = code_parser.parse(segment_text)
+                    if block:
+                        blocks.append(block)
+            elif segment_text.strip():
+                # Process text segments normally
+                segment_blocks = self._process_text_segment(segment_text)
                 blocks.extend(segment_blocks)
                     
         return blocks
     
-    def _process_multiline_elements(self, text: str, blocks: List[Dict[str, Any]]) -> List[str]:
+    def _split_with_multiline_markers(self, text: str) -> List[Tuple[str, str]]:
         """
-        Process and extract multi-line elements from the text.
+        Split text into segments, marking multi-line elements.
         
         Args:
             text: The markdown text
-            blocks: List to append blocks to
             
         Returns:
-            List of text segments without the multiline elements
+            List of tuples (segment_type, segment_text)
+            where segment_type is either "text" or "code_block"
         """
-        # Get all multi-line parsers
+        # Get multi-line parsers
         multiline_parsers = [p for p in self.element_parsers if p.is_multiline]
         
-        # If no multi-line parsers, return the whole text
+        # If no multi-line parsers, return the whole text as a text segment
         if not multiline_parsers:
-            return [text]
-            
-        # Get code block parser specifically (since it's our only multi-line parser for now)
+            return [("text", text)]
+        
+        # Get code block parser
         code_parser = next((p for p in multiline_parsers if isinstance(p, CodeBlockParser)), None)
         if not code_parser or not code_parser.match(text):
-            return [text]
-            
-        # Extract code blocks
+            return [("text", text)]
+        
+        # Find all code blocks with their positions
         matches = code_parser.find_matches(text)
         if not matches:
-            return [text]
-            
+            return [("text", text)]
+        
+        # Sort matches by start position to preserve order
+        matches.sort(key=lambda m: m[0])
+        
         segments = []
         last_end = 0
         
-        for block, start, end in matches:
-            # Add text before code block
+        for start, end, block in matches:
             if start > last_end:
-                segments.append(text[last_end:start])
+                segments.append(("text", text[last_end:start]))
             
-            # Add the code block
-            blocks.append(block)
+            segments.append(("code_block", text[start:end]))
             
             last_end = end
         
-        # Add remaining text
         if last_end < len(text):
-            segments.append(text[last_end:])
-            
+            segments.append(("text", text[last_end:]))
+        
         return segments
     
     def _process_text_segment(self, text: str) -> List[Dict[str, Any]]:

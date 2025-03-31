@@ -1,6 +1,6 @@
 from typing import List, Dict, Any, Optional
 from abc import ABC, abstractmethod
-from notionary.core.notion_markdown_parser import MarkdownToNotionConverter
+from notionary.core.markdown_to_notion import MarkdownToNotionConverter
 from notionary.util.logging_mixin import LoggingMixin
 
 class BlockConverter(ABC):
