@@ -95,14 +95,5 @@ class NotionContentConverter:
     @staticmethod
     def _extract_text_from_rich_text(rich_text: List[Dict[str, Any]]) -> str:
         """Extrahiert reinen Text aus dem rich_text-Format von Notion.
-        
-        Args:
-            rich_text: Liste von Rich-Text-Objekten aus der Notion-API
-            
-        Returns:
-            Reine Textdarstellung
         """
         return "".join([text.get("plain_text", "") for text in rich_text])
-
-
-

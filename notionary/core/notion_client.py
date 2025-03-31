@@ -6,6 +6,7 @@ import httpx
 from dotenv import load_dotenv
 
 class HttpMethod(Enum):
+    """Enum für HTTP-Methoden."""
     GET = "get"
     POST = "post"
     PATCH = "patch"
@@ -16,6 +17,7 @@ class NotionClient(ABC):
     NOTION_VERSION = "2022-06-28"
     
     def __init__(self, token: Optional[str] = None, timeout: int = 30):
+        """Initialisiert den Notion-Client mit Token und Timeout."""
         load_dotenv()
         self.token = token or os.getenv("NOTION_SECRET", "")
         if not self.token:
@@ -27,26 +29,30 @@ class NotionClient(ABC):
             "Notion-Version": self.NOTION_VERSION
         }
         
-        self.client = None
-        self.timeout = timeout
+        self.client = httpx.AsyncClient(
+            headers=self.headers, 
+            timeout=timeout
+        )
     
-    async def __aenter__(self):
-        self.client = httpx.AsyncClient(headers=self.headers, timeout=self.timeout)
-        return self
-    
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def close(self):
         if self.client:
             await self.client.aclose()
-            self.client = None
     
-    async def _ensure_client(self):
-        if not self.client:
-            self.client = httpx.AsyncClient(headers=self.headers, timeout=self.timeout)
-            
+    async def get(self, endpoint: str) -> Dict[str, Any]:
+        return await self._make_request(HttpMethod.GET, endpoint)
+    
+    async def post(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        return await self._make_request(HttpMethod.POST, endpoint, data)
+    
+    async def patch(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        return await self._make_request(HttpMethod.PATCH, endpoint, data)
+    
+    async def delete(self, endpoint: str) -> Dict[str, Any]:
+        return await self._make_request(HttpMethod.DELETE, endpoint)
+    
     async def _make_request(self, method: Union[HttpMethod, str], endpoint: str, 
-                        data: Optional[Dict[str, Any]] = None):
-        await self._ensure_client()
-        
+                        data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Performs an HTTP request to the specified endpoint."""
         url = f"{self.BASE_URL}/{endpoint.lstrip('/')}"
         method_str = method.value if isinstance(method, HttpMethod) else str(method).lower()
         
@@ -58,5 +64,7 @@ class NotionClient(ABC):
                 
             response.raise_for_status()
             return response.json()
-        except Exception as e:
-            return {"error": str(e)}
+        except httpx.HTTPStatusError as e:
+            return {"error": f"HTTP status error: {e.response.status_code}", "status": e.response.status_code}
+        except httpx.RequestError as e:
+            return {"error": f"Request error: {str(e)}"}
