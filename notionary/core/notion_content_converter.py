@@ -1,6 +1,6 @@
 from typing import List, Dict, Any, Optional
 from abc import ABC, abstractmethod
-from notionary.core.notion_markdown_parser import NotionMarkdownParser
+from notionary.core.notion_markdown_parser import MarkdownToNotionConverter
 from notionary.util.logging_mixin import LoggingMixin
 
 class BlockConverter(ABC):
@@ -110,18 +110,6 @@ class NotionContentConverter(LoggingMixin):
             converter: The BlockConverter implementation
         """
         NotionContentConverter._converters[block_type] = converter
-    
-    @staticmethod
-    def markdown_to_blocks(text: str) -> List[Dict[str, Any]]:
-        """Convert Markdown text to Notion API block format.
-        
-        Args:
-            text: Markdown text to convert
-            
-        Returns:
-            List of Notion block objects
-        """
-        return NotionMarkdownParser.parse_markdown(text)
     
     @staticmethod
     def blocks_to_text(blocks: List[Dict[str, Any]]) -> str:

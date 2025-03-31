@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional
 from notionary.core.notion_client import NotionClient, HttpMethod
 from notionary.core.notion_content_converter import NotionContentConverter
+from notionary.core.notion_markdown_parser import MarkdownToNotionConverter
 from notionary.util.logging_mixin import LoggingMixin
 
 
@@ -18,6 +19,36 @@ class NotionPageManager(NotionClient, LoggingMixin):
         super().__init__(token=token)
         
         self.page_id = page_id
+        
+    async def append_content(self, text: str, add_divider: bool = False) -> str:
+        notion_markdown_converter = MarkdownToNotionConverter()
+        
+        content_blocks = notion_markdown_converter.convert(markdown_text=text)
+        
+        if add_divider:
+            divider_block = {
+                "type": "divider",
+                "divider": {}
+            }
+            content_blocks = [divider_block] + content_blocks
+        
+        data = {
+            "children": content_blocks
+        }
+        
+        response = await self._make_request(
+            HttpMethod.PATCH, 
+            f"blocks/{self.page_id}/children", 
+            data
+        )
+        
+        # TODO: Frage ob man das das hier überhaupt noch braucht?
+        if "error" in response:
+            self.logger.error("Fehler beim Hinzufügen von Text: %s", response.get('error'))
+            return f"Fehler beim Hinzufügen von Text: {response.get('error')}"
+        else:
+            self.logger.info("Text erfolgreich zur Seite hinzugefügt.")
+            return "Text erfolgreich zur Seite hinzugefügt."
     
     async def get_page_content(self) -> List[Dict[str, Any]]:
         response = await self._make_request(
@@ -300,12 +331,36 @@ class NotionPageManager(NotionClient, LoggingMixin):
 async def demo():
     notion_page_manager = NotionPageManager(page_id="1a3389d5-7bd3-80d7-a507-e67d1b25822c")
     
-    # Example usage of the NotionPageManager class
-    return await notion_page_manager.get_page_text()
+    # Example markdown to append
+    markdown = """
+# Test Code Blocks
 
+Here's a paragraph with `inline code` inside it.
+
+```python
+def hello_world():
+    print("Hello from Python!")
+    # This is a multi-line code block
+    return True
+```
+
+And another paragraph.
+
+```javascript
+function sayHello() {
+    console.log("Hello from JavaScript!");
+    // This is another multi-line code block
+    return true;
+}
+```
+
+End of the document.
+"""
+    
+    # Append the markdown content to your Notion page
+    await notion_page_manager.append_content(markdown)
     
 if __name__ == "__main__":
     import asyncio
     result = asyncio.run(demo())
-    print("result", result)
-    
+    print("Successfully appended content to Notion page")
