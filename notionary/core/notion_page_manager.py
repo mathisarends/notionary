@@ -51,7 +51,7 @@ class NotionPageContentManager(LoggingMixin):
         result = await self._client.get(f"blocks/{self.page_id}/children")
         
         if not result:
-            self.logger.error(f"Error retrieving page content: {result.error}")
+            self.logger.error("Error retrieving page content: %s", result.error)
             return []
         
         return result.data.get("results", [])
@@ -124,7 +124,7 @@ async def demo():
     content_manager = NotionPageContentManager(page_id="1a3389d5-7bd3-80d7-a507-e67d1b25822c")
     
     markdown = """
-# Aufgabenliste für Projekt
+# Aufgabenliste für Projekt XYZ
 
 ## Heute erledigen
 - [ ] Dokumentation aktualisieren
@@ -141,21 +141,64 @@ async def demo():
 Hier sind einige wichtige Punkte zu beachten:
 * Normale Liste (kein To-do)
 * Noch ein Punkt
+* Text mit **Fettschrift** und *kursiver Schrift*
+* Text mit __unterstrichener Schrift__ und ~~durchgestrichener Text~~
+* Ein [Link zur Dokumentation](https://example.com/docs)
 
 > Hier ist ein Blockzitat zur Erinnerung:
 > Qualität ist wichtiger als Geschwindigkeit!
+> 
+> Noch eine Zeile im Blockzitat.
+
+### Code-Beispiele
 
 ```python
-# Hier ist ein Codeblock
+# Hier ist ein Python-Codeblock
 def hello():
     print("Hallo Welt!")
+    
+class Example:
+    def __init__(self):
+        self.value = 42
 ```
-    """
+
+```javascript
+// Hier ist ein JavaScript-Codeblock
+function calculateSum(a, b) {
+    return a + b;
+}
+
+const result = calculateSum(5, 10);
+console.log(`Das Ergebnis ist: ${result}`);
+```
+
+### Projekt-Ressourcen
+
+| Name | Typ | Verantwortlich | Fälligkeitsdatum |
+|------|-----|----------------|------------------|
+| API-Dokumentation | Dokument | Maria | 15.04.2025 |
+| Frontend-Komponenten | Code | Thomas | 20.04.2025 |
+| Datenbank-Schema | Diagramm | Anna | 10.04.2025 |
+| Unit-Tests | Code | Michael | 25.04.2025 |
+
+### Fortschritt des Projekts
+
+1. Anforderungsanalyse abgeschlossen
+2. Design-Phase läuft
+   1. UI/UX-Design zu 75% fertig
+   2. Architektur-Design zu 90% fertig
+3. Implementierungsphase beginnt nächste Woche
+4. Tests geplant für Ende des Monats
+
+> Abschließende Bemerkungen:
+> Das Projekt liegt im Zeitplan und das Budget wird eingehalten.
+> Bei Fragen wenden Sie sich an den Projektleiter.
+"""
     
     
     
     # Append the markdown content to your Notion page
-    result = await content_manager.append_markdown(markdown)
+    result = await content_manager.get_text()
     print(result)
     
     # Clean up
