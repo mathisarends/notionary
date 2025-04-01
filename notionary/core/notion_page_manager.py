@@ -96,7 +96,7 @@ class NotionPageContentManager(LoggingMixin):
         
         return blocks
     
-    async def get_text(self, include_table_data: bool = False) -> str:
+    async def get_text(self, include_table_data: bool = True) -> str:
         """Retrieve the page content and convert it to readable text.
         
         Args:
@@ -106,102 +106,13 @@ class NotionPageContentManager(LoggingMixin):
             Text representation of the page content
         """
         if include_table_data:
+            # Holen aller Blöcke mit Kindern und Konvertierung mit der erweiterten converter-Methode
             blocks = await self.get_page_blocks_with_children()
-            
-            # Wir verwenden hier die selbst implementierte Funktion, die mit den 
-            # bereits abgerufenen Kindern arbeitet, anstatt sie einzeln zu laden
-            return self.blocks_to_text_with_table_data(blocks)
+            return NotionContentConverter.blocks_to_text(blocks, include_table_data=True)
         else:
+            # Normale Konvertierung ohne zusätzliche Daten
             blocks = await self.get_blocks()
             return NotionContentConverter.blocks_to_text(blocks)
-    
-    def blocks_to_text_with_table_data(self, blocks: List[Dict[str, Any]]) -> str:
-        """Convert blocks to text, including data from table children if present.
-        
-        Args:
-            blocks: List of block objects, potentially with 'children' attributes
-            
-        Returns:
-            Text representation of the blocks
-        """
-        # Zunächst normal konvertieren
-        text = NotionContentConverter.blocks_to_text(blocks)
-        
-        # Nur wenn Tabellenplatzhalter vorhanden sind, diese ersetzen
-        for block in blocks:
-            if block.get("type") == "table" and "children" in block:
-                # Platzhalter-Tabelle generieren (gleiche Logik wie im TableConverter)
-                table_data = block.get("table", {})
-                table_width = table_data.get("table_width", 3)
-                placeholder_table = self._generate_placeholder_table(table_width)
-                
-                # Vollständige Tabelle mit vorhandenen Kindern erstellen
-                full_table = self._process_table_with_children(block, block.get("children", []))
-                
-                # Platzhalter durch die vollständige Tabelle ersetzen
-                if full_table and placeholder_table in text:
-                    text = text.replace(placeholder_table, full_table)
-        
-        return text
-    
-    def _generate_placeholder_table(self, table_width: int) -> str:
-        """Generiert eine Platzhalter-Tabelle mit der angegebenen Breite."""
-        header_cells = [f"Spalte {i+1}" for i in range(table_width)]
-        header_row = "| " + " | ".join(header_cells) + " |"
-        separator_row = "| " + " | ".join(["---" for _ in range(table_width)]) + " |"
-        placeholder_row = "| " + " | ".join(["..." for _ in range(table_width)]) + " |"
-        
-        return f"{header_row}\n{separator_row}\n{placeholder_row}"
-    
-    def _process_table_with_children(self, 
-                                    table_block: Dict[str, Any], 
-                                    row_blocks: List[Dict[str, Any]]) -> Optional[str]:
-        """Verarbeitet einen Tabellen-Block mit seinen Kinder-Blöcken."""
-        if not row_blocks:
-            return None
-            
-        table_data = table_block.get("table", {})
-        has_column_header = table_data.get("has_column_header", False)
-        
-        table_rows = []
-        column_count = 0
-        
-        # Jede Zeile verarbeiten
-        for i, row_block in enumerate(row_blocks):
-            if row_block.get("type") != "table_row":
-                continue
-                
-            row_data = row_block.get("table_row", {})
-            cells = row_data.get("cells", [])
-            
-            # Maximale Spaltenzahl für den Separator ermitteln
-            if len(cells) > column_count:
-                column_count = len(cells)
-            
-            # Zellen in Text konvertieren
-            row_texts = []
-            for cell in cells:
-                cell_text = NotionContentConverter.extract_text_with_formatting(cell)
-                row_texts.append(cell_text or "")
-            
-            # Zeile als Tabelle formatieren
-            row = "| " + " | ".join(row_texts) + " |"
-            table_rows.append(row)
-        
-        # Wenn keine Zeilen gefunden wurden, None zurückgeben
-        if not table_rows or column_count == 0:
-            return None
-            
-        # Header-Trenner hinzufügen, wenn es sich um eine Tabellenüberschrift handelt
-        if has_column_header and len(table_rows) > 0:
-            separator_row = "| " + " | ".join(["---" for _ in range(column_count)]) + " |"
-            table_rows.insert(1, separator_row)
-            
-        return "\n".join(table_rows)
-    
-    async def get_text_with_tables(self) -> str:
-        """Vereinfachte Methode, die direkt Text mit Tabellendaten zurückgibt."""
-        return await self.get_text(include_table_data=True)
     
     async def clear(self) -> str:
         """Delete all content from the page.
@@ -261,12 +172,13 @@ async def demo():
     """Example usage of the NotionContentManager."""
     content_manager = NotionPageContentManager(page_id="1a3389d5-7bd3-80d7-a507-e67d1b25822c")
     
-    # Retrieve the text with table data
-    text_with_tables = await content_manager.get_text_with_tables()
-    print(text_with_tables)
-    
-    # Clean up
-    await content_manager.close()
+    try:
+        # Retrieve the text with table data
+        text_with_tables = await content_manager.get_text(include_table_data=True)
+        print(text_with_tables)
+    finally:
+        # Clean up
+        await content_manager.close()
     
     
 if __name__ == "__main__":

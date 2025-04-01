@@ -205,14 +205,8 @@ class NotionContentConverter(LoggingMixin):
         NotionContentConverter._converters[block_type] = converter
     
     @staticmethod
-    def blocks_to_text(blocks: List[Dict[str, Any]]) -> str:
+    def blocks_to_text(blocks: List[Dict[str, Any]], include_table_data: bool = False) -> str:
         """Convert Notion blocks to readable text.
-        
-        Args:
-            blocks: List of Notion block objects
-            
-        Returns:
-            Text representation of the blocks
         """
         if not blocks:
             return "Keine Inhalte gefunden."
@@ -234,6 +228,11 @@ class NotionContentConverter(LoggingMixin):
             # Special handling for numbered lists to maintain correct numbering
             if block_type == "numbered_list_item":
                 result = NotionContentConverter._handle_numbered_list_item(block, list_numbering)
+                if result:
+                    text_parts.append(result)
+            # Special handling for tables with children data
+            elif block_type == "table" and include_table_data and "children" in block:
+                result = NotionContentConverter._process_table_with_children(block, block.get("children", []))
                 if result:
                     text_parts.append(result)
             elif converter is None:
@@ -272,6 +271,50 @@ class NotionContentConverter(LoggingMixin):
         number = list_numbering[level]
         
         return f"{number}. {text}" if text else None
+    
+    @staticmethod
+    def _process_table_with_children(
+        table_block: Dict[str, Any], 
+        row_blocks: List[Dict[str, Any]]
+    ) -> Optional[str]:
+        """
+        Verarbeitet einen Tabellen-Block mit seinen Kinder-Blöcken.
+        """
+        if not row_blocks:
+            return None
+            
+        table_data = table_block.get("table", {})
+        has_column_header = table_data.get("has_column_header", False)
+        
+        table_rows = []
+        column_count = 0
+        
+        for i, row_block in enumerate(row_blocks):
+            if row_block.get("type") != "table_row":
+                continue
+                
+            row_data = row_block.get("table_row", {})
+            cells = row_data.get("cells", [])
+            
+            if len(cells) > column_count:
+                column_count = len(cells)
+            
+            row_texts = []
+            for cell in cells:
+                cell_text = NotionContentConverter.extract_text_with_formatting(cell)
+                row_texts.append(cell_text or "")
+            
+            row = "| " + " | ".join(row_texts) + " |"
+            table_rows.append(row)
+        
+        if not table_rows or column_count == 0:
+            return None
+            
+        if has_column_header and len(table_rows) > 0:
+            separator_row = "| " + " | ".join(["---" for _ in range(column_count)]) + " |"
+            table_rows.insert(1, separator_row)
+            
+        return "\n".join(table_rows)
     
     @staticmethod
     def extract_text_from_rich_text(rich_text: List[Dict[str, Any]]) -> str:
@@ -321,122 +364,3 @@ class NotionContentConverter(LoggingMixin):
             formatted_parts.append(content)
         
         return "".join(formatted_parts)
-    
-    
-class NotionTableProcessor:
-    """Zusätzliche Klasse zum Verarbeiten von Tabellendaten, die asynchronen API-Zugriff erfordert."""
-    
-    @staticmethod
-    async def process_table_blocks(blocks: List[Dict[str, Any]], 
-                                  fetch_children_func: Callable[[str], Awaitable[List[Dict[str, Any]]]]) -> str:
-        """
-        Verarbeitet die Blöcke und ersetzt die Platzhalter-Tabellen durch vollständige Tabellen.
-        
-        Args:
-            blocks: Liste von Notion-Blöcken
-            fetch_children_func: Funktion zum Abrufen von Kinder-Blöcken
-                Funktions-Signatur: async def fetch_func(block_id: str) -> List[Dict[str, Any]]
-                
-        Returns:
-            Text-Repräsentation der Blöcke mit vollständigen Tabellen
-        """
-        # Erstellt zunächst den Text mit Platzhaltern für Tabellen
-        markdown_text = NotionContentConverter.blocks_to_text(blocks)
-        
-        # Tabellen-Blöcke finden
-        table_blocks = [b for b in blocks if b.get("type") == "table"]
-        
-        # Wenn keine Tabellen vorhanden sind, geben wir den Text direkt zurück
-        if not table_blocks:
-            return markdown_text
-        
-        # Für jede Tabelle die Kinder-Blöcke abrufen und die Tabelle verarbeiten
-        for table_block in table_blocks:
-            block_id = table_block.get("id")
-            if not block_id:
-                continue
-                
-            # Platzhalter-Tabelle generieren (gleiche Logik wie im TableConverter)
-            table_data = table_block.get("table", {})
-            table_width = table_data.get("table_width", 3)
-            placeholder_table = NotionTableProcessor._generate_placeholder_table(table_width)
-            
-            # Vollständige Tabelle mit Kindern-Daten erstellen
-            try:
-                row_blocks = await fetch_children_func(block_id)
-                full_table = await NotionTableProcessor._process_table_with_children(table_block, row_blocks)
-                
-                # Platzhalter durch die vollständige Tabelle ersetzen
-                if full_table and placeholder_table in markdown_text:
-                    markdown_text = markdown_text.replace(placeholder_table, full_table)
-            except Exception as e:
-                print(f"Fehler beim Verarbeiten der Tabelle {block_id}: {e}")
-        
-        return markdown_text
-    
-    @staticmethod
-    def _generate_placeholder_table(table_width: int) -> str:
-        """Generiert eine Platzhalter-Tabelle mit der angegebenen Breite."""
-        header_cells = [f"Spalte {i+1}" for i in range(table_width)]
-        header_row = "| " + " | ".join(header_cells) + " |"
-        separator_row = "| " + " | ".join(["---" for _ in range(table_width)]) + " |"
-        placeholder_row = "| " + " | ".join(["..." for _ in range(table_width)]) + " |"
-        
-        return f"{header_row}\n{separator_row}\n{placeholder_row}"
-    
-    @staticmethod
-    async def _process_table_with_children(
-        table_block: Dict[str, Any], 
-        row_blocks: List[Dict[str, Any]]
-    ) -> Optional[str]:
-        """
-        Verarbeitet einen Tabellen-Block mit seinen Kinder-Blöcken.
-        
-        Args:
-            table_block: Der Tabellen-Block
-            row_blocks: Die Kinder-Blöcke (Tabellenzeilen)
-            
-        Returns:
-            Markdown-Darstellung der Tabelle
-        """
-        if not row_blocks:
-            return None
-            
-        table_data = table_block.get("table", {})
-        has_column_header = table_data.get("has_column_header", False)
-        
-        table_rows = []
-        column_count = 0
-        
-        # Jede Zeile verarbeiten
-        for i, row_block in enumerate(row_blocks):
-            if row_block.get("type") != "table_row":
-                continue
-                
-            row_data = row_block.get("table_row", {})
-            cells = row_data.get("cells", [])
-            
-            # Maximale Spaltenzahl für den Separator ermitteln
-            if len(cells) > column_count:
-                column_count = len(cells)
-            
-            # Zellen in Text konvertieren
-            row_texts = []
-            for cell in cells:
-                cell_text = NotionContentConverter.extract_text_with_formatting(cell)
-                row_texts.append(cell_text or "")
-            
-            # Zeile als Tabelle formatieren
-            row = "| " + " | ".join(row_texts) + " |"
-            table_rows.append(row)
-        
-        # Wenn keine Zeilen gefunden wurden, None zurückgeben
-        if not table_rows or column_count == 0:
-            return None
-            
-        # Header-Trenner hinzufügen, wenn es sich um eine Tabellenüberschrift handelt
-        if has_column_header and len(table_rows) > 0:
-            separator_row = "| " + " | ".join(["---" for _ in range(column_count)]) + " |"
-            table_rows.insert(1, separator_row)
-            
-        return "\n".join(table_rows)
