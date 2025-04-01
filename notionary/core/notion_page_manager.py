@@ -160,12 +160,39 @@ function sayHello() {
 | Row 2, Col 1 | Row 2, Col 2 | Row 2, Col 3 |
 | Row 3, Col 1 | **Bold text** | `code` |
 
+> Design is not just what it looks like and
+> Design is how it works.
+
 End of the document
 """
+
+    markdown_2 = """
+# Wichtige Zitate
+
+> Design is not just what it looks like and feels like.
+> Design is how it works.
+> 
+> — Steve Jobs
+
+Ein normaler Absatz zwischen Zitaten.
+
+> The best way to predict the future is to invent it.
+> 
+> — Alan Kay
+
+## Liste wichtiger Punkte
+* Gutes Design ist funktional
+* Gutes Design ist ästhetisch
+* Gutes Design ist einfach
+
+> Perfection is achieved, not when there is nothing more to add,
+    """
+    
     
     
     # Append the markdown content to your Notion page
     result = await content_manager.append_markdown(markdown)
+    await content_manager.append_markdown(markdown_2)
     print(result)
     
     # Clean up

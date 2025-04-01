@@ -386,6 +386,104 @@ class TableParser(MarkdownElementParser):
         for i in range(start, end):
             position += len(lines[i]) + 1  # +1 für Zeilenumbruch
         return position
+    
+
+class QuoteParser(MarkdownElementParser):
+    """Parser für Markdown-Blockzitate (> Zitat)."""
+    
+    def __init__(self):
+        self.quote_pattern = re.compile(r'^\s*>\s?(.*)')
+    
+    def match(self, text: str) -> bool:
+        """Prüft, ob der Text ein Blockzitat enthält."""
+        lines = text.split('\n')
+        for line in lines:
+            if self.quote_pattern.match(line):
+                return True
+        return False
+    
+    @property
+    def is_multiline(self) -> bool:
+        """Blockzitate können mehrere Zeilen umfassen."""
+        return True
+    
+    def parse(self, text: str) -> Optional[Dict[str, Any]]:
+        """Konvertiert ein Markdown-Blockzitat in einen Notion-Quote-Block."""
+        lines = text.split('\n')
+        quote_lines = []
+        
+        # Sammle alle zusammenhängenden Blockzitat-Zeilen
+        for line in lines:
+            quote_match = self.quote_pattern.match(line)
+            if quote_match:
+                # Extrahiere den Inhalt nach dem >
+                content = quote_match.group(1)
+                quote_lines.append(content)
+            elif not line.strip() and quote_lines:
+                # Leere Zeilen innerhalb eines Blockzitats behandeln
+                quote_lines.append("")
+            elif quote_lines:
+                # Ende des Blockzitats
+                break
+        
+        if not quote_lines:
+            return None
+            
+        # Verbinde die Zeilen zu einem einzigen Text
+        quote_content = '\n'.join(quote_lines).strip()
+        
+        return {
+            "type": "quote",
+            "quote": {
+                "rich_text": MarkdownToNotionConverter.parse_inline_formatting(quote_content)
+            }
+        }
+    
+    def find_matches(self, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
+        """Findet alle Blockzitate im Text und gibt ihre Positionen zurück."""
+        matches = []
+        lines = text.split('\n')
+        
+        i = 0
+        while i < len(lines):
+            if self.quote_pattern.match(lines[i]):
+                # Beginn eines Blockzitats gefunden
+                start_line = i
+                
+                # Finde das Ende des Blockzitats
+                end_line = start_line + 1
+                while end_line < len(lines):
+                    if self.quote_pattern.match(lines[end_line]):
+                        end_line += 1
+                    elif not lines[end_line].strip():
+                        # Leere Zeile könnte Teil des Blockzitats sein, wenn danach wieder ein Blockzitat kommt
+                        if end_line + 1 < len(lines) and self.quote_pattern.match(lines[end_line + 1]):
+                            end_line += 1
+                        else:
+                            break
+                    else:
+                        break
+                
+                # Berechne die Positionen im Text
+                start_pos = sum(len(lines[j]) + 1 for j in range(start_line))
+                end_pos = sum(len(lines[j]) + 1 for j in range(end_line))
+                
+                # Extrahiere den Blockzitat-Text
+                quote_text = '\n'.join(lines[start_line:end_line])
+                
+                # Parse den Blockzitat-Text
+                block = self.parse(quote_text)
+                
+                if block:
+                    matches.append((start_pos, end_pos, block))
+                
+                i = end_line
+            else:
+                i += 1
+        
+        return matches
+    
+    
 
 class MarkdownToNotionConverter:
     """
@@ -398,7 +496,8 @@ class MarkdownToNotionConverter:
         """Initialize the converter with element parsers."""
         self.element_parsers = [
             CodeBlockParser(),
-            TableParser(),  # The improved TableParser
+            TableParser(),
+            QuoteParser(),
             HeadingParser(),
             BulletListParser(),
             NumberedListParser(),
@@ -431,7 +530,13 @@ class MarkdownToNotionConverter:
 
     def _find_special_matches(self, markdown_text: str) -> List[Tuple[int, int, str, Dict[str, Any]]]:
         """
-        Find all multiline elements like tables and code blocks.
+        Find all multiline elements like tables, code blocks, and quotes.
+        
+        Args:
+            markdown_text: The markdown text to process
+            
+        Returns:
+            List of (start_pos, end_pos, segment_type, block) tuples
         """
         multiline_parsers = [p for p in self.element_parsers if p.is_multiline]
         special_matches = []
@@ -442,7 +547,15 @@ class MarkdownToNotionConverter:
                 
             try:
                 matches = parser.find_matches(markdown_text)
-                parser_type = "table" if isinstance(parser, TableParser) else "code_block"
+                
+                if isinstance(parser, TableParser):
+                    parser_type = "table"
+                elif isinstance(parser, CodeBlockParser):
+                    parser_type = "code_block"
+                elif isinstance(parser, QuoteParser):
+                    parser_type = "quote"
+                else:
+                    parser_type = "unknown"
                 
                 for start, end, block in matches:
                     special_matches.append((start, end, parser_type, block))
@@ -450,6 +563,7 @@ class MarkdownToNotionConverter:
             except Exception as e:
                 print(f"Error finding matches with {parser.__class__.__name__}: {e}")
         
+        # Sort by start position to maintain order
         return sorted(special_matches, key=lambda m: m[0])
     
 
@@ -472,7 +586,7 @@ class MarkdownToNotionConverter:
             segments.append(("text", markdown_text[last_end:]))
         
         return segments
-
+    
     def _process_segments(self, segments: List[Tuple[str, Any]]) -> List[Dict[str, Any]]:
         """
         Process each segment and generate Notion blocks.
@@ -483,7 +597,7 @@ class MarkdownToNotionConverter:
             if segment_type == "text":
                 text_blocks = self._process_text_segment(content)
                 blocks.extend(text_blocks)
-            elif segment_type in ["code_block", "table"]:
+            elif segment_type in ["code_block", "table", "quote"]:  # "quote" hinzugefügt
                 blocks.append(content)
         
         return blocks
