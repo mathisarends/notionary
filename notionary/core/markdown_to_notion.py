@@ -384,7 +384,7 @@ class TableParser(MarkdownElementParser):
         """Berechnet die Textposition in Zeichen von Zeile start bis end."""
         position = 0
         for i in range(start, end):
-            position += len(lines[i]) + 1  # +1 für Zeilenumbruch
+            position += len(lines[i]) + 1
         return position
     
 
@@ -412,24 +412,19 @@ class QuoteParser(MarkdownElementParser):
         lines = text.split('\n')
         quote_lines = []
         
-        # Sammle alle zusammenhängenden Blockzitat-Zeilen
         for line in lines:
             quote_match = self.quote_pattern.match(line)
             if quote_match:
-                # Extrahiere den Inhalt nach dem >
                 content = quote_match.group(1)
                 quote_lines.append(content)
             elif not line.strip() and quote_lines:
-                # Leere Zeilen innerhalb eines Blockzitats behandeln
                 quote_lines.append("")
             elif quote_lines:
-                # Ende des Blockzitats
                 break
         
         if not quote_lines:
             return None
             
-        # Verbinde die Zeilen zu einem einzigen Text
         quote_content = '\n'.join(quote_lines).strip()
         
         return {
@@ -447,16 +442,13 @@ class QuoteParser(MarkdownElementParser):
         i = 0
         while i < len(lines):
             if self.quote_pattern.match(lines[i]):
-                # Beginn eines Blockzitats gefunden
                 start_line = i
                 
-                # Finde das Ende des Blockzitats
                 end_line = start_line + 1
                 while end_line < len(lines):
                     if self.quote_pattern.match(lines[end_line]):
                         end_line += 1
                     elif not lines[end_line].strip():
-                        # Leere Zeile könnte Teil des Blockzitats sein, wenn danach wieder ein Blockzitat kommt
                         if end_line + 1 < len(lines) and self.quote_pattern.match(lines[end_line + 1]):
                             end_line += 1
                         else:
@@ -464,14 +456,11 @@ class QuoteParser(MarkdownElementParser):
                     else:
                         break
                 
-                # Berechne die Positionen im Text
                 start_pos = sum(len(lines[j]) + 1 for j in range(start_line))
                 end_pos = sum(len(lines[j]) + 1 for j in range(end_line))
                 
-                # Extrahiere den Blockzitat-Text
                 quote_text = '\n'.join(lines[start_line:end_line])
                 
-                # Parse den Blockzitat-Text
                 block = self.parse(quote_text)
                 
                 if block:
@@ -499,6 +488,7 @@ class MarkdownToNotionConverter:
             TableParser(),
             QuoteParser(),
             HeadingParser(),
+            TodoParser(),
             BulletListParser(),
             NumberedListParser(),
             InlineCodeParser(),
@@ -563,7 +553,6 @@ class MarkdownToNotionConverter:
             except Exception as e:
                 print(f"Error finding matches with {parser.__class__.__name__}: {e}")
         
-        # Sort by start position to maintain order
         return sorted(special_matches, key=lambda m: m[0])
     
 
@@ -597,7 +586,7 @@ class MarkdownToNotionConverter:
             if segment_type == "text":
                 text_blocks = self._process_text_segment(content)
                 blocks.extend(text_blocks)
-            elif segment_type in ["code_block", "table", "quote"]:  # "quote" hinzugefügt
+            elif segment_type in ["code_block", "table", "quote"]:
                 blocks.append(content)
         
         return blocks
@@ -714,6 +703,42 @@ class MarkdownToNotionConverter:
             "underline": False,
             "code": False,
             "color": "default"
+        }
+        
+class TodoParser(MarkdownElementParser):
+    """Parser für Markdown-Aufgabenlisten (- [ ] und - [x])."""
+    
+    def __init__(self):
+        self.todo_pattern = re.compile(r'^\s*[-*+]\s+\[\s?\]\s+(.+)$')
+        self.done_pattern = re.compile(r'^\s*[-*+]\s+\[x\]\s+(.+)$')
+    
+    def match(self, text: str) -> bool:
+        lines = text.split('\n')
+        for line in lines:
+            if self.todo_pattern.match(line) or self.done_pattern.match(line):
+                return True
+        return False
+    
+    def parse(self, text: str) -> Optional[Dict[str, Any]]:
+        done_match = self.done_pattern.match(text)
+        if done_match:
+            content = done_match.group(1)
+            return self._create_todo_block(content, True)
+        
+        todo_match = self.todo_pattern.match(text)
+        if todo_match:
+            content = todo_match.group(1)
+            return self._create_todo_block(content, False)
+        
+        return None
+    
+    def _create_todo_block(self, content: str, checked: bool) -> Dict[str, Any]:
+        return {
+            "type": "to_do",
+            "to_do": {
+                "rich_text": MarkdownToNotionConverter.parse_inline_formatting(content),
+                "checked": checked
+            }
         }
         
         

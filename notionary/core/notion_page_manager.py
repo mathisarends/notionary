@@ -124,75 +124,38 @@ async def demo():
     content_manager = NotionPageContentManager(page_id="1a3389d5-7bd3-80d7-a507-e67d1b25822c")
     
     markdown = """
-# Test Document
+# Aufgabenliste für Projekt
 
-Here's a paragraph with `inline code` inside it.
+## Heute erledigen
+- [ ] Dokumentation aktualisieren
+- [ ] Meeting-Notizen versenden
+- [x] E-Mails beantworten
+
+## Diese Woche
+- [ ] Präsentation vorbereiten
+- [ ] Code-Review durchführen
+- [x] Tests schreiben
+- [ ] Feature implementieren mit `speziellem Code`
+
+## Notizen
+Hier sind einige wichtige Punkte zu beachten:
+* Normale Liste (kein To-do)
+* Noch ein Punkt
+
+> Hier ist ein Blockzitat zur Erinnerung:
+> Qualität ist wichtiger als Geschwindigkeit!
 
 ```python
-def hello_world():
-    print("Hello from Python!")
-    # This is a multi-line code block
-    return True
+# Hier ist ein Codeblock
+def hello():
+    print("Hallo Welt!")
 ```
-
-## Bullet List
-* Item 1
-* Item 2
-* Item 3 with `code`
-
-## Numbered List
-1. First item
-2. Second item
-3. Third item with **bold text**
-
-```javascript
-function sayHello() {
-    console.log("Hello from JavaScript!");
-    // This is another multi-line code block
-    return true;
-}
-```
-
-## Markdown Table
-| Header 1 | Header 2 | Header 3 |
-|----------|----------|----------|
-| Row 1, Col 1 | Row 1, Col 2 | Row 1, Col 3 |
-| Row 2, Col 1 | Row 2, Col 2 | Row 2, Col 3 |
-| Row 3, Col 1 | **Bold text** | `code` |
-
-> Design is not just what it looks like and
-> Design is how it works.
-
-End of the document
-"""
-
-    markdown_2 = """
-# Wichtige Zitate
-
-> Design is not just what it looks like and feels like.
-> Design is how it works.
-> 
-> — Steve Jobs
-
-Ein normaler Absatz zwischen Zitaten.
-
-> The best way to predict the future is to invent it.
-> 
-> — Alan Kay
-
-## Liste wichtiger Punkte
-* Gutes Design ist funktional
-* Gutes Design ist ästhetisch
-* Gutes Design ist einfach
-
-> Perfection is achieved, not when there is nothing more to add,
     """
     
     
     
     # Append the markdown content to your Notion page
     result = await content_manager.append_markdown(markdown)
-    await content_manager.append_markdown(markdown_2)
     print(result)
     
     # Clean up
