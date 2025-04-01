@@ -56,14 +56,152 @@ class NotionPageContentManager(LoggingMixin):
         
         return result.data.get("results", [])
     
-    async def get_text(self) -> str:
+    async def get_block_children(self, block_id: str) -> List[Dict[str, Any]]:
+        """Retrieve the children of a specific block (e.g., table rows).
+        
+        Args:
+            block_id: ID of the parent block
+            
+        Returns:
+            List of child block objects or empty list on error
+        """
+        result = await self._client.get(f"blocks/{block_id}/children")
+        
+        if not result:
+            self.logger.error("Error retrieving block children: %s", result.error)
+            return []
+        
+        return result.data.get("results", [])
+    
+    async def get_page_blocks_with_children(self) -> List[Dict[str, Any]]:
+        """Retrieve the page content as blocks, including children for blocks that have them.
+        
+        This is useful for tables and other nested block structures.
+        
+        Returns:
+            List of block objects with their children or empty list on error
+        """
+        # Get the main blocks
+        blocks = await self.get_blocks()
+        
+        # For each block that may have children (has_children=True),
+        # fetch its children and add them to the block
+        for block in blocks:
+            if block.get("has_children", False):
+                block_id = block.get("id")
+                if block_id:
+                    children = await self.get_block_children(block_id)
+                    if children:
+                        block["children"] = children
+        
+        return blocks
+    
+    async def get_text(self, include_table_data: bool = False) -> str:
         """Retrieve the page content and convert it to readable text.
         
+        Args:
+            include_table_data: Whether to include data from tables (requires additional API calls)
+            
         Returns:
             Text representation of the page content
         """
-        blocks = await self.get_blocks()
-        return NotionContentConverter.blocks_to_text(blocks)
+        if include_table_data:
+            blocks = await self.get_page_blocks_with_children()
+            
+            # Wir verwenden hier die selbst implementierte Funktion, die mit den 
+            # bereits abgerufenen Kindern arbeitet, anstatt sie einzeln zu laden
+            return self.blocks_to_text_with_table_data(blocks)
+        else:
+            blocks = await self.get_blocks()
+            return NotionContentConverter.blocks_to_text(blocks)
+    
+    def blocks_to_text_with_table_data(self, blocks: List[Dict[str, Any]]) -> str:
+        """Convert blocks to text, including data from table children if present.
+        
+        Args:
+            blocks: List of block objects, potentially with 'children' attributes
+            
+        Returns:
+            Text representation of the blocks
+        """
+        # Zunächst normal konvertieren
+        text = NotionContentConverter.blocks_to_text(blocks)
+        
+        # Nur wenn Tabellenplatzhalter vorhanden sind, diese ersetzen
+        for block in blocks:
+            if block.get("type") == "table" and "children" in block:
+                # Platzhalter-Tabelle generieren (gleiche Logik wie im TableConverter)
+                table_data = block.get("table", {})
+                table_width = table_data.get("table_width", 3)
+                placeholder_table = self._generate_placeholder_table(table_width)
+                
+                # Vollständige Tabelle mit vorhandenen Kindern erstellen
+                full_table = self._process_table_with_children(block, block.get("children", []))
+                
+                # Platzhalter durch die vollständige Tabelle ersetzen
+                if full_table and placeholder_table in text:
+                    text = text.replace(placeholder_table, full_table)
+        
+        return text
+    
+    def _generate_placeholder_table(self, table_width: int) -> str:
+        """Generiert eine Platzhalter-Tabelle mit der angegebenen Breite."""
+        header_cells = [f"Spalte {i+1}" for i in range(table_width)]
+        header_row = "| " + " | ".join(header_cells) + " |"
+        separator_row = "| " + " | ".join(["---" for _ in range(table_width)]) + " |"
+        placeholder_row = "| " + " | ".join(["..." for _ in range(table_width)]) + " |"
+        
+        return f"{header_row}\n{separator_row}\n{placeholder_row}"
+    
+    def _process_table_with_children(self, 
+                                    table_block: Dict[str, Any], 
+                                    row_blocks: List[Dict[str, Any]]) -> Optional[str]:
+        """Verarbeitet einen Tabellen-Block mit seinen Kinder-Blöcken."""
+        if not row_blocks:
+            return None
+            
+        table_data = table_block.get("table", {})
+        has_column_header = table_data.get("has_column_header", False)
+        
+        table_rows = []
+        column_count = 0
+        
+        # Jede Zeile verarbeiten
+        for i, row_block in enumerate(row_blocks):
+            if row_block.get("type") != "table_row":
+                continue
+                
+            row_data = row_block.get("table_row", {})
+            cells = row_data.get("cells", [])
+            
+            # Maximale Spaltenzahl für den Separator ermitteln
+            if len(cells) > column_count:
+                column_count = len(cells)
+            
+            # Zellen in Text konvertieren
+            row_texts = []
+            for cell in cells:
+                cell_text = NotionContentConverter.extract_text_with_formatting(cell)
+                row_texts.append(cell_text or "")
+            
+            # Zeile als Tabelle formatieren
+            row = "| " + " | ".join(row_texts) + " |"
+            table_rows.append(row)
+        
+        # Wenn keine Zeilen gefunden wurden, None zurückgeben
+        if not table_rows or column_count == 0:
+            return None
+            
+        # Header-Trenner hinzufügen, wenn es sich um eine Tabellenüberschrift handelt
+        if has_column_header and len(table_rows) > 0:
+            separator_row = "| " + " | ".join(["---" for _ in range(column_count)]) + " |"
+            table_rows.insert(1, separator_row)
+            
+        return "\n".join(table_rows)
+    
+    async def get_text_with_tables(self) -> str:
+        """Vereinfachte Methode, die direkt Text mit Tabellendaten zurückgibt."""
+        return await self.get_text(include_table_data=True)
     
     async def clear(self) -> str:
         """Delete all content from the page.
@@ -123,86 +261,13 @@ async def demo():
     """Example usage of the NotionContentManager."""
     content_manager = NotionPageContentManager(page_id="1a3389d5-7bd3-80d7-a507-e67d1b25822c")
     
-    markdown = """
-# Aufgabenliste für Projekt XYZ
-
-## Heute erledigen
-- [ ] Dokumentation aktualisieren
-- [ ] Meeting-Notizen versenden
-- [x] E-Mails beantworten
-
-## Diese Woche
-- [ ] Präsentation vorbereiten
-- [ ] Code-Review durchführen
-- [x] Tests schreiben
-- [ ] Feature implementieren mit `speziellem Code`
-
-## Notizen
-Hier sind einige wichtige Punkte zu beachten:
-* Normale Liste (kein To-do)
-* Noch ein Punkt
-* Text mit **Fettschrift** und *kursiver Schrift*
-* Text mit __unterstrichener Schrift__ und ~~durchgestrichener Text~~
-* Ein [Link zur Dokumentation](https://example.com/docs)
-
-> Hier ist ein Blockzitat zur Erinnerung:
-> Qualität ist wichtiger als Geschwindigkeit!
-> 
-> Noch eine Zeile im Blockzitat.
-
-### Code-Beispiele
-
-```python
-# Hier ist ein Python-Codeblock
-def hello():
-    print("Hallo Welt!")
-    
-class Example:
-    def __init__(self):
-        self.value = 42
-```
-
-```javascript
-// Hier ist ein JavaScript-Codeblock
-function calculateSum(a, b) {
-    return a + b;
-}
-
-const result = calculateSum(5, 10);
-console.log(`Das Ergebnis ist: ${result}`);
-```
-
-### Projekt-Ressourcen
-
-| Name | Typ | Verantwortlich | Fälligkeitsdatum |
-|------|-----|----------------|------------------|
-| API-Dokumentation | Dokument | Maria | 15.04.2025 |
-| Frontend-Komponenten | Code | Thomas | 20.04.2025 |
-| Datenbank-Schema | Diagramm | Anna | 10.04.2025 |
-| Unit-Tests | Code | Michael | 25.04.2025 |
-
-### Fortschritt des Projekts
-
-1. Anforderungsanalyse abgeschlossen
-2. Design-Phase läuft
-   1. UI/UX-Design zu 75% fertig
-   2. Architektur-Design zu 90% fertig
-3. Implementierungsphase beginnt nächste Woche
-4. Tests geplant für Ende des Monats
-
-> Abschließende Bemerkungen:
-> Das Projekt liegt im Zeitplan und das Budget wird eingehalten.
-> Bei Fragen wenden Sie sich an den Projektleiter.
-"""
-    
-    
-    
-    # Append the markdown content to your Notion page
-    result = await content_manager.get_text()
-    print(result)
+    # Retrieve the text with table data
+    text_with_tables = await content_manager.get_text_with_tables()
+    print(text_with_tables)
     
     # Clean up
     await content_manager.close()
+    
     
 if __name__ == "__main__":
     import asyncio

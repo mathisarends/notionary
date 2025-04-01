@@ -1,6 +1,5 @@
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Awaitable, Callable, List, Dict, Any, Optional
 from abc import ABC, abstractmethod
-from notionary.core.markdown_to_notion import MarkdownToNotionConverter
 from notionary.util.logging_mixin import LoggingMixin
 
 
@@ -144,45 +143,31 @@ class TableConverter(BlockConverter):
     """Converter for table blocks."""
     
     def convert(self, block: Dict[str, Any]) -> Optional[str]:
-        """Convert a table block to text."""
+        """
+        Erstellt eine Markdown-Tabelle basierend auf den Metadaten des Table-Blocks.
+        Da die Tabellendaten in Kinder-Blöcken gespeichert sind, die asynchron abgerufen werden müssten,
+        erstellen wir hier eine Platzhalter-Tabelle mit der richtigen Struktur.
+        """
         # Tabellendaten extrahieren
+        if block.get("type") != "table":
+            return None
+            
         table_data = block.get("table", {})
         table_width = table_data.get("table_width", 3)
         has_column_header = table_data.get("has_column_header", False)
-        has_row_header = table_data.get("has_row_header", False)
         
-        # Wenn verfügbar, die Anzahl der Zeilen aus der Tabelle lesen
-        rows_count = 1  # Mindestens eine Datenzeile
-        
-        # Spaltentitel erstellen (entweder anhand der verfügbaren Daten oder generisch)
-        header_cells = []
-        for i in range(table_width):
-            column_name = f"Spalte {i+1}"
-            header_cells.append(column_name)
-        
-        # Header-Zeile erstellen
+        # Header-Zeile mit angepasster Anzahl von Spalten
+        header_cells = [f"Spalte {i+1}" for i in range(table_width)]
         header_row = "| " + " | ".join(header_cells) + " |"
         
-        # Separator-Zeile erstellen
+        # Separator-Zeile mit der richtigen Anzahl von Spalten
         separator_row = "| " + " | ".join(["---" for _ in range(table_width)]) + " |"
         
-        # Datenzeilen erstellen
-        data_rows = []
-        for row_idx in range(rows_count):
-            # Leere Zellen für jede Spalte
-            row_cells = ["..." for _ in range(table_width)]
-            data_row = "| " + " | ".join(row_cells) + " |"
-            data_rows.append(data_row)
+        # Eine Platzhalterzeile für Daten
+        placeholder_row = "| " + " | ".join(["..." for _ in range(table_width)]) + " |"
         
-        # Ersetze erste Zeile durch das Wort "Daten" in jeder Zelle, wenn mehr als eine Zeile
-        if rows_count > 0:
-            data_rows[0] = "| " + " | ".join(["Daten" for _ in range(table_width)]) + " |"
-        
-        # Alle Zeilen zusammenfügen
-        table_rows = [header_row, separator_row] + data_rows
-        
-        return "\n".join(table_rows)
-    
+        return f"{header_row}\n{separator_row}\n{placeholder_row}"
+
 
 class NotionContentConverter(LoggingMixin):
     """Class for converting between Notion blocks and text formats."""
@@ -219,14 +204,13 @@ class NotionContentConverter(LoggingMixin):
         """
         NotionContentConverter._converters[block_type] = converter
     
-
     @staticmethod
     def blocks_to_text(blocks: List[Dict[str, Any]]) -> str:
         """Convert Notion blocks to readable text.
         
         Args:
             blocks: List of Notion block objects
-                
+            
         Returns:
             Text representation of the blocks
         """
@@ -268,62 +252,6 @@ class NotionContentConverter(LoggingMixin):
             return NotionContentConverter.CONTENT_NOT_FOUND_MSG
         
         return "\n\n".join(text_parts)
-    
-    @staticmethod
-    async def _handle_table_block(block: Dict[str, Any], fetch_children_func) -> Optional[str]:
-        """Handle conversion of a table block by fetching and processing its rows."""
-        block_id = block.get("id")
-        if not block_id or not fetch_children_func:
-            return None
-
-        try:
-            # Tabellendaten abrufen
-            table_data = block.get("table", {})
-            has_column_header = table_data.get("has_column_header", False)
-            
-            # Zeilen abrufen
-            row_blocks = await fetch_children_func(block_id)
-            
-            if not row_blocks:
-                return None
-
-            table_rows = []
-            column_count = 0
-            
-            # Jede Zeile verarbeiten
-            for i, row_block in enumerate(row_blocks):
-                if row_block.get("type") != "table_row":
-                    continue
-                    
-                row_data = row_block.get("table_row", {})
-                cells = row_data.get("cells", [])
-                
-                # Track maximum column count for separator
-                if len(cells) > column_count:
-                    column_count = len(cells)
-                
-                # Zellen in Text konvertieren
-                row_texts = []
-                for cell in cells:
-                    cell_text = NotionContentConverter.extract_text_with_formatting(cell)
-                    row_texts.append(cell_text or "")
-                
-                # Zeile als Tabelle formatieren
-                row = "| " + " | ".join(row_texts) + " |"
-                table_rows.append(row)
-            
-            # Header-Trenner hinzufügen, wenn es sich um eine Tabellenüberschrift handelt
-            if has_column_header and len(table_rows) > 0 and column_count > 0:
-                separator_parts = ["---" for _ in range(column_count)]
-                header_separator = "| " + " | ".join(separator_parts) + " |"
-                table_rows.insert(1, header_separator)
-                
-            return "\n".join(table_rows) if table_rows else None
-            
-        except Exception as e:
-            logger = LoggingMixin.static_logger()
-            logger.error(f"Error processing table: {e}")
-            return None
     
     @staticmethod
     def _handle_numbered_list_item(block: Dict[str, Any], list_numbering: Dict[str, int]) -> str:
@@ -393,3 +321,122 @@ class NotionContentConverter(LoggingMixin):
             formatted_parts.append(content)
         
         return "".join(formatted_parts)
+    
+    
+class NotionTableProcessor:
+    """Zusätzliche Klasse zum Verarbeiten von Tabellendaten, die asynchronen API-Zugriff erfordert."""
+    
+    @staticmethod
+    async def process_table_blocks(blocks: List[Dict[str, Any]], 
+                                  fetch_children_func: Callable[[str], Awaitable[List[Dict[str, Any]]]]) -> str:
+        """
+        Verarbeitet die Blöcke und ersetzt die Platzhalter-Tabellen durch vollständige Tabellen.
+        
+        Args:
+            blocks: Liste von Notion-Blöcken
+            fetch_children_func: Funktion zum Abrufen von Kinder-Blöcken
+                Funktions-Signatur: async def fetch_func(block_id: str) -> List[Dict[str, Any]]
+                
+        Returns:
+            Text-Repräsentation der Blöcke mit vollständigen Tabellen
+        """
+        # Erstellt zunächst den Text mit Platzhaltern für Tabellen
+        markdown_text = NotionContentConverter.blocks_to_text(blocks)
+        
+        # Tabellen-Blöcke finden
+        table_blocks = [b for b in blocks if b.get("type") == "table"]
+        
+        # Wenn keine Tabellen vorhanden sind, geben wir den Text direkt zurück
+        if not table_blocks:
+            return markdown_text
+        
+        # Für jede Tabelle die Kinder-Blöcke abrufen und die Tabelle verarbeiten
+        for table_block in table_blocks:
+            block_id = table_block.get("id")
+            if not block_id:
+                continue
+                
+            # Platzhalter-Tabelle generieren (gleiche Logik wie im TableConverter)
+            table_data = table_block.get("table", {})
+            table_width = table_data.get("table_width", 3)
+            placeholder_table = NotionTableProcessor._generate_placeholder_table(table_width)
+            
+            # Vollständige Tabelle mit Kindern-Daten erstellen
+            try:
+                row_blocks = await fetch_children_func(block_id)
+                full_table = await NotionTableProcessor._process_table_with_children(table_block, row_blocks)
+                
+                # Platzhalter durch die vollständige Tabelle ersetzen
+                if full_table and placeholder_table in markdown_text:
+                    markdown_text = markdown_text.replace(placeholder_table, full_table)
+            except Exception as e:
+                print(f"Fehler beim Verarbeiten der Tabelle {block_id}: {e}")
+        
+        return markdown_text
+    
+    @staticmethod
+    def _generate_placeholder_table(table_width: int) -> str:
+        """Generiert eine Platzhalter-Tabelle mit der angegebenen Breite."""
+        header_cells = [f"Spalte {i+1}" for i in range(table_width)]
+        header_row = "| " + " | ".join(header_cells) + " |"
+        separator_row = "| " + " | ".join(["---" for _ in range(table_width)]) + " |"
+        placeholder_row = "| " + " | ".join(["..." for _ in range(table_width)]) + " |"
+        
+        return f"{header_row}\n{separator_row}\n{placeholder_row}"
+    
+    @staticmethod
+    async def _process_table_with_children(
+        table_block: Dict[str, Any], 
+        row_blocks: List[Dict[str, Any]]
+    ) -> Optional[str]:
+        """
+        Verarbeitet einen Tabellen-Block mit seinen Kinder-Blöcken.
+        
+        Args:
+            table_block: Der Tabellen-Block
+            row_blocks: Die Kinder-Blöcke (Tabellenzeilen)
+            
+        Returns:
+            Markdown-Darstellung der Tabelle
+        """
+        if not row_blocks:
+            return None
+            
+        table_data = table_block.get("table", {})
+        has_column_header = table_data.get("has_column_header", False)
+        
+        table_rows = []
+        column_count = 0
+        
+        # Jede Zeile verarbeiten
+        for i, row_block in enumerate(row_blocks):
+            if row_block.get("type") != "table_row":
+                continue
+                
+            row_data = row_block.get("table_row", {})
+            cells = row_data.get("cells", [])
+            
+            # Maximale Spaltenzahl für den Separator ermitteln
+            if len(cells) > column_count:
+                column_count = len(cells)
+            
+            # Zellen in Text konvertieren
+            row_texts = []
+            for cell in cells:
+                cell_text = NotionContentConverter.extract_text_with_formatting(cell)
+                row_texts.append(cell_text or "")
+            
+            # Zeile als Tabelle formatieren
+            row = "| " + " | ".join(row_texts) + " |"
+            table_rows.append(row)
+        
+        # Wenn keine Zeilen gefunden wurden, None zurückgeben
+        if not table_rows or column_count == 0:
+            return None
+            
+        # Header-Trenner hinzufügen, wenn es sich um eine Tabellenüberschrift handelt
+        if has_column_header and len(table_rows) > 0:
+            separator_row = "| " + " | ".join(["---" for _ in range(column_count)]) + " |"
+            table_rows.insert(1, separator_row)
+            
+        return "\n".join(table_rows)
