@@ -11,7 +11,6 @@ class LoggingMixin:
     @property
     def logger(self):
         if not hasattr(self, '_logger'):
-            # Klassenname als Logger-Name verwenden
             self._logger = logging.getLogger(self.__class__.__name__)
         return self._logger
     

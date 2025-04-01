@@ -123,7 +123,6 @@ async def demo():
     """Example usage of the NotionContentManager."""
     content_manager = NotionPageContentManager(page_id="1a3389d5-7bd3-80d7-a507-e67d1b25822c")
     
-    # Example markdown to append
     markdown = """
 # Test Document
 
@@ -154,8 +153,16 @@ function sayHello() {
 }
 ```
 
-End of the document.
+## Markdown Table
+| Header 1 | Header 2 | Header 3 |
+|----------|----------|----------|
+| Row 1, Col 1 | Row 1, Col 2 | Row 1, Col 3 |
+| Row 2, Col 1 | Row 2, Col 2 | Row 2, Col 3 |
+| Row 3, Col 1 | **Bold text** | `code` |
+
+End of the document
 """
+    
     
     # Append the markdown content to your Notion page
     result = await content_manager.append_markdown(markdown)

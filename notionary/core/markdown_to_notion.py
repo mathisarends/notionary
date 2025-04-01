@@ -220,6 +220,216 @@ class ParagraphParser(MarkdownElementParser):
                 "rich_text": MarkdownToNotionConverter.parse_inline_formatting(text)
             }
         }
+        
+class TableParser(MarkdownElementParser):
+    """Parser for Markdown tables."""
+    
+    def __init__(self):
+        # More robust patterns to better match tables
+        self.table_start_pattern = re.compile(r'^\s*\|(.+)\|\s*$')
+        self.table_separator_pattern = re.compile(r'^\s*\|([\s\-:|]+)\|\s*$')
+    
+    def match(self, text: str) -> bool:
+        """Check if text contains a Markdown table."""
+        lines = text.split('\n')
+        
+        # Need at least 3 lines for a valid table: header, separator, and one data row
+        if len(lines) < 3:
+            return False
+        
+        # Find potential table start
+        for i in range(len(lines) - 2):
+            if (self.table_start_pattern.match(lines[i]) and 
+                self.table_separator_pattern.match(lines[i+1]) and 
+                self.table_start_pattern.match(lines[i+2])):
+                return True
+                
+        return False
+    
+    @property
+    def is_multiline(self) -> bool:
+        """Tables span multiple lines."""
+        return True
+    
+    def parse(self, text: str) -> Optional[Dict[str, Any]]:
+        """
+        Parse a Markdown table into a Notion table block.
+        
+        This method extracts the table from the text and creates a Notion table block.
+        """
+        lines = text.split('\n')
+        
+        # Find the table start
+        start_idx = 0
+        for i in range(len(lines)):
+            if (i < len(lines) - 2 and 
+                self.table_start_pattern.match(lines[i]) and 
+                self.table_separator_pattern.match(lines[i+1]) and 
+                self.table_start_pattern.match(lines[i+2])):
+                start_idx = i
+                break
+        else:
+            return None  # No table found
+        
+        # Find where the table ends
+        end_idx = start_idx + 3  # At minimum includes header, separator, and one data row
+        while end_idx < len(lines) and self.table_start_pattern.match(lines[end_idx]):
+            end_idx += 1
+        
+        # Extract the table lines
+        table_lines = lines[start_idx:end_idx]
+        
+        # Parse rows (skip separator row)
+        rows = []
+        for i, line in enumerate(table_lines):
+            if i != 1:  # Skip the separator row
+                if self.table_start_pattern.match(line):
+                    cells = self._parse_table_row(line)
+                    if cells:  # Make sure we have valid cells
+                        rows.append(cells)
+        
+        # Validate table structure
+        if not rows:
+            return None
+            
+        # Get the number of columns from the first row
+        column_count = len(rows[0])
+        
+        # Ensure all rows have the same number of columns
+        for row in rows:
+            if len(row) != column_count:
+                # Pad rows with empty cells if needed
+                while len(row) < column_count:
+                    row.append("")
+                # Truncate rows if they're too long
+                if len(row) > column_count:
+                    row = row[:column_count]
+        
+        return {
+            "type": "table",
+            "table": {
+                "table_width": column_count,
+                "has_column_header": True,
+                "has_row_header": False,
+                "children": self._create_table_rows(rows)
+            }
+        }
+    
+    def _parse_table_row(self, row_text: str) -> List[str]:
+        """
+        Parse a table row text into cell contents.
+        
+        Args:
+            row_text: Text of the table row (e.g., "| Cell 1 | Cell 2 |")
+            
+        Returns:
+            List of cell contents
+        """
+        # Remove leading/trailing whitespace
+        row_content = row_text.strip()
+        
+        # Remove leading and trailing pipes
+        if row_content.startswith('|'):
+            row_content = row_content[1:]
+        if row_content.endswith('|'):
+            row_content = row_content[:-1]
+            
+        # Split by pipe and strip whitespace from each cell
+        cells = [cell.strip() for cell in row_content.split('|')]
+        
+        return cells
+    
+    def _create_table_rows(self, rows: List[List[str]]) -> List[Dict[str, Any]]:
+        """
+        Create Notion table row blocks from parsed rows.
+        
+        Args:
+            rows: List of rows, where each row is a list of cell contents
+            
+        Returns:
+            List of Notion table_row blocks
+        """
+        table_rows = []
+        
+        for row in rows:
+            cells_data = []
+            
+            for cell_content in row:
+                # Use inline formatting for cell content
+                rich_text = MarkdownToNotionConverter.parse_inline_formatting(cell_content)
+                
+                # If no rich text was parsed (empty cell), add an empty text block
+                if not rich_text:
+                    rich_text = [{
+                        "type": "text",
+                        "text": {"content": ""},
+                        "annotations": MarkdownToNotionConverter.default_annotations(),
+                        "plain_text": "",
+                        "href": None
+                    }]
+                    
+                cells_data.append(rich_text)
+                
+            table_rows.append({
+                "type": "table_row",
+                "table_row": {
+                    "cells": cells_data
+                }
+            })
+            
+        return table_rows
+    
+    def find_matches(self, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
+        """
+        Find all table matches in the text and return their positions.
+        
+        Args:
+            text: The text to search in
+            
+        Returns:
+            List of tuples with (start_pos, end_pos, block)
+        """
+        matches = []
+        lines = text.split('\n')
+        
+        i = 0
+        while i < len(lines) - 2:
+            if (self.table_start_pattern.match(lines[i]) and 
+                self.table_separator_pattern.match(lines[i+1]) and 
+                self.table_start_pattern.match(lines[i+2])):
+                
+                # Found start of a table
+                start_line = i
+                
+                # Find the end of the table
+                end_line = start_line + 3  # Minimum table size
+                while end_line < len(lines) and self.table_start_pattern.match(lines[end_line]):
+                    end_line += 1
+                
+                # Calculate text positions for the table
+                start_pos = 0
+                for j in range(start_line):
+                    start_pos += len(lines[j]) + 1  # +1 for newline
+                
+                end_pos = start_pos
+                for j in range(start_line, end_line):
+                    end_pos += len(lines[j]) + 1  # +1 for newline
+                
+                # Extract the table text
+                table_text = '\n'.join(lines[start_line:end_line])
+                
+                # Parse the table
+                block = self.parse(table_text)
+                
+                if block:
+                    matches.append((start_pos, end_pos, block))
+                
+                # Skip ahead to after this table
+                i = end_line
+            else:
+                i += 1
+                
+        return matches
 
 
 class MarkdownToNotionConverter:
@@ -233,6 +443,7 @@ class MarkdownToNotionConverter:
         """Initialize the converter with element parsers."""
         self.element_parsers = [
             CodeBlockParser(),
+            TableParser(),  # The improved TableParser
             HeadingParser(),
             BulletListParser(),
             NumberedListParser(),
@@ -253,74 +464,62 @@ class MarkdownToNotionConverter:
         if not markdown_text:
             return []
         
-        # Get all segments with multi-line elements marked for special processing
-        # This approach preserves the original order of content
-        segments = self._split_with_multiline_markers(markdown_text)
-        
-        blocks = []
-        
-        # Process each segment in order
-        for segment_type, segment_text in segments:
-            if segment_type == "code_block":
-                # If it's a code block, parse it directly
-                code_parser = next((p for p in self.element_parsers if isinstance(p, CodeBlockParser)), None)
-                if code_parser:
-                    block = code_parser.parse(segment_text)
-                    if block:
-                        blocks.append(block)
-            elif segment_text.strip():
-                # Process text segments normally
-                segment_blocks = self._process_text_segment(segment_text)
-                blocks.extend(segment_blocks)
-                    
-        return blocks
-    
-    def _split_with_multiline_markers(self, text: str) -> List[Tuple[str, str]]:
-        """
-        Split text into segments, marking multi-line elements.
-        
-        Args:
-            text: The markdown text
-            
-        Returns:
-            List of tuples (segment_type, segment_text)
-            where segment_type is either "text" or "code_block"
-        """
-        # Get multi-line parsers
+        # Extract all special multi-line elements first
         multiline_parsers = [p for p in self.element_parsers if p.is_multiline]
         
-        # If no multi-line parsers, return the whole text as a text segment
-        if not multiline_parsers:
-            return [("text", text)]
+        # Store all matches for all multiline parsers
+        all_matches = []
         
-        # Get code block parser
-        code_parser = next((p for p in multiline_parsers if isinstance(p, CodeBlockParser)), None)
-        if not code_parser or not code_parser.match(text):
-            return [("text", text)]
+        # For each parser, find all its matches
+        for parser in multiline_parsers:
+            if hasattr(parser, 'find_matches') and parser.match(markdown_text):
+                try:
+                    matches = parser.find_matches(markdown_text)
+                    
+                    # Add the parser type to each match
+                    for start, end, block in matches:
+                        parser_type = "table" if isinstance(parser, TableParser) else "code_block"
+                        all_matches.append((start, end, parser_type, block))
+                except Exception as e:
+                    print(f"Error finding matches with {parser.__class__.__name__}: {e}")
         
-        # Find all code blocks with their positions
-        matches = code_parser.find_matches(text)
-        if not matches:
-            return [("text", text)]
+        # Sort matches by start position
+        all_matches.sort(key=lambda m: m[0])
         
-        # Sort matches by start position to preserve order
-        matches.sort(key=lambda m: m[0])
-        
+        # Split text into segments: regular text and special elements
         segments = []
         last_end = 0
         
-        for start, end, block in matches:
+        for start, end, segment_type, block in all_matches:
+            # Add text before this match as regular text
             if start > last_end:
-                segments.append(("text", text[last_end:start]))
+                segments.append(("text", markdown_text[last_end:start]))
             
-            segments.append(("code_block", text[start:end]))
+            # Add the match as its specific type
+            segments.append((segment_type, block))
             
             last_end = end
         
-        if last_end < len(text):
-            segments.append(("text", text[last_end:]))
+        # Add any remaining text
+        if last_end < len(markdown_text):
+            segments.append(("text", markdown_text[last_end:]))
         
-        return segments
+        # Now process each segment type
+        blocks = []
+        
+        for segment_type, content in segments:
+            if segment_type == "text":
+                # For text segments, process line by line
+                text_blocks = self._process_text_segment(content)
+                blocks.extend(text_blocks)
+            elif segment_type in ["code_block", "table"]:
+                # For code blocks and tables, add the pre-parsed block
+                blocks.append(content)
+        
+        # Remove any None values that might have slipped in
+        blocks = [b for b in blocks if b is not None]
+        
+        return blocks
     
     def _process_text_segment(self, text: str) -> List[Dict[str, Any]]:
         """
@@ -430,7 +629,8 @@ class MarkdownToNotionConverter:
                     "content": text,
                     "link": {"url": formatting['url']}
                 },
-                "annotations": MarkdownToNotionConverter.default_annotations()
+                "annotations": MarkdownToNotionConverter.default_annotations(),
+                "plain_text": text
             }
             
         annotations = MarkdownToNotionConverter.default_annotations()
@@ -439,7 +639,8 @@ class MarkdownToNotionConverter:
         return {
             "type": "text",
             "text": {"content": text},
-            "annotations": annotations
+            "annotations": annotations,
+            "plain_text": text
         }
     
     @staticmethod
