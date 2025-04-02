@@ -172,33 +172,31 @@ async def demo():
     """Example usage of the NotionContentManager."""
     content_manager = NotionPageContentManager(page_id="1a3389d5-7bd3-80d7-a507-e67d1b25822c")
     
-    markdown = """# Page with Callouts
+    markdown = """# Document with Dividers
 
-Regular paragraph text.
+This is the first section of content.
 
-!> Simple callout with default emoji and color
+---
 
-!> [🤖] J.A.R.V.I.S Creative Space
+## Second Section
 
-!> {gray_background} [🤖] J.A.R.V.I.S Creative Space with gray background
+Content after a divider.
 
->> A toggle block with a callout inside
+!> [💡] Callout block in the second section
 
-  !> [🔍] Nested callout inside a toggle
+***
+
+### Third Section
+
+Content in the third section.
+
+>> Toggle Section
+
+  Content inside a toggle.
   
-  Regular content inside the toggle
-
-# More content
-
-Another paragraph after the callouts.
-
-This is a paragraph with ==highlighted text== in the middle.
-
-You can highlight text with specific colors like ==blue:blue background== 
-or ==red:red background== or ==green:green background==.
-
-You can combine **bold** and ==yellow:highlighted== text in the same paragraph.
-
+  ---
+  
+  Even toggles can contain dividers!
 """
     
     

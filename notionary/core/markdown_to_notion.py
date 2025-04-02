@@ -130,6 +130,28 @@ class NumberedListParser(MarkdownElementParser):
                 "rich_text": MarkdownToNotionConverter.parse_inline_formatting(content)
             }
         }
+        
+class DividerParser(MarkdownElementParser):
+    """Parser for markdown horizontal dividers (---, ***, ___)."""
+    
+    def __init__(self):
+        # Pattern for dividers: Three or more hyphens, asterisks, or underscores on a line by themselves
+        self.pattern = re.compile(r'^\s*([-*_])\1{2,}\s*$')
+    
+    def match(self, text: str) -> bool:
+        """Check if text is a divider."""
+        return bool(self.pattern.match(text))
+    
+    def parse(self, text: str) -> Optional[Dict[str, Any]]:
+        """Parse a divider line into a Notion divider block."""
+        if not self.match(text):
+            return None
+            
+        # Notion divider blocks are very simple
+        return {
+            "type": "divider",
+            "divider": {}
+        }
 
 
 class InlineCodeParser(MarkdownElementParser):
@@ -580,6 +602,7 @@ class MarkdownToNotionConverter:
             HeadingParser(),
             ToggleParser(),
             CalloutParser(),
+            DividerParser(),
             TodoParser(),
             BulletListParser(),
             NumberedListParser(),
