@@ -755,7 +755,7 @@ class MarkdownToNotionConverter:
     
     @staticmethod
     def parse_inline_formatting(text: str) -> List[Dict[str, Any]]:
-        """Parse inline text formatting (bold, italic, code, etc.)"""
+        """Parse inline text formatting (bold, italic, code, highlight, etc.)"""
         if not text:
             return []
 
@@ -768,7 +768,7 @@ class MarkdownToNotionConverter:
                 elements.append(element)
                 
         return elements
-    
+
     @staticmethod
     def _create_text_element(segment: Tuple[str, Dict[str, Any]]) -> Dict[str, Any]:
         """
@@ -788,7 +788,15 @@ class MarkdownToNotionConverter:
             }
             
         annotations = MarkdownToNotionConverter.default_annotations()
-        annotations.update(formatting)
+        
+        # Handle special color formatting
+        if 'color' in formatting:
+            annotations['color'] = formatting['color']
+        else:
+            # Apply standard annotations (bold, italic, etc.)
+            for key in formatting:
+                if key in annotations:
+                    annotations[key] = formatting[key]
         
         return {
             "type": "text",
@@ -796,6 +804,7 @@ class MarkdownToNotionConverter:
             "annotations": annotations,
             "plain_text": text
         }
+
     
     @staticmethod
     def default_annotations() -> Dict[str, bool]:
@@ -858,6 +867,7 @@ class TextFormattingParser:
     into smaller, more manageable methods.
     """
     
+    # Update the FORMAT_PATTERNS to include highlighting syntax
     FORMAT_PATTERNS = [
         (r'\*\*(.+?)\*\*', {'bold': True}),
         (r'\*(.+?)\*', {'italic': True}),
@@ -866,6 +876,10 @@ class TextFormattingParser:
         (r'~~(.+?)~~', {'strikethrough': True}),
         (r'`(.+?)`', {'code': True}),  # Inline code
         (r'\[(.+?)\]\((.+?)\)', {'link': True}),
+        # New pattern for highlighted text with color specification
+        (r'==([a-z_]+):(.+?)==', {'highlight': True}),  # ==yellow:highlighted text==
+        # Simple highlight pattern with default yellow
+        (r'==(.+?)==', {'highlight_default': True}),  # ==highlighted text==
     ]
     
     @classmethod
@@ -948,13 +962,40 @@ class TextFormattingParser:
         Returns:
             Tuple of (content, formatting)
         """
-        content = match.group(1)
+        if 'highlight' in formatting:
+            color = match.group(1)
+            content = match.group(2)
+            
+            valid_colors = [
+                "default", "gray", "brown", "orange", "yellow", "green", "blue", 
+                "purple", "pink", "red", "gray_background", "brown_background", 
+                "orange_background", "yellow_background", "green_background", 
+                "blue_background", "purple_background", "pink_background", "red_background"
+            ]
+            
+            if color not in valid_colors:
+                if not color.endswith("_background"):
+                    color = f"{color}_background"
+                
+                if color not in valid_colors:
+                    color = "yellow_background"
+            
+            return (content, {'color': color})
         
-        if 'link' in formatting:
+        # Handle default highlighting (yellow)
+        elif 'highlight_default' in formatting:
+            content = match.group(1)
+            return (content, {'color': 'yellow_background'})
+        
+        elif 'link' in formatting:
+            content = match.group(1)
             url = match.group(2)
             return (content, {'url': url})
         
-        return (content, formatting)
+        else:
+            content = match.group(1)
+            return (content, formatting)
+        
     
 class ToggleContentProcessor:
     """Helper class to process content that should be nested inside toggle blocks."""

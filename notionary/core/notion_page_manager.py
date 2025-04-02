@@ -190,12 +190,21 @@ Regular paragraph text.
 
 # More content
 
-Another paragraph after the callouts."""
+Another paragraph after the callouts.
+
+This is a paragraph with ==highlighted text== in the middle.
+
+You can highlight text with specific colors like ==blue:blue background== 
+or ==red:red background== or ==green:green background==.
+
+You can combine **bold** and ==yellow:highlighted== text in the same paragraph.
+
+"""
     
     
     try:
         # Retrieve the text with table data
-        text_with_tables = await content_manager.get_blocks()
+        text_with_tables = await content_manager.append_markdown(markdown)
         print(text_with_tables)
     finally:
         # Clean up
