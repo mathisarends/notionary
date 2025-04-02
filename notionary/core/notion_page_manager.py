@@ -172,27 +172,30 @@ async def demo():
     """Example usage of the NotionContentManager."""
     content_manager = NotionPageContentManager(page_id="1a3389d5-7bd3-80d7-a507-e67d1b25822c")
     
-    markdown = """
-# Regular Heading 1
+    markdown = """# Page with Callouts
 
-This is regular paragraph content.
+Regular paragraph text.
 
->>## Toggle Heading 2
+!> Simple callout with default emoji and color
 
-  This content will be nested inside the toggle heading.
+!> [🤖] J.A.R.V.I.S Creative Space
+
+!> {gray_background} [🤖] J.A.R.V.I.S Creative Space with gray background
+
+>> A toggle block with a callout inside
+
+  !> [🔍] Nested callout inside a toggle
   
-  - This is a list inside the toggle
-  - Another list item
+  Regular content inside the toggle
 
-# Another Regular Heading
+# More content
 
-And regular content continues here.
-    """
+Another paragraph after the callouts."""
     
     
     try:
         # Retrieve the text with table data
-        text_with_tables = await content_manager.append_markdown(markdown_text=markdown)
+        text_with_tables = await content_manager.get_blocks()
         print(text_with_tables)
     finally:
         # Clean up

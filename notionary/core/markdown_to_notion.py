@@ -48,32 +48,31 @@ class HeadingParser(MarkdownElementParser):
             }
         }
         
-class ToggleHeadingParser(MarkdownElementParser):
-    """Parser for toggle headings in markdown (>># Heading)."""
+class ToggleParser(MarkdownElementParser):
+    """Parser for simple toggle blocks in markdown (>> Toggle content)."""
     
     def __init__(self):
-        # Pattern for toggle headings: >>#{1,6} Heading Text
-        self.pattern = re.compile(r'^(>{2})(#{1,6})?\s(.+)$')
+        self.pattern = re.compile(r'^>{2}\s+(.+)$')
     
     def match(self, text: str) -> bool:
-        """Check if text is a toggle heading."""
+        """Check if text is a toggle block."""
         return bool(self.pattern.match(text))
     
     def parse(self, text: str) -> Optional[Dict[str, Any]]:
-        """Parse a toggle heading line into a Notion toggle block."""
+        """Parse a toggle line into a Notion toggle block."""
         toggle_match = self.pattern.match(text)
         if not toggle_match:
             return None
             
-        heading_markers = toggle_match.group(2) or ""
-        content = toggle_match.group(3)
+        # Extract content
+        content = toggle_match.group(1)
         
         return {
             "type": "toggle",
             "toggle": {
                 "rich_text": MarkdownToNotionConverter.parse_inline_formatting(content),
                 "color": "default",
-                "children": []
+                "children": []  # Will be populated with nested content
             }
         }
     
@@ -506,7 +505,64 @@ class QuoteParser(MarkdownElementParser):
         
         return matches
     
+class CalloutParser(MarkdownElementParser):
+    """Parser for callout blocks in markdown (!> [emoji] Callout text)."""
     
+    def __init__(self):
+        # Pattern for callouts: !> [emoji] Text or !> {color} [emoji] Text or !> Text
+        # Group 1: Optional color in {}
+        # Group 2: Optional emoji in []
+        # Group 3: Callout text
+        self.pattern = re.compile(r'^!>\s+(?:(?:{([a-z_]+)})?\s*)?(?:\[([^\]]+)\])?\s*(.+)$')
+        
+        # Default values if not specified
+        self.default_emoji = "💡"
+        self.default_color = "gray_background"
+        
+        # Valid color options in Notion
+        self.valid_colors = [
+            "default", "gray", "brown", "orange", "yellow", "green", "blue", 
+            "purple", "pink", "red", "gray_background", "brown_background", 
+            "orange_background", "yellow_background", "green_background", 
+            "blue_background", "purple_background", "pink_background", "red_background"
+        ]
+    
+    def match(self, text: str) -> bool:
+        """Check if text is a callout block."""
+        # Simple check before applying regex
+        return text.strip().startswith("!>") and bool(self.pattern.match(text))
+    
+    def parse(self, text: str) -> Optional[Dict[str, Any]]:
+        """Parse a callout line into a Notion callout block."""
+        callout_match = self.pattern.match(text)
+        if not callout_match:
+            return None
+            
+        # Extract components
+        color = callout_match.group(1)
+        emoji = callout_match.group(2)
+        content = callout_match.group(3)
+        
+        # Set defaults if not provided
+        if not emoji:
+            emoji = self.default_emoji
+            
+        if not color or color not in self.valid_colors:
+            color = self.default_color
+            
+        # Create the callout block
+        return {
+            "type": "callout",
+            "callout": {
+                "rich_text": MarkdownToNotionConverter.parse_inline_formatting(content),
+                "icon": {
+                    "type": "emoji",
+                    "emoji": emoji
+                },
+                "color": color
+            }
+        }
+
 
 class MarkdownToNotionConverter:
     """
@@ -522,7 +578,8 @@ class MarkdownToNotionConverter:
             TableParser(),
             QuoteParser(),
             HeadingParser(),
-            ToggleHeadingParser(),
+            ToggleParser(),
+            CalloutParser(),
             TodoParser(),
             BulletListParser(),
             NumberedListParser(),
@@ -905,7 +962,7 @@ class ToggleContentProcessor:
     @staticmethod
     def process_toggle_content(markdown_text: str, converter: 'MarkdownToNotionConverter') -> List[Dict[str, Any]]:
         """
-        Process markdown text to identify toggle headings and their nested content.
+        Process markdown text to identify toggle blocks and their nested content.
         
         Args:
             markdown_text: Markdown text to process
@@ -915,93 +972,57 @@ class ToggleContentProcessor:
             List of blocks with properly nested content
         """
         lines = markdown_text.split('\n')
-        blocks = []
+        result_blocks = []
         i = 0
         
-        toggle_parser = ToggleHeadingParser()
+        toggle_parser = next((p for p in converter.element_parsers 
+                             if isinstance(p, ToggleParser)), None)
+        
+        if not toggle_parser:
+            return converter._convert_without_toggles(markdown_text)
         
         while i < len(lines):
             line = lines[i].rstrip()
             
-            # Check if line is a toggle heading
             if toggle_parser.match(line):
-                # Parse the toggle heading
                 toggle_block = toggle_parser.parse(line)
                 
-                # Find indented content that belongs to this toggle
-                nested_content_lines = []
+                nested_content = []
                 j = i + 1
-                
-                # Look for indented content to include as children
                 while j < len(lines):
                     next_line = lines[j]
                     
-                    # If we encounter another toggle or a non-indented line, stop
-                    if toggle_parser.match(next_line) or (next_line.strip() and not next_line.startswith('  ')):
+                    if (toggle_parser.match(next_line) or 
+                        (next_line.strip() and not next_line.startswith('  '))):
                         break
                     
-                    # Skip empty lines at the beginning
-                    if not next_line.strip() and not nested_content_lines:
-                        j += 1
-                        continue
-                    
-                    # If it's an indented line, add it to nested content (removing indentation)
                     if next_line.startswith('  '):
-                        nested_content_lines.append(next_line[2:])  # Remove the first 2 spaces
+                        nested_content.append(next_line[2:])
                     else:
-                        # Include blank lines in the nested content
-                        nested_content_lines.append(next_line)
+                        nested_content.append(next_line)
                     
                     j += 1
                 
-                # Process nested content into child blocks if we have any
-                if nested_content_lines:
-                    nested_text = '\n'.join(nested_content_lines)
-                    # Use the main converter to process the nested content
+                if nested_content:
+                    nested_text = '\n'.join(nested_content)
                     child_blocks = converter._convert_without_toggles(nested_text)
-                    
-                    # Add children to the toggle block
                     if child_blocks:
                         toggle_block["toggle"]["children"] = child_blocks
                 
-                blocks.append(toggle_block)
-                i = j  # Skip the lines we've already processed
+                result_blocks.append(toggle_block)
+                i = j  # Skip processed lines
             else:
-                # Not a toggle, let the regular parsers handle it
-                i += 1
-                continue
-        
-        # Process remaining non-toggle content
-        regular_content = []
-        i = 0
-        while i < len(lines):
-            if not toggle_parser.match(lines[i]):
-                regular_content.append(lines[i])
-                i += 1
-                continue
-                
-            # If we hit a toggle, process accumulated content first
-            if regular_content:
-                regular_text = '\n'.join(regular_content)
-                regular_blocks = converter._convert_without_toggles(regular_text)
-                blocks.extend(regular_blocks)
                 regular_content = []
-            
-            # Skip past the toggle and its content
-            nested_level = 0
-            toggle_start = i
-            i += 1
-            while i < len(lines):
-                if toggle_parser.match(lines[i]):
-                    break
-                if lines[i].strip() and not lines[i].startswith('  '):
-                    break
-                i += 1
+                start_i = i
+                
+                while i < len(lines) and not toggle_parser.match(lines[i]):
+                    regular_content.append(lines[i])
+                    i += 1
+                
+                # Process regular content
+                if regular_content:
+                    regular_text = '\n'.join(regular_content)
+                    regular_blocks = converter._convert_without_toggles(regular_text)
+                    result_blocks.extend(regular_blocks)
         
-        # Process any remaining regular content
-        if regular_content:
-            regular_text = '\n'.join(regular_content)
-            regular_blocks = converter._convert_without_toggles(regular_text)
-            blocks.extend(regular_blocks)
-        
-        return blocks
+        return result_blocks
