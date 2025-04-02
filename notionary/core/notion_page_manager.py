@@ -172,9 +172,27 @@ async def demo():
     """Example usage of the NotionContentManager."""
     content_manager = NotionPageContentManager(page_id="1a3389d5-7bd3-80d7-a507-e67d1b25822c")
     
+    markdown = """
+# Regular Heading 1
+
+This is regular paragraph content.
+
+>>## Toggle Heading 2
+
+  This content will be nested inside the toggle heading.
+  
+  - This is a list inside the toggle
+  - Another list item
+
+# Another Regular Heading
+
+And regular content continues here.
+    """
+    
+    
     try:
         # Retrieve the text with table data
-        text_with_tables = await content_manager.get_text(include_table_data=True)
+        text_with_tables = await content_manager.append_markdown(markdown_text=markdown)
         print(text_with_tables)
     finally:
         # Clean up

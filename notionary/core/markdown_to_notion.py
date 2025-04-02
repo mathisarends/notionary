@@ -47,6 +47,37 @@ class HeadingParser(MarkdownElementParser):
                 "rich_text": MarkdownToNotionConverter.parse_inline_formatting(content)
             }
         }
+        
+class ToggleHeadingParser(MarkdownElementParser):
+    """Parser for toggle headings in markdown (>># Heading)."""
+    
+    def __init__(self):
+        self.pattern = re.compile(r'^(>{2})(#{1,6})\s(.+)$')
+    
+    def match(self, text: str) -> bool:
+        """Check if text is a toggle heading."""
+        return bool(self.pattern.match(text))
+    
+    def parse(self, text: str) -> Optional[Dict[str, Any]]:
+        """Parse a toggle heading line into a Notion toggle block."""
+        toggle_match = self.pattern.match(text)
+        if not toggle_match:
+            return None
+            
+        # Extract heading level (number of #) - we'll store this as metadata
+        # but use the standard toggle block type
+        level = len(toggle_match.group(2))
+        content = toggle_match.group(3)
+        
+        # Using the correct Notion API block structure
+        return {
+            "type": "toggle",
+            "toggle": {
+                "rich_text": MarkdownToNotionConverter.parse_inline_formatting(content),
+                # You can add metadata if needed for UI formatting
+                "color": "default"
+            }
+        }
 
 
 class BulletListParser(MarkdownElementParser):
@@ -488,6 +519,7 @@ class MarkdownToNotionConverter:
             TableParser(),
             QuoteParser(),
             HeadingParser(),
+            ToggleHeadingParser(),
             TodoParser(),
             BulletListParser(),
             NumberedListParser(),
@@ -501,6 +533,13 @@ class MarkdownToNotionConverter:
         """
         if not markdown_text:
             return []
+        
+        has_toggle = any(isinstance(parser, ToggleHeadingParser) and parser.match(line) 
+                        for parser in self.element_parsers 
+                        for line in markdown_text.split('\n'))
+        
+        if has_toggle:
+            return ToggleContentProcessor.process_toggle_content(markdown_text, self)
         
         segments = self._find_segments(markdown_text)
         
@@ -846,3 +885,83 @@ class TextFormattingParser:
             return (content, {'url': url})
         
         return (content, formatting)
+    
+class ToggleContentProcessor:
+    """Helper class to process content that should be nested inside toggle blocks."""
+    
+    @staticmethod
+    def process_toggle_content(markdown_text: str, converter: MarkdownToNotionConverter) -> List[Dict[str, Any]]:
+        """
+        Process markdown text to identify toggle headings and their nested content.
+        
+        Args:
+            markdown_text: Markdown text to process
+            converter: Instance of MarkdownToNotionConverter to use for processing inner content
+            
+        Returns:
+            List of blocks with properly nested content
+        """
+        lines = markdown_text.split('\n')
+        blocks = []
+        i = 0
+        
+        while i < len(lines):
+            line = lines[i]
+            
+            # Check if line is a toggle heading
+            toggle_parser = ToggleHeadingParser()
+            if toggle_parser.match(line):
+                # Parse the toggle heading
+                toggle_block = toggle_parser.parse(line)
+                
+                # Find indented content that belongs to this toggle
+                nested_content = []
+                indent_level = None
+                j = i + 1
+                
+                while j < len(lines):
+                    next_line = lines[j]
+                    
+                    # Check if line has indentation indicating it belongs to the toggle
+                    spaces_match = re.match(r'^(\s+)', next_line)
+                    
+                    # If it's the first indented line, get its indent level
+                    if spaces_match and indent_level is None:
+                        indent_level = len(spaces_match.group(1))
+                        nested_content.append(next_line[indent_level:])
+                        j += 1
+                    # If it matches the indent level of the toggle content
+                    elif spaces_match and len(spaces_match.group(1)) >= indent_level:
+                        nested_content.append(next_line[indent_level:])
+                        j += 1
+                    # If we hit another toggle heading or unindented content, stop
+                    elif toggle_parser.match(next_line) or not next_line.strip() or not spaces_match:
+                        break
+                    else:
+                        j += 1
+                
+                if nested_content:
+                    nested_text = '\n'.join(nested_content)
+                    nested_blocks = converter.convert(nested_text)
+                    
+                    # Add children to the toggle block
+                    toggle_block_type = toggle_block["type"]
+                    toggle_block[toggle_block_type]["children"] = nested_blocks
+                
+                blocks.append(toggle_block)
+                i = j
+            else:
+                parser = None
+                for p in converter.element_parsers:
+                    if not p.is_multiline and p.match(line):
+                        parser = p
+                        break
+                
+                if parser:
+                    block = parser.parse(line)
+                    if block:
+                        blocks.append(block)
+                
+                i += 1
+        
+        return blocks

@@ -1,4 +1,4 @@
-from typing import Awaitable, Callable, List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional
 from abc import ABC, abstractmethod
 from notionary.util.logging_mixin import LoggingMixin
 
