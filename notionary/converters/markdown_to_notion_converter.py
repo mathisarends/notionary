@@ -3,10 +3,10 @@
 from typing import Dict, Any, List, Optional, Tuple
 from notionary.converters.notion_element_registry import ElementRegistry
 
-# TODO: Refactor this one.
 class MarkdownToNotionConverter:
     """Converts Markdown text to Notion API block format."""
     MULTILINE_CONTENT_MARKER = '<!-- REMOVED_MULTILINE_CONTENT -->'
+    SPACER_MARKER = '<!-- spacer -->'  # Neuer Marker für Einrückung
     
     def convert(self, markdown_text: str) -> List[Dict[str, Any]]:
         """
@@ -31,7 +31,7 @@ class MarkdownToNotionConverter:
         
         blocks = [block for _, _, block in all_blocks]
         
-        final_blocks = self._add_spacing_after_multiline(blocks)
+        final_blocks = self._process_explicit_spacing(blocks)
         
         return final_blocks
     
@@ -93,6 +93,12 @@ class MarkdownToNotionConverter:
             
             # Skip marker lines
             if self._is_multiline_marker(line):
+                current_pos += line_length
+                continue
+            
+            # Überprüfe auf Spacer-Marker
+            if self._is_spacer_marker(line):
+                line_blocks.append((current_pos, current_pos + line_length, self._create_empty_paragraph()))
                 current_pos += line_length
                 continue
             
@@ -159,6 +165,10 @@ class MarkdownToNotionConverter:
     def _is_multiline_marker(self, line: str) -> bool:
         """Check if a line is a multiline content marker."""
         return line.strip() == self.MULTILINE_CONTENT_MARKER
+    
+    def _is_spacer_marker(self, line: str) -> bool:
+        """Prüft, ob eine Zeile ein Spacer-Marker ist."""
+        return line.strip() == self.SPACER_MARKER
     
     def _try_process_todo_item(self, line: str) -> Optional[Dict[str, Any]]:
         """
@@ -269,29 +279,38 @@ class MarkdownToNotionConverter:
             
         blocks.append((start_pos, end_pos, block))
     
-    def _add_spacing_after_multiline(self, blocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _process_explicit_spacing(self, blocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        Add spacing (empty paragraph) after multiline elements.
+        Verarbeitet Blöcke und fügt automatische Einrückung nur hinzu, wenn kein expliziter Spacer vorhanden ist.
         
         Args:
-            blocks: List of Notion blocks
+            blocks: Liste der Notion-Blöcke
             
         Returns:
-            List of Notion blocks with spacing added
+            Liste der Notion-Blöcke mit verarbeiteten Spacern
         """
         if not blocks:
             return blocks
             
         final_blocks = []
+        i = 0
         
-        for block in blocks:
-            final_blocks.append(block)
+        while i < len(blocks):
+            current_block = blocks[i]
+            final_blocks.append(current_block)
             
-            # Check if this is a multiline element type
-            block_type = block.get("type")
+            # Prüfe, ob dies ein Multiline-Element ist
+            block_type = current_block.get("type")
             if self._is_multiline_block_type(block_type):
-                # Add an empty paragraph for spacing
-                final_blocks.append(self._create_empty_paragraph())
+                # Prüfe, ob der nächste Block bereits ein Spacer ist
+                if i + 1 < len(blocks) and self._is_empty_paragraph(blocks[i + 1]):
+                    # Der nächste Block ist bereits ein Spacer, füge keinen weiteren hinzu
+                    pass
+                else:
+                    # Kein expliziter Spacer gefunden, füge automatisch einen hinzu
+                    final_blocks.append(self._create_empty_paragraph())
+            
+            i += 1
         
         return final_blocks
     
@@ -321,6 +340,22 @@ class MarkdownToNotionConverter:
                     return True
         
         return False
+    
+    def _is_empty_paragraph(self, block: Dict[str, Any]) -> bool:
+        """
+        Prüft, ob ein Block ein leerer Paragraph ist.
+        
+        Args:
+            block: Der zu prüfende Block
+            
+        Returns:
+            True, wenn es sich um einen leeren Paragraph handelt, sonst False
+        """
+        return (
+            block.get("type") == "paragraph" and 
+            (not block.get("paragraph", {}).get("rich_text") or 
+             len(block.get("paragraph", {}).get("rich_text", [])) == 0)
+        )
     
     def _create_empty_paragraph(self) -> Dict[str, Any]:
         """

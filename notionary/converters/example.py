@@ -1,3 +1,4 @@
+import textwrap
 from notionary.converters import MarkdownToNotionConverter
 from notionary.core.notion_client import NotionClient
 
@@ -29,6 +30,7 @@ def greet(name):
 
 print(greet("Mathis"))
 ```
+<!-- spacer -->
 
 ## Tabelle mit Daten
 
@@ -48,11 +50,13 @@ print(greet("Mathis"))
 
 ```json
 {
-  "name": "Mathis",
-  "projekte": ["Notion", "Automation"],
-  "aktiv": true
+"name": "Mathis",
+"projekte": ["Notion", "Automation"],
+"aktiv": true
 }
 ```
+<!-- spacer -->
+<!-- spacer -->
 
 ## Toggle Inhalt
 
@@ -96,6 +100,7 @@ Bla Bla
 
 > [color:yellow] Und hier ist ein gelbes Blockzitat.
 > Mit mehreren Absätzen.
+<!-- spacer -->
 
 Bla Bla
 
