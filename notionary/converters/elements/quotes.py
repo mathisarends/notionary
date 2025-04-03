@@ -1,12 +1,25 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple
 
-# Define a constant for the regex pattern
-
 
 class QuoteElement:
-    """Class for converting between Markdown blockquotes and Notion quote blocks."""
-    QUOTE_PATTERN = r'^\s*>\s?(.*)'
+    """Class for converting between Markdown blockquotes and Notion quote blocks with background color support."""
+    
+    # Mapping von Markdown-Farbnamen zu Notion-Farbnamen
+    COLOR_MAPPING = {
+        "gray": "gray_background",
+        "brown": "brown_background",
+        "orange": "orange_background",
+        "yellow": "yellow_background",
+        "green": "green_background",
+        "blue": "blue_background", 
+        "purple": "purple_background",
+        "pink": "pink_background",
+        "red": "red_background"
+    }
+    
+    # Umgekehrtes Mapping für die Rückkonvertierung
+    REVERSE_COLOR_MAPPING = {v: k for k, v in COLOR_MAPPING.items()}
     
     @staticmethod
     def find_matches(text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
@@ -19,7 +32,7 @@ class QuoteElement:
         Returns:
             List of tuples (start_pos, end_pos, block)
         """
-        quote_pattern = re.compile(QuoteElement.QUOTE_PATTERN, re.MULTILINE)
+        quote_pattern = re.compile(r'^\s*>\s?(.*)', re.MULTILINE)
         matches = []
         
         # Find all potential quote line matches
@@ -59,7 +72,7 @@ class QuoteElement:
     
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
-        """Convert markdown blockquote to Notion block."""
+        """Convert markdown blockquote to Notion block with background color support."""
         if not text:
             return None
             
@@ -72,11 +85,36 @@ class QuoteElement:
         # Extract quote content
         lines = text.split('\n')
         quote_lines = []
+        color = "default"  # Standardfarbe
         
+        # Überprüfen, ob der erste Nicht-Leerzeichen-Inhalt eine Farbangabe ist
+        first_line = None
+        for line in lines:
+            quote_match = quote_pattern.match(line)
+            if quote_match and quote_match.group(1).strip():
+                first_line = quote_match.group(1).strip()
+                break
+        
+        # Farbangabe in eckigen Klammern prüfen
+        if first_line:
+            color_match = re.match(r'^\[background:(\w+)\]\s*(.*)', first_line)
+            if color_match:
+                potential_color = color_match.group(1).lower()
+                if potential_color in QuoteElement.COLOR_MAPPING:
+                    color = QuoteElement.COLOR_MAPPING[potential_color]
+                    # Erste Zeile ohne Farbangabe neu hinzufügen
+                    first_line = color_match.group(2)
+        
+        # Inhalte extrahieren
+        processing_first_color_line = True
         for line in lines:
             quote_match = quote_pattern.match(line)
             if quote_match:
                 content = quote_match.group(1)
+                # Farbangabe in der ersten Zeile entfernen
+                if processing_first_color_line and content.strip() and re.match(r'^\[background:(\w+)\]', content.strip()):
+                    content = re.sub(r'^\[background:(\w+)\]\s*', '', content)
+                    processing_first_color_line = False
                 quote_lines.append(content)
             elif not line.strip() and quote_lines:
                 # Allow empty lines within the quote
@@ -93,25 +131,37 @@ class QuoteElement:
         return {
             "type": "quote",
             "quote": {
-                "rich_text": rich_text
+                "rich_text": rich_text,
+                "color": color
             }
         }
     
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
-        """Convert Notion quote block to markdown."""
+        """Convert Notion quote block to markdown with background color support."""
         if block.get("type") != "quote":
             return None
         
         rich_text = block.get("quote", {}).get("rich_text", [])
+        color = block.get("quote", {}).get("color", "default")
         
         # Extract the text content
         content = QuoteElement._extract_text_content(rich_text)
         
         # Format as markdown blockquote
-        # Split by newlines and prefix each line with >
         lines = content.split('\n')
-        formatted_lines = [f"> {line}" for line in lines]
+        formatted_lines = []
+        
+        # Füge die Farbinformation zur ersten Zeile hinzu, falls nicht default
+        if color != "default" and color in QuoteElement.REVERSE_COLOR_MAPPING:
+            markdown_color = QuoteElement.REVERSE_COLOR_MAPPING.get(color)
+            first_line = lines[0] if lines else ""
+            formatted_lines.append(f"> [background:{markdown_color}] {first_line}")
+            lines = lines[1:] if len(lines) > 1 else []
+        
+        # Füge die restlichen Zeilen hinzu
+        for line in lines:
+            formatted_lines.append(f"> {line}")
         
         return '\n'.join(formatted_lines)
     
