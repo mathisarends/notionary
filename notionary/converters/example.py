@@ -19,31 +19,48 @@ async def demo():
     """Example usage of the NotionContentManager."""
     page_id = "1a3389d5-7bd3-80d7-a507-e67d1b25822c"
     
-    markdown = """# Document with Dividers
+    markdown = """# Beispiel mit Codeblöcken und Tabellen
 
-This is the first section of content.
+Hier ist ein Codeblock in Python:
+
+```python
+def greet(name):
+    return f"Hallo, {name}!"
+
+print(greet("Mathis"))
+```
+
+## Tabelle mit Daten
+
+| Name  | Alter | Beruf         |
+| ----- | ----- | ------------- |
+| Anna  | 29    | Designerin    |
+| Ben   | 35    | Entwickler    |
+| Clara | 41    | Projektleiterin |
+
+## Weitere Sektion
+
+!> [🚧] Dies ist ein Callout mit einem Hinweistext
 
 ---
 
-## Second Section
+## Noch ein Codeblock – JSON
 
-Content after a divider.
+```json
+{
+  "name": "Mathis",
+  "projekte": ["Notion", "Automation"],
+  "aktiv": true
+}
+```
 
-!> [💡] Callout block in the second section
+## Toggle Inhalt
 
-***
+Auch hier ist etwas Inhalt in einem Toggle versteckt.
 
-### Third Section
-
-Content in the third section.
-
->> Toggle Section
-
-  Content inside a toggle.
-  
-  ---
-  
-  Even toggles can contain dividers!
+```bash
+echo "Toggle mit Codeblock"
+```
 """
     
     await append_markdown(page_id=page_id, markdown_text=markdown)

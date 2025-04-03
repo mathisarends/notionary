@@ -20,6 +20,8 @@ class MarkdownToNotionConverter:
         if not markdown_text:
             return []
         
+        print("elem,elements:", ElementRegistry._elements)
+        
         # Process multiline elements first (tables, code blocks, etc.)
         processed_text, multiline_blocks = MarkdownToNotionConverter._process_multiline_elements(markdown_text)
         

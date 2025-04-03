@@ -198,8 +198,6 @@ Content in the third section.
   
   Even toggles can contain dividers!
 """
-    
-    
     try:
         # Retrieve the text with table data
         text_with_tables = await content_manager.append_markdown(markdown)

@@ -21,3 +21,7 @@ class BaseElement(ABC):
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if this element can handle the given Notion block."""
         return bool(BaseElement.notion_to_markdown(block))
+    
+    @staticmethod
+    def is_multiline() -> bool:
+        return False

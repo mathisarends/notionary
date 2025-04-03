@@ -1,5 +1,3 @@
-# File: converters/text_formatting.py
-
 from typing import List, Dict, Any, Tuple
 import re
 
