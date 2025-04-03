@@ -75,15 +75,17 @@ echo "Toggle mit Codeblock"
 - [ ] Integration mit Notion API testen
 - [ ] Regressionstests durchführen
 
+## Formatierungsbeispiele
 
-1. Erster Punkt
-2. Zweiter Punkt
-3. Dritter Punkt
+Hier folgen einige **Formatierungsbeispiele** zum Testen:
 
-
-- Anmerkung 1
-- Anmerkung 2
-
+1. **Fettgedruckter** Text mit `Code-Snippet` darin
+2. *Kursiver* Text mit __unterstrichenem__ Abschnitt
+3. ~~Durchgestrichener~~ Text mit **_gemischter Formatierung_**
+4. Hervorhebungen in ==yellow:Gelb== und ==blue:Blau==
+5. Ein [Link mit **Formatierung**](https://notion.so) darin
+6. Verschachtelte `Formatierungen` mit *`gemischten`* **Stilen**
+7. Text mit ==red_background:farbigem Hintergrund==
 """
     
     await append_markdown(page_id=page_id, markdown_text=markdown)

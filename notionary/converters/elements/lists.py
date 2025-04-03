@@ -1,5 +1,6 @@
 import re
 from typing import Dict, Any, Optional, List
+from notionary.converters.elements.text_formatting import parse_inline_formatting, extract_text_with_formatting
 
 
 class BulletedListElement:
@@ -15,13 +16,14 @@ class BulletedListElement:
             
         content = list_match.group(2)
         
-        # Create a simple rich_text element for plain text
-        rich_text = [{"type": "text", "text": {"content": content}}]
+        # Use parse_inline_formatting to handle rich text
+        rich_text = parse_inline_formatting(content)
         
         return {
             "type": "bulleted_list_item",
             "bulleted_list_item": {
-                "rich_text": rich_text
+                "rich_text": rich_text,
+                "color": "default"
             }
         }
     
@@ -32,7 +34,7 @@ class BulletedListElement:
             return None
         
         rich_text = block.get("bulleted_list_item", {}).get("rich_text", [])
-        content = BulletedListElement._extract_text_content(rich_text)
+        content = extract_text_with_formatting(rich_text)
         
         return f"- {content}"
     
@@ -50,17 +52,6 @@ class BulletedListElement:
     @staticmethod
     def is_multiline() -> bool:
         return False
-        
-    @staticmethod
-    def _extract_text_content(rich_text: List[Dict[str, Any]]) -> str:
-        """Extract plain text content from Notion rich_text elements."""
-        result = ""
-        for text_obj in rich_text:
-            if text_obj.get("type") == "text":
-                result += text_obj.get("text", {}).get("content", "")
-            elif "plain_text" in text_obj:
-                result += text_obj.get("plain_text", "")
-        return result
 
 
 class NumberedListElement:
@@ -76,13 +67,14 @@ class NumberedListElement:
             
         content = numbered_match.group(2)
         
-        # Create a simple rich_text element for plain text
-        rich_text = [{"type": "text", "text": {"content": content}}]
+        # Use parse_inline_formatting to handle rich text
+        rich_text = parse_inline_formatting(content)
         
         return {
             "type": "numbered_list_item",
             "numbered_list_item": {
-                "rich_text": rich_text
+                "rich_text": rich_text,
+                "color": "default"
             }
         }
     
@@ -93,9 +85,8 @@ class NumberedListElement:
             return None
         
         rich_text = block.get("numbered_list_item", {}).get("rich_text", [])
-        content = NumberedListElement._extract_text_content(rich_text)
+        content = extract_text_with_formatting(rich_text)
         
-        # Use 1. for all numbered list items, as markdown renderers will handle proper numbering
         return f"1. {content}"
     
     @staticmethod
@@ -112,14 +103,3 @@ class NumberedListElement:
     @staticmethod
     def is_multiline() -> bool:
         return False
-        
-    @staticmethod
-    def _extract_text_content(rich_text: List[Dict[str, Any]]) -> str:
-        """Extract plain text content from Notion rich_text elements."""
-        result = ""
-        for text_obj in rich_text:
-            if text_obj.get("type") == "text":
-                result += text_obj.get("text", {}).get("content", "")
-            elif "plain_text" in text_obj:
-                result += text_obj.get("plain_text", "")
-        return result
