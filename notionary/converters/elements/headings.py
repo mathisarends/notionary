@@ -57,8 +57,6 @@ class HeadingElement(NotionBlockElement):
         heading_data = block.get(block_type, {})
         rich_text = heading_data.get("rich_text", [])
         
-        # Import here to avoid circular imports
-        
         text = extract_text_with_formatting(rich_text)
         prefix = "#" * level
-        return f"{prefix} {text}" if text else None
+        return f"{prefix} {text or ''}"

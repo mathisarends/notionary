@@ -143,23 +143,16 @@ def _create_link_element(text: str, url: str) -> Dict[str, Any]:
     }
 
 def extract_text_with_formatting(rich_text: List[Dict[str, Any]]) -> str:
-    """
-    Extract text with Markdown formatting from Notion rich_text format.
-    
-    Args:
-        rich_text: List of rich_text objects from Notion API
-        
-    Returns:
-        Formatted text in Markdown
-    """
     formatted_parts = []
-    
+
     for text_obj in rich_text:
-        content = text_obj.get("plain_text", "")
+        # Fallback: Falls plain_text fehlt, verwende text['content']
+        content = text_obj.get("plain_text")
+        if content is None:
+            content = text_obj.get("text", {}).get("content", "")
+
         annotations = text_obj.get("annotations", {})
-        
-        # Apply formatting based on annotations in reverse order to avoid conflicts
-        # (e.g., bold inside italic)
+
         if annotations.get("code", False):
             content = f"`{content}`"
         if annotations.get("strikethrough", False):
@@ -170,21 +163,19 @@ def extract_text_with_formatting(rich_text: List[Dict[str, Any]]) -> str:
             content = f"*{content}*"
         if annotations.get("bold", False):
             content = f"**{content}**"
-        
-        # Handle colored text
+
         color = annotations.get("color", "default")
         if color != "default":
             content = f"=={color.replace('_background', '')}:{content}=="
-        
-        # Handle links
+
         text_data = text_obj.get("text", {})
         link_data = text_data.get("link")
         if link_data:
             url = link_data.get("url", "")
             content = f"[{content}]({url})"
-        
+
         formatted_parts.append(content)
-    
+
     return "".join(formatted_parts)
 
 def default_annotations() -> Dict[str, bool]:
