@@ -100,6 +100,11 @@ Bla Bla
 Bla Bla
 
 [bookmark](https://claude.ai/chat/a241fdb4-6526-4e0e-9a9f-c4573e7e834d "Beispieltitel")
+
+## Bilder
+
+Hier ist ein Bild mit Beschriftung:
+![Ein schönes Landschaftsbild](https://images.unsplash.com/photo-1506744038136-46273834b3fb)
 """
     
     await append_markdown(page_id=page_id, markdown_text=markdown)

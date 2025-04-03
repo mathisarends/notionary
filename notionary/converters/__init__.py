@@ -15,6 +15,7 @@ from .elements.todo_lists import TodoElement
 from .elements.lists import BulletedListElement, NumberedListElement
 from .elements.quotes import QuoteElement
 from .elements.bookmarks import BookmarkElement
+from .elements.images import ImageElement
 
 # Register all elements
 # Register paragraphs last since they're the fallback
@@ -28,6 +29,7 @@ ElementRegistry.register(NumberedListElement)
 ElementRegistry.register(QuoteElement)
 ElementRegistry.register(TodoElement)
 ElementRegistry.register(BookmarkElement)
+ElementRegistry.register(ImageElement)
 ElementRegistry.register(ParagraphElement)  # Register last!
 
 # Define what to export
