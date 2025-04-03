@@ -13,6 +13,7 @@ from .elements.dividers import DividerElement
 from .elements.tables import TableElement
 from .elements.todo_lists import TodoElement
 from .elements.lists import BulletedListElement, NumberedListElement
+from .elements.quotes import QuoteElement
 
 # Register all elements
 # Register paragraphs last since they're the fallback
@@ -23,6 +24,7 @@ ElementRegistry.register(DividerElement)
 ElementRegistry.register(TableElement)
 ElementRegistry.register(BulletedListElement)
 ElementRegistry.register(NumberedListElement)
+ElementRegistry.register(QuoteElement)
 ElementRegistry.register(TodoElement)
 ElementRegistry.register(ParagraphElement)  # Register last!
 
@@ -38,6 +40,7 @@ __all__ = [
     'DividerElement',
     'TableElement',
     'TodoElement',
+    'QuoteElement',
     'BulletedListElement',
     'NumberedListElement',
 ]

@@ -86,6 +86,17 @@ Hier folgen einige **Formatierungsbeispiele** zum Testen:
 5. Ein [Link mit **Formatierung**](https://notion.so) darin
 6. Verschachtelte `Formatierungen` mit *`gemischten`* **Stilen**
 7. Text mit ==red_background:farbigem Hintergrund==
+
+## Blockzitat-Beispiel
+
+> Dies ist ein einfaches Blockzitat.
+> 
+> Es kann mehrere Absätze enthalten.
+> 
+> - Sogar Listen
+> - innerhalb des Zitats
+> 
+> Und weitere **formatierte** Inhalte.
 """
     
     await append_markdown(page_id=page_id, markdown_text=markdown)
