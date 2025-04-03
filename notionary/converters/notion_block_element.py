@@ -1,7 +1,7 @@
 from typing import Dict, Any, Optional
 from abc import ABC
 
-class BaseElement(ABC):
+class NotionBlockElement(ABC):
     """Base class for elements that can be converted between Markdown and Notion."""
     
     @staticmethod
@@ -15,12 +15,12 @@ class BaseElement(ABC):
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if this element can handle the given markdown text."""
-        return bool(BaseElement.markdown_to_notion(text))
+        return bool(NotionBlockElement.markdown_to_notion(text))
     
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if this element can handle the given Notion block."""
-        return bool(BaseElement.notion_to_markdown(block))
+        return bool(NotionBlockElement.notion_to_markdown(block))
     
     @staticmethod
     def is_multiline() -> bool:

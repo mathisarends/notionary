@@ -1,8 +1,8 @@
 from typing import Dict, Any, Optional, List, Tuple
 import re
-from notionary.converters.base_element import BaseElement
+from notionary.converters.notion_block_element import NotionBlockElement
 
-class CodeBlockElement(BaseElement):
+class CodeBlockElement(NotionBlockElement):
     """
     Handles conversion between Markdown code blocks and Notion code blocks.
     

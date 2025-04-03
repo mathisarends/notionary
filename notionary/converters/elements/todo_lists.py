@@ -1,9 +1,9 @@
 import re
-from typing import Dict, Any, Optional, List, Tuple
-from notionary.converters.base_element import BaseElement
+from typing import Dict, Any, Optional
+from notionary.converters.notion_block_element import NotionBlockElement
 from notionary.converters.elements.text_formatting import parse_inline_formatting, extract_text_with_formatting
 
-class TodoElement(BaseElement):
+class TodoElement(NotionBlockElement):
     """
     Handles conversion between Markdown todo items and Notion to_do blocks.
     

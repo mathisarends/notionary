@@ -2,10 +2,10 @@
 
 from typing import Dict, Any, Optional
 
-from notionary.converters.base_element import BaseElement
+from notionary.converters.notion_block_element import NotionBlockElement
 from notionary.converters.elements.text_formatting import extract_text_with_formatting, parse_inline_formatting
 
-class ParagraphElement(BaseElement):
+class ParagraphElement(NotionBlockElement):
     """Handles conversion between Markdown paragraphs and Notion paragraph blocks."""
     
     @staticmethod

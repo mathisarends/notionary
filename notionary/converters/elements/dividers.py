@@ -2,9 +2,9 @@
 
 from typing import Dict, Any, Optional
 import re
-from notionary.converters.base_element import BaseElement
+from notionary.converters.notion_block_element import NotionBlockElement
 
-class DividerElement(BaseElement):
+class DividerElement(NotionBlockElement):
     """
     Handles conversion between Markdown horizontal dividers and Notion divider blocks.
     

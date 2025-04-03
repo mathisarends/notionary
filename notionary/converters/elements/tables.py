@@ -2,10 +2,10 @@
 
 from typing import Dict, Any, Optional, List, Tuple
 import re
-from notionary.converters.base_element import BaseElement
+from notionary.converters.notion_block_element import NotionBlockElement
 from notionary.converters.elements.text_formatting import extract_text_with_formatting, parse_inline_formatting
 
-class TableElement(BaseElement):
+class TableElement(NotionBlockElement):
     """
     Handles conversion between Markdown tables and Notion table blocks.
     

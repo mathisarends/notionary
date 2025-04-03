@@ -1,10 +1,10 @@
 from typing import Dict, Any, Optional
 import re
 
-from notionary.converters.base_element import BaseElement
+from notionary.converters.notion_block_element import NotionBlockElement
 from notionary.converters.elements.text_formatting import extract_text_with_formatting, parse_inline_formatting
 
-class CalloutElement(BaseElement):
+class CalloutElement(NotionBlockElement):
     """
     Handles conversion between Markdown callouts and Notion callout blocks.
     
