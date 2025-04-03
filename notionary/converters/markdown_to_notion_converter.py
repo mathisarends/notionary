@@ -6,10 +6,6 @@ from notionary.converters.notion_element_registry import ElementRegistry
 class MarkdownToNotionConverter:
     """Converts Markdown text to Notion API block format."""
     
-    def __init__(self):
-        """Initialize the converter."""
-        pass
-    
     def convert(self, markdown_text: str) -> List[Dict[str, Any]]:
         """
         Convert markdown text to Notion API block format.
@@ -23,17 +19,20 @@ class MarkdownToNotionConverter:
         if not markdown_text:
             return []
         
+        # Process multiline elements first (tables, code blocks, etc.)
         processed_text, multiline_blocks = self._process_multiline_elements(markdown_text)
         
+        # Process the remaining text line by line
         line_blocks = self._process_text_lines(processed_text)
         
+        # Combine and sort all blocks by their original position
         all_blocks = multiline_blocks + line_blocks
         all_blocks.sort(key=lambda x: x[0])  # Sort by start position
         
-        # Get just the blocks, without position information
+        # Extract just the blocks, without position information
         blocks = [block for _, _, block in all_blocks]
         
-        # Add spacing after multiline elements
+        # Add spacing after multiline elements if needed
         final_blocks = self._add_spacing_after_multiline(blocks)
         
         return final_blocks
@@ -62,8 +61,11 @@ class MarkdownToNotionConverter:
                     multiline_blocks.extend(matches)
                     
                     # Remove matched content from the text to avoid processing it again
+                    # Use a special marker instead of just newlines to preserve line structure
                     for start, end, _ in reversed(matches):
-                        processed_text = processed_text[:start] + '\n' * (processed_text[start:end].count('\n')) + processed_text[end:]
+                        num_newlines = processed_text[start:end].count('\n')
+                        # Use a marker that won't be processed as markdown
+                        processed_text = processed_text[:start] + '\n' + '<!-- REMOVED_MULTILINE_CONTENT -->\n' * num_newlines + processed_text[end:]
         
         return processed_text, multiline_blocks
     
@@ -86,9 +88,47 @@ class MarkdownToNotionConverter:
         current_pos = 0
         current_paragraph = []
         paragraph_start = 0
+        in_todo_sequence = False
         
         for line in lines:
             line_length = len(line) + 1  # +1 for newline
+            
+            # Skip lines that are just placeholders for removed multiline content
+            if line.strip() == '<!-- REMOVED_MULTILINE_CONTENT -->':
+                current_pos += line_length
+                continue
+                
+            # Check if this line is a todo item
+            is_todo = False
+            todo_block = None
+            
+            # Try to match as a todo item first
+            for element in ElementRegistry._elements:
+                if (not element.is_multiline() and 
+                    hasattr(element, 'match_markdown') and
+                    element.__name__ == 'TodoElement' and
+                    element.match_markdown(line)):
+                    is_todo = True
+                    todo_block = element.markdown_to_notion(line)
+                    break
+            
+            # Handle todo items specially to keep them grouped
+            if is_todo:
+                # If we were building a paragraph, finish it before starting todos
+                if not in_todo_sequence and current_paragraph:
+                    self._process_paragraph(
+                        current_paragraph, paragraph_start, current_pos, line_blocks
+                    )
+                    current_paragraph = []
+                
+                in_todo_sequence = True
+                line_blocks.append((current_pos, current_pos + line_length, todo_block))
+                current_pos += line_length
+                continue
+            
+            # If we were in a todo sequence but this line isn't a todo, end the sequence
+            if in_todo_sequence and not is_todo:
+                in_todo_sequence = False
             
             # Handle empty lines
             if not line.strip():
@@ -103,13 +143,22 @@ class MarkdownToNotionConverter:
                 continue
             
             # Check if line is a special block (not paragraph)
-            block = ElementRegistry.markdown_to_notion(line)
+            block = None
+            for element in ElementRegistry._elements:
+                if (not element.is_multiline() and 
+                    hasattr(element, 'match_markdown') and
+                    element.match_markdown(line)):
+                    block = element.markdown_to_notion(line)
+                    if block and block.get("type") != "paragraph":
+                        break
+            
             if block and block.get("type") != "paragraph":
                 # Process any accumulated paragraph content before adding the special block
-                self._process_paragraph(
-                    current_paragraph, paragraph_start, current_pos, line_blocks
-                )
-                current_paragraph = []
+                if current_paragraph:
+                    self._process_paragraph(
+                        current_paragraph, paragraph_start, current_pos, line_blocks
+                    )
+                    current_paragraph = []
                 
                 line_blocks.append((current_pos, current_pos + line_length, block))
                 current_pos += line_length
@@ -122,9 +171,10 @@ class MarkdownToNotionConverter:
             current_pos += line_length
         
         # Process any remaining paragraph content
-        self._process_paragraph(
-            current_paragraph, paragraph_start, current_pos, line_blocks
-        )
+        if current_paragraph:
+            self._process_paragraph(
+                current_paragraph, paragraph_start, current_pos, line_blocks
+            )
         
         return line_blocks
 
@@ -154,20 +204,6 @@ class MarkdownToNotionConverter:
             return
             
         blocks.append((start_pos, end_pos, block))
-    
-    def _create_empty_paragraph(self) -> Dict[str, Any]:
-        """
-        Create an empty paragraph block.
-        
-        Returns:
-            Empty paragraph block dictionary
-        """
-        return {
-            "type": "paragraph",
-            "paragraph": {
-                "rich_text": []
-            }
-        }
     
     def _add_spacing_after_multiline(self, blocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
@@ -212,14 +248,28 @@ class MarkdownToNotionConverter:
         
         for element in multiline_elements:
             # Check if the element name contains the block type
-            # For example, "TableElement" should match "table" block type
             element_name = element.__name__.lower()
             if block_type in element_name:
                 return True
                 
+            # Check if this multiline element handles this block type
             if hasattr(element, 'match_notion'):
                 dummy_block = {"type": block_type}
                 if element.match_notion(dummy_block):
                     return True
         
         return False
+    
+    def _create_empty_paragraph(self) -> Dict[str, Any]:
+        """
+        Create an empty paragraph block.
+        
+        Returns:
+            Empty paragraph block dictionary
+        """
+        return {
+            "type": "paragraph",
+            "paragraph": {
+                "rich_text": []
+            }
+        }

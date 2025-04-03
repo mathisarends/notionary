@@ -61,6 +61,19 @@ Auch hier ist etwas Inhalt in einem Toggle versteckt.
 ```bash
 echo "Toggle mit Codeblock"
 ```
+
+## Aufgabenliste
+
+- [ ] Implementierung des TodoElement abschließen
+- [x] Markdown-Parser überprüfen
+- [ ] Tabellen-Element testen
+- [ ] Code-Block-Formatierung optimieren
+- [x] Callout-Elemente unterstützen
+- [ ] Dokumentation aktualisieren
+- [ ] Unit-Tests für alle Element-Typen schreiben
+- [x] Element-Registry implementieren
+- [ ] Integration mit Notion API testen
+- [ ] Regressionstests durchführen
 """
     
     await append_markdown(page_id=page_id, markdown_text=markdown)

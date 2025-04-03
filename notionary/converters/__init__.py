@@ -11,6 +11,7 @@ from .elements.callouts import CalloutElement
 from .elements.code_blocks import CodeBlockElement
 from .elements.dividers import DividerElement
 from .elements.tables import TableElement
+from .elements.todo_lists import TodoElement
 
 # Register all elements
 # Register paragraphs last since they're the fallback
@@ -19,6 +20,7 @@ ElementRegistry.register(CalloutElement)
 ElementRegistry.register(CodeBlockElement)
 ElementRegistry.register(DividerElement)
 ElementRegistry.register(TableElement)
+ElementRegistry.register(TodoElement)
 ElementRegistry.register(ParagraphElement)  # Register last!
 
 # Define what to export
