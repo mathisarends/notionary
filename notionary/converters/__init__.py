@@ -12,6 +12,7 @@ from .elements.code_blocks import CodeBlockElement
 from .elements.dividers import DividerElement
 from .elements.tables import TableElement
 from .elements.todo_lists import TodoElement
+from .elements.lists import BulletedListElement, NumberedListElement
 
 # Register all elements
 # Register paragraphs last since they're the fallback
@@ -20,6 +21,8 @@ ElementRegistry.register(CalloutElement)
 ElementRegistry.register(CodeBlockElement)
 ElementRegistry.register(DividerElement)
 ElementRegistry.register(TableElement)
+ElementRegistry.register(BulletedListElement)
+ElementRegistry.register(NumberedListElement)
 ElementRegistry.register(TodoElement)
 ElementRegistry.register(ParagraphElement)  # Register last!
 
@@ -33,5 +36,8 @@ __all__ = [
     'CalloutElement',
     'CodeBlockElement',
     'DividerElement',
-    'TableElement'
+    'TableElement',
+    'TodoElement',
+    'BulletedListElement',
+    'NumberedListElement',
 ]

@@ -47,3 +47,8 @@ class ElementRegistry:
     def get_multiline_elements(cls) -> List[Type[BaseElement]]:
         """Get all registered multiline elements."""
         return [element for element in cls._elements if element.is_multiline()]
+    
+    @classmethod
+    def get_elements(cls) -> List[Type[BaseElement]]:
+        """Get all registered elements."""
+        return cls._elements.copy()

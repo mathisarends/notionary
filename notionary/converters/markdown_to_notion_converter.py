@@ -1,10 +1,12 @@
 # File: notionary/converters/markdown_to_notion_converter.py
 
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Optional, Tuple
 from notionary.converters.notion_element_registry import ElementRegistry
 
+# TODO: Refactor this one.
 class MarkdownToNotionConverter:
     """Converts Markdown text to Notion API block format."""
+    MULTILINE_CONTENT_MARKER = '<!-- REMOVED_MULTILINE_CONTENT -->'
     
     def convert(self, markdown_text: str) -> List[Dict[str, Any]]:
         """
@@ -19,20 +21,16 @@ class MarkdownToNotionConverter:
         if not markdown_text:
             return []
         
-        # Process multiline elements first (tables, code blocks, etc.)
         processed_text, multiline_blocks = self._process_multiline_elements(markdown_text)
         
-        # Process the remaining text line by line
         line_blocks = self._process_text_lines(processed_text)
         
         # Combine and sort all blocks by their original position
         all_blocks = multiline_blocks + line_blocks
         all_blocks.sort(key=lambda x: x[0])  # Sort by start position
         
-        # Extract just the blocks, without position information
         blocks = [block for _, _, block in all_blocks]
         
-        # Add spacing after multiline elements if needed
         final_blocks = self._add_spacing_after_multiline(blocks)
         
         return final_blocks
@@ -93,74 +91,55 @@ class MarkdownToNotionConverter:
         for line in lines:
             line_length = len(line) + 1  # +1 for newline
             
-            # Skip lines that are just placeholders for removed multiline content
-            if line.strip() == '<!-- REMOVED_MULTILINE_CONTENT -->':
+            # Skip marker lines
+            if self._is_multiline_marker(line):
                 current_pos += line_length
                 continue
-                
-            # Check if this line is a todo item
-            is_todo = False
-            todo_block = None
             
-            # Try to match as a todo item first
-            for element in ElementRegistry._elements:
-                if (not element.is_multiline() and 
-                    hasattr(element, 'match_markdown') and
-                    element.__name__ == 'TodoElement' and
-                    element.match_markdown(line)):
-                    is_todo = True
-                    todo_block = element.markdown_to_notion(line)
-                    break
-            
-            # Handle todo items specially to keep them grouped
-            if is_todo:
-                # If we were building a paragraph, finish it before starting todos
-                if not in_todo_sequence and current_paragraph:
-                    self._process_paragraph(
-                        current_paragraph, paragraph_start, current_pos, line_blocks
-                    )
-                    current_paragraph = []
-                
+            # Process todos first to keep them grouped
+            todo_block = self._try_process_todo_item(line)
+            if todo_block:
+                self._handle_todo_item(
+                    todo_block, 
+                    line_length,
+                    current_pos, 
+                    current_paragraph,
+                    paragraph_start,
+                    line_blocks,
+                    in_todo_sequence
+                )
                 in_todo_sequence = True
-                line_blocks.append((current_pos, current_pos + line_length, todo_block))
                 current_pos += line_length
                 continue
             
-            # If we were in a todo sequence but this line isn't a todo, end the sequence
-            if in_todo_sequence and not is_todo:
+            # No longer in a todo sequence
+            if in_todo_sequence:
                 in_todo_sequence = False
             
             # Handle empty lines
             if not line.strip():
-                # End the current paragraph if we have one
-                if current_paragraph:
-                    self._process_paragraph(
-                        current_paragraph, paragraph_start, current_pos, line_blocks
-                    )
-                    current_paragraph = []
-                
+                self._handle_empty_line(
+                    current_paragraph, 
+                    paragraph_start, 
+                    current_pos, 
+                    line_blocks
+                )
+                current_paragraph = []
                 current_pos += line_length
                 continue
             
-            # Check if line is a special block (not paragraph)
-            block = None
-            for element in ElementRegistry._elements:
-                if (not element.is_multiline() and 
-                    hasattr(element, 'match_markdown') and
-                    element.match_markdown(line)):
-                    block = element.markdown_to_notion(line)
-                    if block and block.get("type") != "paragraph":
-                        break
-            
-            if block and block.get("type") != "paragraph":
-                # Process any accumulated paragraph content before adding the special block
-                if current_paragraph:
-                    self._process_paragraph(
-                        current_paragraph, paragraph_start, current_pos, line_blocks
-                    )
-                    current_paragraph = []
-                
-                line_blocks.append((current_pos, current_pos + line_length, block))
+            # Check for other special blocks
+            special_block = self._try_process_special_block(line)
+            if special_block:
+                self._handle_special_block(
+                    special_block,
+                    line_length,
+                    current_pos,
+                    current_paragraph,
+                    paragraph_start,
+                    line_blocks
+                )
+                current_paragraph = []
                 current_pos += line_length
                 continue
                 
@@ -171,12 +150,97 @@ class MarkdownToNotionConverter:
             current_pos += line_length
         
         # Process any remaining paragraph content
+        self._process_paragraph(
+            current_paragraph, paragraph_start, current_pos, line_blocks
+        )
+        
+        return line_blocks
+    
+    def _is_multiline_marker(self, line: str) -> bool:
+        """Check if a line is a multiline content marker."""
+        return line.strip() == self.MULTILINE_CONTENT_MARKER
+    
+    def _try_process_todo_item(self, line: str) -> Optional[Dict[str, Any]]:
+        """
+        Try to process a line as a todo item.
+        
+        Returns:
+            Todo block if line is a todo item, None otherwise
+        """
+        for element in ElementRegistry.get_elements():
+            if (not element.is_multiline() and
+                hasattr(element, 'match_markdown') and
+                element.__name__ == 'TodoElement' and
+                element.match_markdown(line)):
+                return element.markdown_to_notion(line)
+        return None
+    
+    def _handle_todo_item(
+        self,
+        todo_block: Dict[str, Any],
+        line_length: int,
+        current_pos: int,
+        current_paragraph: List[str],
+        paragraph_start: int,
+        line_blocks: List[Tuple[int, int, Dict[str, Any]]],
+        in_todo_sequence: bool
+    ) -> None:
+        """Handle a todo item line."""
+        # If we were building a paragraph, finish it before starting todos
+        if not in_todo_sequence and current_paragraph:
+            self._process_paragraph(
+                current_paragraph, paragraph_start, current_pos, line_blocks
+            )
+            current_paragraph.clear()
+        
+        line_blocks.append((current_pos, current_pos + line_length, todo_block))
+    
+    def _handle_empty_line(
+        self,
+        current_paragraph: List[str],
+        paragraph_start: int,
+        current_pos: int,
+        line_blocks: List[Tuple[int, int, Dict[str, Any]]]
+    ) -> None:
+        """Handle an empty line."""
+        if current_paragraph:
+            self._process_paragraph(
+                current_paragraph, paragraph_start, current_pos, line_blocks
+            )
+    
+    def _try_process_special_block(self, line: str) -> Optional[Dict[str, Any]]:
+        """
+        Try to process a line as a special block (not paragraph).
+        
+        Returns:
+            Block if line is a special block, None otherwise
+        """
+        for element in ElementRegistry.get_elements():
+            if (not element.is_multiline() and 
+                hasattr(element, 'match_markdown') and
+                element.match_markdown(line)):
+                block = element.markdown_to_notion(line)
+                if block and block.get("type") != "paragraph":
+                    return block
+        return None
+    
+    def _handle_special_block(
+        self,
+        block: Dict[str, Any],
+        line_length: int,
+        current_pos: int,
+        current_paragraph: List[str],
+        paragraph_start: int,
+        line_blocks: List[Tuple[int, int, Dict[str, Any]]]
+    ) -> None:
+        """Handle a special block line."""
+        # Process any accumulated paragraph content before adding the special block
         if current_paragraph:
             self._process_paragraph(
                 current_paragraph, paragraph_start, current_pos, line_blocks
             )
         
-        return line_blocks
+        line_blocks.append((current_pos, current_pos + line_length, block))
 
     def _process_paragraph(
         self,
@@ -247,12 +311,10 @@ class MarkdownToNotionConverter:
         multiline_elements = ElementRegistry.get_multiline_elements()
         
         for element in multiline_elements:
-            # Check if the element name contains the block type
             element_name = element.__name__.lower()
             if block_type in element_name:
                 return True
                 
-            # Check if this multiline element handles this block type
             if hasattr(element, 'match_notion'):
                 dummy_block = {"type": block_type}
                 if element.match_notion(dummy_block):

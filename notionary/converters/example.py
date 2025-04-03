@@ -74,6 +74,16 @@ echo "Toggle mit Codeblock"
 - [x] Element-Registry implementieren
 - [ ] Integration mit Notion API testen
 - [ ] Regressionstests durchführen
+
+
+1. Erster Punkt
+2. Zweiter Punkt
+3. Dritter Punkt
+
+
+- Anmerkung 1
+- Anmerkung 2
+
 """
     
     await append_markdown(page_id=page_id, markdown_text=markdown)
