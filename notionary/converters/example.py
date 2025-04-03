@@ -99,8 +99,7 @@ Bla Bla
 
 Bla Bla
 
-> Ein normales Blockzitat ohne spezielle Farbe.
-
+[bookmark](https://claude.ai/chat/a241fdb4-6526-4e0e-9a9f-c4573e7e834d "Beispieltitel")
 """
     
     await append_markdown(page_id=page_id, markdown_text=markdown)
