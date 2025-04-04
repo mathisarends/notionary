@@ -1,6 +1,5 @@
 import re
 from typing import Dict, Any, Optional, List
-from typing import override
 
 from notionary.converters.notion_block_element import NotionBlockElement
 
@@ -12,58 +11,54 @@ class VideoElement(NotionBlockElement):
     Markdown video syntax (custom format since standard Markdown doesn't support videos):
     - @[Caption](https://example.com/video.mp4) - Basic video with caption
     - @[](https://example.com/video.mp4) - Video without caption
-    - @[Caption](https://example.com/video.mp4 "alt text") - Video with caption and alt text
+    - @[Caption](https://www.youtube.com/watch?v=dQw4w9WgXcQ) - YouTube video
+    - @[Caption](https://youtu.be/dQw4w9WgXcQ) - YouTube shortened URL
     
     Supports various video URLs including YouTube, Vimeo, and direct video file links.
     """
     
-    # Regex pattern for video syntax with optional alt text
+    # Regex pattern for video syntax
     PATTERN = re.compile(
         r'^\@\[(.*?)\]' +                     # @[Caption] part
         r'\((https?://[^\s"]+)' +             # (URL part
-        r'(?:\s+"([^"]+)")?' +                # Optional alt text in quotes
-        r'\)$'                                 # closing parenthesis
+        r'\)$'                                # closing parenthesis
     )
     
-    # Supported video platforms and their domain patterns
-    VIDEO_PLATFORMS = [
-        'youtube.com', 'youtu.be',            # YouTube
-        'vimeo.com',                          # Vimeo
-        'dailymotion.com',                    # Dailymotion
-        'twitch.tv',                          # Twitch
-        'facebook.com',                       # Facebook
-        'instagram.com'                       # Instagram
+    # YouTube specific patterns
+    YOUTUBE_PATTERNS = [
+        re.compile(r'(?:https?://)?(?:www\.)?youtube\.com/watch\?v=([a-zA-Z0-9_-]{11})'),
+        re.compile(r'(?:https?://)?(?:www\.)?youtu\.be/([a-zA-Z0-9_-]{11})')
     ]
     
-    # Video file extensions
-    VIDEO_EXTENSIONS = ['.mp4', '.webm', '.mov', '.avi', '.wmv', '.flv', '.mkv']
-    
-    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text is a markdown video embed."""
         text = text.strip()
-        if not text.startswith("@["):
-            return False
-        
-        match = VideoElement.PATTERN.match(text)
-        if not match:
-            return False
-            
-        # Check if URL is a known video platform or has a video extension
-        url = match.group(2).lower()
-        is_video_platform = any(platform in url for platform in VideoElement.VIDEO_PLATFORMS)
-        is_video_file = any(url.endswith(ext) for ext in VideoElement.VIDEO_EXTENSIONS)
-        
-        return is_video_platform or is_video_file
+        return text.startswith("@[") and bool(VideoElement.PATTERN.match(text))
     
-    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion video."""
         return block.get("type") == "video"
     
-    @override
+    @staticmethod
+    def is_youtube_url(url: str) -> bool:
+        """Check if URL is a YouTube video and return video ID if it is."""
+        for pattern in VideoElement.YOUTUBE_PATTERNS:
+            match = pattern.match(url)
+            if match:
+                return True
+        return False
+    
+    @staticmethod
+    def get_youtube_id(url: str) -> Optional[str]:
+        """Extract YouTube video ID from URL."""
+        for pattern in VideoElement.YOUTUBE_PATTERNS:
+            match = pattern.match(url)
+            if match:
+                return match.group(1)
+        return None
+    
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown video embed to Notion video block."""
@@ -76,6 +71,11 @@ class VideoElement(NotionBlockElement):
         
         if not url:
             return None
+        
+        # For YouTube videos, ensure we use the full embed URL
+        youtube_id = VideoElement.get_youtube_id(url)
+        if youtube_id:
+            url = f"https://www.youtube.com/watch?v={youtube_id}"
             
         # Prepare the video block
         video_block = {
@@ -96,7 +96,6 @@ class VideoElement(NotionBlockElement):
         
         return video_block
     
-    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion video block to markdown video embed."""
@@ -124,7 +123,6 @@ class VideoElement(NotionBlockElement):
             
         return f"@[{caption}]({url})"
     
-    @override
     @staticmethod
     def is_multiline() -> bool:
         """Videos are single-line elements."""

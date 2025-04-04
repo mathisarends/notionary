@@ -200,8 +200,8 @@ Content in the third section.
 """
     try:
         # Retrieve the text with table data
-        text_with_tables = await content_manager.append_markdown(markdown)
-        print(text_with_tables)
+        blocks = await content_manager.get_blocks()
+        print(blocks)
     finally:
         # Clean up
         await content_manager.close()

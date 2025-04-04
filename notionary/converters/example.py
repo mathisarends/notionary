@@ -46,6 +46,18 @@ print(greet("Mathis"))
 
 ---
 
+## Video Embed Beispiel
+
+Hier ist ein eingebettetes Video von YouTube:
+
+@[Einführung in Python-Programmierung](https://www.youtube.com/watch?v=rfscVS0vtbw)
+
+Und ein weiteres Video ohne Beschriftung:
+
+@[](https://vimeo.com/148751763)
+
+---
+
 ## Noch ein Codeblock – JSON
 
 ```json
@@ -106,13 +118,28 @@ Bla Bla
 
 [bookmark](https://claude.ai/chat/a241fdb4-6526-4e0e-9a9f-c4573e7e834d "Beispieltitel")
 
-## Bilder
+## Bilder und Videos
 
 Hier ist ein Bild mit Beschriftung:
 ![Ein schönes Landschaftsbild](https://images.unsplash.com/photo-1506744038136-46273834b3fb)
+
+Und hier noch ein direkt eingebettetes Video:
+@[Ein Naturdokumentarfilm](https://example.com/naturvideo.mp4)
+"""
+
+    youtub_video_markdown = """# YouTube Video Embeds
+
+## Standard YouTube URL
+@[Learn Python - Full Course for Beginners](https://www.youtube.com/watch?v=rfscVS0vtbw)
+
+## YouTube Shortened URL
+@[Python Tutorial](https://youtu.be/Z1Yd7upQsXY)
+
+## YouTube URL without Caption
+@[](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
 """
     
-    await append_markdown(page_id=page_id, markdown_text=markdown)
+    await append_markdown(page_id=page_id, markdown_text=youtub_video_markdown)
     
     
 if __name__ == "__main__":
