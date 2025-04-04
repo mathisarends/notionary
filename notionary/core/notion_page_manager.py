@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional
+from notionary.converters.markdown_to_notion_converter import MarkdownToNotionConverter
+from notionary.converters.notion_to_markdown_converter import NotionToMarkdownConverter
 from notionary.core.notion_client import NotionClient
-from notionary.core.notion_content_converter import NotionContentConverter
-from notionary.core.markdown_to_notion import MarkdownToNotionConverter
 from notionary.util.logging_mixin import LoggingMixin
 
 
@@ -96,7 +96,7 @@ class NotionPageContentManager(LoggingMixin):
         
         return blocks
     
-    async def get_text(self, include_table_data: bool = True) -> str:
+    async def get_text(self) -> str:
         """Retrieve the page content and convert it to readable text.
         
         Args:
@@ -105,14 +105,9 @@ class NotionPageContentManager(LoggingMixin):
         Returns:
             Text representation of the page content
         """
-        if include_table_data:
-            # Holen aller Blöcke mit Kindern und Konvertierung mit der erweiterten converter-Methode
-            blocks = await self.get_page_blocks_with_children()
-            return NotionContentConverter.blocks_to_text(blocks, include_table_data=True)
-        else:
-            # Normale Konvertierung ohne zusätzliche Daten
-            blocks = await self.get_blocks()
-            return NotionContentConverter.blocks_to_text(blocks)
+        blocks = await self.get_page_blocks_with_children()
+        return NotionToMarkdownConverter.convert(blocks)
+
     
     async def clear(self) -> str:
         """Delete all content from the page.
@@ -172,35 +167,161 @@ async def demo():
     """Example usage of the NotionContentManager."""
     content_manager = NotionPageContentManager(page_id="1a3389d5-7bd3-80d7-a507-e67d1b25822c")
     
-    markdown = """# Document with Dividers
+    markdown = """# Beispiel mit Codeblöcken und Tabellen
 
-This is the first section of content.
+Hier ist ein Codeblock in Python:
+
+```python
+def greet(name):
+    return f"Hallo, {name}!"
+
+print(greet("Mathis"))
+```
+<!-- spacer -->
+
+## Tabelle mit Daten
+
+| Name  | Alter | Beruf         |
+| ----- | ----- | ------------- |
+| Anna  | 29    | Designerin    |
+| Ben   | 35    | Entwickler    |
+| Clara | 41    | Projektleiterin |
+
+## Weitere Sektion
+
+!> [🚧] Dies ist ein Callout mit einem Hinweistext
 
 ---
 
-## Second Section
+## Video Embed Beispiel
 
-Content after a divider.
+Hier ist ein eingebettetes Video von YouTube:
 
-!> [💡] Callout block in the second section
+@[Einführung in Python-Programmierung](https://www.youtube.com/watch?v=rfscVS0vtbw)
 
-***
+Und ein weiteres Video ohne Beschriftung:
 
-### Third Section
+@[](https://vimeo.com/148751763)
 
-Content in the third section.
+---
 
->> Toggle Section
+## Noch ein Codeblock – JSON
 
-  Content inside a toggle.
-  
-  ---
-  
-  Even toggles can contain dividers!
+```json
+{
+"name": "Mathis",
+"projekte": ["Notion", "Automation"],
+"aktiv": true
+}
+```
+<!-- spacer -->
+<!-- spacer -->
+
+## Toggle Inhalt
+
+Auch hier ist etwas Inhalt in einem Toggle versteckt.
+
+```bash
+echo "Toggle mit Codeblock"
+```
+
+## Aufgabenliste
+
+- [ ] Implementierung des TodoElement abschließen
+- [x] Markdown-Parser überprüfen
+- [ ] Tabellen-Element testen
+- [ ] Code-Block-Formatierung optimieren
+- [x] Callout-Elemente unterstützen
+- [ ] Dokumentation aktualisieren
+- [ ] Unit-Tests für alle Element-Typen schreiben
+- [x] Element-Registry implementieren
+- [ ] Integration mit Notion API testen
+- [ ] Regressionstests durchführen
+
+## Formatierungsbeispiele
+
+Hier folgen einige **Formatierungsbeispiele** zum Testen:
+
+1. **Fettgedruckter** Text mit `Code-Snippet` darin
+2. *Kursiver* Text mit __unterstrichenem__ Abschnitt
+3. ~~Durchgestrichener~~ Text mit **_gemischter Formatierung_**
+4. Hervorhebungen in ==yellow:Gelb== und ==blue:Blau==
+5. Ein [Link mit **Formatierung**](https://notion.so) darin
+6. Verschachtelte `Formatierungen` mit *`gemischten`* **Stilen**
+7. Text mit ==red_background:farbigem Hintergrund==
+
+## Farbige Blockzitate
+
+> [background:brown] Dies ist ein Blockzitat mit braunem Hintergrund.
+> Es kann mehrere Zeilen enthalten.
+
+Bla Bla
+
+> [color:yellow] Und hier ist ein gelbes Blockzitat.
+> Mit mehreren Absätzen.
+<!-- spacer -->
+
+Bla Bla
+
+[bookmark](https://claude.ai/chat/a241fdb4-6526-4e0e-9a9f-c4573e7e834d "Beispieltitel")
+
+## Bilder und Videos
+
+Hier ist ein Bild mit Beschriftung:
+![Ein schönes Landschaftsbild](https://images.unsplash.com/photo-1506744038136-46273834b3fb)
+
+Und hier noch ein direkt eingebettetes Video:
+@[Ein Naturdokumentarfilm](https://example.com/naturvideo.mp4)
+"""
+
+    markdown_yt = """# YouTube Video Embeds in Columns
+::: columns
+::: column
+## Standard YouTube URL
+@[Learn Python - Full Course for Beginners](https://www.youtube.com/watch?v=rfscVS0vtbw)
+:::
+::: column
+## YouTube Shortened URL
+@[Python Tutorial](https://youtu.be/Z1Yd7upQsXY)
+:::
+::: column
+## YouTube URL without Caption
+@[](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+:::
+:::
+
+## Toggle Section Below
+
++++ Toggle title
+    Indented content that belongs to the toggle
+    More indented content
+
++++ Empty Toggle
+
+## Videos With Toggles in Columns
+
+::: columns
+::: column
+### Video with Toggle
+@[Python Tips](https://www.youtube.com/watch?v=C-gEQdGVXbk)
+
++++ Toggle Details
+    This video contains good Python tips
+    for beginners and advanced users
+:::
+::: column
+### Another Video with Toggle
+@[Data Science](https://youtu.be/ua-CiDNNj30)
+
++++ Video Description
+    Learn about data science
+    and pandas library in Python
+:::
+:::
 """
     try:
         # Retrieve the text with table data
-        blocks = await content_manager.get_blocks()
+        blocks = await content_manager.append_markdown(markdown_text=markdown_yt)
         print(blocks)
     finally:
         # Clean up

@@ -2,10 +2,9 @@ from typing import Dict, Any, List, Optional, Tuple
 from notionary.converters.notion_element_registry import ElementRegistry
 
 class MarkdownToNotionConverter:
-    """Converts Markdown text to Notion API block format."""
     MULTILINE_CONTENT_MARKER = '<!-- REMOVED_MULTILINE_CONTENT -->'
-    SPACER_MARKER = '<!-- spacer -->'  # Marker für Einrückung
-    TOGGLE_MARKER = '<!-- toggle_content -->'  # Marker für Toggle-Inhalte
+    SPACER_MARKER = '<!-- spacer -->'
+    TOGGLE_MARKER = '<!-- toggle_content -->'
     
     def convert(self, markdown_text: str) -> List[Dict[str, Any]]:
         """
