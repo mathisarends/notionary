@@ -1,5 +1,6 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple
+from typing_extensions import override
 
 from notionary.converters.notion_block_element import NotionBlockElement
 from notionary.converters import MarkdownToNotionConverter
@@ -25,16 +26,19 @@ class ColumnElement(NotionBlockElement):
     COLUMN_START = re.compile(r'^:::\s*column\s*$')
     BLOCK_END = re.compile(r'^:::\s*$')
     
+    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text starts a columns block."""
         return bool(ColumnElement.COLUMNS_START.match(text.strip()))
     
+    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion column_list."""
         return block.get("type") == "column_list"
     
+    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """
@@ -54,7 +58,8 @@ class ColumnElement(NotionBlockElement):
                 "children": []
             }
         }
-    
+        
+    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion column_list block to markdown column syntax."""
@@ -71,10 +76,8 @@ class ColumnElement(NotionBlockElement):
             if column_block.get("type") == "column":
                 result.append("::: column")
                 
-                # Process children of this column
-                for child_block in column_block.get("column", {}).get("children", []):
-                    # This would need to be handled by a full converter
-                    result.append("  [Column content]")  # Placeholder
+            for _ in column_block.get("column", {}).get("children", []):
+                result.append("  [Column content]")  # Placeholder
                 
                 result.append(":::")
         
@@ -83,6 +86,7 @@ class ColumnElement(NotionBlockElement):
         
         return "\n".join(result)
     
+    @override
     @staticmethod
     def is_multiline() -> bool:
         """Column blocks span multiple lines."""
@@ -101,101 +105,129 @@ class ColumnElement(NotionBlockElement):
         """
         matches = []
         lines = text.split('\n')
-        
         i = 0
+        
         while i < len(lines):
-            line = lines[i].strip()
-            
-            # Check for columns start
-            if ColumnElement.COLUMNS_START.match(line):
-                columns_start = i
-                columns_block = ColumnElement.markdown_to_notion(line)
-                columns_children = []
+            # Skip non-column lines
+            if not ColumnElement.COLUMNS_START.match(lines[i].strip()):
+                i += 1
+                continue
                 
-                # Process columns until we find the end
+            # Process a column block and add to matches
+            column_block_info = ColumnElement._process_column_block(lines, i)
+            matches.append(column_block_info)
+            
+            # Skip to the end of the processed column block
+            i = column_block_info[3]  # i is returned as the 4th element in the tuple
+        
+        return [(start, end, block) for start, end, block, _ in matches]
+
+    @staticmethod
+    def _process_column_block(lines: List[str], start_index: int) -> Tuple[int, int, Dict[str, Any], int]:
+        """
+        Process a complete column block structure from the given starting line.
+        
+        Args:
+            lines: All lines of the text
+            start_index: Index of the column block start line
+            
+        Returns:
+            Tuple of (start_pos, end_pos, block, next_line_index)
+        """
+        columns_start = start_index
+        columns_block = ColumnElement.markdown_to_notion(lines[start_index].strip())
+        columns_children = []
+        
+        next_index = ColumnElement._collect_columns(lines, start_index + 1, columns_children)
+        
+        # Add columns to the main block
+        if columns_children:
+            columns_block["column_list"]["children"] = columns_children
+        
+        # Calculate positions
+        start_pos = sum(len(lines[j]) + 1 for j in range(columns_start))
+        end_pos = sum(len(lines[j]) + 1 for j in range(next_index))
+        
+        return (start_pos, end_pos, columns_block, next_index)
+
+    @staticmethod
+    def _collect_columns(lines: List[str], start_index: int, columns_children: List[Dict[str, Any]]) -> int:
+        """
+        Collect all columns within a column block structure.
+        
+        Args:
+            lines: All lines of the text
+            start_index: Index to start collecting from
+            columns_children: List to append collected columns to
+            
+        Returns:
+            Next line index after all columns have been processed
+        """
+        i = start_index
+        in_column = False
+        column_content = []
+        
+        while i < len(lines):
+            current_line = lines[i].strip()
+            
+            # Check for nested column block (would be an error, but avoid infinite loop)
+            if ColumnElement.COLUMNS_START.match(current_line):
+                break
+                
+            # Process column start
+            if ColumnElement.COLUMN_START.match(current_line):
+                ColumnElement._finalize_column(column_content, columns_children, in_column)
+                column_content = []
+                in_column = True
+                i += 1
+                continue
+                
+            # Process column end
+            if ColumnElement.BLOCK_END.match(current_line) and in_column:
+                ColumnElement._finalize_column(column_content, columns_children, in_column)
                 column_content = []
                 in_column = False
                 i += 1
+                continue
                 
-                while i < len(lines) and not ColumnElement.COLUMNS_START.match(lines[i].strip()):
-                    current_line = lines[i].strip()
-                    
-                    # Check for column start
-                    if ColumnElement.COLUMN_START.match(current_line):
-                        # If we were already in a column, finalize it
-                        if in_column and column_content:
-                            # Process column content recursively
-                            converter = MarkdownToNotionConverter()
-                            column_blocks = converter.convert('\n'.join(column_content))
-                            
-                            # Create column block
-                            column_block = {
-                                "type": "column",
-                                "column": {
-                                    "children": column_blocks
-                                }
-                            }
-                            columns_children.append(column_block)
-                            column_content = []
-                        
-                        in_column = True
-                    # Check for block end (only if we're in a column)
-                    elif ColumnElement.BLOCK_END.match(current_line) and in_column:
-                        # Finalize current column
-                        if column_content:
-                            # Process column content recursively
-                            converter = MarkdownToNotionConverter()
-                            column_blocks = converter.convert('\n'.join(column_content))
-                            
-                            # Create column block
-                            column_block = {
-                                "type": "column",
-                                "column": {
-                                    "children": column_blocks
-                                }
-                            }
-                            columns_children.append(column_block)
-                            column_content = []
-                        
-                        in_column = False
-                    # Check for columns end
-                    elif ColumnElement.BLOCK_END.match(current_line) and not in_column:
-                        # End of columns block
-                        break
-                    # Regular content line (if in a column)
-                    elif in_column:
-                        column_content.append(lines[i])
-                    
-                    i += 1
-                
-                # Finalize any remaining column
-                if in_column and column_content:
-                    # Process column content recursively
-                    converter = MarkdownToNotionConverter()
-                    column_blocks = converter.convert('\n'.join(column_content))
-                    
-                    # Create column block
-                    column_block = {
-                        "type": "column",
-                        "column": {
-                            "children": column_blocks
-                        }
-                    }
-                    columns_children.append(column_block)
-                
-                # Add columns to the main block
-                if columns_children:
-                    columns_block["column_list"]["children"] = columns_children
-                
-                # Calculate positions
-                start_pos = sum(len(lines[j]) + 1 for j in range(columns_start))
-                end_pos = sum(len(lines[j]) + 1 for j in range(i + 1))
-                
-                matches.append((start_pos, end_pos, columns_block))
-                
-                # Skip to the next line after the columns block
+            # Process columns block end
+            if ColumnElement.BLOCK_END.match(current_line) and not in_column:
                 i += 1
-            else:
-                i += 1
+                break
+                
+            # Regular content line (if in a column)
+            if in_column:
+                column_content.append(lines[i])
+            
+            i += 1
         
-        return matches
+        # Finalize any remaining column
+        ColumnElement._finalize_column(column_content, columns_children, in_column)
+        
+        return i
+
+    @staticmethod
+    def _finalize_column(column_content: List[str], columns_children: List[Dict[str, Any]], in_column: bool) -> None:
+        """
+        Finalize a column by processing its content and adding it to the columns_children list.
+        
+        Args:
+            column_content: Content lines of the column
+            columns_children: List to append the column block to
+            in_column: Whether we're currently in a column (if False, does nothing)
+        """
+        if not (in_column and column_content):
+            return
+            
+        # Process column content recursively
+        converter = MarkdownToNotionConverter()
+        column_blocks = converter.convert('\n'.join(column_content))
+        
+        # Create column block
+        column_block = {
+            "type": "column",
+            "column": {
+                "children": column_blocks
+            }
+        }
+        columns_children.append(column_block)
