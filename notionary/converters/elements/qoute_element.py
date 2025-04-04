@@ -199,3 +199,24 @@ class QuoteElement(NotionBlockElement):
             elif "plain_text" in text_obj:
                 result += text_obj.get("plain_text", "")
         return result
+    
+    @override
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """Returns information for LLM prompts about this element."""
+        return {
+            "description": "Creates blockquotes that visually distinguish quoted text with optional background colors.",
+            "when_to_use": "Use blockquotes for quoting external sources, highlighting important statements, or creating visual emphasis for key information.",
+            "syntax": [
+                "> Text - Simple blockquote",
+                "> [background:color] Text - Blockquote with colored background"
+            ],
+            "color_options": [
+                "gray", "brown", "orange", "yellow", "green", "blue", "purple", "pink", "red"
+            ],
+            "examples": [
+                "> This is a simple blockquote without any color",
+                "> [background:blue] This is a blockquote with blue background",
+                "> Multi-line quotes\n> continue like this\n> across several lines"
+            ]
+        }

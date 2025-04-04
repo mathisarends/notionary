@@ -141,3 +141,24 @@ class CodeBlockElement(NotionBlockElement):
     @staticmethod
     def is_multiline() -> bool:
         return True
+    
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """
+        Returns a dictionary with all information needed for LLM prompts about this element.
+        Includes description, usage guidance, syntax options, and examples.
+        """
+        return {
+            "description": "Creates a code block that displays formatted code with syntax highlighting.",
+            "when_to_use": "Use code blocks when you need to include programming code, commands, configuration files, or any content that benefits from monospace formatting and syntax highlighting.",
+            "syntax": [
+                "```\ncode content\n``` - Code block without language specification (plain text)",
+                "```language\ncode content\n``` - Code block with language specification for syntax highlighting"
+            ],
+            "examples": [
+                "```python\ndef hello_world():\n    print('Hello, world!')\n\nhello_world()\n```",
+                "```javascript\nconst greeting = 'Hello, world!';\nconsole.log(greeting);\n```",
+                "```css\n.container {\n    display: flex;\n    justify-content: center;\n    align-items: center;\n}\n```",
+                "```\nThis is plain text in a code block\nwithout any syntax highlighting\n```"
+            ]
+        }

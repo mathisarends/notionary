@@ -54,6 +54,17 @@ class BulletedListElement(NotionBlockElement):
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if this element can handle the given Notion block."""
         return block.get("type") == "bulleted_list_item"
+    
+    @override
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """Returns information for LLM prompts about this element."""
+        return {
+            "description": "Creates bulleted list items for unordered lists.",
+            "when_to_use": "Use for lists where order doesn't matter, such as features, options, or items without hierarchy.",
+            "syntax": ["- Item text", "* Item text", "+ Item text"],
+            "examples": ["- First item\n- Second item\n- Third item"]
+        }
 
 
 class NumberedListElement:
@@ -110,3 +121,14 @@ class NumberedListElement:
     @staticmethod
     def is_multiline() -> bool:
         return False
+    
+    @override
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """Returns information for LLM prompts about this element."""
+        return {
+            "description": "Creates numbered list items for ordered sequences.",
+            "when_to_use": "Use for lists where order matters, such as steps, rankings, or sequential items.",
+            "syntax": ["1. Item text"],
+            "examples": ["1. First step\n2. Second step\n3. Third step"]
+        }

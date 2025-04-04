@@ -1,3 +1,4 @@
+import inspect
 from typing import Dict, Any, Optional
 from abc import ABC
 
@@ -25,3 +26,26 @@ class NotionBlockElement(ABC):
     @staticmethod
     def is_multiline() -> bool:
         return False
+    
+    @classmethod
+    def get_llm_documentation(cls) -> str:
+        """
+        Returns documentation specifically formatted for LLM system prompts.
+        Can be overridden by subclasses to provide custom LLM-friendly documentation.
+        
+        By default, returns the class docstring.
+        """
+@classmethod
+def get_llm_prompt_content(cls) -> dict:
+    """
+    Returns a dictionary with information for LLM prompts about this element.
+    This default implementation extracts information from the class docstring.
+    Subclasses should override this method to provide more structured information.
+    
+    Returns:
+        Dictionary with documentation information
+    """
+    return {
+        "description": inspect.cleandoc(cls.__doc__ or ""),
+        "examples": []
+    }

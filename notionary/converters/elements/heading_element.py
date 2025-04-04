@@ -70,3 +70,30 @@ class HeadingElement(NotionBlockElement):
     @staticmethod
     def is_multiline() -> bool:
         return False
+    
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """
+        Returns a dictionary with all information needed for LLM prompts about this element.
+        Includes description, usage guidance, syntax options, and examples.
+        """
+        return {
+            "description": "Creates heading blocks of various levels to organize content hierarchically.",
+            "when_to_use": "Use headings to structure your document with a clear hierarchy, making it easier to navigate and scan. Headings help break content into logical sections and create an implicit outline or table of contents.",
+            "syntax": [
+                "# Heading 1 - Top level heading, used for document titles",
+                "## Heading 2 - Major section heading",
+                "### Heading 3 - Sub-section heading",
+            ],
+            "notes": [
+                "Each heading level creates a different visual hierarchy in Notion",
+                "Heading 1 (#) is largest and most prominent, while Heading 6 (######) is smallest",
+                "Be consistent with heading levels - don't skip levels in your hierarchy",
+                "Headings support inline formatting like **bold** and *italic*"
+            ],
+            "examples": [
+                "# Project Overview\n\n## Background\nProject background information goes here.\n\n## Objectives\n### Primary Objectives\nMain goals of the project.\n\n### Secondary Objectives\nAdditional goals that would be nice to achieve.",
+                
+                "# Monthly Report: January\n\n## Financial Summary\nRevenue and expense overview.\n\n## Department Updates\n### Marketing\nCampaign results and upcoming initiatives.\n\n### Product\nNew features and development progress."
+            ]
+        }

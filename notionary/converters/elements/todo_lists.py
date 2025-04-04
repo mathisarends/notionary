@@ -90,3 +90,25 @@ class TodoElement(NotionBlockElement):
     @staticmethod
     def is_multiline() -> bool:
         return False
+    
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """Returns information for LLM prompts about this element."""
+        return {
+            "description": "Creates interactive to-do items with checkboxes that can be marked as complete.",
+            "when_to_use": "Use to-do items for task lists, checklists, or tracking progress on items that need to be completed. Todo items are interactive in Notion and can be checked/unchecked directly.",
+            "syntax": [
+                "- [ ] Unchecked to-do item",
+                "- [x] Checked to-do item"
+            ],
+            "notes": [
+                "Can use any list indicator (-, *, +) before the checkbox",
+                "Space in brackets [ ] indicates unchecked status",
+                "x in brackets [x] indicates checked status",
+                "To-do items support inline formatting like **bold** and *italic*"
+            ],
+            "examples": [
+                "- [ ] Draft project proposal\n- [ ] Schedule kickoff meeting\n- [x] Create initial timeline",
+                "* [ ] Review code changes\n* [x] Write documentation\n* [ ] Deploy to production"
+            ]
+        }

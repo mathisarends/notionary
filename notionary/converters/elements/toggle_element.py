@@ -99,3 +99,27 @@ class ToggleElement(NotionBlockElement):
             elif "plain_text" in text_obj:
                 result += text_obj.get("plain_text", "")
         return result
+    
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """Returns information for LLM prompts about this element."""
+        return {
+            "description": "Creates expandable/collapsible toggle blocks that can hide or show content.",
+            "when_to_use": "Use toggles to reduce visual clutter while keeping information accessible. Toggles are perfect for FAQs, detailed explanations, additional information, or any content that doesn't need to be visible all the time.",
+            "syntax": [
+                "+++ Toggle title",
+                "  Indented content inside the toggle",
+                "  More indented content"
+            ],
+            "notes": [
+                "Toggle blocks start with three plus signs (+++) followed by the title",
+                "Content inside the toggle must be indented with at least 2 spaces or a tab",
+                "Non-indented content marks the end of the toggle block",
+                "Toggles can contain any other block elements (lists, code blocks, etc.)"
+            ],
+            "examples": [
+                "+++ How to use this feature\n  1. Start by clicking the button\n  2. Configure the settings\n  3. Save your changes",
+                
+                "+++ Implementation Details\n  ```python\n  def example():\n      return \"This is inside a toggle\"\n  ```"
+            ]
+        }

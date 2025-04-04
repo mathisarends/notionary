@@ -112,3 +112,24 @@ class ImageElement(NotionBlockElement):
     @staticmethod
     def is_multiline() -> bool:
         return False
+    
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """
+        Returns a dictionary with all information needed for LLM prompts about this element.
+        Includes description, usage guidance, syntax options, and examples.
+        """
+        return {
+            "description": "Embeds an image from an external URL into your document.",
+            "when_to_use": "Use images to include visual content such as diagrams, screenshots, charts, photos, or illustrations that enhance your document. Images can make complex information easier to understand, create visual interest, or provide evidence for your points.",
+            "syntax": [
+                "![](https://example.com/image.jpg) - Image without caption",
+                "![Caption text](https://example.com/image.jpg) - Image with caption",
+                "![Caption text](https://example.com/image.jpg \"Alt text\") - Image with caption and alt text"
+            ],
+            "examples": [
+                "![Data visualization showing monthly trends](https://example.com/chart.png)",
+                "![](https://example.com/screenshot.jpg)",
+                "![Company logo](https://company.com/logo.png \"Company Inc. logo\")"
+            ]
+        }

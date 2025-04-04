@@ -231,3 +231,34 @@ class ColumnElement(NotionBlockElement):
             }
         }
         columns_children.append(column_block)
+        
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """
+        Returns a dictionary with all information needed for LLM prompts about this element.
+        Includes description, usage guidance, syntax options, and examples.
+        """
+        return {
+            "description": "Creates a multi-column layout that displays content side by side.",
+            "when_to_use": "Use columns when you want to present information in parallel, compare items side by side, or create more space-efficient layouts that would otherwise require excessive scrolling. Columns are ideal for comparisons, pros/cons lists, and displaying related but distinct content together.",
+            "syntax": [
+                "::: columns",
+                "::: column",
+                "Content for first column",
+                ":::",
+                "::: column",
+                "Content for second column",
+                ":::",
+                ":::"
+            ],
+            "notes": [
+                "You can include any Notion block type within a column",
+                "You can add more than two columns by adding additional '::: column' sections",
+                "Make sure to close each column with ':::' and the entire columns section with another ':::'"
+            ],
+            "examples": [
+                "::: columns\n::: column\n## Features\n- Fast response time\n- Intuitive interface\n- Regular updates\n:::\n::: column\n## Benefits\n- Increased productivity\n- Better collaboration\n- Simplified workflows\n:::\n:::",
+                
+                "::: columns\n::: column\n![Image placeholder](/api/placeholder/400/320)\n:::\n::: column\nThis text appears next to the image, creating a media-with-caption style layout that's perfect for documentation or articles.\n:::\n:::"
+            ]
+        }

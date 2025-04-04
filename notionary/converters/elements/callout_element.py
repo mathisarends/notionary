@@ -119,3 +119,31 @@ class CalloutElement(NotionBlockElement):
     @staticmethod
     def is_multiline() -> bool:
         return False
+    
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """
+        Returns a dictionary with all information needed for LLM prompts about this element.
+        Includes description, usage guidance, syntax options, and examples.
+        """
+        return {
+            "description": "Creates a callout block to highlight important information with an icon and background color.",
+            "when_to_use": "Use callouts when you want to draw attention to important information, tips, warnings, or notes that stand out from the main content.",
+            "syntax": [
+                "!> Text - Simple callout with default emoji (💡) and color (gray background)",
+                "!> [emoji] Text - Callout with custom emoji",
+                "!> {color} [emoji] Text - Callout with custom color and emoji"
+            ],
+            "color_options": [
+                "default", "gray", "brown", "orange", "yellow", "green", "blue", 
+                "purple", "pink", "red", "gray_background", "brown_background", 
+                "orange_background", "yellow_background", "green_background", 
+                "blue_background", "purple_background", "pink_background", "red_background"
+            ],
+            "examples": [
+                "!> This is a default callout with the light bulb emoji",
+                "!> [🔔] This is a callout with a bell emoji",
+                "!> {blue_background} [💧] This is a blue callout with a water drop emoji",
+                "!> {yellow_background} [⚠️] Warning: This is an important note to pay attention to"
+            ]
+        }

@@ -2,7 +2,7 @@ import importlib
 import inspect
 import os
 import pkgutil
-from typing import List, Type, Optional
+from typing import List, Type
 
 from notionary.converters.notion_block_element import NotionBlockElement
 
@@ -18,6 +18,7 @@ class LLMDocumentationGenerator:
     def generate_element_doc(element_class: Type[NotionBlockElement]) -> str:
         """
         Generates documentation for a specific NotionBlockElement subclass.
+        Prioritizes the get_llm_prompt_content method if available, otherwise falls back to docstring.
         
         Args:
             element_class: The NotionBlockElement subclass to document
@@ -26,19 +27,65 @@ class LLMDocumentationGenerator:
             Formatted documentation string for the element
         """
         class_name = element_class.__name__
-        doc = element_class.__doc__ or ""
-        
         element_name = class_name.replace("Element", "")
         
         result = [f"## {element_name}"]
         
-        clean_doc = inspect.cleandoc(doc)
-        result.append(clean_doc)
+        # Prioritize get_llm_prompt_content method if available
+        if hasattr(element_class, 'get_llm_prompt_content') and callable(getattr(element_class, 'get_llm_prompt_content')):
+            content = element_class.get_llm_prompt_content()
+            
+            # Add description
+            if "description" in content:
+                result.append(content["description"])
+            
+            # Add usage guidance
+            if "when_to_use" in content:
+                result.append(f"\n**When to use:** {content['when_to_use']}")
+            
+            # Add syntax options
+            if "syntax" in content:
+                result.append("\n### Syntax:")
+                for syntax_item in content["syntax"]:
+                    result.append(f"- `{syntax_item}`")
+            
+            # Add notes if available
+            if "notes" in content:
+                result.append("\n### Notes:")
+                for note in content["notes"]:
+                    result.append(f"- {note}")
+            
+            # Add color options if available (for elements with color support)
+            if "color_options" in content:
+                result.append("\n### Available colors:")
+                colors = ", ".join(f"`{color}`" for color in content["color_options"])
+                result.append(colors)
+                
+            # Add supported sources if available (for media elements)
+            if "supported_sources" in content:
+                result.append("\n### Supported sources:")
+                for source in content["supported_sources"]:
+                    result.append(f"- {source}")
+            
+            # Add examples
+            if "examples" in content:
+                result.append("\n### Examples:")
+                result.append("```markdown")
+                for example in content["examples"]:
+                    result.append(example)
+                result.append("```")
         
-        example = LLMDocumentationGenerator._get_example(element_class)
-        if example:
-            result.append("\n### Example:")
-            result.append(f"```markdown\n{example}\n```")
+        # Fall back to docstring if get_llm_prompt_content is not available
+        else:
+            doc = element_class.__doc__ or ""
+            clean_doc = inspect.cleandoc(doc)
+            result.append(clean_doc)
+            
+            # Get example using the old method
+            example = LLMDocumentationGenerator._get_example(element_class)
+            if example:
+                result.append("\n### Example:")
+                result.append(f"```markdown\n{example}\n```")
         
         return "\n".join(result)
     

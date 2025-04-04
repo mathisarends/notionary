@@ -52,3 +52,25 @@ class DividerElement(NotionBlockElement):
     @staticmethod
     def is_multiline() -> bool:
         return False
+    
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """
+        Returns a dictionary with all information needed for LLM prompts about this element.
+        Includes description, usage guidance, syntax options, and examples.
+        """
+        return {
+            "description": "Creates a horizontal divider line that visually separates sections of content.",
+            "when_to_use": "Use dividers when you want to create clear visual breaks between different sections or topics in your document. Dividers help improve readability by organizing content into distinct sections without requiring headings.",
+            "syntax": [
+                "---"
+            ],
+            "notes": [
+                "Dividers must be on their own line with no other content",
+                "Dividers work well when combined with headings to clearly separate major document sections"
+            ],
+            "examples": [
+                "## Introduction\nThis is the introduction section of the document.\n\n---\n\n## Main Content\nThis is the main content section.",
+                "Task List:\n- Complete project proposal\n- Review feedback\n\n---\n\nMeeting Notes:\n- Discussed timeline\n- Assigned responsibilities"
+            ]
+        }

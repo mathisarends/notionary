@@ -271,3 +271,27 @@ class TableElement(NotionBlockElement):
         for i in range(start, end):
             position += len(lines[i]) + 1  # +1 for newline
         return position
+    
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """Returns information for LLM prompts about this element."""
+        return {
+            "description": "Creates formatted tables with rows and columns for structured data.",
+            "when_to_use": "Use tables to organize and present structured data in a grid format, making information easier to compare and analyze. Tables are ideal for data sets, comparison charts, pricing information, or any content that benefits from columnar organization.",
+            "syntax": [
+                "| Header 1 | Header 2 | Header 3 |",
+                "| -------- | -------- | -------- |",
+                "| Row 1, Col 1 | Row 1, Col 2 | Row 1, Col 3 |",
+                "| Row 2, Col 1 | Row 2, Col 2 | Row 2, Col 3 |"
+            ],
+            "notes": [
+                "The header row is required and will be displayed differently in Notion",
+                "The separator row with dashes is required to define the table structure",
+                "Table cells support inline formatting such as **bold** and *italic*"
+            ],
+            "examples": [
+                "| Product | Price | Stock |\n| ------- | ----- | ----- |\n| Widget A | $10.99 | 42 |\n| Widget B | $14.99 | 27 |",
+                
+                "| Name | Role | Department |\n| ---- | ---- | ---------- |\n| John Smith | Manager | Marketing |\n| Jane Doe | Director | Sales |"
+            ]
+        }

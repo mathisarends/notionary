@@ -54,3 +54,15 @@ class ParagraphElement(NotionBlockElement):
     @staticmethod
     def is_multiline() -> bool:
         return False
+    
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """Returns information for LLM prompts about this element."""
+        return {
+            "description": "Creates standard paragraph blocks for regular text content.",
+            "when_to_use": "Use paragraphs for normal text content. Paragraphs are the default block type and will be used when no other specific formatting is applied.",
+            "syntax": ["Just write text normally without any special prefix"],
+            "notes": ["Paragraphs support inline formatting like **bold**, *italic*, ~~strikethrough~~, `code`, and [links](url)"],
+            "examples": ["This is a simple paragraph with plain text.", 
+                        "This paragraph has **bold** and *italic* formatting."]
+        }

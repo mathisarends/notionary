@@ -138,3 +138,26 @@ class VideoElement(NotionBlockElement):
             elif "plain_text" in text_obj:
                 result += text_obj.get("plain_text", "")
         return result
+    
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """Returns information for LLM prompts about this element."""
+        return {
+            "description": "Embeds video content from external sources like YouTube or direct video URLs.",
+            "when_to_use": "Use video embeds when you want to include multimedia content directly in your document. Videos are useful for tutorials, demonstrations, presentations, or any content that benefits from visual explanation.",
+            "syntax": [
+                "@[](https://example.com/video.mp4) - Video without caption",
+                "@[Caption text](https://example.com/video.mp4) - Video with caption"
+            ],
+            "supported_sources": [
+                "YouTube videos (https://youtube.com/watch?v=ID or https://youtu.be/ID)",
+                "Vimeo videos",
+                "Direct links to video files (.mp4, .mov, etc.)",
+                "Other video hosting platforms supported by Notion"
+            ],
+            "examples": [
+                "@[How to use this feature](https://www.youtube.com/watch?v=dQw4w9WgXcQ)",
+                "@[Product demo](https://example.com/videos/demo.mp4)",
+                "@[](https://youtu.be/dQw4w9WgXcQ)"
+            ]
+        }
