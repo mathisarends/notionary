@@ -17,6 +17,7 @@ from .elements.list_element import BulletedListElement, NumberedListElement
 from .elements.qoute_element import QuoteElement
 from .elements.image_element import ImageElement
 from .elements.video_element import VideoElement
+from .elements.toggle_element import ToggleElement
 
 # Register all elements
 # Register paragraphs last since they're the fallback
@@ -27,12 +28,15 @@ ElementRegistry.register(DividerElement)
 ElementRegistry.register(TableElement)
 ElementRegistry.register(BulletedListElement)
 ElementRegistry.register(NumberedListElement)
+# Has to be registered before quote element
+ElementRegistry.register(ToggleElement) 
 ElementRegistry.register(QuoteElement)
 ElementRegistry.register(TodoElement)
 ElementRegistry.register(BookmarkElement)
 ElementRegistry.register(ImageElement)
 ElementRegistry.register(VideoElement)
-ElementRegistry.register(ParagraphElement)  # Register last!
+# Register last! (Fallback)
+ElementRegistry.register(ParagraphElement)  
 
 # Define what to export
 __all__ = [

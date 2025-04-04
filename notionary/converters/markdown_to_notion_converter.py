@@ -1,12 +1,11 @@
-# File: notionary/converters/markdown_to_notion_converter.py
-
 from typing import Dict, Any, List, Optional, Tuple
 from notionary.converters.notion_element_registry import ElementRegistry
 
 class MarkdownToNotionConverter:
     """Converts Markdown text to Notion API block format."""
     MULTILINE_CONTENT_MARKER = '<!-- REMOVED_MULTILINE_CONTENT -->'
-    SPACER_MARKER = '<!-- spacer -->'  # Neuer Marker für Einrückung
+    SPACER_MARKER = '<!-- spacer -->'  # Marker für Einrückung
+    TOGGLE_MARKER = '<!-- toggle_content -->'  # Marker für Toggle-Inhalte
     
     def convert(self, markdown_text: str) -> List[Dict[str, Any]]:
         """
@@ -21,12 +20,16 @@ class MarkdownToNotionConverter:
         if not markdown_text:
             return []
         
-        processed_text, multiline_blocks = self._process_multiline_elements(markdown_text)
+        # Process toggles first
+        processed_text, toggle_blocks = self._process_toggle_elements(markdown_text)
+        
+        # Process other multiline elements
+        processed_text, multiline_blocks = self._process_multiline_elements(processed_text)
         
         line_blocks = self._process_text_lines(processed_text)
         
         # Combine and sort all blocks by their original position
-        all_blocks = multiline_blocks + line_blocks
+        all_blocks = toggle_blocks + multiline_blocks + line_blocks
         all_blocks.sort(key=lambda x: x[0])  # Sort by start position
         
         blocks = [block for _, _, block in all_blocks]
@@ -34,6 +37,101 @@ class MarkdownToNotionConverter:
         final_blocks = self._process_explicit_spacing(blocks)
         
         return final_blocks
+    
+    def _process_toggle_elements(self, text: str) -> Tuple[str, List[Tuple[int, int, Dict[str, Any]]]]:
+        """
+        Process toggle elements and their nested content.
+        
+        Args:
+            text: The text to process
+            
+        Returns:
+            Tuple of (processed text, list of (start_pos, end_pos, block) tuples)
+        """
+        toggle_blocks = []
+        lines = text.split('\n')
+        processed_lines = []
+        
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            
+            # Check if the line is a toggle
+            toggle_element = None
+            for element in ElementRegistry.get_elements():
+                if (element.is_multiline() and 
+                    hasattr(element, 'match_markdown') and 
+                    element.__name__ == 'ToggleElement' and
+                    element.match_markdown(line)):
+                    toggle_element = element
+                    break
+            
+            if toggle_element:
+                toggle_start_pos = len('\n'.join(processed_lines)) + (len(processed_lines) if processed_lines else 0)
+                toggle_block = toggle_element.markdown_to_notion(line)
+                
+                # Collect indented content for the toggle
+                nested_content = []
+                j = i + 1
+                
+                # This is the pattern for indented content - 2 or more spaces or tabs
+                indent_pattern = lambda l: l.startswith('  ') or l.startswith('\t')
+                
+                while j < len(lines):
+                    next_line = lines[j]
+                    
+                    # Empty line still part of toggle content
+                    if not next_line.strip():
+                        nested_content.append("")
+                        j += 1
+                        continue
+                    
+                    # Indented content belongs to toggle
+                    if indent_pattern(next_line):
+                        # Remove indentation (either tabs or 2+ spaces)
+                        if next_line.startswith('\t'):
+                            content_line = next_line[1:]
+                        else:
+                            # Find number of leading spaces
+                            leading_spaces = len(next_line) - len(next_line.lstrip(' '))
+                            # Remove at least 2 spaces
+                            content_line = next_line[min(2, leading_spaces):]
+                        
+                        nested_content.append(content_line)
+                        j += 1
+                        continue
+                    
+                    # Non-indented, non-empty line marks the end of toggle content
+                    break
+                
+                # Process nested content recursively
+                if nested_content:
+                    nested_text = '\n'.join(nested_content)
+                    nested_blocks = self.convert(nested_text)
+                    if nested_blocks:
+                        toggle_block["toggle"]["children"] = nested_blocks
+                
+                # Calculate toggle end position
+                toggle_end_pos = toggle_start_pos + len(line) + sum([len(l) + 1 for l in nested_content])
+                
+                # Add the toggle block to our list
+                toggle_blocks.append((toggle_start_pos, toggle_end_pos, toggle_block))
+                
+                # Add a placeholder for the toggle and its content
+                # IMPORTANT: Don't add the original toggle line to processed_lines, 
+                # instead add a marker to completely remove it from output
+                processed_lines.append(self.TOGGLE_MARKER)
+                toggle_content_lines = [self.TOGGLE_MARKER] * len(nested_content)
+                processed_lines.extend(toggle_content_lines)
+                
+                # Skip to after the toggle content
+                i = j
+            else:
+                processed_lines.append(line)
+                i += 1
+        
+        processed_text = '\n'.join(processed_lines)
+        return processed_text, toggle_blocks
     
     def _process_multiline_elements(self, text: str) -> Tuple[str, List[Tuple[int, int, Dict[str, Any]]]]:
         """
@@ -52,6 +150,10 @@ class MarkdownToNotionConverter:
         multiline_elements = ElementRegistry.get_multiline_elements()
         
         for element in multiline_elements:
+            # Skip ToggleElement as it's handled separately
+            if element.__name__ == 'ToggleElement':
+                continue
+                
             if hasattr(element, 'find_matches'):
                 # Find all matches for this element
                 matches = element.find_matches(processed_text)
@@ -63,7 +165,7 @@ class MarkdownToNotionConverter:
                     for start, end, _ in reversed(matches):
                         num_newlines = processed_text[start:end].count('\n')
                         # Use a marker that won't be processed as markdown
-                        processed_text = processed_text[:start] + '\n' + '<!-- REMOVED_MULTILINE_CONTENT -->\n' * num_newlines + processed_text[end:]
+                        processed_text = processed_text[:start] + '\n' + self.MULTILINE_CONTENT_MARKER + '\n' * num_newlines + processed_text[end:]
         
         return processed_text, multiline_blocks
     
@@ -92,7 +194,7 @@ class MarkdownToNotionConverter:
             line_length = len(line) + 1  # +1 for newline
             
             # Skip marker lines
-            if self._is_multiline_marker(line):
+            if self._is_multiline_marker(line) or self._is_toggle_marker(line):
                 current_pos += line_length
                 continue
             
@@ -165,6 +267,10 @@ class MarkdownToNotionConverter:
     def _is_multiline_marker(self, line: str) -> bool:
         """Check if a line is a multiline content marker."""
         return line.strip() == self.MULTILINE_CONTENT_MARKER
+    
+    def _is_toggle_marker(self, line: str) -> bool:
+        """Check if a line is a toggle content marker."""
+        return line.strip() == self.TOGGLE_MARKER
     
     def _is_spacer_marker(self, line: str) -> bool:
         """Prüft, ob eine Zeile ein Spacer-Marker ist."""

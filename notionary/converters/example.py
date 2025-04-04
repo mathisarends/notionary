@@ -137,6 +137,12 @@ Und hier noch ein direkt eingebettetes Video:
 
 ## YouTube URL without Caption
 @[](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+
++++ Toggle title
+    Indented content that belongs to the toggle
+    More indented content
+
++++ Empty Toggle
 """
     
     await append_markdown(page_id=page_id, markdown_text=youtub_video_markdown)
