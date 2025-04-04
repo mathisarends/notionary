@@ -2,7 +2,7 @@ import re
 from typing import Dict, Any, Optional, List, Tuple
 
 from notionary.converters.notion_block_element import NotionBlockElement
-
+from notionary.converters import MarkdownToNotionConverter
 
 class ColumnElement(NotionBlockElement):
     """
@@ -125,7 +125,6 @@ class ColumnElement(NotionBlockElement):
                         # If we were already in a column, finalize it
                         if in_column and column_content:
                             # Process column content recursively
-                            from notionary.converters import MarkdownToNotionConverter
                             converter = MarkdownToNotionConverter()
                             column_blocks = converter.convert('\n'.join(column_content))
                             
@@ -145,7 +144,6 @@ class ColumnElement(NotionBlockElement):
                         # Finalize current column
                         if column_content:
                             # Process column content recursively
-                            from notionary.converters import MarkdownToNotionConverter
                             converter = MarkdownToNotionConverter()
                             column_blocks = converter.convert('\n'.join(column_content))
                             
@@ -173,7 +171,6 @@ class ColumnElement(NotionBlockElement):
                 # Finalize any remaining column
                 if in_column and column_content:
                     # Process column content recursively
-                    from notionary.converters import MarkdownToNotionConverter
                     converter = MarkdownToNotionConverter()
                     column_blocks = converter.convert('\n'.join(column_content))
                     
