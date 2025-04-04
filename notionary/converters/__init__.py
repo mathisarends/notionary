@@ -18,6 +18,7 @@ from .elements.qoute_element import QuoteElement
 from .elements.image_element import ImageElement
 from .elements.video_element import VideoElement
 from .elements.toggle_element import ToggleElement
+from .elements.column_element import ColumnElement
 
 # Register all elements
 # Register paragraphs last since they're the fallback
@@ -26,6 +27,7 @@ ElementRegistry.register(CalloutElement)
 ElementRegistry.register(CodeBlockElement)
 ElementRegistry.register(DividerElement)
 ElementRegistry.register(TableElement)
+ElementRegistry.register(ColumnElement)
 ElementRegistry.register(BulletedListElement)
 ElementRegistry.register(NumberedListElement)
 # Has to be registered before quote element

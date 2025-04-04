@@ -127,25 +127,53 @@ Und hier noch ein direkt eingebettetes Video:
 @[Ein Naturdokumentarfilm](https://example.com/naturvideo.mp4)
 """
 
-    youtub_video_markdown = """# YouTube Video Embeds
-
+    markdown_yt = """# YouTube Video Embeds in Columns
+::: columns
+::: column
 ## Standard YouTube URL
 @[Learn Python - Full Course for Beginners](https://www.youtube.com/watch?v=rfscVS0vtbw)
-
+:::
+::: column
 ## YouTube Shortened URL
 @[Python Tutorial](https://youtu.be/Z1Yd7upQsXY)
-
+:::
+::: column
 ## YouTube URL without Caption
 @[](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+:::
+:::
+
+## Toggle Section Below
 
 +++ Toggle title
     Indented content that belongs to the toggle
     More indented content
 
 +++ Empty Toggle
+
+## Videos With Toggles in Columns
+
+::: columns
+::: column
+### Video with Toggle
+@[Python Tips](https://www.youtube.com/watch?v=C-gEQdGVXbk)
+
++++ Toggle Details
+    This video contains good Python tips
+    for beginners and advanced users
+:::
+::: column
+### Another Video with Toggle
+@[Data Science](https://youtu.be/ua-CiDNNj30)
+
++++ Video Description
+    Learn about data science
+    and pandas library in Python
+:::
+:::
 """
     
-    await append_markdown(page_id=page_id, markdown_text=youtub_video_markdown)
+    await append_markdown(page_id=page_id, markdown_text=markdown_yt)
     
     
 if __name__ == "__main__":
