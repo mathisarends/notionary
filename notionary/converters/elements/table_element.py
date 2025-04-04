@@ -1,6 +1,7 @@
 # File: elements/tables.py
 
 from typing import Dict, Any, Optional, List, Tuple
+from typing_extensions import override
 import re
 from notionary.converters.notion_block_element import NotionBlockElement
 from notionary.converters.elements.text_formatting import extract_text_with_formatting, parse_inline_formatting
@@ -22,6 +23,7 @@ class TableElement(NotionBlockElement):
     ROW_PATTERN = re.compile(r'^\s*\|(.+)\|\s*$')
     SEPARATOR_PATTERN = re.compile(r'^\s*\|([\s\-:|]+)\|\s*$')
     
+    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text contains a markdown table."""
@@ -38,11 +40,13 @@ class TableElement(NotionBlockElement):
                 
         return False
     
+    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion table."""
         return block.get("type") == "table"
     
+    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown table to Notion table block."""
@@ -75,6 +79,7 @@ class TableElement(NotionBlockElement):
             }
         }
     
+    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion table block to markdown table."""
@@ -127,6 +132,7 @@ class TableElement(NotionBlockElement):
             
         return "\n".join(table_rows)
     
+    @override
     @staticmethod
     def is_multiline() -> bool:
         """Indicates if this element handles content that spans multiple lines."""

@@ -1,5 +1,6 @@
 import re
 from typing import Dict, Any, Optional
+from typing_extensions import override
 from notionary.converters.notion_block_element import NotionBlockElement
 from notionary.converters.elements.text_formatting import parse_inline_formatting, extract_text_with_formatting
 
@@ -18,16 +19,19 @@ class TodoElement(NotionBlockElement):
     TODO_PATTERN = re.compile(r'^\s*[-*+]\s+\[\s?\]\s+(.+)$')
     DONE_PATTERN = re.compile(r'^\s*[-*+]\s+\[x\]\s+(.+)$')
     
+    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text is a markdown todo item."""
         return bool(TodoElement.TODO_PATTERN.match(text) or TodoElement.DONE_PATTERN.match(text))
     
+    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion to_do block."""
         return block.get("type") == "to_do"
     
+    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown todo item to Notion to_do block."""
@@ -43,6 +47,7 @@ class TodoElement(NotionBlockElement):
         
         return None
     
+    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion to_do block to markdown todo item."""
@@ -80,8 +85,8 @@ class TodoElement(NotionBlockElement):
                 "color": "default"
             }
         }
-    
+        
+    @override
     @staticmethod
     def is_multiline() -> bool:
-        """Indicates if this element handles content that spans multiple lines."""
         return False

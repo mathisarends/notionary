@@ -1,8 +1,11 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple
+from typing_extensions import override
+
+from notionary.converters.notion_block_element import NotionBlockElement
 
 
-class QuoteElement:
+class QuoteElement(NotionBlockElement):
     """Class for converting between Markdown blockquotes and Notion quote blocks with background color support."""
     
     # Mapping von Markdown-Farbnamen zu Notion-Farbnamen
@@ -70,6 +73,7 @@ class QuoteElement:
             
         return matches
     
+    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown blockquote to Notion block with background color support."""
@@ -136,6 +140,7 @@ class QuoteElement:
             }
         }
     
+    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion quote block to markdown with background color support."""
@@ -165,17 +170,20 @@ class QuoteElement:
         
         return '\n'.join(formatted_lines)
     
+    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if this element can handle the given markdown text."""
         quote_pattern = re.compile(r'^\s*>\s?(.*)', re.MULTILINE)
         return bool(quote_pattern.search(text))
     
+    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if this element can handle the given Notion block."""
         return block.get("type") == "quote"
     
+    @override
     @staticmethod
     def is_multiline() -> bool:
         """Blockquotes can span multiple lines."""

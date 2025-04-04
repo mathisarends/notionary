@@ -1,5 +1,6 @@
 import unittest
-from notionary.converters.elements.code_blocks import CodeBlockElement
+
+from notionary.converters.elements.code_block_element import CodeBlockElement
 
 class TestCodeBlockElement(unittest.TestCase):
 

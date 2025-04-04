@@ -1,4 +1,5 @@
 from typing import Dict, Any, Optional, List, Tuple
+from typing_extensions import override
 import re
 from notionary.converters.notion_block_element import NotionBlockElement
 
@@ -18,16 +19,19 @@ class CodeBlockElement(NotionBlockElement):
     
     PATTERN = re.compile(r'```(\w*)\n([\s\S]+?)```', re.MULTILINE)
     
+    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text contains a markdown code block."""
         return bool(CodeBlockElement.PATTERN.search(text))
     
+    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion code block."""
         return block.get("type") == "code"
     
+    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown code block to Notion code block."""
@@ -65,6 +69,7 @@ class CodeBlockElement(NotionBlockElement):
             }
         }
     
+    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion code block to markdown code block."""
@@ -132,7 +137,7 @@ class CodeBlockElement(NotionBlockElement):
             
         return matches
     
+    @override
     @staticmethod
     def is_multiline() -> bool:
-        """Indicates if this element handles content that spans multiple lines."""
         return True

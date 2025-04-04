@@ -1,5 +1,6 @@
 import unittest
-from notionary.converters.elements.tables import TableElement
+
+from notionary.converters.elements.table_element import TableElement
 
 class TestTableElement(unittest.TestCase):
 
@@ -69,14 +70,14 @@ class TestTableElement(unittest.TestCase):
         self.assertIsNotNone(block)
         self.assertEqual(block["type"], "table")
         self.assertEqual(block["table"]["table_width"], 3)
-        self.assertEqual(len(block["table"]["children"]), 3)  # header + 2 rows
-
+        self.assertEqual(len(block["table"]["children"]), 3)
+        
     def test_notion_to_markdown(self):
         markdown = TableElement.notion_to_markdown(self.notion_table)
         self.assertIn("| Name", markdown)
         self.assertIn("| Alice", markdown)
         self.assertIn("| Bob", markdown)
-        self.assertIn("|---------", markdown)
+        self.assertIn("| -------- | -------- | -------- |", markdown)
 
     def test_find_matches(self):
         text = (

@@ -1,8 +1,11 @@
 import re
 from typing import Dict, Any, Optional, List
+from typing_extensions import override
+
+from notionary.converters.notion_block_element import NotionBlockElement
 
 
-class BookmarkElement:
+class BookmarkElement(NotionBlockElement):
     """
     Handles conversion between Markdown bookmarks and Notion bookmark blocks.
     
@@ -26,16 +29,19 @@ class BookmarkElement:
         r'\)$'                                       # closing parenthesis
     )
     
+    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text is a markdown bookmark."""
         return text.strip().startswith("[bookmark]") and bool(BookmarkElement.PATTERN.match(text.strip()))
     
+    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion bookmark."""
         return block.get("type") == "bookmark"
     
+    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown bookmark to Notion bookmark block."""
@@ -72,6 +78,7 @@ class BookmarkElement:
             "bookmark": bookmark_data
         }
     
+    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion bookmark block to markdown bookmark."""
@@ -102,6 +109,7 @@ class BookmarkElement:
         # Simple bookmark with URL only
         return f'[bookmark]({url})'
     
+    @override
     @staticmethod
     def is_multiline() -> bool:
         """Bookmarks are single-line elements."""

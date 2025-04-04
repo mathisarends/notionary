@@ -1,5 +1,6 @@
 import unittest
-from notionary.converters.elements.dividers import DividerElement
+
+from notionary.converters.elements.divider_element import DividerElement
 
 class TestDividerElement(unittest.TestCase):
     

@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch
-from notionary.converters.elements.callouts import CalloutElement
+
+from notionary.converters.elements.callout_element import CalloutElement
 
 class TestCalloutElement(unittest.TestCase):
     """Einfacher Test für die CalloutElement-Klasse mit direkten Strings als Eingabe und Ausgabe."""
