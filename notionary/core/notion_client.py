@@ -61,6 +61,7 @@ class NotionClient(LoggingMixin):
         if self.client:
             await self.client.aclose()
     
+    # TODO: vllt. macht es hier eh Sinn die API hier so zu designen, dass hier immer nur die Daten zurückgegeben werden den Status interessiert doch nicht wirklich
     async def get(self, endpoint: str) -> RequestResult:
         return await self._make_request(HttpMethod.GET, endpoint)
     
@@ -73,6 +74,55 @@ class NotionClient(LoggingMixin):
     async def delete(self, endpoint: str) -> RequestResult:
         return await self._make_request(HttpMethod.DELETE, endpoint)
     
+    
+    async def api_get(self, endpoint: str) -> Optional[Dict[str, Any]]:
+        """
+        High-level abstraction for GET requests that returns the data directly.
+        """
+        result = await self.get(endpoint)
+        
+        if not result:
+            self.logger.error("API error (GET %s): %s", endpoint, result.error)
+            return None
+        
+        return result.data
+
+    async def api_patch(self, endpoint: str, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        High-level abstraction for PATCH requests that returns the data directly.
+        """
+        result = await self.patch(endpoint, data)
+        
+        if not result:
+            self.logger.error("API error (PATCH %s): %s", endpoint, result.error)
+            return None
+        
+        return result.data
+
+    async def api_post(self, endpoint: str, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        High-level abstraction for POST requests that returns the data directly.
+        """
+        result = await self.post(endpoint, data)
+        
+        if not result:
+            self.logger.error("API error (POST %s): %s", endpoint, result.error)
+            return None
+        
+        return result.data
+
+    async def api_delete(self, endpoint: str) -> bool:
+        """
+        High-level abstraction for DELETE requests.
+        """
+        result = await self.delete(endpoint)
+        
+        if not result:
+            self.logger.error("API error (DELETE %s): %s", endpoint, result.error)
+            return False
+        
+        return True
+        
     async def _make_request(self, method: Union[HttpMethod, str], endpoint: str,
                         data: Optional[Dict[str, Any]] = None) -> RequestResult:
         url = f"{self.BASE_URL}/{endpoint.lstrip('/')}"
@@ -104,3 +154,4 @@ class NotionClient(LoggingMixin):
             error_msg = f"Request error: {str(e)}"
             self.logger.error("Request error (%s): %s", url, error_msg)
             return RequestResult(success=False, error=error_msg)
+    
