@@ -5,7 +5,7 @@ from notionary.converters.notion_to_markdown_converter import NotionToMarkdownCo
 from notionary.core.notion_client import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
 
-class NotionPageContentManager(LoggingMixin):
+class NotionPageManager(LoggingMixin):
     """Class for managing Notion page content (text and blocks)."""
     
     def __init__(self, page_id: str, token: Optional[str] = None):

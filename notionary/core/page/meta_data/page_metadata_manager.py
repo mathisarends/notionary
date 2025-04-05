@@ -1,127 +1,11 @@
-import asyncio
 from typing import Any, Dict, List, Optional
 from notionary.core.notion_client import NotionClient
+from notionary.core.page.meta_data.metadata_cache import MetadataCache
+from notionary.core.page.meta_data.metadata_property_manager import MetadataPropertManager
 from notionary.core.page.property_formatter import NotionPropertyFormatter
 from notionary.util.logging_mixin import LoggingMixin
 
-class MetadataCache(LoggingMixin):
-    """Verwaltet den Metadaten-Cache für Notion-Seiten."""
-    
-    def __init__(self, client: NotionClient):
-        self._client = client
-        self._page_metadata = {}
-        self._property_cache = {}
-        self._is_building_cache = False
-    
-    def get_cached_metadata(self, page_id: str) -> Optional[Dict[str, Any]]:
-        return self._page_metadata.get(page_id)
-    
-    def set_cached_metadata(self, page_id: str, metadata: Dict[str, Any]) -> None:
-        self._page_metadata[page_id] = metadata
-    
-    def clear_metadata(self, page_id: str) -> None:
-        if page_id in self._page_metadata:
-            del self._page_metadata[page_id]
-    
-    def get_property_cache(self, page_id: str) -> Dict[str, Any]:
-        if page_id not in self._property_cache:
-            self._property_cache[page_id] = {}
-        return self._property_cache[page_id]
-    
-    def set_property_data(self, page_id: str, prop_name: str, data: Dict[str, Any]) -> None:
-        if page_id not in self._property_cache:
-            self._property_cache[page_id] = {}
-        self._property_cache[page_id][prop_name] = data
-    
-    def is_building_cache(self) -> bool:
-        return self._is_building_cache
-    
-    def set_building_cache(self, value: bool) -> None:
-        self._is_building_cache = value
-
-
-class PropertyManager(LoggingMixin):
-    """Verwaltet Eigenschaften von Notion-Seiten."""
-    
-    def __init__(self, client: NotionClient, cache: MetadataCache, formatter: NotionPropertyFormatter):
-        self._client = client
-        self._cache = cache
-        self._formatter = formatter
-    
-    async def find_property_by_type(self, page_id: str, prop_type: str) -> List[str]:
-        """Findet alle Eigenschaften eines bestimmten Typs."""
-        properties = self._cache.get_property_cache(page_id)
-        if not properties:
-            self.logger.warning("Keine Eigenschaften im Cache für Seite %s", page_id)
-            return []
-        
-        return [name for name, info in properties.items() 
-                if info.get("type") == prop_type]
-    
-    async def get_status_options(self, page_id: str, status_property_name: str) -> List[Dict[str, Any]]:
-        """Gibt die verfügbaren Optionen für eine Status-Eigenschaft zurück."""
-        properties = self._cache.get_property_cache(page_id)
-        
-        if not properties:
-            self.logger.warning("Keine Eigenschaften im Cache für Seite %s", page_id)
-            return []
-        
-        if status_property_name not in properties:
-            self.logger.error("Eigenschaft '%s' nicht gefunden", status_property_name)
-            return []
-        
-        prop_info = properties[status_property_name]
-        if prop_info["type"] != "status":
-            self.logger.error("Eigenschaft '%s' ist keine Status-Eigenschaft", status_property_name)
-            return []
-        
-        if "options" in prop_info:
-            return prop_info["options"]
-            
-        return []
-    
-    async def list_valid_status_options(self, page_id: str, status_property_name: str) -> List[str]:
-        """Gibt eine Liste aller gültigen Status-Optionen-Namen zurück."""
-        options = await self.get_status_options(page_id, status_property_name)
-        return [option["name"] for option in options]
-    
-    async def update_property(self, page_id: str, name: str, value: Any) -> Optional[Dict[str, Any]]:
-        """Aktualisiert eine einzelne Eigenschaft mit Typ-Validierung."""
-        properties = self._cache.get_property_cache(page_id)
-        
-        if name not in properties:
-            self.logger.error("Eigenschaft '%s' nicht gefunden", name)
-            return None
-        
-        prop_info = properties[name]
-        prop_type = prop_info["type"]
-        
-        if prop_type == "status":
-            status_options = await self.get_status_options(page_id, name)
-            status_names = [option["name"] for option in status_options]
-            
-            if status_names and str(value) not in status_names:
-                self.logger.error("Ungültiger Status: '%s'. Verfügbare Optionen: %s", 
-                                 value, ', '.join(status_names))
-                return None
-        
-        formatted_prop = self._formatter.format_value(prop_type, value)
-        if not formatted_prop:
-            return None
-        
-        properties_data = {
-            name: formatted_prop
-        }
-        
-        result = await self._client.api_patch(f"pages/{page_id}", {"properties": properties_data})
-        
-        if result:
-            self._cache.clear_metadata(page_id)
-            
-        return result
-
-
-class PageContentManager(LoggingMixin):
+class MetaDataPropertySetter(LoggingMixin):
     """Verwaltet den Inhalt von Notion-Seiten (Titel, Icon, Cover)."""
     
     def __init__(self, client: NotionClient, cache: MetadataCache):
@@ -191,8 +75,8 @@ class NotionMetadataManager(LoggingMixin):
         self._cache = MetadataCache(self._client)
         self._formatter = NotionPropertyFormatter()
         
-        self.properties = PropertyManager(self._client, self._cache, self._formatter)
-        self.content = PageContentManager(self._client, self._cache)
+        self.properties = MetadataPropertManager(self._client, self._cache, self._formatter)
+        self.content = MetaDataPropertySetter(self._client, self._cache)
         
     @property
     def cache(self) -> MetadataCache:
@@ -304,66 +188,3 @@ class NotionMetadataManager(LoggingMixin):
         await self._client.close()
 
 
-# Demo-Funktion
-async def run_demo():
-    page_id = "1c8389d5-7bd3-814a-974e-f9e706569b16"
-    
-    manager = NotionMetadataManager(page_id=page_id)
-    
-    try:
-        metadata = await manager.get_page_metadata()
-        if not metadata:
-            print("Konnte keine Metadaten abrufen.")
-            return
-            
-        print("Verfügbare Eigenschaften:")
-        for name, info in manager.cache.get_property_cache(page_id).items():
-            prop_type = info.get("type")
-            print(f"- {name} (Typ: {prop_type})")
-        
-        # Icon und Cover setzen über den PageContentManager
-        print("\nSetze Icon und Cover...")
-        await manager.set_page_icon(emoji="🎧")
-        await manager.set_page_cover("https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4")
-        await manager.set_title("Soundcore Retoure")
-        
-        # Status-Optionen auflisten und gültigen Status setzen über den PropertyManager
-        status_props = await manager.find_property_by_type("status")
-        if status_props:
-            status_name = status_props[0]
-            valid_options = await manager.list_valid_status_options(status_name)
-            
-            print(f"\nVerfügbare Status-Optionen für '{status_name}':")
-            for option in valid_options:
-                print(f"- {option}")
-            
-            if valid_options:
-                option_index = min(3, len(valid_options) - 1)
-                status_to_set = valid_options[option_index]
-                print(f"\nAktualisiere Status auf: {status_to_set}")
-                await manager.update_property_by_name(status_name, status_to_set)
-        
-        # URL aktualisieren
-        url_props = await manager.find_property_by_type("url")
-        if url_props:
-            url_name = url_props[0]
-            print(f"\nAktualisiere URL-Eigenschaft: {url_name}")
-            await manager.update_property_by_name(url_name, "https://www.soundcore.com/updates")
-        
-        # Tags (Multi-Select) aktualisieren
-        multi_select_props = await manager.find_property_by_type("multi_select")
-        if multi_select_props:
-            tags_name = multi_select_props[0]
-            print(f"\nAktualisiere Tags-Eigenschaft: {tags_name}")
-            await manager.update_property_by_name(tags_name, ["Kopfhörer", "Bestellung"])
-        
-        print("\nAktualisierung abgeschlossen!")
-    
-    finally:
-        # Sicherstellen, dass Ressourcen freigegeben werden
-        await manager.close()
-
-
-# Führe die Demo aus
-if __name__ == "__main__":
-    asyncio.run(run_demo())
