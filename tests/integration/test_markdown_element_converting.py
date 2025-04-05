@@ -1,7 +1,8 @@
 import asyncio
 from typing import Optional
 
-from notionary.core.notion_page_manager import NotionPageContentManager
+from notionary.core.page.notion_page_manager import NotionPageContentManager
+
 
 
 async def run_integration_test(page_id: Optional[str] = "integration-test-page-id"):

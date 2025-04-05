@@ -1,9 +1,12 @@
 from typing import Any, Dict, List, Optional
+import json
 from notionary.converters.markdown_to_notion_converter import MarkdownToNotionConverter
 from notionary.converters.notion_to_markdown_converter import NotionToMarkdownConverter
 from notionary.core.notion_client import NotionClient
+from notionary.core.page.page_metadata_manager import PageMetadata
 from notionary.util.logging_mixin import LoggingMixin
 
+# TODO: Metadaten hier abfragen:
 
 class NotionPageContentManager(LoggingMixin):
     """Class for managing Notion page content (text and blocks)."""
@@ -17,6 +20,39 @@ class NotionPageContentManager(LoggingMixin):
         """
         self._client = NotionClient(token=token)
         self.page_id = page_id
+        
+    async def get_metadata(self) -> Optional[PageMetadata]:
+        """Retrieve the metadata for this page.
+        """
+        result = await self._client.get(f"pages/{self.page_id}")
+        
+        if not result:
+            self.logger.error("Error retrieving page metadata: %s", result.error)
+            return None
+        
+        page_data = result.data
+        
+        title = ""
+        if "properties" in page_data and "title" in page_data["properties"]:
+            title_property = page_data["properties"]["title"]
+            if "title" in title_property and title_property["title"]:
+                title = "".join([text_item.get("plain_text", "") for text_item in title_property["title"]])
+        
+        metadata: PageMetadata = {
+            "id": page_data.get("id", ""),
+            "title": title,
+            "icon": page_data.get("icon"),
+            "cover": page_data.get("cover"),
+            "parent": page_data.get("parent", {}),
+            "url": page_data.get("url", ""),
+            "created_time": page_data.get("created_time", ""),
+            "last_edited_time": page_data.get("last_edited_time", ""),
+            "created_by": page_data.get("created_by", {}),
+            "last_edited_by": page_data.get("last_edited_by", {}),
+            "properties": page_data.get("properties", {})
+        }
+        
+        return metadata
         
     async def append_markdown(self, markdown_text: str) -> str:
         """Append markdown text to the page.
@@ -165,7 +201,11 @@ class NotionPageContentManager(LoggingMixin):
 
 async def demo():
     """Example usage of the NotionContentManager."""
-    content_manager = NotionPageContentManager(page_id="1a3389d5-7bd3-80d7-a507-e67d1b25822c")
+    
+    soundcore = "1c8389d5-7bd3-814a-974e-f9e706569b16"
+    jarvis_clipboard = "1a3389d5-7bd3-80d7-a507-e67d1b25822c"
+
+    content_manager = NotionPageContentManager(page_id=soundcore)
     
     markdown = """# Beispiel mit Bookmarks for Testing
 [bookmark](https://claude.ai/chat/a241fdb4-6526-4e0e-9a9f-c4573e7e834d "Beispieltitel")
@@ -174,9 +214,7 @@ async def demo():
 """
     try:
         # Retrieve the text with table data
-        blocks = await content_manager.get_page_blocks_with_children()
-        import json
-
+        blocks = await content_manager.get_metadata()
         print(json.dumps(blocks, indent=2, ensure_ascii=False))
     finally:
         # Clean up
