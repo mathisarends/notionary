@@ -1,6 +1,7 @@
 from typing import Dict, Any, List
 
-from notionary.converters.notion_element_registry import ElementRegistry
+from notionary.converters.registry.notion_element_registry import ElementRegistry
+
 
 class NotionToMarkdownConverter:
     """Converts Notion blocks to Markdown text."""
