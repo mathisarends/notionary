@@ -4,7 +4,7 @@ from typing import Dict, Any, Optional, List, Tuple
 from typing_extensions import override
 import re
 from notionary.converters.notion_block_element import NotionBlockElement
-from notionary.converters.elements.text_formatting import extract_text_with_formatting, parse_inline_formatting
+from notionary.converters.elements.text_inline_formatter import TextInlineFormatter
 
 class TableElement(NotionBlockElement):
     """
@@ -111,7 +111,7 @@ class TableElement(NotionBlockElement):
             
             row_cells = []
             for cell in cells:
-                cell_text = extract_text_with_formatting(cell)
+                cell_text = TextInlineFormatter.extract_text_with_formatting(cell)
                 row_cells.append(cell_text or "")
             
             row = "| " + " | ".join(row_cells) + " |"
@@ -197,7 +197,7 @@ class TableElement(NotionBlockElement):
             cells_data = []
             
             for cell_content in row:
-                rich_text = parse_inline_formatting(cell_content)
+                rich_text = TextInlineFormatter.parse_inline_formatting(cell_content)
                 
                 if not rich_text:
                     rich_text = [{

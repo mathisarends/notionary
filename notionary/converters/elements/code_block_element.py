@@ -146,19 +146,15 @@ class CodeBlockElement(NotionBlockElement):
     def get_llm_prompt_content(cls) -> dict:
         """
         Returns a dictionary with all information needed for LLM prompts about this element.
-        Includes description, usage guidance, syntax options, and examples.
         """
         return {
-            "description": "Creates a code block that displays formatted code with syntax highlighting.",
-            "when_to_use": "Use code blocks when you need to include programming code, commands, configuration files, or any content that benefits from monospace formatting and syntax highlighting.",
+            "description": "Use fenced code blocks to format content as code. Supports language annotations like 'python', 'json', or 'mermaid'. Use when you want to display code, configurations, command-line examples, or diagram syntax. Also useful when breaking down or visualizing a system or architecture for complex problems (e.g. using mermaid).",
             "syntax": [
-                "```\ncode content\n``` - Code block without language specification (plain text)",
-                "```language\ncode content\n``` - Code block with language specification for syntax highlighting"
+                "```\ncontent\n``` - Plain code block",
+                "```language\ncontent\n``` - Code block with syntax highlighting or diagram rendering"
             ],
             "examples": [
-                "```python\ndef hello_world():\n    print('Hello, world!')\n\nhello_world()\n```",
-                "```javascript\nconst greeting = 'Hello, world!';\nconsole.log(greeting);\n```",
-                "```css\n.container {\n    display: flex;\n    justify-content: center;\n    align-items: center;\n}\n```",
-                "```\nThis is plain text in a code block\nwithout any syntax highlighting\n```"
+                "```python\nprint('Hello, world!')\n```",
+                "```mermaid\nflowchart TD\n  A --> B\n```"
             ]
         }

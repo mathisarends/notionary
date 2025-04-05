@@ -1,5 +1,5 @@
 import unittest
-from notionary.converters.elements.text_formatting import extract_text_with_formatting
+from notionary.converters.elements.text_inline_formatter import TextInlineFormatter
 from notionary.converters.elements.todo_lists import TodoElement
 
 class TestTodoElement(unittest.TestCase):
@@ -39,7 +39,7 @@ class TestTodoElement(unittest.TestCase):
         self.assertEqual(notion_block["to_do"]["color"], "default")
         
         rich_text = notion_block["to_do"]["rich_text"]
-        extracted_text = extract_text_with_formatting(rich_text)
+        extracted_text = TextInlineFormatter.extract_text_with_formatting(rich_text)
         self.assertEqual(extracted_text, "Buy groceries")
         
         # Checked todo
@@ -50,7 +50,7 @@ class TestTodoElement(unittest.TestCase):
         self.assertEqual(notion_block["to_do"]["checked"], True)
         
         rich_text = notion_block["to_do"]["rich_text"]
-        extracted_text = extract_text_with_formatting(rich_text)
+        extracted_text = TextInlineFormatter.extract_text_with_formatting(rich_text)
         self.assertEqual(extracted_text, "Complete assignment")
         
         # Invalid todo format

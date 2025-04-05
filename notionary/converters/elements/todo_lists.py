@@ -2,7 +2,7 @@ import re
 from typing import Dict, Any, Optional
 from typing_extensions import override
 from notionary.converters.notion_block_element import NotionBlockElement
-from notionary.converters.elements.text_formatting import parse_inline_formatting, extract_text_with_formatting
+from notionary.converters.elements.text_inline_formatter import TextInlineFormatter
 
 class TodoElement(NotionBlockElement):
     """
@@ -59,7 +59,7 @@ class TodoElement(NotionBlockElement):
         
         # Extract text content
         rich_text = todo_data.get("rich_text", [])
-        content = extract_text_with_formatting(rich_text)
+        content = TextInlineFormatter.extract_text_with_formatting(rich_text)
         
         # Format as markdown todo item
         checkbox = "[x]" if checked else "[ ]"
@@ -80,7 +80,7 @@ class TodoElement(NotionBlockElement):
         return {
             "type": "to_do",
             "to_do": {
-                "rich_text": parse_inline_formatting(content),
+                "rich_text": TextInlineFormatter.parse_inline_formatting(content),
                 "checked": checked,
                 "color": "default"
             }

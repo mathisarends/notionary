@@ -2,7 +2,7 @@ from typing import Dict, Any, Optional
 from typing_extensions import override
 
 from notionary.converters.notion_block_element import NotionBlockElement
-from notionary.converters.elements.text_formatting import extract_text_with_formatting, parse_inline_formatting
+from notionary.converters.elements.text_inline_formatter import TextInlineFormatter
 
 class ParagraphElement(NotionBlockElement):
     """Handles conversion between Markdown paragraphs and Notion paragraph blocks."""
@@ -33,7 +33,7 @@ class ParagraphElement(NotionBlockElement):
         return {
             "type": "paragraph",
             "paragraph": {
-                "rich_text": parse_inline_formatting(text)
+                "rich_text": TextInlineFormatter.parse_inline_formatting(text)
             }
         }
     
@@ -47,7 +47,7 @@ class ParagraphElement(NotionBlockElement):
         paragraph_data = block.get("paragraph", {})
         rich_text = paragraph_data.get("rich_text", [])
         
-        text = extract_text_with_formatting(rich_text)
+        text = TextInlineFormatter.extract_text_with_formatting(rich_text)
         return text if text else None
     
     @override

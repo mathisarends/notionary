@@ -1,8 +1,8 @@
 import re
 from typing import Dict, Any, Optional
 from typing_extensions import override
-from notionary.converters.elements.text_formatting import parse_inline_formatting, extract_text_with_formatting
 from notionary.converters.notion_block_element import NotionBlockElement
+from notionary.converters.elements.text_inline_formatter import TextInlineFormatter
 
 
 class BulletedListElement(NotionBlockElement):
@@ -20,7 +20,7 @@ class BulletedListElement(NotionBlockElement):
         content = list_match.group(2)
         
         # Use parse_inline_formatting to handle rich text
-        rich_text = parse_inline_formatting(content)
+        rich_text = TextInlineFormatter.parse_inline_formatting(content)
         
         return {
             "type": "bulleted_list_item",
@@ -38,7 +38,7 @@ class BulletedListElement(NotionBlockElement):
             return None
         
         rich_text = block.get("bulleted_list_item", {}).get("rich_text", [])
-        content = extract_text_with_formatting(rich_text)
+        content = TextInlineFormatter.extract_text_with_formatting(rich_text)
         
         return f"- {content}"
     
@@ -82,7 +82,7 @@ class NumberedListElement:
         content = numbered_match.group(2)
         
         # Use parse_inline_formatting to handle rich text
-        rich_text = parse_inline_formatting(content)
+        rich_text = TextInlineFormatter.parse_inline_formatting(content)
         
         return {
             "type": "numbered_list_item",
@@ -100,7 +100,7 @@ class NumberedListElement:
             return None
         
         rich_text = block.get("numbered_list_item", {}).get("rich_text", [])
-        content = extract_text_with_formatting(rich_text)
+        content = TextInlineFormatter.extract_text_with_formatting(rich_text)
         
         return f"1. {content}"
     

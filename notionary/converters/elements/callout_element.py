@@ -2,8 +2,8 @@ from typing import Dict, Any, Optional
 from typing_extensions import override
 import re
 
+from notionary.converters.elements.text_inline_formatter import TextInlineFormatter
 from notionary.converters.notion_block_element import NotionBlockElement
-from notionary.converters.elements.text_formatting import extract_text_with_formatting, parse_inline_formatting
 
 class CalloutElement(NotionBlockElement):
     """
@@ -76,7 +76,7 @@ class CalloutElement(NotionBlockElement):
         return {
             "type": "callout",
             "callout": {
-                "rich_text": parse_inline_formatting(content),
+                "rich_text": TextInlineFormatter.parse_inline_formatting(content),
                 "icon": {
                     "type": "emoji",
                     "emoji": emoji
@@ -97,7 +97,7 @@ class CalloutElement(NotionBlockElement):
         icon = callout_data.get("icon", {})
         color = callout_data.get("color", CalloutElement.DEFAULT_COLOR)
         
-        text = extract_text_with_formatting(rich_text)
+        text = TextInlineFormatter.extract_text_with_formatting(rich_text)
         if not text:
             return None
         

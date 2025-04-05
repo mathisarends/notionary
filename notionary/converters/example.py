@@ -172,8 +172,28 @@ Und hier noch ein direkt eingebettetes Video:
 :::
 :::
 """
+
+    mermaid_markdown = """## Beispiel: Mermaid-Diagramm eines KI-Agenten
+```mermaid
+flowchart TD
+    A[User-Eingabe] --> B[KI-Agent analysiert Anfrage]
+    B --> C{Tool benötigt?}
+
+    C -- Websuche --> D[Tool: Webbrowser]
+    C -- Berechnung --> E[Tool: Rechenengine]
+    C -- Bildgenerierung --> F[Tool: Image Generator]
+    C -- Nein --> G[Antwort direkt generieren]
+
+    D --> H[Agent verwendet Webbrowser]
+    E --> H[Agent verwendet Rechenengine]
+    F --> H[Agent verwendet Bildgenerator]
+    G --> H[Agent erzeugt Antwort]
+
+    H --> I[Antwort an User]
+```
+    """
     
-    await append_markdown(page_id=page_id, markdown_text=markdown_yt)
+    await append_markdown(page_id=page_id, markdown_text=mermaid_markdown)
     
     
 if __name__ == "__main__":
