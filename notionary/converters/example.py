@@ -172,28 +172,66 @@ Und hier noch ein direkt eingebettetes Video:
 :::
 :::
 """
-
-    mermaid_markdown = """## Beispiel: Mermaid-Diagramm eines KI-Agenten
-```mermaid
-flowchart TD
-    A[User-Eingabe] --> B[KI-Agent analysiert Anfrage]
-    B --> C{Tool benötigt?}
-
-    C -- Websuche --> D[Tool: Webbrowser]
-    C -- Berechnung --> E[Tool: Rechenengine]
-    C -- Bildgenerierung --> F[Tool: Image Generator]
-    C -- Nein --> G[Antwort direkt generieren]
-
-    D --> H[Agent verwendet Webbrowser]
-    E --> H[Agent verwendet Rechenengine]
-    F --> H[Agent verwendet Bildgenerator]
-    G --> H[Agent erzeugt Antwort]
-
-    H --> I[Antwort an User]
-```
-    """
     
-    await append_markdown(page_id=page_id, markdown_text=mermaid_markdown)
+    test = """
+# Supervised Learning
+
+Supervised learning is a machine learning paradigm where models learn from labeled training data.
+
+## Core Concept
+!> [🎓] The algorithm learns a mapping function from input variables (X) to output variables (Y).
+
+## How It Works
+1. The model is trained on a dataset where the correct answers (labels) are provided
+2. It learns to predict the output from input data
+3. The model is evaluated on test data to measure performance
+
+::: columns
+::: column
+### Common Algorithms
+- [ ] Decision Trees
+- [x] Random Forests
+- [x] Support Vector Machines
+- [ ] Neural Networks
+- [x] Linear/Logistic Regression
+:::
+::: column
+### Key Metrics
+- Accuracy
+- Precision
+- Recall
+- F1 Score
+- AUC-ROC
+:::
+:::
+
+## Types of Supervised Learning
++++ Classification
+  Models predict discrete categories or classes.
+  ```python
+  # Example: Email spam detection
+  from sklearn.ensemble import RandomForestClassifier
+  model = RandomForestClassifier()
+  model.fit(X_train, y_train)
+  predictions = model.predict(X_test)
++++ Regression
+Models predict continuous numerical values.
+pythonKopieren# Example: House price prediction
+from sklearn.linear_model import LinearRegression
+model = LinearRegression()
+model.fit(X_train, y_train)
+predictions = model.predict(X_test)
+
+[background] Supervised learning requires high-quality labeled data, which can be ==expensive== and ==time-consuming== to acquire.
+
+
+==yellow:Note:== Proper feature selection and preprocessing are critical for model performance.
+[bookmark](https://scikit-learn.org/stable/supervised_learning.html "Scikit-learn Documentation" "Official documentation for supervised learning algorithms")
+"""
+        
+
+    
+    await append_markdown(page_id=page_id, markdown_text=test)
     
     
 if __name__ == "__main__":

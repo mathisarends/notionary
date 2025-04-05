@@ -3,7 +3,7 @@ from typing_extensions import override
 import re
 
 from notionary.converters.notion_block_element import NotionBlockElement
-from notionary.converters.elements.text_formatting import extract_text_with_formatting, parse_inline_formatting
+from notionary.converters.elements.text_inline_formatter import TextInlineFormatter
 
 class HeadingElement(NotionBlockElement):
     """Handles conversion between Markdown headings and Notion heading blocks."""
@@ -39,7 +39,7 @@ class HeadingElement(NotionBlockElement):
         return {
             "type": f"heading_{level}",
             f"heading_{level}": {
-                "rich_text": parse_inline_formatting(content)
+                "rich_text": TextInlineFormatter.parse_inline_formatting(content)
             }
         }
     
@@ -62,7 +62,7 @@ class HeadingElement(NotionBlockElement):
         heading_data = block.get(block_type, {})
         rich_text = heading_data.get("rich_text", [])
         
-        text = extract_text_with_formatting(rich_text)
+        text = TextInlineFormatter.extract_text_with_formatting(rich_text)
         prefix = "#" * level
         return f"{prefix} {text or ''}"
     

@@ -240,7 +240,7 @@ class ColumnElement(NotionBlockElement):
         """
         return {
             "description": "Creates a multi-column layout that displays content side by side.",
-            "when_to_use": "Use columns when you want to present information in parallel, compare items side by side, or create more space-efficient layouts that would otherwise require excessive scrolling. Columns are ideal for comparisons, pros/cons lists, and displaying related but distinct content together.",
+            "when_to_use": "Use columns sparingly, only for direct comparisons or when parallel presentation significantly improves readability. Best for pros/cons lists, feature comparisons, or pairing images with descriptions. Avoid overusing as it can complicate document structure.",
             "syntax": [
                 "::: columns",
                 "::: column",
@@ -252,9 +252,9 @@ class ColumnElement(NotionBlockElement):
                 ":::"
             ],
             "notes": [
-                "You can include any Notion block type within a column",
-                "You can add more than two columns by adding additional '::: column' sections",
-                "Make sure to close each column with ':::' and the entire columns section with another ':::'"
+                "Any Notion block can be placed within columns",
+                "Add more columns with additional '::: column' sections",
+                "Each column must close with ':::' and the entire columns section with another ':::'"
             ],
             "examples": [
                 "::: columns\n::: column\n## Features\n- Fast response time\n- Intuitive interface\n- Regular updates\n:::\n::: column\n## Benefits\n- Increased productivity\n- Better collaboration\n- Simplified workflows\n:::\n:::",

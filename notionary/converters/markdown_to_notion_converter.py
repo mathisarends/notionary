@@ -2,8 +2,8 @@ from typing import Dict, Any, List, Optional, Tuple
 from notionary.converters.notion_element_registry import ElementRegistry
 
 class MarkdownToNotionConverter:
-    MULTILINE_CONTENT_MARKER = '<!-- REMOVED_MULTILINE_CONTENT -->'
     SPACER_MARKER = '<!-- spacer -->'
+    MULTILINE_CONTENT_MARKER = '<!-- REMOVED_MULTILINE_CONTENT -->'
     TOGGLE_MARKER = '<!-- toggle_content -->'
     
     def convert(self, markdown_text: str) -> List[Dict[str, Any]]:
@@ -27,9 +27,8 @@ class MarkdownToNotionConverter:
         
         line_blocks = self._process_text_lines(processed_text)
         
-        # Combine and sort all blocks by their original position
         all_blocks = toggle_blocks + multiline_blocks + line_blocks
-        all_blocks.sort(key=lambda x: x[0])  # Sort by start position
+        all_blocks.sort(key=lambda x: x[0])
         
         blocks = [block for _, _, block in all_blocks]
         
