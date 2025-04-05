@@ -1,7 +1,7 @@
 import re
 from typing import Dict, Any, Optional
 from typing_extensions import override
-from notionary.converters.notion_block_element import NotionBlockElement
+from notionary.converters.elements.notion_block_element import NotionBlockElement
 from notionary.converters.elements.text_inline_formatter import TextInlineFormatter
 
 

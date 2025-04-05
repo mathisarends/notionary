@@ -244,7 +244,7 @@ class TextInlineFormatter:
             A dictionary with descriptions, syntax examples, and usage guidelines
         """
         return {
-            "description": "Standard Markdown formatting is supported in all text blocks. Additionally, a custom highlight syntax is available for emphasizing important information.",
+            "description": "Standard Markdown formatting is supported in all text blocks. Additionally, a custom highlight syntax is available for emphasizing important information. To create vertical spacing between elements, use the special spacer tag.",
             
             "syntax": [
                 "**text** - Bold text",
@@ -254,7 +254,8 @@ class TextInlineFormatter:
                 "`text` - Inline code",
                 "[text](url) - Link",
                 "==text== - Default highlight (yellow background)",
-                "==color:text== - Colored highlight (e.g., ==red:warning==)"
+                "==color:text== - Colored highlight (e.g., ==red:warning==)",
+                "<!-- spacer --> - Creates vertical spacing between elements"
             ],
             
             "examples": [
@@ -264,8 +265,11 @@ class TextInlineFormatter:
                 "Check our [documentation](https://docs.example.com) for more details.",
                 "==This is an important note== that you should remember.",
                 "==red:Warning:== This action cannot be undone.",
-                "==blue:Note:== Common colors include red, blue, green, yellow, purple."
+                "==blue:Note:== Common colors include red, blue, green, yellow, purple.",
+                "First paragraph content.\n\n<!-- spacer -->\n\nSecond paragraph with additional spacing above."
             ],
             
-            "highlight_usage": "The highlight syntax (==text== and ==color:text==) should be used to emphasize important information, warnings, notes, or other content that needs to stand out. This is particularly useful for making content more scannable at a glance."
+            "highlight_usage": "The highlight syntax (==text== and ==color:text==) should be used to emphasize important information, warnings, notes, or other content that needs to stand out. This is particularly useful for making content more scannable at a glance.",
+            
+            "spacer_usage": "Use the <!-- spacer --> tag on its own line to create additional vertical spacing between elements. This is useful for improving readability by visually separating sections of content. Multiple spacer tags can be used for greater spacing."
         }

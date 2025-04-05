@@ -119,7 +119,5 @@ class ToggleElement(NotionBlockElement):
             ],
             "examples": [
                 "+++ How to use this feature\n  1. Start by clicking the button\n  2. Configure the settings\n  3. Save your changes",
-                
-                "+++ Implementation Details\n  ```python\n  def example():\n      return \"This is inside a toggle\"\n  ```"
             ]
         }

@@ -3,7 +3,7 @@ from notionary.converters.elements.bookmark_element import BookmarkElement
 from .markdown_to_notion_converter import MarkdownToNotionConverter
 from .notion_to_markdown_converter import NotionToMarkdownConverter
 
-from .notion_element_registry import ElementRegistry
+from .registry.notion_element_registry import ElementRegistry
 
 # Import elements
 from .elements.paragraph_element import ParagraphElement
@@ -38,7 +38,7 @@ ElementRegistry.register(BookmarkElement)
 ElementRegistry.register(ImageElement)
 ElementRegistry.register(VideoElement)
 # Register last! (Fallback)
-ElementRegistry.register(ParagraphElement)  
+ElementRegistry.register(ParagraphElement)
 
 # Define what to export
 __all__ = [

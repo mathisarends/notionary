@@ -80,12 +80,4 @@ class HeadingElement(NotionBlockElement):
         return {
             "description": "Use Markdown headings (#, ##, ###, etc.) to structure content hierarchically.",
             "when_to_use": "Use to group content into sections and define a visual hierarchy.",
-            "syntax": [
-                "# Heading 1",
-                "## Heading 2",
-                "### Heading 3"
-            ],
-            "examples": [
-                "# Project Overview\n## Goals\n### Milestones"
-            ]
         }

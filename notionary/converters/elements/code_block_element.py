@@ -1,7 +1,7 @@
 from typing import Dict, Any, Optional, List, Tuple
 from typing_extensions import override
 import re
-from notionary.converters.notion_block_element import NotionBlockElement
+from notionary.converters.elements.notion_block_element import NotionBlockElement
 
 class CodeBlockElement(NotionBlockElement):
     """
@@ -149,10 +149,6 @@ class CodeBlockElement(NotionBlockElement):
         """
         return {
             "description": "Use fenced code blocks to format content as code. Supports language annotations like 'python', 'json', or 'mermaid'. Use when you want to display code, configurations, command-line examples, or diagram syntax. Also useful when breaking down or visualizing a system or architecture for complex problems (e.g. using mermaid).",
-            "syntax": [
-                "```\ncontent\n``` - Plain code block",
-                "```language\ncontent\n``` - Code block with syntax highlighting or diagram rendering"
-            ],
             "examples": [
                 "```python\nprint('Hello, world!')\n```",
                 "```mermaid\nflowchart TD\n  A --> B\n```"

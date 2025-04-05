@@ -1,5 +1,5 @@
 from typing import Dict, Any, List, Optional, Tuple
-from notionary.converters.notion_element_registry import ElementRegistry
+from notionary.converters.registry.notion_element_registry import ElementRegistry
 
 class MarkdownToNotionConverter:
     SPACER_MARKER = '<!-- spacer -->'

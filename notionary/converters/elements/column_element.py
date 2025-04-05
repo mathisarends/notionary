@@ -2,7 +2,7 @@ import re
 from typing import Dict, Any, Optional, List, Tuple
 from typing_extensions import override
 
-from notionary.converters.notion_block_element import NotionBlockElement
+from notionary.converters.elements.notion_block_element import NotionBlockElement
 from notionary.converters import MarkdownToNotionConverter
 
 class ColumnElement(NotionBlockElement):
