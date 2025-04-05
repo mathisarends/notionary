@@ -170,11 +170,9 @@ class ColumnElement(NotionBlockElement):
         while i < len(lines):
             current_line = lines[i].strip()
             
-            # Check for nested column block (would be an error, but avoid infinite loop)
             if ColumnElement.COLUMNS_START.match(current_line):
                 break
                 
-            # Process column start
             if ColumnElement.COLUMN_START.match(current_line):
                 ColumnElement._finalize_column(column_content, columns_children, in_column)
                 column_content = []
@@ -182,7 +180,6 @@ class ColumnElement(NotionBlockElement):
                 i += 1
                 continue
                 
-            # Process column end
             if ColumnElement.BLOCK_END.match(current_line) and in_column:
                 ColumnElement._finalize_column(column_content, columns_children, in_column)
                 column_content = []
@@ -190,18 +187,15 @@ class ColumnElement(NotionBlockElement):
                 i += 1
                 continue
                 
-            # Process columns block end
             if ColumnElement.BLOCK_END.match(current_line) and not in_column:
                 i += 1
                 break
                 
-            # Regular content line (if in a column)
             if in_column:
                 column_content.append(lines[i])
             
             i += 1
         
-        # Finalize any remaining column
         ColumnElement._finalize_column(column_content, columns_children, in_column)
         
         return i

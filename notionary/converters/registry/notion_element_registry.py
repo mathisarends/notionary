@@ -10,6 +10,23 @@ class ElementRegistry:
     def register(cls, element_class: Type[NotionBlockElement]):
         """Register an element class."""
         cls._elements.append(element_class)
+        
+        
+    @classmethod
+    def deregister(cls, element_class: Type[NotionBlockElement]) -> bool:
+        """
+        Deregister an element class.
+        
+        Args:
+            element_class: The element class to remove from the registry
+            
+        Returns:
+            bool: True if the element was removed, False if it wasn't in the registry
+        """
+        if element_class in cls._elements:
+            cls._elements.remove(element_class)
+            return True
+        return False
     
     @classmethod
     def find_markdown_handler(cls, text: str) -> Optional[Type[NotionBlockElement]]:
