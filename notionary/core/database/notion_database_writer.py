@@ -89,7 +89,7 @@ class DatabaseWritter(LoggingMixin):
             "properties": formatted_props
         }
             
-        result = await self._client.api_post("pages", data)
+        result = await self._client.post("pages", data)
         if not result:
             self.logger.error("Error creating page in database %s", database_id)
             return None
@@ -102,7 +102,7 @@ class DatabaseWritter(LoggingMixin):
         """
         Updates a page with support for relations.
         """
-        page_data = await self._client.api_get(f"pages/{page_id}")
+        page_data = await self._client.get(f"pages/{page_id}")
         if not page_data or "parent" not in page_data or "database_id" not in page_data["parent"]:
             self.logger.error("Could not determine database ID for page %s", page_id)
             return None
@@ -133,7 +133,7 @@ class DatabaseWritter(LoggingMixin):
             "properties": update_props
         }
         
-        result = await self._client.api_patch(f"pages/{page_id}", data)
+        result = await self._client.patch(f"pages/{page_id}", data)
         if not result:
             self.logger.error("Error updating page %s", page_id)
             return None
@@ -149,7 +149,7 @@ class DatabaseWritter(LoggingMixin):
             "archived": True
         }
         
-        result = await self._client.api_patch(f"pages/{page_id}", data)
+        result = await self._client.patch(f"pages/{page_id}", data)
         if not result:
             self.logger.error("Error deleting page %s", page_id)
             return False
@@ -161,7 +161,7 @@ class DatabaseWritter(LoggingMixin):
         """
         Formats properties according to their types in the database.
         """
-        db_schema = await self._client.api_get(f"databases/{database_id}")
+        db_schema = await self._client.get(f"databases/{database_id}")
         if not db_schema or "properties" not in db_schema:
             self.logger.error("Could not load database schema for %s", database_id)
             return None
@@ -219,46 +219,3 @@ class DatabaseWritter(LoggingMixin):
                 }
         
         return formatted_relations
-
-
-async def example_usage():
-    client = NotionClient()
-    
-    try:
-        db_manager = NotionDatabaseManager(client)
-        await db_manager.initialize()
-        
-        db_writer = DatabaseWritter(client, db_manager)
-        
-        database_id = "1a6389d5-7bd3-8097-aa38-e93cb052615a"
-        
-        new_page = await db_writer.create_page(
-            database_id=database_id,
-            properties={
-                "Name": "Python Relations API Example",
-                "Tags": ["Python", "Notion API"],
-                "Status": "Entwurf",
-                "URL": "https://github.com/yourusername/notionary"
-            },
-            relations={
-                "Thema": "Software / AI-Engineering",
-                "Projekte": ["Notionary"]
-            }
-        )
-        
-        if new_page:
-            print(f"New page created: {new_page.get('url')}")
-            
-            await db_writer.update_page(
-                page_id=new_page["id"],
-                properties={"Status": "Completed"},
-                relations={"Thema": ["Software / AI-Engineering", "Second Brain"]}
-            )
-            
-    finally:
-        await client.close()
-
-
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(example_usage())

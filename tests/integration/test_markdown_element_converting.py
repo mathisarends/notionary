@@ -1,7 +1,7 @@
 import asyncio
 from typing import Optional
 
-from notionary.core.page.notion_page_manager import NotionPageContentManager
+from notionary.core.page.notion_page_manager import  NotionPageManager
 
 
 
@@ -15,9 +15,8 @@ async def run_integration_test(page_id: Optional[str] = "integration-test-page-i
     """
     print(f"Starting integration test with page ID: {page_id}")
     
-    content_manager = NotionPageContentManager(page_id=page_id)
+    content_manager = NotionPageManager(page_id=page_id)
     
-    # Indentation is part of Synthax so textwrap.dedent is not used here
     test_markdown = """# Notion Markdown Integration Test
 
 This document demonstrates all supported Notion block types using our custom Markdown syntax.
@@ -215,11 +214,9 @@ function notionExample() {
 """
     
     try:
-        # Append the test markdown to the Notion page
-        result = await content_manager.append_markdown(markdown_text=test_markdown)
+        result = await content_manager.append_markdown(markdown=test_markdown)
         print(f"Integration test completed with result: {result}")
         
-        # Return the full test markdown for reference
         return test_markdown
     except Exception as e:
         print(f"Error during integration test: {e}")
@@ -229,7 +226,7 @@ function notionExample() {
         await content_manager.close()
 
 if __name__ == "__main__":
-    jarvis_clipboard_page_id = "1a3389d5-7bd3-80d7-a507-e67d1b25822c"
-    full_markdown = asyncio.run(run_integration_test(page_id=jarvis_clipboard_page_id))
+    JARVIS_CLIPBOARD_PAGE = "1a3389d5-7bd3-80d7-a507-e67d1b25822c"
+    full_markdown = asyncio.run(run_integration_test(page_id=JARVIS_CLIPBOARD_PAGE))
     
     print("Integration test markdown saved to notion_integration_test.md")

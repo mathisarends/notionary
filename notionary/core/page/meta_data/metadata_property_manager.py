@@ -78,7 +78,7 @@ class MetadataPropertManager(LoggingMixin):
             name: formatted_prop
         }
         
-        result = await self._client.api_patch(f"pages/{page_id}", {"properties": properties_data})
+        result = await self._client.patch(f"pages/{page_id}", {"properties": properties_data})
         
         if result:
             self._cache.clear_metadata(page_id)

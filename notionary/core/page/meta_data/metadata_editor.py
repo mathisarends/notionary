@@ -10,7 +10,7 @@ class MetadataEditor(LoggingMixin):
         self._client = client
 
     async def set_title(self, title: str) -> Optional[Dict[str, Any]]:
-        return await self._client.api_patch(f"pages/{self.page_id}", {
+        return await self._client.patch(f"pages/{self.page_id}", {
             "properties": {
                 "title": {
                     "title": [{"type": "text", "text": {"content": title}}]
@@ -26,10 +26,10 @@ class MetadataEditor(LoggingMixin):
         else:
             return None
 
-        return await self._client.api_patch(f"pages/{self.page_id}", {"icon": icon})
+        return await self._client.patch(f"pages/{self.page_id}", {"icon": icon})
 
     async def set_cover(self, external_url: str) -> Optional[Dict[str, Any]]:
-        return await self._client.api_patch(f"pages/{self.page_id}", {
+        return await self._client.patch(f"pages/{self.page_id}", {
             "cover": {"type": "external", "external": {"url": external_url}}
         })
         

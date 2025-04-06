@@ -4,7 +4,7 @@ from notionary.util.logging_mixin import LoggingMixin
 from notionary.util.singleton_decorator import singleton
 
 class PropertyInfo(TypedDict, total=False):
-    """TypedDict für Eigenschaftsinformationen einer Datenbank."""
+    """TypedDict for database property information."""
     id: str
     name: str
     type: str
@@ -12,7 +12,7 @@ class PropertyInfo(TypedDict, total=False):
     relation_database_id: str
 
 class DatabaseInfo(TypedDict, total=False):
-    """TypedDict für Datenbankinformationen."""
+    """TypedDict for database information."""
     id: str
     title: str
     url: str
@@ -65,14 +65,14 @@ class NotionDatabaseManager(LoggingMixin):
                 "properties": {}
             }
             
-            db_details = await self._client.api_get(f"databases/{db_id}")
+            db_details = await self._client.get(f"databases/{db_id}")
             if db_details and "properties" in db_details:
                 db_info["properties"] = self._extract_property_info(db_details["properties"])
             
             self._database_details[db_id] = db_info
                 
         self._initialized = True
-        self.logger.info("DatabaseManager initialisiert mit %d Datenbanken", len(self._database_details))
+        self.logger.info("DatabaseManager initialized with %d databases", len(self._database_details))
     
     async def get_database_info(self, database_id: str) -> Optional[DatabaseInfo]:
         """
@@ -137,7 +137,7 @@ class NotionDatabaseManager(LoggingMixin):
         """
         related_db_id = await self.get_relation_database_id(database_id, property_name)
         if not related_db_id:
-            self.logger.warning("Keine Relations-Datenbank für %s in %s gefunden", property_name, database_id)
+            self.logger.warning("No relation database found for %s in %s", property_name, database_id)
             return []
             
         result = await self._query_database_pages(related_db_id, limit)
@@ -148,7 +148,7 @@ class NotionDatabaseManager(LoggingMixin):
             if not page_id:
                 continue
                 
-            page_title = "Unbenannt"
+            page_title = "Untitled"
             properties = page.get("properties", {})
             
             for prop_name, prop_data in properties.items():
@@ -192,16 +192,15 @@ class NotionDatabaseManager(LoggingMixin):
             result = await self._client.post(f"databases/{database_id}/query", data=body)
             
             if not result:
-                self.logger.error("Fehler beim Abfragen der Datenbank %s", database_id)
+                self.logger.error("Error querying database %s", database_id)
                 break
                 
-            data = result.data
-            if "results" in data and data["results"]:
-                pages.extend(data["results"])
-                remaining -= len(data["results"])
+            if "results" in result:
+                pages.extend(result["results"])
+                remaining -= len(result["results"])
                 
-                if "has_more" in data and data["has_more"] and "next_cursor" in data:
-                    start_cursor = data["next_cursor"]
+                if "has_more" in result and result["has_more"] and "next_cursor" in result:
+                    start_cursor = result["next_cursor"]
                 else:
                     break
             else:
@@ -276,7 +275,7 @@ class NotionDatabaseManager(LoggingMixin):
         Refreshes metadata for a specific database.
         """
         if database_id in self._database_details:
-            db_details = await self._client.api_get(f"databases/{database_id}")
+            db_details = await self._client.get(f"databases/{database_id}")
             if db_details:
                 title = self._extract_title_from_api(db_details)
                 if title:
@@ -292,7 +291,7 @@ class NotionDatabaseManager(LoggingMixin):
         """
         Extracts the database title from a Search API response.
         """
-        title = "Unbenannt"
+        title = "Untitled"
         
         if "title" in database:
             title_parts = []
@@ -338,7 +337,7 @@ class NotionDatabaseManager(LoggingMixin):
                 if prop_type in prop_data and "options" in prop_data[prop_type]:
                     property_info["options"] = prop_data[prop_type]["options"]
             
-            # Extrahiere Relations-Informationen
+            # Extract relation information
             elif prop_type == "relation" and "relation" in prop_data:
                 if "database_id" in prop_data["relation"]:
                     property_info["relation_database_id"] = prop_data["relation"]["database_id"]
@@ -369,54 +368,17 @@ class NotionDatabaseManager(LoggingMixin):
             result = await self._client.post("search", data=body)
             
             if not result:
-                self.logger.error("Fehler beim Abrufen der Datenbanken")
+                self.logger.error("Error fetching databases")
                 break
             
-            data = result.data
-            if "results" in data:
-                all_databases.extend(data["results"])
+            if "results" in result:
+                all_databases.extend(result["results"])
             
-            if "has_more" in data and data["has_more"] and "next_cursor" in data:
-                start_cursor = data["next_cursor"]
+                if "has_more" in result and result["has_more"] and "next_cursor" in result:
+                    start_cursor = result["next_cursor"]
+                else:
+                    break
             else:
                 break
                 
         return all_databases
-    
-async def main():
-    client = NotionClient()
-    
-    try:
-        db_manager = NotionDatabaseManager(client)
-        await db_manager.initialize()
-        
-        database_id = "1a6389d5-7bd3-8097-aa38-e93cb052615a"
-        
-        # Alle Relations-Properties finden
-        properties = await db_manager.get_database_properties(database_id)
-        relation_props = [name for name, info in properties.items() 
-                          if info.get("type") == "relation"]
-        
-        print("Relations-Properties in der Datenbank:")
-        for prop_name in relation_props:
-            related_db_id = await db_manager.get_relation_database_id(database_id, prop_name)
-            related_db_title = await db_manager.get_database_title(related_db_id) if related_db_id else "Unbekannt"
-            
-            print(f"\n- {prop_name} → {related_db_title} ({related_db_id})")
-            
-            options = await db_manager.get_relation_options(database_id, prop_name, limit=10)
-            
-            if options:
-                print("  Verfügbare Optionen:")
-                for i, option in enumerate(options, 1):
-                    print(f"  {i}. {option['title']} ({option['id']})")
-            else:
-                print("  Keine Optionen gefunden oder leere Datenbank")
-            
-    finally:
-        await client.close()
-        
-        
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
