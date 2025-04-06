@@ -1,5 +1,4 @@
 # Import converters
-from notionary.converters.elements.bookmark_element import BookmarkElement
 from .markdown_to_notion_converter import MarkdownToNotionConverter
 from .notion_to_markdown_converter import NotionToMarkdownConverter
 
@@ -18,6 +17,7 @@ from .elements.qoute_element import QuoteElement
 from .elements.image_element import ImageElement
 from .elements.video_element import VideoElement
 from .elements.toggle_element import ToggleElement
+from .elements.bookmark_element import BookmarkElement
 from .elements.column_element import ColumnElement
 
 # Register all elements

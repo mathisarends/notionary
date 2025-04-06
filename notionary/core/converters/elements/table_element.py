@@ -3,8 +3,8 @@
 from typing import Dict, Any, Optional, List, Tuple
 from typing_extensions import override
 import re
-from notionary.converters.elements.notion_block_element import NotionBlockElement
-from notionary.converters.elements.text_inline_formatter import TextInlineFormatter
+from notionary.core.converters.elements.notion_block_element import NotionBlockElement
+from notionary.core.converters.elements.text_inline_formatter import TextInlineFormatter
 
 class TableElement(NotionBlockElement):
     """

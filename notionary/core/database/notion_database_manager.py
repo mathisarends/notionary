@@ -527,7 +527,7 @@ async def main():
         relation_props = [name for name, info in properties.items() 
                           if info.get("type") == "relation"]
         
-        print(f"Relations-Properties in der Datenbank:")
+        print("Relations-Properties in der Datenbank:")
         for prop_name in relation_props:
             # Für jede Relation die Zieldatenbank und verfügbaren Optionen anzeigen
             related_db_id = await db_manager.get_relation_database_id(database_id, prop_name)
