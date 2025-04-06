@@ -7,23 +7,30 @@ entries in Notion databases with support for relations.
 """
 
 import asyncio
+import os
+from notionary.core.database.notion_database_manager import NotionDatabaseSchema
 from notionary.core.database.notion_database_writer import DatabaseWritter
 from notionary.core.notion_client import NotionClient
-from notionary.core.database.notion_database_manager import NotionDatabaseManager
 
 
 async def main():
     """Creates and updates an entry in a Notion database."""
     
-    client = NotionClient()
+    # Token aus Umgebungsvariablen lesen
+    token = os.getenv("NOTION_SECRET")
+    if not token:
+        print("❌ NOTION_SECRET Umgebungsvariable ist nicht gesetzt")
+        return
+        
+    client = NotionClient(token)
     
     try:
-        db_manager = NotionDatabaseManager(client)
-        await db_manager.initialize()
-        
-        db_writer = DatabaseWritter(client, db_manager)
-        
         database_id = "1a6389d5-7bd3-8097-aa38-e93cb052615a"
+        
+        db_schema = NotionDatabaseSchema(database_id, client)
+        await db_schema.load()
+        
+        db_writer = DatabaseWritter(client, db_schema)
         
         print("✨ Creating new database entry...")
         
@@ -41,24 +48,27 @@ async def main():
         )
         
         if new_page:
-            page_id = new_page["id"]
-            page_url = new_page["url"]
-            print(f"✅ New entry created: {page_url}")
+            print("page was succesfully created")
+        
+        # if new_page:
+        #     page_id = new_page["id"]
+        #     page_url = new_page.get("url", "keine URL verfügbar")
+        #     print(f"✅ New entry created: {page_url}")
             
-            print("🔄 Updating the entry...")
+        #     print("🔄 Updating the entry...")
             
-            update_result = await db_writer.update_page(
-                page_id=page_id,
-                properties={"Status": "Fertig"},
-                relations={"Thema": ["Software / AI-Engineering"]}
-            )
+        #     update_result = await db_writer.update_page(
+        #         page_id=page_id,
+        #         properties={"Status": "Fertig"},
+        #         relations={"Thema": ["Software / AI-Engineering"]}
+        #     )
             
-            if update_result:
-                print("✅ Entry successfully updated")
-            else:
-                print("❌ Error updating entry")
-        else:
-            print("❌ Error creating entry")
+        #     if update_result:
+        #         print("✅ Entry successfully updated")
+        #     else:
+        #         print("❌ Error updating entry")
+        # else:
+        #     print("❌ Error creating entry")
     
     finally:
         await client.close()

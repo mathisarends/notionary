@@ -6,11 +6,8 @@ from notionary.util.logging_mixin import LoggingMixin
 from notionary.util.singleton_decorator import singleton
 
 
-# Typdefinitionen für die Notion API-Antworten
 class NotionTextContent(TypedDict):
     plain_text: str
-    # Weitere Felder könnten hier hinzugefügt werden
-
 
 class NotionTitleProperty(TypedDict):
     type: Literal["title"]
