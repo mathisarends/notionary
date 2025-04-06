@@ -18,25 +18,22 @@ class NotionPageManager(LoggingMixin):
         token: Optional[str] = None,
     ):
         if not page_id and not url:
-            raise ValueError("Entweder page_id oder url muss angegeben werden")
+            raise ValueError("Either page_id or url must be provided")
 
         if not page_id and url:
             page_id = self._extract_notion_uuid(url)
             if not page_id:
                 raise ValueError(
-                    f"Konnte keine gültige UUID aus der URL extrahieren: {url}"
+                    f"Could not extract a valid UUID from the URL: {url}"
                 )
 
         if not self._validate_uuid_format(page_id):
             parsed_id = self._extract_notion_uuid(page_id)
             if not parsed_id:
                 raise ValueError(
-                    f"Ungültiges UUID-Format und konnte nicht geparst werden: {page_id}"
+                    f"Invalid UUID format and could not be parsed: {page_id}"
                 )
             page_id = parsed_id
-
-        print("page_id:", page_id)
-        input("Drücke enter um weiterzumachen")
 
         self.page_id = page_id
         self.url = url
@@ -78,9 +75,6 @@ class NotionPageManager(LoggingMixin):
 
     async def set_page_cover(self, external_url: str) -> Optional[Dict[str, Any]]:
         return await self._metadata.set_cover(external_url)
-
-    async def close(self):
-        await self._client.close()
 
     @staticmethod
     def _extract_notion_uuid(url: str) -> Optional[str]:
