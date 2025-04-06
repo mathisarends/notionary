@@ -1,8 +1,7 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from notionary.converters.markdown_to_notion_converter import MarkdownToNotionConverter
 from notionary.converters.notion_to_markdown_converter import NotionToMarkdownConverter
 from notionary.core.notion_client import NotionClient
-from notionary.core.page.meta_data.page_metadata_provider import PageMetadataProvider
 from notionary.util.logging_mixin import LoggingMixin
 
 class PageContentEditor(LoggingMixin):

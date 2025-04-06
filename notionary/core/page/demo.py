@@ -11,30 +11,30 @@ async def demo():
     manager = NotionPageManager(page_id=page_id)
 
     try:
-        print("🔧 Setze Titel ...")
-        await manager.set_title("📘 Neue Testseite mit Bookmarks")
+#         print("🔧 Setze Titel ...")
+#         await manager.set_title("📘 Neue Testseite mit Bookmarks")
 
-        print("🔧 Setze Icon ...")
-        await manager.set_page_icon(emoji="🔖")
+#         print("🔧 Setze Icon ...")
+#         await manager.set_page_icon(emoji="🔖")
 
-        print("🔧 Setze Cover ...")
-        await manager.set_page_cover("https://source.unsplash.com/random/1200x300")
+#         print("🔧 Setze Cover ...")
+#         await manager.set_page_cover("https://source.unsplash.com/random/1200x300")
 
-        print("🧩 Aktualisiere Property ...")
-        await manager.update_property_by_name("Status", "Überarbeiten")
+#         print("🧩 Aktualisiere Property ...")
+#         await manager.update_property_by_name("Status", "Überarbeiten")
 
-        print("📝 Ersetze Markdown-Inhalt ...")
-        markdown = """# Beispiel mit Bookmarks
+#         print("📝 Ersetze Markdown-Inhalt ...")
+#         markdown = """# Beispiel mit Bookmarks
 
-[bookmark](https://claude.ai/chat/a241fdb4-6526-4e0e-9a9f-c4573e7e834d "Erklärchat")
+# [bookmark](https://claude.ai/chat/a241fdb4-6526-4e0e-9a9f-c4573e7e834d "Erklärchat")
 
-[bookmark](https://claude.ai/chat/534901ea-0592-4c9b-ad71-ade0a4260704 "Zweiter Bookmark")
-"""
-        await manager.replace_content(markdown)
+# [bookmark](https://claude.ai/chat/534901ea-0592-4c9b-ad71-ade0a4260704 "Zweiter Bookmark")
+# """
+#         await manager.replace_content(markdown)
 
-        print("📄 Inhalt der Seite (als Text):")
-        text = await manager.get_text()
-        print(text)
+#         print("📄 Inhalt der Seite (als Text):")
+#         text = await manager.get_text()
+#         print(text)
 
         print("📦 Metadaten:")
         metadata = await manager.get_metadata()

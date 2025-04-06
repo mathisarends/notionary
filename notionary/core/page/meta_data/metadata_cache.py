@@ -1,7 +1,9 @@
 from typing import Any, Dict, Optional
 from notionary.core.notion_client import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
+from notionary.util.singleton_decorator import singleton
 
+@singleton
 class MetadataCache(LoggingMixin):
     """Verwaltet den Metadaten-Cache für Notion-Seiten."""
     
