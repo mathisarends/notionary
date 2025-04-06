@@ -3,13 +3,19 @@ from notionary.core.notion_client import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
 from notionary.util.singleton_decorator import singleton
 
+# Bridge:
+# Gucken ob man hiermit gut einen Worklflow Inklusive von Querverntzungen vornhemen kann.
+# Weiterhin wie gut man bestimmte Eigenschaften setzen kann ohne den Namen zu haben.
+# Vllt. eine Konvention dass man nur eine Property mit einem Type haben darf?  ^^
+# Löschen von Seiten nicht nur Erstellen von Seiten aus der Datenbank.
+
 class PropertyInfo(TypedDict, total=False):
     """TypedDict für Eigenschaftsinformationen einer Datenbank."""
     id: str
     name: str
     type: str
-    options: List[Dict[str, Any]]  # Für select, multi_select, status
-    relation_database_id: str      # Für relation-Properties: ID der verknüpften Datenbank
+    options: List[Dict[str, Any]]
+    relation_database_id: str
 
 class DatabaseInfo(TypedDict, total=False):
     """TypedDict für Datenbankinformationen."""
@@ -25,38 +31,35 @@ class DatabaseInfo(TypedDict, total=False):
 @singleton
 class NotionDatabaseManager(LoggingMixin):
     """
-    Erweiterter Manager für Notion-Datenbanken mit detaillierten Informationen.
-    Speichert und verwaltet Struktur und Eigenschaften jeder Datenbank.
+    Advanced manager for Notion databases with detailed metadata support.
+    Caches and manages the structure and properties of each database.
     """
     
     def __init__(self, client: NotionClient):
         """
-        Initialisiert den DatabaseManager mit einem NotionClient.
+        Initializes the DatabaseManager with a NotionClient.
         
         Args:
-            client: Eine Instanz des NotionClient für API-Anfragen
+            client: An instance of NotionClient for API requests
         """
         self._client = client
-        self._database_details: Dict[str, DatabaseInfo] = {}  # Vollständige Details zu jeder Datenbank
+        self._database_details: Dict[str, DatabaseInfo] = {}
         self._initialized = False
     
     async def initialize(self) -> None:
         """
-        Lädt alle Datenbanken und ihre Details.
+        Loads all databases and their metadata.
         """
         if self._initialized:
             return
             
-        # Zuerst alle Datenbanken über die Search API abrufen
         databases = await self._fetch_all_databases()
         
-        # Für jede Datenbank weitere Details abrufen und speichern
         for db in databases:
             db_id = db.get("id")
             if not db_id:
                 continue
                 
-            # Extrahiere Basisdaten aus dem Search-Ergebnis
             db_info: DatabaseInfo = {
                 "id": db_id,
                 "title": self._extract_database_title(db),
@@ -68,26 +71,18 @@ class NotionDatabaseManager(LoggingMixin):
                 "properties": {}
             }
             
-            # Detaillierte Eigenschaften der Datenbank abrufen
             db_details = await self._client.api_get(f"databases/{db_id}")
             if db_details and "properties" in db_details:
                 db_info["properties"] = self._extract_property_info(db_details["properties"])
             
-            # In den Cache einfügen
             self._database_details[db_id] = db_info
                 
         self._initialized = True
-        self.logger.info(f"DatabaseManager initialisiert mit {len(self._database_details)} Datenbanken")
+        self.logger.info("DatabaseManager initialisiert mit %d Datenbanken", len(self._database_details))
     
     async def get_database_info(self, database_id: str) -> Optional[DatabaseInfo]:
         """
-        Gibt detaillierte Informationen zu einer Datenbank zurück.
-        
-        Args:
-            database_id: Die ID der Datenbank
-            
-        Returns:
-            Detaillierte Datenbankinformationen oder None, wenn nicht gefunden
+        Returns detailed information for a specific database.
         """
         if not self._initialized:
             await self.initialize()
@@ -96,67 +91,35 @@ class NotionDatabaseManager(LoggingMixin):
     
     async def get_database_title(self, database_id: str) -> Optional[str]:
         """
-        Gibt den Titel einer Datenbank zurück.
-        
-        Args:
-            database_id: Die ID der Datenbank
-            
-        Returns:
-            Der Titel der Datenbank oder None, wenn nicht gefunden
+        Returns the title of a database.
         """
         info = await self.get_database_info(database_id)
         return info.get("title") if info else None
     
     async def get_database_properties(self, database_id: str) -> Dict[str, PropertyInfo]:
         """
-        Gibt alle Eigenschaften einer Datenbank zurück.
-        
-        Args:
-            database_id: Die ID der Datenbank
-            
-        Returns:
-            Dictionary mit Eigenschaftsnamen als Schlüssel und PropertyInfo als Werte
+        Returns all properties of a database.
         """
         info = await self.get_database_info(database_id)
         return info.get("properties", {}) if info else {}
     
     async def get_property_types(self, database_id: str) -> Dict[str, str]:
         """
-        Gibt ein Mapping von Eigenschaftsnamen zu ihren Typen zurück.
-        
-        Args:
-            database_id: Die ID der Datenbank
-            
-        Returns:
-            Dictionary mit Eigenschaftsnamen als Schlüssel und Typen als Werte
+        Returns a mapping of property names to their types.
         """
         properties = await self.get_database_properties(database_id)
         return {name: prop.get("type", "") for name, prop in properties.items()}
     
     async def get_property_info(self, database_id: str, property_name: str) -> Optional[PropertyInfo]:
         """
-        Gibt Informationen zu einer bestimmten Eigenschaft zurück.
-        
-        Args:
-            database_id: Die ID der Datenbank
-            property_name: Der Name der Eigenschaft
-            
-        Returns:
-            PropertyInfo oder None, wenn nicht gefunden
+        Returns metadata for a specific property.
         """
         properties = await self.get_database_properties(database_id)
         return properties.get(property_name)
     
     async def get_select_options(self, database_id: str, property_name: str) -> List[Dict[str, Any]]:
         """
-        Gibt Optionen für eine select, multi_select oder status Eigenschaft zurück.
-        
-        Args:
-            database_id: Die ID der Datenbank
-            property_name: Der Name der Eigenschaft
-            
-        Returns:
-            Liste von Optionen oder leere Liste, wenn nicht zutreffend
+        Returns options for a select, multi_select, or status property.
         """
         property_info = await self.get_property_info(database_id, property_name)
         if not property_info:
@@ -166,14 +129,7 @@ class NotionDatabaseManager(LoggingMixin):
         
     async def get_relation_database_id(self, database_id: str, property_name: str) -> Optional[str]:
         """
-        Gibt die ID der verknüpften Datenbank für eine Relation-Eigenschaft zurück.
-        
-        Args:
-            database_id: Die ID der Datenbank
-            property_name: Der Name der Relation-Eigenschaft
-            
-        Returns:
-            ID der verknüpften Datenbank oder None, wenn nicht gefunden
+        Returns the ID of the related database for a relation property.
         """
         property_info = await self.get_property_info(database_id, property_name)
         if not property_info or property_info.get("type") != "relation":
@@ -183,37 +139,24 @@ class NotionDatabaseManager(LoggingMixin):
         
     async def get_relation_options(self, database_id: str, property_name: str, limit: int = 100) -> List[Dict[str, Any]]:
         """
-        Gibt verfügbare Optionen für eine Relation-Eigenschaft zurück.
-        Dies sind die Seiten in der verknüpften Datenbank.
-        
-        Args:
-            database_id: Die ID der Datenbank
-            property_name: Der Name der Relation-Eigenschaft
-            limit: Maximale Anzahl der zurückzugebenden Optionen
-            
-        Returns:
-            Liste von Seiten in der verknüpften Datenbank mit ID und Titel
+        Returns available options for a relation property (i.e., pages in the linked database).
         """
         related_db_id = await self.get_relation_database_id(database_id, property_name)
         if not related_db_id:
             self.logger.warning(f"Keine Relations-Datenbank für {property_name} in {database_id} gefunden")
             return []
             
-        # Hole die ersten 'limit' Seiten aus der verknüpften Datenbank
         result = await self._query_database_pages(related_db_id, limit)
         
-        # Extrahiere relevante Informationen (ID und Titel)
         relation_options = []
         for page in result:
             page_id = page.get("id")
             if not page_id:
                 continue
                 
-            # Extrahiere den Titel (in Notion oft die "title" Property)
             page_title = "Unbenannt"
             properties = page.get("properties", {})
             
-            # Suche nach der Title-Property
             for prop_name, prop_data in properties.items():
                 if prop_data.get("type") == "title" and "title" in prop_data:
                     title_content = prop_data["title"]
@@ -235,14 +178,7 @@ class NotionDatabaseManager(LoggingMixin):
         
     async def _query_database_pages(self, database_id: str, limit: int = 100) -> List[Dict[str, Any]]:
         """
-        Fragt Seiten in einer Datenbank ab.
-        
-        Args:
-            database_id: Die ID der Datenbank
-            limit: Maximale Anzahl der zurückzugebenden Seiten
-            
-        Returns:
-            Liste von Seiten
+        Queries pages in a Notion database.
         """
         pages = []
         start_cursor = None
@@ -285,14 +221,7 @@ class NotionDatabaseManager(LoggingMixin):
     
     async def find_databases_by_title(self, title: str, exact_match: bool = False) -> List[str]:
         """
-        Findet Datenbanken anhand ihres Titels.
-        
-        Args:
-            title: Der zu suchende Titel
-            exact_match: Bei True nur exakte Übereinstimmungen, sonst auch Teilübereinstimmungen
-            
-        Returns:
-            Liste von Datenbank-IDs, die dem Titel entsprechen
+        Finds databases by title.
         """
         if not self._initialized:
             await self.initialize()
@@ -307,13 +236,7 @@ class NotionDatabaseManager(LoggingMixin):
     
     async def find_databases_by_property_type(self, property_type: str) -> List[str]:
         """
-        Findet Datenbanken, die eine Eigenschaft des angegebenen Typs haben.
-        
-        Args:
-            property_type: Der zu suchende Eigenschaftstyp (z.B. "status", "relation")
-            
-        Returns:
-            Liste von Datenbank-IDs
+        Finds databases that include a property of the given type.
         """
         if not self._initialized:
             await self.initialize()
@@ -328,10 +251,7 @@ class NotionDatabaseManager(LoggingMixin):
     
     async def get_all_database_ids(self) -> List[str]:
         """
-        Gibt alle verfügbaren Datenbank-IDs zurück.
-        
-        Returns:
-            Liste aller Datenbank-IDs
+        Returns all cached database IDs.
         """
         if not self._initialized:
             await self.initialize()
@@ -340,10 +260,7 @@ class NotionDatabaseManager(LoggingMixin):
     
     async def get_all_property_types(self) -> Set[str]:
         """
-        Gibt eine Menge aller verwendeten Eigenschaftstypen zurück.
-        
-        Returns:
-            Set aller Eigenschaftstypen
+        Returns all property types used across all databases.
         """
         if not self._initialized:
             await self.initialize()
@@ -358,7 +275,7 @@ class NotionDatabaseManager(LoggingMixin):
     
     async def refresh(self) -> None:
         """
-        Aktualisiert alle Datenbankinformationen.
+        Refreshes all cached database metadata.
         """
         self._database_details.clear()
         self._initialized = False
@@ -366,41 +283,27 @@ class NotionDatabaseManager(LoggingMixin):
     
     async def refresh_database(self, database_id: str) -> None:
         """
-        Aktualisiert die Informationen für eine bestimmte Datenbank.
-        
-        Args:
-            database_id: Die ID der zu aktualisierenden Datenbank
+        Refreshes metadata for a specific database.
         """
         if database_id in self._database_details:
-            # Detaillierte Eigenschaften der Datenbank neu abrufen
             db_details = await self._client.api_get(f"databases/{database_id}")
             if db_details:
-                # Titel aktualisieren
                 title = self._extract_title_from_api(db_details)
                 if title:
                     self._database_details[database_id]["title"] = title
                 
-                # Last edited time aktualisieren
                 if "last_edited_time" in db_details:
                     self._database_details[database_id]["last_edited_time"] = db_details["last_edited_time"]
                 
-                # Eigenschaften aktualisieren
                 if "properties" in db_details:
                     self._database_details[database_id]["properties"] = self._extract_property_info(db_details["properties"])
     
     def _extract_database_title(self, database: Dict[str, Any]) -> str:
         """
-        Extrahiert den Titel aus einem Datenbankobjekt aus der Search-API.
-        
-        Args:
-            database: Das Datenbankobjekt
-            
-        Returns:
-            Der extrahierte Titel oder "Unbenannt"
+        Extracts the database title from a Search API response.
         """
         title = "Unbenannt"
         
-        # Versuche, den Titel zu extrahieren
         if "title" in database:
             title_parts = []
             for text_obj in database["title"]:
@@ -414,13 +317,7 @@ class NotionDatabaseManager(LoggingMixin):
     
     def _extract_title_from_api(self, database: Dict[str, Any]) -> Optional[str]:
         """
-        Extrahiert den Titel aus der API-Antwort für eine Datenbank.
-        
-        Args:
-            database: Die API-Antwort
-            
-        Returns:
-            Der extrahierte Titel oder None, wenn nicht gefunden
+        Extracts the title from a direct API response.
         """
         if "title" in database:
             title_parts = []
@@ -434,13 +331,7 @@ class NotionDatabaseManager(LoggingMixin):
     
     def _extract_property_info(self, properties: Dict[str, Any]) -> Dict[str, PropertyInfo]:
         """
-        Extrahiert Informationen zu Eigenschaften aus der API-Antwort.
-        
-        Args:
-            properties: Die Eigenschaften aus der API-Antwort
-            
-        Returns:
-            Dictionary mit Eigenschaftsnamen als Schlüssel und PropertyInfo als Werte
+        Extracts property metadata from a database API response.
         """
         result = {}
         
@@ -453,14 +344,12 @@ class NotionDatabaseManager(LoggingMixin):
                 "type": prop_type
             }
             
-            # Extrahiere Optionen für select, multi_select und status
             if prop_type in ["select", "multi_select", "status"]:
                 if prop_type in prop_data and "options" in prop_data[prop_type]:
                     property_info["options"] = prop_data[prop_type]["options"]
             
             # Extrahiere Relations-Informationen
             elif prop_type == "relation" and "relation" in prop_data:
-                # In der Notion API ist die Zieldatenbank-ID in relation.database_id enthalten
                 if "database_id" in prop_data["relation"]:
                     property_info["relation_database_id"] = prop_data["relation"]["database_id"]
             
@@ -470,19 +359,12 @@ class NotionDatabaseManager(LoggingMixin):
     
     async def _fetch_all_databases(self, page_size: int = 100) -> List[Dict[str, Any]]:
         """
-        Ruft alle Datenbanken von der Notion API ab.
-        
-        Args:
-            page_size: Anzahl der Ergebnisse pro Seite (max. 100)
-            
-        Returns:
-            Liste aller Datenbanken
+        Fetches all Notion databases using the Search API.
         """
         all_databases = []
         start_cursor = None
         
         while True:
-            # Bereite den Anfragekörper vor
             body = {
                 "filter": {
                     "value": "database",

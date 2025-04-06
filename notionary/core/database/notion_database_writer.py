@@ -1,12 +1,10 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 from notionary.core.database.notion_database_manager import NotionDatabaseManager
 from notionary.core.notion_client import NotionClient
 from notionary.core.page.notion_page_manager import NotionPageManager
 from notionary.core.page.property_formatter import NotionPropertyFormatter
 from notionary.util.logging_mixin import LoggingMixin
-from notionary.util.singleton_decorator import singleton
 
-@singleton
 class NotionDatabaseWriter(LoggingMixin):
     """
     Vereinfachte Klasse zum Erstellen und Aktualisieren von Seiten in Notion-Datenbanken.
@@ -14,27 +12,12 @@ class NotionDatabaseWriter(LoggingMixin):
     """
     
     def __init__(self, client: NotionClient):
-        """
-        Initialisiert den DatabaseWriter mit einem NotionClient.
-        
-        Args:
-            client: Eine Instanz des NotionClient für API-Anfragen
-        """
         self._client = client
         self._formatter = NotionPropertyFormatter()
     
-    async def create_page(self, database_id: str, properties: Dict[str, Any], 
-                         content: List[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
+    async def create_page(self, database_id: str, properties: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
         Erstellt eine neue Seite in einer Datenbank.
-        
-        Args:
-            database_id: ID der Datenbank
-            properties: Dictionary mit Eigenschaftsnamen und Werten (unformatiert)
-            content: Liste von Inhaltsblöcken (optional)
-            
-        Returns:
-            Die erstellte Seite oder None bei Fehler
         """
         formatted_props = await self._format_properties(database_id, properties)
         if not formatted_props:
@@ -46,10 +29,6 @@ class NotionDatabaseWriter(LoggingMixin):
             },
             "properties": formatted_props
         }
-        
-        # Füge Inhaltsblöcke hinzu, wenn vorhanden
-        if content:
-            data["children"] = content
             
         result = await self._client.api_post("pages", data)
         if not result:
@@ -59,16 +38,25 @@ class NotionDatabaseWriter(LoggingMixin):
         self.logger.info("Seite in Datenbank %s erfolgreich erstellt", database_id)
         return result
     
+    async def delete_page(self, page_id: str) -> bool:
+        """
+        Löscht eine Seite aus einer Datenbank.
+        """
+        data = {
+            "archived": True
+        }
+        
+        result = await self._client.api_patch(f"pages/{page_id}", data)
+        if not result:
+            self.logger.error("Fehler beim Löschen der Seite %s", page_id)
+            return False
+            
+        self.logger.info("Seite %s erfolgreich gelöscht (archiviert)", page_id)
+        return True
+    
     async def update_page(self, page_id: str, properties: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
         Aktualisiert die Eigenschaften einer Seite.
-        
-        Args:
-            page_id: ID der Seite
-            properties: Dictionary mit Eigenschaftsnamen und Werten (unformatiert)
-            
-        Returns:
-            Die aktualisierte Seite oder None bei Fehler
         """
         page_data = await self._client.api_get(f"pages/{page_id}")
         if not page_data or "parent" not in page_data or "database_id" not in page_data["parent"]:
@@ -96,13 +84,6 @@ class NotionDatabaseWriter(LoggingMixin):
     async def _format_properties(self, database_id: str, properties: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
         Formatiert Eigenschaften entsprechend ihrer Typen in der Datenbank.
-        
-        Args:
-            database_id: ID der Datenbank
-            properties: Dictionary mit Eigenschaftsnamen und unformatierten Werten
-            
-        Returns:
-            Dictionary mit formatierten Eigenschaften oder None bei Fehler
         """
         db_schema = await self._client.api_get(f"databases/{database_id}")
         if not db_schema or "properties" not in db_schema:
@@ -126,6 +107,7 @@ class NotionDatabaseWriter(LoggingMixin):
         
         return formatted_props
     
+import asyncio
     
 async def main():
     client = NotionClient()
@@ -142,24 +124,28 @@ async def main():
         new_page = await db_writer.create_page(
             database_id=database_id,
             properties={
-                "Name": "Neue Notiz über XanaX",
+                "Name": "Test Eintrag 123",
                 "Tags": ["Python", "Programmierung"],
                 "Status": "Entwurf",
                 "URL": "https://www.python.org"
             }
         )
         
+        print("created new page", new_page["url"])
+        
+        await asyncio.sleep(10)
+        
         if new_page:
-            page_id = new_page["id"]
-
-            page_manager = NotionPageManager(page_id=page_id)
-            await page_manager.set_page_icon(emoji="📝")
-            await page_manager.append_markdown("thats not it")
+            page_id = new_page["id"]  # Die tatsächliche ID der erstellten Seite verwenden
+            success = await db_writer.delete_page(page_id=page_id)
+            if success:
+                print("Seite erfolgreich gelöscht")
+            else:
+                print("Fehler beim Löschen der Seite")
             
     finally:
         await client.close()
         
         
 if __name__ == "__main__":
-    import asyncio
     asyncio.run(main())
