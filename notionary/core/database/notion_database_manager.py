@@ -249,7 +249,8 @@ class NotionDatabaseRegistry(LoggingMixin):
 
         return all_databases
 
-
+# Diese Klasse hier muss offiziell auch noch bestehnde Seiten mit sukzessive zurückliefern vllt. oder bestehende mit einer Stichpunktsuche erweitern:
+# Die Seite sollte hier auch refacoted werden.
 class NotionDatabaseSchema:
     """
     Represents the schema of a specific Notion database.

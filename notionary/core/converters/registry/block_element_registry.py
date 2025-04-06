@@ -3,7 +3,7 @@ from typing import Dict, Any, Optional, List, Type
 from notionary.core.converters.elements.notion_block_element import NotionBlockElement
 from notionary.core.converters.elements.text_inline_formatter import TextInlineFormatter
 
-
+# TODO: Das hier nicht mehr in einem Singleton verwenden, sondern in Instanzen die man dann auf unterschiedliche Arten bauen kann mit einem Builder oder Fabrik Muster.
 class BlockElementRegistry:
     """Registry of elements that can convert between Markdown and Notion."""
 
