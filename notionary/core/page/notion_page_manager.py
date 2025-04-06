@@ -1,7 +1,6 @@
 import re
 from typing import Any, Dict, List, Optional
 from notionary.core.notion_client import NotionClient
-from notionary.core.page.meta_data.page_metadata_provider import PageMetadataProvider
 from notionary.util.logging_mixin import LoggingMixin
 from notionary.core.page.page_content import PageContentReader, PageContentEditor
 from notionary.core.page.meta_data.metadata_editor import MetadataEditor
@@ -47,7 +46,6 @@ class NotionPageManager(LoggingMixin):
         self._reader = PageContentReader(page_id, self._client)
         self._editor = PageContentEditor(page_id, self._client)
         self._metadata = MetadataEditor(page_id, self._client)
-        self._provider = PageMetadataProvider(page_id, self._client)
 
     async def append_markdown(self, markdown: str) -> str:
         return await self._editor.append_markdown(markdown)
@@ -80,17 +78,6 @@ class NotionPageManager(LoggingMixin):
 
     async def set_page_cover(self, external_url: str) -> Optional[Dict[str, Any]]:
         return await self._metadata.set_cover(external_url)
-
-    async def get_metadata(self) -> Optional[Dict[str, Any]]:
-        return await self._provider.get_page_metadata()
-
-    async def update_property_by_name(
-        self, name: str, value: Any
-    ) -> Optional[Dict[str, Any]]:
-        return await self._provider.update_property_by_name(name, value)
-
-    async def list_valid_status_options(self, name: str) -> List[str]:
-        return await self._provider.list_valid_status_options(name)
 
     async def close(self):
         await self._client.close()
