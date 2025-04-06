@@ -20,12 +20,7 @@ class TestColumnElement(unittest.TestCase):
     def test_markdown_to_notion(self):
         """Test basic column block creation from markdown."""
         result = ColumnElement.markdown_to_notion("::: columns")
-        expected = {
-            "type": "column_list",
-            "column_list": {
-                "children": []
-            }
-        }
+        expected = {"type": "column_list", "column_list": {"children": []}}
         self.assertEqual(result, expected)
 
         self.assertIsNone(ColumnElement.markdown_to_notion("::: column"))
@@ -37,24 +32,10 @@ class TestColumnElement(unittest.TestCase):
             "type": "column_list",
             "column_list": {
                 "children": [
-                    {
-                        "type": "column",
-                        "column": {
-                            "children": [
-                                {"type": "paragraph"}
-                            ]
-                        }
-                    },
-                    {
-                        "type": "column",
-                        "column": {
-                            "children": [
-                                {"type": "paragraph"}
-                            ]
-                        }
-                    }
+                    {"type": "column", "column": {"children": [{"type": "paragraph"}]}},
+                    {"type": "column", "column": {"children": [{"type": "paragraph"}]}},
                 ]
-            }
+            },
         }
 
         markdown = ColumnElement.notion_to_markdown(notion_block)
@@ -75,7 +56,9 @@ class TestColumnElement(unittest.TestCase):
         """Test that column blocks are found and parsed correctly."""
         # Mock converter.convert to always return a simple block
         mock_converter_instance = MockConverter.return_value
-        mock_converter_instance.convert.return_value = [{"type": "paragraph", "paragraph": {"rich_text": []}}]
+        mock_converter_instance.convert.return_value = [
+            {"type": "paragraph", "paragraph": {"rich_text": []}}
+        ]
 
         markdown = (
             "::: columns\n"

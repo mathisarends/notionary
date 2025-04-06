@@ -2,6 +2,7 @@ import unittest
 
 from notionary.converters.elements.heading_element import HeadingElement
 
+
 class TestHeadingElement(unittest.TestCase):
 
     def test_match_markdown(self):
@@ -27,7 +28,9 @@ class TestHeadingElement(unittest.TestCase):
         self.assertIsNotNone(block)
         self.assertEqual(block["type"], "heading_2")
         self.assertEqual(block["heading_2"]["rich_text"][0]["type"], "text")
-        self.assertEqual(block["heading_2"]["rich_text"][0]["text"]["content"], "Subtitle")
+        self.assertEqual(
+            block["heading_2"]["rich_text"][0]["text"]["content"], "Subtitle"
+        )
 
     def test_markdown_to_notion_invalid(self):
         """Invalid markdown should return None."""
@@ -38,10 +41,8 @@ class TestHeadingElement(unittest.TestCase):
         block = {
             "type": "heading_3",
             "heading_3": {
-                "rich_text": [
-                    {"type": "text", "text": {"content": "Section Title"}}
-                ]
-            }
+                "rich_text": [{"type": "text", "text": {"content": "Section Title"}}]
+            },
         }
         md = HeadingElement.notion_to_markdown(block)
         self.assertEqual(md, "### Section Title")
@@ -59,6 +60,7 @@ class TestHeadingElement(unittest.TestCase):
         back_md = HeadingElement.notion_to_markdown(block)
         self.assertIn("important", back_md)
         self.assertTrue(back_md.startswith("###"))
+
 
 if __name__ == "__main__":
     unittest.main()

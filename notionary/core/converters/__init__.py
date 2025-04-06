@@ -31,7 +31,7 @@ ElementRegistry.register(ColumnElement)
 ElementRegistry.register(BulletedListElement)
 ElementRegistry.register(NumberedListElement)
 # Has to be registered before quote element
-ElementRegistry.register(ToggleElement) 
+ElementRegistry.register(ToggleElement)
 ElementRegistry.register(QuoteElement)
 ElementRegistry.register(TodoElement)
 ElementRegistry.register(BookmarkElement)
@@ -42,17 +42,17 @@ ElementRegistry.register(ParagraphElement)
 
 # Define what to export
 __all__ = [
-    'ElementRegistry',
-    'MarkdownToNotionConverter',
-    'NotionToMarkdownConverter',
-    'ParagraphElement',
-    'HeadingElement',
-    'CalloutElement',
-    'CodeBlockElement',
-    'DividerElement',
-    'TableElement',
-    'TodoElement',
-    'QuoteElement',
-    'BulletedListElement',
-    'NumberedListElement',
+    "ElementRegistry",
+    "MarkdownToNotionConverter",
+    "NotionToMarkdownConverter",
+    "ParagraphElement",
+    "HeadingElement",
+    "CalloutElement",
+    "CodeBlockElement",
+    "DividerElement",
+    "TableElement",
+    "TodoElement",
+    "QuoteElement",
+    "BulletedListElement",
+    "NumberedListElement",
 ]

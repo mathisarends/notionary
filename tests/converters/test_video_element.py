@@ -6,10 +6,20 @@ class TestVideoElement(unittest.TestCase):
 
     def test_match_markdown(self):
         """Test that markdown video embeds are correctly identified."""
-        self.assertTrue(VideoElement.match_markdown("@[Caption](https://example.com/video.mp4)"))
-        self.assertTrue(VideoElement.match_markdown("@[](https://example.com/video.mp4)"))
-        self.assertTrue(VideoElement.match_markdown("@[Caption](https://youtube.com/watch?v=abc123)"))
-        self.assertFalse(VideoElement.match_markdown("![Caption](https://example.com/video.mp4)"))
+        self.assertTrue(
+            VideoElement.match_markdown("@[Caption](https://example.com/video.mp4)")
+        )
+        self.assertTrue(
+            VideoElement.match_markdown("@[](https://example.com/video.mp4)")
+        )
+        self.assertTrue(
+            VideoElement.match_markdown(
+                "@[Caption](https://youtube.com/watch?v=abc123)"
+            )
+        )
+        self.assertFalse(
+            VideoElement.match_markdown("![Caption](https://example.com/video.mp4)")
+        )
         self.assertFalse(VideoElement.match_markdown("@[Caption](not-a-url)"))
         self.assertFalse(VideoElement.match_markdown("@[Caption]()"))
 
@@ -26,8 +36,8 @@ class TestVideoElement(unittest.TestCase):
             "video": {
                 "type": "external",
                 "external": {"url": "https://example.com/video.mp4"},
-                "caption": [{"type": "text", "text": {"content": "My Caption"}}]
-            }
+                "caption": [{"type": "text", "text": {"content": "My Caption"}}],
+            },
         }
         self.assertEqual(VideoElement.markdown_to_notion(md), expected)
 
@@ -37,10 +47,12 @@ class TestVideoElement(unittest.TestCase):
             "type": "video",
             "video": {
                 "type": "external",
-                "external": {"url": "https://example.com/video.mp4"}
-            }
+                "external": {"url": "https://example.com/video.mp4"},
+            },
         }
-        self.assertEqual(VideoElement.markdown_to_notion(md_no_caption), expected_no_caption)
+        self.assertEqual(
+            VideoElement.markdown_to_notion(md_no_caption), expected_no_caption
+        )
 
         self.assertIsNone(VideoElement.markdown_to_notion("Not a video"))
 
@@ -51,12 +63,12 @@ class TestVideoElement(unittest.TestCase):
             "video": {
                 "type": "external",
                 "external": {"url": "https://example.com/video.mp4"},
-                "caption": [{"type": "text", "text": {"content": "My Caption"}}]
-            }
+                "caption": [{"type": "text", "text": {"content": "My Caption"}}],
+            },
         }
         self.assertEqual(
             VideoElement.notion_to_markdown(block),
-            "@[My Caption](https://example.com/video.mp4)"
+            "@[My Caption](https://example.com/video.mp4)",
         )
 
         # File without caption
@@ -64,12 +76,12 @@ class TestVideoElement(unittest.TestCase):
             "type": "video",
             "video": {
                 "type": "file",
-                "file": {"url": "https://example.com/uploaded.mp4"}
-            }
+                "file": {"url": "https://example.com/uploaded.mp4"},
+            },
         }
         self.assertEqual(
             VideoElement.notion_to_markdown(block_file),
-            "@[](https://example.com/uploaded.mp4)"
+            "@[](https://example.com/uploaded.mp4)",
         )
 
         # Invalid type
@@ -78,10 +90,7 @@ class TestVideoElement(unittest.TestCase):
         # Missing URL
         block_missing_url = {
             "type": "video",
-            "video": {
-                "type": "external",
-                "external": {}
-            }
+            "video": {"type": "external", "external": {}},
         }
         self.assertIsNone(VideoElement.notion_to_markdown(block_missing_url))
 
@@ -89,7 +98,7 @@ class TestVideoElement(unittest.TestCase):
         """Test caption extraction from rich_text."""
         rt = [
             {"type": "text", "text": {"content": "This "}},
-            {"type": "text", "text": {"content": "works"}}
+            {"type": "text", "text": {"content": "works"}},
         ]
         self.assertEqual(VideoElement._extract_text_content(rt), "This works")
 

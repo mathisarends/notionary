@@ -1,22 +1,21 @@
 import asyncio
 from typing import Optional
 
-from notionary.core.page.notion_page_manager import  NotionPageManager
-
+from notionary.core.page.notion_page_manager import NotionPageManager
 
 
 async def run_integration_test(page_id: Optional[str] = "integration-test-page-id"):
     """
     Runs an integration test that uses all Notion block elements to verify
     that the markdown conversion is working correctly.
-    
+
     Args:
         page_id: Optional Notion page ID to use for the test
     """
     print(f"Starting integration test with page ID: {page_id}")
-    
+
     content_manager = NotionPageManager(page_id=page_id)
-    
+
     test_markdown = """# Notion Markdown Integration Test
 
 This document demonstrates all supported Notion block types using our custom Markdown syntax.
@@ -212,11 +211,11 @@ function notionExample() {
 
 !> [🏁] Integration test complete!
 """
-    
+
     try:
         result = await content_manager.append_markdown(markdown=test_markdown)
         print(f"Integration test completed with result: {result}")
-        
+
         return test_markdown
     except Exception as e:
         print(f"Error during integration test: {e}")
@@ -225,8 +224,9 @@ function notionExample() {
         # Clean up
         await content_manager.close()
 
+
 if __name__ == "__main__":
     JARVIS_CLIPBOARD_PAGE = "1a3389d5-7bd3-80d7-a507-e67d1b25822c"
     full_markdown = asyncio.run(run_integration_test(page_id=JARVIS_CLIPBOARD_PAGE))
-    
+
     print("Integration test markdown saved to notion_integration_test.md")

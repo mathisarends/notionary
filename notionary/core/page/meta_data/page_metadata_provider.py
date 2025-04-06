@@ -1,15 +1,18 @@
 from typing import Any, Dict, List, Optional
 from notionary.core.notion_client import NotionClient
 from notionary.core.page.meta_data.metadata_cache import MetadataCache
-from notionary.core.page.meta_data.metadata_property_manager import MetadataPropertManager
+from notionary.core.page.meta_data.metadata_property_manager import (
+    MetadataPropertManager,
+)
 from notionary.core.page.property_formatter import NotionPropertyFormatter
 from notionary.util.logging_mixin import LoggingMixin
 
+
 class PageMetadataProvider(LoggingMixin):
     """Manages metadata and properties of Notion pages with optimized database caching."""
-    
+
     _database_schema_cache = {}
-    
+
     def __init__(self, page_id: str, client: NotionClient):
         self.page_id = page_id
         self._client = client
@@ -54,12 +57,12 @@ class PageMetadataProvider(LoggingMixin):
                 prop_id = prop_data.get("id")
                 prop_type = prop_data.get("type")
                 prop_value = prop_data.get(prop_type, {})
-                
-                self._cache.set_property_data(self.page_id, name, {
-                    "id": prop_id,
-                    "type": prop_type,
-                    "data": prop_value
-                })
+
+                self._cache.set_property_data(
+                    self.page_id,
+                    name,
+                    {"id": prop_id, "type": prop_type, "data": prop_value},
+                )
 
             # Load options for status properties if needed
             await self._enrich_properties_from_db_schema()
@@ -69,45 +72,62 @@ class PageMetadataProvider(LoggingMixin):
     async def _enrich_properties_from_db_schema(self) -> None:
         """Enriches property information with data from database schema."""
         metadata = self._cache.get_cached_metadata(self.page_id)
-        if not metadata or "parent" not in metadata or "database_id" not in metadata["parent"]:
+        if (
+            not metadata
+            or "parent" not in metadata
+            or "database_id" not in metadata["parent"]
+        ):
             return
 
         db_id = metadata["parent"]["database_id"]
-        
+
         if db_id not in self._database_schema_cache:
             await self._load_database_schema(db_id)
             if db_id not in self._database_schema_cache:
                 return
-        
+
         database_schema = self._database_schema_cache[db_id]
-        
+
         properties = self._cache.get_property_cache(self.page_id)
-        
-        status_props = [name for name, info in properties.items()
-                        if info.get("type") == "status" and "options" not in info]
-        
+
+        status_props = [
+            name
+            for name, info in properties.items()
+            if info.get("type") == "status" and "options" not in info
+        ]
+
         print("status_props", status_props)
-        
+
         for prop_name in status_props:
             await self._add_options_to_property(prop_name, "status", database_schema)
-        
-        multi_select_props = [name for name, info in properties.items()
-                             if info.get("type") == "multi_select" and "options" not in info]
-        
+
+        multi_select_props = [
+            name
+            for name, info in properties.items()
+            if info.get("type") == "multi_select" and "options" not in info
+        ]
+
         print("multi_select_props", multi_select_props)
-        
+
         for prop_name in multi_select_props:
-            await self._add_options_to_property(prop_name, "multi_select", database_schema)
-        
-        select_props = [name for name, info in properties.items()
-                       if info.get("type") == "select" and "options" not in info]
-        
+            await self._add_options_to_property(
+                prop_name, "multi_select", database_schema
+            )
+
+        select_props = [
+            name
+            for name, info in properties.items()
+            if info.get("type") == "select" and "options" not in info
+        ]
+
         print("select_props", select_props)
-        
+
         for prop_name in select_props:
             await self._add_options_to_property(prop_name, "select", database_schema)
 
-    async def _add_options_to_property(self, prop_name: str, prop_type: str, database_schema: Dict[str, Any]) -> None:
+    async def _add_options_to_property(
+        self, prop_name: str, prop_type: str, database_schema: Dict[str, Any]
+    ) -> None:
         """Adds available options to a property."""
         properties = self._cache.get_property_cache(self.page_id)
         if prop_name not in properties:
@@ -124,10 +144,14 @@ class PageMetadataProvider(LoggingMixin):
             if prop_type in db_prop and "options" in db_prop[prop_type]:
                 prop_info["options"] = db_prop[prop_type]["options"]
                 self._cache.set_property_data(self.page_id, prop_name, prop_info)
-                self.logger.debug("Added options for %s-property '%s'", prop_type, prop_name)
+                self.logger.debug(
+                    "Added options for %s-property '%s'", prop_type, prop_name
+                )
                 break
 
-    async def update_property_by_name(self, name: str, value: Any) -> Optional[Dict[str, Any]]:
+    async def update_property_by_name(
+        self, name: str, value: Any
+    ) -> Optional[Dict[str, Any]]:
         """Updates a property by its name."""
         await self.get_page_metadata()
         return await self._properties.update_property(self.page_id, name, value)
@@ -141,25 +165,25 @@ class PageMetadataProvider(LoggingMixin):
         """Finds all properties of a specific type."""
         await self.get_page_metadata()
         return await self._properties.find_property_by_type(self.page_id, prop_type)
-        
+
     async def get_database_id(self) -> Optional[str]:
         """Returns the database ID this page belongs to (if any)."""
         metadata = await self.get_page_metadata()
         if metadata and "parent" in metadata and "database_id" in metadata["parent"]:
             return metadata["parent"]["database_id"]
         return None
-        
+
     async def get_database_schema(self) -> Optional[Dict[str, Any]]:
         """Returns the schema of the database this page belongs to (if any)."""
         db_id = await self.get_database_id()
         if not db_id:
             return None
-            
+
         if db_id not in self._database_schema_cache:
             await self._load_database_schema(db_id)
-            
+
         return self._database_schema_cache.get(db_id)
-    
+
     def _is_page_in_database(self, metadata: Dict[str, Any]) -> bool:
         """Checks if the page is in a database."""
         return "parent" in metadata and "database_id" in metadata["parent"]

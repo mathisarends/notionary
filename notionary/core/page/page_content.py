@@ -1,9 +1,14 @@
 from typing import Any, Dict, List
 
-from notionary.core.converters.markdown_to_notion_converter import MarkdownToNotionConverter
-from notionary.core.converters.notion_to_markdown_converter import NotionToMarkdownConverter
+from notionary.core.converters.markdown_to_notion_converter import (
+    MarkdownToNotionConverter,
+)
+from notionary.core.converters.notion_to_markdown_converter import (
+    NotionToMarkdownConverter,
+)
 from notionary.core.notion_client import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
+
 
 class PageContentEditor(LoggingMixin):
     def __init__(self, page_id: str, client: NotionClient):
@@ -12,8 +17,12 @@ class PageContentEditor(LoggingMixin):
 
     async def append_markdown(self, markdown_text: str) -> str:
         blocks = MarkdownToNotionConverter().convert(markdown_text)
-        result = await self._client.patch(f"blocks/{self.page_id}/children", {"children": blocks})
-        return "Successfully added text to the page." if result else "Failed to add text."
+        result = await self._client.patch(
+            f"blocks/{self.page_id}/children", {"children": blocks}
+        )
+        return (
+            "Successfully added text to the page." if result else "Failed to add text."
+        )
 
     async def clear(self) -> str:
         blocks = await self._client.get(f"blocks/{self.page_id}/children")
@@ -31,8 +40,8 @@ class PageContentEditor(LoggingMixin):
         clear_result = await self.clear()
         append_result = await self.append_markdown(markdown_text)
         return f"{clear_result}\n{append_result}"
-    
-    
+
+
 class PageContentReader(LoggingMixin):
     def __init__(self, page_id: str, client: NotionClient):
         self.page_id = page_id

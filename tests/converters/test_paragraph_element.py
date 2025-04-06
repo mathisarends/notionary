@@ -1,6 +1,7 @@
 import unittest
 from notionary.converters.elements.paragraph_element import ParagraphElement
 
+
 class TestParagraphElement(unittest.TestCase):
 
     def test_match_markdown_always_true(self):
@@ -34,19 +35,14 @@ class TestParagraphElement(unittest.TestCase):
                 "rich_text": [
                     {"type": "text", "text": {"content": "Some paragraph content"}}
                 ]
-            }
+            },
         }
         md = ParagraphElement.notion_to_markdown(block)
         self.assertEqual(md, "Some paragraph content")
 
     def test_notion_to_markdown_empty(self):
         """Returns None for paragraph blocks without content."""
-        block = {
-            "type": "paragraph",
-            "paragraph": {
-                "rich_text": []
-            }
-        }
+        block = {"type": "paragraph", "paragraph": {"rich_text": []}}
         self.assertIsNone(ParagraphElement.notion_to_markdown(block))
 
     def test_notion_to_markdown_wrong_type(self):

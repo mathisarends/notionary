@@ -2,6 +2,7 @@ import unittest
 
 from notionary.converters.elements.table_element import TableElement
 
+
 class TestTableElement(unittest.TestCase):
 
     def setUp(self):
@@ -27,7 +28,7 @@ class TestTableElement(unittest.TestCase):
                                 [{"type": "text", "text": {"content": "Age"}}],
                                 [{"type": "text", "text": {"content": "City"}}],
                             ]
-                        }
+                        },
                     },
                     {
                         "type": "table_row",
@@ -37,7 +38,7 @@ class TestTableElement(unittest.TestCase):
                                 [{"type": "text", "text": {"content": "30"}}],
                                 [{"type": "text", "text": {"content": "New York"}}],
                             ]
-                        }
+                        },
                     },
                     {
                         "type": "table_row",
@@ -47,11 +48,11 @@ class TestTableElement(unittest.TestCase):
                                 [{"type": "text", "text": {"content": "25"}}],
                                 [{"type": "text", "text": {"content": "Berlin"}}],
                             ]
-                        }
-                    }
-                ]
+                        },
+                    },
+                ],
             },
-            "children": []  # will be auto-used by `notion_to_markdown`
+            "children": [],  # will be auto-used by `notion_to_markdown`
         }
 
         # Simulate Notion structure having the same children at the top-level for export
@@ -71,7 +72,7 @@ class TestTableElement(unittest.TestCase):
         self.assertEqual(block["type"], "table")
         self.assertEqual(block["table"]["table_width"], 3)
         self.assertEqual(len(block["table"]["children"]), 3)
-        
+
     def test_notion_to_markdown(self):
         markdown = TableElement.notion_to_markdown(self.notion_table)
         self.assertIn("| Name", markdown)
@@ -80,13 +81,7 @@ class TestTableElement(unittest.TestCase):
         self.assertIn("| -------- | -------- | -------- |", markdown)
 
     def test_find_matches(self):
-        text = (
-            "Intro\n\n"
-            "| H1 | H2 |\n"
-            "|----|----|\n"
-            "| A1 | A2 |\n\n"
-            "End"
-        )
+        text = "Intro\n\n" "| H1 | H2 |\n" "|----|----|\n" "| A1 | A2 |\n\n" "End"
         matches = TableElement.find_matches(text)
         self.assertEqual(len(matches), 1)
         start, end, block = matches[0]
@@ -106,13 +101,14 @@ class TestTableElement(unittest.TestCase):
             "table": {
                 "table_width": 2,
                 "has_column_header": True,
-                "has_row_header": False
+                "has_row_header": False,
             },
-            "children": []
+            "children": [],
         }
         md = TableElement.notion_to_markdown(empty_table)
         self.assertIn("| Column 1 | Column 2 |", md)
         self.assertIn("| -------- | -------- |", md)
+
 
 if __name__ == "__main__":
     unittest.main()

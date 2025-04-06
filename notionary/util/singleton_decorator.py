@@ -1,7 +1,8 @@
 from typing import TypeVar
 from functools import wraps
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 def singleton(cls: T) -> T:
     """
@@ -9,11 +10,11 @@ def singleton(cls: T) -> T:
     Stellt sicher, dass nur eine Instanz der Klasse existiert.
     """
     instances = {}
-    
+
     @wraps(cls)
     def get_instance(*args, **kwargs):
         if cls not in instances:
             instances[cls] = cls(*args, **kwargs)
         return instances[cls]
-    
+
     return get_instance
