@@ -1,8 +1,8 @@
 from typing import List, Type, Optional
 
-from notionary.converters.elements.notion_block_element import NotionBlockElement
-from notionary.converters.elements.text_inline_formatter import TextInlineFormatter
-from notionary.converters.registry.notion_element_registry import ElementRegistry
+from notionary.core.converters.elements.notion_block_element import NotionBlockElement
+from notionary.core.converters.elements.text_inline_formatter import TextInlineFormatter
+from notionary.core.converters.registry.notion_element_registry import ElementRegistry
 
 
 class LLMDocumentationGenerator:

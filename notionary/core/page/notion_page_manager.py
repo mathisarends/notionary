@@ -11,7 +11,7 @@ class NotionPageManager(LoggingMixin):
     High-Level Fassade zur Verwaltung von Inhalten und Metadaten einer Notion-Seite.
     """
 
-    def __init__(self, page_id: str, url: Optional[str] = None, token: Optional[str] = None):
+    def __init__(self, page_id: Optional[str] = None, url: Optional[str] = None, token: Optional[str] = None):
         if not page_id and not url:
             raise ValueError("Entweder page_id oder url muss angegeben werden")
         
@@ -25,6 +25,10 @@ class NotionPageManager(LoggingMixin):
             if not parsed_id:
                 raise ValueError(f"Ungültiges UUID-Format und konnte nicht geparst werden: {page_id}")
             page_id = parsed_id
+            
+            
+        print("page_id:", page_id)
+        input("Drücke enter um weiterzumachen")
         
         self.page_id = page_id
         self.url = url
