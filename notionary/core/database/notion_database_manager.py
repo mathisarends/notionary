@@ -3,12 +3,6 @@ from notionary.core.notion_client import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
 from notionary.util.singleton_decorator import singleton
 
-# Bridge:
-# Gucken ob man hiermit gut einen Worklflow Inklusive von Querverntzungen vornhemen kann.
-# Weiterhin wie gut man bestimmte Eigenschaften setzen kann ohne den Namen zu haben.
-# Vllt. eine Konvention dass man nur eine Property mit einem Type haben darf?  ^^
-# Löschen von Seiten nicht nur Erstellen von Seiten aus der Datenbank.
-
 class PropertyInfo(TypedDict, total=False):
     """TypedDict für Eigenschaftsinformationen einer Datenbank."""
     id: str
@@ -143,7 +137,7 @@ class NotionDatabaseManager(LoggingMixin):
         """
         related_db_id = await self.get_relation_database_id(database_id, property_name)
         if not related_db_id:
-            self.logger.warning(f"Keine Relations-Datenbank für {property_name} in {database_id} gefunden")
+            self.logger.warning("Keine Relations-Datenbank für %s in %s gefunden", property_name, database_id)
             return []
             
         result = await self._query_database_pages(related_db_id, limit)
@@ -182,13 +176,12 @@ class NotionDatabaseManager(LoggingMixin):
         """
         pages = []
         start_cursor = None
-        page_size = min(limit, 100)  # Notion begrenzt auf 100 pro Anfrage
+        page_size = min(limit, 100)
         remaining = limit
         
         while remaining > 0:
             current_page_size = min(remaining, page_size)
             
-            # Erstelle Anfragekörper
             body = {
                 "page_size": current_page_size
             }
@@ -196,20 +189,17 @@ class NotionDatabaseManager(LoggingMixin):
             if start_cursor:
                 body["start_cursor"] = start_cursor
                 
-            # API-Anfrage
             result = await self._client.post(f"databases/{database_id}/query", data=body)
             
             if not result:
-                self.logger.error(f"Fehler beim Abfragen der Datenbank {database_id}")
+                self.logger.error("Fehler beim Abfragen der Datenbank %s", database_id)
                 break
                 
-            # Verarbeite Ergebnisse
             data = result.data
             if "results" in data and data["results"]:
                 pages.extend(data["results"])
                 remaining -= len(data["results"])
                 
-                # Prüfe, ob es weitere Seiten gibt
                 if "has_more" in data and data["has_more"] and "next_cursor" in data:
                     start_cursor = data["next_cursor"]
                 else:
@@ -397,12 +387,10 @@ async def main():
     client = NotionClient()
     
     try:
-        # Manager initialisieren
         db_manager = NotionDatabaseManager(client)
         await db_manager.initialize()
         
-        # Beispiel: Datenbank-ID und Property-Name
-        database_id = "1a6389d5-7bd3-8097-aa38-e93cb052615a"  # Deine "Wissen & Notizen" Datenbank
+        database_id = "1a6389d5-7bd3-8097-aa38-e93cb052615a"
         
         # Alle Relations-Properties finden
         properties = await db_manager.get_database_properties(database_id)
@@ -411,13 +399,11 @@ async def main():
         
         print("Relations-Properties in der Datenbank:")
         for prop_name in relation_props:
-            # Für jede Relation die Zieldatenbank und verfügbaren Optionen anzeigen
             related_db_id = await db_manager.get_relation_database_id(database_id, prop_name)
             related_db_title = await db_manager.get_database_title(related_db_id) if related_db_id else "Unbekannt"
             
             print(f"\n- {prop_name} → {related_db_title} ({related_db_id})")
             
-            # Abfragen der verfügbaren Relations-Optionen (begrenzt auf 10)
             options = await db_manager.get_relation_options(database_id, prop_name, limit=10)
             
             if options:
