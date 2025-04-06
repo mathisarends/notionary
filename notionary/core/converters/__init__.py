@@ -2,7 +2,7 @@
 from .markdown_to_notion_converter import MarkdownToNotionConverter
 from .notion_to_markdown_converter import NotionToMarkdownConverter
 
-from .registry.notion_element_registry import ElementRegistry
+from .registry.block_element_registry import BlockElementRegistry
 
 # Import elements
 from .elements.paragraph_element import ParagraphElement
@@ -22,27 +22,27 @@ from .elements.column_element import ColumnElement
 
 # Register all elements
 # Register paragraphs last since they're the fallback
-ElementRegistry.register(HeadingElement)
-ElementRegistry.register(CalloutElement)
-ElementRegistry.register(CodeBlockElement)
-ElementRegistry.register(DividerElement)
-ElementRegistry.register(TableElement)
-ElementRegistry.register(ColumnElement)
-ElementRegistry.register(BulletedListElement)
-ElementRegistry.register(NumberedListElement)
+BlockElementRegistry.register(HeadingElement)
+BlockElementRegistry.register(CalloutElement)
+BlockElementRegistry.register(CodeBlockElement)
+BlockElementRegistry.register(DividerElement)
+BlockElementRegistry.register(TableElement)
+BlockElementRegistry.register(ColumnElement)
+BlockElementRegistry.register(BulletedListElement)
+BlockElementRegistry.register(NumberedListElement)
 # Has to be registered before quote element
-ElementRegistry.register(ToggleElement)
-ElementRegistry.register(QuoteElement)
-ElementRegistry.register(TodoElement)
-ElementRegistry.register(BookmarkElement)
-ElementRegistry.register(ImageElement)
-ElementRegistry.register(VideoElement)
+BlockElementRegistry.register(ToggleElement)
+BlockElementRegistry.register(QuoteElement)
+BlockElementRegistry.register(TodoElement)
+BlockElementRegistry.register(BookmarkElement)
+BlockElementRegistry.register(ImageElement)
+BlockElementRegistry.register(VideoElement)
 # Register last! (Fallback)
-ElementRegistry.register(ParagraphElement)
+BlockElementRegistry.register(ParagraphElement)
 
 # Define what to export
 __all__ = [
-    "ElementRegistry",
+    "BlockElementRegistry",
     "MarkdownToNotionConverter",
     "NotionToMarkdownConverter",
     "ParagraphElement",

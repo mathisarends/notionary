@@ -1,6 +1,6 @@
 from typing import Dict, Any, List
 
-from notionary.core.converters.registry.notion_element_registry import ElementRegistry
+from notionary.core.converters.registry.block_element_registry import BlockElementRegistry
 
 
 class NotionToMarkdownConverter:
@@ -23,7 +23,7 @@ class NotionToMarkdownConverter:
         markdown_parts = []
 
         for block in blocks:
-            markdown = ElementRegistry.notion_to_markdown(block)
+            markdown = BlockElementRegistry.notion_to_markdown(block)
             if markdown:
                 markdown_parts.append(markdown)
 
