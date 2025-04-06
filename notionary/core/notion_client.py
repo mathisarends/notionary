@@ -1,6 +1,6 @@
 import os
 from enum import Enum
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, List, Optional, Union
 import httpx
 from dotenv import load_dotenv
 from notionary.util.logging_mixin import LoggingMixin
@@ -154,4 +154,3 @@ class NotionClient(LoggingMixin):
             error_msg = f"Request error: {str(e)}"
             self.logger.error("Request error (%s): %s", url, error_msg)
             return RequestResult(success=False, error=error_msg)
-    
