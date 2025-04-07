@@ -33,7 +33,6 @@ class NotionDatabaseFactory(LoggingMixin):
             An initialized NotionDatabaseManager instance
         """
         logger = cls.class_logger()
-        logger.debug(lambda: f"Creating database manager with ID: {database_id}")
         
         try:
             formatted_id = format_uuid(database_id) or database_id

@@ -23,7 +23,7 @@ async def list_all_pages(schema: NotionDatabaseSchema) -> None:
 
     count = 0
     async for page in schema.iter_database_pages():
-        page_id = page.get("id", "")
+        page_id = page.page_id
         title = schema.extract_title_from_page(page)
         print(f"{page_id[:8]}... | {title}")
         count += 1
