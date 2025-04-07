@@ -35,7 +35,7 @@ class NotionDatabaseManager(LoggingMixin):
         self._client = NotionClient(token=token)
         self._schema = NotionDatabaseSchema(self.database_id, self._client)
         self._writer = DatabaseWritter(self._client, self._schema)
-
+        
     async def initialize(self) -> bool:
         """
         Initialize the database facade by loading the schema.
