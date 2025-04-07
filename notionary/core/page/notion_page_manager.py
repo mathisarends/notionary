@@ -4,6 +4,7 @@ from notionary.core.notion_client import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
 from notionary.core.page.page_content import PageContentReader, PageContentEditor
 from notionary.core.page.meta_data.metadata_editor import MetadataEditor
+from notionary.util.uuid_utils import extract_uuid, format_uuid, is_valid_uuid
 
 
 class NotionPageManager(LoggingMixin):
@@ -22,29 +23,23 @@ class NotionPageManager(LoggingMixin):
             raise ValueError("Either page_id or url must be provided")
 
         if not page_id and url:
-            page_id = self._extract_notion_uuid(url)
+            page_id = extract_uuid(url)
             if not page_id:
-                raise ValueError(
-                    f"Could not extract a valid UUID from the URL: {url}"
-                )
+                raise ValueError(f"Could not extract a valid UUID from the URL: {url}")
 
-        if not self._validate_uuid_format(page_id):
-            parsed_id = self._extract_notion_uuid(page_id)
-            if not parsed_id:
-                raise ValueError(
-                    f"Invalid UUID format and could not be parsed: {page_id}"
-                )
-            page_id = parsed_id
+        page_id = format_uuid(page_id)
+        if not page_id or not is_valid_uuid(page_id):
+            raise ValueError(f"Invalid UUID format: {page_id}")
 
         self.page_id = page_id
         self.url = url
         self._title = title
 
         self._client = NotionClient(token=token)
-
         self._reader = PageContentReader(page_id, self._client)
         self._editor = PageContentEditor(page_id, self._client)
         self._metadata = MetadataEditor(page_id, self._client)
+
 
     @property
     def title(self) -> Optional[str]:
@@ -81,22 +76,3 @@ class NotionPageManager(LoggingMixin):
 
     async def set_page_cover(self, external_url: str) -> Optional[Dict[str, Any]]:
         return await self._metadata.set_cover(external_url)
-
-    @staticmethod
-    def _extract_notion_uuid(url: str) -> Optional[str]:
-        uuid_pattern = r"([a-f0-9]{32})"
-        match = re.search(uuid_pattern, url.lower())
-
-        if not match:
-            return None
-
-        uuid_raw = match.group(1)
-
-        formatted_uuid = f"{uuid_raw[0:8]}-{uuid_raw[8:12]}-{uuid_raw[12:16]}-{uuid_raw[16:20]}-{uuid_raw[20:32]}"
-
-        return formatted_uuid
-
-    @staticmethod
-    def _validate_uuid_format(uuid: str) -> bool:
-        uuid_pattern = r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
-        return bool(re.match(uuid_pattern, uuid.lower()))

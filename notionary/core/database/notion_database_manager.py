@@ -2,10 +2,12 @@ from typing import Any, AsyncGenerator, Dict, List, Optional, Union, TypedDict
 import re
 
 from notionary.core.notion_client import NotionClient
-from notionary.core.database.notion_database_schema import NotionDatabaseRegistry, NotionDatabaseSchema
+from notionary.core.database.notion_database_schema import NotionDatabaseSchema
 from notionary.core.database.notion_database_writer import DatabaseWritter
 from notionary.core.page.notion_page_manager import NotionPageManager
 from notionary.util.logging_mixin import LoggingMixin
+from notionary.exceptions.page_creation_exception import PageCreationException
+from notionary.util.uuid_utils import format_uuid
 
 
 class PageResult(TypedDict, total=False):
@@ -30,11 +32,10 @@ class NotionDatabaseManager(LoggingMixin):
             database_id: The ID of the Notion database
             token: Optional Notion API token (uses environment variable if not provided)
         """
-        self.database_id = self._format_database_id(database_id)
+        self.database_id = format_uuid(database_id) or database_id
         self._client = NotionClient(token=token)
         self._schema = NotionDatabaseSchema(self.database_id, self._client)
         self._writer = DatabaseWritter(self._client, self._schema)
-        self._registry = NotionDatabaseRegistry(self._client)
 
     async def initialize(self) -> bool:
         """
@@ -159,12 +160,12 @@ class NotionDatabaseManager(LoggingMixin):
                 "page_id": page_id,
                 "url": page_url
             }
-            
-        except Exception as e:
-            self.logger.error("Error creating page: %s", str(e))
+                
+        except PageCreationException as e:
+            self.logger.warning("Page creation failed: %s", str(e))
             return {
                 "success": False,
-                "message": f"Error: {str(e)}"
+                "message": str(e)
             }
 
     async def update_page(
@@ -345,59 +346,9 @@ class NotionDatabaseManager(LoggingMixin):
         """
         return self._schema.extract_title_from_page(page)
 
-    def _format_database_id(self, database_id: str) -> str:
-        """
-        Format a database ID to ensure it has the correct UUID format.
-
-        Args:
-            database_id: The raw database ID or URL
-
-        Returns:
-            Formatted database ID
-        """
-        if re.match(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$', database_id.lower()):
-            return database_id
-            
-        extracted = self._extract_uuid(database_id)
-        if extracted:
-            return extracted
-            
-        return database_id
-
     def _format_page_id(self, page_id: str) -> str:
-        """
-        Format a page ID to ensure it has the correct UUID format.
+        return format_uuid(page_id) or page_id
 
-        Args:
-            page_id: The raw page ID or URL
-
-        Returns:
-            Formatted page ID
-        """
-        return self._format_database_id(page_id)
-
-    @staticmethod
-    def _extract_uuid(source: str) -> Optional[str]:
-        """
-        Extract a UUID from a string (URL, ID with hyphens removed, etc.)
-
-        Args:
-            source: String that might contain a UUID
-
-        Returns:
-            Formatted UUID or None if not found
-        """
-        uuid_pattern = r'([a-f0-9]{32})'
-        match = re.search(uuid_pattern, source.lower())
-        
-        if not match:
-            return None
-            
-        uuid_raw = match.group(1)
-        
-        formatted_uuid = f"{uuid_raw[0:8]}-{uuid_raw[8:12]}-{uuid_raw[12:16]}-{uuid_raw[16:20]}-{uuid_raw[20:32]}"
-        
-        return formatted_uuid
 
     async def close(self) -> None:
         """Close the client connection."""
