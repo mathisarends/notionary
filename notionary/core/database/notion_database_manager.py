@@ -1,5 +1,4 @@
 from typing import Any, AsyncGenerator, Dict, List, Optional, Union, TypedDict
-import re
 
 from notionary.core.notion_client import NotionClient
 from notionary.core.database.notion_database_schema import NotionDatabaseSchema
