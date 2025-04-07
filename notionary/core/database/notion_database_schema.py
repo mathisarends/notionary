@@ -2,8 +2,6 @@ from typing import AsyncGenerator, Dict, List, Optional, Any, TypedDict, Union, 
 from notionary.core.notion_client import NotionClient
 from notionary.core.page.notion_page_manager import NotionPageManager
 from notionary.util.logging_mixin import LoggingMixin
-from notionary.util.singleton_decorator import singleton
-
 
 class NotionTextContent(TypedDict):
     plain_text: str
@@ -61,138 +59,22 @@ class RelationOption(TypedDict):
     title: str
 
 
-@singleton
-class NotionDatabaseRegistry(LoggingMixin):
+class NotionDatabaseAccessor(LoggingMixin):
     """
-    Registry that maintains a mapping of database IDs to their titles.
-    Provides a simple way to lookup databases by ID or title.
+    A utility class that provides methods to access Notion databases.
+    Focused on efficient, paginated access to databases without unnecessary complexity.
     """
 
-    def __init__(self, client: NotionClient) -> None:
+    def __init__(self, client: Optional[NotionClient] = None) -> None:
         """
-        Initialize the registry with a NotionClient.
-        """
-        self._client = client
-        self._id_to_title: Dict[str, str] = {}
-        self._title_to_id: Dict[str, str] = {}
-        self._initialized: bool = False
-
-
-    async def initialize(self) -> None:
-        """
-        Load all databases and build the ID-to-title mapping.
-        """
-        if self._initialized:
-            return
-
-        self.logger.info("Initializing database registry...")
+        Initialize the accessor with a NotionClient.
         
-        # Reset mappings
-        self._id_to_title.clear()
-        self._title_to_id.clear()
-        
-        count = 0
-        async for db in self.iter_databases():
-            db_id = db.get("id")
-            if not db_id:
-                continue
-
-            db_title = self._extract_database_title(db)
-            self._id_to_title[db_id] = db_title
-            count += 1
-
-            if db_title in self._title_to_id:
-                self.logger.warning("Duplicate database title found: %s", db_title)
-                self._title_to_id[f"{db_title} ({db_id})"] = db_id
-            else:
-                self._title_to_id[db_title] = db_id
-
-        self._initialized = True
-        self.logger.info(
-            "Database registry initialized with %d databases", count
-        )
-
-    async def get_title(self, database_id: str) -> Optional[str]:
-        """
-        Get the title of a database by its ID.
-        """
-        if not self._initialized:
-            await self.initialize()
-
-        return self._id_to_title.get(database_id)
-
-    async def get_id(self, title: str) -> Optional[str]:
-        """
-        Get the ID of a database by its title.
-        """
-        if not self._initialized:
-            await self.initialize()
-
-        return self._title_to_id.get(title)
-
-    async def get_all_ids(self) -> List[str]:
-        """
-        Get all database IDs.
-        """
-        if not self._initialized:
-            await self.initialize()
-
-        return list(self._id_to_title.keys())
-
-    async def get_all_titles(self) -> List[str]:
-        """
-        Get all database titles.
-        """
-        if not self._initialized:
-            await self.initialize()
-
-        return list(self._title_to_id.keys())
-
-    async def get_id_title_map(self) -> Dict[str, str]:
-        """
-        Get the complete mapping of database IDs to titles.
-
-        Returns:
-            A dictionary mapping database IDs to titles
-        """
-        if not self._initialized:
-            await self.initialize()
-
-        return self._id_to_title.copy()
-
-    async def refresh(self) -> None:
-        """
-        Refresh the registry by reloading all databases.
-        """
-        self._id_to_title.clear()
-        self._title_to_id.clear()
-        self._initialized = False
-        await self.initialize()
-
-    def _extract_database_title(self, database: Dict[str, Any]) -> str:
-        """
-        Extract the database title from a Notion API response.
-
         Args:
-            database: The database object from the Notion API
-
-        Returns:
-            The extracted title or "Untitled" if no title is found
+            client: NotionClient instance for API communication
         """
-        title = "Untitled"
+        self._client = client if client else NotionClient()
+        self.logger.info("NotionDatabaseAccessor initialized")
 
-        if "title" in database:
-            title_parts: List[str] = []
-            for text_obj in database["title"]:
-                if "plain_text" in text_obj:
-                    title_parts.append(text_obj["plain_text"])
-
-            if title_parts:
-                title = "".join(title_parts)
-
-        return title
-    
-    
     async def iter_databases(self, page_size: int = 100) -> AsyncGenerator[Dict[str, Any], None]:
         """
         Asynchronous generator that yields Notion databases one by one.
@@ -230,6 +112,47 @@ class NotionDatabaseRegistry(LoggingMixin):
                 start_cursor = result["next_cursor"]
             else:
                 break
+    
+    async def get_database(self, database_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get the details for a specific database.
+        
+        Args:
+            database_id: The ID of the database
+            
+        Returns:
+            Database details or None if not found
+        """
+        db_details = await self._client.get(f"databases/{database_id}")
+        if not db_details:
+            self.logger.error("Failed to retrieve database %s", database_id)
+            return None
+        
+        return db_details
+    
+    def extract_database_title(self, database: Dict[str, Any]) -> str:
+        """
+        Extract the database title from a Notion API response.
+        
+        Args:
+            database: The database object from the Notion API
+            
+        Returns:
+            The extracted title or "Untitled" if no title is found
+        """
+        title = "Untitled"
+        
+        if "title" in database:
+            title_parts = []
+            for text_obj in database["title"]:
+                if "plain_text" in text_obj:
+                    title_parts.append(text_obj["plain_text"])
+            
+            if title_parts:
+                title = "".join(title_parts)
+        
+        return title
+
 
 class NotionDatabaseSchema:
     """
@@ -353,7 +276,7 @@ class NotionDatabaseSchema:
         return relation_prop["relation"].get("database_id")
 
     def _extract_page_titles_and_ids(
-        self, pages: List[Dict[str, Any]]
+        self, pages: List[NotionPageManager]
     ) -> List[RelationOption]:
         """
         Extract titles and IDs from page objects.
@@ -367,16 +290,12 @@ class NotionDatabaseSchema:
         options: List[RelationOption] = []
 
         for page in pages:
-            page_id = page.get("id")
-            if not page_id:
-                continue
-
             page_title = self.extract_title_from_page(page)
-            options.append({"id": page_id, "title": page_title})
+            options.append({"id": page.page_id, "title": page_title})
 
         return options
 
-    def extract_title_from_page(self, page: Dict[str, Any]) -> str:
+    def extract_title_from_page(self, page_manager: NotionPageManager) -> str:
         """
         Extract the title from a page object.
 
@@ -386,25 +305,8 @@ class NotionDatabaseSchema:
         Returns:
             The extracted title or "Untitled" if no title is found
         """
-        properties = page.get("properties", {})
-
-        # Find the title property (usually the one with type "title")
-        for prop_data in properties.values():
-            if prop_data.get("type") != "title" or "title" not in prop_data:
-                continue
-
-            title_property = cast(NotionTitleProperty, prop_data)
-            title_content = title_property["title"]
-            if not title_content or not isinstance(title_content, list):
-                continue
-
-            title_parts: List[str] = []
-            for part in title_content:
-                if "plain_text" in part:
-                    title_parts.append(part["plain_text"])
-
-            if title_parts:
-                return "".join(title_parts)
+        if page_manager.title:
+            return page_manager.title
 
         return "Untitled"
 
