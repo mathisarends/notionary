@@ -1,12 +1,22 @@
 from typing import Dict, Any, List, Optional, Tuple
 
 from notionary.core.converters.registry.block_element_registry import BlockElementRegistry
-
+from notionary.core.converters.registry.block_element_registry_builder import BlockElementRegistryBuilder
 
 class MarkdownToNotionConverter:
     SPACER_MARKER = "<!-- spacer -->"
     MULTILINE_CONTENT_MARKER = "<!-- REMOVED_MULTILINE_CONTENT -->"
     TOGGLE_MARKER = "<!-- toggle_content -->"
+    
+    def __init__(self, block_registry: Optional[BlockElementRegistry] = None):
+        """
+        Initialize the MarkdownToNotionConverter.
+
+        Args:
+            block_registry: Optional registry of Notion block elements
+        """
+        self.block_registry = block_registry or BlockElementRegistryBuilder().create_standard_registry()
+        
 
     def convert(self, markdown_text: str) -> List[Dict[str, Any]]:
         """
@@ -62,7 +72,7 @@ class MarkdownToNotionConverter:
 
             # Check if the line is a toggle
             toggle_element = None
-            for element in BlockElementRegistry.get_elements():
+            for element in default_registry.get_elements():
                 if (
                     element.is_multiline()
                     and hasattr(element, "match_markdown")
@@ -161,7 +171,7 @@ class MarkdownToNotionConverter:
         processed_text = text
 
         # Get all multiline elements
-        multiline_elements = BlockElementRegistry.get_multiline_elements()
+        multiline_elements = default_registry.get_multiline_elements()
 
         for element in multiline_elements:
             # Skip ToggleElement as it's handled separately
@@ -306,7 +316,7 @@ class MarkdownToNotionConverter:
         Returns:
             Todo block if line is a todo item, None otherwise
         """
-        for element in BlockElementRegistry.get_elements():
+        for element in default_registry.get_elements():
             if (
                 not element.is_multiline()
                 and hasattr(element, "match_markdown")
@@ -356,7 +366,7 @@ class MarkdownToNotionConverter:
         Returns:
             Block if line is a special block, None otherwise
         """
-        for element in BlockElementRegistry.get_elements():
+        for element in default_registry.get_elements():
             if (
                 not element.is_multiline()
                 and hasattr(element, "match_markdown")
@@ -405,7 +415,7 @@ class MarkdownToNotionConverter:
             return
 
         paragraph_text = "\n".join(paragraph_lines)
-        block = BlockElementRegistry.markdown_to_notion(paragraph_text)
+        block = default_registry.markdown_to_notion(paragraph_text)
 
         if not block:
             return
@@ -462,7 +472,7 @@ class MarkdownToNotionConverter:
         if not block_type:
             return False
 
-        multiline_elements = BlockElementRegistry.get_multiline_elements()
+        multiline_elements = default_registry.get_multiline_elements()
 
         for element in multiline_elements:
             element_name = element.__name__.lower()

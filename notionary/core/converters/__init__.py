@@ -2,9 +2,11 @@
 from .markdown_to_notion_converter import MarkdownToNotionConverter
 from .notion_to_markdown_converter import NotionToMarkdownConverter
 
+# Import registry classes
 from .registry.block_element_registry import BlockElementRegistry
+from .registry.block_element_registry_builder import BlockElementRegistryBuilder
 
-# Import elements
+# Import elements for type hints and direct use
 from .elements.paragraph_element import ParagraphElement
 from .elements.heading_element import HeadingElement
 from .elements.callout_element import CalloutElement
@@ -20,31 +22,16 @@ from .elements.toggle_element import ToggleElement
 from .elements.bookmark_element import BookmarkElement
 from .elements.column_element import ColumnElement
 
-# Register all elements
-# Register paragraphs last since they're the fallback
-BlockElementRegistry.register(HeadingElement)
-BlockElementRegistry.register(CalloutElement)
-BlockElementRegistry.register(CodeBlockElement)
-BlockElementRegistry.register(DividerElement)
-BlockElementRegistry.register(TableElement)
-BlockElementRegistry.register(ColumnElement)
-BlockElementRegistry.register(BulletedListElement)
-BlockElementRegistry.register(NumberedListElement)
-# Has to be registered before quote element
-BlockElementRegistry.register(ToggleElement)
-BlockElementRegistry.register(QuoteElement)
-BlockElementRegistry.register(TodoElement)
-BlockElementRegistry.register(BookmarkElement)
-BlockElementRegistry.register(ImageElement)
-BlockElementRegistry.register(VideoElement)
-# Register last! (Fallback)
-BlockElementRegistry.register(ParagraphElement)
+default_registry = BlockElementRegistryBuilder.create_standard_registry()
 
 # Define what to export
 __all__ = [
     "BlockElementRegistry",
+    "BlockElementRegistryBuilder",
     "MarkdownToNotionConverter",
     "NotionToMarkdownConverter",
+    "default_registry",
+    # Element classes
     "ParagraphElement",
     "HeadingElement",
     "CalloutElement",
@@ -55,4 +42,9 @@ __all__ = [
     "QuoteElement",
     "BulletedListElement",
     "NumberedListElement",
+    "ImageElement",
+    "VideoElement",
+    "ToggleElement",
+    "BookmarkElement",
+    "ColumnElement",
 ]

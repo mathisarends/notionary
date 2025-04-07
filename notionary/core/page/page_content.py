@@ -14,9 +14,10 @@ class PageContentEditor(LoggingMixin):
     def __init__(self, page_id: str, client: NotionClient):
         self.page_id = page_id
         self._client = client
+        self._markdown_to_notion_converter = MarkdownToNotionConverter()
 
     async def append_markdown(self, markdown_text: str) -> str:
-        blocks = MarkdownToNotionConverter().convert(markdown_text)
+        blocks = self._markdown_to_notion_converter.convert(markdown_text)
         result = await self._client.patch(
             f"blocks/{self.page_id}/children", {"children": blocks}
         )

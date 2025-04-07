@@ -3,19 +3,29 @@ from typing import Dict, Any, Optional, List, Type
 from notionary.core.converters.elements.notion_block_element import NotionBlockElement
 from notionary.core.converters.elements.text_inline_formatter import TextInlineFormatter
 
-# TODO: Das hier nicht mehr in einem Singleton verwenden, sondern in Instanzen die man dann auf unterschiedliche Arten bauen kann mit einem Builder oder Fabrik Muster.
 class BlockElementRegistry:
     """Registry of elements that can convert between Markdown and Notion."""
 
-    _elements = []
+    def __init__(self, elements=None):
+        """
+        Initialize a new registry instance.
+        
+        Args:
+            elements: Optional list of NotionBlockElement classes to register at creation
+        """
+        self._elements = []
+        
+        # Register initial elements if provided
+        if elements:
+            for element in elements:
+                self.register(element)
 
-    @classmethod
-    def register(cls, element_class: Type[NotionBlockElement]):
+    def register(self, element_class: Type[NotionBlockElement]):
         """Register an element class."""
-        cls._elements.append(element_class)
+        self._elements.append(element_class)
+        return self  # Return self to allow method chaining
 
-    @classmethod
-    def deregister(cls, element_class: Type[NotionBlockElement]) -> bool:
+    def deregister(self, element_class: Type[NotionBlockElement]) -> bool:
         """
         Deregister an element class.
 
@@ -25,73 +35,66 @@ class BlockElementRegistry:
         Returns:
             bool: True if the element was removed, False if it wasn't in the registry
         """
-        if element_class in cls._elements:
-            cls._elements.remove(element_class)
+        if element_class in self._elements:
+            self._elements.remove(element_class)
             return True
         return False
     
-    @classmethod
-    def clear(cls):
-        """Leert die Registry komplett."""
-        cls._elements.clear()
+    def clear(self):
+        """Clear the registry completely."""
+        self._elements.clear()
+        return self  # Return self to allow method chaining
 
-    @classmethod
-    def find_markdown_handler(cls, text: str) -> Optional[Type[NotionBlockElement]]:
+    def find_markdown_handler(self, text: str) -> Optional[Type[NotionBlockElement]]:
         """Find an element that can handle the given markdown text."""
-        for element in cls._elements:
+        for element in self._elements:
             if element.match_markdown(text):
                 return element
         return None
 
-    @classmethod
     def find_notion_handler(
-        cls, block: Dict[str, Any]
+        self, block: Dict[str, Any]
     ) -> Optional[Type[NotionBlockElement]]:
         """Find an element that can handle the given Notion block."""
-        for element in cls._elements:
+        for element in self._elements:
             if element.match_notion(block):
                 return element
         return None
 
-    @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(self, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown to Notion block using registered elements."""
-        handler = cls.find_markdown_handler(text)
+        handler = self.find_markdown_handler(text)
         if handler:
             return handler.markdown_to_notion(text)
         return None
 
-    @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
+    def notion_to_markdown(self, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion block to markdown using registered elements."""
-        handler = cls.find_notion_handler(block)
+        handler = self.find_notion_handler(block)
         if handler:
             return handler.notion_to_markdown(block)
         return None
 
-    @classmethod
-    def get_multiline_elements(cls) -> List[Type[NotionBlockElement]]:
+    def get_multiline_elements(self) -> List[Type[NotionBlockElement]]:
         """Get all registered multiline elements."""
-        return [element for element in cls._elements if element.is_multiline()]
+        return [element for element in self._elements if element.is_multiline()]
 
-    @classmethod
-    def get_elements(cls) -> List[Type[NotionBlockElement]]:
+    def get_elements(self) -> List[Type[NotionBlockElement]]:
         """Get all registered elements."""
-        return cls._elements.copy()
+        return self._elements.copy()
     
-    @classmethod
-    def generate_llm_prompt(cls) -> str:
+    def generate_llm_prompt(self) -> str:
         """
-        Generiert einen LLM-System-Prompt, der die Markdown-Syntax aller registrierten Elemente beschreibt.
+        Generates an LLM system prompt that describes the Markdown syntax of all registered elements.
         
-        Es wird automatisch der TextInlineFormatter hinzugefügt, falls er nicht bereits registriert ist.
+        TextInlineFormatter is automatically added if not already registered.
         
         Returns:
-            Ein kompletter System-Prompt für ein LLM, das Notion-Markdown-Syntax verstehen soll
+            A complete system prompt for an LLM that should understand Notion-Markdown syntax
         """
-        # Kopie der registrierten Elemente erstellen
-        element_classes = cls._elements.copy()
-        print("Elemente in der Registry:", element_classes)
+        # Create a copy of registered elements
+        element_classes = self._elements.copy()
+        print("Elements in registry:", element_classes)
         
         formatter_names = [e.__name__ for e in element_classes]
         if "TextInlineFormatter" not in formatter_names:
@@ -100,16 +103,15 @@ class BlockElementRegistry:
         return MarkdownSyntaxPromptBuilder.generate_system_prompt(element_classes)
 
 
-# TODO: Das muss hier besser benannt werden
 class MarkdownSyntaxPromptBuilder:
     """
-    Generator für LLM-System-Prompts, die Notion-Markdown-Syntax beschreiben.
+    Generator for LLM system prompts that describe Notion-Markdown syntax.
     
-    Diese Klasse extrahiert Informationen über unterstützte Markdown-Patterns
-    und formatiert sie für LLMs optimal.
+    This class extracts information about supported Markdown patterns
+    and formats them optimally for LLMs.
     """
     
-    # Standard System-Prompt Template
+    # Standard system prompt template
     SYSTEM_PROMPT_TEMPLATE = """You are a knowledgeable assistant that helps users create content for Notion pages.
 Notion supports standard Markdown with some special extensions for creating rich content.
 
@@ -136,9 +138,9 @@ paragraphs, lists, quotes, etc.
     @staticmethod
     def generate_element_doc(element_class: Type[NotionBlockElement]) -> str:
         """
-        Generiert Dokumentation für ein spezifisches NotionBlockElement.
+        Generates documentation for a specific NotionBlockElement.
         
-        Verwendet die get_llm_prompt_content-Methode des Elements, wenn verfügbar.
+        Uses the element's get_llm_prompt_content method if available.
         """
         class_name = element_class.__name__
         element_name = class_name.replace("Element", "")
@@ -181,13 +183,13 @@ paragraphs, lists, quotes, etc.
         element_classes: List[Type[NotionBlockElement]],
     ) -> str:
         """
-        Generiert vollständige Dokumentation für alle übergebenen Element-Klassen.
+        Generates complete documentation for all provided element classes.
         
         Args:
-            element_classes: Liste von NotionBlockElement-Klassen
+            element_classes: List of NotionBlockElement classes
             
         Returns:
-            Dokumentationstext für alle Elemente
+            Documentation text for all elements
         """
         docs = [
             "# Custom Markdown Syntax for Notion Blocks",
@@ -218,13 +220,13 @@ paragraphs, lists, quotes, etc.
         element_classes: List[Type[NotionBlockElement]],
     ) -> str:
         """
-        Generiert einen vollständigen System-Prompt für LLMs.
+        Generates a complete system prompt for LLMs.
         
         Args:
-            element_classes: Liste der zu dokumentierenden Element-Klassen
+            element_classes: List of element classes to document
             
         Returns:
-            Vollständiger System-Prompt für ein LLM
+            Complete system prompt for an LLM
         """
         element_docs = cls.generate_element_docs(element_classes)
         
