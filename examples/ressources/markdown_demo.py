@@ -1,4 +1,4 @@
-markdown_example_rich_text = """
+MARKDOWN_EXAMPLE = """
 # Notionary Rich Markdown Demo
 
 !> [💡] This example was automatically generated using the Notionary Python library.

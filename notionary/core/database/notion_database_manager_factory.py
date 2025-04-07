@@ -210,18 +210,3 @@ class NotionDatabaseFactory(LoggingMixin):
                 text_parts.append(text_obj["plain_text"])
         
         return "".join(text_parts)
-        
-if __name__ == "__main__":
-    import asyncio
-    
-    async def main():
-        factory = NotionDatabaseFactory()
-        manager = await factory.from_database_name("Projekte")
-        
-        if manager:
-            print(f"Manager created for database: {manager.database_id}")
-            await manager.close()
-        else:
-            print("No matching database found")
-    
-    asyncio.run(main())

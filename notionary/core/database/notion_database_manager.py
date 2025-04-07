@@ -27,7 +27,6 @@ class NotionDatabaseManager(LoggingMixin):
         It is recommended to create instances of this class using the NotionDatabaseFactory
         instead of directly calling the constructor.
     """
-    _factory_warning_shown: ClassVar[bool] = False
 
     def __init__(self, database_id: str, token: Optional[str] = None):
         """
@@ -41,13 +40,6 @@ class NotionDatabaseManager(LoggingMixin):
             database_id: The ID of the Notion database
             token: Optional Notion API token (uses environment variable if not provided)
         """
-        if not NotionDatabaseManager._factory_warning_shown:
-            self.logger.info(
-                "Direct instantiation of NotionDatabaseManager detected. "
-                "Consider using NotionDatabaseFactory for better error handling."
-            )
-            NotionDatabaseManager._factory_warning_shown = True
-            
         self.database_id = format_uuid(database_id) or database_id
         self._client = NotionClient(token=token)
         self._schema = NotionDatabaseSchema(self.database_id, self._client)

@@ -14,8 +14,9 @@ and custom Markdown extensions supported by Notionary.
 
 import asyncio
 from notionary.core.page.notion_page_manager import NotionPageManager
-from examples.ressources.markdown_demo import markdown_example_rich_text
+from notionary.exceptions.database_exceptions import PageOperationError
 
+from examples.ressources.markdown_demo import MARKDOWN_EXAMPLE
 
 async def main():
     """Create a rich Notion page showcasing various content blocks."""
@@ -33,12 +34,12 @@ async def main():
         )
 
         print("✨ Updating page with rich content...")
-        await page_manager.replace_content(markdown_example_rich_text)
+        await page_manager.replace_content(markdown=MARKDOWN_EXAMPLE)
 
         print("🎉 Page updated successfully with rich content!")
         print("🔗 Open the page in Notion to see the results")
 
-    except Exception as e:
+    except PageOperationError as e:
         print(f"❌ Error updating page: {e}")
 
 if __name__ == "__main__":
