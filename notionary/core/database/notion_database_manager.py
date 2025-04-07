@@ -1,527 +1,315 @@
-from typing import AsyncGenerator, Dict, List, Optional, Any, TypedDict, Union, cast, Literal
-import asyncio
-import os
+import re
+from typing import Any, Dict, List, Optional, Union, AsyncGenerator, Callable
+from notionary.core.database.notion_database_writer import DatabaseWritter
 from notionary.core.notion_client import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
-from notionary.util.singleton_decorator import singleton
+from notionary.core.database.notion_database_manager import NotionDatabaseSchema
+from notionary.core.database.notion_database_manager import NotionDatabaseRegistry
 
 
-class NotionTextContent(TypedDict):
-    plain_text: str
-
-
-class NotionTitleProperty(TypedDict):
-    type: Literal["title"]
-    title: List[NotionTextContent]
-
-
-class NotionSelectOption(TypedDict):
-    name: str
-    id: Optional[str]
-    color: Optional[str]
-
-
-class NotionSelectProperty(TypedDict):
-    type: Literal["select"]
-    select: Dict[str, List[NotionSelectOption]]
-
-
-class NotionMultiSelectProperty(TypedDict):
-    type: Literal["multi_select"]
-    multi_select: Dict[str, List[NotionSelectOption]]
-
-
-class NotionStatusProperty(TypedDict):
-    type: Literal["status"]
-    status: Dict[str, List[NotionSelectOption]]
-
-
-class NotionRelationProperty(TypedDict):
-    type: Literal["relation"]
-    relation: Dict[str, str]
-
-
-class NotionNumberProperty(TypedDict):
-    type: Literal["number"]
-    number: Dict[str, Any]
-
-
-NotionPropertyType = Union[
-    NotionTitleProperty,
-    NotionSelectProperty,
-    NotionMultiSelectProperty,
-    NotionStatusProperty,
-    NotionRelationProperty,
-    NotionNumberProperty,
-    Dict[str, Any],  # Fallback für andere Typen
-]
-
-
-class RelationOption(TypedDict):
-    id: str
-    title: str
-
-
-@singleton
-class NotionDatabaseRegistry(LoggingMixin):
+class NotionDatabaseManager(LoggingMixin):
     """
-    Registry that maintains a mapping of database IDs to their titles.
-    Provides a simple way to lookup databases by ID or title.
+    High-Level Fassade zur Verwaltung von Notion-Datenbanken und deren Einträgen.
+    Bietet vereinfachte Methoden zum Erstellen, Lesen, Aktualisieren und Löschen von Datenbankeinträgen.
     """
 
-    def __init__(self, client: NotionClient) -> None:
+    def __init__(
+        self,
+        database_id: Optional[str] = None,
+        url: Optional[str] = None,
+        token: Optional[str] = None,
+    ):
         """
-        Initialize the registry with a NotionClient.
-        """
-        self._client = client
-        self._id_to_title: Dict[str, str] = {}
-        self._title_to_id: Dict[str, str] = {}
-        self._initialized: bool = False
+        Initialisiert den Datenbank-Manager mit einer Datenbank-ID oder URL.
 
-
-    async def initialize(self) -> None:
+        Args:
+            database_id: Die ID der Notion-Datenbank
+            url: Die URL der Notion-Datenbank (alternativ zur ID)
+            token: Optional - ein benutzerdefiniertes API-Token
         """
-        Load all databases and build the ID-to-title mapping.
-        """
-        if self._initialized:
-            return
+        if not database_id and not url:
+            raise ValueError("Either database_id or url must be provided")
 
-        self.logger.info("Initializing database registry...")
-        
-        # Reset mappings
-        self._id_to_title.clear()
-        self._title_to_id.clear()
-        
+        if not database_id and url:
+            database_id = self._extract_notion_uuid(url)
+            if not database_id:
+                raise ValueError(
+                    f"Could not extract a valid UUID from the URL: {url}"
+                )
+
+        if not self._validate_uuid_format(database_id):
+            parsed_id = self._extract_notion_uuid(database_id)
+            if not parsed_id:
+                raise ValueError(
+                    f"Invalid UUID format and could not be parsed: {database_id}"
+                )
+            database_id = parsed_id
+
+        self.database_id = database_id
+        self.url = url
+
+        self._client = NotionClient(token=token)
+        self._schema = NotionDatabaseSchema(database_id, self._client)
+        self._writer = DatabaseWritter(self._client, self._schema)
+        self._registry = NotionDatabaseRegistry(self._client)
+
+    async def get_schema(self) -> Dict[str, str]:
+        """
+        Gibt das Schema der Datenbank zurück (Eigenschaften und ihre Typen).
+
+        Returns:
+            Ein Dictionary mit Eigenschaftsnamen und ihren Typen
+        """
+        await self._schema.load()
+        return await self._schema.get_property_types()
+
+    async def get_select_options(self, property_name: str) -> List[Dict[str, str]]:
+        """
+        Ruft die verfügbaren Optionen für eine Select-, Multi-Select- oder Status-Eigenschaft ab.
+
+        Args:
+            property_name: Der Name der Eigenschaft
+
+        Returns:
+            Eine Liste von Optionsobjekten mit Namen und IDs
+        """
+        return await self._schema.get_select_options(property_name)
+
+    async def create_entry(
+        self, 
+        properties: Dict[str, Any], 
+        relations: Optional[Dict[str, Union[str, List[str]]]] = None
+    ) -> Optional[str]:
+        """
+        Erstellt einen neuen Eintrag in der Datenbank.
+
+        Args:
+            properties: Ein Dictionary mit Eigenschaftsnamen und Werten
+            relations: Optional - ein Dictionary mit Relationsnamen und Titeln der verknüpften Einträge
+
+        Returns:
+            Die ID des erstellten Eintrags oder None bei Fehler
+        """
+        result = await self._writer.create_page(self.database_id, properties, relations)
+        if result:
+            self.logger.info("Entry created with ID: %s", result['id'])
+            return result["id"]
+        return None
+
+    async def update_entry(
+        self, 
+        page_id: str, 
+        properties: Optional[Dict[str, Any]] = None,
+        relations: Optional[Dict[str, Union[str, List[str]]]] = None
+    ) -> bool:
+        """
+        Aktualisiert einen bestehenden Eintrag in der Datenbank.
+
+        Args:
+            page_id: Die ID des zu aktualisierenden Eintrags
+            properties: Ein Dictionary mit zu aktualisierenden Eigenschaften und Werten
+            relations: Optional - ein Dictionary mit zu aktualisierenden Relationen
+
+        Returns:
+            True bei Erfolg, False bei Fehler
+        """
+        result = await self._writer.update_page(page_id, properties, relations)
+        return result is not None
+
+    async def delete_entry(self, page_id: str) -> bool:
+        """
+        Löscht (archiviert) einen Eintrag aus der Datenbank.
+
+        Args:
+            page_id: Die ID des zu löschenden Eintrags
+
+        Returns:
+            True bei Erfolg, False bei Fehler
+        """
+        return await self._writer.delete_page(page_id)
+
+    async def get_entries(
+        self,
+        filter_conditions: Optional[Dict[str, Any]] = None,
+        sorts: Optional[List[Dict[str, Any]]] = None,
+        limit: Optional[int] = None,
+        transform: Optional[Callable[[Dict[str, Any]], Any]] = None
+    ) -> List[Any]:
+        """
+        Ruft Einträge aus der Datenbank ab mit optionalen Filtern und Sortierung.
+
+        Args:
+            filter_conditions: Optional - Filterbedingungen für die Abfrage
+            sorts: Optional - Sortierungsanweisungen für die Abfrage
+            limit: Optional - maximale Anzahl der abzurufenden Einträge
+            transform: Optional - eine Funktion zur Transformation der Ergebnisse
+
+        Returns:
+            Eine Liste von Datenbankeinträgen oder transformierten Werten
+        """
+        entries = []
         count = 0
-        async for db in self.iter_databases():
-            db_id = db.get("id")
-            if not db_id:
-                continue
-
-            db_title = self._extract_database_title(db)
-            self._id_to_title[db_id] = db_title
+        
+        async for page in self.iter_entries(filter_conditions, sorts):
+            if limit and count >= limit:
+                break
+                
+            if transform:
+                entries.append(transform(page))
+            else:
+                entries.append(page)
+                
             count += 1
-
-            if db_title in self._title_to_id:
-                self.logger.warning("Duplicate database title found: %s", db_title)
-                self._title_to_id[f"{db_title} ({db_id})"] = db_id
-            else:
-                self._title_to_id[db_title] = db_id
-
-        self._initialized = True
-        self.logger.info(
-            "Database registry initialized with %d databases", count
-        )
-
-    async def get_title(self, database_id: str) -> Optional[str]:
-        """
-        Get the title of a database by its ID.
-        """
-        if not self._initialized:
-            await self.initialize()
-
-        return self._id_to_title.get(database_id)
-
-    async def get_id(self, title: str) -> Optional[str]:
-        """
-        Get the ID of a database by its title.
-        """
-        if not self._initialized:
-            await self.initialize()
-
-        return self._title_to_id.get(title)
-
-    async def get_all_ids(self) -> List[str]:
-        """
-        Get all database IDs.
-        """
-        if not self._initialized:
-            await self.initialize()
-
-        return list(self._id_to_title.keys())
-
-    async def get_all_titles(self) -> List[str]:
-        """
-        Get all database titles.
-        """
-        if not self._initialized:
-            await self.initialize()
-
-        return list(self._title_to_id.keys())
-
-    async def get_id_title_map(self) -> Dict[str, str]:
-        """
-        Get the complete mapping of database IDs to titles.
-
-        Returns:
-            A dictionary mapping database IDs to titles
-        """
-        if not self._initialized:
-            await self.initialize()
-
-        return self._id_to_title.copy()
-
-    async def refresh(self) -> None:
-        """
-        Refresh the registry by reloading all databases.
-        """
-        self._id_to_title.clear()
-        self._title_to_id.clear()
-        self._initialized = False
-        await self.initialize()
-
-    def _extract_database_title(self, database: Dict[str, Any]) -> str:
-        """
-        Extract the database title from a Notion API response.
-
-        Args:
-            database: The database object from the Notion API
-
-        Returns:
-            The extracted title or "Untitled" if no title is found
-        """
-        title = "Untitled"
-
-        if "title" in database:
-            title_parts: List[str] = []
-            for text_obj in database["title"]:
-                if "plain_text" in text_obj:
-                    title_parts.append(text_obj["plain_text"])
-
-            if title_parts:
-                title = "".join(title_parts)
-
-        return title
-    
-    
-    async def iter_databases(self, page_size: int = 100) -> AsyncGenerator[Dict[str, Any], None]:
-        """
-        Asynchronous generator that yields Notion databases one by one.
-        
-        Uses the Notion API to provide paginated access to all databases
-        without loading all of them into memory at once.
-        
-        Args:
-            page_size: The number of databases to fetch per request
             
+        return entries
+
+    async def iter_entries(
+        self,
+        filter_conditions: Optional[Dict[str, Any]] = None,
+        sorts: Optional[List[Dict[str, Any]]] = None,
+        page_size: int = 100
+    ) -> AsyncGenerator[Dict[str, Any], None]:
+        """
+        Asynchroner Generator, der Einträge aus der Datenbank schrittweise zurückgibt.
+
+        Args:
+            filter_conditions: Optional - Filterbedingungen für die Abfrage
+            sorts: Optional - Sortierungsanweisungen für die Abfrage
+            page_size: Die Anzahl der Einträge, die pro Anfrage abgerufen werden sollen
+
         Yields:
-            Individual database objects from the Notion API
+            Einzelne Datenbankeinträge aus der Notion-API
         """
-        start_cursor: Optional[str] = None
-        
-        while True:
-            body: Dict[str, Any] = {
-                "filter": {"value": "database", "property": "object"},
-                "page_size": page_size,
+        async for page in self._schema.iter_database_pages(
+            page_size=page_size,
+            filter_conditions=filter_conditions,
+            sorts=sorts
+        ):
+            yield page
+
+    async def create_status_filter(self, property_name: str, status_value: str) -> Dict[str, Any]:
+        """
+        Erstellt eine Filterbedingung für eine Status-Eigenschaft.
+
+        Args:
+            property_name: Der Name der Status-Eigenschaft
+            status_value: Der Statuswert, nach dem gefiltert werden soll
+
+        Returns:
+            Ein Filter-Dictionary für die Verwendung mit get_entries oder iter_entries
+        """
+        return {
+            "property": property_name,
+            "status": {
+                "equals": status_value
             }
-            
-            if start_cursor:
-                body["start_cursor"] = start_cursor
-                
-            result = await self._client.post("search", data=body)
-            
-            if not result or "results" not in result:
-                self.logger.error("Error fetching databases")
-                break
-                
-            for database in result["results"]:
-                yield database
-                
-            if "has_more" in result and result["has_more"] and "next_cursor" in result:
-                start_cursor = result["next_cursor"]
-            else:
-                break
+        }
 
-# Diese Klasse hier muss offiziell auch noch bestehnde Seiten mit sukzessive zurückliefern vllt. oder bestehende mit einer Stichpunktsuche erweitern:
-# Die Seite sollte hier auch refacoted werden.
-class NotionDatabaseSchema:
-    """
-    Represents the schema of a specific Notion database.
-    Manages property information, options, and relations for a single database.
-    """
-
-    def __init__(self, database_id: str, client: NotionClient) -> None:
+    async def create_title_filter(self, title_value: str, contains: bool = True) -> Dict[str, Any]:
         """
-        Initialize a database schema handler for a specific database.
+        Erstellt eine Filterbedingung für den Titel.
 
         Args:
-            database_id: The ID of the database
-            client: An instance of NotionClient for API requests
-        """
-        self.database_id: str = database_id
-        self._client: NotionClient = client
-        self._properties: Dict[str, NotionPropertyType] = {}
-        self._loaded: bool = False
-
-    async def load(self) -> bool:
-        """
-        Load the database schema from the Notion API.
+            title_value: Der Titelwert, nach dem gefiltert werden soll
+            contains: True für eine enthält-Abfrage, False für eine exakte Übereinstimmung
 
         Returns:
-            True if the schema was loaded successfully, False otherwise
+            Ein Filter-Dictionary für die Verwendung mit get_entries oder iter_entries
         """
-        if self._loaded:
-            return True
+        condition = "contains" if contains else "equals"
+        return {
+            "property": "title",
+            "title": {
+                condition: title_value
+            }
+        }
 
-        db_details = await self._client.get(f"databases/{self.database_id}")
-        if not db_details or "properties" not in db_details:
-            return False
-
-        self._properties = db_details["properties"]
-        self._loaded = True
-        return True
-
-    async def get_property_types(self) -> Dict[str, str]:
+    async def create_number_filter(
+        self, 
+        property_name: str, 
+        condition: str, 
+        value: Union[int, float]
+    ) -> Dict[str, Any]:
         """
-        Get a mapping of property names to their types.
-
-        Returns:
-            A dictionary mapping property names to types
-        """
-        if not self._loaded:
-            await self.load()
-
-        return {name: prop.get("type", "") for name, prop in self._properties.items()}
-
-    async def get_select_options(self, property_name: str) -> List[NotionSelectOption]:
-        """
-        Get the options for a select, multi_select, or status property.
+        Erstellt eine Filterbedingung für eine Zahleneigenschaft.
 
         Args:
-            property_name: The name of the property
+            property_name: Der Name der Zahleneigenschaft
+            condition: Die Bedingung (z.B. "equals", "greater_than", "less_than")
+            value: Der Zahlenwert für den Vergleich
 
         Returns:
-            A list of option objects
+            Ein Filter-Dictionary für die Verwendung mit get_entries oder iter_entries
         """
-        if not self._loaded:
-            await self.load()
+        return {
+            "property": property_name,
+            "number": {
+                condition: value
+            }
+        }
 
-        if property_name not in self._properties:
-            return []
-
-        prop = self._properties[property_name]
-        prop_type = prop.get("type", "")
-
-        if prop_type not in ["select", "multi_select", "status"]:
-            return []
-
-        if prop_type in prop and "options" in prop[prop_type]:
-            return cast(List[NotionSelectOption], prop[prop_type]["options"])
-
-        return []
-
-    async def get_relation_options(
-        self, property_name: str, limit: int = 100
-    ) -> List[RelationOption]:
-        """
-        Get available options for a relation property (pages in the related database).
-
-        Args:
-            property_name: The name of the relation property
-            limit: Maximum number of options to retrieve
-
-        Returns:
-            List of options with id and title
-        """
-        related_db_id = await self.get_relation_database_id(property_name)
-        if not related_db_id:
-            return []
-
-        pages = await self._query_database_pages(related_db_id, limit)
-        return self._extract_page_titles_and_ids(pages)
-
-    async def get_relation_database_id(self, property_name: str) -> Optional[str]:
-        """
-        Get the ID of the related database for a relation property.
-
-        Args:
-            property_name: The name of the property
-
-        Returns:
-            The ID of the related database or None
-        """
-        if not self._loaded:
-            await self.load()
-
-        if property_name not in self._properties:
-            return None
-
-        prop = self._properties[property_name]
-        prop_type = prop.get("type", "")
-
-        if prop_type != "relation" or "relation" not in prop:
-            return None
-
-        relation_prop = cast(NotionRelationProperty, prop)
-        return relation_prop["relation"].get("database_id")
-
-    def _extract_page_titles_and_ids(
-        self, pages: List[Dict[str, Any]]
-    ) -> List[RelationOption]:
-        """
-        Extract titles and IDs from page objects.
-
-        Args:
-            pages: List of page objects from the Notion API
-
-        Returns:
-            List of dictionaries with id and title for each page
-        """
-        options: List[RelationOption] = []
-
-        for page in pages:
-            page_id = page.get("id")
-            if not page_id:
-                continue
-
-            page_title = self._extract_title_from_page(page)
-            options.append({"id": page_id, "title": page_title})
-
-        return options
-
-    def _extract_title_from_page(self, page: Dict[str, Any]) -> str:
-        """
-        Extract the title from a page object.
-
-        Args:
-            page: A page object from the Notion API
-
-        Returns:
-            The extracted title or "Untitled" if no title is found
-        """
-        properties = page.get("properties", {})
-
-        # Find the title property (usually the one with type "title")
-        for prop_data in properties.values():
-            if prop_data.get("type") != "title" or "title" not in prop_data:
-                continue
-
-            title_property = cast(NotionTitleProperty, prop_data)
-            title_content = title_property["title"]
-            if not title_content or not isinstance(title_content, list):
-                continue
-
-            title_parts: List[str] = []
-            for part in title_content:
-                if "plain_text" in part:
-                    title_parts.append(part["plain_text"])
-
-            if title_parts:
-                return "".join(title_parts)
-
-        return "Untitled"
-
-    async def _query_database_pages(
-        self, database_id: str, limit: int = 100
+    async def get_related_entries(
+        self, 
+        property_name: str, 
+        related_title: str, 
+        limit: int = 100
     ) -> List[Dict[str, Any]]:
         """
-        Query pages in a Notion database.
+        Findet Einträge, die mit einem bestimmten Eintrag durch eine Relation verknüpft sind.
 
         Args:
-            database_id: The ID of the database to query
-            limit: Maximum number of pages to retrieve
+            property_name: Der Name der Relationseigenschaft
+            related_title: Der Titel des verknüpften Eintrags
+            limit: Maximale Anzahl der abzurufenden Einträge
 
         Returns:
-            List of page objects from the Notion API
+            Eine Liste von verknüpften Einträgen
         """
-        pages: List[Dict[str, Any]] = []
-        start_cursor: Optional[str] = None
-        page_size = min(limit, 100)
-        remaining = limit
-
-        while remaining > 0:
-            current_page_size = min(remaining, page_size)
-
-            body: Dict[str, Any] = {"page_size": current_page_size}
-
-            if start_cursor:
-                body["start_cursor"] = start_cursor
-
-            result = await self._client.post(
-                f"databases/{database_id}/query", data=body
-            )
-
-            if not result:
+        # Finde zuerst die ID des verwandten Eintrags
+        related_db_id = await self._schema.get_relation_database_id(property_name)
+        if not related_db_id:
+            self.logger.error("No related database found for property %s", property_name)
+            return []
+            
+        related_schema = NotionDatabaseSchema(related_db_id, self._client)
+        
+        related_id = None
+        async for page in related_schema.iter_database_pages():
+            title = related_schema.extract_title_from_page(page)
+            if title.lower() == related_title.lower():
+                related_id = page["id"]
                 break
+                
+        if not related_id:
+            self.logger.warning("No entry with title '%s' found in related database", related_title)
+            return []
+            
+        # Dann finde alle Einträge, die auf diesen Eintrag verweisen
+        filter_conditions = {
+            "property": property_name,
+            "relation": {
+                "contains": related_id
+            }
+        }
+        
+        return await self.get_entries(filter_conditions=filter_conditions, limit=limit)
 
-            if "results" in result:
-                pages.extend(result["results"])
-                remaining -= len(result["results"])
+    @staticmethod
+    def _extract_notion_uuid(url: str) -> Optional[str]:
+        """Extrahiert die UUID aus einer Notion-URL."""
+        uuid_pattern = r"([a-f0-9]{32})"
+        match = re.search(uuid_pattern, url.lower())
 
-                if (
-                    "has_more" in result
-                    and result["has_more"]
-                    and "next_cursor" in result
-                ):
-                    start_cursor = result["next_cursor"]
-                else:
-                    break
-            else:
-                break
+        if not match:
+            return None
 
-        return pages
+        uuid_raw = match.group(1)
+        formatted_uuid = f"{uuid_raw[0:8]}-{uuid_raw[8:12]}-{uuid_raw[12:16]}-{uuid_raw[16:20]}-{uuid_raw[20:32]}"
 
+        return formatted_uuid
 
-async def main() -> None:
-    """
-    Main function to demonstrate the usage of the registry and schema classes.
-    """
-    token = os.getenv("NOTION_SECRET")
-    if token is None:
-        raise ValueError("NOTION_SECRET environment variable is not set")
-
-    client = NotionClient(token)
-
-    try:
-        # Initialize the registry
-        registry = NotionDatabaseRegistry(client)
-        await registry.initialize()
-
-        # Get and display all database IDs and titles
-        db_map = await registry.get_id_title_map()
-        print("Database Registry:")
-        for db_id, title in db_map.items():
-            print(f"  {title}: {db_id}")
-
-        # Example: Load the schema for a specific database
-        # Replace with a real database ID from your account
-        if db_map:
-            first_db_id = next(iter(db_map.keys()))
-            first_db_title = db_map[first_db_id]
-
-            print(f"\nExploring schema for: {first_db_title}")
-            schema = NotionDatabaseSchema(first_db_id, client)
-            await schema.load()
-
-            property_types = await schema.get_property_types()
-            print("Properties:")
-            for prop_name, prop_type in property_types.items():
-                if prop_type in ["select", "multi_select", "status"]:
-                    options = await schema.get_select_options(prop_name)
-                    option_names = [opt.get("name", "Unnamed") for opt in options]
-                    if option_names:
-                        print(f"    Options: {', '.join(option_names)}")
-
-                # Show related database for relation properties
-                elif prop_type == "relation":
-                    related_db_id = await schema.get_relation_database_id(prop_name)
-                    if related_db_id:
-                        related_title = await registry.get_title(related_db_id)
-                        print(f"    Related to: {related_title} ({related_db_id})")
-
-                        # Show available entries in the related database
-                        relation_options = await schema.get_relation_options(
-                            prop_name, limit=5
-                        )
-                        if relation_options:
-                            print(f"    Available entries (first 5):")
-                            for option in relation_options:
-                                print(f"      - {option['title']} ({option['id']})")
-
-    finally:
-        # Close the client
-        await client.close()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
+    @staticmethod
+    def _validate_uuid_format(uuid: str) -> bool:
+        """Überprüft, ob eine Zeichenfolge dem UUID-Format entspricht."""
+        uuid_pattern = r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+        return bool(re.match(uuid_pattern, uuid.lower()))

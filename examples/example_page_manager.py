@@ -40,9 +40,6 @@ async def main():
 
     except Exception as e:
         print(f"❌ Error updating page: {e}")
-    finally:
-        await page_manager.close()
-
 
 if __name__ == "__main__":
     asyncio.run(main())

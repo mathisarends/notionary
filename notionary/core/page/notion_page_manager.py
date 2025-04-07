@@ -14,6 +14,7 @@ class NotionPageManager(LoggingMixin):
     def __init__(
         self,
         page_id: Optional[str] = None,
+        title: Optional[str] = None,
         url: Optional[str] = None,
         token: Optional[str] = None,
     ):
@@ -37,12 +38,17 @@ class NotionPageManager(LoggingMixin):
 
         self.page_id = page_id
         self.url = url
+        self._title = title
 
         self._client = NotionClient(token=token)
 
         self._reader = PageContentReader(page_id, self._client)
         self._editor = PageContentEditor(page_id, self._client)
         self._metadata = MetadataEditor(page_id, self._client)
+
+    @property
+    def title(self) -> Optional[str]:
+        return self._title
 
     async def append_markdown(self, markdown: str) -> str:
         return await self._editor.append_markdown(markdown)
