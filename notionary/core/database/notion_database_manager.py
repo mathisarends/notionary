@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Any, TypedDict, Union, cast, Literal
+from typing import AsyncGenerator, Dict, List, Optional, Any, TypedDict, Union, cast, Literal
 import asyncio
 import os
 from notionary.core.notion_client import NotionClient
@@ -46,7 +46,6 @@ class NotionNumberProperty(TypedDict):
     number: Dict[str, Any]
 
 
-# Union-Typ für alle möglichen Eigenschaftstypen
 NotionPropertyType = Union[
     NotionTitleProperty,
     NotionSelectProperty,
@@ -56,22 +55,6 @@ NotionPropertyType = Union[
     NotionNumberProperty,
     Dict[str, Any],  # Fallback für andere Typen
 ]
-
-
-class NotionDatabaseDefinition(TypedDict):
-    id: str
-    properties: Dict[str, NotionPropertyType]
-
-
-class NotionPage(TypedDict):
-    id: str
-    properties: Dict[str, NotionPropertyType]
-
-
-class NotionSearchResult(TypedDict):
-    results: List[Union[NotionDatabaseDefinition, NotionPage]]
-    has_more: bool
-    next_cursor: Optional[str]
 
 
 class RelationOption(TypedDict):
@@ -95,6 +78,7 @@ class NotionDatabaseRegistry(LoggingMixin):
         self._title_to_id: Dict[str, str] = {}
         self._initialized: bool = False
 
+
     async def initialize(self) -> None:
         """
         Load all databases and build the ID-to-title mapping.
@@ -103,16 +87,20 @@ class NotionDatabaseRegistry(LoggingMixin):
             return
 
         self.logger.info("Initializing database registry...")
-        all_databases = await self._fetch_all_databases()
-
-        # Build mappings
-        for db in all_databases:
+        
+        # Reset mappings
+        self._id_to_title.clear()
+        self._title_to_id.clear()
+        
+        count = 0
+        async for db in self.iter_databases():
             db_id = db.get("id")
             if not db_id:
                 continue
 
             db_title = self._extract_database_title(db)
             self._id_to_title[db_id] = db_title
+            count += 1
 
             if db_title in self._title_to_id:
                 self.logger.warning("Duplicate database title found: %s", db_title)
@@ -122,7 +110,7 @@ class NotionDatabaseRegistry(LoggingMixin):
 
         self._initialized = True
         self.logger.info(
-            "Database registry initialized with %d databases", len(self._id_to_title)
+            "Database registry initialized with %d databases", count
         )
 
     async def get_title(self, database_id: str) -> Optional[str]:
@@ -204,50 +192,45 @@ class NotionDatabaseRegistry(LoggingMixin):
                 title = "".join(title_parts)
 
         return title
-
-    async def _fetch_all_databases(self, page_size: int = 100) -> List[Dict[str, Any]]:
+    
+    
+    async def iter_databases(self, page_size: int = 100) -> AsyncGenerator[Dict[str, Any], None]:
         """
-        Fetch all Notion databases using the Search API.
-
+        Asynchronous generator that yields Notion databases one by one.
+        
+        Uses the Notion API to provide paginated access to all databases
+        without loading all of them into memory at once.
+        
         Args:
-            page_size: The number of databases to fetch per page
-
-        Returns:
-            A list of database objects from the Notion API
+            page_size: The number of databases to fetch per request
+            
+        Yields:
+            Individual database objects from the Notion API
         """
-        all_databases: List[Dict[str, Any]] = []
         start_cursor: Optional[str] = None
-
+        
         while True:
             body: Dict[str, Any] = {
                 "filter": {"value": "database", "property": "object"},
                 "page_size": page_size,
             }
-
+            
             if start_cursor:
                 body["start_cursor"] = start_cursor
-
+                
             result = await self._client.post("search", data=body)
-
-            if not result:
+            
+            if not result or "results" not in result:
                 self.logger.error("Error fetching databases")
                 break
-
-            if "results" in result:
-                all_databases.extend(result["results"])
-
-                if (
-                    "has_more" in result
-                    and result["has_more"]
-                    and "next_cursor" in result
-                ):
-                    start_cursor = result["next_cursor"]
-                else:
-                    break
+                
+            for database in result["results"]:
+                yield database
+                
+            if "has_more" in result and result["has_more"] and "next_cursor" in result:
+                start_cursor = result["next_cursor"]
             else:
                 break
-
-        return all_databases
 
 # Diese Klasse hier muss offiziell auch noch bestehnde Seiten mit sukzessive zurückliefern vllt. oder bestehende mit einer Stichpunktsuche erweitern:
 # Die Seite sollte hier auch refacoted werden.
