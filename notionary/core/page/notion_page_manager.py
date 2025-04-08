@@ -1,4 +1,6 @@
 from typing import Any, Dict, List, Optional
+from notionary.core.converters.registry.block_element_registry import BlockElementRegistry
+from notionary.core.converters.registry.block_element_registry_builder import BlockElementRegistryBuilder
 from notionary.core.notion_client import NotionClient
 from notionary.core.page.page_content_manager import PageContentManager
 from notionary.util.logging_mixin import LoggingMixin
@@ -30,18 +32,41 @@ class NotionPageManager(LoggingMixin):
         if not page_id or not is_valid_uuid(page_id):
             raise ValueError(f"Invalid UUID format: {page_id}")
 
-        self.page_id = page_id
+        self._page_id = page_id
         self.url = url
         self._title = title
-
+        
         self._client = NotionClient(token=token)
-        self._page_content_manager = PageContentManager(page_id, self._client)
+        
+        self._block_element_registry = BlockElementRegistryBuilder.create_standard_registry()
+        
+        self._page_content_manager = PageContentManager(page_id=page_id, client=self._client, block_registry=self._block_element_registry)
         self._metadata = MetadataEditor(page_id, self._client)
-
+        
+    @property
+    def page_id(self) -> Optional[str]:
+        """Get the title of the page."""
+        return self._page_id
 
     @property
     def title(self) -> Optional[str]:
         return self._title
+    
+    @property
+    def block_registry(self) -> BlockElementRegistry:
+        return self._block_element_registry
+
+    @block_registry.setter
+    def block_registry(self, block_registry: BlockElementRegistry)  -> None:
+        """Set the block element registry for the page content manager."""
+        
+        self._block_element_registry = block_registry
+        
+        self._page_content_manager = PageContentManager(
+            page_id=self._page_id, 
+            client=self._client, 
+            block_registry=block_registry
+    )
 
     async def append_markdown(self, markdown: str) -> str:
         return await self._page_content_manager.append_markdown(markdown)
