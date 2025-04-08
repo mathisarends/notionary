@@ -30,17 +30,16 @@ class PageContentEditor(LoggingMixin):
         if not blocks:
             return "No content to delete."
 
+        results = blocks.get("results", [])
+        if not results:
+            return "No content to delete."
+
         deleted = 0
-        for b in blocks.data.get("results", []):
+        for b in results:
             if await self._client.delete(f"blocks/{b['id']}"):
                 deleted += 1
 
-        return f"Deleted {deleted}/{len(blocks.data['results'])} blocks."
-
-    async def replace_content(self, markdown_text: str) -> str:
-        clear_result = await self.clear()
-        append_result = await self.append_markdown(markdown_text)
-        return f"{clear_result}\n{append_result}"
+        return f"Deleted {deleted}/{len(results)} blocks."
 
 
 class PageContentReader(LoggingMixin):

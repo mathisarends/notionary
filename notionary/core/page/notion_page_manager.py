@@ -52,7 +52,8 @@ class NotionPageManager(LoggingMixin):
         return await self._editor.clear()
 
     async def replace_content(self, markdown: str) -> str:
-        return await self._editor.replace_content(markdown)
+        await self._editor.clear()
+        return await self._editor.append_markdown(markdown)
 
     async def get_blocks(self) -> List[Dict[str, Any]]:
         return await self._reader.get_blocks()

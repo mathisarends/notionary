@@ -139,4 +139,9 @@ This example demonstrates how you can use Notionary to create rich, interactive 
 <!-- spacer -->
 
 ==green:Next steps:== Explore the Notionary documentation to discover more features and possibilities.
+
++++ Togggle
+  - [ ] Read the documentation
+  - [ ] Try out the examples
+  - [ ] Build your own Notion automation scripts
 """
