@@ -1,5 +1,5 @@
 import textwrap
-from notionary.converters import MarkdownToNotionConverter
+from notionary.core.converters.markdown_to_notion_converter import MarkdownToNotionConverter
 from notionary.core.notion_client import NotionClient
 
 
@@ -18,7 +18,7 @@ async def append_markdown(page_id: str, markdown_text: str) -> str:
 
 async def demo():
     """Example usage of the NotionContentManager."""
-    page_id = "1a3389d5-7bd3-80d7-a507-e67d1b25822c"
+    page_id = "1cd389d5-7bd3-81e5-8be9-d35ce24adf3d"
 
     markdown = """# Beispiel mit Codeblöcken und Tabellen
 
@@ -205,26 +205,9 @@ Supervised learning is a machine learning paradigm where models learn from label
 :::
 :::
 
-## Types of Supervised Learning
-+++ Classification
-  Models predict discrete categories or classes.
-  ```python
-  # Example: Email spam detection
-  from sklearn.ensemble import RandomForestClassifier
-  model = RandomForestClassifier()
-  model.fit(X_train, y_train)
-  predictions = model.predict(X_test)
-+++ Regression
-Models predict continuous numerical values.
-pythonKopieren# Example: House price prediction
-from sklearn.linear_model import LinearRegression
-model = LinearRegression()
-model.fit(X_train, y_train)
-predictions = model.predict(X_test)
+Supervised learning requires high-quality labeled data, which can be ==expensive== and ==time-consuming== to acquire.
 
-[background] Supervised learning requires high-quality labeled data, which can be ==expensive== and ==time-consuming== to acquire.
-
-
+<!-- spacer -->
 ==yellow:Note:== Proper feature selection and preprocessing are critical for model performance.
 [bookmark](https://scikit-learn.org/stable/supervised_learning.html "Scikit-learn Documentation" "Official documentation for supervised learning algorithms")
 """

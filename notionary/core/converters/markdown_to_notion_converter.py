@@ -17,6 +17,15 @@ class MarkdownToNotionConverter:
         """
         self.block_registry = block_registry or BlockElementRegistryBuilder().create_standard_registry()
         
+        self._setup_element_callbacks()
+
+    def _setup_element_callbacks(self) -> None:
+        """Registriert den Converter als Callback für Elemente, die ihn benötigen."""
+        from notionary.core.converters import default_registry # type: ignore
+        
+        for element in default_registry.get_elements():
+            if hasattr(element, 'set_converter_callback'):
+                element.set_converter_callback(self.convert)
 
     def convert(self, markdown_text: str) -> List[Dict[str, Any]]:
         """
@@ -139,6 +148,7 @@ class MarkdownToNotionConverter:
         multiline_blocks = []
         processed_text = text
 
+        # Get all multiline elements except ToggleElement
         multiline_elements = [
             element for element in default_registry.get_multiline_elements()
             if element.__name__ != "ToggleElement"
@@ -151,12 +161,18 @@ class MarkdownToNotionConverter:
             if not hasattr(element, "find_matches"):
                 continue
                 
-            matches = element.find_matches(processed_text)
+            # Find all matches for this element (pass the convert method as callback if needed)
+            if hasattr(element, 'set_converter_callback'):
+                matches = element.find_matches(processed_text, self.convert)
+            else:
+                matches = element.find_matches(processed_text)
+                
             if not matches:
                 continue
                 
             multiline_blocks.extend(matches)
 
+            # Remove matched content from the text to avoid processing it again
             processed_text = self._replace_matched_content_with_markers(processed_text, matches)
 
         return processed_text, multiline_blocks
