@@ -365,11 +365,9 @@ class MarkdownToNotionConverter:
         """
         if not paragraph_lines:
             return
-
-        from notionary.core.converters import default_registry # type: ignore
         
         paragraph_text = "\n".join(paragraph_lines)
-        block = default_registry.markdown_to_notion(paragraph_text)
+        block = self._block_registry.markdown_to_notion(paragraph_text)
 
         if not block:
             return

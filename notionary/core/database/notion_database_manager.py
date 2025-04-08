@@ -1,22 +1,17 @@
-from typing import Any, AsyncGenerator, Dict, List, Optional, Union, TypedDict
+from typing import Any, AsyncGenerator, Dict, List, Optional, Union
 
+from notionary.core.database.database_info_service import DatabaseInfoService
+from notionary.core.database.database_query_service import DatabaseQueryService
+from notionary.core.database.database_schema_service import DatabaseSchemaService
+from notionary.core.database.models.page_result import PageResult
+from notionary.core.database.page_service import DatabasePageService
 from notionary.core.notion_client import NotionClient
 from notionary.core.database.notion_database_schema import NotionDatabaseSchema
 from notionary.core.database.notion_database_writer import DatabaseWritter
 from notionary.core.page.notion_page_manager import NotionPageManager
-from notionary.exceptions.database_exceptions import DatabaseInitializationError, PageNotFoundException, PageOperationError, PropertyError
+from notionary.exceptions.database_exceptions import DatabaseInitializationError, PropertyError
 from notionary.util.logging_mixin import LoggingMixin
-from notionary.exceptions.page_creation_exception import PageCreationException
 from notionary.util.uuid_utils import format_uuid
-
-
-class PageResult(TypedDict, total=False):
-    """Type definition for page operation results."""
-    success: bool
-    page_id: str
-    url: Optional[str]
-    message: Optional[str]
-
 
 class NotionDatabaseManager(LoggingMixin):
     """
@@ -46,18 +41,15 @@ class NotionDatabaseManager(LoggingMixin):
         self._writer = DatabaseWritter(self._client, self._schema)
         self._initialized = False
         
-        # Gets loaded in initialize()
-        self._title = None
+        self._info_service = DatabaseInfoService(self._client, self.database_id)
+        self._page_service = DatabasePageService(self._client, self._schema, self._writer)
+        self._query_service = DatabaseQueryService(self._schema)
+        self._schema_service = DatabaseSchemaService(self._schema)
         
     @property
     def title(self) -> Optional[str]:
-        """
-        Get the database title.
-        
-        Returns:
-            The database title or None if not initialized or loaded yet
-        """
-        return self._title
+        """ Get the database title. """
+        return self._info_service.title
         
     async def initialize(self) -> bool:
         """
@@ -72,12 +64,8 @@ class NotionDatabaseManager(LoggingMixin):
                 self.logger.error("Failed to load schema for database %s", self.database_id)
                 return False
             
-            # Lade den Datenbanktitel beim Initialisieren
-            try:
-                self._title = await self._fetch_database_title()
-                self.logger.debug("Loaded database title: %s", self._title)
-            except Exception as e:
-                self.logger.warning("Could not load database title: %s", str(e))
+            await self._info_service.load_title()
+            self.logger.debug("Loaded database title: %s", self.title)
                 
             self._initialized = True
             return True
@@ -98,30 +86,6 @@ class NotionDatabaseManager(LoggingMixin):
                 "Database manager not initialized. Call initialize() first."
             )
 
-    async def _fetch_database_title(self) -> str:
-        """
-        Fetch the database title from the Notion API.
-        
-        Returns:
-            The database title or "Untitled" if no title is found
-        """
-        db_details = await self._client.get(f"databases/{self.database_id}")
-        if not db_details:
-            self.logger.error("Failed to retrieve database %s", self.database_id)
-            return "Untitled"
-        
-        title = "Untitled"
-        if "title" in db_details:
-            title_parts = []
-            for text_obj in db_details["title"]:
-                if "plain_text" in text_obj:
-                    title_parts.append(text_obj["plain_text"])
-            
-            if title_parts:
-                title = "".join(title_parts)
-        
-        return title
-
     async def get_database_name(self) -> Optional[str]:
         """
         Get the name of the current database.
@@ -131,12 +95,11 @@ class NotionDatabaseManager(LoggingMixin):
         """
         await self._ensure_initialized()
         
-        if self._title:
-            return self._title
+        if self.title:
+            return self.title
             
         try:
-            self._title = await self._fetch_database_title()
-            return self._title
+            return await self._info_service.load_title()
         except PropertyError as e:
             self.logger.error("Error getting database name: %s", str(e))
             return None
@@ -149,7 +112,7 @@ class NotionDatabaseManager(LoggingMixin):
             Dictionary mapping property names to their types
         """
         await self._ensure_initialized()
-        return await self._schema.get_property_types()
+        return await self._schema_service.get_property_types()
 
     async def get_select_options(self, property_name: str) -> List[Dict[str, str]]:
         """
@@ -162,15 +125,7 @@ class NotionDatabaseManager(LoggingMixin):
             List of select options with name, id, and color (if available)
         """
         await self._ensure_initialized()
-        options = await self._schema.get_select_options(property_name)
-        return [
-            {
-                "name": option.get("name", ""),
-                "id": option.get("id", ""),
-                "color": option.get("color", "")
-            }
-            for option in options
-        ]
+        return await self._schema_service.get_select_options(property_name)
 
     async def get_relation_options(self, property_name: str, limit: int = 100) -> List[Dict[str, str]]:
         """
@@ -184,14 +139,7 @@ class NotionDatabaseManager(LoggingMixin):
             List of relation options with id and title
         """
         await self._ensure_initialized()
-        options = await self._schema.get_relation_options(property_name, limit)
-        return [
-            {
-                "id": option.get("id", ""),
-                "title": option.get("title", "")
-            }
-            for option in options
-        ]
+        return await self._schema_service.get_relation_options(property_name, limit)
 
     async def create_page(
         self,
@@ -210,34 +158,16 @@ class NotionDatabaseManager(LoggingMixin):
         """
         await self._ensure_initialized()
         
-        try:
-            response = await self._writer.create_page(
-                self.database_id, properties, relations
-            )
+        result = await self._page_service.create_page(
+            self.database_id, properties, relations
+        )
+        
+        if result["success"]:
+            self.logger.info("Created page %s in database %s", result.get("page_id", ""), self.database_id)
+        else:
+            self.logger.warning("Page creation failed: %s", result.get("message", ""))
             
-            if not response:
-                return {
-                    "success": False,
-                    "message": f"Failed to create page in database {self.database_id}"
-                }
-                
-            page_id = response.get("id", "")
-            page_url = response.get("url", None)
-            
-            self.logger.info("Created page %s in database %s", page_id, self.database_id)
-            
-            return {
-                "success": True,
-                "page_id": page_id,
-                "url": page_url
-            }
-                
-        except PageCreationException as e:
-            self.logger.warning("Page creation failed: %s", str(e))
-            return {
-                "success": False,
-                "message": str(e)
-            }
+        return result
 
     async def update_page(
         self,
@@ -258,34 +188,18 @@ class NotionDatabaseManager(LoggingMixin):
         """
         await self._ensure_initialized()
         
-        try:
-            formatted_page_id = self._format_page_id(page_id)
+        self.logger.debug("Updating page %s", page_id)
+        
+        result = await self._page_service.update_page(
+            page_id, properties, relations
+        )
+        
+        if result["success"]:
+            self.logger.info("Successfully updated page %s", result.get("page_id", ""))
+        else:
+            self.logger.error("Error updating page %s: %s", page_id, result.get("message", ""))
             
-            self.logger.debug("Updating page %s", formatted_page_id)
-            
-            response = await self._writer.update_page(
-                formatted_page_id, properties, relations
-            )
-            
-            if not response:
-                self.logger.error("Failed to update page %s", formatted_page_id)
-                return {
-                    "success": False,
-                    "message": f"Failed to update page {formatted_page_id}"
-                }
-                
-            self.logger.info("Successfully updated page %s", formatted_page_id)
-            return {
-                "success": True,
-                "page_id": formatted_page_id
-            }
-            
-        except PageOperationError as e:
-            self.logger.error("Error updating page %s: %s", page_id, str(e))
-            return {
-                "success": False,
-                "message": f"Error: {str(e)}"
-            }
+        return result
 
     async def delete_page(self, page_id: str) -> PageResult:
         """
@@ -299,32 +213,16 @@ class NotionDatabaseManager(LoggingMixin):
         """
         await self._ensure_initialized()
         
-        try:
-            formatted_page_id = self._format_page_id(page_id)
+        self.logger.debug("Deleting page %s", page_id)
+        
+        result = await self._page_service.delete_page(page_id)
+        
+        if result["success"]:
+            self.logger.info("Successfully deleted page %s", result.get("page_id", ""))
+        else:
+            self.logger.error("Error deleting page %s: %s", page_id, result.get("message", ""))
             
-            self.logger.debug("Deleting page %s", formatted_page_id)
-            
-            success = await self._writer.delete_page(formatted_page_id)
-            
-            if not success:
-                self.logger.error("Failed to delete page %s", formatted_page_id)
-                return {
-                    "success": False,
-                    "message": f"Failed to delete page {formatted_page_id}"
-                }
-                
-            self.logger.info("Successfully deleted page %s", formatted_page_id)
-            return {
-                "success": True,
-                "page_id": formatted_page_id
-            }
-            
-        except PageOperationError as e:
-            self.logger.error("Error deleting page %s: %s", page_id, str(e))
-            return {
-                "success": False,
-                "message": f"Error: {str(e)}"
-            }
+        return result
 
     async def get_pages(
         self, 
@@ -352,21 +250,14 @@ class NotionDatabaseManager(LoggingMixin):
             sorts
         )
         
-        pages: List[NotionPageManager] = []
-        count = 0
+        pages = await self._query_service.get_pages(
+            self.database_id, 
+            limit, 
+            filter_conditions, 
+            sorts
+        )
         
-        async for page in self.iter_pages(
-            page_size=min(limit, 100),
-            filter_conditions=filter_conditions,
-            sorts=sorts
-        ):
-            pages.append(page)
-            count += 1
-            
-            if count >= limit:
-                break
-                
-        self.logger.debug("Retrieved %d pages from database %s", count, self.database_id)
+        self.logger.debug("Retrieved %d pages from database %s", len(pages), self.database_id)
         return pages
 
     async def iter_pages(
@@ -395,11 +286,11 @@ class NotionDatabaseManager(LoggingMixin):
             sorts
         )
         
-        async for page_manager in self._schema.iter_database_pages(
-            database_id=self.database_id,
-            page_size=page_size,
-            filter_conditions=filter_conditions,
-            sorts=sorts
+        async for page_manager in self._query_service.iter_pages(
+            self.database_id,
+            page_size,
+            filter_conditions,
+            sorts
         ):
             yield page_manager
 
@@ -415,37 +306,14 @@ class NotionDatabaseManager(LoggingMixin):
         """
         await self._ensure_initialized()
         
-        formatted_page_id = self._format_page_id(page_id)
+        self.logger.debug("Getting page manager for page %s", page_id)
         
-        self.logger.debug("Getting page manager for page %s", formatted_page_id)
+        page_manager = await self._page_service.get_page_manager(page_id)
         
-        try:
-            page_data = await self._client.get(f"pages/{formatted_page_id}")
-            
-            if not page_data:
-                self.logger.error("Page %s not found", formatted_page_id)
-                return None
-            
-            return NotionPageManager(
-                page_id=formatted_page_id,
-                url=page_data.get("url")
-            )
-            
-        except PageNotFoundException as e:
-            self.logger.error("Error getting page manager for %s: %s", page_id, str(e))
-            return None
-
-    def _format_page_id(self, page_id: str) -> str:
-        """
-        Format a page ID to ensure it's in the correct format.
+        if not page_manager:
+            self.logger.error("Page %s not found", page_id)
         
-        Args:
-            page_id: The page ID to format
-            
-        Returns:
-            The formatted page ID
-        """
-        return format_uuid(page_id) or page_id
+        return page_manager
 
     async def close(self) -> None:
         """Close the client connection."""
