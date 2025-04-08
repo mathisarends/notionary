@@ -15,15 +15,14 @@ class MarkdownToNotionConverter:
         Args:
             block_registry: Optional registry of Notion block elements
         """
-        self.block_registry = block_registry or BlockElementRegistryBuilder().create_standard_registry()
+        self._block_registry = block_registry or BlockElementRegistryBuilder().create_standard_registry()
         
         self._setup_element_callbacks()
 
     def _setup_element_callbacks(self) -> None:
         """Registriert den Converter als Callback für Elemente, die ihn benötigen."""
-        from notionary.core.converters import default_registry # type: ignore
         
-        for element in default_registry.get_elements():
+        for element in self._block_registry.get_elements():
             if hasattr(element, 'set_converter_callback'):
                 element.set_converter_callback(self.convert)
 
@@ -71,11 +70,9 @@ class MarkdownToNotionConverter:
         Returns:
             Tuple of (processed text, list of (start_pos, end_pos, block) tuples)
         """
-        from notionary.core.converters import default_registry # type: ignore
-        
         # Find toggle element in registry
         toggle_element = None
-        for element in default_registry.get_elements():
+        for element in self._block_registry.get_elements():
             if (
                 element.is_multiline()
                 and hasattr(element, "match_markdown")
@@ -139,9 +136,7 @@ class MarkdownToNotionConverter:
 
         Returns:
             Tuple of (processed text, list of (start_pos, end_pos, block) tuples)
-        """
-        from notionary.core.converters import default_registry # type: ignore
-        
+        """        
         if not text:
             return text, []
             
@@ -150,7 +145,7 @@ class MarkdownToNotionConverter:
 
         # Get all multiline elements except ToggleElement
         multiline_elements = [
-            element for element in default_registry.get_multiline_elements()
+            element for element in self._block_registry.get_multiline_elements()
             if element.__name__ != "ToggleElement"
         ]
         
@@ -304,9 +299,7 @@ class MarkdownToNotionConverter:
         Returns:
             Todo block if line is a todo item, None otherwise
         """
-        from notionary.core.converters import default_registry # type: ignore
-        
-        for element in default_registry.get_elements():
+        for element in self._block_registry.get_elements():
             if (
                 not element.is_multiline()
                 and hasattr(element, "match_markdown")
@@ -343,9 +336,7 @@ class MarkdownToNotionConverter:
         Returns:
             Block if line is a special block, None otherwise
         """
-        from notionary.core.converters import default_registry # type: ignore     
-        
-        for element in default_registry.get_elements():
+        for element in self._block_registry.get_elements():
             if (
                 not element.is_multiline()
                 and hasattr(element, "match_markdown")
@@ -436,10 +427,8 @@ class MarkdownToNotionConverter:
         """
         if not block_type:
             return False
-
-        from notionary.core.converters import default_registry # type: ignore
         
-        multiline_elements = default_registry.get_multiline_elements()
+        multiline_elements = self._block_registry.get_multiline_elements()
 
         for element in multiline_elements:
             element_name = element.__name__.lower()

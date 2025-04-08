@@ -1,8 +1,7 @@
-import re
 from typing import Any, Dict, List, Optional
 from notionary.core.notion_client import NotionClient
+from notionary.core.page.page_content_manager import PageContentManager
 from notionary.util.logging_mixin import LoggingMixin
-from notionary.core.page.page_content import PageContentReader, PageContentEditor
 from notionary.core.page.meta_data.metadata_editor import MetadataEditor
 from notionary.util.uuid_utils import extract_uuid, format_uuid, is_valid_uuid
 
@@ -36,8 +35,7 @@ class NotionPageManager(LoggingMixin):
         self._title = title
 
         self._client = NotionClient(token=token)
-        self._reader = PageContentReader(page_id, self._client)
-        self._editor = PageContentEditor(page_id, self._client)
+        self._page_content_manager = PageContentManager(page_id, self._client)
         self._metadata = MetadataEditor(page_id, self._client)
 
 
@@ -46,26 +44,26 @@ class NotionPageManager(LoggingMixin):
         return self._title
 
     async def append_markdown(self, markdown: str) -> str:
-        return await self._editor.append_markdown(markdown)
+        return await self._page_content_manager.append_markdown(markdown)
 
     async def clear(self) -> str:
-        return await self._editor.clear()
+        return await self._page_content_manager.clear()
 
     async def replace_content(self, markdown: str) -> str:
-        await self._editor.clear()
-        return await self._editor.append_markdown(markdown)
+        await self._page_content_manager.clear()
+        return await self._page_content_manager.append_markdown(markdown)
 
     async def get_blocks(self) -> List[Dict[str, Any]]:
-        return await self._reader.get_blocks()
+        return await self._page_content_manager.get_blocks()
 
     async def get_block_children(self, block_id: str) -> List[Dict[str, Any]]:
-        return await self._reader.get_block_children(block_id)
+        return await self._page_content_manager.get_block_children(block_id)
 
     async def get_page_blocks_with_children(self) -> List[Dict[str, Any]]:
-        return await self._reader.get_page_blocks_with_children()
+        return await self._page_content_manager.get_page_blocks_with_children()
 
     async def get_text(self) -> str:
-        return await self._reader.get_text()
+        return await self._page_content_manager.get_text()
 
     async def set_title(self, title: str) -> Optional[Dict[str, Any]]:
         return await self._metadata.set_title(title)

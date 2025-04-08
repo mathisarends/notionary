@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from notionary.core.converters.markdown_to_notion_converter import (
     MarkdownToNotionConverter,
@@ -6,15 +6,17 @@ from notionary.core.converters.markdown_to_notion_converter import (
 from notionary.core.converters.notion_to_markdown_converter import (
     NotionToMarkdownConverter,
 )
+from notionary.core.converters.registry.block_element_registry import BlockElementRegistry
 from notionary.core.notion_client import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
 
 
-class PageContentEditor(LoggingMixin):
-    def __init__(self, page_id: str, client: NotionClient):
+class PageContentManager(LoggingMixin):
+    def __init__(self, page_id: str, client: NotionClient, block_registry: Optional[BlockElementRegistry] = None):
         self.page_id = page_id
         self._client = client
-        self._markdown_to_notion_converter = MarkdownToNotionConverter()
+        self._markdown_to_notion_converter = MarkdownToNotionConverter(block_registry=block_registry)
+        self._notion_to_markdown_converter = NotionToMarkdownConverter(block_registry=block_registry)
 
     async def append_markdown(self, markdown_text: str) -> str:
         blocks = self._markdown_to_notion_converter.convert(markdown_text)
@@ -41,12 +43,7 @@ class PageContentEditor(LoggingMixin):
 
         return f"Deleted {deleted}/{len(results)} blocks."
 
-
-class PageContentReader(LoggingMixin):
-    def __init__(self, page_id: str, client: NotionClient):
-        self.page_id = page_id
-        self._client = client
-
+    # Methods from PageContentReader
     async def get_blocks(self) -> List[Dict[str, Any]]:
         result = await self._client.get(f"blocks/{self.page_id}/children")
         if not result:
@@ -74,4 +71,4 @@ class PageContentReader(LoggingMixin):
 
     async def get_text(self) -> str:
         blocks = await self.get_page_blocks_with_children()
-        return NotionToMarkdownConverter.convert(blocks)
+        return self._notion_to_markdown_converter.convert(blocks)
