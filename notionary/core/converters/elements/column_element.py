@@ -3,10 +3,6 @@ from typing import Dict, Any, Optional, List, Tuple
 from typing_extensions import override
 
 from notionary.core.converters.elements.notion_block_element import NotionBlockElement
-from notionary.core.converters.markdown_to_notion_converter import (
-    MarkdownToNotionConverter,
-)
-
 
 class ColumnElement(NotionBlockElement):
     """
@@ -221,7 +217,11 @@ class ColumnElement(NotionBlockElement):
             column_content: Content lines of the column
             columns_children: List to append the column block to
             in_column: Whether we're currently in a column (if False, does nothing)
-        """
+        """       
+        from notionary.core.converters.markdown_to_notion_converter import (
+            MarkdownToNotionConverter,
+        )
+        
         if not (in_column and column_content):
             return
 

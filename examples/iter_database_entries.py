@@ -14,6 +14,7 @@ It uses `NotionDatabaseSchema` to efficiently iterate over pages without loading
 
 from notionary.core.database.notion_database_schema import NotionDatabaseSchema
 from notionary.core.notion_client import NotionClient
+from notionary.core.page.notion_page_manager import NotionPageManager
 
 
 async def list_all_pages(schema: NotionDatabaseSchema) -> None:
@@ -22,9 +23,10 @@ async def list_all_pages(schema: NotionDatabaseSchema) -> None:
     print("-" * 50)
 
     count = 0
+    page: NotionPageManager
     async for page in schema.iter_database_pages():
         page_id = page.page_id
-        title = schema.extract_title_from_page(page)
+        title = page.title or "Untitled Page"
         print(f"{page_id[:8]}... | {title}")
         count += 1
 
@@ -46,8 +48,8 @@ async def list_filtered_pages(schema: NotionDatabaseSchema) -> None:
 
     count = 0
     async for page in schema.iter_database_pages(filter_conditions=filter_conditions):
-        page_id = page.get("id", "")
-        title = schema.extract_title_from_page(page)
+        page_id = page.page_id
+        title = page.title(page)
         print(f"{page_id[:8]}... | {title}")
         count += 1
 

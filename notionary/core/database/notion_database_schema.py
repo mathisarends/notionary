@@ -289,26 +289,11 @@ class NotionDatabaseSchema:
         """
         options: List[RelationOption] = []
 
-        for page in pages:
-            page_title = self.extract_title_from_page(page)
-            options.append({"id": page.page_id, "title": page_title})
+        for page_manager in pages:
+            page_title = page_manager.title or "Untitled"
+            options.append({"id": page_manager.page_id, "title": page_title})
 
         return options
-
-    def extract_title_from_page(self, page_manager: NotionPageManager) -> str:
-        """
-        Extract the title from a page object.
-
-        Args:
-            page: A page object from the Notion API
-
-        Returns:
-            The extracted title or "Untitled" if no title is found
-        """
-        if page_manager.title:
-            return page_manager.title
-
-        return "Untitled"
 
     async def _query_database_pages(
         self, database_id: str, limit: int = 100

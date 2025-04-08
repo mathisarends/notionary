@@ -425,30 +425,15 @@ class NotionDatabaseManager(LoggingMixin):
             if not page_data:
                 self.logger.error("Page %s not found", formatted_page_id)
                 return None
-                
-            title = self._extract_title_from_page(page_data)
             
             return NotionPageManager(
                 page_id=formatted_page_id,
-                title=title,
                 url=page_data.get("url")
             )
             
         except PageNotFoundException as e:
             self.logger.error("Error getting page manager for %s: %s", page_id, str(e))
             return None
-
-    def _extract_title_from_page(self, page: Dict[str, Any]) -> str:
-        """
-        Extract the title from a page object.
-
-        Args:
-            page: A page object from the Notion API
-
-        Returns:
-            The extracted title or "Untitled" if no title is found
-        """
-        return self._schema.extract_title_from_page(page)
 
     def _format_page_id(self, page_id: str) -> str:
         """

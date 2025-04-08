@@ -1,8 +1,5 @@
 from typing import Dict, Any, List
 
-from notionary.core.converters import default_registry
-
-
 class NotionToMarkdownConverter:
     """Converts Notion blocks to Markdown text."""
 
@@ -17,6 +14,9 @@ class NotionToMarkdownConverter:
         Returns:
             Markdown text
         """
+        # type: ignore
+        from notionary.core.converters import default_registry
+        
         if not blocks:
             return ""
 
