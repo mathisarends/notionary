@@ -54,7 +54,7 @@ class MarkdownToNotionConverter:
         self, text: str
     ) -> Tuple[str, List[Tuple[int, int, Dict[str, Any]]]]:
         """
-        Extract toggle elements and their nested content.
+        Extract toggle elements and their nested content using the ToggleElement class.
 
         Args:
             text: The text to process
@@ -64,113 +64,60 @@ class MarkdownToNotionConverter:
         """
         from notionary.core.converters import default_registry # type: ignore
         
-        toggle_blocks = []
-        lines = text.split("\n")
-        processed_lines = []
-
-        i = 0
-        while i < len(lines):
-            line = lines[i]
-
-            toggle_element = self._find_toggle_element(line, default_registry)
-            
-            if not toggle_element:
-                processed_lines.append(line)
-                i += 1
-                continue
-                
-            # Toggle element found - process it
-            toggle_start_pos = len("\n".join(processed_lines)) + (
-                len(processed_lines) if processed_lines else 0
-            )
-            toggle_block = toggle_element.markdown_to_notion(line)
-
-            # Extract nested content
-            nested_content, j = self._extract_toggle_nested_content(lines, i + 1)
-            
-            # Process nested content recursively
-            if nested_content:
-                nested_text = "\n".join(nested_content)
-                nested_blocks = self.convert(nested_text)
-                if nested_blocks:
-                    toggle_block["toggle"]["children"] = nested_blocks
-
-            # Calculate toggle end position
-            toggle_end_pos = (
-                toggle_start_pos
-                + len(line)
-                + sum([len(l) + 1 for l in nested_content])
-            )
-
-            # Add the toggle block to our list
-            toggle_blocks.append((toggle_start_pos, toggle_end_pos, toggle_block))
-
-            # Add placeholders for the toggle and its content
-            processed_lines.append(self.TOGGLE_MARKER)
-            toggle_content_lines = [self.TOGGLE_MARKER] * len(nested_content)
-            processed_lines.extend(toggle_content_lines)
-
-            # Skip to after the toggle content
-            i = j
-
-        processed_text = "\n".join(processed_lines)
-        return processed_text, toggle_blocks
-        
-    def _find_toggle_element(self, line: str, registry):
-        """Find matching toggle element for a line if one exists."""
-        for element in registry.get_elements():
+        # Find toggle element in registry
+        toggle_element = None
+        for element in default_registry.get_elements():
             if (
                 element.is_multiline()
                 and hasattr(element, "match_markdown")
                 and element.__name__ == "ToggleElement"
-                and element.match_markdown(line)
             ):
-                return element
-        return None
+                toggle_element = element
+                break
+                
+        if not toggle_element:
+            # No toggle element found, return text as is
+            return text, []
         
-    def _extract_toggle_nested_content(self, lines: List[str], start_index: int) -> Tuple[List[str], int]:
-        """
-        Extract the nested content of a toggle element.
+        # Use the find_matches method of ToggleElement to find and process all toggles
+        # Pass the converter's convert method as a callback to process nested content
+        toggle_blocks = toggle_element.find_matches(text, self.convert)
         
-        Args:
-            lines: All lines of text
-            start_index: Starting index to look for nested content
+        if not toggle_blocks:
+            return text, []
             
-        Returns:
-            Tuple of (nested_content_lines, next_line_index)
-        """
-        nested_content = []
-        j = start_index
-
-        # This is the pattern for indented content - 2 or more spaces or tabs
-        while j < len(lines):
-            next_line = lines[j]
-
-            # Empty line still part of toggle content
-            if not next_line.strip():
-                nested_content.append("")
-                j += 1
-                continue
-
-            # Indented content belongs to toggle
-            if next_line.startswith("  ") or next_line.startswith("\t"):
-                # Remove indentation (either tabs or 2+ spaces)
-                if next_line.startswith("\t"):
-                    content_line = next_line[1:]
-                else:
-                    # Find number of leading spaces
-                    leading_spaces = len(next_line) - len(next_line.lstrip(" "))
-                    # Remove at least 2 spaces
-                    content_line = next_line[min(2, leading_spaces):]
-
-                nested_content.append(content_line)
-                j += 1
-                continue
-
-            # Non-indented, non-empty line marks the end of toggle content
-            break
-
-        return nested_content, j
+        # Create a processed text with toggle markers
+        lines = text.split("\n")
+        processed_lines = lines.copy()
+        
+        # Replace toggle content with markers
+        for start_pos, end_pos, _ in reversed(toggle_blocks):
+            # Calculate line indices for this toggle
+            start_line_index = 0
+            current_pos = 0
+            for i, line in enumerate(lines):
+                line_length = len(line) + 1  # +1 for newline
+                if current_pos <= start_pos < current_pos + line_length:
+                    start_line_index = i
+                    break
+                current_pos += line_length
+                
+            end_line_index = start_line_index
+            current_pos = 0
+            for i, line in enumerate(lines):
+                line_length = len(line) + 1  # +1 for newline
+                if current_pos <= end_pos < current_pos + line_length:
+                    end_line_index = i
+                    break
+                current_pos += line_length
+                
+            # Replace toggle content with markers
+            num_lines = end_line_index - start_line_index + 1
+            for i in range(start_line_index, start_line_index + num_lines):
+                processed_lines[i] = self.TOGGLE_MARKER
+                
+        processed_text = "\n".join(processed_lines)
+        return processed_text, toggle_blocks
 
     def _extract_multiline_elements(
         self, text: str
@@ -192,7 +139,6 @@ class MarkdownToNotionConverter:
         multiline_blocks = []
         processed_text = text
 
-        # Get all multiline elements except ToggleElement
         multiline_elements = [
             element for element in default_registry.get_multiline_elements()
             if element.__name__ != "ToggleElement"
@@ -205,14 +151,12 @@ class MarkdownToNotionConverter:
             if not hasattr(element, "find_matches"):
                 continue
                 
-            # Find all matches for this element
             matches = element.find_matches(processed_text)
             if not matches:
                 continue
                 
             multiline_blocks.extend(matches)
 
-            # Remove matched content from the text to avoid processing it again
             processed_text = self._replace_matched_content_with_markers(processed_text, matches)
 
         return processed_text, multiline_blocks
@@ -221,7 +165,6 @@ class MarkdownToNotionConverter:
         """Replace matched content with marker placeholders to preserve line structure."""
         for start, end, _ in reversed(matches):
             num_newlines = text[start:end].count("\n")
-            # Use a marker that won't be processed as markdown
             text = (
                 text[:start]
                 + "\n"
@@ -288,11 +231,9 @@ class MarkdownToNotionConverter:
                 current_pos += line_length
                 continue
 
-            # No longer in a todo sequence
             if in_todo_sequence:
                 in_todo_sequence = False
 
-            # Handle empty lines
             if not line.strip():
                 self._process_paragraph_if_present(
                     current_paragraph, paragraph_start, current_pos, line_blocks
@@ -301,7 +242,6 @@ class MarkdownToNotionConverter:
                 current_pos += line_length
                 continue
 
-            # Check for other special blocks
             special_block = self._extract_special_block(line)
             if special_block:
                 self._process_paragraph_if_present(
