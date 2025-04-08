@@ -1,9 +1,9 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 
 setup(
     name="notionary",
-    version="0.1.0",
-    packages=find_packages(),
+    version="0.1.3",
+    packages=find_namespace_packages(include=["notionary*"]),
     install_requires=[
         "notion-client>=2.0.0",
         "markdown-it-py>=3.0.0",
@@ -16,7 +16,7 @@ setup(
     author="Mathis Arends",
     author_email="mathisarends27@gmail.com",
     description="A toolkit to convert between Markdown and Notion blocks",
-    long_description=open("README.md").read(),
+    long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/mathisarends/notionary",
     classifiers=[
