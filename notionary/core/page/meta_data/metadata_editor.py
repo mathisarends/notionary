@@ -30,7 +30,6 @@ class MetadataEditor(LoggingMixin):
 
         return await self._client.patch(f"pages/{self.page_id}", {"icon": icon})
 
-
     async def set_cover(self, external_url: str) -> Optional[Dict[str, Any]]:
         return await self._client.patch(
             f"pages/{self.page_id}",

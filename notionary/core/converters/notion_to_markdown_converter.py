@@ -1,7 +1,12 @@
 from typing import Dict, Any, List, Optional
 
-from notionary.core.converters.registry.block_element_registry import BlockElementRegistry
-from notionary.core.converters.registry.block_element_registry_builder import BlockElementRegistryBuilder
+from notionary.core.converters.registry.block_element_registry import (
+    BlockElementRegistry,
+)
+from notionary.core.converters.registry.block_element_registry_builder import (
+    BlockElementRegistryBuilder,
+)
+
 
 class NotionToMarkdownConverter:
     """Converts Notion blocks to Markdown text."""
@@ -13,7 +18,9 @@ class NotionToMarkdownConverter:
         Args:
             block_registry: Optional registry of Notion block elements
         """
-        self._block_registry = block_registry or BlockElementRegistryBuilder().create_standard_registry()
+        self._block_registry = (
+            block_registry or BlockElementRegistryBuilder().create_standard_registry()
+        )
 
     def convert(self, blocks: List[Dict[str, Any]]) -> str:
         """

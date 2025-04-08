@@ -1,7 +1,18 @@
-from typing import AsyncGenerator, Dict, List, Optional, Any, TypedDict, Union, cast, Literal
+from typing import (
+    AsyncGenerator,
+    Dict,
+    List,
+    Optional,
+    Any,
+    TypedDict,
+    Union,
+    cast,
+    Literal,
+)
 from notionary.core.notion_client import NotionClient
 from notionary.core.page.notion_page_manager import NotionPageManager
 from notionary.util.logging_mixin import LoggingMixin
+
 
 class NotionTextContent(TypedDict):
     plain_text: str
@@ -68,58 +79,60 @@ class NotionDatabaseAccessor(LoggingMixin):
     def __init__(self, client: Optional[NotionClient] = None) -> None:
         """
         Initialize the accessor with a NotionClient.
-        
+
         Args:
             client: NotionClient instance for API communication
         """
         self._client = client if client else NotionClient()
         self.logger.info("NotionDatabaseAccessor initialized")
 
-    async def iter_databases(self, page_size: int = 100) -> AsyncGenerator[Dict[str, Any], None]:
+    async def iter_databases(
+        self, page_size: int = 100
+    ) -> AsyncGenerator[Dict[str, Any], None]:
         """
         Asynchronous generator that yields Notion databases one by one.
-        
+
         Uses the Notion API to provide paginated access to all databases
         without loading all of them into memory at once.
-        
+
         Args:
             page_size: The number of databases to fetch per request
-            
+
         Yields:
             Individual database objects from the Notion API
         """
         start_cursor: Optional[str] = None
-        
+
         while True:
             body: Dict[str, Any] = {
                 "filter": {"value": "database", "property": "object"},
                 "page_size": page_size,
             }
-            
+
             if start_cursor:
                 body["start_cursor"] = start_cursor
-                
+
             result = await self._client.post("search", data=body)
-            
+
             if not result or "results" not in result:
                 self.logger.error("Error fetching databases")
                 break
-                
+
             for database in result["results"]:
                 yield database
-                
+
             if "has_more" in result and result["has_more"] and "next_cursor" in result:
                 start_cursor = result["next_cursor"]
             else:
                 break
-    
+
     async def get_database(self, database_id: str) -> Optional[Dict[str, Any]]:
         """
         Get the details for a specific database.
-        
+
         Args:
             database_id: The ID of the database
-            
+
         Returns:
             Database details or None if not found
         """
@@ -127,30 +140,30 @@ class NotionDatabaseAccessor(LoggingMixin):
         if not db_details:
             self.logger.error("Failed to retrieve database %s", database_id)
             return None
-        
+
         return db_details
-    
+
     def extract_database_title(self, database: Dict[str, Any]) -> str:
         """
         Extract the database title from a Notion API response.
-        
+
         Args:
             database: The database object from the Notion API
-            
+
         Returns:
             The extracted title or "Untitled" if no title is found
         """
         title = "Untitled"
-        
+
         if "title" in database:
             title_parts = []
             for text_obj in database["title"]:
                 if "plain_text" in text_obj:
                     title_parts.append(text_obj["plain_text"])
-            
+
             if title_parts:
                 title = "".join(title_parts)
-        
+
         return title
 
 
@@ -304,95 +317,99 @@ class NotionDatabaseSchema:
         """
         pages: List[Dict[str, Any]] = []
         count = 0
-        
-        async for page in self.iter_database_pages(database_id=database_id, page_size=min(limit, 100)):
+
+        async for page in self.iter_database_pages(
+            database_id=database_id, page_size=min(limit, 100)
+        ):
             pages.append(page)
             count += 1
-            
+
             if count >= limit:
                 break
-                
+
         return pages
-    
+
     async def iter_database_pages(
-            self,   
-            database_id: Optional[str] = None, 
-            page_size: int = 100,
-            filter_conditions: Optional[Dict[str, Any]] = None,
-            sorts: Optional[List[Dict[str, Any]]] = None
-        ) -> AsyncGenerator[NotionPageManager, None]:
-            """
-            Asynchronous generator that yields pages from a Notion database one by one.
-            
-            Uses the Notion API to provide paginated access to all pages in a database
-            without loading all of them into memory at once.
-            
-            Args:
-                database_id: The ID of the database to query (uses self.database_id if None)
-                page_size: The number of pages to fetch per request
-                filter_conditions: Optional filter to apply to the database query
-                sorts: Optional sort instructions for the database query
-                
-            Yields:
-                Individual page objects from the Notion API
-            """
-            db_id = database_id or self.database_id
-            if not db_id:
-                raise ValueError("No database ID provided")
-            
-            start_cursor: Optional[str] = None
-            has_more = True
-            
-            body: Dict[str, Any] = {"page_size": page_size}
-            
-            if filter_conditions:
-                body["filter"] = filter_conditions
-                
-            if sorts:
-                body["sorts"] = sorts
-            
-            while has_more:
-                current_body = body.copy() 
-                if start_cursor:
-                    current_body["start_cursor"] = start_cursor
-                    
-                result = await self._client.post(f"databases/{db_id}/query", data=current_body)
-                
-                if not result or "results" not in result:
-                    return
-                
-                for page in result["results"]:
-                    page_id = page.get("id", "")
-                    title = self._extract_page_title(page)
-                    
-                    notion_page_manager = NotionPageManager(page_id=page_id, title=title)
-                    yield notion_page_manager
-                
-                has_more = result.get("has_more", False)
-                start_cursor = result.get("next_cursor") if has_more else None
-            
+        self,
+        database_id: Optional[str] = None,
+        page_size: int = 100,
+        filter_conditions: Optional[Dict[str, Any]] = None,
+        sorts: Optional[List[Dict[str, Any]]] = None,
+    ) -> AsyncGenerator[NotionPageManager, None]:
+        """
+        Asynchronous generator that yields pages from a Notion database one by one.
+
+        Uses the Notion API to provide paginated access to all pages in a database
+        without loading all of them into memory at once.
+
+        Args:
+            database_id: The ID of the database to query (uses self.database_id if None)
+            page_size: The number of pages to fetch per request
+            filter_conditions: Optional filter to apply to the database query
+            sorts: Optional sort instructions for the database query
+
+        Yields:
+            Individual page objects from the Notion API
+        """
+        db_id = database_id or self.database_id
+        if not db_id:
+            raise ValueError("No database ID provided")
+
+        start_cursor: Optional[str] = None
+        has_more = True
+
+        body: Dict[str, Any] = {"page_size": page_size}
+
+        if filter_conditions:
+            body["filter"] = filter_conditions
+
+        if sorts:
+            body["sorts"] = sorts
+
+        while has_more:
+            current_body = body.copy()
+            if start_cursor:
+                current_body["start_cursor"] = start_cursor
+
+            result = await self._client.post(
+                f"databases/{db_id}/query", data=current_body
+            )
+
+            if not result or "results" not in result:
+                return
+
+            for page in result["results"]:
+                page_id = page.get("id", "")
+                title = self._extract_page_title(page)
+
+                notion_page_manager = NotionPageManager(page_id=page_id, title=title)
+                yield notion_page_manager
+
+            has_more = result.get("has_more", False)
+            start_cursor = result.get("next_cursor") if has_more else None
+
     def _extract_page_title(self, page: Dict[str, Any]) -> str:
         """
         Extracts the title from a Notion page object.
-        
+
         Args:
             page: The Notion page object
-            
+
         Returns:
             The extracted title as a string, or an empty string if no title found
         """
         properties = page.get("properties", {})
         if not properties:
             return ""
-        
+
         for prop_value in properties.values():
             if prop_value.get("type") != "title":
                 continue
-                
+
             title_array = prop_value.get("title", [])
             if not title_array:
                 continue
-                
+
             return title_array[0].get("plain_text", "")
-        
+
         return ""

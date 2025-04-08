@@ -1,13 +1,18 @@
 from typing import Dict, Any, List, Optional, Tuple
 
-from notionary.core.converters.registry.block_element_registry import BlockElementRegistry
-from notionary.core.converters.registry.block_element_registry_builder import BlockElementRegistryBuilder
+from notionary.core.converters.registry.block_element_registry import (
+    BlockElementRegistry,
+)
+from notionary.core.converters.registry.block_element_registry_builder import (
+    BlockElementRegistryBuilder,
+)
+
 
 class MarkdownToNotionConverter:
     SPACER_MARKER = "<!-- spacer -->"
     MULTILINE_CONTENT_MARKER = "<!-- REMOVED_MULTILINE_CONTENT -->"
     TOGGLE_MARKER = "<!-- toggle_content -->"
-    
+
     def __init__(self, block_registry: Optional[BlockElementRegistry] = None):
         """
         Initialize the MarkdownToNotionConverter.
@@ -15,15 +20,17 @@ class MarkdownToNotionConverter:
         Args:
             block_registry: Optional registry of Notion block elements
         """
-        self._block_registry = block_registry or BlockElementRegistryBuilder().create_standard_registry()
-        
+        self._block_registry = (
+            block_registry or BlockElementRegistryBuilder().create_standard_registry()
+        )
+
         self._setup_element_callbacks()
 
     def _setup_element_callbacks(self) -> None:
         """Registriert den Converter als Callback für Elemente, die ihn benötigen."""
-        
+
         for element in self._block_registry.get_elements():
-            if hasattr(element, 'set_converter_callback'):
+            if hasattr(element, "set_converter_callback"):
                 element.set_converter_callback(self.convert)
 
     def convert(self, markdown_text: str) -> List[Dict[str, Any]]:
@@ -43,7 +50,9 @@ class MarkdownToNotionConverter:
         processed_text, toggle_blocks = self._extract_toggle_elements(markdown_text)
 
         # Process other multiline elements
-        processed_text, multiline_blocks = self._extract_multiline_elements(processed_text)
+        processed_text, multiline_blocks = self._extract_multiline_elements(
+            processed_text
+        )
 
         # Process remaining text line by line
         line_blocks = self._process_text_lines(processed_text)
@@ -80,22 +89,22 @@ class MarkdownToNotionConverter:
             ):
                 toggle_element = element
                 break
-                
+
         if not toggle_element:
             # No toggle element found, return text as is
             return text, []
-        
+
         # Use the find_matches method of ToggleElement to find and process all toggles
         # Pass the converter's convert method as a callback to process nested content
         toggle_blocks = toggle_element.find_matches(text, self.convert)
-        
+
         if not toggle_blocks:
             return text, []
-            
+
         # Create a processed text with toggle markers
         lines = text.split("\n")
         processed_lines = lines.copy()
-        
+
         # Replace toggle content with markers
         for start_pos, end_pos, _ in reversed(toggle_blocks):
             # Calculate line indices for this toggle
@@ -107,7 +116,7 @@ class MarkdownToNotionConverter:
                     start_line_index = i
                     break
                 current_pos += line_length
-                
+
             end_line_index = start_line_index
             current_pos = 0
             for i, line in enumerate(lines):
@@ -116,12 +125,12 @@ class MarkdownToNotionConverter:
                     end_line_index = i
                     break
                 current_pos += line_length
-                
+
             # Replace toggle content with markers
             num_lines = end_line_index - start_line_index + 1
             for i in range(start_line_index, start_line_index + num_lines):
                 processed_lines[i] = self.TOGGLE_MARKER
-                
+
         processed_text = "\n".join(processed_lines)
         return processed_text, toggle_blocks
 
@@ -136,43 +145,48 @@ class MarkdownToNotionConverter:
 
         Returns:
             Tuple of (processed text, list of (start_pos, end_pos, block) tuples)
-        """        
+        """
         if not text:
             return text, []
-            
+
         multiline_blocks = []
         processed_text = text
 
         # Get all multiline elements except ToggleElement
         multiline_elements = [
-            element for element in self._block_registry.get_multiline_elements()
+            element
+            for element in self._block_registry.get_multiline_elements()
             if element.__name__ != "ToggleElement"
         ]
-        
+
         if not multiline_elements:
             return text, []
 
         for element in multiline_elements:
             if not hasattr(element, "find_matches"):
                 continue
-                
+
             # Find all matches for this element (pass the convert method as callback if needed)
-            if hasattr(element, 'set_converter_callback'):
+            if hasattr(element, "set_converter_callback"):
                 matches = element.find_matches(processed_text, self.convert)
             else:
                 matches = element.find_matches(processed_text)
-                
+
             if not matches:
                 continue
-                
+
             multiline_blocks.extend(matches)
 
             # Remove matched content from the text to avoid processing it again
-            processed_text = self._replace_matched_content_with_markers(processed_text, matches)
+            processed_text = self._replace_matched_content_with_markers(
+                processed_text, matches
+            )
 
         return processed_text, multiline_blocks
-        
-    def _replace_matched_content_with_markers(self, text: str, matches: List[Tuple[int, int, Dict[str, Any]]]) -> str:
+
+    def _replace_matched_content_with_markers(
+        self, text: str, matches: List[Tuple[int, int, Dict[str, Any]]]
+    ) -> str:
         """Replace matched content with marker placeholders to preserve line structure."""
         for start, end, _ in reversed(matches):
             num_newlines = text[start:end].count("\n")
@@ -258,7 +272,9 @@ class MarkdownToNotionConverter:
                 self._process_paragraph_if_present(
                     current_paragraph, paragraph_start, current_pos, line_blocks
                 )
-                line_blocks.append((current_pos, current_pos + line_length, special_block))
+                line_blocks.append(
+                    (current_pos, current_pos + line_length, special_block)
+                )
                 current_paragraph = []
                 current_pos += line_length
                 continue
@@ -275,7 +291,7 @@ class MarkdownToNotionConverter:
         )
 
         return line_blocks
-        
+
     def _is_marker_line(self, line: str) -> bool:
         """Check if a line is any kind of marker line that should be skipped."""
         return self._is_multiline_marker(line) or self._is_toggle_marker(line)
@@ -365,7 +381,7 @@ class MarkdownToNotionConverter:
         """
         if not paragraph_lines:
             return
-        
+
         paragraph_text = "\n".join(paragraph_lines)
         block = self._block_registry.markdown_to_notion(paragraph_text)
 
@@ -400,7 +416,7 @@ class MarkdownToNotionConverter:
             if not self._is_multiline_block_type(current_block.get("type")):
                 i += 1
                 continue
-                
+
             # Check if the next block is already a spacer
             if i + 1 < len(blocks) and self._is_empty_paragraph(blocks[i + 1]):
                 # Next block is already a spacer, don't add another
@@ -425,7 +441,7 @@ class MarkdownToNotionConverter:
         """
         if not block_type:
             return False
-        
+
         multiline_elements = self._block_registry.get_multiline_elements()
 
         for element in multiline_elements:
@@ -452,7 +468,7 @@ class MarkdownToNotionConverter:
         """
         if block.get("type") != "paragraph":
             return False
-            
+
         rich_text = block.get("paragraph", {}).get("rich_text", [])
         return not rich_text or len(rich_text) == 0
 

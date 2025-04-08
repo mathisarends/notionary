@@ -36,12 +36,7 @@ async def list_all_pages(schema: NotionDatabaseSchema) -> None:
 
 async def list_filtered_pages(schema: NotionDatabaseSchema) -> None:
     """Lists only pages in the Notion database with status 'In Bearbeitung'."""
-    filter_conditions = {
-        "property": "Status",
-        "status": {
-            "equals": "In Bearbeitung"
-        }
-    }
+    filter_conditions = {"property": "Status", "status": {"equals": "In Bearbeitung"}}
 
     print("Filtered Pages (Status: In Bearbeitung)")
     print("-" * 50)
@@ -72,4 +67,5 @@ async def main() -> None:
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(main())

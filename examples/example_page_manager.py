@@ -18,6 +18,7 @@ from notionary.exceptions.database_exceptions import PageOperationError
 
 from examples.ressources.markdown_demo import MARKDOWN_EXAMPLE
 
+
 async def main():
     """Create a rich Notion page showcasing various content blocks."""
 
@@ -41,6 +42,7 @@ async def main():
 
     except PageOperationError as e:
         print(f"❌ Error updating page: {e}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

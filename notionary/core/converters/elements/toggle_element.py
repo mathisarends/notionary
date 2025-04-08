@@ -54,14 +54,16 @@ class ToggleElement(NotionBlockElement):
         }
 
     @staticmethod
-    def extract_nested_content(lines: List[str], start_index: int) -> Tuple[List[str], int]:
+    def extract_nested_content(
+        lines: List[str], start_index: int
+    ) -> Tuple[List[str], int]:
         """
         Extract the nested content of a toggle element.
-        
+
         Args:
             lines: All lines of text
             start_index: Starting index to look for nested content
-            
+
         Returns:
             Tuple of (nested_content_lines, next_line_index)
         """
@@ -89,7 +91,7 @@ class ToggleElement(NotionBlockElement):
             break
 
         return nested_content, current_index
-    
+
     @staticmethod
     def _remove_indentation(line: str) -> str:
         """Remove indentation from a line, handling both spaces and tabs."""
@@ -99,7 +101,7 @@ class ToggleElement(NotionBlockElement):
             # Find number of leading spaces
             leading_spaces = len(line) - len(line.lstrip(" "))
             # Remove at least 2 spaces, but not more than what's there
-            return line[min(2, leading_spaces):]
+            return line[min(2, leading_spaces) :]
 
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
@@ -146,56 +148,58 @@ class ToggleElement(NotionBlockElement):
         return result
 
     @classmethod
-    def find_matches(cls, text: str, process_nested_content: Callable = None) -> List[Tuple[int, int, Dict[str, Any]]]:
+    def find_matches(
+        cls, text: str, process_nested_content: Callable = None
+    ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
         Find all toggle elements in the text and process them.
-        
+
         Args:
             text: The text to search in
             process_nested_content: Optional callback function to process nested content
                 It should accept a string and return a list of Notion blocks
-            
+
         Returns:
             List of (start_pos, end_pos, block) tuples
         """
         if not text:
             return []
-            
+
         toggle_blocks = []
         lines = text.split("\n")
-        
+
         i = 0
         while i < len(lines):
             line = lines[i]
-            
+
             # Check if line is a toggle
             if not cls.match_markdown(line):
                 i += 1
                 continue
-                
+
             start_pos = 0
             for j in range(i):
                 start_pos += len(lines[j]) + 1
-            
+
             toggle_block = cls.markdown_to_notion(line)
             if not toggle_block:
                 i += 1
                 continue
-                
+
             # Extract nested content
             nested_content, next_index = cls.extract_nested_content(lines, i + 1)
-            
+
             # Calculate ending position
             end_pos = start_pos + len(line) + sum(len(l) + 1 for l in nested_content)
-            
+
             if nested_content and process_nested_content:
                 nested_text = "\n".join(nested_content)
                 nested_blocks = process_nested_content(nested_text)
                 if nested_blocks:
                     toggle_block["toggle"]["children"] = nested_blocks
-            
+
             toggle_blocks.append((start_pos, end_pos, toggle_block))
-            
+
             i = next_index
-                
+
         return toggle_blocks

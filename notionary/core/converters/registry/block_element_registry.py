@@ -3,18 +3,19 @@ from typing import Dict, Any, Optional, List, Type
 from notionary.core.converters.elements.notion_block_element import NotionBlockElement
 from notionary.core.converters.elements.text_inline_formatter import TextInlineFormatter
 
+
 class BlockElementRegistry:
     """Registry of elements that can convert between Markdown and Notion."""
 
     def __init__(self, elements=None):
         """
         Initialize a new registry instance.
-        
+
         Args:
             elements: Optional list of NotionBlockElement classes to register at creation
         """
         self._elements = []
-        
+
         # Register initial elements if provided
         if elements:
             for element in elements:
@@ -23,7 +24,7 @@ class BlockElementRegistry:
     def register(self, element_class: Type[NotionBlockElement]):
         """Register an element class."""
         self._elements.append(element_class)
-        return self  # Return self to allow method chaining
+        return self
 
     def deregister(self, element_class: Type[NotionBlockElement]) -> bool:
         """
@@ -39,11 +40,11 @@ class BlockElementRegistry:
             self._elements.remove(element_class)
             return True
         return False
-    
+
     def clear(self):
         """Clear the registry completely."""
         self._elements.clear()
-        return self  # Return self to allow method chaining
+        return self
 
     def find_markdown_handler(self, text: str) -> Optional[Type[NotionBlockElement]]:
         """Find an element that can handle the given markdown text."""
@@ -82,35 +83,35 @@ class BlockElementRegistry:
     def get_elements(self) -> List[Type[NotionBlockElement]]:
         """Get all registered elements."""
         return self._elements.copy()
-    
+
     def generate_llm_prompt(self) -> str:
         """
         Generates an LLM system prompt that describes the Markdown syntax of all registered elements.
-        
+
         TextInlineFormatter is automatically added if not already registered.
-        
+
         Returns:
             A complete system prompt for an LLM that should understand Notion-Markdown syntax
         """
         # Create a copy of registered elements
         element_classes = self._elements.copy()
         print("Elements in registry:", element_classes)
-        
+
         formatter_names = [e.__name__ for e in element_classes]
         if "TextInlineFormatter" not in formatter_names:
             element_classes = [TextInlineFormatter] + element_classes
-        
+
         return MarkdownSyntaxPromptBuilder.generate_system_prompt(element_classes)
 
 
 class MarkdownSyntaxPromptBuilder:
     """
     Generator for LLM system prompts that describe Notion-Markdown syntax.
-    
+
     This class extracts information about supported Markdown patterns
     and formats them optimally for LLMs.
     """
-    
+
     # Standard system prompt template
     SYSTEM_PROMPT_TEMPLATE = """You are a knowledgeable assistant that helps users create content for Notion pages.
 Notion supports standard Markdown with some special extensions for creating rich content.
@@ -139,7 +140,7 @@ paragraphs, lists, quotes, etc.
     def generate_element_doc(element_class: Type[NotionBlockElement]) -> str:
         """
         Generates documentation for a specific NotionBlockElement.
-        
+
         Uses the element's get_llm_prompt_content method if available.
         """
         class_name = element_class.__name__
@@ -184,10 +185,10 @@ paragraphs, lists, quotes, etc.
     ) -> str:
         """
         Generates complete documentation for all provided element classes.
-        
+
         Args:
             element_classes: List of NotionBlockElement classes
-            
+
         Returns:
             Documentation text for all elements
         """
@@ -198,22 +199,22 @@ paragraphs, lists, quotes, etc.
 
         text_formatter = None
         other_elements = []
-        
+
         for element in element_classes:
             if element.__name__ == "TextInlineFormatter":
                 text_formatter = element
             else:
                 other_elements.append(element)
-        
+
         if text_formatter:
             docs.append("\n" + cls.generate_element_doc(text_formatter))
-        
+
         for element in other_elements:
             if element.__name__ != "InlineFormattingElement":
                 docs.append("\n" + cls.generate_element_doc(element))
 
         return "\n".join(docs)
-    
+
     @classmethod
     def generate_system_prompt(
         cls,
@@ -221,13 +222,13 @@ paragraphs, lists, quotes, etc.
     ) -> str:
         """
         Generates a complete system prompt for LLMs.
-        
+
         Args:
             element_classes: List of element classes to document
-            
+
         Returns:
             Complete system prompt for an LLM
         """
         element_docs = cls.generate_element_docs(element_classes)
-        
+
         return cls.SYSTEM_PROMPT_TEMPLATE.format(element_docs=element_docs)

@@ -4,6 +4,7 @@ from typing_extensions import override
 
 from notionary.core.converters.elements.notion_block_element import NotionBlockElement
 
+
 class ColumnElement(NotionBlockElement):
     """
     Handles conversion between custom Markdown column syntax and Notion column blocks.
@@ -28,10 +29,12 @@ class ColumnElement(NotionBlockElement):
     _converter_callback = None
 
     @classmethod
-    def set_converter_callback(cls, callback: Callable[[str], List[Dict[str, Any]]]) -> None:
+    def set_converter_callback(
+        cls, callback: Callable[[str], List[Dict[str, Any]]]
+    ) -> None:
         """
         Setze die Callback-Funktion, die zum Konvertieren von Markdown zu Notion-Blöcken verwendet wird.
-        
+
         Args:
             callback: Funktion, die Markdown-Text annimmt und eine Liste von Notion-Blöcken zurückgibt
         """
@@ -99,7 +102,9 @@ class ColumnElement(NotionBlockElement):
         return True
 
     @classmethod
-    def find_matches(cls, text: str, converter_callback: Optional[Callable] = None) -> List[Tuple[int, int, Dict[str, Any]]]:
+    def find_matches(
+        cls, text: str, converter_callback: Optional[Callable] = None
+    ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
         Find all column block matches in the text and return their positions and blocks.
 
@@ -113,8 +118,10 @@ class ColumnElement(NotionBlockElement):
         # Wenn ein Callback übergeben wurde, nutze diesen, sonst die gespeicherte Referenz
         converter = converter_callback or cls._converter_callback
         if not converter:
-            raise ValueError("No converter callback provided for ColumnElement. Call set_converter_callback first or provide converter_callback parameter.")
-        
+            raise ValueError(
+                "No converter callback provided for ColumnElement. Call set_converter_callback first or provide converter_callback parameter."
+            )
+
         matches = []
         lines = text.split("\n")
         i = 0
@@ -136,10 +143,7 @@ class ColumnElement(NotionBlockElement):
 
     @classmethod
     def _process_column_block(
-        cls, 
-        lines: List[str], 
-        start_index: int,
-        converter_callback: Callable
+        cls, lines: List[str], start_index: int, converter_callback: Callable
     ) -> Tuple[int, int, Dict[str, Any], int]:
         """
         Process a complete column block structure from the given starting line.
@@ -173,10 +177,10 @@ class ColumnElement(NotionBlockElement):
     @classmethod
     def _collect_columns(
         cls,
-        lines: List[str], 
-        start_index: int, 
+        lines: List[str],
+        start_index: int,
         columns_children: List[Dict[str, Any]],
-        converter_callback: Callable
+        converter_callback: Callable,
     ) -> int:
         """
         Collect all columns within a column block structure.
@@ -227,7 +231,9 @@ class ColumnElement(NotionBlockElement):
 
             i += 1
 
-        cls._finalize_column(column_content, columns_children, in_column, converter_callback)
+        cls._finalize_column(
+            column_content, columns_children, in_column, converter_callback
+        )
 
         return i
 
@@ -236,7 +242,7 @@ class ColumnElement(NotionBlockElement):
         column_content: List[str],
         columns_children: List[Dict[str, Any]],
         in_column: bool,
-        converter_callback: Callable
+        converter_callback: Callable,
     ) -> None:
         """
         Finalize a column by processing its content and adding it to the columns_children list.

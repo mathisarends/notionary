@@ -1,8 +1,8 @@
 import re
 from typing import Optional
 
-UUID_PATTERN = r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$'
-UUID_RAW_PATTERN = r'([a-f0-9]{32})'
+UUID_PATTERN = r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+UUID_RAW_PATTERN = r"([a-f0-9]{32})"
 
 
 def extract_uuid(source: str) -> Optional[str]:

@@ -76,7 +76,9 @@ async def main():
                 if prop_type == "title":
                     update_properties[name] = "Updated via Database Facade"
                 elif prop_type == "rich_text":
-                    update_properties[name] = "This entry was updated using NotionDatabaseFacade."
+                    update_properties[name] = (
+                        "This entry was updated using NotionDatabaseFacade."
+                    )
 
             update_result = await db.update_page(page_id, update_properties)
             if update_result["success"]:
@@ -89,9 +91,10 @@ async def main():
             page_manager = await db.get_page_manager(page_id)
             if page_manager:
                 print(f"✅ Got page manager with title: {page_manager.title}")
-                
+
                 print("\n📝 Appending content...")
-                await page_manager.append_markdown("""
+                await page_manager.append_markdown(
+                    """
 # This is a heading
 This content was appended using the NotionPageManager.
 
@@ -99,7 +102,8 @@ This content was appended using the NotionPageManager.
 - Easy to use
 - High-level API
 - Handles relations
-                """)
+                """
+                )
                 print("✅ Content added successfully!")
 
             # List pages in the database
@@ -110,7 +114,7 @@ This content was appended using the NotionPageManager.
                 print(f"  {i}. {page.title} ({page.page_id})")
 
             # Optional: Delete the created page
-            if input("\n❓ Delete the created page? (y/n): ").lower() == 'y':
+            if input("\n❓ Delete the created page? (y/n): ").lower() == "y":
                 delete_result = await db.delete_page(page_id)
                 if delete_result["success"]:
                     print("✅ Page deleted successfully!")
@@ -123,7 +127,6 @@ This content was appended using the NotionPageManager.
     except Exception as e:
         print(f"❌ Error: {e}")
         traceback.print_exc()
-
 
     finally:
         # Close the client connection

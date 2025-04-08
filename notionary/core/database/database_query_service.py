@@ -5,16 +5,16 @@ from notionary.core.page.notion_page_manager import NotionPageManager
 
 class DatabaseQueryService:
     """Service für Datenbankabfragen und Iterations"""
-    
+
     def __init__(self, schema: NotionDatabaseSchema):
         self._schema = schema
-        
+
     async def get_pages(
-        self, 
+        self,
         database_id: str,
         limit: int = 100,
         filter_conditions: Optional[Dict[str, Any]] = None,
-        sorts: Optional[List[Dict[str, Any]]] = None
+        sorts: Optional[List[Dict[str, Any]]] = None,
     ) -> List[NotionPageManager]:
         """
         Get all pages from the database.
@@ -30,27 +30,27 @@ class DatabaseQueryService:
         """
         pages: List[NotionPageManager] = []
         count = 0
-        
+
         async for page in self.iter_pages(
             database_id,
             page_size=min(limit, 100),
             filter_conditions=filter_conditions,
-            sorts=sorts
+            sorts=sorts,
         ):
             pages.append(page)
             count += 1
-            
+
             if count >= limit:
                 break
-                
+
         return pages
-        
+
     async def iter_pages(
         self,
         database_id: str,
         page_size: int = 100,
         filter_conditions: Optional[Dict[str, Any]] = None,
-        sorts: Optional[List[Dict[str, Any]]] = None
+        sorts: Optional[List[Dict[str, Any]]] = None,
     ) -> AsyncGenerator[NotionPageManager, None]:
         """
         Asynchronous generator that yields pages from the database.
@@ -68,6 +68,6 @@ class DatabaseQueryService:
             database_id=database_id,
             page_size=page_size,
             filter_conditions=filter_conditions,
-            sorts=sorts
+            sorts=sorts,
         ):
             yield page_manager

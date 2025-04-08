@@ -1,5 +1,7 @@
 import textwrap
-from notionary.core.converters.markdown_to_notion_converter import MarkdownToNotionConverter
+from notionary.core.converters.markdown_to_notion_converter import (
+    MarkdownToNotionConverter,
+)
 from notionary.core.notion_client import NotionClient
 
 

@@ -9,15 +9,19 @@ from notionary.core.notion_client import NotionClient
 from notionary.core.database.notion_database_schema import NotionDatabaseSchema
 from notionary.core.database.notion_database_writer import DatabaseWritter
 from notionary.core.page.notion_page_manager import NotionPageManager
-from notionary.exceptions.database_exceptions import DatabaseInitializationError, PropertyError
+from notionary.exceptions.database_exceptions import (
+    DatabaseInitializationError,
+    PropertyError,
+)
 from notionary.util.logging_mixin import LoggingMixin
 from notionary.util.uuid_utils import format_uuid
+
 
 class NotionDatabaseManager(LoggingMixin):
     """
     High-level facade for working with Notion databases.
     Provides simplified operations for creating, reading, updating and deleting pages.
-    
+
     Note:
         It is recommended to create instances of this class using the NotionDatabaseFactory
         instead of directly calling the constructor.
@@ -26,7 +30,7 @@ class NotionDatabaseManager(LoggingMixin):
     def __init__(self, database_id: str, token: Optional[str] = None):
         """
         Initialize the database facade with a database ID.
-        
+
         Note:
             It's recommended to use NotionDatabaseFactory to create instances of this class
             rather than using this constructor directly.
@@ -40,33 +44,37 @@ class NotionDatabaseManager(LoggingMixin):
         self._schema = NotionDatabaseSchema(self.database_id, self._client)
         self._writer = DatabaseWritter(self._client, self._schema)
         self._initialized = False
-        
+
         self._info_service = DatabaseInfoService(self._client, self.database_id)
-        self._page_service = DatabasePageService(self._client, self._schema, self._writer)
+        self._page_service = DatabasePageService(
+            self._client, self._schema, self._writer
+        )
         self._query_service = DatabaseQueryService(self._schema)
         self._schema_service = DatabaseSchemaService(self._schema)
-        
+
     @property
     def title(self) -> Optional[str]:
-        """ Get the database title. """
+        """Get the database title."""
         return self._info_service.title
-        
+
     async def initialize(self) -> bool:
         """
         Initialize the database facade by loading the schema.
-        
+
         This method needs to be called after creating a new instance via the constructor.
         When using NotionDatabaseFactory, this is called automatically.
         """
         try:
             success = await self._schema.load()
             if not success:
-                self.logger.error("Failed to load schema for database %s", self.database_id)
+                self.logger.error(
+                    "Failed to load schema for database %s", self.database_id
+                )
                 return False
-            
+
             await self._info_service.load_title()
             self.logger.debug("Loaded database title: %s", self.title)
-                
+
             self._initialized = True
             return True
         except Exception as e:
@@ -76,14 +84,14 @@ class NotionDatabaseManager(LoggingMixin):
     async def _ensure_initialized(self) -> None:
         """
         Ensure the database manager is initialized before use.
-        
+
         Raises:
             DatabaseInitializationError: If the database isn't initialized
         """
         if not self._initialized:
             raise DatabaseInitializationError(
-                self.database_id, 
-                "Database manager not initialized. Call initialize() first."
+                self.database_id,
+                "Database manager not initialized. Call initialize() first.",
             )
 
     async def get_database_name(self) -> Optional[str]:
@@ -94,16 +102,16 @@ class NotionDatabaseManager(LoggingMixin):
             The database name or None if it couldn't be retrieved
         """
         await self._ensure_initialized()
-        
+
         if self.title:
             return self.title
-            
+
         try:
             return await self._info_service.load_title()
         except PropertyError as e:
             self.logger.error("Error getting database name: %s", str(e))
             return None
-            
+
     async def get_property_types(self) -> Dict[str, str]:
         """
         Get all property types for the database.
@@ -127,7 +135,9 @@ class NotionDatabaseManager(LoggingMixin):
         await self._ensure_initialized()
         return await self._schema_service.get_select_options(property_name)
 
-    async def get_relation_options(self, property_name: str, limit: int = 100) -> List[Dict[str, str]]:
+    async def get_relation_options(
+        self, property_name: str, limit: int = 100
+    ) -> List[Dict[str, str]]:
         """
         Get available options for a relation property.
 
@@ -144,7 +154,7 @@ class NotionDatabaseManager(LoggingMixin):
     async def create_page(
         self,
         properties: Dict[str, Any],
-        relations: Optional[Dict[str, Union[str, List[str]]]] = None
+        relations: Optional[Dict[str, Union[str, List[str]]]] = None,
     ) -> PageResult:
         """
         Create a new page in the database.
@@ -157,23 +167,27 @@ class NotionDatabaseManager(LoggingMixin):
             Result object with success status and page information
         """
         await self._ensure_initialized()
-        
+
         result = await self._page_service.create_page(
             self.database_id, properties, relations
         )
-        
+
         if result["success"]:
-            self.logger.info("Created page %s in database %s", result.get("page_id", ""), self.database_id)
+            self.logger.info(
+                "Created page %s in database %s",
+                result.get("page_id", ""),
+                self.database_id,
+            )
         else:
             self.logger.warning("Page creation failed: %s", result.get("message", ""))
-            
+
         return result
 
     async def update_page(
         self,
         page_id: str,
         properties: Optional[Dict[str, Any]] = None,
-        relations: Optional[Dict[str, Union[str, List[str]]]] = None
+        relations: Optional[Dict[str, Union[str, List[str]]]] = None,
     ) -> PageResult:
         """
         Update an existing page.
@@ -187,18 +201,18 @@ class NotionDatabaseManager(LoggingMixin):
             Result object with success status and message
         """
         await self._ensure_initialized()
-        
+
         self.logger.debug("Updating page %s", page_id)
-        
-        result = await self._page_service.update_page(
-            page_id, properties, relations
-        )
-        
+
+        result = await self._page_service.update_page(page_id, properties, relations)
+
         if result["success"]:
             self.logger.info("Successfully updated page %s", result.get("page_id", ""))
         else:
-            self.logger.error("Error updating page %s: %s", page_id, result.get("message", ""))
-            
+            self.logger.error(
+                "Error updating page %s: %s", page_id, result.get("message", "")
+            )
+
         return result
 
     async def delete_page(self, page_id: str) -> PageResult:
@@ -212,23 +226,25 @@ class NotionDatabaseManager(LoggingMixin):
             Result object with success status and message
         """
         await self._ensure_initialized()
-        
+
         self.logger.debug("Deleting page %s", page_id)
-        
+
         result = await self._page_service.delete_page(page_id)
-        
+
         if result["success"]:
             self.logger.info("Successfully deleted page %s", result.get("page_id", ""))
         else:
-            self.logger.error("Error deleting page %s: %s", page_id, result.get("message", ""))
-            
+            self.logger.error(
+                "Error deleting page %s: %s", page_id, result.get("message", "")
+            )
+
         return result
 
     async def get_pages(
-        self, 
+        self,
         limit: int = 100,
         filter_conditions: Optional[Dict[str, Any]] = None,
-        sorts: Optional[List[Dict[str, Any]]] = None
+        sorts: Optional[List[Dict[str, Any]]] = None,
     ) -> List[NotionPageManager]:
         """
         Get all pages from the database.
@@ -242,29 +258,28 @@ class NotionDatabaseManager(LoggingMixin):
             List of NotionPageManager instances for each page
         """
         await self._ensure_initialized()
-        
+
         self.logger.debug(
-            "Getting up to %d pages with filter: %s, sorts: %s", 
-            limit, 
-            filter_conditions, 
-            sorts
+            "Getting up to %d pages with filter: %s, sorts: %s",
+            limit,
+            filter_conditions,
+            sorts,
         )
-        
+
         pages = await self._query_service.get_pages(
-            self.database_id, 
-            limit, 
-            filter_conditions, 
-            sorts
+            self.database_id, limit, filter_conditions, sorts
         )
-        
-        self.logger.debug("Retrieved %d pages from database %s", len(pages), self.database_id)
+
+        self.logger.debug(
+            "Retrieved %d pages from database %s", len(pages), self.database_id
+        )
         return pages
 
     async def iter_pages(
         self,
         page_size: int = 100,
         filter_conditions: Optional[Dict[str, Any]] = None,
-        sorts: Optional[List[Dict[str, Any]]] = None
+        sorts: Optional[List[Dict[str, Any]]] = None,
     ) -> AsyncGenerator[NotionPageManager, None]:
         """
         Asynchronous generator that yields pages from the database.
@@ -278,19 +293,16 @@ class NotionDatabaseManager(LoggingMixin):
             NotionPageManager instances for each page
         """
         await self._ensure_initialized()
-        
+
         self.logger.debug(
-            "Iterating pages with page_size: %d, filter: %s, sorts: %s", 
-            page_size, 
-            filter_conditions, 
-            sorts
-        )
-        
-        async for page_manager in self._query_service.iter_pages(
-            self.database_id,
+            "Iterating pages with page_size: %d, filter: %s, sorts: %s",
             page_size,
             filter_conditions,
-            sorts
+            sorts,
+        )
+
+        async for page_manager in self._query_service.iter_pages(
+            self.database_id, page_size, filter_conditions, sorts
         ):
             yield page_manager
 
@@ -305,14 +317,14 @@ class NotionDatabaseManager(LoggingMixin):
             NotionPageManager instance or None if the page wasn't found
         """
         await self._ensure_initialized()
-        
+
         self.logger.debug("Getting page manager for page %s", page_id)
-        
+
         page_manager = await self._page_service.get_page_manager(page_id)
-        
+
         if not page_manager:
             self.logger.error("Page %s not found", page_id)
-        
+
         return page_manager
 
     async def close(self) -> None:

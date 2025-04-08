@@ -6,17 +6,28 @@ from notionary.core.converters.markdown_to_notion_converter import (
 from notionary.core.converters.notion_to_markdown_converter import (
     NotionToMarkdownConverter,
 )
-from notionary.core.converters.registry.block_element_registry import BlockElementRegistry
+from notionary.core.converters.registry.block_element_registry import (
+    BlockElementRegistry,
+)
 from notionary.core.notion_client import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
 
 
 class PageContentManager(LoggingMixin):
-    def __init__(self, page_id: str, client: NotionClient, block_registry: Optional[BlockElementRegistry] = None):
+    def __init__(
+        self,
+        page_id: str,
+        client: NotionClient,
+        block_registry: Optional[BlockElementRegistry] = None,
+    ):
         self.page_id = page_id
         self._client = client
-        self._markdown_to_notion_converter = MarkdownToNotionConverter(block_registry=block_registry)
-        self._notion_to_markdown_converter = NotionToMarkdownConverter(block_registry=block_registry)
+        self._markdown_to_notion_converter = MarkdownToNotionConverter(
+            block_registry=block_registry
+        )
+        self._notion_to_markdown_converter = NotionToMarkdownConverter(
+            block_registry=block_registry
+        )
 
     async def append_markdown(self, markdown_text: str) -> str:
         blocks = self._markdown_to_notion_converter.convert(markdown_text)
