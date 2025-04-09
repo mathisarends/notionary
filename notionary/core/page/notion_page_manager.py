@@ -108,3 +108,22 @@ class NotionPageManager(LoggingMixin):
 
     async def set_page_cover(self, external_url: str) -> Optional[Dict[str, Any]]:
         return await self._metadata.set_cover(external_url)
+    
+    async def get_properties(self) -> Dict[str, Any]:
+        """Retrieves all properties of the page"""
+        page_data = await self._client.get_page(self._page_id)
+        if page_data and "properties" in page_data:
+            return page_data["properties"]
+        return {}
+
+    async def get_status(self) -> Optional[str]:
+        """
+        Determines the status of the page (e.g., 'Draft', 'Completed', etc.)
+        
+        Returns:
+            Optional[str]: The status as a string or None if not available
+        """
+        properties = await self.get_properties()
+        if "Status" in properties and properties["Status"].get("status"):
+            return properties["Status"]["status"]["name"]
+        return None
