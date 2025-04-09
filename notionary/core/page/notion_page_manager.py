@@ -6,6 +6,7 @@ from notionary.core.converters.registry.block_element_registry_builder import (
     BlockElementRegistryBuilder,
 )
 from notionary.core.notion_client import NotionClient
+from notionary.core.page.meta_data.notion_page_cover_manager import NotionPageCoverManager
 from notionary.core.page.page_content_manager import PageContentManager
 from notionary.util.logging_mixin import LoggingMixin
 from notionary.core.page.meta_data.metadata_editor import MetadataEditor
@@ -52,6 +53,7 @@ class NotionPageManager(LoggingMixin):
             block_registry=self._block_element_registry,
         )
         self._metadata = MetadataEditor(page_id, self._client)
+        self._page_cover_manager = NotionPageCoverManager(page_id, self._client)
 
     @property
     def page_id(self) -> Optional[str]:
@@ -128,20 +130,14 @@ class NotionPageManager(LoggingMixin):
         
         return None  
 
-    
     async def get_cover_url(self) -> str:
-        page_data = await self._client.get_page(self._page_id)
-        
-        if not page_data:
-            return ""
-        
-        return page_data.get("cover", {}).get("external", {}).get("url", "")
+        return await self._page_cover_manager.get_cover_url()
 
     async def set_page_cover(self, external_url: str) -> Optional[Dict[str, Any]]:
-        return await self._metadata.set_cover(external_url)
+        return await self._page_cover_manager.set_cover(external_url)
     
     async def set_random_gradient_cover(self) -> Optional[Dict[str, Any]]:
-        return await self._metadata.set_random_gradient_cover()
+        return await self._page_cover_manager.set_random_gradient_cover()
     
     async def get_properties(self) -> Dict[str, Any]:
         """Retrieves all properties of the page"""
@@ -256,7 +252,7 @@ class NotionPageManager(LoggingMixin):
     
 async def main(): 
     page_manager = NotionPageManager(page_id="https://notion.so/1d0389d57bd3805cb34ccaf5804b43ce")
-    await page_manager.set_property_by_name("Projekte", "Smart Home")
+    await page_manager.set_property_by_name("Status", "Bin King")
     
 if __name__ == "__main__":
     import asyncio
