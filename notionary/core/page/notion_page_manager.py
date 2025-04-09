@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from notionary.core.converters.registry.block_element_registry import (
     BlockElementRegistry,
 )
@@ -162,12 +162,101 @@ class NotionPageManager(LoggingMixin):
             return properties["Status"]["status"]["name"]
         return None
     
+    async def add_relation(self, relation_property_name: str, page_ids: Union[str, List[str]]) -> Optional[Dict[str, Any]]:
+        """
+        Add a relation to another page or pages.
+        
+        Args:
+            relation_property_name: The name of the relation property
+            page_ids: A single page ID or list of page IDs to relate to
+            
+        Returns:
+            Optional[Dict[str, Any]]: The API response or None if it fails
+        """
+        existing_relations = await self.get_property_value(relation_property_name) or []
+        
+        if isinstance(page_ids, str):
+            page_ids = [page_ids]
+            
+        # Combine existing and new relations, removing duplicates
+        all_relations = list(set(existing_relations + page_ids))
+        
+        return await self.set_property_by_name(relation_property_name, all_relations)
+    
+    # Aufjedenfall auslagern
+    async def get_property_value(self, property_name: str) -> Any:
+        """
+        Get the value of a specific property.
+        
+        Args:
+            property_name: The name of the property
+            
+        Returns:
+            Any: The value of the property, or None if not found
+        """
+        properties = await self.get_properties()
+        if property_name not in properties:
+            return None
+            
+        prop_data = properties[property_name]
+        prop_type = prop_data.get("type")
+        
+        if not prop_type:
+            return None
+            
+        # Extract the value based on property type
+        if prop_type == "title" and "title" in prop_data:
+            return "".join([text_obj.get("plain_text", "") for text_obj in prop_data["title"]])
+        elif prop_type == "rich_text" and "rich_text" in prop_data:
+            return "".join([text_obj.get("plain_text", "") for text_obj in prop_data["rich_text"]])
+        elif prop_type == "number" and "number" in prop_data:
+            return prop_data["number"]
+        elif prop_type == "select" and "select" in prop_data and prop_data["select"]:
+            return prop_data["select"].get("name")
+        elif prop_type == "multi_select" and "multi_select" in prop_data:
+            return [option.get("name") for option in prop_data["multi_select"]]
+        elif prop_type == "status" and "status" in prop_data and prop_data["status"]:
+            return prop_data["status"].get("name")
+        elif prop_type == "date" and "date" in prop_data and prop_data["date"]:
+            return prop_data["date"]
+        elif prop_type == "checkbox" and "checkbox" in prop_data:
+            return prop_data["checkbox"]
+        elif prop_type == "url" and "url" in prop_data:
+            return prop_data["url"]
+        elif prop_type == "email" and "email" in prop_data:
+            return prop_data["email"]
+        elif prop_type == "phone_number" and "phone_number" in prop_data:
+            return prop_data["phone_number"]
+        elif prop_type == "relation" and "relation" in prop_data:
+            return [rel.get("id") for rel in prop_data["relation"]]
+        elif prop_type == "people" and "people" in prop_data:
+            return [person.get("id") for person in prop_data["people"]]
+        elif prop_type == "files" and "files" in prop_data:
+            return [
+                file.get("external", {}).get("url") 
+                if file.get("type") == "external" else file.get("name") 
+                for file in prop_data["files"]
+            ]
+            
+        return None
+    
+    async def set_property_by_name(self, property_name: str, value: Any) -> Optional[Dict[str, Any]]:
+        """
+        Set a property value by name, automatically detecting the property type.
+        
+        Args:
+            property_name: The name of the property
+            value: The value to set
+            
+        Returns:
+            Optional[Dict[str, Any]]: The API response or None if it fails
+        """
+        return await self._metadata.set_property_by_name(property_name, value)
+    
     
 async def main(): 
     page_manager = NotionPageManager(page_id="https://notion.so/1d0389d57bd3805cb34ccaf5804b43ce")
-    icon = await page_manager.get_icon()
-    print(f"Cover URL: {icon}")
-    
+    await page_manager.set_property_by_name("Projekte", "Smart Home")
     
 if __name__ == "__main__":
     import asyncio

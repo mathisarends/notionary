@@ -330,3 +330,57 @@ class NotionDatabaseManager(LoggingMixin):
     async def close(self) -> None:
         """Close the client connection."""
         await self._client.close()
+
+
+    # TODO: Idee wäre hier noch ein Enum einzuführen, bin mir hier aber nicht sicher wieviel Overhead das ist.
+    async def collect_database_metadata(
+        self,
+        include_types: Optional[List[str]] = None,
+        relation_limit: int = 100
+    ) -> Dict[str, Any]:
+        """
+        Collects all metadata of a Notion database in a structured format.
+        
+        This function builds a comprehensive representation of the database schema,
+        including available options for select fields, status fields, and relations.
+        The resulting structure is particularly useful for providing AI agents with
+        context about your Notion database schema when generating prompts or
+        analyzing data.
+        
+        Args:
+            include_types: List of property types to include (e.g., ["select", "relation"]).
+                        If None, all property types will be included.
+            relation_limit: Maximum number of relation options to fetch per relation field.
+        
+        Returns:
+            A structured dictionary containing database metadata and property options.
+        """
+        db_name = await self.get_database_name()
+        property_types = await self.get_property_types()
+        
+        schema_metadata = {
+            "database_name": db_name,
+            "properties": {}
+        }
+        
+        for prop_name, prop_type in property_types.items():
+            # Skip if we're filtering property types and this one isn't included
+            if include_types is not None and prop_type not in include_types:
+                continue
+                
+            property_info = {
+                "type": prop_type,
+                "options": []
+            }
+            
+            if prop_type in ["select", "multi_select", "status"]:
+                options = await self.get_select_options(prop_name)
+                property_info["options"] = options
+            
+            elif prop_type == "relation":
+                relation_options = await self.get_relation_options(prop_name, limit=relation_limit)
+                property_info["options"] = relation_options
+            
+            schema_metadata["properties"][prop_name] = property_info
+        
+        return schema_metadata
