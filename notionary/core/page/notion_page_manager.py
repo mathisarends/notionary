@@ -106,6 +106,29 @@ class NotionPageManager(LoggingMixin):
     ) -> Optional[Dict[str, Any]]:
         return await self._metadata.set_icon(emoji, external_url)
     
+    async def get_icon(self) -> Optional[str]:
+        """
+        Retrieves the page icon - either emoji or external URL.
+        
+        Returns:
+            str: Emoji character or URL if set, None if no icon
+        """
+        page_data = await self._client.get_page(self._page_id)
+        
+        if not page_data or "icon" not in page_data:
+            return None
+        
+        icon_data = page_data.get("icon", {})
+        icon_type = icon_data.get("type")
+        
+        if icon_type == "emoji":
+            return icon_data.get("emoji")
+        elif icon_type == "external":
+            return icon_data.get("external", {}).get("url")
+        
+        return None  
+
+    
     async def get_cover_url(self) -> str:
         page_data = await self._client.get_page(self._page_id)
         
@@ -142,8 +165,8 @@ class NotionPageManager(LoggingMixin):
     
 async def main(): 
     page_manager = NotionPageManager(page_id="https://notion.so/1d0389d57bd3805cb34ccaf5804b43ce")
-    cover_url = await page_manager.get_cover_url()
-    print(f"Cover URL: {cover_url}")
+    icon = await page_manager.get_icon()
+    print(f"Cover URL: {icon}")
     
     
 if __name__ == "__main__":
