@@ -379,10 +379,12 @@ class NotionDatabaseSchema:
                 return
 
             for page in result["results"]:
-                page_id = page.get("id", "")
+                page_id: str = page.get("id", "")
                 title = self._extract_page_title(page)
+                
+                page_url = f"https://notion.so/{page_id.replace('-', '')}"
 
-                notion_page_manager = NotionPageManager(page_id=page_id, title=title)
+                notion_page_manager = NotionPageManager(page_id=page_id, title=title, url=page_url)
                 yield notion_page_manager
 
             has_more = result.get("has_more", False)
