@@ -20,19 +20,6 @@ class MetadataEditor(LoggingMixin):
             },
         )
 
-    async def set_icon(
-        self, emoji: Optional[str] = None, external_url: Optional[str] = None
-    ) -> Optional[Dict[str, Any]]:
-        if emoji:
-            icon = {"type": "emoji", "emoji": emoji}
-        elif external_url:
-            icon = {"type": "external", "external": {"url": external_url}}
-        else:
-            return None
-
-        return await self._client.patch(f"pages/{self.page_id}", {"icon": icon})
-
-    
     async def set_property(self, property_name: str, property_value: Any, property_type: str) -> Optional[Dict[str, Any]]:
             """
             Generic method to set any property on a Notion page.

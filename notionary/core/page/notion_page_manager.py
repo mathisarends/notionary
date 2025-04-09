@@ -6,6 +6,7 @@ from notionary.core.converters.registry.block_element_registry_builder import (
     BlockElementRegistryBuilder,
 )
 from notionary.core.notion_client import NotionClient
+from notionary.core.page.meta_data.notion_icon_manager import NotionPageIconManager
 from notionary.core.page.meta_data.notion_page_cover_manager import NotionPageCoverManager
 from notionary.core.page.page_content_manager import PageContentManager
 from notionary.util.logging_mixin import LoggingMixin
@@ -53,7 +54,9 @@ class NotionPageManager(LoggingMixin):
             block_registry=self._block_element_registry,
         )
         self._metadata = MetadataEditor(page_id, self._client)
-        self._page_cover_manager = NotionPageCoverManager(page_id, self._client)
+        
+        self._page_cover_manager = NotionPageCoverManager(page_id=page_id, client=self._client)
+        self._page_icon_manager = NotionPageIconManager(page_id=page_id, client=self._client)
 
     @property
     def page_id(self) -> Optional[str]:
@@ -106,7 +109,7 @@ class NotionPageManager(LoggingMixin):
     async def set_page_icon(
         self, emoji: Optional[str] = None, external_url: Optional[str] = None
     ) -> Optional[Dict[str, Any]]:
-        return await self._metadata.set_icon(emoji, external_url)
+        return await self._page_icon_manager.set_icon(emoji, external_url)
     
     async def get_icon(self) -> Optional[str]:
         """
@@ -115,20 +118,8 @@ class NotionPageManager(LoggingMixin):
         Returns:
             str: Emoji character or URL if set, None if no icon
         """
-        page_data = await self._client.get_page(self._page_id)
-        
-        if not page_data or "icon" not in page_data:
-            return None
-        
-        icon_data = page_data.get("icon", {})
-        icon_type = icon_data.get("type")
-        
-        if icon_type == "emoji":
-            return icon_data.get("emoji")
-        elif icon_type == "external":
-            return icon_data.get("external", {}).get("url")
-        
-        return None  
+        return await self._page_icon_manager.get_icon()
+
 
     async def get_cover_url(self) -> str:
         return await self._page_cover_manager.get_cover_url()
@@ -252,7 +243,9 @@ class NotionPageManager(LoggingMixin):
     
 async def main(): 
     page_manager = NotionPageManager(page_id="https://notion.so/1d0389d57bd3805cb34ccaf5804b43ce")
-    await page_manager.set_property_by_name("Status", "Bin King")
+    properties = await page_manager.get_properties()
+    print("properties:", properties)
+    # await page_manager.set_property_by_name("Status", "Bin King")
     
 if __name__ == "__main__":
     import asyncio
