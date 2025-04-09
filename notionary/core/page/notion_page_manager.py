@@ -105,9 +105,20 @@ class NotionPageManager(LoggingMixin):
         self, emoji: Optional[str] = None, external_url: Optional[str] = None
     ) -> Optional[Dict[str, Any]]:
         return await self._metadata.set_icon(emoji, external_url)
+    
+    async def get_cover_url(self) -> str:
+        page_data = await self._client.get_page(self._page_id)
+        
+        if not page_data:
+            return ""
+        
+        return page_data.get("cover", {}).get("external", {}).get("url", "")
 
     async def set_page_cover(self, external_url: str) -> Optional[Dict[str, Any]]:
         return await self._metadata.set_cover(external_url)
+    
+    async def set_random_gradient_cover(self) -> Optional[Dict[str, Any]]:
+        return await self._metadata.set_random_gradient_cover()
     
     async def get_properties(self) -> Dict[str, Any]:
         """Retrieves all properties of the page"""
@@ -127,3 +138,14 @@ class NotionPageManager(LoggingMixin):
         if "Status" in properties and properties["Status"].get("status"):
             return properties["Status"]["status"]["name"]
         return None
+    
+    
+async def main(): 
+    page_manager = NotionPageManager(page_id="https://notion.so/1d0389d57bd3805cb34ccaf5804b43ce")
+    cover_url = await page_manager.get_cover_url()
+    print(f"Cover URL: {cover_url}")
+    
+    
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
