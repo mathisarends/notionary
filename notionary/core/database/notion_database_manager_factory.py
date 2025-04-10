@@ -12,7 +12,7 @@ from notionary.exceptions.database_exceptions import (
     NotionDatabaseException,
 )
 from notionary.util.logging_mixin import LoggingMixin
-from notionary.util.uuid_utils import format_uuid
+from notionary.util.page_id_utils import format_uuid
 
 
 class NotionDatabaseFactory(LoggingMixin):

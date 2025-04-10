@@ -22,3 +22,18 @@ def format_uuid(value: str) -> Optional[str]:
     if is_valid_uuid(value):
         return value
     return extract_uuid(value)
+
+
+def extract_and_validate_page_id(page_id: Optional[str], url: Optional[str]) -> str:
+    if not page_id and not url:
+        raise ValueError("Either page_id or url must be provided")
+
+    candidate = page_id or url
+    extracted_id = extract_uuid(candidate)
+    if not extracted_id:
+        raise ValueError(f"Could not extract a valid UUID from: {candidate}")
+
+    formatted = format_uuid(extracted_id)
+    if not is_valid_uuid(formatted):
+        raise ValueError(f"Invalid UUID format: {formatted}")
+    return formatted

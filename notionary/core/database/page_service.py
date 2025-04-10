@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Any, List, Union, TYPE_CHECKING
+from typing import Dict, Optional, Any, List, Union
 from notionary.core.database.models.page_result import PageResult
 from notionary.core.database.notion_database_schema import NotionDatabaseSchema
 from notionary.core.database.notion_database_writer import DatabaseWritter
@@ -10,7 +10,7 @@ from notionary.exceptions.database_exceptions import (
     PageOperationError,
 )
 from notionary.exceptions.page_creation_exception import PageCreationException
-from notionary.util.uuid_utils import format_uuid
+from notionary.util.page_id_utils import format_uuid
 
 
 class DatabasePageService:

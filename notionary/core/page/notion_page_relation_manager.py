@@ -1,39 +1,41 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from notionary.core.notion_client import NotionClient
+from notionary.core.page.notion_page_title_resolver import NotionPageTitleResolver
 from notionary.util.logging_mixin import LoggingMixin
-from notionary.util.uuid_utils import is_valid_uuid
-
+from notionary.util.page_id_utils import is_valid_uuid
 
 
 class NotionRelationManager(LoggingMixin):
     """
-    Manager für Relation-Properties einer Notion-Seite.
-    Verwaltet Beziehungen zwischen Seiten und lädt verfügbare Relation-Optionen.
+    Manager for relation properties of a Notion page.
+    Manages links between pages and loads available relation options.
     """
 
     def __init__(self, page_id: str, client: NotionClient, database_id: Optional[str] = None):
         """
-        Initialisiert den Relation-Manager.
-        
+        Initializes the relation manager.
+
         Args:
-            page_id: ID der Notion-Seite
-            client: NotionClient-Instanz
-            database_id: Optional, ID der Datenbank, zu der die Seite gehört (wird bei Bedarf geladen)
+            page_id: ID of the Notion page
+            client: NotionClient instance
+            database_id: Optional, ID of the database the page belongs to (loaded if needed)
         """
         self._page_id = page_id
         self._client = client
         self._database_id = database_id
         self._page_properties = None
 
+        self._page_title_resolver = NotionPageTitleResolver(client=client)
+
     async def _get_page_properties(self, force_refresh: bool = False) -> Dict[str, Any]:
         """
-        Lädt die Properties der Seite.
-        
+        Loads the properties of the page.
+
         Args:
-            force_refresh: Bei True wird ein erneuter API-Call durchgeführt
-            
+            force_refresh: If True, a fresh API call will be made
+
         Returns:
-            Dict[str, Any]: Die Properties der Seite
+            Dict[str, Any]: The properties of the page
         """
         if self._page_properties is None or force_refresh:
             page_data = await self._client.get_page(self._page_id)
@@ -41,38 +43,37 @@ class NotionRelationManager(LoggingMixin):
                 self._page_properties = page_data["properties"]
             else:
                 self._page_properties = {}
-        
+
         return self._page_properties
 
     async def _ensure_database_id(self) -> Optional[str]:
         """
-        Stellt sicher, dass die database_id vorhanden ist. Lädt sie bei Bedarf.
-        
+        Ensures the database_id is available. Loads it if necessary.
+
         Returns:
-            Optional[str]: Die Datenbank-ID oder None
+            Optional[str]: The database ID or None
         """
         if self._database_id:
             return self._database_id
-            
-        # Versuchen, die Datenbank-ID aus den Seitendaten zu ermitteln
+
         page_data = await self._client.get_page(self._page_id)
         if page_data and "parent" in page_data:
             parent = page_data["parent"]
             if parent.get("type") == "database_id":
                 self._database_id = parent.get("database_id")
                 return self._database_id
-                
+
         return None
 
     async def get_relation_property_ids(self) -> List[str]:
         """
-        Gibt eine Liste aller Relation-Property-Namen zurück.
-        
+        Returns a list of all relation property names.
+
         Returns:
-            List[str]: Namen aller Relation-Properties
+            List[str]: Names of all relation properties
         """
         properties = await self._get_page_properties()
-        
+
         return [
             prop_name for prop_name, prop_data in properties.items()
             if prop_data.get("type") == "relation"
@@ -80,170 +81,162 @@ class NotionRelationManager(LoggingMixin):
 
     async def get_relation_values(self, property_name: str) -> List[str]:
         """
-        Gibt die aktuellen Relationswerte für eine Property zurück.
-        
+        Returns the current relation values for a property.
+
         Args:
-            property_name: Name der Relation-Property
-            
+            property_name: Name of the relation property
+
         Returns:
-            List[str]: Liste der verknüpften Page-IDs
+            List[str]: List of linked page IDs
         """
         properties = await self._get_page_properties()
-        
+
         if property_name not in properties:
             return []
-            
+
         prop_data = properties[property_name]
-        
+
         if prop_data.get("type") != "relation" or "relation" not in prop_data:
             return []
-            
+
         return [rel.get("id") for rel in prop_data["relation"]]
 
     async def get_relation_details(self, property_name: str) -> Optional[Dict[str, Any]]:
         """
-        Gibt Details zur Relation-Property zurück, inkl. verknüpfte Datenbank.
-        
+        Returns details about the relation property, including the linked database.
+
         Args:
-            property_name: Name der Relation-Property
-            
+            property_name: Name of the relation property
+
         Returns:
-            Optional[Dict[str, Any]]: Details zur Relation oder None
+            Optional[Dict[str, Any]]: Relation details or None
         """
         database_id = await self._ensure_database_id()
         if not database_id:
             return None
-            
+
         try:
             database = await self._client.get(f"databases/{database_id}")
             if not database or "properties" not in database:
                 return None
-                
+
             properties = database["properties"]
-            
+
             if property_name not in properties:
                 return None
-                
+
             prop_data = properties[property_name]
-            
+
             if prop_data.get("type") != "relation":
                 return None
-                
+
             return prop_data.get("relation", {})
-            
+
         except Exception as e:
-            self.logger.error(f"Fehler beim Abrufen der Relation-Details: {str(e)}")
+            self.logger.error("Error retrieving relation details: %s", str(e))
             return None
 
     async def get_relation_database_id(self, property_name: str) -> Optional[str]:
         """
-        Gibt die ID der verknüpften Datenbank für eine Relation-Property zurück.
-        
+        Returns the ID of the linked database for a relation property.
+
         Args:
-            property_name: Name der Relation-Property
-            
+            property_name: Name of the relation property
+
         Returns:
-            Optional[str]: ID der verknüpften Datenbank oder None
+            Optional[str]: ID of the linked database or None
         """
         relation_details = await self.get_relation_details(property_name)
-        
+
         if not relation_details:
             return None
-            
+
         return relation_details.get("database_id")
 
     async def get_relation_options(self, property_name: str, limit: int = 100) -> List[Dict[str, Any]]:
         """
-        Gibt verfügbare Optionen für eine Relation-Property zurück.
-        
+        Returns available options for a relation property.
+
         Args:
-            property_name: Name der Relation-Property
-            limit: Maximale Anzahl der zurückzugebenden Optionen
-            
+            property_name: Name of the relation property
+            limit: Maximum number of options to return
+
         Returns:
-            List[Dict[str, Any]]: Liste der verfügbaren Optionen mit ID und Name
+            List[Dict[str, Any]]: List of available options with ID and name
         """
         related_db_id = await self.get_relation_database_id(property_name)
-        
+
         if not related_db_id:
             return []
-            
+
         try:
-            # Abfrage der verknüpften Datenbank
             query_result = await self._client.post(
                 f"databases/{related_db_id}/query",
                 {
                     "page_size": limit,
                 }
             )
-            
+
             if not query_result or "results" not in query_result:
                 return []
-                
-            # Relevante Informationen aus den Seiten extrahieren
+
             options = []
             for page in query_result["results"]:
                 page_id = page.get("id")
                 title = self._extract_title_from_page(page)
-                
+
                 if page_id and title:
                     options.append({
                         "id": page_id,
                         "name": title
                     })
-                    
+
             return options
         except Exception as e:
-            self.logger.error(f"Fehler beim Abrufen der Relation-Optionen: {str(e)}")
+            self.logger.error("Error retrieving relation options: %s", str(e))
             return []
 
     def _extract_title_from_page(self, page: Dict[str, Any]) -> Optional[str]:
         """
-        Extrahiert den Titel aus einem Page-Objekt.
-        
+        Extracts the title from a page object.
+
         Args:
-            page: Das Page-Objekt von der Notion API
-            
+            page: The page object from the Notion API
+
         Returns:
-            Optional[str]: Der Seitentitel oder None
+            Optional[str]: The page title or None
         """
         if "properties" not in page:
             return None
-            
+
         properties = page["properties"]
-        
-        # Nach einer Title-Property suchen
+
         for prop_data in properties.values():
             if prop_data.get("type") == "title" and "title" in prop_data:
                 title_parts = prop_data["title"]
                 return "".join([text_obj.get("plain_text", "") for text_obj in title_parts])
-                
+
         return None
 
-    async def add_relation(self, property_name: str, page_ids: Union[str, List[str]]) -> Optional[Dict[str, Any]]:
+    async def add_relation(self, property_name: str, page_ids: List[str]) -> Optional[Dict[str, Any]]:
         """
-        Fügt eine oder mehrere Relationen hinzu.
-        
+        Adds one or more relations.
+
         Args:
-            property_name: Name der Relation-Property
-            page_ids: Eine Page-ID oder Liste von Page-IDs
-            
+            property_name: Name of the relation property
+            page_ids: List of page IDs to add
+
         Returns:
-            Optional[Dict[str, Any]]: API-Antwort oder None bei Fehler
+            Optional[Dict[str, Any]]: API response or None on error
         """
         existing_relations = await self.get_relation_values(property_name) or []
-        
-        if isinstance(page_ids, str):
-            page_ids = [page_ids]
-            
-        # Bestehende und neue Relationen kombinieren, Duplikate entfernen
+
         all_relations = list(set(existing_relations + page_ids))
-        
-        # Property-Payload erstellen
+
         relation_payload = {
             "relation": [{"id": page_id} for page_id in all_relations]
         }
-        
+
         try:
             result = await self._client.patch(
                 f"pages/{self._page_id}",
@@ -253,93 +246,57 @@ class NotionRelationManager(LoggingMixin):
                     }
                 },
             )
-            
-            # Cache aktualisieren
+
             self._page_properties = None
-            
+
             return result
         except Exception as e:
-            self.logger.error(f"Fehler beim Hinzufügen der Relation: {str(e)}")
+            self.logger.error("Error adding relation: %s", str(e))
             return None
-        
-    async def add_relation_by_name(self, property_name: str, page_titles: Union[str, List[str]]) -> Optional[Dict[str, Any]]:
+
+    async def add_relation_by_name(self, property_name: str, page_titles: List[str]) -> Optional[Dict[str, Any]]:
         """
-        Fügt eine oder mehrere Relationen anhand von Seitennamen hinzu.
-        
+        Adds one or more relations based on page titles.
+
         Args:
-            property_name: Name der Relation-Property
-            pages: Ein Page-Titel oder Liste von Page-Titeln
-                
+            property_name: Name of the relation property
+            page_titles: List of page titles
+
         Returns:
-            Optional[Dict[str, Any]]: API-Antwort oder None bei Fehler
+            Optional[Dict[str, Any]]: API response or None on error
         """
-        if isinstance(page_titles, str):
-            page_titles = [page_titles]
-        
         page_ids = []
         for page in page_titles:
             if is_valid_uuid(page):
                 page_ids.append(page)
             else:
-                page_id = await self._get_page_id_by_title(page)
+                page_id = await self._page_title_resolver.get_page_id_by_title(page)
                 if page_id:
                     page_ids.append(page_id)
                 else:
-                    self.logger.warning("Keine Seite mit Titel '%s' gefunden", page)
-        
-        # Existierende add_relation Methode verwenden
+                    self.logger.warning("No page found with title '%s'", page)
+
         if page_ids:
             return await self.add_relation(property_name, page_ids)
-        
-        self.logger.warning("Keine gültigen Page-IDs gefunden, keine Änderungen vorgenommen")
+
+        self.logger.warning("No valid page IDs found, no changes applied")
         return None
-
-    async def _get_page_id_by_title(self, title: str) -> Optional[str]:
-        search_results = await self._client.post(
-            "search",
-            {
-                "query": title,
-                "filter": {
-                    "value": "page",
-                    "property": "object"
-                }
-            }
-        )
-
-        print("search_results", search_results)
-
-        for result in search_results.get("results", []):
-            properties = result.get("properties", {})
-
-            for prop_value in properties.values():
-                if prop_value.get("type") == "title":
-                    title_texts = prop_value.get("title", [])
-                    page_title = " ".join([t.get("plain_text", "") for t in title_texts])
-
-                    if page_title == title or title in page_title:
-                        print(f"Seite gefunden: '{page_title}' mit ID: {result.get('id')}")
-                        return result.get("id")
-
-        print(f"Keine Seite mit Titel '{title}' gefunden")
-        return None
-
 
     async def set_relations(self, property_name: str, page_ids: List[str]) -> Optional[Dict[str, Any]]:
         """
-        Setzt die Relationen auf die angegebenen IDs (ersetzt bestehende).
-        
+        Sets the relations to the specified IDs (replaces existing ones).
+
         Args:
-            property_name: Name der Relation-Property
-            page_ids: Liste der Page-IDs, die gesetzt werden sollen
-            
+            property_name: Name of the relation property
+            page_ids: List of page IDs to set
+
         Returns:
-            Optional[Dict[str, Any]]: API-Antwort oder None bei Fehler
+            Optional[Dict[str, Any]]: API response or None on error
         """
-        # Property-Payload erstellen
         relation_payload = {
             "relation": [{"id": page_id} for page_id in page_ids]
         }
-        
+
         try:
             result = await self._client.patch(
                 f"pages/{self._page_id}",
@@ -349,11 +306,23 @@ class NotionRelationManager(LoggingMixin):
                     }
                 },
             )
-            
-            # Cache aktualisieren
+
             self._page_properties = None
-            
+
             return result
         except Exception as e:
-            self.logger.error(f"Fehler beim Setzen der Relationen: {str(e)}")
+            self.logger.error("Error setting relations: %s", str(e))
             return None
+        
+    async def get_all_relations(self) -> Dict[str, List[str]]:
+        """ Returns all relation properties and their values.
+        """
+        relation_properties = await self.get_relation_property_ids()
+        if not relation_properties:
+            return {}
+            
+        result = {}
+        for prop_name in relation_properties:
+            result[prop_name] = await self.get_relation_values(prop_name)
+            
+        return result
