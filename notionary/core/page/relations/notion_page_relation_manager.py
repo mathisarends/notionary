@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 from notionary.core.notion_client import NotionClient
-from notionary.core.page.notion_page_title_resolver import NotionPageTitleResolver
+from notionary.core.page.relations.notion_page_title_resolver import NotionPageTitleResolver
 from notionary.util.logging_mixin import LoggingMixin
 from notionary.util.page_id_utils import is_valid_uuid
 

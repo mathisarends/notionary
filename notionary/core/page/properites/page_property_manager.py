@@ -1,10 +1,10 @@
 from typing import Dict, Any, List, Optional
 from notionary.core.notion_client import NotionClient
-from notionary.core.page.notion_page_title_resolver import NotionPageTitleResolver
-from notionary.core.page.property_value_extractor import PropertyValueExtractor
-from notionary.core.page.database_property_service import DatabasePropertyService
-from notionary.core.page.page_database_relation import PageDatabaseRelation
-from notionary.core.page.meta_data.metadata_editor import MetadataEditor
+from notionary.core.page.metadata.metadata_editor import MetadataEditor
+from notionary.core.page.relations.notion_page_title_resolver import NotionPageTitleResolver
+from notionary.core.page.properites.database_property_service import DatabasePropertyService
+from notionary.core.page.relations.page_database_relation import PageDatabaseRelation
+from notionary.core.page.properites.property_value_extractor import PropertyValueExtractor
 from notionary.util.logging_mixin import LoggingMixin
 
 

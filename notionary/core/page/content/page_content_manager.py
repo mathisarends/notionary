@@ -54,7 +54,6 @@ class PageContentManager(LoggingMixin):
 
         return f"Deleted {deleted}/{len(results)} blocks."
 
-    # Methods from PageContentReader
     async def get_blocks(self) -> List[Dict[str, Any]]:
         result = await self._client.get(f"blocks/{self.page_id}/children")
         if not result:

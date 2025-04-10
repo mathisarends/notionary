@@ -7,17 +7,20 @@ from notionary.core.converters.registry.block_element_registry_builder import (
     BlockElementRegistryBuilder,
 )
 from notionary.core.notion_client import NotionClient
-from notionary.core.page.database_property_service import DatabasePropertyService
-from notionary.core.page.meta_data.notion_icon_manager import NotionPageIconManager
-from notionary.core.page.meta_data.notion_page_cover_manager import NotionPageCoverManager
-from notionary.core.page.notion_page_relation_manager import NotionRelationManager
-from notionary.core.page.page_content_manager import PageContentManager
-from notionary.core.page.page_property_manager import PagePropertyManager
+from notionary.core.page.metadata.metadata_editor import MetadataEditor
+from notionary.core.page.metadata.notion_icon_manager import NotionPageIconManager
+from notionary.core.page.metadata.notion_page_cover_manager import NotionPageCoverManager
+from notionary.core.page.properites.database_property_service import DatabasePropertyService
+from notionary.core.page.relations.notion_page_relation_manager import NotionRelationManager
+from notionary.core.page.content.page_content_manager import PageContentManager
+from notionary.core.page.properites.page_property_manager import PagePropertyManager
 from notionary.util.logging_mixin import LoggingMixin
-from notionary.core.page.meta_data.metadata_editor import MetadataEditor
 from notionary.util.page_id_utils import extract_and_validate_page_id
-from notionary.core.page.page_database_relation import PageDatabaseRelation
+from notionary.core.page.relations.page_database_relation import PageDatabaseRelation
 
+# Kommmt mir hier vor wie eine Delegationskaskade
+# TODO: Ich will hier eigentlich ein Datanbankschema reinreichen oder finden, wenn es denn ein solches gibt, weil die  Logik hier wirklich sehr verteilt vorliegt (Gerade das mit den Properties nochmal anschauen)
+# Hier sollte auch eine Caching-Strategie rein, für alle Properties die mit derselben Datenbank zu tun haben.
 
 class NotionPageManager(LoggingMixin):
     """

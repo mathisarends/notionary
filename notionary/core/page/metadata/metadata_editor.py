@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
 from notionary.core.notion_client import NotionClient
-from notionary.core.page.property_formatter import NotionPropertyFormatter
+from notionary.core.page.properites.property_formatter import NotionPropertyFormatter
 from notionary.util.logging_mixin import LoggingMixin
 
 

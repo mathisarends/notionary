@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional, Union, TypedDict, cast
 from notionary.core.database.notion_database_schema import NotionDatabaseSchema
 from notionary.core.notion_client import NotionClient
-from notionary.core.page.property_formatter import NotionPropertyFormatter
+from notionary.core.page.properites.property_formatter import NotionPropertyFormatter
 from notionary.util.logging_mixin import LoggingMixin
 
 
