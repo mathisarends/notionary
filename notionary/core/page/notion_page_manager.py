@@ -108,15 +108,6 @@ class NotionPageManager(LoggingMixin):
         await self._page_content_manager.clear()
         return await self._page_content_manager.append_markdown(markdown)
 
-    async def get_blocks(self) -> List[Dict[str, Any]]:
-        return await self._page_content_manager.get_blocks()
-
-    async def get_block_children(self, block_id: str) -> List[Dict[str, Any]]:
-        return await self._page_content_manager.get_block_children(block_id)
-
-    async def get_page_blocks_with_children(self) -> List[Dict[str, Any]]:
-        return await self._page_content_manager.get_page_blocks_with_children()
-
     async def get_text(self) -> str:
         return await self._page_content_manager.get_text()
     

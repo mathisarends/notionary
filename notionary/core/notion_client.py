@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from notionary.util.logging_mixin import LoggingMixin
 import weakref
 
-
 class HttpMethod(Enum):
     """Enum für HTTP-Methoden."""
 
@@ -15,7 +14,6 @@ class HttpMethod(Enum):
     POST = "post"
     PATCH = "patch"
     DELETE = "delete"
-
 
 class NotionClient(LoggingMixin):
     """Verbesserter Notion-Client mit automatischer Ressourcenverwaltung."""
@@ -113,12 +111,6 @@ class NotionClient(LoggingMixin):
             return None
 
     def __del__(self):
-        """
-        Destruktor, der beim Garbage Collecting aufgerufen wird.
-
-        Hinweis: Dies ist nur ein Fallback, da __del__ nicht garantiert für async Cleanup funktioniert.
-        Die bessere Praxis ist, close() explizit zu rufen, wenn möglich.
-        """
         if not hasattr(self, "client") or not self.client:
             return
 

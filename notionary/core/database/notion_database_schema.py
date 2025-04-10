@@ -61,7 +61,7 @@ NotionPropertyType = Union[
     NotionStatusProperty,
     NotionRelationProperty,
     NotionNumberProperty,
-    Dict[str, Any],  # Fallback
+    Dict[str, Any],
 ]
 
 
