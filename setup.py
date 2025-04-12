@@ -2,7 +2,7 @@ from setuptools import setup, find_namespace_packages
 
 setup(
     name="notionary",
-    version="0.1.6",
+    version="0.1.7",
     packages=find_namespace_packages(include=["notionary*"]),
     install_requires=[
         "notion-client>=2.0.0",

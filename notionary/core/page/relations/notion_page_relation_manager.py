@@ -1,9 +1,9 @@
 from typing import Any, Dict, List, Optional
 from notionary.core.notion_client import NotionClient
 from notionary.core.page.relations.notion_page_title_resolver import NotionPageTitleResolver
+from notionary.core.page.relations.relation_operation_result import RelationOperationResult
 from notionary.util.logging_mixin import LoggingMixin
 from notionary.util.page_id_utils import is_valid_uuid
-
 
 class NotionRelationManager(LoggingMixin):
     """
@@ -254,33 +254,69 @@ class NotionRelationManager(LoggingMixin):
             self.logger.error("Error adding relation: %s", str(e))
             return None
 
-    async def add_relation_by_name(self, property_name: str, page_titles: List[str]) -> Optional[Dict[str, Any]]:
+    async def add_relation_by_name(self, property_name: str, page_titles: List[str]) -> RelationOperationResult:
         """
         Adds one or more relations based on page titles.
 
         Args:
             property_name: Name of the relation property
-            page_titles: List of page titles
+            page_titles: List of page titles to link
 
         Returns:
-            Optional[Dict[str, Any]]: API response or None on error
+            RelationOperationResult: Result of the operation with details on which pages were found and added
         """
+        found_pages = []
+        not_found_pages = []
         page_ids = []
+        
+        self.logger.info("Attempting to add %d relation(s) to property '%s'", len(page_titles), property_name)
+        
         for page in page_titles:
             if is_valid_uuid(page):
                 page_ids.append(page)
+                found_pages.append(page)
+                self.logger.debug("Using page ID directly: %s", page)
             else:
                 page_id = await self._page_title_resolver.get_page_id_by_title(page)
                 if page_id:
                     page_ids.append(page_id)
+                    found_pages.append(page)
+                    self.logger.debug("Found page ID %s for title '%s'", page_id, page)
                 else:
+                    not_found_pages.append(page)
                     self.logger.warning("No page found with title '%s'", page)
 
-        if page_ids:
-            return await self.add_relation(property_name, page_ids)
+        if not page_ids:
+            self.logger.warning("No valid page IDs found for any of the titles, no changes applied")
+            return RelationOperationResult.from_no_pages_found(property_name, not_found_pages)
 
-        self.logger.warning("No valid page IDs found, no changes applied")
-        return None
+        api_response = await self.add_relation(property_name, page_ids)
+        
+        if api_response:
+            result = RelationOperationResult.from_success(
+                property_name=property_name,
+                found_pages=found_pages,
+                not_found_pages=not_found_pages,
+                page_ids_added=page_ids,
+                api_response=api_response
+            )
+            
+            if not_found_pages:
+                not_found_str = "', '".join(not_found_pages)
+                self.logger.info("Added %d relation(s) to '%s', but couldn't find pages: '%s'", 
+                                len(page_ids), property_name, not_found_str)
+            else:
+                self.logger.info("Successfully added all %d relation(s) to '%s'", 
+                                len(page_ids), property_name)
+                
+            return result
+        
+        self.logger.error("Failed to add relations to '%s' (API error)", property_name)
+        return RelationOperationResult.from_no_api_response(
+            property_name=property_name,
+            found_pages=found_pages,
+            page_ids_added=page_ids
+        )
 
     async def set_relations(self, property_name: str, page_ids: List[str]) -> Optional[Dict[str, Any]]:
         """

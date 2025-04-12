@@ -1,6 +1,5 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
-
 
 @dataclass
 class PropertyOperationResult:
