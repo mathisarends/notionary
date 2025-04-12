@@ -220,10 +220,6 @@ function notionExample() {
     except Exception as e:
         print(f"Error during integration test: {e}")
         raise
-    finally:
-        # Clean up
-        await content_manager.close()
-
 
 if __name__ == "__main__":
     JARVIS_CLIPBOARD_PAGE = "1a3389d5-7bd3-80d7-a507-e67d1b25822c"

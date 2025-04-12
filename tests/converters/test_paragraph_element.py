@@ -1,6 +1,6 @@
 import unittest
-from notionary.converters.elements.paragraph_element import ParagraphElement
 
+from notionary.core.converters.elements.paragraph_element import ParagraphElement
 
 class TestParagraphElement(unittest.TestCase):
 

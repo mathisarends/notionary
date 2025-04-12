@@ -48,25 +48,30 @@ class PageContentManager(LoggingMixin):
             return "No content to delete."
 
         deleted = 0
-        for b in results:
-            if await self._client.delete(f"blocks/{b['id']}"):
+        skipped = 0
+        for block in results:
+            if block.get("type") in ["child_database", "database", "linked_database"]:
+                skipped += 1
+                continue
+                
+            if await self._client.delete(f"blocks/{block['id']}"):
                 deleted += 1
 
-        return f"Deleted {deleted}/{len(results)} blocks."
+        return f"Deleted {deleted}/{len(results)} blocks. Skipped {skipped} database blocks."
 
     async def get_blocks(self) -> List[Dict[str, Any]]:
         result = await self._client.get(f"blocks/{self.page_id}/children")
         if not result:
             self.logger.error("Error retrieving page content: %s", result.error)
             return []
-        return result.data.get("results", [])
+        return result.get("results", [])
 
     async def get_block_children(self, block_id: str) -> List[Dict[str, Any]]:
         result = await self._client.get(f"blocks/{block_id}/children")
         if not result:
             self.logger.error("Error retrieving block children: %s", result.error)
             return []
-        return result.data.get("results", [])
+        return result.get("results", [])
 
     async def get_page_blocks_with_children(self) -> List[Dict[str, Any]]:
         blocks = await self.get_blocks()

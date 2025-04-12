@@ -1,7 +1,5 @@
 import unittest
-
-from notionary.converters.elements.bookmark_element import BookmarkElement
-
+from notionary.core.converters.elements.bookmark_element import BookmarkElement
 
 class TestBookmarkElement(unittest.TestCase):
     def test_match_markdown(self):
