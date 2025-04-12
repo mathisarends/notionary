@@ -16,7 +16,6 @@ import asyncio
 from typing import Dict, Any
 from notionary.core.database.notion_database_schema import NotionDatabaseAccessor
 
-
 async def print_database_details(
     database: Dict[str, Any], accessor: NotionDatabaseAccessor
 ) -> None:

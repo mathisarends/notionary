@@ -38,13 +38,13 @@ class DatabasePropertyService(LoggingMixin):
             database = await self._client.get(f"databases/{self._database_id}")
             if database and "properties" in database:
                 self._schema = database["properties"]
-                self.logger.debug(f"Loaded schema for database {self._database_id}")
+                self.logger.debug("Loaded schema for database %s", self._database_id)
                 return True
             else:
-                self.logger.error(f"Failed to load schema: missing 'properties' in response")
+                self.logger.error("Failed to load schema: missing 'properties' in response")
                 return False
         except Exception as e:
-            self.logger.error(f"Error loading database schema: {str(e)}")
+            self.logger.error("Error loading database schema: %s", str(e))
             return False
     
     async def _ensure_schema_loaded(self) -> None:
@@ -286,8 +286,6 @@ class DatabasePropertyService(LoggingMixin):
                 if invalid_values:
                     return False, f"Invalid multi_select options: {', '.join(invalid_values)}", options
         
-        # Add additional validation for other property types as needed
-                    
         return True, None, None
     
     async def get_database_metadata(self, include_types: Optional[List[str]] = None) -> Dict[str, Any]:

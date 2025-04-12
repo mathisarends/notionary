@@ -238,62 +238,57 @@ async def main():
     
     page_manager = NotionPageManager(page_id="https://notion.so/1d0389d57bd3805cb34ccaf5804b43ce")
     
-    await page_manager.add_relations_by_name("Projekte", ["Notionary"])
+    # await page_manager.add_relations_by_name("Projekte", ["Notionary"])
 
     
-    is_database_page = await page_manager.is_database_page()
+    # is_database_page = await page_manager.is_database_page()
     
-    if not is_database_page:
-        print("Diese Seite gehört zu keiner Datenbank. Demo wird beendet.")
-        return
+    # if not is_database_page:
+    #     print("Diese Seite gehört zu keiner Datenbank. Demo wird beendet.")
+    #     return
         
-    db_id = await page_manager.get_parent_database_id()
-    print(f"\n2. Datenbank-ID: {db_id}")
+    # db_id = await page_manager.get_parent_database_id()
+    # print(f"\n2. Datenbank-ID: {db_id}")
     
-    properties = await page_manager.get_properties()
-    print("\n3. Aktuelle Eigenschaften der Seite:")
-    for prop_name, prop_data in properties.items():
-        prop_type = prop_data.get("type", "unbekannt")
+    # properties = await page_manager.get_properties()
+    # print("\n3. Aktuelle Eigenschaften der Seite:")
+    # for prop_name, prop_data in properties.items():
+    #     prop_type = prop_data.get("type", "unbekannt")
         
-        value = await page_manager.get_property_value(prop_name)
-        print(f"  - {prop_name} ({prop_type}): {value}")
+    #     value = await page_manager.get_property_value(prop_name)
+    #     print(f"  - {prop_name} ({prop_type}): {value}")
     
-    status_options = await page_manager.get_available_options_for_property("Status")
-    print(f"\n4. Verfügbare Status-Optionen: {status_options}")
+    # status_options = await page_manager.get_available_options_for_property("Status")
+    # print(f"\n4. Verfügbare Status-Optionen: {status_options}")
     
-    tags_options = await page_manager.get_available_options_for_property("Tags")
-    print(f"\n5. Verfügbare Tags-Optionen: {tags_options}")
+    # tags_options = await page_manager.get_available_options_for_property("Tags")
+    # print(f"\n5. Verfügbare Tags-Optionen: {tags_options}")
     
-    # 6. Verfügbare Optionen für alle Relationen anzeigen
-    print("\n6. Relation-Eigenschaften und deren Optionen:")
-    for prop_name, prop_data in properties.items():
-        if prop_data.get("type") == "relation":
-            relation_options = await page_manager.get_relation_options(prop_name, limit=5)
-            option_names = [option.get("name", "Unbenannt") for option in relation_options]
-            print(f"  - {prop_name} Relation-Optionen (max. 5): {option_names}")
+    # print("\n6. Relation-Eigenschaften und deren Optionen:")
+    # for prop_name, prop_data in properties.items():
+    #     if prop_data.get("type") == "relation":
+    #         relation_options = await page_manager.get_relation_options(prop_name, limit=5)
+    #         option_names = [option.get("name", "Unbenannt") for option in relation_options]
+    #         print(f"  - {prop_name} Relation-Optionen (max. 5): {option_names}")
     
-    # 7. Typ für jede Eigenschaft abfragen
-    print("\n7. Typen aller Eigenschaften:")
-    for prop_name in properties.keys():
-        prop_type = await page_manager.get_property_type(prop_name)
-        print(f"  - {prop_name}: {prop_type}")
+    # print("\n7. Typen aller Eigenschaften:")
+    # for prop_name in properties.keys():
+    #     prop_type = await page_manager.get_property_type(prop_name)
+    #     print(f"  - {prop_name}: {prop_type}")
     
-    # 8. Einen gültigen Status setzen (erste verfügbare Option)
-    if status_options:
-        valid_status = status_options[0]
-        print(f"\n8. Setze Status auf '{valid_status}'...")
-        result = await page_manager.set_property_by_name("Status", valid_status)
-        print(f"   Ergebnis: {'Erfolgreich' if result else 'Fehlgeschlagen'}")
+    # if status_options:
+    #     valid_status = status_options[0]
+    #     print(f"\n8. Setze Status auf '{valid_status}'...")
+    #     result = await page_manager.set_property_by_name("Status", valid_status)
+    #     print(f"   Ergebnis: {'Erfolgreich' if result else 'Fehlgeschlagen'}")
         
-        # Aktuellen Status nach der Änderung anzeigen
-        current_status = await page_manager.get_status()
-        print(f"   Aktueller Status: {current_status}")
+    #     current_status = await page_manager.get_status()
+    #     print(f"   Aktueller Status: {current_status}")
     
     # 9. Versuch, einen ungültigen Status zu setzen
     invalid_status = "Bin King"
     print(f"\n9. Versuche ungültigen Status '{invalid_status}' zu setzen...")
-    result = await page_manager.set_property_by_name("Status", invalid_status)
-    print(f"   Ergebnis: {'Erfolgreich' if result else 'Fehlgeschlagen'}")
+    await page_manager.set_property_by_name("Status", invalid_status)
     
     # 10. Komplette Datenbank-Metadaten für select-ähnliche Properties abrufen
     print("\n10. Datenbank-Metadaten für select, multi_select und status Properties:")
