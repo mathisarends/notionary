@@ -1,11 +1,11 @@
 import asyncio
 import os
+import weakref
 from enum import Enum
 from typing import Dict, Any, Optional, Union
 import httpx
 from dotenv import load_dotenv
 from notionary.util.logging_mixin import LoggingMixin
-import weakref
 
 class HttpMethod(Enum):
     """Enum für HTTP-Methoden."""

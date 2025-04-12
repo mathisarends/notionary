@@ -44,21 +44,11 @@ class NotionDatabaseFactory(LoggingMixin):
 
         try:
             formatted_id = format_uuid(database_id) or database_id
-
+            
             manager = NotionDatabaseManager(formatted_id, token)
+            
 
-            success = await manager.initialize()
-
-            if not success:
-                error_msg = (
-                    f"Failed to initialize database manager for ID: {formatted_id}"
-                )
-                logger.error(error_msg)
-                raise DatabaseInitializationError(formatted_id, error_msg)
-
-            logger.info(
-                lambda: f"Successfully created database manager for ID: {formatted_id}"
-            )
+            logger.info("Successfully created database manager for ID: %s", formatted_id)
             return manager
 
         except DatabaseInitializationError:
@@ -88,7 +78,7 @@ class NotionDatabaseFactory(LoggingMixin):
             An initialized NotionDatabaseManager instance
         """
         logger = cls.class_logger()
-        logger.debug(lambda: f"Searching for database with name: {database_name}")
+        logger.debug("Searching for database with name: %s", database_name)
 
         client = NotionClient(token=token)
 
@@ -116,11 +106,8 @@ class NotionDatabaseFactory(LoggingMixin):
                 logger.warning(error_msg)
                 raise DatabaseNotFoundException(database_name, error_msg)
 
-            logger.debug(
-                lambda: f"Found {len(databases)} databases, searching for best match"
-            )
+            logger.debug("Found %d databases, searching for best match", len(databases))
 
-            # Find best match using fuzzy matching
             best_match = None
             best_score = 0
 
@@ -135,7 +122,6 @@ class NotionDatabaseFactory(LoggingMixin):
                     best_score = score
                     best_match = db
 
-            # Use a minimum threshold for match quality (0.6 = 60% similarity)
             if best_score < 0.6 or not best_match:
                 error_msg = f"No good database name match found for '{database_name}'. Best match had score {best_score:.2f}"
                 logger.warning(error_msg)
@@ -150,23 +136,11 @@ class NotionDatabaseFactory(LoggingMixin):
 
             matched_name = cls._extract_title_from_database(best_match)
 
-            logger.info(
-                lambda: f"Found matching database: '{matched_name}' (ID: {database_id}) with score: {best_score:.2f}"
-            )
+            logger.info("Found matching database: '%s' (ID: %s) with score: %.2f", matched_name, database_id, best_score)
 
             manager = NotionDatabaseManager(database_id, token)
-            success = await manager.initialize()
 
-            if not success:
-                error_msg = (
-                    f"Failed to initialize database manager for database {database_id}"
-                )
-                logger.error(error_msg)
-                raise DatabaseInitializationError(database_id, error_msg)
-
-            logger.info(
-                lambda: f"Successfully created database manager for '{matched_name}'"
-            )
+            logger.info(f"Successfully created database manager for '{matched_name}'")
             await client.close()
             return manager
 
@@ -183,22 +157,11 @@ class NotionDatabaseFactory(LoggingMixin):
     def _extract_title_from_database(cls, database: Dict[str, Any]) -> str:
         """
         Extract the title from a database object.
-
-        Args:
-            database: A database object from the Notion API
-
-        Returns:
-            The extracted title or "Untitled" if no title is found
-
-        Raises:
-            DatabaseParsingError: If there's an error parsing the database title
         """
         try:
-            # Check for title in the root object
             if "title" in database:
                 return cls._extract_text_from_rich_text(database["title"])
 
-            # Check for title in properties
             if "properties" in database and "title" in database["properties"]:
                 title_prop = database["properties"]["title"]
                 if "title" in title_prop:
@@ -215,12 +178,6 @@ class NotionDatabaseFactory(LoggingMixin):
     def _extract_text_from_rich_text(cls, rich_text: List[Dict[str, Any]]) -> str:
         """
         Extract plain text from a rich text array.
-
-        Args:
-            rich_text: A list of rich text objects from Notion API
-
-        Returns:
-            The concatenated plain text content
         """
         if not rich_text:
             return ""

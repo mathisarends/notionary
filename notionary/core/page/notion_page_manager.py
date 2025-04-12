@@ -18,10 +18,6 @@ from notionary.util.logging_mixin import LoggingMixin
 from notionary.util.page_id_utils import extract_and_validate_page_id
 from notionary.core.page.relations.page_database_relation import PageDatabaseRelation
 
-# Kommmt mir hier vor wie eine Delegationskaskade
-# TODO: Ich will hier eigentlich ein Datanbankschema reinreichen oder finden, wenn es denn ein solches gibt, weil die  Logik hier wirklich sehr verteilt vorliegt (Gerade das mit den Properties nochmal anschauen)
-# Hier sollte auch eine Caching-Strategie rein, für alle Properties die mit derselben Datenbank zu tun haben.
-
 class NotionPageManager(LoggingMixin):
     """
     High-Level Facade for managing content and metadata of a Notion page.
@@ -66,8 +62,13 @@ class NotionPageManager(LoggingMixin):
             self._db_relation
         )
 
-    async def _init_db_property_service(self) -> Optional[DatabasePropertyService]:
-        """ Lazily initializes the database property service if the page belongs to a database.
+    async def _get_db_property_service(self) -> Optional[DatabasePropertyService]:
+        """
+        Gets the database property service, initializing it if necessary.
+        This is a more intuitive way to work with the instance variable.
+        
+        Returns:
+            Optional[DatabasePropertyService]: The database property service or None if not applicable
         """
         if self._db_property_service is not None:
             return self._db_property_service
@@ -175,7 +176,7 @@ class NotionPageManager(LoggingMixin):
     async def get_available_options_for_property(self, property_name: str) -> List[str]:
         """ Gets the available option names for a property (select, multi_select, status).
         """
-        db_service = await self._init_db_property_service()
+        db_service = await self._get_db_property_service()
         if db_service:
             return await db_service.get_option_names(property_name)
         return []
@@ -183,7 +184,7 @@ class NotionPageManager(LoggingMixin):
     async def get_property_type(self, property_name: str) -> Optional[str]:
         """ Gets the type of a specific property.
         """
-        db_service = await self._init_db_property_service()
+        db_service = await self._get_db_property_service()
         if db_service:
             return await db_service.get_property_type(property_name)
         return None
@@ -191,7 +192,7 @@ class NotionPageManager(LoggingMixin):
     async def get_database_metadata(self, include_types: Optional[List[str]] = None) -> Dict[str, Any]:
         """ Gets complete metadata about the database this page belongs to.
         """
-        db_service = await self._init_db_property_service()
+        db_service = await self._get_db_property_service()
         if db_service:
             return await db_service.get_database_metadata(include_types)
         return {"properties": {}}
@@ -238,11 +239,9 @@ async def main():
     page_manager = NotionPageManager(page_id="https://notion.so/1d0389d57bd3805cb34ccaf5804b43ce")
     
     await page_manager.add_relations_by_name("Projekte", ["Notionary"])
-    
-    input("Drücke bitte enter")
+
     
     is_database_page = await page_manager.is_database_page()
-    print(f"\n1. Ist diese Seite Teil einer Datenbank? {is_database_page}")
     
     if not is_database_page:
         print("Diese Seite gehört zu keiner Datenbank. Demo wird beendet.")
