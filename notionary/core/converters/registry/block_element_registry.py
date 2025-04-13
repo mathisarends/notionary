@@ -95,6 +95,8 @@ class BlockElementRegistry:
         """
         # Create a copy of registered elements
         element_classes = self._elements.copy()
+        
+        # TODO: Das hier besser formattieren und über debug level lösen . ) 
         print("Elements in registry:", element_classes)
 
         formatter_names = [e.__name__ for e in element_classes]
@@ -232,3 +234,7 @@ paragraphs, lists, quotes, etc.
         element_docs = cls.generate_element_docs(element_classes)
 
         return cls.SYSTEM_PROMPT_TEMPLATE.format(element_docs=element_docs)
+
+
+
+# TODO: Testen ob der Inline Formatter hier überhaupt funktionieren tut:

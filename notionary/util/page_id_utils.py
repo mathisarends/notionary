@@ -24,8 +24,6 @@ def format_uuid(value: str) -> Optional[str]:
     return extract_uuid(value)
 
 def extract_and_validate_page_id(page_id: Optional[str], url: Optional[str]) -> str:
-    print("page_id", page_id)
-    print("=====")
     if not page_id and not url:
         raise ValueError("Either page_id or url must be provided")
     

@@ -1,6 +1,7 @@
 from typing import List, Type
 from collections import OrderedDict
 
+from notionary.core.converters.elements.embed_element import EmbedElement
 from notionary.core.converters.elements.notion_block_element import NotionBlockElement
 from notionary.core.converters.registry.block_element_registry import (
     BlockElementRegistry,
@@ -90,6 +91,7 @@ class BlockElementRegistryBuilder:
             .add_element(BookmarkElement)
             .add_element(ImageElement)
             .add_element(VideoElement)
+            .add_element(EmbedElement)
             .add_element(ParagraphElement)
         )  # Add paragraph last as fallback
 
