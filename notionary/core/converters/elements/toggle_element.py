@@ -6,19 +6,14 @@ from notionary.core.converters.elements.notion_block_element import NotionBlockE
 
 class ToggleElement(NotionBlockElement):
     """
-    Handles conversion between Markdown toggle blocks and Notion toggle blocks.
-
-    Markdown toggle syntax:
-    +++ Toggle title
-       Indented content that belongs to the toggle
-       More indented content
-
-    Non-indented content marks the end of the toggle block.
+    Verbesserte ToggleElement-Klasse, die Kontext berücksichtigt.
     """
 
     TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+(.+)$")
-
     INDENT_PATTERN = re.compile(r"^(\s{2,}|\t+)(.+)$")
+
+    # Ein neues Pattern, um spezifisch nach der "Transcript" Überschrift zu suchen
+    TRANSCRIPT_TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+Transcript$")
 
     @staticmethod
     def match_markdown(text: str) -> bool:
@@ -32,11 +27,7 @@ class ToggleElement(NotionBlockElement):
 
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
-        """Convert markdown toggle to Notion toggle block.
-
-        Note: This method only converts the toggle title line.
-        The nested content needs to be processed separately.
-        """
+        """Convert markdown toggle to Notion toggle block."""
         toggle_match = ToggleElement.TOGGLE_PATTERN.match(text.strip())
         if not toggle_match:
             return None
@@ -101,7 +92,7 @@ class ToggleElement(NotionBlockElement):
             # Find number of leading spaces
             leading_spaces = len(line) - len(line.lstrip(" "))
             # Remove at least 2 spaces, but not more than what's there
-            return line[min(2, leading_spaces) :]
+            return line[min(2, leading_spaces):]
 
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
@@ -149,18 +140,18 @@ class ToggleElement(NotionBlockElement):
 
     @classmethod
     def find_matches(
-        cls, text: str, process_nested_content: Callable = None
+        cls, text: str, process_nested_content: Callable = None, context_aware: bool = True
     ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
-        Find all toggle elements in the text and process them.
-
+        Verbesserte find_matches-Methode, die Kontext beim Finden von Toggles berücksichtigt.
+        
         Args:
-            text: The text to search in
-            process_nested_content: Optional callback function to process nested content
-                It should accept a string and return a list of Notion blocks
-
+            text: Der zu durchsuchende Text
+            process_nested_content: Optionale Callback-Funktion zur Verarbeitung verschachtelter Inhalte
+            context_aware: Ob der Kontext (vorhergehende Zeilen) beim Finden von Toggles berücksichtigt werden soll
+            
         Returns:
-            List of (start_pos, end_pos, block) tuples
+            Liste von (start_pos, end_pos, block) Tupeln
         """
         if not text:
             return []
@@ -176,6 +167,20 @@ class ToggleElement(NotionBlockElement):
             if not cls.match_markdown(line):
                 i += 1
                 continue
+
+            # Wenn context_aware aktiviert ist, prüfen wir für "Transcript"-Toggles
+            # ob sie direkt nach einem Bullet Point kommen
+            is_transcript_toggle = cls.TRANSCRIPT_TOGGLE_PATTERN.match(line.strip())
+            
+            if context_aware and is_transcript_toggle:
+                # Prüfen, ob der Toggle in einem gültigen Kontext ist (nach Bullet Point)
+                if i > 0 and lines[i-1].strip().startswith("- "):
+                    # Gültiger Kontext, fahre fort
+                    pass
+                else:
+                    # Ungültiger Kontext für Transcript-Toggle, überspringe ihn
+                    i += 1
+                    continue
 
             start_pos = 0
             for j in range(i):

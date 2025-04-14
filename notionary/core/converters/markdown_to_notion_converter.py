@@ -12,6 +12,8 @@ class MarkdownToNotionConverter:
     SPACER_MARKER = "<!-- spacer -->"
     MULTILINE_CONTENT_MARKER = "<!-- REMOVED_MULTILINE_CONTENT -->"
     TOGGLE_MARKER = "<!-- toggle_content -->"
+    TOGGLE_MARKER_PREFIX = "<!-- toggle_"
+    TOGGLE_MARKER_SUFFIX = " -->"
 
     def __init__(self, block_registry: Optional[BlockElementRegistry] = None):
         """
@@ -46,38 +48,46 @@ class MarkdownToNotionConverter:
         if not markdown_text:
             return []
 
-        # Process toggles first
-        processed_text, toggle_blocks = self._extract_toggle_elements(markdown_text)
+        # We'll process all blocks in order, preserving their original positions
+        all_blocks = []
+
+        # First, identify all toggle blocks
+        toggle_blocks = self._identify_toggle_blocks(markdown_text)
+        
+        # If we have toggles, process them and extract positions 
+        if toggle_blocks:
+            all_blocks.extend(toggle_blocks)
 
         # Process other multiline elements
-        processed_text, multiline_blocks = self._extract_multiline_elements(
-            processed_text
-        )
-
+        multiline_blocks = self._identify_multiline_blocks(markdown_text, toggle_blocks)
+        if multiline_blocks:
+            all_blocks.extend(multiline_blocks)
+            
         # Process remaining text line by line
-        line_blocks = self._process_text_lines(processed_text)
+        line_blocks = self._process_text_lines(markdown_text, toggle_blocks + multiline_blocks)
+        if line_blocks:
+            all_blocks.extend(line_blocks)
 
-        # Combine and sort all blocks
-        all_blocks = toggle_blocks + multiline_blocks + line_blocks
+        # Sort all blocks by their position in the text
         all_blocks.sort(key=lambda x: x[0])
 
-        # Extract just the blocks from position tuples
+        # Extract just the blocks without position information
         blocks = [block for _, _, block in all_blocks]
 
         # Process spacing between blocks
         return self._process_block_spacing(blocks)
 
-    def _extract_toggle_elements(
+    def _identify_toggle_blocks(
         self, text: str
-    ) -> Tuple[str, List[Tuple[int, int, Dict[str, Any]]]]:
+    ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
-        Extract toggle elements and their nested content using the ToggleElement class.
-
+        Identify all toggle blocks in the text without replacing them.
+        
         Args:
             text: The text to process
-
+            
         Returns:
-            Tuple of (processed text, list of (start_pos, end_pos, block) tuples)
+            List of (start_pos, end_pos, block) tuples
         """
         # Find toggle element in registry
         toggle_element = None
@@ -91,67 +101,26 @@ class MarkdownToNotionConverter:
                 break
 
         if not toggle_element:
-            # No toggle element found, return text as is
-            return text, []
+            return []
 
-        # Use the find_matches method of ToggleElement to find and process all toggles
+        # Use the find_matches method with context awareness
         # Pass the converter's convert method as a callback to process nested content
-        toggle_blocks = toggle_element.find_matches(text, self.convert)
+        toggle_blocks = toggle_element.find_matches(text, self.convert, context_aware=True)
+        return toggle_blocks
 
-        if not toggle_blocks:
-            return text, []
-
-        # Create a processed text with toggle markers
-        lines = text.split("\n")
-        processed_lines = lines.copy()
-
-        # Replace toggle content with markers
-        for start_pos, end_pos, _ in reversed(toggle_blocks):
-            # Calculate line indices for this toggle
-            start_line_index = 0
-            current_pos = 0
-            for i, line in enumerate(lines):
-                line_length = len(line) + 1  # +1 for newline
-                if current_pos <= start_pos < current_pos + line_length:
-                    start_line_index = i
-                    break
-                current_pos += line_length
-
-            end_line_index = start_line_index
-            current_pos = 0
-            for i, line in enumerate(lines):
-                line_length = len(line) + 1  # +1 for newline
-                if current_pos <= end_pos < current_pos + line_length:
-                    end_line_index = i
-                    break
-                current_pos += line_length
-
-            # Replace toggle content with markers
-            num_lines = end_line_index - start_line_index + 1
-            for i in range(start_line_index, start_line_index + num_lines):
-                processed_lines[i] = self.TOGGLE_MARKER
-
-        processed_text = "\n".join(processed_lines)
-        return processed_text, toggle_blocks
-
-    def _extract_multiline_elements(
-        self, text: str
-    ) -> Tuple[str, List[Tuple[int, int, Dict[str, Any]]]]:
+    def _identify_multiline_blocks(
+        self, text: str, exclude_blocks: List[Tuple[int, int, Dict[str, Any]]]
+    ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
-        Extract multiline elements and remove them from the text.
-
+        Identify all multiline blocks (except toggle blocks) without altering the text.
+        
         Args:
             text: The text to process
-
+            exclude_blocks: Blocks to exclude (e.g., already identified toggle blocks)
+            
         Returns:
-            Tuple of (processed text, list of (start_pos, end_pos, block) tuples)
+            List of (start_pos, end_pos, block) tuples
         """
-        if not text:
-            return text, []
-
-        multiline_blocks = []
-        processed_text = text
-
         # Get all multiline elements except ToggleElement
         multiline_elements = [
             element
@@ -160,57 +129,56 @@ class MarkdownToNotionConverter:
         ]
 
         if not multiline_elements:
-            return text, []
-
+            return []
+            
+        # Create a set of ranges to exclude
+        exclude_ranges = set()
+        for start, end, _ in exclude_blocks:
+            exclude_ranges.update(range(start, end + 1))
+            
+        multiline_blocks = []
         for element in multiline_elements:
             if not hasattr(element, "find_matches"):
                 continue
 
-            # Find all matches for this element (pass the convert method as callback if needed)
+            # Find all matches for this element
             if hasattr(element, "set_converter_callback"):
-                matches = element.find_matches(processed_text, self.convert)
+                matches = element.find_matches(text, self.convert)
             else:
-                matches = element.find_matches(processed_text)
+                matches = element.find_matches(text)
 
             if not matches:
                 continue
+                
+            # Add only blocks that don't overlap with excluded ranges
+            for start, end, block in matches:
+                # Check if this block overlaps with any excluded range
+                if any(start <= i <= end for i in exclude_ranges):
+                    continue
+                multiline_blocks.append((start, end, block))
 
-            multiline_blocks.extend(matches)
+        return multiline_blocks
 
-            # Remove matched content from the text to avoid processing it again
-            processed_text = self._replace_matched_content_with_markers(
-                processed_text, matches
-            )
-
-        return processed_text, multiline_blocks
-
-    def _replace_matched_content_with_markers(
-        self, text: str, matches: List[Tuple[int, int, Dict[str, Any]]]
-    ) -> str:
-        """Replace matched content with marker placeholders to preserve line structure."""
-        for start, end, _ in reversed(matches):
-            num_newlines = text[start:end].count("\n")
-            text = (
-                text[:start]
-                + "\n"
-                + self.MULTILINE_CONTENT_MARKER
-                + "\n" * num_newlines
-                + text[end:]
-            )
-        return text
-
-    def _process_text_lines(self, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
+    def _process_text_lines(
+        self, text: str, exclude_blocks: List[Tuple[int, int, Dict[str, Any]]]
+    ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
-        Process text line by line for single-line elements.
-
+        Process text line by line, excluding ranges already processed.
+        
         Args:
             text: The text to process
-
+            exclude_blocks: Blocks to exclude (e.g., already identified toggle and multiline blocks)
+            
         Returns:
             List of (start_pos, end_pos, block) tuples
         """
         if not text:
             return []
+            
+        # Create a set of excluded positions
+        exclude_positions = set()
+        for start, end, _ in exclude_blocks:
+            exclude_positions.update(range(start, end + 1))
 
         line_blocks = []
         lines = text.split("\n")
@@ -222,9 +190,10 @@ class MarkdownToNotionConverter:
 
         for line in lines:
             line_length = len(line) + 1  # +1 for newline
-
-            # Skip marker lines
-            if self._is_marker_line(line):
+            line_end = current_pos + line_length - 1
+            
+            # Skip lines that are part of excluded blocks
+            if any(current_pos <= pos <= line_end for pos in exclude_positions):
                 current_pos += line_length
                 continue
 
@@ -233,7 +202,7 @@ class MarkdownToNotionConverter:
                 line_blocks.append(
                     (
                         current_pos,
-                        current_pos + line_length,
+                        current_pos + line_length - 1,
                         self._create_empty_paragraph(),
                     )
                 )
@@ -273,7 +242,7 @@ class MarkdownToNotionConverter:
                     current_paragraph, paragraph_start, current_pos, line_blocks
                 )
                 line_blocks.append(
-                    (current_pos, current_pos + line_length, special_block)
+                    (current_pos, current_pos + line_length - 1, special_block)
                 )
                 current_paragraph = []
                 current_pos += line_length
@@ -291,18 +260,6 @@ class MarkdownToNotionConverter:
         )
 
         return line_blocks
-
-    def _is_marker_line(self, line: str) -> bool:
-        """Check if a line is any kind of marker line that should be skipped."""
-        return self._is_multiline_marker(line) or self._is_toggle_marker(line)
-
-    def _is_multiline_marker(self, line: str) -> bool:
-        """Check if a line is a multiline content marker."""
-        return line.strip() == self.MULTILINE_CONTENT_MARKER
-
-    def _is_toggle_marker(self, line: str) -> bool:
-        """Check if a line is a toggle content marker."""
-        return line.strip() == self.TOGGLE_MARKER
 
     def _is_spacer_marker(self, line: str) -> bool:
         """Check if a line is a spacer marker."""
@@ -343,7 +300,7 @@ class MarkdownToNotionConverter:
             )
             current_paragraph.clear()
 
-        line_blocks.append((current_pos, current_pos + line_length, todo_block))
+        line_blocks.append((current_pos, current_pos + line_length - 1, todo_block))
 
     def _extract_special_block(self, line: str) -> Optional[Dict[str, Any]]:
         """

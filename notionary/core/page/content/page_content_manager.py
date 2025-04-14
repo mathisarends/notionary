@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, List, Optional
 
 from notionary.core.converters.markdown_to_notion_converter import (
@@ -31,6 +32,7 @@ class PageContentManager(LoggingMixin):
 
     async def append_markdown(self, markdown_text: str) -> str:
         blocks = self._markdown_to_notion_converter.convert(markdown_text)
+        print(json.dumps(blocks, indent=2)) 
         result = await self._client.patch(
             f"blocks/{self.page_id}/children", {"children": blocks}
         )

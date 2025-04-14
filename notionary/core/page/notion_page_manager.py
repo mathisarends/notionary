@@ -230,93 +230,64 @@ class NotionPageManager(LoggingMixin):
     
     
     
-async def main():
-    """
-    Demonstriert die Verwendung des refactorierten NotionPageManager.
-    """
-    print("=== NotionPageManager Demo ===")
-    
-    page_manager = NotionPageManager(page_id="https://notion.so/1d0389d57bd3805cb34ccaf5804b43ce")
-    
-    await page_manager.add_relations_by_name("Projekte", ["Fetzen mit Stine"])
-
-
-    input("Drücke Enter, um fortzufahren...")
-
-    
-    is_database_page = await page_manager.is_database_page()
-    
-    if not is_database_page:
-        print("Diese Seite gehört zu keiner Datenbank. Demo wird beendet.")
-        return
-        
-    db_id = await page_manager.get_parent_database_id()
-    print(f"\n2. Datenbank-ID: {db_id}")
-    
-    properties = await page_manager.get_properties()
-    print("\n3. Aktuelle Eigenschaften der Seite:")
-    for prop_name, prop_data in properties.items():
-        prop_type = prop_data.get("type", "unbekannt")
-        
-        value = await page_manager.get_property_value(prop_name)
-        print(f"  - {prop_name} ({prop_type}): {value}")
-    
-    status_options = await page_manager.get_available_options_for_property("Status")
-    print(f"\n4. Verfügbare Status-Optionen: {status_options}")
-    
-    tags_options = await page_manager.get_available_options_for_property("Tags")
-    print(f"\n5. Verfügbare Tags-Optionen: {tags_options}")
-    
-    print("\n6. Relation-Eigenschaften und deren Optionen:")
-    for prop_name, prop_data in properties.items():
-        if prop_data.get("type") == "relation":
-            relation_options = await page_manager.get_relation_options(prop_name, limit=5)
-            option_names = [option.get("name", "Unbenannt") for option in relation_options]
-            print(f"  - {prop_name} Relation-Optionen (max. 5): {option_names}")
-    
-    print("\n7. Typen aller Eigenschaften:")
-    for prop_name in properties.keys():
-        prop_type = await page_manager.get_property_type(prop_name)
-        print(f"  - {prop_name}: {prop_type}")
-    
-    if status_options:
-        valid_status = status_options[0]
-        print(f"\n8. Setze Status auf '{valid_status}'...")
-        result = await page_manager.set_property_by_name("Status", valid_status)
-        print(f"   Ergebnis: {'Erfolgreich' if result else 'Fehlgeschlagen'}")
-        
-        current_status = await page_manager.get_status()
-        print(f"   Aktueller Status: {current_status}")
-    
-    # 9. Versuch, einen ungültigen Status zu setzen
-    invalid_status = "Bin King"
-    print(f"\n9. Versuche ungültigen Status '{invalid_status}' zu setzen...")
-    await page_manager.set_property_by_name("Status", invalid_status)
-    
-    # 10. Komplette Datenbank-Metadaten für select-ähnliche Properties abrufen
-    print("\n10. Datenbank-Metadaten für select, multi_select und status Properties:")
-    metadata = await page_manager.get_database_metadata(
-        include_types=["select", "multi_select", "status"]
-    )
-    
-    for prop_name, prop_info in metadata.get("properties", {}).items():
-        option_names = [opt.get("name", "") for opt in prop_info.get("options", [])]
-        print(f"  - {prop_name} ({prop_info.get('type')}): {option_names}")
-    
-    print("\nDemonstration abgeschlossen.")
-
-
-async def demo2():
+async def append_markdown_demo():
     url = "https://www.notion.so/Jarvis-Clipboard-1a3389d57bd380d7a507e67d1b25822c"
-    
     page_manager = NotionPageManager(url=url)
     
-    markdown = """
-$[Podcast Zusammenfassung](https://storage.googleapis.com/audio_summaries/ep_ai_summary_127d02ec-ca12-4312-a5ed-cb14b185480c.mp3)
-    """
+    example_output = """!> [📚] AI Summary: Explore the fascinating connection between the nervous system and muscle movement. Discover the differences between training for hypertrophy and strength, alongside effective resistance protocols. Learn how to assess recovery with tools like heart rate variability and grip strength. Dive into the impact of key nutrients such as creatine and electrolytes on muscle performance. This discussion offers actionable strategies to enhance movement, preserve strength with age, and boost energy levels.
 
-    await page_manager.append_markdown(markdown=markdown)
++++ 🎧 Audio Summary
+    $[AI-generated audio summary](https://storage.googleapis.com/audio_summaries/ep_ai_summary_127d02ec-ca12-4312-a5ed-cb14b185480c.mp3)
+
+<!-- spacer -->
+
+## ⬆️ Key Insights
+- The interplay between the nervous system and muscle fibers is critical for effective muscle contraction and movement coordination.
+- Adequate nutrition, particularly protein and electrolytes, coupled with proper recovery practices, is essential for optimizing muscle growth and performance.
+- Regular strength training helps offset age-related muscle decline and improves overall posture and functional movement.
+- Simple tools like grip strength measurements and heart rate variability can provide valuable insights into recovery status and training readiness.
+
+<!-- spacer -->
+---
+
+### 💪 1. Understanding Muscle Strength
+- Muscles naturally weaken with age; strength training helps offset this decline and improve posture and movement.
+- The *Henneman size principle* explains how our bodies efficiently recruit muscle fibers based on the weight of an object, prioritizing energy conservation.
+- Neural adaptations are the primary driver of strength gains in the initial weeks of training, before hypertrophy becomes significant.
++++ Transcript
+    <embed:Listen to this highlight>(https://snipd.com/snip/a1b2c3d4)
+    ... "When we talk about strength training, we're primarily focusing on the neurological adaptations that occur first. What's fascinating is that during the first 4-6 weeks of a strength program, most of your strength gains come from improved neural efficiency, not muscle size. Your brain is literally learning to recruit more muscle fibers simultaneously, creating greater force output with the same muscle mass."
+
+
+### 🧠 2. The Nervous System's Role
+- The central nervous system coordinates which motor units are activated and in what sequence when performing movements.
+- *Motor unit recruitment* follows a specific pattern that prioritizes smaller, more precise units before larger, more powerful ones.
+- Fatigue can significantly impact nervous system efficiency, reducing both strength output and movement quality.
++++ Transcript
+    <embed:Listen to this highlight>(https://snipd.com/snip/e5f6g7h8)
+    ... "The beauty of how our nervous system works is that it's incredibly adaptive. When you're learning a new movement, your brain is creating new neural pathways. With practice, these pathways become more efficient—similar to how a path through grass becomes more defined the more it's walked on. This is why technique practice is so crucial; you're literally building the neural infrastructure for efficient movement."
+
+
+### 🔬 3. Assessing Recovery Through Simple Tests
+- *Heart rate variability* (HRV) is a key indicator of recovery, but can be difficult to measure accurately without specialized equipment.
+- Morning grip strength is a simple, readily available test to assess whole-system recovery and inform training decisions.
+- Sleep quality has a direct correlation with both HRV and grip strength measurements.
++++ Transcript
+    <embed:Listen to this highlight>(https://snipd.com/snip/i9j0k1l2)
+    ... "One of the simplest recovery tools you have access to is grip strength. First thing in the morning, try squeezing a hand dynamometer or even just observe how your grip feels. If it's significantly weaker than your baseline, that's often an indicator your nervous system is still fatigued. This simple test has been shown to correlate with overall systemic recovery and can help you decide whether to push hard in training or take a lighter approach that day."
+
+
+### 🥗 4. Nutrition for Muscle Performance
+- *Creatine monohydrate* remains one of the most well-researched and effective supplements for improving strength and power output.
+- Adequate *electrolyte balance* is critical for optimal muscle contraction and preventing cramping during exercise.
+- Protein timing and distribution throughout the day may be as important as total daily intake for maximizing muscle protein synthesis.
++++ Transcript
+    <embed:Listen to this highlight>(https://snipd.com/snip/m3n4o5p6)
+    ... "The research on creatine is remarkably consistent. A dose of 3-5 grams daily increases phosphocreatine stores in your muscles, enhancing your capacity for high-intensity, short-duration activities. What's often overlooked is how it can benefit cognitive function as well. Your brain uses a significant amount of ATP, and creatine supports that energy production. This is why some studies show improvements in cognitive tasks, particularly under sleep-deprived conditions, when supplementing with creatine."
+"""
+    
+    await page_manager.append_markdown(markdown=example_output)
 
 if __name__ == "__main__":
-    asyncio.run(demo2())
+    asyncio.run(append_markdown_demo())
     print("\nDemonstration completed.")
