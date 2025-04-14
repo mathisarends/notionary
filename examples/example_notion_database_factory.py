@@ -12,15 +12,11 @@ The factory will use fuzzy matching to find the closest match to this name.
 import asyncio
 import textwrap
 
-from notionary.core.database.notion_database_manager_factory import NotionDatabaseFactory
+from notionary import NotionDatabaseFactory
 from notionary.exceptions.database_exceptions import DatabaseNotFoundException
 
-
-# Set your database name here - REPLACE THIS WITH YOUR ACTUAL DATABASE NAME
 DATABASE_NAME = "WISSEN/NOTIZEN"
 
-
-# URL kann hier doch eigentlich rekonstruiert werden aus der Page hier und auch der Databse Tite gibt es ja auch ein Mappign für.
 async def main():
     """Demonstrate a simple Notion database to page workflow."""
     print("✨ Notionary Simple Workflow Example")

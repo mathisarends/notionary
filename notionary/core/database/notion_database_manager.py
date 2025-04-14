@@ -50,33 +50,7 @@ class NotionDatabaseManager(LoggingMixin):
         except Exception as e:
             self.logger.error("Error creating blank page: %s", str(e))
             return None
-
-    async def get_page_manager(self, page_id: str) -> Optional[NotionPageManager]:
-        """
-        Get a NotionPageManager for a specific page.
-
-        Args:
-            page_id: The ID of the page
-
-        Returns:
-            NotionPageManager instance or None if the page wasn't found
-        """
-        self.logger.debug("Getting page manager for page %s", page_id)
-
-        try:
-            # Check if the page exists
-            page_data = await self._client.get_page(page_id)
-
-            if not page_data:
-                self.logger.error("Page %s not found", page_id)
-                return None
-
-            return NotionPageManager(page_id=page_id)
-
-        except Exception as e:
-            self.logger.error("Error getting page manager: %s", str(e))
-            return None
-
+        
     async def get_pages(
         self,
         limit: int = 100,
