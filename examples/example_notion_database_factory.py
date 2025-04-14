@@ -20,6 +20,7 @@ from notionary.exceptions.database_exceptions import DatabaseNotFoundException
 DATABASE_NAME = "WISSEN/NOTIZEN"
 
 
+# URL kann hier doch eigentlich rekonstruiert werden aus der Page hier und auch der Databse Tite gibt es ja auch ein Mappign für.
 async def main():
     """Demonstrate a simple Notion database to page workflow."""
     print("✨ Notionary Simple Workflow Example")
