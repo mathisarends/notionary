@@ -234,7 +234,3 @@ paragraphs, lists, quotes, etc.
         element_docs = cls.generate_element_docs(element_classes)
 
         return cls.SYSTEM_PROMPT_TEMPLATE.format(element_docs=element_docs)
-
-
-
-# TODO: Testen ob der Inline Formatter hier überhaupt funktionieren tut:

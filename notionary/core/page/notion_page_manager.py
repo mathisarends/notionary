@@ -311,20 +311,11 @@ async def demo2():
     
     page_manager = NotionPageManager(url=url)
     
-    # Beispiel mit einem Embed-Element im Transcript-Toggle
     markdown = """
-## 💪 Muskelaufbau und Kraft
-- Regelmäßiges Training ist essentiell für den Muskelerhalt im Alter
-- Richtige Ernährung unterstützt die Regeneration nach dem Training
+$[Podcast Zusammenfassung](https://storage.googleapis.com/audio_summaries/ep_ai_summary_127d02ec-ca12-4312-a5ed-cb14b185480c.mp3)
+    """
 
-+++ Transcript
-    <embed:Listen to this highlight>(https://share.snipd.com/snip/ad3d95b2-d648-4fa9-9036-bd7df653ea32)
-    <!-- spacer -->
-    ... In diesem Teil des Podcasts erklärt der Sprecher, wie das Henneman-Größenprinzip funktioniert und wie Muskelfasern rekrutiert werden, basierend auf der Schwere des zu bewegenden Objekts.
-"""
-    
-    await page_manager.append_markdown(markdown)
-    print("Markdown wurde zur Notion-Seite hinzugefügt.")
+    await page_manager.append_markdown(markdown=markdown)
 
 if __name__ == "__main__":
     asyncio.run(demo2())
