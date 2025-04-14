@@ -4,7 +4,21 @@ from notionary.util.logging_mixin import LoggingMixin
 
 
 class NotionPageContentChunker(LoggingMixin):
-    """Handles chunking of markdown text to conform to Notion API limits."""
+    """
+    Handles markdown text processing to comply with Notion API length limitations.
+
+    This class specifically addresses the Notion API constraint that limits
+    rich_text elements to a maximum of 2000 characters. This particularly affects
+    paragraph blocks within toggle blocks or other nested structures.
+
+    Resolves the following typical API error:
+    "validation_error - body.children[79].toggle.children[2].paragraph.rich_text[0].text.content.length
+    should be ≤ 2000, instead was 2162."
+
+    The class provides methods for:
+    1. Automatically truncating text that exceeds the limit
+    2. Splitting markdown into smaller units for separate API requests
+    """
 
     def __init__(self, max_text_length: int = 1900):
         self.max_text_length = max_text_length
