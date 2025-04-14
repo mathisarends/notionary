@@ -1,62 +1,76 @@
 """
-# Notionary: Database Factory Example
+# Notionary: Clean Database to Page Example
 =========================================
 
-This example demonstrates how to use the NotionDatabaseFactory to connect to Notion databases
-either by their ID or by name with fuzzy matching.
+This example demonstrates a clean workflow connecting to a Notion database
+and creating a new page with title, icon, and content.
+
+IMPORTANT: Replace DATABASE_NAME with the name of your actual Notion database.
+The factory will use fuzzy matching to find the closest match to this name.
 """
 
 import asyncio
+import textwrap
 
-from notionary.core.database.notion_database_manager_factory import (
-    NotionDatabaseFactory,
-)
-from notionary.exceptions.database_exceptions import (
-    DatabaseNotFoundException,
-    DatabaseConnectionError,
-)
+from notionary.core.database.notion_database_manager_factory import NotionDatabaseFactory
+from notionary.exceptions.database_exceptions import DatabaseNotFoundException
+
+
+# Set your database name here - REPLACE THIS WITH YOUR ACTUAL DATABASE NAME
+DATABASE_NAME = "WISSEN/NOTIZEN"
 
 
 async def main():
-    """Demonstrate the NotionDatabaseFactory functionality."""
-    print("🚀 Notionary Database Factory Example")
-
-    print("\n🔍 Connecting to database by ID...")
-    try:
-        database_id = "1af389d5-7bd3-815c-937a-e0e39eb6343a"
-
-        db_manager = await NotionDatabaseFactory.from_database_id(database_id)
-
-        print(f"✅ Successfully connected to database: {db_manager.title}")
-        print(f"🆔 Database ID: {db_manager.database_id}")
-
-        # Clean up resources
-        await db_manager.close()
-
-    except DatabaseConnectionError as e:
-        print(f"❌ Error connecting to database: {e}")
-
-    # Example 2: Connect by name with fuzzy matching
-    print("\n🔍 Searching for database by name...")
+    """Demonstrate a simple Notion database to page workflow."""
+    print("✨ Notionary Simple Workflow Example")
+    print("===================================")
 
     try:
-        # The factory will find the closest match to this name
-        database_name = "Projects"
+        print("\n🔎 Connecting to database by name...")
+        
+        db_manager = await NotionDatabaseFactory.from_database_name(DATABASE_NAME)
+        
+        page_manager = await db_manager.create_blank_page()
+        
+        print("📝 Setting page properties...")
+        
+        await page_manager.set_title("Notionary Demo Example Page")
+        await page_manager.set_page_icon("🌟")
+        await page_manager.set_random_gradient_cover()
+        
+        print("🎨 Page styled with title, icon and cover")
+        
+        print("📄 Adding content to the page...")
+        
+        content = textwrap.dedent("""
+        # Notionary API Demo
 
-        # Use the factory to find and create a database manager by name
-        db_manager = await NotionDatabaseFactory.from_database_name(database_name)
+        This page was created using the Notionary API through an automated example.
 
-        print(f"✅ Found matching database: '{db_manager.title}'")
-        print(f"🆔 Database ID: {db_manager.database_id}")
+        ## Key Steps
+        - Connect to database using NotionDatabaseFactory
+        - Create a new page in the database
+        - Use NotionPageManager to set properties and add content
 
-        # Clean up resources
-        await db_manager.close()
-
+        ## Features Demonstrated
+        - Database connection by name (fuzzy matching)
+        - Page creation
+        - Setting page title
+        - Adding an emoji icon
+        - Setting a random gradient cover
+        - Appending markdown content
+        """)
+        
+        await page_manager.append_markdown(content)
+        print("📋 Content added successfully")
+        
     except DatabaseNotFoundException as e:
         print(f"❌ Database not found: {e}")
-    except DatabaseConnectionError as e:
-        print(f"❌ Error connecting to database: {e}")
+        
+
 
 
 if __name__ == "__main__":
+    print("🚀 Starting Notionary example...")
     asyncio.run(main())
+    print("✅ Example completed!")
