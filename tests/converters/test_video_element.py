@@ -2,6 +2,7 @@ import unittest
 
 from notionary.core.converters.elements.video_element import VideoElement
 
+
 class TestVideoElement(unittest.TestCase):
 
     def test_match_markdown(self):

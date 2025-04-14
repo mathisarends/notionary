@@ -2,6 +2,7 @@ import unittest
 
 from notionary.core.converters.elements.paragraph_element import ParagraphElement
 
+
 class TestParagraphElement(unittest.TestCase):
 
     def test_match_markdown_always_true(self):

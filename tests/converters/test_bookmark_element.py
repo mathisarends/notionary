@@ -1,6 +1,7 @@
 import unittest
 from notionary.core.converters.elements.bookmark_element import BookmarkElement
 
+
 class TestBookmarkElement(unittest.TestCase):
     def test_match_markdown(self):
         """Test die Erkennung von Markdown-Bookmarks."""

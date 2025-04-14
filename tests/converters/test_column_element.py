@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from notionary.core.converters.elements.column_element import ColumnElement
 
+
 class TestColumnElement(unittest.TestCase):
 
     def test_match_markdown(self):

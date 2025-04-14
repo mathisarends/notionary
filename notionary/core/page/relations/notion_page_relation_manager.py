@@ -1,9 +1,14 @@
 from typing import Any, Dict, List, Optional
 from notionary.core.notion_client import NotionClient
-from notionary.core.page.relations.notion_page_title_resolver import NotionPageTitleResolver
-from notionary.core.page.relations.relation_operation_result import RelationOperationResult
+from notionary.core.page.relations.notion_page_title_resolver import (
+    NotionPageTitleResolver,
+)
+from notionary.core.page.relations.relation_operation_result import (
+    RelationOperationResult,
+)
 from notionary.util.logging_mixin import LoggingMixin
 from notionary.util.page_id_utils import is_valid_uuid
+
 
 class NotionRelationManager(LoggingMixin):
     """
@@ -11,7 +16,9 @@ class NotionRelationManager(LoggingMixin):
     Manages links between pages and loads available relation options.
     """
 
-    def __init__(self, page_id: str, client: NotionClient, database_id: Optional[str] = None):
+    def __init__(
+        self, page_id: str, client: NotionClient, database_id: Optional[str] = None
+    ):
         """
         Initializes the relation manager.
 
@@ -75,7 +82,8 @@ class NotionRelationManager(LoggingMixin):
         properties = await self._get_page_properties()
 
         return [
-            prop_name for prop_name, prop_data in properties.items()
+            prop_name
+            for prop_name, prop_data in properties.items()
             if prop_data.get("type") == "relation"
         ]
 
@@ -101,7 +109,9 @@ class NotionRelationManager(LoggingMixin):
 
         return [rel.get("id") for rel in prop_data["relation"]]
 
-    async def get_relation_details(self, property_name: str) -> Optional[Dict[str, Any]]:
+    async def get_relation_details(
+        self, property_name: str
+    ) -> Optional[Dict[str, Any]]:
         """
         Returns details about the relation property, including the linked database.
 
@@ -153,7 +163,9 @@ class NotionRelationManager(LoggingMixin):
 
         return relation_details.get("database_id")
 
-    async def get_relation_options(self, property_name: str, limit: int = 100) -> List[Dict[str, Any]]:
+    async def get_relation_options(
+        self, property_name: str, limit: int = 100
+    ) -> List[Dict[str, Any]]:
         """
         Returns available options for a relation property.
 
@@ -174,7 +186,7 @@ class NotionRelationManager(LoggingMixin):
                 f"databases/{related_db_id}/query",
                 {
                     "page_size": limit,
-                }
+                },
             )
 
             if not query_result or "results" not in query_result:
@@ -186,10 +198,7 @@ class NotionRelationManager(LoggingMixin):
                 title = self._extract_title_from_page(page)
 
                 if page_id and title:
-                    options.append({
-                        "id": page_id,
-                        "name": title
-                    })
+                    options.append({"id": page_id, "name": title})
 
             return options
         except Exception as e:
@@ -214,11 +223,15 @@ class NotionRelationManager(LoggingMixin):
         for prop_data in properties.values():
             if prop_data.get("type") == "title" and "title" in prop_data:
                 title_parts = prop_data["title"]
-                return "".join([text_obj.get("plain_text", "") for text_obj in title_parts])
+                return "".join(
+                    [text_obj.get("plain_text", "") for text_obj in title_parts]
+                )
 
         return None
 
-    async def add_relation(self, property_name: str, page_ids: List[str]) -> Optional[Dict[str, Any]]:
+    async def add_relation(
+        self, property_name: str, page_ids: List[str]
+    ) -> Optional[Dict[str, Any]]:
         """
         Adds one or more relations.
 
@@ -233,18 +246,12 @@ class NotionRelationManager(LoggingMixin):
 
         all_relations = list(set(existing_relations + page_ids))
 
-        relation_payload = {
-            "relation": [{"id": page_id} for page_id in all_relations]
-        }
+        relation_payload = {"relation": [{"id": page_id} for page_id in all_relations]}
 
         try:
             result = await self._client.patch(
                 f"pages/{self._page_id}",
-                {
-                    "properties": {
-                        property_name: relation_payload
-                    }
-                },
+                {"properties": {property_name: relation_payload}},
             )
 
             self._page_properties = None
@@ -254,7 +261,9 @@ class NotionRelationManager(LoggingMixin):
             self.logger.error("Error adding relation: %s", str(e))
             return None
 
-    async def add_relation_by_name(self, property_name: str, page_titles: List[str]) -> RelationOperationResult:
+    async def add_relation_by_name(
+        self, property_name: str, page_titles: List[str]
+    ) -> RelationOperationResult:
         """
         Adds one or more relations based on page titles.
 
@@ -268,9 +277,13 @@ class NotionRelationManager(LoggingMixin):
         found_pages = []
         not_found_pages = []
         page_ids = []
-        
-        self.logger.info("Attempting to add %d relation(s) to property '%s'", len(page_titles), property_name)
-        
+
+        self.logger.info(
+            "Attempting to add %d relation(s) to property '%s'",
+            len(page_titles),
+            property_name,
+        )
+
         for page in page_titles:
             if is_valid_uuid(page):
                 page_ids.append(page)
@@ -287,38 +300,51 @@ class NotionRelationManager(LoggingMixin):
                     self.logger.warning("No page found with title '%s'", page)
 
         if not page_ids:
-            self.logger.warning("No valid page IDs found for any of the titles, no changes applied")
-            return RelationOperationResult.from_no_pages_found(property_name, not_found_pages)
+            self.logger.warning(
+                "No valid page IDs found for any of the titles, no changes applied"
+            )
+            return RelationOperationResult.from_no_pages_found(
+                property_name, not_found_pages
+            )
 
         api_response = await self.add_relation(property_name, page_ids)
-        
+
         if api_response:
             result = RelationOperationResult.from_success(
                 property_name=property_name,
                 found_pages=found_pages,
                 not_found_pages=not_found_pages,
                 page_ids_added=page_ids,
-                api_response=api_response
+                api_response=api_response,
             )
-            
+
             if not_found_pages:
                 not_found_str = "', '".join(not_found_pages)
-                self.logger.info("Added %d relation(s) to '%s', but couldn't find pages: '%s'", 
-                                len(page_ids), property_name, not_found_str)
+                self.logger.info(
+                    "Added %d relation(s) to '%s', but couldn't find pages: '%s'",
+                    len(page_ids),
+                    property_name,
+                    not_found_str,
+                )
             else:
-                self.logger.info("Successfully added all %d relation(s) to '%s'", 
-                                len(page_ids), property_name)
-                
+                self.logger.info(
+                    "Successfully added all %d relation(s) to '%s'",
+                    len(page_ids),
+                    property_name,
+                )
+
             return result
-        
+
         self.logger.error("Failed to add relations to '%s' (API error)", property_name)
         return RelationOperationResult.from_no_api_response(
             property_name=property_name,
             found_pages=found_pages,
-            page_ids_added=page_ids
+            page_ids_added=page_ids,
         )
 
-    async def set_relations(self, property_name: str, page_ids: List[str]) -> Optional[Dict[str, Any]]:
+    async def set_relations(
+        self, property_name: str, page_ids: List[str]
+    ) -> Optional[Dict[str, Any]]:
         """
         Sets the relations to the specified IDs (replaces existing ones).
 
@@ -329,18 +355,12 @@ class NotionRelationManager(LoggingMixin):
         Returns:
             Optional[Dict[str, Any]]: API response or None on error
         """
-        relation_payload = {
-            "relation": [{"id": page_id} for page_id in page_ids]
-        }
+        relation_payload = {"relation": [{"id": page_id} for page_id in page_ids]}
 
         try:
             result = await self._client.patch(
                 f"pages/{self._page_id}",
-                {
-                    "properties": {
-                        property_name: relation_payload
-                    }
-                },
+                {"properties": {property_name: relation_payload}},
             )
 
             self._page_properties = None
@@ -349,16 +369,15 @@ class NotionRelationManager(LoggingMixin):
         except Exception as e:
             self.logger.error("Error setting relations: %s", str(e))
             return None
-        
+
     async def get_all_relations(self) -> Dict[str, List[str]]:
-        """ Returns all relation properties and their values.
-        """
+        """Returns all relation properties and their values."""
         relation_properties = await self.get_relation_property_ids()
         if not relation_properties:
             return {}
-            
+
         result = {}
         for prop_name in relation_properties:
             result[prop_name] = await self.get_relation_values(prop_name)
-            
+
         return result

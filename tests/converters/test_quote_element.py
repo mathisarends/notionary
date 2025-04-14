@@ -1,6 +1,7 @@
 import unittest
 from notionary.core.converters.elements.qoute_element import QuoteElement
 
+
 class TestQuoteElement(unittest.TestCase):
 
     def test_match_markdown(self):

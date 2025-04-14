@@ -2,6 +2,7 @@ import unittest
 
 from notionary.core.converters.elements.divider_element import DividerElement
 
+
 class TestDividerElement(unittest.TestCase):
 
     def test_match_markdown(self):

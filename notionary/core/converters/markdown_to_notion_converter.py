@@ -53,8 +53,8 @@ class MarkdownToNotionConverter:
 
         # First, identify all toggle blocks
         toggle_blocks = self._identify_toggle_blocks(markdown_text)
-        
-        # If we have toggles, process them and extract positions 
+
+        # If we have toggles, process them and extract positions
         if toggle_blocks:
             all_blocks.extend(toggle_blocks)
 
@@ -62,9 +62,11 @@ class MarkdownToNotionConverter:
         multiline_blocks = self._identify_multiline_blocks(markdown_text, toggle_blocks)
         if multiline_blocks:
             all_blocks.extend(multiline_blocks)
-            
+
         # Process remaining text line by line
-        line_blocks = self._process_text_lines(markdown_text, toggle_blocks + multiline_blocks)
+        line_blocks = self._process_text_lines(
+            markdown_text, toggle_blocks + multiline_blocks
+        )
         if line_blocks:
             all_blocks.extend(line_blocks)
 
@@ -82,10 +84,10 @@ class MarkdownToNotionConverter:
     ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
         Identify all toggle blocks in the text without replacing them.
-        
+
         Args:
             text: The text to process
-            
+
         Returns:
             List of (start_pos, end_pos, block) tuples
         """
@@ -105,7 +107,9 @@ class MarkdownToNotionConverter:
 
         # Use the find_matches method with context awareness
         # Pass the converter's convert method as a callback to process nested content
-        toggle_blocks = toggle_element.find_matches(text, self.convert, context_aware=True)
+        toggle_blocks = toggle_element.find_matches(
+            text, self.convert, context_aware=True
+        )
         return toggle_blocks
 
     def _identify_multiline_blocks(
@@ -113,11 +117,11 @@ class MarkdownToNotionConverter:
     ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
         Identify all multiline blocks (except toggle blocks) without altering the text.
-        
+
         Args:
             text: The text to process
             exclude_blocks: Blocks to exclude (e.g., already identified toggle blocks)
-            
+
         Returns:
             List of (start_pos, end_pos, block) tuples
         """
@@ -130,12 +134,12 @@ class MarkdownToNotionConverter:
 
         if not multiline_elements:
             return []
-            
+
         # Create a set of ranges to exclude
         exclude_ranges = set()
         for start, end, _ in exclude_blocks:
             exclude_ranges.update(range(start, end + 1))
-            
+
         multiline_blocks = []
         for element in multiline_elements:
             if not hasattr(element, "find_matches"):
@@ -149,7 +153,7 @@ class MarkdownToNotionConverter:
 
             if not matches:
                 continue
-                
+
             # Add only blocks that don't overlap with excluded ranges
             for start, end, block in matches:
                 # Check if this block overlaps with any excluded range
@@ -164,17 +168,17 @@ class MarkdownToNotionConverter:
     ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
         Process text line by line, excluding ranges already processed.
-        
+
         Args:
             text: The text to process
             exclude_blocks: Blocks to exclude (e.g., already identified toggle and multiline blocks)
-            
+
         Returns:
             List of (start_pos, end_pos, block) tuples
         """
         if not text:
             return []
-            
+
         # Create a set of excluded positions
         exclude_positions = set()
         for start, end, _ in exclude_blocks:
@@ -191,7 +195,7 @@ class MarkdownToNotionConverter:
         for line in lines:
             line_length = len(line) + 1  # +1 for newline
             line_end = current_pos + line_length - 1
-            
+
             # Skip lines that are part of excluded blocks
             if any(current_pos <= pos <= line_end for pos in exclude_positions):
                 current_pos += line_length

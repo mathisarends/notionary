@@ -7,6 +7,7 @@ import httpx
 from dotenv import load_dotenv
 from notionary.util.logging_mixin import LoggingMixin
 
+
 class HttpMethod(Enum):
     """Enum für HTTP-Methoden."""
 
@@ -14,6 +15,7 @@ class HttpMethod(Enum):
     POST = "post"
     PATCH = "patch"
     DELETE = "delete"
+
 
 class NotionClient(LoggingMixin):
     """Verbesserter Notion-Client mit automatischer Ressourcenverwaltung."""
@@ -50,7 +52,7 @@ class NotionClient(LoggingMixin):
 
     async def get(self, endpoint: str) -> Optional[Dict[str, Any]]:
         return await self._make_request(HttpMethod.GET, endpoint)
-    
+
     async def get_page(self, page_id: str) -> Optional[Dict[str, Any]]:
         return await self.get(f"pages/{page_id}")
 

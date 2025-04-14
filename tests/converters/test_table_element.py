@@ -2,6 +2,7 @@ import unittest
 
 from notionary.core.converters.elements.table_element import TableElement
 
+
 class TestTableElement(unittest.TestCase):
 
     def setUp(self):

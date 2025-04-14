@@ -95,8 +95,8 @@ class BlockElementRegistry:
         """
         # Create a copy of registered elements
         element_classes = self._elements.copy()
-        
-        # TODO: Das hier besser formattieren und über debug level lösen . ) 
+
+        # TODO: Das hier besser formattieren und über debug level lösen . )
         print("Elements in registry:", element_classes)
 
         formatter_names = [e.__name__ for e in element_classes]

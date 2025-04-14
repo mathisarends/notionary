@@ -44,11 +44,12 @@ class NotionDatabaseFactory(LoggingMixin):
 
         try:
             formatted_id = format_uuid(database_id) or database_id
-            
-            manager = NotionDatabaseManager(formatted_id, token)
-            
 
-            logger.info("Successfully created database manager for ID: %s", formatted_id)
+            manager = NotionDatabaseManager(formatted_id, token)
+
+            logger.info(
+                "Successfully created database manager for ID: %s", formatted_id
+            )
             return manager
 
         except DatabaseInitializationError:
@@ -136,7 +137,12 @@ class NotionDatabaseFactory(LoggingMixin):
 
             matched_name = cls._extract_title_from_database(best_match)
 
-            logger.info("Found matching database: '%s' (ID: %s) with score: %.2f", matched_name, database_id, best_score)
+            logger.info(
+                "Found matching database: '%s' (ID: %s) with score: %.2f",
+                matched_name,
+                database_id,
+                best_score,
+            )
 
             manager = NotionDatabaseManager(database_id, token)
 

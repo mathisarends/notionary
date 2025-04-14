@@ -92,7 +92,7 @@ class ToggleElement(NotionBlockElement):
             # Find number of leading spaces
             leading_spaces = len(line) - len(line.lstrip(" "))
             # Remove at least 2 spaces, but not more than what's there
-            return line[min(2, leading_spaces):]
+            return line[min(2, leading_spaces) :]
 
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
@@ -140,16 +140,19 @@ class ToggleElement(NotionBlockElement):
 
     @classmethod
     def find_matches(
-        cls, text: str, process_nested_content: Callable = None, context_aware: bool = True
+        cls,
+        text: str,
+        process_nested_content: Callable = None,
+        context_aware: bool = True,
     ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
         Verbesserte find_matches-Methode, die Kontext beim Finden von Toggles berücksichtigt.
-        
+
         Args:
             text: Der zu durchsuchende Text
             process_nested_content: Optionale Callback-Funktion zur Verarbeitung verschachtelter Inhalte
             context_aware: Ob der Kontext (vorhergehende Zeilen) beim Finden von Toggles berücksichtigt werden soll
-            
+
         Returns:
             Liste von (start_pos, end_pos, block) Tupeln
         """
@@ -171,10 +174,10 @@ class ToggleElement(NotionBlockElement):
             # Wenn context_aware aktiviert ist, prüfen wir für "Transcript"-Toggles
             # ob sie direkt nach einem Bullet Point kommen
             is_transcript_toggle = cls.TRANSCRIPT_TOGGLE_PATTERN.match(line.strip())
-            
+
             if context_aware and is_transcript_toggle:
                 # Prüfen, ob der Toggle in einem gültigen Kontext ist (nach Bullet Point)
-                if i > 0 and lines[i-1].strip().startswith("- "):
+                if i > 0 and lines[i - 1].strip().startswith("- "):
                     # Gültiger Kontext, fahre fort
                     pass
                 else:

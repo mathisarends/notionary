@@ -16,9 +16,7 @@ class EmbedElement(NotionBlockElement):
     """
 
     PATTERN = re.compile(
-        r"^<embed(?:\:(.*?))?>(?:\s*)"
-        + r'\((https?://[^\s"]+)'
-        + r"\)$"
+        r"^<embed(?:\:(.*?))?>(?:\s*)" + r'\((https?://[^\s"]+)' + r"\)$"
     )
 
     @staticmethod

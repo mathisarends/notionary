@@ -2,6 +2,7 @@ import unittest
 
 from notionary.core.converters.elements.toggle_element import ToggleElement
 
+
 class TestToggleElement(unittest.TestCase):
 
     def test_match_markdown(self):

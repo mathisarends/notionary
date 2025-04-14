@@ -7,6 +7,7 @@ from typing import (
 from notionary.core.notion_client import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
 
+
 class NotionDatabaseAccessor(LoggingMixin):
     """
     A utility class that provides methods to access Notion databases.

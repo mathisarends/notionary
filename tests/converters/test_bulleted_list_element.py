@@ -1,6 +1,7 @@
 import unittest
 from notionary.core.converters.elements.list_element import BulletedListElement
 
+
 class TestBulletedListElement(unittest.TestCase):
 
     def test_match_markdown(self):

@@ -39,9 +39,11 @@ class AudioElement(NotionBlockElement):
     @staticmethod
     def is_audio_url(url: str) -> bool:
         """Check if URL points to an audio file."""
-        return any(url.lower().endswith(ext) for ext in AudioElement.AUDIO_EXTENSIONS) or \
-               "audio" in url.lower() or \
-               "storage.googleapis.com/audio_summaries" in url.lower()
+        return (
+            any(url.lower().endswith(ext) for ext in AudioElement.AUDIO_EXTENSIONS)
+            or "audio" in url.lower()
+            or "storage.googleapis.com/audio_summaries" in url.lower()
+        )
 
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:

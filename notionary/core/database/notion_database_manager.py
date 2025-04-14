@@ -9,7 +9,7 @@ from notionary.util.page_id_utils import format_uuid
 class NotionDatabaseManager(LoggingMixin):
     """
     Minimal manager for Notion databases.
-    Focused exclusively on creating basic pages and retrieving page managers 
+    Focused exclusively on creating basic pages and retrieving page managers
     for further page operations.
     """
 
@@ -24,31 +24,28 @@ class NotionDatabaseManager(LoggingMixin):
         self.database_id = format_uuid(database_id) or database_id
         self._client = NotionClient(token=token)
 
-
     async def create_blank_page(self) -> Optional[str]:
         """
         Create a new blank page in the database with minimal properties.
-        
+
         Returns:
             Optional[str]: The ID of the created page, or None if creation failed
         """
         try:
             response = await self._client.post(
-                "pages",
-                {
-                    "parent": {"database_id": self.database_id},
-                    "properties": {}  
-                }
+                "pages", {"parent": {"database_id": self.database_id}, "properties": {}}
             )
-            
+
             if response and "id" in response:
                 page_id = response["id"]
-                self.logger.info("Created blank page %s in database %s", page_id, self.database_id)
+                self.logger.info(
+                    "Created blank page %s in database %s", page_id, self.database_id
+                )
                 return page_id
-            
+
             self.logger.warning("Page creation failed: invalid response")
             return None
-                
+
         except Exception as e:
             self.logger.error("Error creating blank page: %s", str(e))
             return None
@@ -64,17 +61,17 @@ class NotionDatabaseManager(LoggingMixin):
             NotionPageManager instance or None if the page wasn't found
         """
         self.logger.debug("Getting page manager for page %s", page_id)
-        
+
         try:
             # Check if the page exists
             page_data = await self._client.get_page(page_id)
-            
+
             if not page_data:
                 self.logger.error("Page %s not found", page_id)
                 return None
-                
+
             return NotionPageManager(page_id=page_id)
-            
+
         except Exception as e:
             self.logger.error("Error getting page manager: %s", str(e))
             return None
@@ -174,10 +171,12 @@ class NotionDatabaseManager(LoggingMixin):
             for page in result["results"]:
                 page_id: str = page.get("id", "")
                 title = self._extract_page_title(page)
-                
+
                 page_url = f"https://notion.so/{page_id.replace('-', '')}"
 
-                notion_page_manager = NotionPageManager(page_id=page_id, title=title, url=page_url)
+                notion_page_manager = NotionPageManager(
+                    page_id=page_id, title=title, url=page_url
+                )
                 yield notion_page_manager
 
             # Update pagination parameters
@@ -222,10 +221,10 @@ class NotionDatabaseManager(LoggingMixin):
         """
         try:
             formatted_page_id = format_uuid(page_id) or page_id
-            
+
             # Archive the page (Notion's way of deleting)
             data = {"archived": True}
-            
+
             result = await self._client.patch(f"pages/{formatted_page_id}", data)
             if not result:
                 self.logger.error("Error deleting page %s", formatted_page_id)
@@ -233,10 +232,12 @@ class NotionDatabaseManager(LoggingMixin):
                     "success": False,
                     "message": f"Failed to delete page {formatted_page_id}",
                 }
-            
-            self.logger.info("Page %s successfully deleted (archived)", formatted_page_id)
+
+            self.logger.info(
+                "Page %s successfully deleted (archived)", formatted_page_id
+            )
             return {"success": True, "page_id": formatted_page_id}
-            
+
         except Exception as e:
             self.logger.error("Error in delete_page: %s", str(e))
             return {"success": False, "message": f"Error: {str(e)}"}
