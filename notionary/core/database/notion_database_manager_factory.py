@@ -146,7 +146,7 @@ class NotionDatabaseFactory(LoggingMixin):
 
             manager = NotionDatabaseManager(database_id, token)
 
-            logger.info(f"Successfully created database manager for '{matched_name}'")
+            logger.info("Successfully created database manager for '%s'", matched_name)
             await client.close()
             return manager
 

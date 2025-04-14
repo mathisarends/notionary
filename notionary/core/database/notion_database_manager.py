@@ -24,12 +24,12 @@ class NotionDatabaseManager(LoggingMixin):
         self.database_id = format_uuid(database_id) or database_id
         self._client = NotionClient(token=token)
 
-    async def create_blank_page(self) -> Optional[str]:
+    async def create_blank_page(self) -> Optional[NotionPageManager]:
         """
         Create a new blank page in the database with minimal properties.
 
         Returns:
-            Optional[str]: The ID of the created page, or None if creation failed
+            NotionPageManager for the created page, or None if creation failed
         """
         try:
             response = await self._client.post(
@@ -41,7 +41,8 @@ class NotionDatabaseManager(LoggingMixin):
                 self.logger.info(
                     "Created blank page %s in database %s", page_id, self.database_id
                 )
-                return page_id
+
+                return NotionPageManager(page_id=page_id)
 
             self.logger.warning("Page creation failed: invalid response")
             return None
@@ -245,3 +246,4 @@ class NotionDatabaseManager(LoggingMixin):
     async def close(self) -> None:
         """Close the client connection."""
         await self._client.close()
+
