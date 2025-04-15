@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from notionary.core.converters.elements.column_element import ColumnElement
+from notionary.converters.elements.column_element import ColumnElement
 
 
 class TestColumnElement(unittest.TestCase):

@@ -1,14 +1,14 @@
-from .core.notion_client import NotionClient
+from .notion_client import NotionClient
 
-from .core.database.notion_database import NotionDatabase
-from .core.database.notion_database_factory import NotionDatabaseFactory
-from .core.database.database_discovery import DatabaseDiscovery
+from .database.notion_database import NotionDatabase
+from .database.notion_database_factory import NotionDatabaseFactory
+from .database.database_discovery import DatabaseDiscovery
 
-from .core.page.notion_page import NotionPage
-from .core.page.notion_page_factory import NotionPageFactory
+from .page.notion_page import NotionPage
+from .page.notion_page_factory import NotionPageFactory
 
-from .core.converters.registry.block_element_registry import BlockElementRegistry
-from .core.converters.registry.block_element_registry_builder import (
+from .converters.registry.block_element_registry import BlockElementRegistry
+from .converters.registry.block_element_registry_builder import (
     BlockElementRegistryBuilder,
 )
 

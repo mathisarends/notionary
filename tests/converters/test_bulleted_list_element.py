@@ -1,5 +1,5 @@
 import unittest
-from notionary.core.converters.elements.list_element import BulletedListElement
+from notionary.converters.elements.list_element import BulletedListElement
 
 
 class TestBulletedListElement(unittest.TestCase):

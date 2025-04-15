@@ -1,8 +1,7 @@
-import textwrap
-from notionary.core.converters.markdown_to_notion_converter import (
+from notionary.converters.markdown_to_notion_converter import (
     MarkdownToNotionConverter,
 )
-from notionary.core.notion_client import NotionClient
+from notionary.notion_client import NotionClient
 
 
 async def append_markdown(page_id: str, markdown_text: str) -> str:
