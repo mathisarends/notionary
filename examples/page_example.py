@@ -13,7 +13,7 @@ and custom Markdown extensions supported by Notionary.
 """
 
 import asyncio
-from notionary import NotionPageManager
+from notionary import NotionPage
 from notionary.exceptions.database_exceptions import PageOperationError
 
 from examples.ressources.markdown_demo import MARKDOWN_EXAMPLE
@@ -24,7 +24,7 @@ async def main():
 
     url = "https://www.notion.so/Notionary-Rich-Markdown-Demo-1cd389d57bd381e58be9d35ce24adf3d?pvs=4"
 
-    page_manager = NotionPageManager(url=url)
+    page_manager = NotionPage(url=url)
 
     try:
         print("🎨 Setting page metadata...")

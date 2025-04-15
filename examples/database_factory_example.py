@@ -15,7 +15,8 @@ import textwrap
 from notionary import NotionDatabaseFactory
 from notionary.exceptions.database_exceptions import DatabaseNotFoundException
 
-DATABASE_NAME = "WISSEN/NOTIZEN"
+DATABASE_NAME = "WISSEN/NOTIZEN"  # YOUR_DATABASE_NAME_HERE
+
 
 async def main():
     """Demonstrate a simple Notion database to page workflow."""
@@ -24,22 +25,23 @@ async def main():
 
     try:
         print("\n🔎 Connecting to database by name...")
-        
+
         db_manager = await NotionDatabaseFactory.from_database_name(DATABASE_NAME)
-        
+
         page_manager = await db_manager.create_blank_page()
-        
+
         print("📝 Setting page properties...")
-        
+
         await page_manager.set_title("Notionary Demo Example Page")
         await page_manager.set_page_icon("🌟")
         await page_manager.set_random_gradient_cover()
-        
+
         print("🎨 Page styled with title, icon and cover")
-        
+
         print("📄 Adding content to the page...")
-        
-        content = textwrap.dedent("""
+
+        content = textwrap.dedent(
+            """
         # Notionary API Demo
 
         This page was created using the Notionary API through an automated example.
@@ -56,15 +58,14 @@ async def main():
         - Adding an emoji icon
         - Setting a random gradient cover
         - Appending markdown content
-        """)
-        
+        """
+        )
+
         await page_manager.append_markdown(content)
         print("📋 Content added successfully")
-        
+
     except DatabaseNotFoundException as e:
         print(f"❌ Database not found: {e}")
-        
-
 
 
 if __name__ == "__main__":

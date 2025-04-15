@@ -37,43 +37,45 @@ class DatabaseDiscovery(LoggingMixin):
             List of tuples containing (database_title, database_id)
         """
         databases = []
-        
+
         async for database in self._iter_databases(page_size):
             db_id = database.get("id")
             if not db_id:
                 continue
-                
+
             title = self._extract_database_title(database)
             databases.append((title, db_id))
-            
+
         return databases
-        
+
     async def discover_and_print(self, page_size: int = 100) -> List[Tuple[str, str]]:
         """
         Discover databases and print the results in a nicely formatted way.
-        
+
         This is a convenience method that discovers databases and handles
         the formatting and printing of results.
-        
+
         Args:
             page_size: The number of databases to fetch per request
-            
+
         Returns:
             The same list of databases as discover() for further processing
         """
         databases = await self.discover(page_size)
-        
+
         if not databases:
             print("\n⚠️ No databases found!")
             print("Please ensure your Notion integration has access to databases.")
-            print("You need to share the databases with your integration in Notion settings.")
+            print(
+                "You need to share the databases with your integration in Notion settings."
+            )
             return databases
-            
+
         print(f"✅ Found {len(databases)} databases:")
-        
+
         for i, (title, db_id) in enumerate(databases, 1):
             print(f"{i}. {title} (ID: {db_id})")
-        
+
         return databases
 
     async def _iter_databases(
@@ -113,7 +115,7 @@ class DatabaseDiscovery(LoggingMixin):
 
             if not result.get("has_more") or not result.get("next_cursor"):
                 return
-                
+
             start_cursor = result["next_cursor"]
 
     def _extract_database_title(self, database: Dict[str, Any]) -> str:
@@ -128,7 +130,7 @@ class DatabaseDiscovery(LoggingMixin):
         """
         if "title" not in database:
             return "Untitled"
-            
+
         title_parts = []
         for text_obj in database["title"]:
             if "plain_text" in text_obj:
@@ -136,5 +138,5 @@ class DatabaseDiscovery(LoggingMixin):
 
         if not title_parts:
             return "Untitled"
-            
+
         return "".join(title_parts)

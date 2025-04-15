@@ -166,7 +166,7 @@ class NotionPage(LoggingMixin):
 
         Returns:
             str: Status or confirmation message.
-        """    
+        """
         await self._page_content_manager.clear()
         return await self._page_content_manager.append_markdown(markdown)
 
@@ -205,7 +205,6 @@ class NotionPage(LoggingMixin):
             Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
         """
         return await self._page_icon_manager.set_icon(emoji, external_url)
-    
 
     async def get_icon(self) -> Optional[str]:
         """

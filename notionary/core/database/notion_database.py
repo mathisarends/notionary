@@ -50,7 +50,7 @@ class NotionDatabase(LoggingMixin):
         except Exception as e:
             self.logger.error("Error creating blank page: %s", str(e))
             return None
-        
+
     async def get_pages(
         self,
         limit: int = 100,
@@ -197,7 +197,6 @@ class NotionDatabase(LoggingMixin):
         try:
             formatted_page_id = format_uuid(page_id) or page_id
 
-            # Archive the page (Notion's way of deleting)
             data = {"archived": True}
 
             result = await self._client.patch(f"pages/{formatted_page_id}", data)
@@ -220,4 +219,3 @@ class NotionDatabase(LoggingMixin):
     async def close(self) -> None:
         """Close the client connection."""
         await self._client.close()
-
