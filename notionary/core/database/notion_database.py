@@ -197,6 +197,7 @@ class NotionDatabase(LoggingMixin):
         try:
             formatted_page_id = format_uuid(page_id) or page_id
 
+            # Archive the page (Notion's way of deleting)
             data = {"archived": True}
 
             result = await self._client.patch(f"pages/{formatted_page_id}", data)

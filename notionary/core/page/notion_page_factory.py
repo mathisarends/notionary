@@ -90,6 +90,7 @@ class NotionPageFactory(LoggingMixin):
         """
         Create a NotionPage by finding a page with a matching name.
         Uses fuzzy matching to find the closest match to the given name.
+        If no good match is found, suggests closest alternatives ("Did you mean?").
 
         Args:
             page_name: The name of the Notion page to search for
@@ -100,6 +101,7 @@ class NotionPageFactory(LoggingMixin):
 
         Raises:
             NotionError: If there is any error during page search or connection
+            NotionPageNotFoundError: If no matching page found, includes suggestions
         """
         logger = cls.class_logger()
         logger.debug("Searching for page with name: %s", page_name)
@@ -128,21 +130,36 @@ class NotionPageFactory(LoggingMixin):
 
             logger.debug("Found %d pages, searching for best match", len(pages))
 
+            # Store all matches with their scores for potential suggestions
+            matches = []
             best_match = None
             best_score = 0
 
             for page in pages:
                 title = cls._extract_title_from_page(page)
-
                 score = SequenceMatcher(None, page_name.lower(), title.lower()).ratio()
+
+                matches.append((page, title, score))
 
                 if score > best_score:
                     best_score = score
                     best_match = page
 
             if best_score < 0.6 or not best_match:
-                error_msg = f"No good page name match found for '{page_name}'. Best match had score {best_score:.2f}"
-                logger.warning(error_msg)
+                # Sort matches by score in descending order
+                matches.sort(key=lambda x: x[2], reverse=True)
+
+                # Take top N suggestions (adjust as needed)
+                suggestions = [title for _, title, _ in matches[:5]]
+
+                error_msg = f"No good match found for '{page_name}'. Did you mean one of these?\n"
+                error_msg += "\n".join(f"- {suggestion}" for suggestion in suggestions)
+
+                logger.warning(
+                    "No good match found for '%s'. Best score: %.2f",
+                    page_name,
+                    best_score,
+                )
 
             page_id = best_match.get("id")
 
@@ -173,7 +190,6 @@ class NotionPageFactory(LoggingMixin):
         except Exception as e:
             error_msg = f"Error finding page by name: {str(e)}"
             logger.error(error_msg)
-            await client.close()
 
     @classmethod
     def _extract_title_from_page(cls, page: Dict[str, Any]) -> str:
