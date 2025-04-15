@@ -7,12 +7,10 @@ Notion integration using the DatabaseDiscovery class.
 """
 
 import asyncio
-from notionary.core.database.database_discovery import DatabaseDiscovery
-
+from notionary import DatabaseDiscovery
 
 async def main():
     """Discover databases in your Notion workspace."""
-    # Create the database discovery
     discovery = DatabaseDiscovery()
 
     await discovery.discover_and_print()

@@ -1,12 +1,12 @@
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from notionary.core.notion_client import NotionClient
-from notionary.core.page.notion_page_manager import NotionPageManager
+from notionary.core.page.notion_page import NotionPage
 from notionary.util.logging_mixin import LoggingMixin
 from notionary.util.page_id_utils import format_uuid
 
 
-class NotionDatabaseManager(LoggingMixin):
+class NotionDatabase(LoggingMixin):
     """
     Minimal manager for Notion databases.
     Focused exclusively on creating basic pages and retrieving page managers
@@ -24,12 +24,12 @@ class NotionDatabaseManager(LoggingMixin):
         self.database_id = format_uuid(database_id) or database_id
         self._client = NotionClient(token=token)
 
-    async def create_blank_page(self) -> Optional[NotionPageManager]:
+    async def create_blank_page(self) -> Optional[NotionPage]:
         """
         Create a new blank page in the database with minimal properties.
 
         Returns:
-            NotionPageManager for the created page, or None if creation failed
+            NotionPage for the created page, or None if creation failed
         """
         try:
             response = await self._client.post(
@@ -42,7 +42,7 @@ class NotionDatabaseManager(LoggingMixin):
                     "Created blank page %s in database %s", page_id, self.database_id
                 )
 
-                return NotionPageManager(page_id=page_id)
+                return NotionPage(page_id=page_id)
 
             self.logger.warning("Page creation failed: invalid response")
             return None
@@ -56,7 +56,7 @@ class NotionDatabaseManager(LoggingMixin):
         limit: int = 100,
         filter_conditions: Optional[Dict[str, Any]] = None,
         sorts: Optional[List[Dict[str, Any]]] = None,
-    ) -> List[NotionPageManager]:
+    ) -> List[NotionPage]:
         """
         Get all pages from the database.
 
@@ -66,7 +66,7 @@ class NotionDatabaseManager(LoggingMixin):
             sorts: Optional sort instructions for the database query
 
         Returns:
-            List of NotionPageManager instances for each page
+            List of NotionPage instances for each page
         """
         self.logger.debug(
             "Getting up to %d pages with filter: %s, sorts: %s",
@@ -75,7 +75,7 @@ class NotionDatabaseManager(LoggingMixin):
             sorts,
         )
 
-        pages: List[NotionPageManager] = []
+        pages: List[NotionPage] = []
         count = 0
 
         async for page in self.iter_pages(
@@ -99,7 +99,7 @@ class NotionDatabaseManager(LoggingMixin):
         page_size: int = 100,
         filter_conditions: Optional[Dict[str, Any]] = None,
         sorts: Optional[List[Dict[str, Any]]] = None,
-    ) -> AsyncGenerator[NotionPageManager, None]:
+    ) -> AsyncGenerator[NotionPage, None]:
         """
         Asynchronous generator that yields pages from the database.
         Directly queries the Notion API without using the schema.
@@ -110,7 +110,7 @@ class NotionDatabaseManager(LoggingMixin):
             sorts: Optional sort instructions for the database query
 
         Yields:
-            NotionPageManager instances for each page
+            NotionPage instances for each page
         """
         self.logger.debug(
             "Iterating pages with page_size: %d, filter: %s, sorts: %s",
@@ -149,7 +149,7 @@ class NotionDatabaseManager(LoggingMixin):
 
                 page_url = f"https://notion.so/{page_id.replace('-', '')}"
 
-                notion_page_manager = NotionPageManager(
+                notion_page_manager = NotionPage(
                     page_id=page_id, title=title, url=page_url
                 )
                 yield notion_page_manager

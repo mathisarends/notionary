@@ -13,7 +13,7 @@ and custom Markdown extensions supported by Notionary.
 """
 
 import asyncio
-from notionary.core.page.notion_page_manager import NotionPageManager
+from notionary import NotionPageManager
 from notionary.exceptions.database_exceptions import PageOperationError
 
 from examples.ressources.markdown_demo import MARKDOWN_EXAMPLE

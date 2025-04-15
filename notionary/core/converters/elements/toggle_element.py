@@ -171,17 +171,12 @@ class ToggleElement(NotionBlockElement):
                 i += 1
                 continue
 
-            # Wenn context_aware aktiviert ist, prüfen wir für "Transcript"-Toggles
-            # ob sie direkt nach einem Bullet Point kommen
             is_transcript_toggle = cls.TRANSCRIPT_TOGGLE_PATTERN.match(line.strip())
 
             if context_aware and is_transcript_toggle:
-                # Prüfen, ob der Toggle in einem gültigen Kontext ist (nach Bullet Point)
                 if i > 0 and lines[i - 1].strip().startswith("- "):
-                    # Gültiger Kontext, fahre fort
                     pass
                 else:
-                    # Ungültiger Kontext für Transcript-Toggle, überspringe ihn
                     i += 1
                     continue
 

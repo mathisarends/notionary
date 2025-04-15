@@ -2,8 +2,8 @@ import logging
 from typing import List, Optional, Dict, Any
 from difflib import SequenceMatcher
 
+from notionary.core.database.notion_database import NotionDatabase
 from notionary.core.notion_client import NotionClient
-from notionary.core.database.notion_database_manager import NotionDatabaseManager
 from notionary.exceptions.database_exceptions import (
     DatabaseConnectionError,
     DatabaseInitializationError,
@@ -29,7 +29,7 @@ class NotionDatabaseFactory(LoggingMixin):
     @classmethod
     async def from_database_id(
         cls, database_id: str, token: Optional[str] = None
-    ) -> NotionDatabaseManager:
+    ) -> NotionDatabase:
         """
         Create a NotionDatabaseManager from a database ID.
 
@@ -45,7 +45,7 @@ class NotionDatabaseFactory(LoggingMixin):
         try:
             formatted_id = format_uuid(database_id) or database_id
 
-            manager = NotionDatabaseManager(formatted_id, token)
+            manager = NotionDatabase(formatted_id, token)
 
             logger.info(
                 "Successfully created database manager for ID: %s", formatted_id
@@ -53,10 +53,8 @@ class NotionDatabaseFactory(LoggingMixin):
             return manager
 
         except DatabaseInitializationError:
-            # Re-raise the already typed exception
             raise
         except NotionDatabaseException:
-            # Re-raise other custom exceptions
             raise
         except Exception as e:
             error_msg = f"Error connecting to database {database_id}: {str(e)}"
@@ -66,7 +64,7 @@ class NotionDatabaseFactory(LoggingMixin):
     @classmethod
     async def from_database_name(
         cls, database_name: str, token: Optional[str] = None
-    ) -> NotionDatabaseManager:
+    ) -> NotionDatabase:
         """
         Create a NotionDatabaseManager by finding a database with a matching name.
         Uses fuzzy matching to find the closest match to the given name.
@@ -86,13 +84,11 @@ class NotionDatabaseFactory(LoggingMixin):
         try:
             logger.debug("Using search endpoint to find databases")
 
-            # Create search query for databases
             search_payload = {
                 "filter": {"property": "object", "value": "database"},
                 "page_size": 100,
             }
 
-            # Perform search
             response = await client.post("search", search_payload)
 
             if not response or "results" not in response:
@@ -144,9 +140,9 @@ class NotionDatabaseFactory(LoggingMixin):
                 best_score,
             )
 
-            manager = NotionDatabaseManager(database_id, token)
+            manager = NotionDatabase(database_id, token)
 
-            logger.info(f"Successfully created database manager for '{matched_name}'")
+            logger.info("Successfully created database manager for '%s'", matched_name)
             await client.close()
             return manager
 
