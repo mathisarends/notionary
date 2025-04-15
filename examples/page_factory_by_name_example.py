@@ -20,20 +20,22 @@ YOUR_PAGE_NAME = "Jarvis Clipboard"
 
 async def main():
     """Demonstrates various ways to find a Notion page."""
-
-    # 1. Find a page by its name (most convenient method)
-    print("Searching for page by name...")
-    page = await NotionPageFactory.from_page_name(YOUR_PAGE_NAME)
-
-    icon = await page.get_icon()
-    title = await page.get_title()
-    url = await page.get_url()
     
-    print(f"✅ Found: {title} {icon}")
-    print("Gop od URL:", url)
+    try:
+        print("Searching for page by name...")
+        page = await NotionPageFactory.from_page_name(YOUR_PAGE_NAME)
 
+        icon, title, url = await asyncio.gather(
+            page.get_icon(),
+            page.get_title(),
+            page.get_url()
+        )
+        
+        print(f"✅ Found: \"{title}\" {icon} → {url}")
+        
+    except Exception as e:
+        print(f"❌ Error while loading page from URL: {e}")
 
 if __name__ == "__main__":
     print("🚀 Starting Notionary URL Lookup Example...")
     found_page = asyncio.run(main())
-    print("✅ Example finished!")

@@ -176,11 +176,8 @@ class NotionPageFactory(LoggingMixin):
                 best_score,
             )
 
-            # Create the Notion page URL from the page ID
-            page_url = f"https://notion.so/{page_id.replace('-', '')}"
-
             page = NotionPage(
-                page_id=page_id, title=matched_name, url=page_url, token=token
+                page_id=page_id, title=matched_name, token=token
             )
 
             logger.info("Successfully created page instance for '%s'", matched_name)
