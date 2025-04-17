@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 from notionary.elements.audio_element import AudioElement
 from notionary.elements.embed_element import EmbedElement
+from notionary.elements.mention_element import MentionElement
 from notionary.elements.notion_block_element import NotionBlockElement
 from notionary.elements.block_element_registry import (
     BlockElementRegistry,
@@ -86,6 +87,7 @@ class BlockElementRegistryBuilder:
             .with_videos()
             .with_embeds()
             .with_audio()
+            .with_mention()
             .with_paragraphs()
         )
 
@@ -333,6 +335,9 @@ class BlockElementRegistryBuilder:
             Self for method chaining
         """
         return self.with_todos()
+    
+    def with_mention(self) -> BlockElementRegistryBuilder:
+        return self.add_element(MentionElement)
 
     def build(self) -> BlockElementRegistry:
         """
