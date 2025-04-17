@@ -31,6 +31,9 @@ async def main():
 
         print(f'✅ Found: "{title}" {icon} → {url}')
 
+        text_content = await page.get_text()
+        print(f"Page text content: {text_content}")
+
     except Exception as e:
         print(f"❌ Error while loading page from URL: {e}")
 
