@@ -240,15 +240,3 @@ class NotionPageFactory(LoggingMixin):
                 text_parts.append(text_obj["plain_text"])
 
         return "".join(text_parts)
-
-
-async def demo():
-    clipboard = await NotionPageFactory.from_page_name("Jarvis Clipboard")
-    icon = await clipboard.get_icon()
-    print(f"Icon: {icon}")
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(demo())

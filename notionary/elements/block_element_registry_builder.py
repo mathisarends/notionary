@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import List, Type
 from collections import OrderedDict
 
@@ -37,13 +38,10 @@ class BlockElementRegistryBuilder:
 
     def __init__(self):
         """Initialize a new builder with an empty element list."""
-        # Use OrderedDict to maintain insertion order while ensuring uniqueness
         self._elements = OrderedDict()
 
-    # Profile methods - create a base configuration
-
     @classmethod
-    def start_empty(cls) -> "BlockElementRegistryBuilder":
+    def start_empty(cls) -> BlockElementRegistryBuilder:
         """
         Start with a completely empty registry builder.
 
@@ -53,7 +51,7 @@ class BlockElementRegistryBuilder:
         return cls()
 
     @classmethod
-    def start_minimal(cls) -> "BlockElementRegistryBuilder":
+    def start_minimal(cls) -> BlockElementRegistryBuilder:
         """
         Start with a minimal set of essential elements.
 
@@ -61,15 +59,10 @@ class BlockElementRegistryBuilder:
             A new builder instance with basic elements
         """
         builder = cls()
-        return (
-            builder.add_element(HeadingElement)
-            .add_element(BulletedListElement)
-            .add_element(NumberedListElement)
-            .add_element(ParagraphElement)
-        )  # Add paragraph last as fallback
+        return builder.with_headings().with_lists().with_paragraphs()
 
     @classmethod
-    def start_standard(cls) -> "BlockElementRegistryBuilder":
+    def start_standard(cls) -> BlockElementRegistryBuilder:
         """
         Start with all standard elements in recommended order.
 
@@ -78,30 +71,29 @@ class BlockElementRegistryBuilder:
         """
         builder = cls()
         return (
-            builder.add_element(HeadingElement)
-            .add_element(CalloutElement)
-            .add_element(CodeBlockElement)
-            .add_element(DividerElement)
-            .add_element(TableElement)
-            .add_element(ColumnElement)
-            .add_element(BulletedListElement)
-            .add_element(NumberedListElement)
-            .add_element(ToggleElement)
-            .add_element(QuoteElement)
-            .add_element(TodoElement)
-            .add_element(BookmarkElement)
-            .add_element(ImageElement)
-            .add_element(VideoElement)
-            .add_element(EmbedElement)
-            .add_element(AudioElement)
-            .add_element(ParagraphElement)
-        )  # Add paragraph last as fallback
+            builder.with_headings()
+            .with_callouts()
+            .with_code()
+            .with_dividers()
+            .with_tables()
+            .with_columns()
+            .with_lists()
+            .with_toggles()
+            .with_quotes()
+            .with_todos()
+            .with_bookmarks()
+            .with_images()
+            .with_videos()
+            .with_embeds()
+            .with_audio()
+            .with_paragraphs()
+        )
 
     # Element manipulation methods
 
     def add_element(
         self, element_class: Type[NotionBlockElement]
-    ) -> "BlockElementRegistryBuilder":
+    ) -> BlockElementRegistryBuilder:
         """
         Add an element class to the registry configuration.
         If the element already exists, it's moved to the end.
@@ -112,14 +104,14 @@ class BlockElementRegistryBuilder:
         Returns:
             Self for method chaining
         """
-        # Remove if exists (to update the order) and add to the end
         self._elements.pop(element_class.__name__, None)
         self._elements[element_class.__name__] = element_class
+
         return self
 
     def add_elements(
         self, element_classes: List[Type[NotionBlockElement]]
-    ) -> "BlockElementRegistryBuilder":
+    ) -> BlockElementRegistryBuilder:
         """
         Add multiple element classes to the registry configuration.
 
@@ -135,7 +127,7 @@ class BlockElementRegistryBuilder:
 
     def remove_element(
         self, element_class: Type[NotionBlockElement]
-    ) -> "BlockElementRegistryBuilder":
+    ) -> BlockElementRegistryBuilder:
         """
         Remove an element class from the registry configuration.
 
@@ -150,7 +142,7 @@ class BlockElementRegistryBuilder:
 
     def move_element_to_end(
         self, element_class: Type[NotionBlockElement]
-    ) -> "BlockElementRegistryBuilder":
+    ) -> BlockElementRegistryBuilder:
         """
         Move an existing element to the end of the registry.
         If the element doesn't exist, it will be added.
@@ -163,28 +155,42 @@ class BlockElementRegistryBuilder:
         """
         return self.add_element(element_class)  # add_element already handles this logic
 
-    def ensure_paragraph_at_end(self) -> "BlockElementRegistryBuilder":
+    def _ensure_paragraph_at_end(self) -> None:
         """
-        Ensure ParagraphElement is the last element in the registry.
-        If it doesn't exist, it will be added.
+        Internal method to ensure ParagraphElement is the last element in the registry.
+        """
+        if ParagraphElement.__name__ in self._elements:
+            paragraph_class = self._elements.pop(ParagraphElement.__name__)
+            self._elements[ParagraphElement.__name__] = paragraph_class
+
+    def with_paragraphs(self) -> BlockElementRegistryBuilder:
+        """
+        Add support for paragraph elements.
 
         Returns:
             Self for method chaining
         """
-        return self.move_element_to_end(ParagraphElement)
+        return self.add_element(ParagraphElement)
 
-    # Specialized configuration methods
-
-    def with_list_support(self) -> "BlockElementRegistryBuilder":
+    def with_headings(self) -> BlockElementRegistryBuilder:
         """
-        Add support for list elements.
+        Add support for heading elements.
 
         Returns:
             Self for method chaining
         """
-        return self.add_element(BulletedListElement).add_element(NumberedListElement)
+        return self.add_element(HeadingElement)
 
-    def with_code_support(self) -> "BlockElementRegistryBuilder":
+    def with_callouts(self) -> BlockElementRegistryBuilder:
+        """
+        Add support for callout elements.
+
+        Returns:
+            Self for method chaining
+        """
+        return self.add_element(CalloutElement)
+
+    def with_code(self) -> BlockElementRegistryBuilder:
         """
         Add support for code blocks.
 
@@ -193,7 +199,16 @@ class BlockElementRegistryBuilder:
         """
         return self.add_element(CodeBlockElement)
 
-    def with_table_support(self) -> "BlockElementRegistryBuilder":
+    def with_dividers(self) -> BlockElementRegistryBuilder:
+        """
+        Add support for divider elements.
+
+        Returns:
+            Self for method chaining
+        """
+        return self.add_element(DividerElement)
+
+    def with_tables(self) -> BlockElementRegistryBuilder:
         """
         Add support for tables.
 
@@ -202,44 +217,141 @@ class BlockElementRegistryBuilder:
         """
         return self.add_element(TableElement)
 
-    def with_rich_content(self) -> "BlockElementRegistryBuilder":
+    def with_columns(self) -> BlockElementRegistryBuilder:
         """
-        Add support for rich content elements (callouts, toggles, etc.).
+        Add support for column elements.
 
         Returns:
             Self for method chaining
         """
-        return (
-            self.add_element(CalloutElement)
-            .add_element(ToggleElement)
-            .add_element(QuoteElement)
-        )
+        return self.add_element(ColumnElement)
 
-    def with_media_support(self) -> "BlockElementRegistryBuilder":
+    def with_lists(self) -> BlockElementRegistryBuilder:
         """
-        Add support for media elements (images, videos).
+        Add support for list elements.
 
         Returns:
             Self for method chaining
         """
-        return self.add_element(ImageElement).add_element(VideoElement)
+        return self.add_element(BulletedListElement).add_element(NumberedListElement)
 
-    def with_task_support(self) -> "BlockElementRegistryBuilder":
+    def with_toggles(self) -> BlockElementRegistryBuilder:
         """
-        Add support for task-related elements (todos).
+        Add support for toggle elements.
+
+        Returns:
+            Self for method chaining
+        """
+        return self.add_element(ToggleElement)
+
+    def with_quotes(self) -> BlockElementRegistryBuilder:
+        """
+        Add support for quote elements.
+
+        Returns:
+            Self for method chaining
+        """
+        return self.add_element(QuoteElement)
+
+    def with_todos(self) -> BlockElementRegistryBuilder:
+        """
+        Add support for todo elements.
 
         Returns:
             Self for method chaining
         """
         return self.add_element(TodoElement)
 
+    def with_bookmarks(self) -> BlockElementRegistryBuilder:
+        """
+        Add support for bookmark elements.
+
+        Returns:
+            Self for method chaining
+        """
+        return self.add_element(BookmarkElement)
+
+    def with_images(self) -> BlockElementRegistryBuilder:
+        """
+        Add support for image elements.
+
+        Returns:
+            Self for method chaining
+        """
+        return self.add_element(ImageElement)
+
+    def with_videos(self) -> BlockElementRegistryBuilder:
+        """
+        Add support for video elements.
+
+        Returns:
+            Self for method chaining
+        """
+        return self.add_element(VideoElement)
+
+    def with_embeds(self) -> BlockElementRegistryBuilder:
+        """
+        Add support for embed elements.
+
+        Returns:
+            Self for method chaining
+        """
+        return self.add_element(EmbedElement)
+
+    def with_audio(self) -> BlockElementRegistryBuilder:
+        """
+        Add support for audio elements.
+
+        Returns:
+            Self for method chaining
+        """
+        return self.add_element(AudioElement)
+
+    def with_rich_content(self) -> BlockElementRegistryBuilder:
+        """
+        Add support for rich content elements (callouts, toggles, etc.).
+
+        Returns:
+            Self for method chaining
+        """
+        return self.with_callouts().with_toggles().with_quotes()
+
+    def with_media_support(self) -> BlockElementRegistryBuilder:
+        """
+        Add support for media elements (images, videos, audio).
+
+        Returns:
+            Self for method chaining
+        """
+        return self.with_images().with_videos().with_audio()
+
+    def with_task_support(self) -> BlockElementRegistryBuilder:
+        """
+        Add support for task-related elements (todos).
+
+        Returns:
+            Self for method chaining
+        """
+        return self.with_todos()
+
     def build(self) -> BlockElementRegistry:
         """
         Build and return the configured BlockElementRegistry instance.
 
+        This automatically ensures that ParagraphElement is at the end
+        of the registry (if present) as a fallback element, unless
+        this behavior was explicitly disabled.
+
         Returns:
             A configured BlockElementRegistry instance
         """
+        if ParagraphElement.__name__ not in self._elements:
+            # Add paragraph as fallback if not present
+            self.add_element(ParagraphElement)
+        else:
+            # Ensure it's at the end
+            self._ensure_paragraph_at_end()
+
         registry = BlockElementRegistry()
 
         # Add elements in the recorded order
