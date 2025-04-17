@@ -124,7 +124,6 @@ class NotionClient(LoggingMixin):
                 )
                 return
 
-            # Versuche, Cleanup Task zu erstellen
             loop.create_task(self.close())
             self.logger.debug("Created cleanup task for NotionClient")
         except RuntimeError:

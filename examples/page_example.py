@@ -28,6 +28,7 @@ async def main():
 
     try:
         print("🎨 Setting page metadata...")
+        
         await page_manager.set_title("Notionary Rich Markdown Demo")
         await page_manager.set_page_icon(emoji="✨")
         await page_manager.set_page_cover(

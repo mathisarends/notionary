@@ -411,6 +411,25 @@ class NotionPage(LoggingMixin):
         """
         return await self._relation_manager.get_all_relations()
 
+    async def get_last_edited_time(self) -> str:
+        """
+        Get the timestamp when the page was last edited.
+
+        Returns:
+            str: ISO 8601 formatted timestamp string of when the page was last edited.
+        """
+        try:
+            page_data = await self._client.get_page(self._page_id)
+            if "last_edited_time" in page_data:
+                return page_data["last_edited_time"]
+
+            self.logger.warning("last_edited_time not found in page data")
+            return ""
+
+        except Exception as e:
+            self.logger.error("Error retrieving last edited time: %s", str(e))
+            return ""
+
     async def _load_page_title(self) -> str:
         """
         Load the page title from Notion API if not already loaded.
