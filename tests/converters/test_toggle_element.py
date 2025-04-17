@@ -1,6 +1,6 @@
 import unittest
 
-from notionary.converters.elements.toggle_element import ToggleElement
+from notionary.elements.toggle_element import ToggleElement
 
 
 class TestToggleElement(unittest.TestCase):

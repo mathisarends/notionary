@@ -1,30 +1,30 @@
 from typing import List, Type
 from collections import OrderedDict
 
-from notionary.converters.elements.audio_element import AudioElement
-from notionary.converters.elements.embed_element import EmbedElement
-from notionary.converters.elements.notion_block_element import NotionBlockElement
-from notionary.converters.registry.block_element_registry import (
+from notionary.elements.audio_element import AudioElement
+from notionary.elements.embed_element import EmbedElement
+from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.block_element_registry import (
     BlockElementRegistry,
 )
 
-from notionary.converters.elements.paragraph_element import ParagraphElement
-from notionary.converters.elements.heading_element import HeadingElement
-from notionary.converters.elements.callout_element import CalloutElement
-from notionary.converters.elements.code_block_element import CodeBlockElement
-from notionary.converters.elements.divider_element import DividerElement
-from notionary.converters.elements.table_element import TableElement
-from notionary.converters.elements.todo_lists import TodoElement
-from notionary.converters.elements.list_element import (
+from notionary.elements.paragraph_element import ParagraphElement
+from notionary.elements.heading_element import HeadingElement
+from notionary.elements.callout_element import CalloutElement
+from notionary.elements.code_block_element import CodeBlockElement
+from notionary.elements.divider_element import DividerElement
+from notionary.elements.table_element import TableElement
+from notionary.elements.todo_lists import TodoElement
+from notionary.elements.list_element import (
     BulletedListElement,
     NumberedListElement,
 )
-from notionary.converters.elements.qoute_element import QuoteElement
-from notionary.converters.elements.image_element import ImageElement
-from notionary.converters.elements.video_element import VideoElement
-from notionary.converters.elements.toggle_element import ToggleElement
-from notionary.converters.elements.bookmark_element import BookmarkElement
-from notionary.converters.elements.column_element import ColumnElement
+from notionary.elements.qoute_element import QuoteElement
+from notionary.elements.image_element import ImageElement
+from notionary.elements.video_element import VideoElement
+from notionary.elements.toggle_element import ToggleElement
+from notionary.elements.bookmark_element import BookmarkElement
+from notionary.elements.column_element import ColumnElement
 
 
 class BlockElementRegistryBuilder:

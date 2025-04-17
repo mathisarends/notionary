@@ -1,7 +1,7 @@
 from typing import Dict, Any, Optional, List, Tuple
 from typing_extensions import override
 import re
-from notionary.converters.elements.notion_block_element import NotionBlockElement
+from notionary.elements.notion_block_element import NotionBlockElement
 
 
 class CodeBlockElement(NotionBlockElement):

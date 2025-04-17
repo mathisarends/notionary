@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from notionary.converters.elements.callout_element import CalloutElement
+from notionary.elements.callout_element import CalloutElement
 
 
 class TestCalloutElement(unittest.TestCase):

@@ -1,9 +1,7 @@
 from typing import Dict, Any, List, Optional, Tuple
 
-from notionary.converters.registry.block_element_registry import (
-    BlockElementRegistry,
-)
-from notionary.converters.registry.block_element_registry_builder import (
+from notionary.elements.block_element_registry import BlockElementRegistry
+from notionary.elements.block_element_registry_builder import (
     BlockElementRegistryBuilder,
 )
 

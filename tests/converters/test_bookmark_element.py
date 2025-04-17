@@ -1,5 +1,5 @@
 import unittest
-from notionary.converters.elements.bookmark_element import BookmarkElement
+from notionary.elements.bookmark_element import BookmarkElement
 
 
 class TestBookmarkElement(unittest.TestCase):

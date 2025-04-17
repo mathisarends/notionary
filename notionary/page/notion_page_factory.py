@@ -176,9 +176,7 @@ class NotionPageFactory(LoggingMixin):
                 best_score,
             )
 
-            page = NotionPage(
-                page_id=page_id, title=matched_name, token=token
-            )
+            page = NotionPage(page_id=page_id, title=matched_name, token=token)
 
             logger.info("Successfully created page instance for '%s'", matched_name)
             await client.close()

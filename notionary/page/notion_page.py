@@ -1,9 +1,8 @@
 import re
 from typing import Any, Dict, List, Optional, Union
-from notionary.converters.registry.block_element_registry import (
-    BlockElementRegistry,
-)
-from notionary.converters.registry.block_element_registry_builder import (
+
+from notionary.elements.block_element_registry import BlockElementRegistry
+from notionary.elements.block_element_registry_builder import (
     BlockElementRegistryBuilder,
 )
 from notionary.notion_client import NotionClient
@@ -74,25 +73,6 @@ class NotionPage(LoggingMixin):
         self._property_manager = PagePropertyManager(
             self._page_id, self._client, self._metadata, self._db_relation
         )
-
-    async def _get_db_property_service(self) -> Optional[DatabasePropertyService]:
-        """
-        Gets the database property service, initializing it if necessary.
-        This is a more intuitive way to work with the instance variable.
-
-        Returns:
-            Optional[DatabasePropertyService]: The database property service or None if not applicable
-        """
-        if self._db_property_service is not None:
-            return self._db_property_service
-
-        database_id = await self._db_relation.get_parent_database_id()
-        if not database_id:
-            return None
-
-        self._db_property_service = DatabasePropertyService(database_id, self._client)
-        await self._db_property_service.load_schema()
-        return self._db_property_service
 
     @property
     def id(self) -> str:
@@ -502,3 +482,22 @@ class NotionPage(LoggingMixin):
         clean_id = self._page_id.replace("-", "")
 
         return f"https://www.notion.so/{url_title}{clean_id}"
+
+    async def _get_db_property_service(self) -> Optional[DatabasePropertyService]:
+        """
+        Gets the database property service, initializing it if necessary.
+        This is a more intuitive way to work with the instance variable.
+
+        Returns:
+            Optional[DatabasePropertyService]: The database property service or None if not applicable
+        """
+        if self._db_property_service is not None:
+            return self._db_property_service
+
+        database_id = await self._db_relation.get_parent_database_id()
+        if not database_id:
+            return None
+
+        self._db_property_service = DatabasePropertyService(database_id, self._client)
+        await self._db_property_service.load_schema()
+        return self._db_property_service

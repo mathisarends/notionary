@@ -1,7 +1,5 @@
-from notionary.converters.markdown_to_notion_converter import (
-    MarkdownToNotionConverter,
-)
 from notionary.notion_client import NotionClient
+from notionary.page.markdown_to_notion_converter import MarkdownToNotionConverter
 
 
 async def append_markdown(page_id: str, markdown_text: str) -> str:

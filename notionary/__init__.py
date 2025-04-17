@@ -7,8 +7,8 @@ from .database.database_discovery import DatabaseDiscovery
 from .page.notion_page import NotionPage
 from .page.notion_page_factory import NotionPageFactory
 
-from .converters.registry.block_element_registry import BlockElementRegistry
-from .converters.registry.block_element_registry_builder import (
+from .elements.block_element_registry import BlockElementRegistry
+from .elements.block_element_registry_builder import (
     BlockElementRegistryBuilder,
 )
 

@@ -1,12 +1,12 @@
 from typing import Any, Dict, List, Optional
 
+from notionary.elements.block_element_registry import BlockElementRegistry
 from notionary.notion_client import NotionClient
-from notionary.converters.registry.block_element_registry import BlockElementRegistry
 
-from notionary.converters.markdown_to_notion_converter import (
+from notionary.page.markdown_to_notion_converter import (
     MarkdownToNotionConverter,
 )
-from notionary.converters.notion_to_markdown_converter import (
+from notionary.page.notion_to_markdown_converter import (
     NotionToMarkdownConverter,
 )
 from notionary.page.content.notion_page_content_chunker import (

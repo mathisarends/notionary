@@ -1,7 +1,7 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple, Callable
 
-from notionary.converters.elements.notion_block_element import NotionBlockElement
+from notionary.elements.notion_block_element import NotionBlockElement
 
 
 class ToggleElement(NotionBlockElement):
