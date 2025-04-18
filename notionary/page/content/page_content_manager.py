@@ -39,8 +39,7 @@ class PageContentManager(LoggingMixin):
         """
         try:
             blocks = self._markdown_to_notion_converter.convert(markdown_text)
-            print(json.dumps(blocks, indent=4))
-
+            
             fixed_blocks = self._chunker.fix_blocks_content_length(blocks)
 
             result = await self._client.patch(
@@ -173,5 +172,4 @@ class PageContentManager(LoggingMixin):
 
     async def get_text(self) -> str:
         blocks = await self.get_page_blocks_with_children()
-        print(json.dumps(blocks, indent=4))
         return self._notion_to_markdown_converter.convert(blocks)
