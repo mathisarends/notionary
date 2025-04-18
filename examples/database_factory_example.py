@@ -62,6 +62,7 @@ async def main():
         )
 
         await page_manager.append_markdown(content)
+        
         print("📋 Content added successfully")
 
     except DatabaseNotFoundException as e:

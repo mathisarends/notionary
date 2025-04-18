@@ -8,9 +8,9 @@
 ## Features
 
 - **Rich Markdown Support**: Create Notion pages using intuitive Markdown syntax with custom extensions
+- **Dynamic Database Operations**: Create, update, and query database entries with schema auto-detection
 - **Extensible Block Registry**: Add, customize, or remove Notion block elements with a flexible registry pattern
 - **LLM-Ready Prompts**: Generate system prompts explaining Markdown syntax for LLMs to create Notion content
-- **Dynamic Database Operations**: Create, update, and query database entries with schema auto-detection
 - **Async-First Design**: Built for modern Python with full async/await support
 - **Schema-Based Validation**: Automatic property validation based on database schemas
 - **Intelligent Content Conversion**: Bidirectional conversion between Markdown and Notion blocks
@@ -19,32 +19,6 @@
 
 ```bash
 pip install notionary
-```
-
-## Block Registry & Builder
-
-Notionary uses a flexible registry pattern with a builder to customize which Notion elements are supported:
-
-```python
-from notionary.elements.block_element_registry_builder import BlockElementRegistryBuilder
-
-# Create a registry with standard Notion elements
-registry = BlockElementRegistryBuilder.create_standard_registry()
-
-# Or build a custom registry with only the elements you need
-custom_registry = (
-    BlockElementRegistryBuilder()
-    .with_headings()
-    .with_callouts()
-    .with_toggles()
-    .with_lists()
-    .with_tables()
-    .with_paragraphs()
-    .build()
-)
-
-# Generate an LLM system prompt explaining the Markdown syntax
-llm_system_prompt = registry.generate_llm_prompt()
 ```
 
 ## Custom Markdown Syntax
@@ -102,22 +76,6 @@ And more:
 - Code blocks with syntax highlighting
 - To-do lists with `- [ ]` and `- [x]`
 - Block quotes with `>`
-
-## AI-Ready LLM Prompt Generation
-
-Notionary can automatically generate comprehensive system prompts for LLMs to understand Notion's custom Markdown syntax:
-
-```python
-from notionary.elements.block_element_registry_builder import BlockElementRegistryBuilder
-
-registry = BlockElementRegistryBuilder.create_standard_registry()
-llm_system_prompt = registry.generate_llm_prompt()
-
-# Use this prompt with your LLM to generate Notion-compatible Markdown
-print(llm_system_prompt)
-```
-
-This makes Notionary the perfect foundation for AI-driven Notion content generation, enabling LLMs to create properly formatted Notion pages.
 
 ## Database Management
 
@@ -196,6 +154,55 @@ async def create_rich_page():
 
     await page_manager.replace_content(markdown)
 ```
+
+## Block Registry & Builder
+
+Notionary uses a flexible registry pattern with a builder to customize which Notion elements are supported, allowing programmatic creation of complex UI layouts that were previously only possible through Notion's UI:
+
+```python
+from notionary import NotionPage
+from notionary.elements.block_element_registry_builder import BlockElementRegistryBuilder
+
+# Create a registry with standard Notion elements
+registry = BlockElementRegistryBuilder.create_standard_registry()
+
+# Or build a custom registry with only the elements you need
+custom_registry = (
+    BlockElementRegistryBuilder()
+    .with_headings()
+    .with_callouts()
+    .with_toggles()
+    .with_lists()
+    .with_tables()
+    .with_paragraphs()
+    .build()
+)
+
+# Apply this registry to a page to enable custom Markdown support
+page = NotionPage(url="https://www.notion.so/your-page-url")
+page.block_registry = custom_registry
+
+# Now your page supports exactly the elements you've defined
+await page.replace_content("# Custom heading with only selected elements")
+```
+
+This registry approach gives you granular control over which Notion UI elements can be created through Markdown, making it possible to programmatically construct any page layout that would normally require manual UI interaction.
+
+## AI-Ready LLM Prompt Generation
+
+Notionary can automatically generate comprehensive system prompts for LLMs to understand Notion's custom Markdown syntax:
+
+```python
+from notionary.elements.block_element_registry_builder import BlockElementRegistryBuilder
+
+registry = BlockElementRegistryBuilder.create_standard_registry()
+llm_system_prompt = registry.generate_llm_prompt()
+
+# Use this prompt with your LLM to generate Notion-compatible Markdown
+print(llm_system_prompt)
+```
+
+This makes Notionary the perfect foundation for AI-driven Notion content generation, enabling LLMs to create properly formatted Notion pages.
 
 ## Examples
 

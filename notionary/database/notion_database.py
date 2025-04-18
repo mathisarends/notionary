@@ -217,6 +217,26 @@ class NotionDatabase(LoggingMixin):
             self.logger.error("Error in delete_page: %s", str(e))
             return {"success": False, "message": f"Error: {str(e)}"}
 
+    async def get_last_edited_time(self) -> Optional[str]:
+        """
+        Retrieve the last edited time of the database.
+
+        Returns:
+            ISO 8601 timestamp string of the last database edit, or None if request fails
+        """
+        try:
+            response = await self._client.get(f"databases/{self.database_id}")
+
+            if response and "last_edited_time" in response:
+                return response["last_edited_time"]
+
+            self.logger.warning("Could not retrieve last_edited_time for database %s", self.database_id)
+            return None
+
+        except Exception as e:
+            self.logger.error("Error fetching last_edited_time: %s", str(e))
+            return None
+
     async def close(self) -> None:
         """Close the client connection."""
         await self._client.close()
