@@ -155,7 +155,7 @@ class BlockElementRegistryBuilder:
         Returns:
             Self for method chaining
         """
-        return self.add_element(element_class)  # add_element already handles this logic
+        return self.add_element(element_class)
 
     def _ensure_paragraph_at_end(self) -> None:
         """
@@ -309,15 +309,6 @@ class BlockElementRegistryBuilder:
         """
         return self.add_element(AudioElement)
 
-    def with_rich_content(self) -> BlockElementRegistryBuilder:
-        """
-        Add support for rich content elements (callouts, toggles, etc.).
-
-        Returns:
-            Self for method chaining
-        """
-        return self.with_callouts().with_toggles().with_quotes()
-
     def with_media_support(self) -> BlockElementRegistryBuilder:
         """
         Add support for media elements (images, videos, audio).
@@ -326,15 +317,6 @@ class BlockElementRegistryBuilder:
             Self for method chaining
         """
         return self.with_images().with_videos().with_audio()
-
-    def with_task_support(self) -> BlockElementRegistryBuilder:
-        """
-        Add support for task-related elements (todos).
-
-        Returns:
-            Self for method chaining
-        """
-        return self.with_todos()
 
     def with_mention(self) -> BlockElementRegistryBuilder:
         return self.add_element(MentionElement)

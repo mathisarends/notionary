@@ -88,26 +88,40 @@ class NotionRelationManager(LoggingMixin):
         ]
 
     async def get_relation_values(self, property_name: str) -> List[str]:
-        """
-        Returns the current relation values for a property.
+            """
+            Returns the titles of the pages linked via a relation property.
 
-        Args:
-            property_name: Name of the relation property
+            Args:
+                property_name: Name of the relation property
 
-        Returns:
-            List[str]: List of linked page IDs
-        """
-        properties = await self._get_page_properties()
+            Returns:
+                List[str]: List of linked page titles
+            """
+            properties = await self._get_page_properties()
 
-        if property_name not in properties:
-            return []
+            if property_name not in properties:
+                return []
 
-        prop_data = properties[property_name]
+            prop_data = properties[property_name]
 
-        if prop_data.get("type") != "relation" or "relation" not in prop_data:
-            return []
+            if prop_data.get("type") != "relation" or "relation" not in prop_data:
+                return []
 
-        return [rel.get("id") for rel in prop_data["relation"]]
+            resolver = NotionPageTitleResolver(self._client)
+            titles = []
+
+            for rel in prop_data["relation"]:
+                page_id = rel.get("id")
+                if not page_id:
+                    continue
+
+                title = await resolver.get_title_by_page_id(page_id)
+                if not title:
+                    continue
+
+                titles.append(title)
+
+            return titles
 
     async def get_relation_details(
         self, property_name: str
@@ -373,6 +387,7 @@ class NotionRelationManager(LoggingMixin):
     async def get_all_relations(self) -> Dict[str, List[str]]:
         """Returns all relation properties and their values."""
         relation_properties = await self.get_relation_property_ids()
+
         if not relation_properties:
             return {}
 

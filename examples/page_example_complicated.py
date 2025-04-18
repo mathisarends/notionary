@@ -20,18 +20,12 @@ from notionary.exceptions.database_exceptions import PageOperationError
 async def main():
     """Create a rich Notion page showcasing various content blocks."""
 
-    url = "https://www.notion.so/Jarvis-Clipboard-1a3389d57bd380d7a507e67d1b25822c"
-    page_manager = NotionPage(url=url)
+    url = "https://www.notion.so/Notionary-Rich-Markdown-Demo-1cd389d57bd381e58be9d35ce24adf3d?pvs=4"
+    page = NotionPage(url=url)
 
     try:
-        markdown_content = """
-Bitte prüfe das Dokument: @[1a6389d5-7bd3-80c5-9a87-e90b034989d0]
-Die Deadline ist @date[2023-12-31]
-Die Daten sind in der DB @db[1a6389d5-7bd3-80e9-b199-000cfb3fa0b3]
-"""
-        await page_manager.append_markdown(markdown_content)
-        # text = await page_manager.get_text()
-        # print("Text from page:", text)
+        relations = await page.get_relation_values("Thema")
+        print(f"Relations: {relations}")
 
     except PageOperationError as e:
         print(f"❌ Error updating page: {e}")
