@@ -61,45 +61,53 @@ class PageContentManager(LoggingMixin):
         """
         resp = await self._client.get(f"blocks/{block_id}/children")
         children = resp.get("results", []) if resp else []
-        
+
         for child in children:
             block_type = child.get("type")
             if block_type in ["child_database", "database", "linked_database"]:
                 return True
-                
+
             if child.get("has_children", False):
                 if await self.has_database_descendant(child["id"]):
                     return True
-                    
+
         return False
 
-    async def delete_block_with_children(self, block: Dict[str, Any], skip_databases: bool) -> tuple[int, int]:
+    async def delete_block_with_children(
+        self, block: Dict[str, Any], skip_databases: bool
+    ) -> tuple[int, int]:
         """
         Delete a block and all its children, optionally skipping databases.
         Returns a tuple of (deleted_count, skipped_count).
         """
         deleted = 0
         skipped = 0
-        
+
         block_type = block.get("type")
-        if skip_databases and block_type in ["child_database", "database", "linked_database"]:
+        if skip_databases and block_type in [
+            "child_database",
+            "database",
+            "linked_database",
+        ]:
             return 0, 1
-            
+
         if skip_databases and await self.has_database_descendant(block["id"]):
             return 0, 1
-            
+
         # Process children first
         if block.get("has_children", False):
             children_resp = await self._client.get(f"blocks/{block['id']}/children")
             for child in children_resp.get("results", []):
-                child_deleted, child_skipped = await self.delete_block_with_children(child, skip_databases)
+                child_deleted, child_skipped = await self.delete_block_with_children(
+                    child, skip_databases
+                )
                 deleted += child_deleted
                 skipped += child_skipped
-                
+
         # Then delete the block itself
         if await self._client.delete(f"blocks/{block['id']}"):
             deleted += 1
-            
+
         return deleted, skipped
 
     async def clear(self, skip_databases: bool = True) -> str:
@@ -108,16 +116,20 @@ class PageContentManager(LoggingMixin):
         """
         blocks_resp = await self._client.get(f"blocks/{self.page_id}/children")
         results = blocks_resp.get("results", []) if blocks_resp else []
-        
+
         total_deleted = 0
         total_skipped = 0
-        
+
         for block in results:
-            deleted, skipped = await self.delete_block_with_children(block, skip_databases)
+            deleted, skipped = await self.delete_block_with_children(
+                block, skip_databases
+            )
             total_deleted += deleted
             total_skipped += skipped
-            
-        return f"Deleted {total_deleted} blocks. Skipped {total_skipped} database blocks."
+
+        return (
+            f"Deleted {total_deleted} blocks. Skipped {total_skipped} database blocks."
+        )
 
     async def get_blocks(self) -> List[Dict[str, Any]]:
         result = await self._client.get(f"blocks/{self.page_id}/children")
@@ -133,8 +145,14 @@ class PageContentManager(LoggingMixin):
             return []
         return result.get("results", [])
 
-    async def get_page_blocks_with_children(self, parent_id: Optional[str] = None) -> List[Dict[str, Any]]:
-        blocks = await self.get_blocks() if parent_id is None else await self.get_block_children(parent_id)
+    async def get_page_blocks_with_children(
+        self, parent_id: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        blocks = (
+            await self.get_blocks()
+            if parent_id is None
+            else await self.get_block_children(parent_id)
+        )
         if not blocks:
             return []
 

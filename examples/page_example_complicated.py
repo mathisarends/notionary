@@ -1,4 +1,3 @@
-
 """
 # Notionary: Rich Notion Page Example
 =========================================
@@ -36,6 +35,7 @@ Die Daten sind in der DB @db[1a6389d5-7bd3-80e9-b199-000cfb3fa0b3]
 
     except PageOperationError as e:
         print(f"❌ Error updating page: {e}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

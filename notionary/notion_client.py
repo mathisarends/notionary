@@ -9,8 +9,6 @@ from notionary.util.logging_mixin import LoggingMixin
 
 
 class HttpMethod(Enum):
-    """Enum für HTTP-Methoden."""
-
     GET = "get"
     POST = "post"
     PATCH = "patch"
@@ -42,31 +40,84 @@ class NotionClient(LoggingMixin):
 
     @classmethod
     async def close_all(cls):
+        """
+        Closes all active NotionClient instances and releases resources.
+        """
         for instance in list(cls._instances):
             await instance.close()
 
-    async def close(self):
+    async def close(self):#
+        """
+        Closes the HTTP client for this instance and releases resources.
+        """
         if hasattr(self, "client") and self.client:
             await self.client.aclose()
             self.client = None
 
     async def get(self, endpoint: str) -> Optional[Dict[str, Any]]:
+        """
+        Sends a GET request to the specified Notion API endpoint.
+
+        Args:
+            endpoint: The relative API path (e.g., 'databases/<id>').
+
+        Returns:
+            A dictionary with the response data, or None if the request failed.
+        """
         return await self._make_request(HttpMethod.GET, endpoint)
 
     async def get_page(self, page_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Fetches metadata for a Notion page by its ID.
+
+        Args:
+            page_id: The Notion page ID.
+
+        Returns:
+            A dictionary with the page data, or None if the request failed.
+        """
         return await self.get(f"pages/{page_id}")
     
     async def post(
         self, endpoint: str, data: Optional[Dict[str, Any]] = None
     ) -> Optional[Dict[str, Any]]:
+        """
+        Sends a POST request to the specified Notion API endpoint.
+
+        Args:
+            endpoint: The relative API path.
+            data: Optional dictionary payload to send with the request.
+
+        Returns:
+            A dictionary with the response data, or None if the request failed.
+        """
         return await self._make_request(HttpMethod.POST, endpoint, data)
 
     async def patch(
         self, endpoint: str, data: Optional[Dict[str, Any]] = None
     ) -> Optional[Dict[str, Any]]:
+        """
+        Sends a PATCH request to the specified Notion API endpoint.
+
+        Args:
+            endpoint: The relative API path.
+            data: Optional dictionary payload to send with the request.
+
+        Returns:
+            A dictionary with the response data, or None if the request failed.
+        """
         return await self._make_request(HttpMethod.PATCH, endpoint, data)
 
     async def delete(self, endpoint: str) -> bool:
+        """
+        Sends a DELETE request to the specified Notion API endpoint.
+
+        Args:
+            endpoint: The relative API path.
+
+        Returns:
+            True if the request was successful, False otherwise.
+        """
         result = await self._make_request(HttpMethod.DELETE, endpoint)
         return result is not None
 

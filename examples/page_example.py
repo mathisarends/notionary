@@ -28,7 +28,7 @@ async def main():
 
     try:
         print("🎨 Setting page metadata...")
-        
+
         await page_manager.set_title("Notionary Rich Markdown Demo")
         await page_manager.set_page_icon(emoji="✨")
         await page_manager.set_page_cover(
@@ -40,7 +40,7 @@ async def main():
 
         print("🎉 Page updated successfully with rich content!")
         print("🔗 Open the page in Notion to see the results")
-        
+
         await page_manager.clear()
 
     except PageOperationError as e:

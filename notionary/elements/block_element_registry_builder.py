@@ -335,7 +335,7 @@ class BlockElementRegistryBuilder:
             Self for method chaining
         """
         return self.with_todos()
-    
+
     def with_mention(self) -> BlockElementRegistryBuilder:
         return self.add_element(MentionElement)
 
