@@ -1,3 +1,4 @@
+
 """
 # Notionary: Rich Notion Page Example
 =========================================
@@ -16,31 +17,16 @@ import asyncio
 from notionary import NotionPage
 from notionary.exceptions.database_exceptions import PageOperationError
 
-from examples.ressources.markdown_demo import MARKDOWN_EXAMPLE
-
 
 async def main():
     """Create a rich Notion page showcasing various content blocks."""
 
-    url = "https://www.notion.so/Notionary-Rich-Markdown-Demo-1cd389d57bd381e58be9d35ce24adf3d?pvs=4"
+    url = "https://www.notion.so/Jarvis-Clipboard-1a3389d57bd380d7a507e67d1b25822c"
 
     page_manager = NotionPage(url=url)
 
     try:
-        print("🎨 Setting page metadata...")
-        
-        await page_manager.set_title("Notionary Rich Markdown Demo")
-        await page_manager.set_page_icon(emoji="✨")
-        await page_manager.set_page_cover(
-            "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200"
-        )
-
-        print("✨ Updating page with rich content...")
-        await page_manager.replace_content(markdown=MARKDOWN_EXAMPLE)
-
-        print("🎉 Page updated successfully with rich content!")
-        print("🔗 Open the page in Notion to see the results")
-        
+        # result = await page_manager.get_text()
         await page_manager.clear()
 
     except PageOperationError as e:

@@ -55,7 +55,7 @@ class NotionClient(LoggingMixin):
 
     async def get_page(self, page_id: str) -> Optional[Dict[str, Any]]:
         return await self.get(f"pages/{page_id}")
-
+    
     async def post(
         self, endpoint: str, data: Optional[Dict[str, Any]] = None
     ) -> Optional[Dict[str, Any]]:
