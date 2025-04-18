@@ -1,7 +1,9 @@
+import re
 from typing import Dict, Any, Optional, List
 from typing_extensions import override
 
 from notionary.elements.notion_block_element import NotionBlockElement
+
 
 class MentionElement(NotionBlockElement):
     """
@@ -9,39 +11,159 @@ class MentionElement(NotionBlockElement):
     
     Markdown mention syntax:
     - @[page-id] - Mention a page by its ID
-    
-    Note: This element primarily supports Notion-to-Markdown conversion,
-    as page mentions in Markdown would typically require knowing internal page IDs.
+    - @date[YYYY-MM-DD] - Mention a date
+    - @db[database-id] - Mention a database by its ID
     """
+    
+    # Define mention patterns and their handlers as class attributes
+    MENTION_TYPES = {
+        "page": {
+            "pattern": r'@\[([0-9a-f-]+)\]',
+            "create_mention": lambda id_value: {
+                "type": "mention",
+                "mention": {
+                    "type": "page",
+                    "page": {"id": id_value}
+                }
+            },
+            "get_plain_text": lambda mention: f"Page {mention['mention']['page']['id']}",
+            "to_markdown": lambda mention: f"@[{mention['mention']['page']['id']}]"
+        },
+        "date": {
+            "pattern": r'@date\[(\d{4}-\d{2}-\d{2})\]',
+            "create_mention": lambda date_value: {
+                "type": "mention",
+                "mention": {
+                    "type": "date",
+                    "date": {"start": date_value, "end": None}
+                }
+            },
+            "get_plain_text": lambda mention: mention['mention']['date']['start'],
+            "to_markdown": lambda mention: f"@date[{mention['mention']['date']['start']}]"
+        },
+        "database": {
+            "pattern": r'@db\[([0-9a-f-]+)\]',
+            "create_mention": lambda db_id: {
+                "type": "mention",
+                "mention": {
+                    "type": "database",
+                    "database": {"id": db_id}
+                }
+            },
+            "get_plain_text": lambda mention: f"Database {mention['mention']['database']['id']}",
+            "to_markdown": lambda mention: f"@db[{mention['mention']['database']['id']}]"
+        }
+    }
     
     @override
     @staticmethod
     def match_markdown(text: str) -> bool:
-        """Check if text is a markdown mention."""
+        """Check if text contains a markdown mention."""
+        for mention_type in MentionElement.MENTION_TYPES.values():
+            if re.search(mention_type["pattern"], text):
+                return True
         return False
     
     @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block contains a mention."""
-        if block.get("type") not in ["paragraph", "heading_1", "heading_2", "heading_3", "bulleted_list_item", "numbered_list_item"]:
+        supported_block_types = [
+            "paragraph", "heading_1", "heading_2", "heading_3", 
+            "bulleted_list_item", "numbered_list_item"
+        ]
+        
+        if block.get("type") not in supported_block_types:
             return False
             
         block_content = block.get(block.get("type"), {})
         rich_text = block_content.get("rich_text", [])
         
-        for text_item in rich_text:
-            if text_item.get("type") == "mention":
-                return True
-                
-        return False
+        return any(text_item.get("type") == "mention" for text_item in rich_text)
     
     @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
-        """Convert markdown mention to Notion mention block."""
-        # This would be handled within rich text processing rather than as a standalone block
-        return None
+        """Convert markdown text with mentions to a Notion paragraph block."""
+        if not MentionElement.match_markdown(text):
+            return None
+            
+        rich_text = MentionElement._process_markdown_with_mentions(text)
+        
+        return {
+            "type": "paragraph",
+            "paragraph": {
+                "rich_text": rich_text,
+                "color": "default"
+            }
+        }
+    
+    @staticmethod
+    def _process_markdown_with_mentions(text: str) -> List[Dict[str, Any]]:
+        """Convert markdown mentions to Notion rich_text format."""
+        mentions = []
+        
+        for mention_type, config in MentionElement.MENTION_TYPES.items():
+            for match in re.finditer(config["pattern"], text):
+                mentions.append({
+                    "start": match.start(),
+                    "end": match.end(),
+                    "type": mention_type,
+                    "value": match.group(1),
+                    "original": match.group(0)
+                })
+        
+        mentions.sort(key=lambda m: m["start"])
+        
+        # Build rich_text list
+        rich_text = []
+        position = 0
+        
+        for mention in mentions:
+            if mention["start"] > position:
+                rich_text.append(MentionElement._create_text_item(text[position:mention["start"]]))
+            
+            # Add the mention
+            mention_obj = MentionElement.MENTION_TYPES[mention["type"]]["create_mention"](mention["value"])
+            
+            # Add annotations and plain text
+            mention_obj["annotations"] = MentionElement._default_annotations()
+            mention_obj["plain_text"] = MentionElement.MENTION_TYPES[mention["type"]]["get_plain_text"](mention_obj)
+            
+            rich_text.append(mention_obj)
+            position = mention["end"]
+        
+        # Add remaining text if any
+        if position < len(text):
+            rich_text.append(MentionElement._create_text_item(text[position:]))
+        
+        return rich_text
+    
+    @staticmethod
+    def _create_text_item(content: str) -> Dict[str, Any]:
+        """Create a text item with default annotations."""
+        text_item = {
+            "type": "text",
+            "text": {
+                "content": content,
+                "link": None
+            },
+            "annotations": MentionElement._default_annotations(),
+            "plain_text": content
+        }
+        return text_item
+    
+    @staticmethod
+    def _default_annotations() -> Dict[str, Any]:
+        """Return default annotations for rich text."""
+        return {
+            "bold": False,
+            "italic": False,
+            "strikethrough": False,
+            "underline": False,
+            "code": False,
+            "color": "default"
+        }
     
     @override
     @staticmethod
@@ -56,14 +178,14 @@ class MentionElement(NotionBlockElement):
         
         processed_text = MentionElement._process_rich_text_with_mentions(rich_text)
         
-        if MentionElement._is_only_mentions(rich_text):
+        if processed_text:
             return processed_text
-            
+        
         return None
     
     @staticmethod
     def _process_rich_text_with_mentions(rich_text: List[Dict[str, Any]]) -> str:
-        """Process rich text array and convert any mentions to markdown format."""
+        """Convert rich text with mentions to markdown string."""
         result = []
         
         for item in rich_text:
@@ -71,38 +193,14 @@ class MentionElement(NotionBlockElement):
                 mention = item.get("mention", {})
                 mention_type = mention.get("type")
                 
-                if mention_type == "page":
-                    page_id = mention.get("page", {}).get("id", "")
-                    result.append(f"@[{page_id}]")
-                elif mention_type == "user":
-                    user_id = mention.get("user", {}).get("id", "")
-                    result.append(f"@user[{user_id}]")
-                elif mention_type == "date":
-                    date_value = mention.get("date", {}).get("start", "")
-                    result.append(f"@date[{date_value}]")
-                elif mention_type == "database":
-                    db_id = mention.get("database", {}).get("id", "")
-                    result.append(f"@db[{db_id}]")
+                if mention_type in MentionElement.MENTION_TYPES:
+                    result.append(MentionElement.MENTION_TYPES[mention_type]["to_markdown"](item))
                 else:
-                    # Unknown mention type, fallback to plain text if available
                     result.append(item.get("plain_text", "@[unknown]"))
             else:
-                # Regular text item
                 result.append(item.get("plain_text", ""))
                 
         return "".join(result)
-    
-    @staticmethod
-    def _is_only_mentions(rich_text: List[Dict[str, Any]]) -> bool:
-        """Check if rich_text array contains only mentions."""
-        if not rich_text:
-            return False
-            
-        for item in rich_text:
-            if item.get("type") != "mention":
-                return False
-                
-        return True
     
     @override
     @staticmethod
@@ -111,25 +209,21 @@ class MentionElement(NotionBlockElement):
     
     @classmethod
     def get_llm_prompt_content(cls) -> dict:
-        """
-        Returns a dictionary with all information needed for LLM prompts about this element.
-        """
+        """Information about this element for LLM-based processing."""
         return {
-            "description": "References to Notion pages, users, databases, or dates within text content.",
-            "when_to_use": "Mentions are typically part of rich text content rather than standalone elements. They're used to link to other Notion content or users.",
+            "description": "References to Notion pages, databases, or dates within text content.",
+            "when_to_use": "When you want to link to other Notion content within your text.",
             "syntax": [
                 "@[page-id] - Reference to a Notion page",
-                "@user[user-id] - Reference to a Notion user",
                 "@date[YYYY-MM-DD] - Reference to a date",
                 "@db[database-id] - Reference to a Notion database"
             ],
             "examples": [
                 "Check the meeting notes at @[1a6389d5-7bd3-80c5-9a87-e90b034989d0]",
-                "Please review this with @user[d3dbbbd7-ec00-4204-94d9-e4a46e4928db]",
-                "Deadline is @date[2023-12-31]"
+                "Deadline is @date[2023-12-31]",
+                "Use the structure in @db[1a6389d5-7bd3-80e9-b199-000cfb3fa0b3]"
             ],
             "limitations": [
-                "Mentions are typically created through Notion's UI rather than direct markdown input",
-                "When converting Notion content to markdown, mentions are represented with their internal IDs"
+                "Mentions require knowing the internal IDs of the pages or databases you want to reference"
             ]
         }

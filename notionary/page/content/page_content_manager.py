@@ -39,8 +39,8 @@ class PageContentManager(LoggingMixin):
         """
         try:
             blocks = self._markdown_to_notion_converter.convert(markdown_text)
+            print(json.dumps(blocks, indent=4))
 
-            # Fix any blocks that exceed Notion's content length limits
             fixed_blocks = self._chunker.fix_blocks_content_length(blocks)
 
             result = await self._client.patch(
