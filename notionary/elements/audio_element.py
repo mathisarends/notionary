@@ -125,15 +125,12 @@ class AudioElement(NotionBlockElement):
         """Returns information for LLM prompts about this element."""
         return {
             "description": "Embeds audio content from external sources like CDNs or direct audio URLs.",
-            "when_to_use": "Use audio embeds when you want to include audio content directly in your document. Audio embeds are useful for podcasts, music, voice recordings, or any content that benefits from audio explanation.",
+            "guidelines": [
+                "Use audio embeds when you want to include audio content directly in your document. Audio embeds are useful for podcasts, music, voice recordings, or any content that benefits from audio explanation."
+            ],
             "syntax": [
                 "$[](https://example.com/audio.mp3) - Audio without caption",
                 "$[Caption text](https://example.com/audio.mp3) - Audio with caption",
-            ],
-            "supported_sources": [
-                "Direct links to audio files (.mp3, .wav, .ogg, etc.)",
-                "Google Cloud Storage links (storage.googleapis.com)",
-                "Other audio hosting platforms supported by Notion",
             ],
             "examples": [
                 "$[Podcast Episode](https://storage.googleapis.com/audio_summaries/ep_ai_summary_127d02ec-ca12-4312-a5ed-cb14b185480c.mp3)",

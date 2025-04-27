@@ -52,7 +52,6 @@ class NotionPageTitleResolver(LoggingMixin):
             self.logger.error("Error while searching for page '%s': %s", title, e)
             return None
 
-
     async def get_title_by_page_id(self, page_id: str) -> Optional[str]:
         """
         Retrieves the title of a Notion page by its page ID.

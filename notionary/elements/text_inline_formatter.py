@@ -25,31 +25,6 @@ class TextInlineFormatter:
         (r"~~(.+?)~~", {"strikethrough": True}),
         (r"`(.+?)`", {"code": True}),
         (r"\[(.+?)\]\((.+?)\)", {"link": True}),
-        (r"==([a-z_]+):(.+?)==", {"highlight": True}),
-        (r"==(.+?)==", {"highlight_default": True}),
-    ]
-
-    # Valid colors for highlighting
-    VALID_COLORS = [
-        "default",
-        "gray",
-        "brown",
-        "orange",
-        "yellow",
-        "green",
-        "blue",
-        "purple",
-        "pink",
-        "red",
-        "gray_background",
-        "brown_background",
-        "orange_background",
-        "yellow_background",
-        "green_background",
-        "blue_background",
-        "purple_background",
-        "pink_background",
-        "red_background",
     ]
 
     @classmethod
@@ -106,25 +81,6 @@ class TextInlineFormatter:
             if earliest_pos > 0:
                 segments.append(
                     cls._create_text_element(remaining_text[:earliest_pos], {})
-                )
-
-            if "highlight" in earliest_format:
-                color = earliest_match.group(1)
-                content = earliest_match.group(2)
-
-                if color not in cls.VALID_COLORS:
-                    if not color.endswith("_background"):
-                        color = f"{color}_background"
-
-                    if color not in cls.VALID_COLORS:
-                        color = "yellow_background"
-
-                segments.append(cls._create_text_element(content, {"color": color}))
-
-            elif "highlight_default" in earliest_format:
-                content = earliest_match.group(1)
-                segments.append(
-                    cls._create_text_element(content, {"color": "yellow_background"})
                 )
 
             elif "link" in earliest_format:
@@ -224,10 +180,6 @@ class TextInlineFormatter:
             if annotations.get("bold", False):
                 content = f"**{content}**"
 
-            color = annotations.get("color", "default")
-            if color != "default":
-                content = f"=={color.replace('_background', '')}:{content}=="
-
             text_data = text_obj.get("text", {})
             link_data = text_data.get("link")
             if link_data:
@@ -255,40 +207,39 @@ class TextInlineFormatter:
             "color": "default",
         }
 
-    @classmethod
-    def get_llm_prompt_content(cls) -> Dict[str, Any]:
+    @classmethod 
+    def get_llm_prompt_content(cls) -> Dict[str, Any]: 
+        """ 
+        Returns information about inline text formatting capabilities for LLM prompts. 
         """
-        Returns information about inline text formatting capabilities for LLM prompts.
-
-        This method provides documentation about supported inline formatting options
-        that can be used across all block elements.
-
-        Returns:
-            A dictionary with descriptions, syntax examples, and usage guidelines
-        """
-        return {
-            "description": "Standard Markdown formatting is supported in all text blocks. Additionally, a custom highlight syntax is available for emphasizing important information. To create vertical spacing between elements, use the special spacer tag.",
-            "syntax": [
-                "**text** - Bold text",
-                "*text* or _text_ - Italic text",
-                "__text__ - Underlined text",
-                "~~text~~ - Strikethrough text",
-                "`text` - Inline code",
-                "[text](url) - Link",
-                "==text== - Default highlight (yellow background)",
-                "==color:text== - Colored highlight (e.g., ==red:warning==)",
-                "<!-- spacer --> - Creates vertical spacing between elements",
-            ],
-            "examples": [
-                "This is a **bold** statement with some *italic* words.",
-                "This feature is ~~deprecated~~ as of version 2.0.",
-                "Edit the `config.json` file to configure settings.",
-                "Check our [documentation](https://docs.example.com) for more details.",
-                "==This is an important note== that you should remember.",
-                "==red:Warning:== This action cannot be undone.",
-                "==blue:Note:== Common colors include red, blue, green, yellow, purple.",
-                "First paragraph content.\n\n<!-- spacer -->\n\nSecond paragraph with additional spacing above.",
-            ],
-            "highlight_usage": "The highlight syntax (==text== and ==color:text==) should be used to emphasize important information, warnings, notes, or other content that needs to stand out. This is particularly useful for making content more scannable at a glance.",
-            "spacer_usage": "Use the <!-- spacer --> tag on its own line to create additional vertical spacing between elements. This is useful for improving readability by visually separating sections of content. Multiple spacer tags can be used for greater spacing.",
+        return { 
+            "description": "Proper typography is ESSENTIAL for readability and establishing visual hierarchy in text. Using Markdown formatting at strategic points demonstrably enhances comprehension and content scanability. It is MANDATORY to apply these formatting elements consistently and thoughtfully throughout all content.", 
+            "syntax": [ 
+                "**text** - Bold for key concepts, important terms, and main headings", 
+                "*text* or _text_ - Italics for emphasis, definitions, and specialized terminology", 
+                "__text__ - Underlining for elements requiring special attention or calls to action", 
+                "~~text~~ - Strikethrough for outdated or no longer applicable information", 
+                "`text` - Inline code for technical terms, file paths, and code examples", 
+                "[text](url) - Hyperlinks for cross-references and external resources", 
+                "<!-- spacer --> - Creates vertical spacing between elements for improved readability", 
+            ], 
+            "examples": [ 
+                "This is a **fundamental principle** with several *important nuances*.", 
+                "The project's *vision* is to create software that feels *intuitive* and responds *elegantly* to user needs.", 
+                "The term *cognitive load* refers to the mental effort required to process information.", 
+                "Remember that *how* you present information is often as important as *what* you present.", 
+                "This feature is ~~deprecated~~ as of version 2.0 and has been replaced by new methods.", 
+                "Edit the `config.json` file to configure settings.", 
+                "Check our [documentation](https://docs.example.com) for more details.", 
+                "First paragraph content.\n\n<!-- spacer -->\n\nSecond paragraph with additional spacing above.", 
+            ], 
+            "guidelines": [ 
+                "Use **bold** for the MOST important concepts that readers should immediately notice", 
+                "Apply *italics* to emphasize key terms, introduce new concepts, or add subtle emphasis", 
+                "Use *italics* for book titles, publication names, and foreign language terms", 
+                "Combine formatting thoughtfully - for example: \"The **primary goal** is to create an *accessible* interface\"", 
+                "Reserve `code formatting` exclusively for technical elements, commands, and syntax", 
+                "Structure information with deliberate spacing and formatting to guide the reader's eye", 
+                "Always maintain consistency in formatting conventions throughout documents", 
+            ], 
         }

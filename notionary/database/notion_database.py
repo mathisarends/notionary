@@ -230,7 +230,9 @@ class NotionDatabase(LoggingMixin):
             if response and "last_edited_time" in response:
                 return response["last_edited_time"]
 
-            self.logger.warning("Could not retrieve last_edited_time for database %s", self.database_id)
+            self.logger.warning(
+                "Could not retrieve last_edited_time for database %s", self.database_id
+            )
             return None
 
         except Exception as e:

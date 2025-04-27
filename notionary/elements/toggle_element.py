@@ -8,11 +8,9 @@ class ToggleElement(NotionBlockElement):
     """
     Verbesserte ToggleElement-Klasse, die Kontext berücksichtigt.
     """
-
     TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+(.+)$")
     INDENT_PATTERN = re.compile(r"^(\s{2,}|\t+)(.+)$")
 
-    # Ein neues Pattern, um spezifisch nach der "Transcript" Überschrift zu suchen
     TRANSCRIPT_TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+Transcript$")
 
     @staticmethod
@@ -206,3 +204,27 @@ class ToggleElement(NotionBlockElement):
             i = next_index
 
         return toggle_blocks
+
+    @classmethod
+    def get_llm_prompt_content(cls) -> dict:
+        """
+        Returns a dictionary with all information needed for LLM prompts about this element.
+        """
+        return {
+            "description": "Toggle elements are collapsible sections that help organize and hide detailed information. They are essential for creating well-structured documents with progressive disclosure of information.",
+            "syntax": [
+                "+++ Toggle Title",
+                "  Content inside the toggle (indented with 2 spaces)",
+                "  Content can span multiple lines",
+            ],
+            "examples": [
+                "+++ Key Findings\n  The research demonstrates **three main conclusions**:\n  1. First important point\n  2. Second important point",
+                "+++ FAQ\n  **Q: When should I use toggles?**\n  *A: Use toggles for supplementary information.*"
+            ],
+            "when_to_use": "Use toggles for supplementary information that's not essential for the first reading, such as details, examples, or technical information.",
+            "guidelines": [
+                "Choose clear, descriptive titles that reflect the hidden content",
+                "Structure complex documents with toggles to improve scanability",
+                "Nest content properly with 2-space indentation"
+            ]
+        }

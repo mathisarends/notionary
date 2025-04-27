@@ -46,7 +46,7 @@ class NotionClient(LoggingMixin):
         for instance in list(cls._instances):
             await instance.close()
 
-    async def close(self):#
+    async def close(self):  #
         """
         Closes the HTTP client for this instance and releases resources.
         """
@@ -77,7 +77,7 @@ class NotionClient(LoggingMixin):
             A dictionary with the page data, or None if the request failed.
         """
         return await self.get(f"pages/{page_id}")
-    
+
     async def post(
         self, endpoint: str, data: Optional[Dict[str, Any]] = None
     ) -> Optional[Dict[str, Any]]:

@@ -88,40 +88,40 @@ class NotionRelationManager(LoggingMixin):
         ]
 
     async def get_relation_values(self, property_name: str) -> List[str]:
-            """
-            Returns the titles of the pages linked via a relation property.
+        """
+        Returns the titles of the pages linked via a relation property.
 
-            Args:
-                property_name: Name of the relation property
+        Args:
+            property_name: Name of the relation property
 
-            Returns:
-                List[str]: List of linked page titles
-            """
-            properties = await self._get_page_properties()
+        Returns:
+            List[str]: List of linked page titles
+        """
+        properties = await self._get_page_properties()
 
-            if property_name not in properties:
-                return []
+        if property_name not in properties:
+            return []
 
-            prop_data = properties[property_name]
+        prop_data = properties[property_name]
 
-            if prop_data.get("type") != "relation" or "relation" not in prop_data:
-                return []
+        if prop_data.get("type") != "relation" or "relation" not in prop_data:
+            return []
 
-            resolver = NotionPageTitleResolver(self._client)
-            titles = []
+        resolver = NotionPageTitleResolver(self._client)
+        titles = []
 
-            for rel in prop_data["relation"]:
-                page_id = rel.get("id")
-                if not page_id:
-                    continue
+        for rel in prop_data["relation"]:
+            page_id = rel.get("id")
+            if not page_id:
+                continue
 
-                title = await resolver.get_title_by_page_id(page_id)
-                if not title:
-                    continue
+            title = await resolver.get_title_by_page_id(page_id)
+            if not title:
+                continue
 
-                titles.append(title)
+            titles.append(title)
 
-            return titles
+        return titles
 
     async def get_relation_details(
         self, property_name: str
