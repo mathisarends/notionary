@@ -155,4 +155,10 @@ class CodeBlockElement(NotionBlockElement):
                 '```json\n{"name": "Alice", "age": 30}\n```',
                 "```mermaid\nflowchart TD\n  A --> B\n```",
             ],
+            "avoid": (
+                "NEVER EVER wrap markdown content with ```markdown. Markdown should be written directly without code block formatting. "
+                "NEVER use ```markdown under any circumstances. "
+                "For Mermaid diagrams, use ONLY the default styling without colors, backgrounds, or custom styling attributes. "
+                "Keep Mermaid diagrams simple and minimal without any styling or color modifications."
+            ),
         }

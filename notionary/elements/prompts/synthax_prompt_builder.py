@@ -34,6 +34,11 @@ CRITICAL USAGE GUIDELINES:
 
 5. Always structure content with clear headings, lists, and paragraphs to create visually appealing
    and well-organized documents.
+
+6. CONTENT FORMATTING - CRITICAL:
+   ❌ DO NOT include introductory phrases like "I understand that..." or "Here's the content...".
+   ✅ Provide ONLY the requested content directly without any prefacing text or meta-commentary.
+   ✅ Generate just the content itself, formatted according to these guidelines.
 """
 
     @staticmethod
@@ -63,7 +68,9 @@ CRITICAL USAGE GUIDELINES:
             f"**When to use:** {content['when_to_use']}",
         ]
 
-        # Filter out any empty parts and join with newlines
+        if "avoid" in content and content["avoid"]:
+            doc_parts.append(f"**Avoid:** {content['avoid']}")
+
         return "\n".join([part for part in doc_parts if part])
 
     @classmethod

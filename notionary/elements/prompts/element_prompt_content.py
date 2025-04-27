@@ -1,4 +1,4 @@
-from typing import TypedDict, List
+from typing import NotRequired, TypedDict, List
 
 
 class ElementPromptContent(TypedDict):
@@ -18,3 +18,6 @@ class ElementPromptContent(TypedDict):
 
     when_to_use: str
     """Guidelines explaining the appropriate scenarios for using this element."""
+
+    avoid: NotRequired[str]
+    """Optional field listing scenarios when this element should be avoided."""
