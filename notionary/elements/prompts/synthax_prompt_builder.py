@@ -15,21 +15,25 @@ Notion supports standard Markdown with some special extensions for creating rich
 
 {element_docs}
 
-Important usage guidelines:
+CRITICAL USAGE GUIDELINES:
 
 1. Do NOT start content with a level 1 heading (# Heading). In Notion, the page title is already displayed in the metadata, so starting with an H1 heading is redundant. Begin with H2 (## Heading) or lower for section headings.
 
-2. The backtick code fence syntax (```) should ONLY be used when creating actual code blocks or diagrams.
-Do not wrap examples or regular content in backticks unless you're showing code.
+2. BACKTICK HANDLING - EXTREMELY IMPORTANT:
+   ❌ NEVER wrap entire content or responses in triple backticks (```).
+   ❌ DO NOT use triple backticks (```) for anything except CODE BLOCKS or DIAGRAMS.
+   ❌ DO NOT use triple backticks to mark or highlight regular text or examples.
+   ✅ USE triple backticks ONLY for actual programming code, pseudocode, or specialized notation.
+   ✅ When showing Markdown syntax examples, use inline code formatting with single backticks.
 
 3. Use inline formatting (bold, italic, etc.) across all content to enhance readability.
-Proper typography is essential for creating scannable, well-structured documents.
+   Proper typography is essential for creating scannable, well-structured documents.
 
 4. Notion's extensions to Markdown provide richer formatting options than standard Markdown
-while maintaining the familiar Markdown syntax for basic elements.
+   while maintaining the familiar Markdown syntax for basic elements.
 
 5. Always structure content with clear headings, lists, and paragraphs to create visually appealing
-and well-organized documents.
+   and well-organized documents.
 """
 
     @staticmethod

@@ -35,7 +35,11 @@ class PageContentManager(LoggingMixin):
     async def append_markdown(self, markdown_text: str) -> str:
         """
         Append markdown text to a Notion page, automatically handling content length limits.
+        First strips out triple backtick markdown fences if they wrap the entire content.
         """
+        # Strip out triple backticks if they wrap the entire content
+        markdown_text = self._strip_wrapping_backticks(markdown_text)
+        
         try:
             blocks = self._markdown_to_notion_converter.convert(markdown_text)
 
@@ -172,3 +176,25 @@ class PageContentManager(LoggingMixin):
     async def get_text(self) -> str:
         blocks = await self.get_page_blocks_with_children()
         return self._notion_to_markdown_converter.convert(blocks)
+
+    def _strip_wrapping_backticks(self, text: str) -> str:
+        """
+        Strip out triple backticks if they wrap the entire content.
+        This prevents LLM-generated markdown fences from breaking the Notion import.
+        
+        Args:
+            text: The markdown text that might be wrapped in backticks
+            
+        Returns:
+            The text with wrapping backticks removed, if present
+        """
+        lines = text.strip().split('\n')
+        
+        if len(lines) >= 2:
+            first_line = lines[0].strip()
+            last_line = lines[-1].strip()
+            
+            if first_line.startswith('```') and last_line == '```':
+                return '\n'.join(lines[1:-1])
+        
+        return text
