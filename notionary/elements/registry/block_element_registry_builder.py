@@ -53,7 +53,7 @@ class BlockElementRegistryBuilder:
             .with_tables()
             .with_columns()
             .with_bulleted_list()
-            .with_numberd_list()
+            .with_numbered_list()
             .with_toggles()
             .with_quotes()
             .with_todos()
@@ -186,7 +186,7 @@ class BlockElementRegistryBuilder:
         """
         return self.add_element(BulletedListElement)
 
-    def with_numberd_list(self) -> BlockElementRegistryBuilder:
+    def with_numbered_list(self) -> BlockElementRegistryBuilder:
         """
         Add support for numbered list elements (ordered lists).
         """

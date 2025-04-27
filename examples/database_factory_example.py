@@ -42,8 +42,6 @@ async def main():
 
         content = textwrap.dedent(
             """
-        # Notionary API Demo
-
         This page was created using the Notionary API through an automated example.
 
         ## Key Steps
