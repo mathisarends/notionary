@@ -47,18 +47,10 @@ class DividerElement(NotionBlockElement):
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """
-        Returns structured LLM prompt metadata for the divider element.
-        """
+        """Returns compact LLM prompt metadata for the divider element."""
         return {
-            "description": "Creates a horizontal divider line that visually separates sections of content.",
-            "when_to_use": (
-                "Use dividers when you want to create clear visual breaks between different sections or topics in your document. "
-                "Dividers help improve readability by organizing content into distinct sections without requiring headings."
-            ),
+            "description": "Creates a horizontal divider line to visually separate sections of content.",
+            "when_to_use": "Use to create clear visual breaks between different sections without requiring headings.",
             "syntax": "---",
-            "examples": [
-                "## Introduction\nThis is the introduction section of the document.\n\n---\n\n## Main Content\nThis is the main content section.",
-                "Task List:\n- Complete project proposal\n- Review feedback\n\n---\n\nMeeting Notes:\n- Discussed timeline\n- Assigned responsibilities",
-            ],
+            "examples": ["## Section 1\nContent\n\n---\n\n## Section 2\nMore content"],
         }

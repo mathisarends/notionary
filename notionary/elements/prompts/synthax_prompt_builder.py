@@ -1,6 +1,5 @@
 from typing import Type, List
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 
 
 class MarkdownSyntaxPromptBuilder:
@@ -36,45 +35,32 @@ and well-organized documents.
     @staticmethod
     def generate_element_doc(element_class: Type[NotionBlockElement]) -> str:
         """
-        Generates documentation for a specific NotionBlockElement.
+        Generates documentation for a specific NotionBlockElement in a compact format.
         Uses the element's get_llm_prompt_content method if available.
         """
         class_name = element_class.__name__
         element_name = class_name.replace("Element", "")
 
-        # Start with the element heading
-        sections = [f"## {element_name}"]
-
         # Check if the class has the get_llm_prompt_content method
         if not hasattr(element_class, "get_llm_prompt_content") or not callable(
             getattr(element_class, "get_llm_prompt_content")
         ):
-            return "\n".join(sections)
+            return f"## {element_name}"
 
         # Get the element content
         content = element_class.get_llm_prompt_content()
 
-        # Add description
-        sections.append(content["description"])
+        # Format the element documentation in a compact way
+        doc_parts = [
+            f"## {element_name}",
+            f"{content['description']}",
+            f"**Syntax:** {content['syntax']}",
+            f"**Example:** {content['examples'][0]}" if content["examples"] else "",
+            f"**When to use:** {content['when_to_use']}",
+        ]
 
-        # Add syntax section
-        sections.append("\n### Syntax:")
-        sections.append(content["syntax"])
-
-        # Add examples section
-        sections.append("\n### Examples:")
-        # Wichtig: Hier jedes Beispiel einzeln hinzufügen, nicht die ganze Liste
-        for example in content["examples"]:
-            sections.append(example)
-
-        # Add when to use section
-        sections.append("\n### When To Use:")
-        sections.append(content["when_to_use"])
-
-        print("====")
-        print(sections)
-
-        return "\n".join(sections)
+        # Filter out any empty parts and join with newlines
+        return "\n".join([part for part in doc_parts if part])
 
     @classmethod
     def generate_element_docs(

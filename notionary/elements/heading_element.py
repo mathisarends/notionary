@@ -78,8 +78,5 @@ class HeadingElement(NotionBlockElement):
                 "# Main Title",
                 "## Section Title",
                 "### Subsection Title",
-                "#### Sub-subsection Title",
-                "##### Tiny Heading",
-                "###### Smallest Heading Level",
             ],
         }
