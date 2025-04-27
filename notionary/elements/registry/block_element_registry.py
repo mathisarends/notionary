@@ -14,7 +14,7 @@ class BlockElementRegistry:
         """
         Initialize a new registry instance.
         """
-        self._elements = []
+        self._elements: List[NotionBlockElement] = []
 
         if elements:
             for element in elements:
@@ -33,6 +33,12 @@ class BlockElementRegistry:
             self._elements.remove(element_class)
             return True
         return False
+    
+    def contains(self, element_class: Type[NotionBlockElement]) -> bool:
+        """
+        Check if the registry contains the specified element class.
+        """
+        return element_class in self._elements
 
     def clear(self):
         """Clear the registry completely."""
