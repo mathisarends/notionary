@@ -1,6 +1,8 @@
 from typing import Dict, Any, List, Tuple
 import re
 
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+
 
 class TextInlineFormatter:
     """
@@ -207,39 +209,23 @@ class TextInlineFormatter:
             "color": "default",
         }
 
-    @classmethod 
-    def get_llm_prompt_content(cls) -> Dict[str, Any]: 
-        """ 
-        Returns information about inline text formatting capabilities for LLM prompts. 
+    @classmethod
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        return { 
-            "description": "Proper typography is ESSENTIAL for readability and establishing visual hierarchy in text. Using Markdown formatting at strategic points demonstrably enhances comprehension and content scanability. It is MANDATORY to apply these formatting elements consistently and thoughtfully throughout all content.", 
-            "syntax": [ 
-                "**text** - Bold for key concepts, important terms, and main headings", 
-                "*text* or _text_ - Italics for emphasis, definitions, and specialized terminology", 
-                "__text__ - Underlining for elements requiring special attention or calls to action", 
-                "~~text~~ - Strikethrough for outdated or no longer applicable information", 
-                "`text` - Inline code for technical terms, file paths, and code examples", 
-                "[text](url) - Hyperlinks for cross-references and external resources", 
-                "<!-- spacer --> - Creates vertical spacing between elements for improved readability", 
-            ], 
-            "examples": [ 
-                "This is a **fundamental principle** with several *important nuances*.", 
-                "The project's *vision* is to create software that feels *intuitive* and responds *elegantly* to user needs.", 
-                "The term *cognitive load* refers to the mental effort required to process information.", 
-                "Remember that *how* you present information is often as important as *what* you present.", 
-                "This feature is ~~deprecated~~ as of version 2.0 and has been replaced by new methods.", 
-                "Edit the `config.json` file to configure settings.", 
-                "Check our [documentation](https://docs.example.com) for more details.", 
-                "First paragraph content.\n\n<!-- spacer -->\n\nSecond paragraph with additional spacing above.", 
-            ], 
-            "guidelines": [ 
-                "Use **bold** for the MOST important concepts that readers should immediately notice", 
-                "Apply *italics* to emphasize key terms, introduce new concepts, or add subtle emphasis", 
-                "Use *italics* for book titles, publication names, and foreign language terms", 
-                "Combine formatting thoughtfully - for example: \"The **primary goal** is to create an *accessible* interface\"", 
-                "Reserve `code formatting` exclusively for technical elements, commands, and syntax", 
-                "Structure information with deliberate spacing and formatting to guide the reader's eye", 
-                "Always maintain consistency in formatting conventions throughout documents", 
-            ], 
+        Returns structured LLM prompt metadata for inline formatting.
+        """
+        return {
+            "description": "Enables inline formatting like bold, italics, strikethrough, code, links, and underlining for enhanced readability and emphasis.",
+            "when_to_use": (
+                "Use inline formatting to highlight important words, provide emphasis, show code or paths, or add hyperlinks. "
+                "Helps create a visual hierarchy and improves scanability of long texts."
+            ),
+            "syntax": "**bold**, *italic*, `code`, [text](url)",
+            "examples": [
+                "This is a **bold** word.",
+                "Use *italics* for emphasis.",
+                "Mark outdated content like ~~this~~.",
+                "Write `config.json` to reference a file.",
+                "Visit [Notion](https://notion.so) for more info.",
+            ],
         }

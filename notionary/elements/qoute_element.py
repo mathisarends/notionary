@@ -1,28 +1,11 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple
-from typing_extensions import override
-
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 
 
 class QuoteElement(NotionBlockElement):
-    """Class for converting between Markdown blockquotes and Notion quote blocks with background color support."""
-
-    # Mapping von Markdown-Farbnamen zu Notion-Farbnamen
-    COLOR_MAPPING = {
-        "gray": "gray_background",
-        "brown": "brown_background",
-        "orange": "orange_background",
-        "yellow": "yellow_background",
-        "green": "green_background",
-        "blue": "blue_background",
-        "purple": "purple_background",
-        "pink": "pink_background",
-        "red": "red_background",
-    }
-
-    # Umgekehrtes Mapping für die Rückkonvertierung
-    REVERSE_COLOR_MAPPING = {v: k for k, v in COLOR_MAPPING.items()}
+    """Class for converting between Markdown blockquotes and Notion quote blocks."""
 
     @staticmethod
     def find_matches(text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
@@ -87,10 +70,9 @@ class QuoteElement(NotionBlockElement):
 
         return matches
 
-    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
-        """Convert markdown blockquote to Notion block with background color support."""
+        """Convert markdown blockquote to Notion block."""
         if not text:
             return None
 
@@ -103,40 +85,12 @@ class QuoteElement(NotionBlockElement):
         # Extract quote content
         lines = text.split("\n")
         quote_lines = []
-        color = "default"  # Standardfarbe
 
-        # Überprüfen, ob der erste Nicht-Leerzeichen-Inhalt eine Farbangabe ist
-        first_line = None
-        for line in lines:
-            quote_match = quote_pattern.match(line)
-            if quote_match and quote_match.group(1).strip():
-                first_line = quote_match.group(1).strip()
-                break
-
-        # Farbangabe in eckigen Klammern prüfen
-        if first_line:
-            color_match = re.match(r"^\[background:(\w+)\]\s*(.*)", first_line)
-            if color_match:
-                potential_color = color_match.group(1).lower()
-                if potential_color in QuoteElement.COLOR_MAPPING:
-                    color = QuoteElement.COLOR_MAPPING[potential_color]
-                    # Erste Zeile ohne Farbangabe neu hinzufügen
-                    first_line = color_match.group(2)
-
-        # Inhalte extrahieren
-        processing_first_color_line = True
+        # Extract content from each line
         for line in lines:
             quote_match = quote_pattern.match(line)
             if quote_match:
                 content = quote_match.group(1)
-                # Farbangabe in der ersten Zeile entfernen
-                if (
-                    processing_first_color_line
-                    and content.strip()
-                    and re.match(r"^\[background:(\w+)\]", content.strip())
-                ):
-                    content = re.sub(r"^\[background:(\w+)\]\s*", "", content)
-                    processing_first_color_line = False
                 quote_lines.append(content)
             elif not line.strip() and quote_lines:
                 # Allow empty lines within the quote
@@ -147,20 +101,17 @@ class QuoteElement(NotionBlockElement):
 
         quote_content = "\n".join(quote_lines).strip()
 
-        # Create rich_text elements directly
         rich_text = [{"type": "text", "text": {"content": quote_content}}]
 
-        return {"type": "quote", "quote": {"rich_text": rich_text, "color": color}}
+        return {"type": "quote", "quote": {"rich_text": rich_text, "color": "default"}}
 
-    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
-        """Convert Notion quote block to markdown with background color support."""
+        """Convert Notion quote block to markdown."""
         if block.get("type") != "quote":
             return None
 
         rich_text = block.get("quote", {}).get("rich_text", [])
-        color = block.get("quote", {}).get("color", "default")
 
         # Extract the text content
         content = QuoteElement._extract_text_content(rich_text)
@@ -169,33 +120,23 @@ class QuoteElement(NotionBlockElement):
         lines = content.split("\n")
         formatted_lines = []
 
-        # Füge die Farbinformation zur ersten Zeile hinzu, falls nicht default
-        if color != "default" and color in QuoteElement.REVERSE_COLOR_MAPPING:
-            markdown_color = QuoteElement.REVERSE_COLOR_MAPPING.get(color)
-            first_line = lines[0] if lines else ""
-            formatted_lines.append(f"> [background:{markdown_color}] {first_line}")
-            lines = lines[1:] if len(lines) > 1 else []
-
-        # Füge die restlichen Zeilen hinzu
+        # Add each line with blockquote prefix
         for line in lines:
             formatted_lines.append(f"> {line}")
 
         return "\n".join(formatted_lines)
 
-    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if this element can handle the given markdown text."""
         quote_pattern = re.compile(r"^\s*>\s?(.*)", re.MULTILINE)
         return bool(quote_pattern.search(text))
 
-    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if this element can handle the given Notion block."""
         return block.get("type") == "quote"
 
-    @override
     @staticmethod
     def is_multiline() -> bool:
         """Blockquotes can span multiple lines."""
@@ -212,31 +153,21 @@ class QuoteElement(NotionBlockElement):
                 result += text_obj.get("plain_text", "")
         return result
 
-    @override
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
-        """Returns information for LLM prompts about this element."""
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
+        """
+        Returns structured LLM prompt metadata for the quote element.
+        """
         return {
-            "description": "Creates blockquotes that visually distinguish quoted text with optional background colors.",
-            "when_to_use": "Use blockquotes for quoting external sources, highlighting important statements, or creating visual emphasis for key information.",
-            "syntax": [
-                "> Text - Simple blockquote",
-                "> [background:color] Text - Blockquote with colored background",
-            ],
-            "color_options": [
-                "gray",
-                "brown",
-                "orange",
-                "yellow",
-                "green",
-                "blue",
-                "purple",
-                "pink",
-                "red",
-            ],
+            "description": "Creates blockquotes that visually distinguish quoted text.",
+            "when_to_use": (
+                "Use blockquotes for quoting external sources, highlighting important statements, "
+                "or creating visual emphasis for key information."
+            ),
+            "syntax": "> Quoted text",
             "examples": [
-                "> This is a simple blockquote without any color",
-                "> [background:blue] This is a blockquote with blue background",
-                "> Multi-line quotes\n> continue like this\n> across several lines",
+                "> This is a simple blockquote",
+                "> This is a multi-line quote\n> that continues on the next line",
+                "> Important note:\n> This quote spans\n> multiple lines.",
             ],
         }

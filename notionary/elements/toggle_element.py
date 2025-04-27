@@ -2,12 +2,14 @@ import re
 from typing import Dict, Any, Optional, List, Tuple, Callable
 
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 
 
 class ToggleElement(NotionBlockElement):
     """
     Verbesserte ToggleElement-Klasse, die Kontext berücksichtigt.
     """
+
     TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+(.+)$")
     INDENT_PATTERN = re.compile(r"^(\s{2,}|\t+)(.+)$")
 
@@ -206,25 +208,19 @@ class ToggleElement(NotionBlockElement):
         return toggle_blocks
 
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        Returns a dictionary with all information needed for LLM prompts about this element.
+        Returns structured LLM prompt metadata for the toggle element.
         """
         return {
-            "description": "Toggle elements are collapsible sections that help organize and hide detailed information. They are essential for creating well-structured documents with progressive disclosure of information.",
-            "syntax": [
-                "+++ Toggle Title",
-                "  Content inside the toggle (indented with 2 spaces)",
-                "  Content can span multiple lines",
-            ],
+            "description": "Toggle elements are collapsible sections that help organize and hide detailed information.",
+            "when_to_use": (
+                "Use toggles for supplementary information that's not essential for the first reading, "
+                "such as details, examples, or technical information."
+            ),
+            "syntax": "+++ Toggle Title",
             "examples": [
                 "+++ Key Findings\n  The research demonstrates **three main conclusions**:\n  1. First important point\n  2. Second important point",
-                "+++ FAQ\n  **Q: When should I use toggles?**\n  *A: Use toggles for supplementary information.*"
+                "+++ FAQ\n  **Q: When should I use toggles?**\n  *A: Use toggles for supplementary information.*",
             ],
-            "when_to_use": "Use toggles for supplementary information that's not essential for the first reading, such as details, examples, or technical information.",
-            "guidelines": [
-                "Choose clear, descriptive titles that reflect the hidden content",
-                "Structure complex documents with toggles to improve scanability",
-                "Nest content properly with 2-space indentation"
-            ]
         }

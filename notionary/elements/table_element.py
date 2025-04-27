@@ -1,10 +1,8 @@
-# File: elements/tables.py
-
-from typing import Dict, Any, Optional, List, Tuple
-from typing_extensions import override
 import re
+from typing import Dict, Any, Optional, List, Tuple
 from notionary.elements.notion_block_element import NotionBlockElement
 from notionary.elements.text_inline_formatter import TextInlineFormatter
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 
 
 class TableElement(NotionBlockElement):
@@ -20,11 +18,9 @@ class TableElement(NotionBlockElement):
     The second line with dashes and optional colons defines column alignment.
     """
 
-    # Patterns for detecting Markdown tables
     ROW_PATTERN = re.compile(r"^\s*\|(.+)\|\s*$")
     SEPARATOR_PATTERN = re.compile(r"^\s*\|([\s\-:|]+)\|\s*$")
 
-    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text contains a markdown table."""
@@ -43,13 +39,11 @@ class TableElement(NotionBlockElement):
 
         return False
 
-    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion table."""
         return block.get("type") == "table"
 
-    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown table to Notion table block."""
@@ -82,7 +76,6 @@ class TableElement(NotionBlockElement):
             },
         }
 
-    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion table block to markdown table."""
@@ -145,7 +138,6 @@ class TableElement(NotionBlockElement):
 
         return "\n".join(table_rows)
 
-    @override
     @staticmethod
     def is_multiline() -> bool:
         """Indicates if this element handles content that spans multiple lines."""
@@ -289,16 +281,12 @@ class TableElement(NotionBlockElement):
         return position
 
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
         """Returns information for LLM prompts about this element."""
         return {
             "description": "Creates formatted tables with rows and columns for structured data.",
             "when_to_use": "Use tables to organize and present structured data in a grid format, making information easier to compare and analyze. Tables are ideal for data sets, comparison charts, pricing information, or any content that benefits from columnar organization.",
-            "notes": [
-                "The header row is required and will be displayed differently in Notion",
-                "The separator row with dashes is required to define the table structure",
-                "Table cells support inline formatting such as **bold** and *italic*",
-            ],
+            "syntax": "| Header 1 | Header 2 | Header 3 |\n| -------- | -------- | -------- |\n| Cell 1   | Cell 2   | Cell 3   |",
             "examples": [
                 "| Product | Price | Stock |\n| ------- | ----- | ----- |\n| Widget A | $10.99 | 42 |\n| Widget B | $14.99 | 27 |",
                 "| Name | Role | Department |\n| ---- | ---- | ---------- |\n| John Smith | Manager | Marketing |\n| Jane Doe | Director | Sales |",

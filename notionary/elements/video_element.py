@@ -1,6 +1,7 @@
 import re
 from typing import Dict, Any, Optional, List
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 
 
 class VideoElement(NotionBlockElement):
@@ -16,14 +17,12 @@ class VideoElement(NotionBlockElement):
     Supports various video URLs including YouTube, Vimeo, and direct video file links.
     """
 
-    # Regex pattern for video syntax
     PATTERN = re.compile(
         r"^\@\[(.*?)\]"  # @[Caption] part
         + r'\((https?://[^\s"]+)'  # (URL part
         + r"\)$"  # closing parenthesis
     )
 
-    # YouTube specific patterns
     YOUTUBE_PATTERNS = [
         re.compile(
             r"(?:https?://)?(?:www\.)?youtube\.com/watch\?v=([a-zA-Z0-9_-]{11})"
@@ -73,18 +72,15 @@ class VideoElement(NotionBlockElement):
         if not url:
             return None
 
-        # For YouTube videos, ensure we use the full embed URL
         youtube_id = VideoElement.get_youtube_id(url)
         if youtube_id:
             url = f"https://www.youtube.com/watch?v={youtube_id}"
 
-        # Prepare the video block
         video_block = {
             "type": "video",
             "video": {"type": "external", "external": {"url": url}},
         }
 
-        # Add caption if provided
         if caption:
             video_block["video"]["caption"] = [
                 {"type": "text", "text": {"content": caption}}
@@ -111,7 +107,6 @@ class VideoElement(NotionBlockElement):
         if not url:
             return None
 
-        # Extract caption if available
         caption = ""
         caption_rich_text = video_data.get("caption", [])
         if caption_rich_text:
@@ -136,21 +131,17 @@ class VideoElement(NotionBlockElement):
         return result
 
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
-        """Returns information for LLM prompts about this element."""
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
+        """
+        Returns structured LLM prompt metadata for the video element.
+        """
         return {
             "description": "Embeds video content from external sources like YouTube or direct video URLs.",
-            "when_to_use": "Use video embeds when you want to include multimedia content directly in your document. Videos are useful for tutorials, demonstrations, presentations, or any content that benefits from visual explanation.",
-            "syntax": [
-                "@[](https://example.com/video.mp4) - Video without caption",
-                "@[Caption text](https://example.com/video.mp4) - Video with caption",
-            ],
-            "supported_sources": [
-                "YouTube videos (https://youtube.com/watch?v=ID or https://youtu.be/ID)",
-                "Vimeo videos",
-                "Direct links to video files (.mp4, .mov, etc.)",
-                "Other video hosting platforms supported by Notion",
-            ],
+            "when_to_use": (
+                "Use video embeds when you want to include multimedia content directly in your document. "
+                "Videos are useful for tutorials, demonstrations, presentations, or any content that benefits from visual explanation."
+            ),
+            "syntax": "@[Caption](https://example.com/video.mp4)",
             "examples": [
                 "@[How to use this feature](https://www.youtube.com/watch?v=dQw4w9WgXcQ)",
                 "@[Product demo](https://example.com/videos/demo.mp4)",

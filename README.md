@@ -164,7 +164,7 @@ from notionary import NotionPage
 from notionary.elements.block_element_registry_builder import BlockElementRegistryBuilder
 
 # Create a registry with standard Notion elements
-registry = BlockElementRegistryBuilder.create_standard_registry()
+registry = BlockElementRegistryBuilder.create_full_registry()
 
 # Or build a custom registry with only the elements you need
 custom_registry = (
@@ -195,7 +195,7 @@ Notionary can automatically generate comprehensive system prompts for LLMs to un
 ```python
 from notionary.elements.block_element_registry_builder import BlockElementRegistryBuilder
 
-registry = BlockElementRegistryBuilder.create_standard_registry()
+registry = BlockElementRegistryBuilder.create_full_registry()
 llm_system_prompt = registry.generate_llm_prompt()
 
 # Use this prompt with your LLM to generate Notion-compatible Markdown

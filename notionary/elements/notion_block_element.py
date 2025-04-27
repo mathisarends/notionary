@@ -2,6 +2,8 @@ import inspect
 from typing import Dict, Any, Optional
 from abc import ABC
 
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+
 
 class NotionBlockElement(ABC):
     """Base class for elements that can be converted between Markdown and Notion."""
@@ -37,15 +39,14 @@ class NotionBlockElement(ABC):
         By default, returns the class docstring.
         """
 
+    @classmethod
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
+        """
+        Returns a dictionary with information for LLM prompts about this element.
+        This default implementation extracts information from the class docstring.
+        Subclasses should override this method to provide more structured information.
 
-@classmethod
-def get_llm_prompt_content(cls) -> dict:
-    """
-    Returns a dictionary with information for LLM prompts about this element.
-    This default implementation extracts information from the class docstring.
-    Subclasses should override this method to provide more structured information.
-
-    Returns:
-        Dictionary with documentation information
-    """
-    return {"description": inspect.cleandoc(cls.__doc__ or ""), "examples": []}
+        Returns:
+            Dictionary with documentation information
+        """
+        return {"description": inspect.cleandoc(cls.__doc__ or ""), "examples": []}

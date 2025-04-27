@@ -1,8 +1,8 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple
-from typing_extensions import override
 
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 
 
 class BookmarkElement(NotionBlockElement):
@@ -29,7 +29,6 @@ class BookmarkElement(NotionBlockElement):
         + r"\)$"  # closing parenthesis
     )
 
-    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text is a markdown bookmark."""
@@ -37,14 +36,11 @@ class BookmarkElement(NotionBlockElement):
             BookmarkElement.PATTERN.match(text.strip())
         )
 
-    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion bookmark."""
-        # Handle both standard "bookmark" type and "external-bookmark" type
         return block.get("type") in ["bookmark", "external-bookmark"]
 
-    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown bookmark to Notion bookmark block."""
@@ -124,7 +120,6 @@ class BookmarkElement(NotionBlockElement):
 
         return {"type": "bookmark", "bookmark": bookmark_data}
 
-    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion bookmark block to markdown bookmark."""
@@ -133,13 +128,10 @@ class BookmarkElement(NotionBlockElement):
         if block_type == "bookmark":
             bookmark_data = block.get("bookmark", {})
         elif block_type == "external-bookmark":
-            # Handle external-bookmark type
-            # Extract URL from the external-bookmark structure
             url = block.get("url", "")
             if not url:
                 return None
 
-            # For external bookmarks, create a simple bookmark format
             return f"[bookmark]({url})"
         else:
             return None
@@ -160,12 +152,12 @@ class BookmarkElement(NotionBlockElement):
 
         if title and description:
             return f'[bookmark]({url} "{title}" "{description}")'
-        elif title:
-            return f'[bookmark]({url} "{title}")'
-        else:
-            return f"[bookmark]({url})"
 
-    @override
+        if title:
+            return f'[bookmark]({url} "{title}")'
+
+        return f"[bookmark]({url})"
+
     @staticmethod
     def is_multiline() -> bool:
         """Bookmarks are single-line elements."""
@@ -191,34 +183,30 @@ class BookmarkElement(NotionBlockElement):
         if not caption:
             return "", ""
 
-        # Extract the full text content from caption
         full_text = BookmarkElement._extract_text_content(caption)
 
-        # Check if the text contains a separator
         if " - " in full_text:
             parts = full_text.split(" - ", 1)
             return parts[0].strip(), parts[1].strip()
-        else:
-            # If no separator, assume the whole content is the title
-            return full_text.strip(), ""
 
-    @override
+        return full_text.strip(), ""
+
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        Returns a dictionary with all information needed for LLM prompts about this element.
-        Includes description, usage guidance, syntax options, and examples.
+        Returns structured LLM prompt metadata for the bookmark element.
         """
         return {
             "description": "Creates a bookmark that links to an external website.",
-            "when_to_use": "Use bookmarks when you want to reference external content while keeping the page clean and organized. Bookmarks display a preview card for the linked content.",
-            "syntax": [
-                "[bookmark](https://example.com) - Simple bookmark with URL only",
-                '[bookmark](https://example.com "Title") - Bookmark with URL and title',
-                '[bookmark](https://example.com "Title" "Description") - Bookmark with URL, title, and description',
-            ],
+            "when_to_use": (
+                "Use bookmarks when you want to reference external content while keeping the page clean and organized. "
+                "Bookmarks display a preview card for the linked content."
+            ),
+            "syntax": '[bookmark](https://example.com "Optional Title" "Optional Description")',
             "examples": [
-                '[bookmark](https://notion.so "Notion Homepage" "Your connected workspace")',
+                "[bookmark](https://example.com)",
+                '[bookmark](https://example.com "Example Title")',
+                '[bookmark](https://example.com "Example Title" "Example description of the site")',
                 '[bookmark](https://github.com "GitHub" "Where the world builds software")',
             ],
         }

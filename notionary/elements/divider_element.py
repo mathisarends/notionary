@@ -1,10 +1,8 @@
-# File: elements/dividers.py
-
-from typing import Dict, Any, Optional
-from typing_extensions import override
 import re
+from typing import Dict, Any, Optional
 
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 
 
 class DividerElement(NotionBlockElement):
@@ -17,19 +15,16 @@ class DividerElement(NotionBlockElement):
 
     PATTERN = re.compile(r"^\s*-{3,}\s*$")
 
-    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text is a markdown divider."""
         return bool(DividerElement.PATTERN.match(text))
 
-    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion divider."""
         return block.get("type") == "divider"
 
-    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown divider to Notion divider block."""
@@ -38,7 +33,6 @@ class DividerElement(NotionBlockElement):
 
         return {"type": "divider", "divider": {}}
 
-    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion divider block to markdown divider."""
@@ -47,25 +41,22 @@ class DividerElement(NotionBlockElement):
 
         return "---"
 
-    @override
     @staticmethod
     def is_multiline() -> bool:
         return False
 
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        Returns a dictionary with all information needed for LLM prompts about this element.
-        Includes description, usage guidance, syntax options, and examples.
+        Returns structured LLM prompt metadata for the divider element.
         """
         return {
             "description": "Creates a horizontal divider line that visually separates sections of content.",
-            "when_to_use": "Use dividers when you want to create clear visual breaks between different sections or topics in your document. Dividers help improve readability by organizing content into distinct sections without requiring headings.",
-            "syntax": ["---"],
-            "notes": [
-                "Dividers must be on their own line with no other content",
-                "Dividers work well when combined with headings to clearly separate major document sections",
-            ],
+            "when_to_use": (
+                "Use dividers when you want to create clear visual breaks between different sections or topics in your document. "
+                "Dividers help improve readability by organizing content into distinct sections without requiring headings."
+            ),
+            "syntax": "---",
             "examples": [
                 "## Introduction\nThis is the introduction section of the document.\n\n---\n\n## Main Content\nThis is the main content section.",
                 "Task List:\n- Complete project proposal\n- Review feedback\n\n---\n\nMeeting Notes:\n- Discussed timeline\n- Assigned responsibilities",

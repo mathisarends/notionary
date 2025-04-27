@@ -1,6 +1,7 @@
 import re
 from typing import Dict, Any, Optional, List
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 
 
 class AudioElement(NotionBlockElement):
@@ -121,20 +122,18 @@ class AudioElement(NotionBlockElement):
         return result
 
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
         """Returns information for LLM prompts about this element."""
         return {
             "description": "Embeds audio content from external sources like CDNs or direct audio URLs.",
-            "guidelines": [
-                "Use audio embeds when you want to include audio content directly in your document. Audio embeds are useful for podcasts, music, voice recordings, or any content that benefits from audio explanation."
-            ],
-            "syntax": [
-                "$[](https://example.com/audio.mp3) - Audio without caption",
-                "$[Caption text](https://example.com/audio.mp3) - Audio with caption",
-            ],
+            "syntax": "$[Caption](https://example.com/audio.mp3)",
             "examples": [
                 "$[Podcast Episode](https://storage.googleapis.com/audio_summaries/ep_ai_summary_127d02ec-ca12-4312-a5ed-cb14b185480c.mp3)",
                 "$[Voice recording](https://example.com/audio/recording.mp3)",
                 "$[](https://storage.googleapis.com/audio_summaries/example.mp3)",
             ],
+            "when_to_use": (
+                "Use audio embeds when you want to include audio content directly in your document. "
+                "Audio embeds are useful for podcasts, music, voice recordings, or any content that benefits from audio explanation."
+            ),
         }

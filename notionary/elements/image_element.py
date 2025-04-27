@@ -1,7 +1,7 @@
 import re
 from typing import Dict, Any, Optional, List
-from typing_extensions import override
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 
 
 class ImageElement(NotionBlockElement):
@@ -22,7 +22,6 @@ class ImageElement(NotionBlockElement):
         + r"\)$"  # closing parenthesis
     )
 
-    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text is a markdown image."""
@@ -30,13 +29,11 @@ class ImageElement(NotionBlockElement):
             ImageElement.PATTERN.match(text.strip())
         )
 
-    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion image."""
         return block.get("type") == "image"
 
-    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown image to Notion image block."""
@@ -64,7 +61,6 @@ class ImageElement(NotionBlockElement):
 
         return image_block
 
-    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion image block to markdown image."""
@@ -103,25 +99,23 @@ class ImageElement(NotionBlockElement):
                 result += text_obj.get("plain_text", "")
         return result
 
-    @override
     @staticmethod
     def is_multiline() -> bool:
         return False
 
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        Returns a dictionary with all information needed for LLM prompts about this element.
-        Includes description, usage guidance, syntax options, and examples.
+        Returns structured LLM prompt metadata for the image element.
         """
         return {
             "description": "Embeds an image from an external URL into your document.",
-            "when_to_use": "Use images to include visual content such as diagrams, screenshots, charts, photos, or illustrations that enhance your document. Images can make complex information easier to understand, create visual interest, or provide evidence for your points.",
-            "syntax": [
-                "![](https://example.com/image.jpg) - Image without caption",
-                "![Caption text](https://example.com/image.jpg) - Image with caption",
-                '![Caption text](https://example.com/image.jpg "Alt text") - Image with caption and alt text',
-            ],
+            "when_to_use": (
+                "Use images to include visual content such as diagrams, screenshots, charts, photos, or illustrations "
+                "that enhance your document. Images can make complex information easier to understand, create visual interest, "
+                "or provide evidence for your points."
+            ),
+            "syntax": "![Caption](https://example.com/image.jpg)",
             "examples": [
                 "![Data visualization showing monthly trends](https://example.com/chart.png)",
                 "![](https://example.com/screenshot.jpg)",

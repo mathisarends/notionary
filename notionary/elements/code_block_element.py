@@ -1,7 +1,7 @@
-from typing import Dict, Any, Optional, List, Tuple
-from typing_extensions import override
 import re
+from typing import Dict, Any, Optional, List, Tuple
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 
 
 class CodeBlockElement(NotionBlockElement):
@@ -20,19 +20,16 @@ class CodeBlockElement(NotionBlockElement):
 
     PATTERN = re.compile(r"```(\w*)\n([\s\S]+?)```", re.MULTILINE)
 
-    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text contains a markdown code block."""
         return bool(CodeBlockElement.PATTERN.search(text))
 
-    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion code block."""
         return block.get("type") == "code"
 
-    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown code block to Notion code block."""
@@ -68,7 +65,6 @@ class CodeBlockElement(NotionBlockElement):
             },
         }
 
-    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion code block to markdown code block."""
@@ -134,20 +130,29 @@ class CodeBlockElement(NotionBlockElement):
 
         return matches
 
-    @override
     @staticmethod
     def is_multiline() -> bool:
         return True
 
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        Returns a dictionary with all information needed for LLM prompts about this element.
+        Returns structured LLM prompt metadata for the code block element.
         """
         return {
-            "description": "Use fenced code blocks to format content as code. Supports language annotations like 'python', 'json', or 'mermaid'. Use when you want to display code, configurations, command-line examples, or diagram syntax. Also useful when breaking down or visualizing a system or architecture for complex problems (e.g. using mermaid).",
+            "description": (
+                "Use fenced code blocks to format content as code. Supports language annotations like "
+                "'python', 'json', or 'mermaid'. Useful for displaying code, configurations, command-line "
+                "examples, or diagram syntax. Also suitable for explaining or visualizing systems with diagram languages."
+            ),
+            "when_to_use": (
+                "Use code blocks when you want to present technical content like code snippets, terminal commands, "
+                "JSON structures, or system diagrams. Especially helpful when structure and formatting are essential."
+            ),
+            "syntax": "```language\ncode content\n```",
             "examples": [
                 "```python\nprint('Hello, world!')\n```",
+                '```json\n{"name": "Alice", "age": 30}\n```',
                 "```mermaid\nflowchart TD\n  A --> B\n```",
             ],
         }

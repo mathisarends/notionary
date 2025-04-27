@@ -1,8 +1,8 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple, Callable
-from typing_extensions import override
 
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 
 
 class ColumnElement(NotionBlockElement):
@@ -40,19 +40,16 @@ class ColumnElement(NotionBlockElement):
         """
         cls._converter_callback = callback
 
-    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text starts a columns block."""
         return bool(ColumnElement.COLUMNS_START.match(text.strip()))
 
-    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion column_list."""
         return block.get("type") == "column_list"
 
-    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """
@@ -68,7 +65,6 @@ class ColumnElement(NotionBlockElement):
         # Child columns will be added by the column processor
         return {"type": "column_list", "column_list": {"children": []}}
 
-    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion column_list block to markdown column syntax."""
@@ -95,7 +91,6 @@ class ColumnElement(NotionBlockElement):
 
         return "\n".join(result)
 
-    @override
     @staticmethod
     def is_multiline() -> bool:
         """Column blocks span multiple lines."""
@@ -264,31 +259,49 @@ class ColumnElement(NotionBlockElement):
         columns_children.append(column_block)
 
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        Returns a dictionary with all information needed for LLM prompts about this element.
-        Includes description, usage guidance, syntax options, and examples.
+        Returns structured LLM prompt metadata for the column layout element.
         """
         return {
             "description": "Creates a multi-column layout that displays content side by side.",
-            "when_to_use": "Use columns sparingly, only for direct comparisons or when parallel presentation significantly improves readability. Best for pros/cons lists, feature comparisons, or pairing images with descriptions. Avoid overusing as it can complicate document structure.",
-            "syntax": [
-                "::: columns",
-                "::: column",
-                "Content for first column",
-                ":::",
-                "::: column",
-                "Content for second column",
-                ":::",
-                ":::",
-            ],
-            "notes": [
-                "Any Notion block can be placed within columns",
-                "Add more columns with additional '::: column' sections",
-                "Each column must close with ':::' and the entire columns section with another ':::'",
-            ],
+            "when_to_use": (
+                "Use columns sparingly, only for direct comparisons or when parallel presentation significantly improves readability. "
+                "Best for pros/cons lists, feature comparisons, or pairing images with descriptions. "
+                "Avoid overusing as it can complicate document structure."
+            ),
+            "syntax": (
+                "::: columns\n"
+                "::: column\n"
+                "Content for first column\n"
+                ":::\n"
+                "::: column\n"
+                "Content for second column\n"
+                ":::\n"
+                ":::"
+            ),
             "examples": [
-                "::: columns\n::: column\n## Features\n- Fast response time\n- Intuitive interface\n- Regular updates\n:::\n::: column\n## Benefits\n- Increased productivity\n- Better collaboration\n- Simplified workflows\n:::\n:::",
-                "::: columns\n::: column\n![Image placeholder](/api/placeholder/400/320)\n:::\n::: column\nThis text appears next to the image, creating a media-with-caption style layout that's perfect for documentation or articles.\n:::\n:::",
+                "::: columns\n"
+                "::: column\n"
+                "## Features\n"
+                "- Fast response time\n"
+                "- Intuitive interface\n"
+                "- Regular updates\n"
+                ":::\n"
+                "::: column\n"
+                "## Benefits\n"
+                "- Increased productivity\n"
+                "- Better collaboration\n"
+                "- Simplified workflows\n"
+                ":::\n"
+                ":::",
+                "::: columns\n"
+                "::: column\n"
+                "![Image placeholder](/api/placeholder/400/320)\n"
+                ":::\n"
+                "::: column\n"
+                "This text appears next to the image, creating a media-with-caption style layout that's perfect for documentation or articles.\n"
+                ":::\n"
+                ":::",
             ],
         }

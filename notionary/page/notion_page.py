@@ -1,8 +1,8 @@
 import re
 from typing import Any, Dict, List, Optional, Union
 
-from notionary.elements.block_element_registry import BlockElementRegistry
-from notionary.elements.block_element_registry_builder import (
+from notionary.elements.registry.block_element_registry import BlockElementRegistry
+from notionary.elements.registry.block_element_registry_builder import (
     BlockElementRegistryBuilder,
 )
 from notionary.notion_client import NotionClient
@@ -45,7 +45,7 @@ class NotionPage(LoggingMixin):
         self._url_loaded = url is not None
 
         self._block_element_registry = (
-            BlockElementRegistryBuilder.create_standard_registry()
+            BlockElementRegistryBuilder.create_full_registry()
         )
 
         self._page_content_manager = PageContentManager(

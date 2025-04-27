@@ -1,6 +1,7 @@
 from typing import Type, List
-
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+
 
 class MarkdownSyntaxPromptBuilder:
     """
@@ -40,59 +41,45 @@ and well-organized documents.
         """
         class_name = element_class.__name__
         element_name = class_name.replace("Element", "")
-        result = [f"## {element_name}"]
 
-        if not hasattr(element_class, "get_llm_prompt_content") or not callable(getattr(element_class, "get_llm_prompt_content")):
-            return "\n".join(result)
+        # Start with the element heading
+        sections = [f"## {element_name}"]
 
+        # Check if the class has the get_llm_prompt_content method
+        if not hasattr(element_class, "get_llm_prompt_content") or not callable(
+            getattr(element_class, "get_llm_prompt_content")
+        ):
+            return "\n".join(sections)
+
+        # Get the element content
         content = element_class.get_llm_prompt_content()
 
-        result += MarkdownSyntaxPromptBuilder._generate_standard_sections(content)
-        result += MarkdownSyntaxPromptBuilder._generate_custom_sections(content)
+        # Add description
+        sections.append(content["description"])
 
-        return "\n".join(result)
+        # Add syntax section
+        sections.append("\n### Syntax:")
+        sections.append(content["syntax"])
 
-    @staticmethod
-    def _generate_standard_sections(content: dict) -> List[str]:
-        """
-        Generates standard sections like description, syntax, examples, guidelines.
-        """
-        result = []
+        # Add examples section
+        sections.append("\n### Examples:")
+        # Wichtig: Hier jedes Beispiel einzeln hinzufügen, nicht die ganze Liste
+        for example in content["examples"]:
+            sections.append(example)
 
-        if content.get("description"):
-            result.append(content["description"])
+        # Add when to use section
+        sections.append("\n### When To Use:")
+        sections.append(content["when_to_use"])
 
-        if content.get("syntax"):
-            result.append("\n### Syntax:")
-            result.extend(content["syntax"])
+        print("====")
+        print(sections)
 
-        if content.get("examples"):
-            result.append("\n### Examples:")
-            result.extend(content["examples"])
-
-        if content.get("guidelines"):
-            result.append("\n### Guidelines:")
-            result.extend(f"- {g}" for g in content["guidelines"])
-
-        return result
-
-    @staticmethod
-    def _generate_custom_sections(content: dict) -> List[str]:
-        """
-        Generates additional sections that are not part of the standard set.
-        """
-        result = []
-        standard_keys = {"description", "syntax", "examples", "guidelines"}
-
-        for key, value in content.items():
-            if key not in standard_keys and isinstance(value, str):
-                result.append(f"\n### {key.replace('_', ' ').title()}:")
-                result.append(value)
-
-        return result
+        return "\n".join(sections)
 
     @classmethod
-    def generate_element_docs(cls, element_classes: List[Type[NotionBlockElement]]) -> str:
+    def generate_element_docs(
+        cls, element_classes: List[Type[NotionBlockElement]]
+    ) -> str:
         """
         Generates complete documentation for all provided element classes.
         """
@@ -100,13 +87,13 @@ and well-organized documents.
             "# Markdown Syntax for Notion Blocks",
             "The following Markdown patterns are supported for creating Notion blocks:",
         ]
-        
-        # Simply generate docs for each element
+
+        # Generate docs for each element
         for element in element_classes:
             docs.append("\n" + cls.generate_element_doc(element))
-            
+
         return "\n".join(docs)
-    
+
     @classmethod
     def generate_system_prompt(
         cls,
@@ -116,5 +103,4 @@ and well-organized documents.
         Generates a complete system prompt for LLMs.
         """
         element_docs = cls.generate_element_docs(element_classes)
-
         return cls.SYSTEM_PROMPT_TEMPLATE.format(element_docs=element_docs)

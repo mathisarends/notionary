@@ -1,7 +1,7 @@
 from typing import Dict, Any, List, Optional, Tuple
 
-from notionary.elements.block_element_registry import BlockElementRegistry
-from notionary.elements.block_element_registry_builder import (
+from notionary.elements.registry.block_element_registry import BlockElementRegistry
+from notionary.elements.registry.block_element_registry_builder import (
     BlockElementRegistryBuilder,
 )
 
@@ -21,7 +21,7 @@ class MarkdownToNotionConverter:
             block_registry: Optional registry of Notion block elements
         """
         self._block_registry = (
-            block_registry or BlockElementRegistryBuilder().create_standard_registry()
+            block_registry or BlockElementRegistryBuilder().create_full_registry()
         )
 
         self._setup_element_callbacks()

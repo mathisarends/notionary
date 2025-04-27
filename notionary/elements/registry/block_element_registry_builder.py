@@ -3,10 +3,12 @@ from typing import List, Type
 from collections import OrderedDict
 
 from notionary.elements.audio_element import AudioElement
+from notionary.elements.bulleted_list_element import BulletedListElement
 from notionary.elements.embed_element import EmbedElement
 from notionary.elements.mention_element import MentionElement
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.block_element_registry import (
+from notionary.elements.numbered_list_element import NumberedListElement
+from notionary.elements.registry.block_element_registry import (
     BlockElementRegistry,
 )
 
@@ -17,10 +19,6 @@ from notionary.elements.code_block_element import CodeBlockElement
 from notionary.elements.divider_element import DividerElement
 from notionary.elements.table_element import TableElement
 from notionary.elements.todo_lists import TodoElement
-from notionary.elements.list_element import (
-    BulletedListElement,
-    NumberedListElement,
-)
 from notionary.elements.qoute_element import QuoteElement
 from notionary.elements.image_element import ImageElement
 from notionary.elements.video_element import VideoElement
@@ -42,33 +40,9 @@ class BlockElementRegistryBuilder:
         self._elements = OrderedDict()
 
     @classmethod
-    def start_empty(cls) -> BlockElementRegistryBuilder:
-        """
-        Start with a completely empty registry builder.
-
-        Returns:
-            A new builder instance with no elements
-        """
-        return cls()
-
-    @classmethod
-    def start_minimal(cls) -> BlockElementRegistryBuilder:
-        """
-        Start with a minimal set of essential elements.
-
-        Returns:
-            A new builder instance with basic elements
-        """
-        builder = cls()
-        return builder.with_headings().with_lists().with_paragraphs()
-
-    @classmethod
-    def start_standard(cls) -> BlockElementRegistryBuilder:
+    def create_full_registry(cls) -> BlockElementRegistry:
         """
         Start with all standard elements in recommended order.
-
-        Returns:
-            A new builder instance with all standard elements
         """
         builder = cls()
         return (
@@ -78,7 +52,8 @@ class BlockElementRegistryBuilder:
             .with_dividers()
             .with_tables()
             .with_columns()
-            .with_lists()
+            .with_bulleted_list()
+            .with_numberd_list()
             .with_toggles()
             .with_quotes()
             .with_todos()
@@ -89,9 +64,7 @@ class BlockElementRegistryBuilder:
             .with_audio()
             .with_mention()
             .with_paragraphs()
-        )
-
-    # Element manipulation methods
+        ).build()
 
     def add_element(
         self, element_class: Type[NotionBlockElement]
@@ -168,153 +141,108 @@ class BlockElementRegistryBuilder:
     def with_paragraphs(self) -> BlockElementRegistryBuilder:
         """
         Add support for paragraph elements.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(ParagraphElement)
 
     def with_headings(self) -> BlockElementRegistryBuilder:
         """
         Add support for heading elements.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(HeadingElement)
 
     def with_callouts(self) -> BlockElementRegistryBuilder:
         """
         Add support for callout elements.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(CalloutElement)
 
     def with_code(self) -> BlockElementRegistryBuilder:
         """
         Add support for code blocks.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(CodeBlockElement)
 
     def with_dividers(self) -> BlockElementRegistryBuilder:
         """
         Add support for divider elements.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(DividerElement)
 
     def with_tables(self) -> BlockElementRegistryBuilder:
         """
         Add support for tables.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(TableElement)
 
     def with_columns(self) -> BlockElementRegistryBuilder:
         """
         Add support for column elements.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(ColumnElement)
 
-    def with_lists(self) -> BlockElementRegistryBuilder:
+    def with_bulleted_list(self) -> BlockElementRegistryBuilder:
         """
-        Add support for list elements.
+        Add support for bulleted list elements (unordered lists).
+        """
+        return self.add_element(BulletedListElement)
 
-        Returns:
-            Self for method chaining
+    def with_numberd_list(self) -> BlockElementRegistryBuilder:
         """
-        return self.add_element(BulletedListElement).add_element(NumberedListElement)
+        Add support for numbered list elements (ordered lists).
+        """
+        return self.add_element(NumberedListElement)
 
     def with_toggles(self) -> BlockElementRegistryBuilder:
         """
         Add support for toggle elements.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(ToggleElement)
 
     def with_quotes(self) -> BlockElementRegistryBuilder:
         """
         Add support for quote elements.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(QuoteElement)
 
     def with_todos(self) -> BlockElementRegistryBuilder:
         """
         Add support for todo elements.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(TodoElement)
 
     def with_bookmarks(self) -> BlockElementRegistryBuilder:
         """
         Add support for bookmark elements.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(BookmarkElement)
 
     def with_images(self) -> BlockElementRegistryBuilder:
         """
         Add support for image elements.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(ImageElement)
 
     def with_videos(self) -> BlockElementRegistryBuilder:
         """
         Add support for video elements.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(VideoElement)
 
     def with_embeds(self) -> BlockElementRegistryBuilder:
         """
         Add support for embed elements.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(EmbedElement)
 
     def with_audio(self) -> BlockElementRegistryBuilder:
         """
         Add support for audio elements.
-
-        Returns:
-            Self for method chaining
         """
         return self.add_element(AudioElement)
 
     def with_media_support(self) -> BlockElementRegistryBuilder:
         """
         Add support for media elements (images, videos, audio).
-
-        Returns:
-            Self for method chaining
         """
         return self.with_images().with_videos().with_audio()
 
@@ -333,10 +261,8 @@ class BlockElementRegistryBuilder:
             A configured BlockElementRegistry instance
         """
         if ParagraphElement.__name__ not in self._elements:
-            # Add paragraph as fallback if not present
             self.add_element(ParagraphElement)
         else:
-            # Ensure it's at the end
             self._ensure_paragraph_at_end()
 
         registry = BlockElementRegistry()
@@ -346,38 +272,3 @@ class BlockElementRegistryBuilder:
             registry.register(element_class)
 
         return registry
-
-    @classmethod
-    def create_standard_registry(cls) -> BlockElementRegistry:
-        """
-        Factory method to directly create a standard registry.
-
-        Returns:
-            A fully configured registry instance
-        """
-        return cls.start_standard().build()
-
-    @classmethod
-    def create_minimal_registry(cls) -> BlockElementRegistry:
-        """
-        Factory method to directly create a minimal registry.
-
-        Returns:
-            A minimal registry instance
-        """
-        return cls.start_minimal().build()
-
-    @classmethod
-    def create_custom_registry(
-        cls, element_classes: List[Type[NotionBlockElement]]
-    ) -> BlockElementRegistry:
-        """
-        Factory method to directly create a custom registry.
-
-        Args:
-            element_classes: List of element classes to register
-
-        Returns:
-            A custom configured registry instance
-        """
-        return cls().add_elements(element_classes).build()

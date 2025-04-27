@@ -3,6 +3,7 @@ from typing import Dict, Any, Optional, List
 from typing_extensions import override
 
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 
 
 class MentionElement(NotionBlockElement):
@@ -45,7 +46,6 @@ class MentionElement(NotionBlockElement):
         },
     }
 
-    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text contains a markdown mention."""
@@ -54,7 +54,6 @@ class MentionElement(NotionBlockElement):
                 return True
         return False
 
-    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block contains a mention."""
@@ -75,7 +74,6 @@ class MentionElement(NotionBlockElement):
 
         return any(text_item.get("type") == "mention" for text_item in rich_text)
 
-    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown text with mentions to a Notion paragraph block."""
@@ -161,7 +159,6 @@ class MentionElement(NotionBlockElement):
             "color": "default",
         }
 
-    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Extract mentions from Notion block and convert to markdown format."""
@@ -200,28 +197,22 @@ class MentionElement(NotionBlockElement):
 
         return "".join(result)
 
-    @override
     @staticmethod
     def is_multiline() -> bool:
         return False
 
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
-        """Information about this element for LLM-based processing."""
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
+        """
+        Returns structured LLM prompt metadata for the mention element.
+        """
         return {
             "description": "References to Notion pages, databases, or dates within text content.",
             "when_to_use": "When you want to link to other Notion content within your text.",
-            "syntax": [
-                "@[page-id] - Reference to a Notion page",
-                "@date[YYYY-MM-DD] - Reference to a date",
-                "@db[database-id] - Reference to a Notion database",
-            ],
+            "syntax": "@[page-id]",
             "examples": [
                 "Check the meeting notes at @[1a6389d5-7bd3-80c5-9a87-e90b034989d0]",
                 "Deadline is @date[2023-12-31]",
                 "Use the structure in @db[1a6389d5-7bd3-80e9-b199-000cfb3fa0b3]",
-            ],
-            "limitations": [
-                "Mentions require knowing the internal IDs of the pages or databases you want to reference"
             ],
         }

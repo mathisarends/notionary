@@ -1,8 +1,8 @@
-from typing import Dict, Any, Optional
-from typing_extensions import override
 import re
+from typing import Dict, Any, Optional
 
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
@@ -11,20 +11,17 @@ class HeadingElement(NotionBlockElement):
 
     PATTERN = re.compile(r"^(#{1,6})\s(.+)$")
 
-    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text is a markdown heading."""
         return bool(HeadingElement.PATTERN.match(text))
 
-    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion heading."""
         block_type: str = block.get("type", "")
         return block_type.startswith("heading_") and block_type[-1] in "123456"
 
-    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown heading to Notion heading block."""
@@ -35,8 +32,6 @@ class HeadingElement(NotionBlockElement):
         level = len(header_match.group(1))
         content = header_match.group(2)
 
-        # Import here to avoid circular imports
-
         return {
             "type": f"heading_{level}",
             f"heading_{level}": {
@@ -44,7 +39,6 @@ class HeadingElement(NotionBlockElement):
             },
         }
 
-    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion heading block to markdown heading."""
@@ -67,18 +61,25 @@ class HeadingElement(NotionBlockElement):
         prefix = "#" * level
         return f"{prefix} {text or ''}"
 
-    @override
     @staticmethod
     def is_multiline() -> bool:
         return False
 
-    @override
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        Returns a dictionary with all information needed for LLM prompts about this element.
+        Returns structured LLM prompt metadata for the heading element.
         """
         return {
             "description": "Use Markdown headings (#, ##, ###, etc.) to structure content hierarchically.",
             "when_to_use": "Use to group content into sections and define a visual hierarchy.",
+            "syntax": "## Your Heading Text",
+            "examples": [
+                "# Main Title",
+                "## Section Title",
+                "### Subsection Title",
+                "#### Sub-subsection Title",
+                "##### Tiny Heading",
+                "###### Smallest Heading Level",
+            ],
         }

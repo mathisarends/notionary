@@ -1,7 +1,7 @@
 import re
 from typing import Dict, Any, Optional
-from typing_extensions import override
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
@@ -20,7 +20,6 @@ class TodoElement(NotionBlockElement):
     TODO_PATTERN = re.compile(r"^\s*[-*+]\s+\[\s?\]\s+(.+)$")
     DONE_PATTERN = re.compile(r"^\s*[-*+]\s+\[x\]\s+(.+)$")
 
-    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text is a markdown todo item."""
@@ -28,13 +27,11 @@ class TodoElement(NotionBlockElement):
             TodoElement.TODO_PATTERN.match(text) or TodoElement.DONE_PATTERN.match(text)
         )
 
-    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion to_do block."""
         return block.get("type") == "to_do"
 
-    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown todo item to Notion to_do block."""
@@ -50,7 +47,6 @@ class TodoElement(NotionBlockElement):
 
         return None
 
-    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion to_do block to markdown todo item."""
@@ -89,26 +85,26 @@ class TodoElement(NotionBlockElement):
             },
         }
 
-    @override
     @staticmethod
     def is_multiline() -> bool:
         return False
 
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
-        """Returns information for LLM prompts about this element."""
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
+        """
+        Returns structured LLM prompt metadata for the todo element.
+        """
         return {
             "description": "Creates interactive to-do items with checkboxes that can be marked as complete.",
-            "when_to_use": "Use to-do items for task lists, checklists, or tracking progress on items that need to be completed. Todo items are interactive in Notion and can be checked/unchecked directly.",
-            "syntax": ["- [ ] Unchecked to-do item", "- [x] Checked to-do item"],
-            "notes": [
-                "Can use any list indicator (-, *, +) before the checkbox",
-                "Space in brackets [ ] indicates unchecked status",
-                "x in brackets [x] indicates checked status",
-                "To-do items support inline formatting like **bold** and *italic*",
-            ],
+            "when_to_use": (
+                "Use to-do items for task lists, checklists, or tracking progress on items that need to be completed. "
+                "Todo items are interactive in Notion and can be checked/unchecked directly."
+            ),
+            "syntax": "- [ ] Task to complete",
             "examples": [
-                "- [ ] Draft project proposal\n- [ ] Schedule kickoff meeting\n- [x] Create initial timeline",
-                "* [ ] Review code changes\n* [x] Write documentation\n* [ ] Deploy to production",
+                "- [ ] Draft project proposal",
+                "- [x] Create initial timeline",
+                "* [ ] Review code changes",
+                "+ [x] Finalize handoff checklist",
             ],
         }

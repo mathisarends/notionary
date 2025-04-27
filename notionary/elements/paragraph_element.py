@@ -2,6 +2,7 @@ from typing import Dict, Any, Optional
 from typing_extensions import override
 
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
@@ -57,17 +58,20 @@ class ParagraphElement(NotionBlockElement):
         return False
 
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
-        """Returns information for LLM prompts about this element."""
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
+        """
+        Returns structured LLM prompt metadata for the paragraph element.
+        """
         return {
             "description": "Creates standard paragraph blocks for regular text content.",
-            "when_to_use": "Use paragraphs for normal text content. Paragraphs are the default block type and will be used when no other specific formatting is applied.",
-            "syntax": ["Just write text normally without any special prefix"],
-            "notes": [
-                "Paragraphs support inline formatting like **bold**, *italic*, ~~strikethrough~~, `code`, and [links](url)"
-            ],
+            "when_to_use": (
+                "Use paragraphs for normal text content. Paragraphs are the default block type and will be used "
+                "when no other specific formatting is applied."
+            ),
+            "syntax": "Just write text normally without any special prefix",
             "examples": [
                 "This is a simple paragraph with plain text.",
                 "This paragraph has **bold** and *italic* formatting.",
+                "You can also include [links](https://example.com) or `inline code`.",
             ],
         }

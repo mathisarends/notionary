@@ -1,7 +1,6 @@
-import json
 from typing import Any, Dict, List, Optional
 
-from notionary.elements.block_element_registry import BlockElementRegistry
+from notionary.elements.registry.block_element_registry import BlockElementRegistry
 from notionary.notion_client import NotionClient
 
 from notionary.page.markdown_to_notion_converter import (

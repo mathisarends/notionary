@@ -1,6 +1,7 @@
 import re
 from typing import Dict, Any, Optional, List
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 
 
 class EmbedElement(NotionBlockElement):
@@ -97,26 +98,17 @@ class EmbedElement(NotionBlockElement):
         return result
 
     @classmethod
-    def get_llm_prompt_content(cls) -> dict:
-        """Returns information for LLM prompts about this element."""
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
+        """
+        Returns structured LLM prompt metadata for the embed element.
+        """
         return {
             "description": "Embeds external content from websites, PDFs, Google Maps, and other sources directly in your document.",
-            "when_to_use": "Use embeds when you want to include external content that isn't just a video or image. Embeds are great for interactive content, reference materials, or live data sources.",
-            "syntax": [
-                "<embed>(https://example.com) - Embed without caption",
-                "<embed:Caption text>(https://example.com) - Embed with caption",
-            ],
-            "supported_sources": [
-                "Websites and web pages",
-                "PDFs and documents",
-                "Google Maps",
-                "Google Drive files",
-                "Twitter/X posts",
-                "GitHub repositories and code",
-                "Figma designs",
-                "Miro boards",
-                "Many other services supported by Notion's embed feature",
-            ],
+            "when_to_use": (
+                "Use embeds when you want to include external content that isn't just a video or image. "
+                "Embeds are great for interactive content, reference materials, or live data sources."
+            ),
+            "syntax": "<embed:Caption>(https://example.com)",
             "examples": [
                 "<embed:Course materials>(https://drive.google.com/file/d/123456/view)",
                 "<embed:Our office location>(https://www.google.com/maps?q=San+Francisco)",

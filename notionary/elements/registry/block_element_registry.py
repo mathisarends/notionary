@@ -1,7 +1,9 @@
 from typing import Dict, Any, Optional, List, Type
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.synthax_prompt_builder import MarkdownSyntaxPromptBuilder
+from notionary.elements.prompts.synthax_prompt_builder import (
+    MarkdownSyntaxPromptBuilder,
+)
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
