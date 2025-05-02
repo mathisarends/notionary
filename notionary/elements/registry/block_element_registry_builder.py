@@ -25,7 +25,6 @@ from notionary.elements.toggleable_heading_element import ToggleableHeadingEleme
 from notionary.elements.video_element import VideoElement
 from notionary.elements.toggle_element import ToggleElement
 from notionary.elements.bookmark_element import BookmarkElement
-from notionary.elements.column_element import ColumnElement
 
 
 class BlockElementRegistryBuilder:
@@ -52,7 +51,6 @@ class BlockElementRegistryBuilder:
             .with_code()
             .with_dividers()
             .with_tables()
-            .with_columns()
             .with_bulleted_list()
             .with_numbered_list()
             .with_toggles()
@@ -175,12 +173,6 @@ class BlockElementRegistryBuilder:
         Add support for tables.
         """
         return self.add_element(TableElement)
-
-    def with_columns(self) -> BlockElementRegistryBuilder:
-        """
-        Add support for column elements.
-        """
-        return self.add_element(ColumnElement)
 
     def with_bulleted_list(self) -> BlockElementRegistryBuilder:
         """

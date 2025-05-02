@@ -40,7 +40,7 @@ class ToggleElement(NotionBlockElement):
             "toggle": {
                 "rich_text": [{"type": "text", "text": {"content": title}}],
                 "color": "default",
-                "children": [],  # Will be populated with nested content
+                "children": [], 
             },
         }
 

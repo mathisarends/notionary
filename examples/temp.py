@@ -32,87 +32,12 @@ async def main():
         print(f'✅ Found: "{title}" {icon} → {url}')
 
         markdown_content = """
- Stresstest für Quote Element
-
-Normaler Text vor einem Zitat.
-
-> Ein einfaches, einzeiliges Zitat.
-
-Etwas normaler Text zwischen den Zitaten.
-
-> Ein mehrzeiliges Zitat
-> das über mehrere Zeilen geht
-> mit drei Zeilen insgesamt.
-
-Text nach einem mehrzeiligen Zitat.
-
-> Zitat mit **Markdown-Formatierung** und *kursivem Text*
-> und auch einem [Link](https://example.com)
-
-Text zwischen komplizierten Zitaten.
-
-> Zitat mit einer leeren Zeile
-> 
-> Die durch eine Leerzeile getrennt werden sollte.
-
-Ein weiterer normaler Abschnitt.
-
-> Zitat mit verschachtelten Listen:
-> - Erster Punkt
-> - Zweiter Punkt
->   - Unterpunkt 2.1
->   - Unterpunkt 2.2
-> - Dritter Punkt
-
-Text vor eingerücktem Zitat.
-
-   > Ein eingerücktes Zitat
-   > mit mehreren Zeilen
-   > die alle eingerückt sind.
-
-Text vor Zitat-Edge-Cases.
-
->Zitat ohne Leerzeichen nach >
->und mehrere solche Zeilen
->sollte trotzdem funktionieren
-
-Ein Abschnitt vor gemischten Formatierungen.
-
-> # Überschrift in einem Zitat
-> 
-> Mit Text darunter und einer
-> ```
-> Codeblock innerhalb des Zitats
-> Mit mehreren Zeilen Code
-> ```
-> Und noch mehr Text danach.
-
-Test für nebeneinander liegende Zitate:
-
-> Erstes Zitat
-
-> Zweites Zitat direkt danach
-> mit mehreren Zeilen
-
-> Drittes Zitat mit nur einer Leerzeile Abstand
-
-Nicht zusammenhängende Zitate:
-
-> Zitat A
-
-Normaler Text.
-
-> Zitat B
-
-Tests für verschachtelte Zitate:
-
-> Äußeres Zitat
-> > Verschachteltes Zitat
-> > mit mehreren Zeilen
-> Zurück zum äußeren Zitat
-
-Abschließender Text.
-        
+| Name        | Position        | Abteilung        |
+| ----------- | --------------- | ---------------- |
+| Max Mustermann | Senior Developer | Entwicklung      |
+| Anna Schmidt   | Projektmanager   | Management       |
+| Thomas Müller  | UI Designer      | Design           |
+| Lisa Weber     | Backend Engineer | Entwicklung      |   
         """
 
         await page.append_markdown(markdown_content)
