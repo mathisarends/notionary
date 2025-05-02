@@ -32,8 +32,18 @@ async def main():
         print(f'✅ Found: "{title}" {icon} → {url}')
 
         markdown_content = """
-+++ This is a toggle block
-   This is the content of the toggle block.
++# Projektübersicht
+  Dies ist ein Überblick über das Projekt.
+
++## Technische Details
+  Hier sind die technischen Spezifikationen.
+  - Punkt 1
+  - Punkt 2
+
++### Implementierungshinweise
+  Detaillierte Informationen zur Implementierung.
+  
+  Sogar mit Absätzen.
         """
 
         await page.append_markdown(markdown_content)

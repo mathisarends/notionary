@@ -21,18 +21,18 @@ class MarkdownToNotionConverter:
         # Process all blocks in order, preserving their positions
         all_blocks = []
         
-        # Process toggle blocks first
-        toggle_blocks = self._identify_toggle_blocks(markdown_text)
-        if toggle_blocks:
-            all_blocks.extend(toggle_blocks)
+        # Process toggleable elements first (both Toggle and ToggleableHeading)
+        toggleable_blocks = self._identify_toggleable_blocks(markdown_text)
+        if toggleable_blocks:
+            all_blocks.extend(toggleable_blocks)
             
         # Process other multiline elements
-        multiline_blocks = self._identify_multiline_blocks(markdown_text, toggle_blocks)
+        multiline_blocks = self._identify_multiline_blocks(markdown_text, toggleable_blocks)
         if multiline_blocks:
             all_blocks.extend(multiline_blocks)
             
         # Process remaining text line by line
-        line_blocks = self._process_text_lines(markdown_text, toggle_blocks + multiline_blocks)
+        line_blocks = self._process_text_lines(markdown_text, toggleable_blocks + multiline_blocks)
         if line_blocks:
             all_blocks.extend(line_blocks)
             
@@ -45,31 +45,39 @@ class MarkdownToNotionConverter:
         # Process spacing between blocks
         return self._process_block_spacing(blocks)
 
-    def _identify_toggle_blocks(self, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
-        """Identify all toggle blocks in the text."""
-        # Find toggle element in registry
-        toggle_element = None
+    def _identify_toggleable_blocks(self, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
+        """Identify all toggleable blocks (Toggle and ToggleableHeading) in the text."""
+        toggleable_blocks = []
+        
+        # Find all toggleable elements
+        toggleable_elements = []
         for element in self._block_registry.get_elements():
             if (element.is_multiline() and 
-                hasattr(element, "match_markdown") and 
-                element.__name__ == "ToggleElement"):
-                toggle_element = element
-                break
+                hasattr(element, "match_markdown") and
+                (element.__name__ == "ToggleElement" or element.__name__ == "ToggleableHeadingElement")):
+                toggleable_elements.append(element)
                 
-        if not toggle_element:
+        if not toggleable_elements:
             return []
             
-        # Find matches with context awareness
-        return toggle_element.find_matches(text, self.convert, context_aware=True)
+        # Process each toggleable element type
+        for element in toggleable_elements:
+            if hasattr(element, "find_matches"):
+                # Find matches with context awareness
+                matches = element.find_matches(text, self.convert, context_aware=True)
+                if matches:
+                    toggleable_blocks.extend(matches)
+                    
+        return toggleable_blocks
 
     def _identify_multiline_blocks(
         self, text: str, exclude_blocks: List[Tuple[int, int, Dict[str, Any]]]
     ) -> List[Tuple[int, int, Dict[str, Any]]]:
-        """Identify all multiline blocks (except toggle blocks)."""
-        # Get all multiline elements except ToggleElement
+        """Identify all multiline blocks (except toggleable blocks)."""
+        # Get all multiline elements except toggleable ones
         multiline_elements = [
             element for element in self._block_registry.get_multiline_elements()
-            if element.__name__ != "ToggleElement"
+            if element.__name__ not in ["ToggleElement", "ToggleableHeadingElement"]
         ]
         
         if not multiline_elements:
