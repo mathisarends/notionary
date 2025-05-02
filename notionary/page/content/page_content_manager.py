@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, List, Optional
 
 from notionary.elements.registry.block_element_registry import BlockElementRegistry
@@ -157,6 +158,9 @@ class PageContentManager(LoggingMixin):
             if parent_id is None
             else await self.get_block_children(parent_id)
         )
+        
+        print("blocks", json.dumps(blocks, indent=2))
+        
         if not blocks:
             return []
 

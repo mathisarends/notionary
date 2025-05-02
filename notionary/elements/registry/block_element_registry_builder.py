@@ -21,6 +21,7 @@ from notionary.elements.table_element import TableElement
 from notionary.elements.todo_lists import TodoElement
 from notionary.elements.qoute_element import QuoteElement
 from notionary.elements.image_element import ImageElement
+from notionary.elements.toggleable_heading_element import ToggleableHeadingElement
 from notionary.elements.video_element import VideoElement
 from notionary.elements.toggle_element import ToggleElement
 from notionary.elements.bookmark_element import BookmarkElement
@@ -64,6 +65,7 @@ class BlockElementRegistryBuilder:
             .with_audio()
             .with_mention()
             .with_paragraphs()
+            .with_toggleable_heading_element()
         ).build()
 
     def add_element(
@@ -248,6 +250,9 @@ class BlockElementRegistryBuilder:
 
     def with_mention(self) -> BlockElementRegistryBuilder:
         return self.add_element(MentionElement)
+    
+    def with_toggleable_heading_element(self) -> BlockElementRegistryBuilder:
+        return self.add_element(ToggleableHeadingElement)
 
     def build(self) -> BlockElementRegistry:
         """

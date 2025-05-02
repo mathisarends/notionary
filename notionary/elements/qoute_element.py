@@ -6,69 +6,58 @@ from notionary.elements.prompts.element_prompt_content import ElementPromptConte
 
 class QuoteElement(NotionBlockElement):
     """Class for converting between Markdown blockquotes and Notion quote blocks."""
+    
+    # Regular expression pattern to match Markdown blockquote lines
+    # Matches lines that start with optional whitespace, followed by '>', 
+    # then optional whitespace, and captures any text after that
+    quote_pattern = re.compile(r"^\s*>\s?(.*)", re.MULTILINE)
 
     @staticmethod
     def find_matches(text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
         Find all blockquote matches in the text and return their positions and blocks.
-
-        Args:
-            text: The input markdown text
-
-        Returns:
-            List of tuples (start_pos, end_pos, block)
         """
-        quote_pattern = re.compile(r"^\s*>\s?(.*)", re.MULTILINE)
         matches = []
-
-        # Find all potential quote line matches
-        quote_matches = list(quote_pattern.finditer(text))
+        quote_matches = list(QuoteElement.quote_pattern.finditer(text))
+        
         if not quote_matches:
             return []
-
-        # Group consecutive quote lines
-        i = 0
-        while i < len(quote_matches):
-            start_match = quote_matches[i]
+        
+        current_match_index = 0
+        while current_match_index < len(quote_matches):
+            start_match = quote_matches[current_match_index]
             start_pos = start_match.start()
-
-            # Find consecutive quote lines
-            j = i + 1
-            while j < len(quote_matches):
-                # Check if this is the next line (considering newlines)
-                if (
-                    text[quote_matches[j - 1].end() : quote_matches[j].start()].count(
-                        "\n"
-                    )
-                    == 1
-                    or
-                    # Or if it's an empty line followed by a quote line
-                    (
-                        text[
-                            quote_matches[j - 1].end() : quote_matches[j].start()
-                        ].strip()
-                        == ""
-                        and text[
-                            quote_matches[j - 1].end() : quote_matches[j].start()
-                        ].count("\n")
-                        <= 2
-                    )
-                ):
-                    j += 1
-                else:
-                    break
-
-            end_pos = quote_matches[j - 1].end()
+            
+            next_match_index = current_match_index + 1
+            while (next_match_index < len(quote_matches) and 
+                QuoteElement.is_consecutive_quote(text, quote_matches, next_match_index)):
+                next_match_index += 1
+                
+            end_pos = quote_matches[next_match_index - 1].end()
             quote_text = text[start_pos:end_pos]
-
-            # Create the block
+            
             block = QuoteElement.markdown_to_notion(quote_text)
             if block:
                 matches.append((start_pos, end_pos, block))
-
-            i = j
-
+            
+            current_match_index = next_match_index
+        
         return matches
+    
+    @staticmethod
+    def is_consecutive_quote(text: str, quote_matches: List, index: int) -> bool:
+        """Checks if the current quote is part of the previous quote sequence."""
+        prev_end = quote_matches[index - 1].end()
+        curr_start = quote_matches[index].start()
+        gap_text = text[prev_end:curr_start]
+        
+        if gap_text.count("\n") == 1:
+            return True
+        
+        if gap_text.strip() == "" and gap_text.count("\n") <= 2:
+            return True
+            
+        return False
 
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
@@ -76,10 +65,8 @@ class QuoteElement(NotionBlockElement):
         if not text:
             return None
 
-        quote_pattern = re.compile(r"^\s*>\s?(.*)", re.MULTILINE)
-
         # Check if it's a blockquote
-        if not quote_pattern.search(text):
+        if not QuoteElement.quote_pattern.search(text):
             return None
 
         # Extract quote content
@@ -88,7 +75,7 @@ class QuoteElement(NotionBlockElement):
 
         # Extract content from each line
         for line in lines:
-            quote_match = quote_pattern.match(line)
+            quote_match = QuoteElement.quote_pattern.match(line)
             if quote_match:
                 content = quote_match.group(1)
                 quote_lines.append(content)
@@ -129,8 +116,7 @@ class QuoteElement(NotionBlockElement):
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if this element can handle the given markdown text."""
-        quote_pattern = re.compile(r"^\s*>\s?(.*)", re.MULTILINE)
-        return bool(quote_pattern.search(text))
+        return bool(QuoteElement.quote_pattern.search(text))
 
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:

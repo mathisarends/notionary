@@ -9,7 +9,7 @@ from notionary.elements.text_inline_formatter import TextInlineFormatter
 class HeadingElement(NotionBlockElement):
     """Handles conversion between Markdown headings and Notion heading blocks."""
 
-    PATTERN = re.compile(r"^(#{1,6})\s(.+)$")
+    PATTERN = re.compile(r"^(#{1,3})\s(.+)$")
 
     @staticmethod
     def match_markdown(text: str) -> bool:
@@ -20,7 +20,7 @@ class HeadingElement(NotionBlockElement):
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion heading."""
         block_type: str = block.get("type", "")
-        return block_type.startswith("heading_") and block_type[-1] in "123456"
+        return block_type.startswith("heading_") and block_type[-1] in "123"
 
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
@@ -30,6 +30,9 @@ class HeadingElement(NotionBlockElement):
             return None
 
         level = len(header_match.group(1))
+        if not 1 <= level <= 3:
+            return None
+            
         content = header_match.group(2)
 
         return {
@@ -49,7 +52,8 @@ class HeadingElement(NotionBlockElement):
 
         try:
             level = int(block_type[-1])
-            if not 1 <= level <= 6:
+            # Only allow levels 1-3
+            if not 1 <= level <= 3:
                 return None
         except ValueError:
             return None
@@ -71,7 +75,7 @@ class HeadingElement(NotionBlockElement):
         Returns structured LLM prompt metadata for the heading element.
         """
         return {
-            "description": "Use Markdown headings (#, ##, ###, etc.) to structure content hierarchically.",
+            "description": "Use Markdown headings (#, ##, ###) to structure content hierarchically.",
             "when_to_use": "Use to group content into sections and define a visual hierarchy.",
             "syntax": "## Your Heading Text",
             "examples": [
