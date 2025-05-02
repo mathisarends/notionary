@@ -32,12 +32,8 @@ async def main():
         print(f'✅ Found: "{title}" {icon} → {url}')
 
         markdown_content = """
-| Name        | Position        | Abteilung        |
-| ----------- | --------------- | ---------------- |
-| Max Mustermann | Senior Developer | Entwicklung      |
-| Anna Schmidt   | Projektmanager   | Management       |
-| Thomas Müller  | UI Designer      | Design           |
-| Lisa Weber     | Backend Engineer | Entwicklung      |   
++++ This is a toggle block
+   This is the content of the toggle block.
         """
 
         await page.append_markdown(markdown_content)
