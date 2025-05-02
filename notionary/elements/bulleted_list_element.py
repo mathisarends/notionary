@@ -1,6 +1,5 @@
 import re
 from typing import Dict, Any, Optional
-from typing_extensions import override
 from notionary.elements.notion_block_element import NotionBlockElement
 from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 from notionary.elements.text_inline_formatter import TextInlineFormatter
@@ -9,7 +8,6 @@ from notionary.elements.text_inline_formatter import TextInlineFormatter
 class BulletedListElement(NotionBlockElement):
     """Class for converting between Markdown bullet lists and Notion bulleted list items."""
 
-    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown bulleted list item to Notion block."""

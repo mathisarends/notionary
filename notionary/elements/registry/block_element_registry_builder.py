@@ -242,7 +242,7 @@ class BlockElementRegistryBuilder:
 
     def with_mention(self) -> BlockElementRegistryBuilder:
         return self.add_element(MentionElement)
-    
+
     def with_toggleable_heading_element(self) -> BlockElementRegistryBuilder:
         return self.add_element(ToggleableHeadingElement)
 

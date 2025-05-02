@@ -140,9 +140,7 @@ class NotionPage(LoggingMixin):
         Returns:
             str: Status or confirmation message.
         """
-        return await self._page_content_manager.append_markdown(
-            markdown_text=markdown
-        )
+        return await self._page_content_manager.append_markdown(markdown_text=markdown)
 
     async def clear(self) -> str:
         """

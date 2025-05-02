@@ -10,7 +10,7 @@ class ToggleableHeadingElement(NotionBlockElement):
     """Handles conversion between Markdown collapsible headings and Notion toggleable heading blocks."""
 
     PATTERN = re.compile(r"^\+(?P<level>#{1,3})\s+(?P<content>.+)$")
-    
+
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text is a markdown collapsible heading."""
@@ -22,7 +22,7 @@ class ToggleableHeadingElement(NotionBlockElement):
         block_type: str = block.get("type", "")
         if not block_type.startswith("heading_") or block_type[-1] not in "123":
             return False
-        
+
         # Check if it has the is_toggleable property set to true
         heading_data = block.get(block_type, {})
         return heading_data.get("is_toggleable", False) is True
@@ -63,7 +63,7 @@ class ToggleableHeadingElement(NotionBlockElement):
             return None
 
         heading_data = block.get(block_type, {})
-        
+
         # Check if it's toggleable
         if not heading_data.get("is_toggleable", False):
             return None
@@ -123,10 +123,10 @@ class ToggleableHeadingElement(NotionBlockElement):
             # Extract nested content (indented lines following the heading)
             nested_content = []
             next_index = i + 1
-            
+
             while next_index < len(lines):
                 next_line = lines[next_index]
-                
+
                 # Empty line is still part of nested content
                 if not next_line.strip():
                     nested_content.append("")
@@ -141,24 +141,26 @@ class ToggleableHeadingElement(NotionBlockElement):
                     else:
                         # Remove at least 2 spaces, but not more than what's there
                         leading_spaces = len(next_line) - len(next_line.lstrip(" "))
-                        content_line = next_line[min(2, leading_spaces):]
-                    
+                        content_line = next_line[min(2, leading_spaces) :]
+
                     nested_content.append(content_line)
                     next_index += 1
                     continue
-                
+
                 # Check if the next line is another heading of the same or lower level
                 # which would end the current heading's content
                 if next_line.startswith(">"):
                     break
-                
+
                 # Non-indented, non-empty, non-heading line
                 break
 
             # Calculate ending position
             end_pos = start_pos + len(line)
             if nested_content:
-                end_pos += sum(len(l) + 1 for l in nested_content)  # +1 for each newline
+                end_pos += sum(
+                    len(l) + 1 for l in nested_content
+                )  # +1 for each newline
 
             # Process nested content if provided
             if nested_content and process_nested_content:
@@ -182,9 +184,9 @@ class ToggleableHeadingElement(NotionBlockElement):
             "when_to_use": "Use when you want to create a structured section that can be expanded or collapsed.",
             "syntax": ">## Collapsible Heading",
             "examples": [
-                "># Main Collapsible Section\n  Content under the section",
-                ">## Subsection\n  This content is hidden until expanded",
-                ">### Detailed Information\n  Technical details go here",
+                "+# Main Collapsible Section\n  Content under the section",
+                "+## Subsection\n  This content is hidden until expanded",
+                "+### Detailed Information\n  Technical details go here",
             ],
         }
 

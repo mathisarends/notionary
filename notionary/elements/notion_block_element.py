@@ -31,15 +31,6 @@ class NotionBlockElement(ABC):
         return False
 
     @classmethod
-    def get_llm_documentation(cls) -> str:
-        """
-        Returns documentation specifically formatted for LLM system prompts.
-        Can be overridden by subclasses to provide custom LLM-friendly documentation.
-
-        By default, returns the class docstring.
-        """
-
-    @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
         Returns a dictionary with information for LLM prompts about this element.

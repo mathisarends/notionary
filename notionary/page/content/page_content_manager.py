@@ -33,9 +33,7 @@ class PageContentManager(LoggingMixin):
         )
         self._chunker = NotionPageContentChunker()
 
-    async def append_markdown(
-        self, markdown_text: str
-    ) -> str:
+    async def append_markdown(self, markdown_text: str) -> str:
         """
         Append markdown text to a Notion page, automatically handling content length limits.
         First strips out triple backtick markdown fences if they wrap the entire content.
@@ -158,9 +156,7 @@ class PageContentManager(LoggingMixin):
             if parent_id is None
             else await self.get_block_children(parent_id)
         )
-        
-        print("blocks", json.dumps(blocks, indent=2))
-        
+
         if not blocks:
             return []
 

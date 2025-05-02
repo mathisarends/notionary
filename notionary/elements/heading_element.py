@@ -32,7 +32,7 @@ class HeadingElement(NotionBlockElement):
         level = len(header_match.group(1))
         if not 1 <= level <= 3:
             return None
-            
+
         content = header_match.group(2)
 
         return {

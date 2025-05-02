@@ -1,6 +1,5 @@
 import re
 from typing import Dict, Any, Optional
-from typing_extensions import override
 
 from notionary.elements.prompts.element_prompt_content import ElementPromptContent
 from notionary.elements.text_inline_formatter import TextInlineFormatter
@@ -28,7 +27,6 @@ class CalloutElement(NotionBlockElement):
     DEFAULT_EMOJI = "💡"
     DEFAULT_COLOR = "gray_background"
 
-    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text is a markdown callout."""
@@ -36,13 +34,11 @@ class CalloutElement(NotionBlockElement):
             CalloutElement.PATTERN.match(text)
         )
 
-    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion callout."""
         return block.get("type") == "callout"
 
-    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown callout to Notion callout block."""
@@ -65,7 +61,6 @@ class CalloutElement(NotionBlockElement):
             },
         }
 
-    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion callout block to markdown callout."""
@@ -90,7 +85,6 @@ class CalloutElement(NotionBlockElement):
 
         return f"!> {emoji_str}{text}"
 
-    @override
     @staticmethod
     def is_multiline() -> bool:
         return False

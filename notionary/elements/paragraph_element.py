@@ -1,5 +1,4 @@
 from typing import Dict, Any, Optional
-from typing_extensions import override
 
 from notionary.elements.notion_block_element import NotionBlockElement
 from notionary.elements.prompts.element_prompt_content import ElementPromptContent
@@ -9,7 +8,6 @@ from notionary.elements.text_inline_formatter import TextInlineFormatter
 class ParagraphElement(NotionBlockElement):
     """Handles conversion between Markdown paragraphs and Notion paragraph blocks."""
 
-    @override
     @staticmethod
     def match_markdown(text: str) -> bool:
         """
@@ -19,13 +17,11 @@ class ParagraphElement(NotionBlockElement):
         """
         return True
 
-    @override
     @staticmethod
     def match_notion(block: Dict[str, Any]) -> bool:
         """Check if block is a Notion paragraph."""
         return block.get("type") == "paragraph"
 
-    @override
     @staticmethod
     def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown paragraph to Notion paragraph block."""
@@ -39,7 +35,6 @@ class ParagraphElement(NotionBlockElement):
             },
         }
 
-    @override
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion paragraph block to markdown paragraph."""
@@ -52,7 +47,6 @@ class ParagraphElement(NotionBlockElement):
         text = TextInlineFormatter.extract_text_with_formatting(rich_text)
         return text if text else None
 
-    @override
     @staticmethod
     def is_multiline() -> bool:
         return False

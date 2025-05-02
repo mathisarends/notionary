@@ -6,9 +6,9 @@ from notionary.elements.prompts.element_prompt_content import ElementPromptConte
 
 class QuoteElement(NotionBlockElement):
     """Class for converting between Markdown blockquotes and Notion quote blocks."""
-    
+
     # Regular expression pattern to match Markdown blockquote lines
-    # Matches lines that start with optional whitespace, followed by '>', 
+    # Matches lines that start with optional whitespace, followed by '>',
     # then optional whitespace, and captures any text after that
     quote_pattern = re.compile(r"^\s*>\s?(.*)", re.MULTILINE)
 
@@ -19,44 +19,47 @@ class QuoteElement(NotionBlockElement):
         """
         matches = []
         quote_matches = list(QuoteElement.quote_pattern.finditer(text))
-        
+
         if not quote_matches:
             return []
-        
+
         current_match_index = 0
         while current_match_index < len(quote_matches):
             start_match = quote_matches[current_match_index]
             start_pos = start_match.start()
-            
+
             next_match_index = current_match_index + 1
-            while (next_match_index < len(quote_matches) and 
-                QuoteElement.is_consecutive_quote(text, quote_matches, next_match_index)):
+            while next_match_index < len(
+                quote_matches
+            ) and QuoteElement.is_consecutive_quote(
+                text, quote_matches, next_match_index
+            ):
                 next_match_index += 1
-                
+
             end_pos = quote_matches[next_match_index - 1].end()
             quote_text = text[start_pos:end_pos]
-            
+
             block = QuoteElement.markdown_to_notion(quote_text)
             if block:
                 matches.append((start_pos, end_pos, block))
-            
+
             current_match_index = next_match_index
-        
+
         return matches
-    
+
     @staticmethod
     def is_consecutive_quote(text: str, quote_matches: List, index: int) -> bool:
         """Checks if the current quote is part of the previous quote sequence."""
         prev_end = quote_matches[index - 1].end()
         curr_start = quote_matches[index].start()
         gap_text = text[prev_end:curr_start]
-        
+
         if gap_text.count("\n") == 1:
             return True
-        
+
         if gap_text.strip() == "" and gap_text.count("\n") <= 2:
             return True
-            
+
         return False
 
     @staticmethod
