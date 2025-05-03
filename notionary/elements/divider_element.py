@@ -2,7 +2,10 @@ import re
 from typing import Dict, Any, Optional
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class DividerElement(NotionBlockElement):
@@ -47,10 +50,18 @@ class DividerElement(NotionBlockElement):
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """Returns compact LLM prompt metadata for the divider element."""
-        return {
-            "description": "Creates a horizontal divider line to visually separate sections of content.",
-            "when_to_use": "Use to create clear visual breaks between different sections without requiring headings.",
-            "syntax": "---",
-            "examples": ["## Section 1\nContent\n\n---\n\n## Section 2\nMore content"],
-        }
+        """Returns structured LLM prompt metadata for the divider element."""
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Creates a horizontal divider line to visually separate sections of content."
+            )
+            .with_usage_guidelines(
+                "Use to create clear visual breaks between different sections without requiring headings."
+            )
+            .with_syntax("---")
+            .with_examples(
+                ["## Section 1\nContent\n\n---\n\n## Section 2\nMore content"]
+            )
+            .build()
+        )

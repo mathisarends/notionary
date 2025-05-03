@@ -13,6 +13,7 @@ The factory uses fuzzy matching to find the closest match.
 """
 
 import asyncio
+import traceback
 from notionary import NotionPageFactory
 
 YOUR_PAGE_NAME = "Jarvis Clipboard"
@@ -31,81 +32,93 @@ async def main():
 
         print(f'✅ Found: "{title}" {icon} → {url}')
 
-        # TODO: Gucken wie das hier gelesen wird
+        python_documentation = """## Comprehensive Python Project Documentation
 
-        markdown_content = """
-# Main Title 
+### Project Overview
+This is a **comprehensive** project that explores *advanced* Python `data science` and machine learning techniques.
 
-## Section Title
+<!-- spacer -->
 
-### Subsection Title
+!> [🧠] Project Intelligence Framework
+| Our mission is to create **cutting-edge** computational tools
+| that solve complex real-world problems.
 
-This is a simple paragraph with **bold** and *italic* formatting. You can also include [links](https://example.com) or `inline code`.
+### Key Project Components
 
-- First item
-- Second item
-- Third item
+1. Data Processing Utilities
+2. Machine Learning Modules
+3. Visualization Techniques
 
-1. First step
-2. Second step
-3. Third step
+<!-- spacer -->
 
-> This is a simple blockquote
-> This is a multi-line quote
-> that continues on the next line
-
-!> [💡] Tip: Add emoji that matches your content's purpose
-
-![Data visualization showing monthly trends](https://example.com/chart.png)
-
-@[How to use this feature](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
-
-$[Podcast Episode](https://storage.googleapis.com/audio_summaries/ep_ai_summary_127d02ec-ca12-4312-a5ed-cb14b185480c.mp3)
-
-<embed:Course materials>(https://drive.google.com/file/d/123456/view)
-
-[bookmark](https://github.com "GitHub" "Where the world builds software")
-
-| Product | Price | Stock |
-| ------- | ----- | ----- |
-| Widget A | $10.99 | 42 |
-| Widget B | $14.99 | 27 |
-
-- [ ] Draft project proposal
-- [x] Create initial timeline
-
-+++ Toggle Title
-| The research demonstrates **three main conclusions**:
-| 1. First important point
-| 2. Second important point
-
-+## Collapsible Heading
-| This content is hidden until expanded
-
----
-
+### Code Demonstration
 ```python
-print('Hello, world!')
+class DataProcessor:
+    def __init__(self, data_source):
+        self.data = data_source
+    
+    def transform(self, method='standard'):
+        if method == 'standard':
+            return self._standard_transform()
+        elif method == 'advanced':
+            return self._advanced_transform()
 ```
 
-Check the meeting notes at @[1a6389d5-7bd3-80c5-9a87-e90b034989d0]
-Deadline is @date[2023-12-31]
+### Interactive Todo List
+- [ ] Implement core data processing algorithm
+- [ ] Write comprehensive unit tests
+- [x] Create project documentation
+- [ ] Optimize performance metrics
 
+### External Resources
+[bookmark](https://docs.python.org "Python Official Documentation")
+[bookmark](https://scikit-learn.org "Machine Learning Library")
 
-+++ Umsatzstatistiken
-| Hier ist unsere Umsatzstatistik für Q2:
-| 
-| | Produkt | Umsatz | Gewinn |
-| | ------- | ------ | ------ |
-| | Produkt A | €10.000 | €4.000 |
-| | Produkt B | €15.000 | €6.000 |
+<!-- spacer -->
+
+### Embedded Content
+<embed:Project Resources>(https://drive.google.com/drive/folders/project_resources)
+
+### Quotes and Insights
+> "Innovation distinguishes between a leader and a follower." - Steve Jobs
+
+<!-- spacer -->
+
+### Toggleable Technical Details
++++ Advanced Implementation Notes
+| **Key Considerations:**
+| - *Performance optimization*
+| - `Scalable architecture`
+| - __Error handling strategies__
+
+### Sample Table of Metrics
+| Metric | Value | Status |
+| ------ | ----- | ------ |
+| Accuracy | 92.5% | ✅ |
+| Processing Speed | 0.03s | ✅ |
+| Memory Usage | 128MB | ⚠️ |
+
+### Final Thoughts
+Some **critical** points to remember:
+- *Readability* is paramount
+- `Clean code` speaks volumes
+- __Continuous learning__ drives innovation
+
+### Mentions and Collaborators
+Check detailed notes at @[project-main-doc]
+
+### Image Visualization
+![Data Flow Diagram](https://example.com/data-flow.png)
         """
 
-        result = await page.append_markdown(markdown_content)
-        print(f"✅ Markdown content appended: {result}")
-    
+        result = await page.append_markdown(python_documentation)
+        print(f"✅ Markdown appended: {result}")
+        
+        prompt = page.block_registry.generate_llm_prompt()
+        print(f"Prompt: {prompt}")
+        
     except Exception as e:
-        print(f"❌ Error while loading page from URL: {e}")
+        print(f"❌ Error while loading page from URL: {traceback.format_exc(e)}")
 
 
 if __name__ == "__main__":

@@ -2,7 +2,10 @@ import re
 from typing import Dict, Any, Optional, List, Tuple
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class BookmarkElement(NotionBlockElement):
@@ -196,17 +199,23 @@ class BookmarkElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the bookmark element.
         """
-        return {
-            "description": "Creates a bookmark that links to an external website.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description("Creates a bookmark that links to an external website.")
+            .with_usage_guidelines(
                 "Use bookmarks when you want to reference external content while keeping the page clean and organized. "
                 "Bookmarks display a preview card for the linked content."
-            ),
-            "syntax": '[bookmark](https://example.com "Optional Title" "Optional Description")',
-            "examples": [
-                "[bookmark](https://example.com)",
-                '[bookmark](https://example.com "Example Title")',
-                '[bookmark](https://example.com "Example Title" "Example description of the site")',
-                '[bookmark](https://github.com "GitHub" "Where the world builds software")',
-            ],
-        }
+            )
+            .with_syntax(
+                '[bookmark](https://example.com "Optional Title" "Optional Description")'
+            )
+            .with_examples(
+                [
+                    "[bookmark](https://example.com)",
+                    '[bookmark](https://example.com "Example Title")',
+                    '[bookmark](https://example.com "Example Title" "Example description of the site")',
+                    '[bookmark](https://github.com "GitHub" "Where the world builds software")',
+                ]
+            )
+            .build()
+        )

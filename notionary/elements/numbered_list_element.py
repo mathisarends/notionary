@@ -1,7 +1,10 @@
 import re
 from typing import Dict, Any, Optional
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
@@ -57,12 +60,18 @@ class NumberedListElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the numbered list element.
         """
-        return {
-            "description": "Creates numbered list items for ordered sequences.",
-            "when_to_use": "Use for lists where order matters, such as steps, rankings, or sequential items.",
-            "syntax": "1. Item text",
-            "examples": [
-                "1. First step\n2. Second step\n3. Third step",
-                "1. Gather materials\n2. Assemble parts\n3. Test the result",
-            ],
-        }
+        return (
+            ElementPromptBuilder()
+            .with_description("Creates numbered list items for ordered sequences.")
+            .with_usage_guidelines(
+                "Use for lists where order matters, such as steps, rankings, or sequential items."
+            )
+            .with_syntax("1. Item text")
+            .with_examples(
+                [
+                    "1. First step\n2. Second step\n3. Third step",
+                    "1. Gather materials\n2. Assemble parts\n3. Test the result",
+                ]
+            )
+            .build()
+        )

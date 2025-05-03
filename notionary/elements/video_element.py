@@ -1,7 +1,10 @@
 import re
 from typing import Dict, Any, Optional, List
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class VideoElement(NotionBlockElement):
@@ -135,16 +138,22 @@ class VideoElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the video element.
         """
-        return {
-            "description": "Embeds video content from external sources like YouTube or direct video URLs.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Embeds video content from external sources like YouTube or direct video URLs."
+            )
+            .with_usage_guidelines(
                 "Use video embeds when you want to include multimedia content directly in your document. "
                 "Videos are useful for tutorials, demonstrations, presentations, or any content that benefits from visual explanation."
-            ),
-            "syntax": "@[Caption](https://example.com/video.mp4)",
-            "examples": [
-                "@[How to use this feature](https://www.youtube.com/watch?v=dQw4w9WgXcQ)",
-                "@[Product demo](https://example.com/videos/demo.mp4)",
-                "@[](https://youtu.be/dQw4w9WgXcQ)",
-            ],
-        }
+            )
+            .with_syntax("@[Caption](https://example.com/video.mp4)")
+            .with_examples(
+                [
+                    "@[How to use this feature](https://www.youtube.com/watch?v=dQw4w9WgXcQ)",
+                    "@[Product demo](https://example.com/videos/demo.mp4)",
+                    "@[](https://youtu.be/dQw4w9WgXcQ)",
+                ]
+            )
+            .build()
+        )

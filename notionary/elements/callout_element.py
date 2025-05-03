@@ -1,7 +1,10 @@
 import re
 from typing import Dict, Any, Optional
 
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 from notionary.elements.notion_block_element import NotionBlockElement
 
@@ -92,20 +95,31 @@ class CalloutElement(NotionBlockElement):
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        Returns a dictionary with all information needed for LLM prompts about this element.
+        Returns structured LLM prompt metadata for the callout element.
         Includes description, usage guidance, syntax options, and examples.
         """
-        return {
-            "description": "Creates a callout block to highlight important information with an icon.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Creates a callout block to highlight important information with an icon."
+            )
+            .with_usage_guidelines(
                 "Use callouts when you want to draw attention to important information, "
-                "tips, warnings, or notes that stand out from the main content."
-            ),
-            "syntax": "!> [emoji] Text",
-            "examples": [
-                "!> This is a default callout with the light bulb emoji",
-                "!> [🔔] This is a callout with a bell emoji",
-                "!> [⚠️] Warning: This is an important note to pay attention to",
-                "!> [💡] Tip: Add emoji that matches your content's purpose",
-            ],
-        }
+                "tips, warnings, or notes that stand out from the main content. "
+                "The emoji MUST be enclosed in square brackets to properly display."
+            )
+            .with_syntax("!> [emoji] Text")
+            .with_examples(
+                [
+                    "!> [💡] This is a default callout with the light bulb emoji",
+                    "!> [🔔] This is a callout with a bell emoji",
+                    "!> [⚠️] Warning: This is an important note to pay attention to",
+                    "!> [💡] Tip: Add emoji that matches your content's purpose",
+                ]
+            )
+            .with_avoidance_guidelines(
+                "NEVER omit the square brackets around the emoji. The format MUST be !> [emoji] and not !> emoji. "
+                "Without the square brackets, Notion will not properly render the callout with the specified emoji."
+            )
+            .build()
+        )

@@ -2,7 +2,10 @@ import re
 from typing import Dict, Any, Optional, List, Tuple, Callable
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class ToggleElement(NotionBlockElement):
@@ -279,15 +282,21 @@ class ToggleElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the toggle element with pipe syntax examples.
         """
-        return {
-            "description": "Toggle elements are collapsible sections that help organize and hide detailed information.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Toggle elements are collapsible sections that help organize and hide detailed information."
+            )
+            .with_usage_guidelines(
                 "Use toggles for supplementary information that's not essential for the first reading, "
                 "such as details, examples, or technical information."
-            ),
-            "syntax": "+++ Toggle Title\n| Toggle content with pipe prefix",
-            "examples": [
-                "+++ Key Findings\n| The research demonstrates **three main conclusions**:\n| 1. First important point\n| 2. Second important point",
-                "+++ FAQ\n| **Q: When should I use toggles?**\n| *A: Use toggles for supplementary information.*",
-            ],
-        }
+            )
+            .with_syntax("+++ Toggle Title\n| Toggle content with pipe prefix")
+            .with_examples(
+                [
+                    "+++ Key Findings\n| The research demonstrates **three main conclusions**:\n| 1. First important point\n| 2. Second important point",
+                    "+++ FAQ\n| **Q: When should I use toggles?**\n| *A: Use toggles for supplementary information.*",
+                ]
+            )
+            .build()
+        )

@@ -2,7 +2,10 @@ import re
 from typing import Dict, Any, Optional, List, Tuple, Callable
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
@@ -246,24 +249,21 @@ class ToggleableHeadingElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the collapsible heading element with pipe syntax.
         """
-        return {
-            "description": "Collapsible headings combine heading structure with toggleable visibility.",
-            "when_to_use": "Use when you want to create a structured section that can be expanded or collapsed.",
-            "syntax": "+# Collapsible Heading\n| Content with pipe prefix",
-            "examples": [
-                "+# Main Collapsible Section\n| Content under the section",
-                "+## Subsection\n| This content is hidden until expanded",
-                "+### Detailed Information\n| Technical details go here",
-            ],
-        }
-
-    @staticmethod
-    def _extract_text_content(rich_text: List[Dict[str, Any]]) -> str:
-        """Extract plain text content from Notion rich_text elements."""
-        result = ""
-        for text_obj in rich_text:
-            if text_obj.get("type") == "text":
-                result += text_obj.get("text", {}).get("content", "")
-            elif "plain_text" in text_obj:
-                result += text_obj.get("plain_text", "")
-        return result
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Collapsible headings combine heading structure with toggleable visibility."
+            )
+            .with_usage_guidelines(
+                "Use when you want to create a structured section that can be expanded or collapsed."
+            )
+            .with_syntax("+# Collapsible Heading\n| Content with pipe prefix")
+            .with_examples(
+                [
+                    "+# Main Collapsible Section\n| Content under the section",
+                    "+## Subsection\n| This content is hidden until expanded",
+                    "+### Detailed Information\n| Technical details go here",
+                ]
+            )
+            .build()
+        )

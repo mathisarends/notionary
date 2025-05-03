@@ -1,7 +1,10 @@
 import re
 from typing import Dict, Any, Optional
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
@@ -55,13 +58,19 @@ class BulletedListElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the bulleted list element.
         """
-        return {
-            "description": "Creates bulleted list items for unordered lists.",
-            "when_to_use": "Use for lists where order doesn't matter, such as features, options, or items without hierarchy.",
-            "syntax": "- Item text",
-            "examples": [
-                "- First item\n- Second item\n- Third item",
-                "* Apple\n* Banana\n* Cherry",
-                "+ Task A\n+ Task B",
-            ],
-        }
+        return (
+            ElementPromptBuilder()
+            .with_description("Creates bulleted list items for unordered lists.")
+            .with_usage_guidelines(
+                "Use for lists where order doesn't matter, such as features, options, or items without hierarchy."
+            )
+            .with_syntax("- Item text")
+            .with_examples(
+                [
+                    "- First item\n- Second item\n- Third item",
+                    "* Apple\n* Banana\n* Cherry",
+                    "+ Task A\n+ Task B",
+                ]
+            )
+            .build()
+        )

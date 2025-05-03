@@ -3,7 +3,10 @@ from typing import Dict, Any, Optional, List
 from typing_extensions import override
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class MentionElement(NotionBlockElement):
@@ -206,13 +209,21 @@ class MentionElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the mention element.
         """
-        return {
-            "description": "References to Notion pages, databases, or dates within text content.",
-            "when_to_use": "When you want to link to other Notion content within your text.",
-            "syntax": "@[page-id]",
-            "examples": [
-                "Check the meeting notes at @[1a6389d5-7bd3-80c5-9a87-e90b034989d0]",
-                "Deadline is @date[2023-12-31]",
-                "Use the structure in @db[1a6389d5-7bd3-80e9-b199-000cfb3fa0b3]",
-            ],
-        }
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "References to Notion pages, databases, or dates within text content."
+            )
+            .with_usage_guidelines(
+                "When you want to link to other Notion content within your text."
+            )
+            .with_syntax("@[page-id]")
+            .with_examples(
+                [
+                    "Check the meeting notes at @[1a6389d5-7bd3-80c5-9a87-e90b034989d0]",
+                    "Deadline is @date[2023-12-31]",
+                    "Use the structure in @db[1a6389d5-7bd3-80e9-b199-000cfb3fa0b3]",
+                ]
+            )
+            .build()
+        )

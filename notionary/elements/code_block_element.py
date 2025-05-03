@@ -1,7 +1,10 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class CodeBlockElement(NotionBlockElement):
@@ -139,26 +142,30 @@ class CodeBlockElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the code block element.
         """
-        return {
-            "description": (
+        return (
+            ElementPromptBuilder()
+            .with_description(
                 "Use fenced code blocks to format content as code. Supports language annotations like "
                 "'python', 'json', or 'mermaid'. Useful for displaying code, configurations, command-line "
                 "examples, or diagram syntax. Also suitable for explaining or visualizing systems with diagram languages."
-            ),
-            "when_to_use": (
+            )
+            .with_usage_guidelines(
                 "Use code blocks when you want to present technical content like code snippets, terminal commands, "
                 "JSON structures, or system diagrams. Especially helpful when structure and formatting are essential."
-            ),
-            "syntax": "```language\ncode content\n```",
-            "examples": [
-                "```python\nprint('Hello, world!')\n```",
-                '```json\n{"name": "Alice", "age": 30}\n```',
-                "```mermaid\nflowchart TD\n  A --> B\n```",
-            ],
-            "avoid": (
+            )
+            .with_syntax("```language\ncode content\n```")
+            .with_examples(
+                [
+                    "```python\nprint('Hello, world!')\n```",
+                    '```json\n{"name": "Alice", "age": 30}\n```',
+                    "```mermaid\nflowchart TD\n  A --> B\n```",
+                ]
+            )
+            .with_avoidance_guidelines(
                 "NEVER EVER wrap markdown content with ```markdown. Markdown should be written directly without code block formatting. "
                 "NEVER use ```markdown under any circumstances. "
                 "For Mermaid diagrams, use ONLY the default styling without colors, backgrounds, or custom styling attributes. "
                 "Keep Mermaid diagrams simple and minimal without any styling or color modifications."
-            ),
-        }
+            )
+            .build()
+        )

@@ -1,7 +1,10 @@
 import re
 from typing import Dict, Any, Optional
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
@@ -94,17 +97,23 @@ class TodoElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the todo element.
         """
-        return {
-            "description": "Creates interactive to-do items with checkboxes that can be marked as complete.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Creates interactive to-do items with checkboxes that can be marked as complete."
+            )
+            .with_usage_guidelines(
                 "Use to-do items for task lists, checklists, or tracking progress on items that need to be completed. "
                 "Todo items are interactive in Notion and can be checked/unchecked directly."
-            ),
-            "syntax": "- [ ] Task to complete",
-            "examples": [
-                "- [ ] Draft project proposal",
-                "- [x] Create initial timeline",
-                "* [ ] Review code changes",
-                "+ [x] Finalize handoff checklist",
-            ],
-        }
+            )
+            .with_syntax("- [ ] Task to complete")
+            .with_examples(
+                [
+                    "- [ ] Draft project proposal",
+                    "- [x] Create initial timeline",
+                    "* [ ] Review code changes",
+                    "+ [x] Finalize handoff checklist",
+                ]
+            )
+            .build()
+        )

@@ -13,33 +13,81 @@ class MarkdownSyntaxPromptBuilder:
     SYSTEM_PROMPT_TEMPLATE = """You are a knowledgeable assistant that helps users create content for Notion pages.
 Notion supports standard Markdown with some special extensions for creating rich content.
 
+# Understanding Notion Blocks
+Notion documents are composed of individual blocks. Each block has a specific type (paragraph, heading, list item, etc.) and format. 
+The Markdown syntax you use directly maps to these Notion blocks.
+
+## Inline Formatting
+Inline formatting can be used within most block types to style your text. You can combine multiple formatting options.
+**Syntax:** **bold**, *italic*, `code`, ~~strikethrough~~, __underline__, [text](url)
+**Examples:** 
+- This text has a **bold** word.
+- This text has an *italic* word.
+- This text has `code` formatting.
+- This text has ~~strikethrough~~ formatting.
+- This text has __underlined__ formatting.
+- This has a [hyperlink](https://example.com).
+- You can **combine *different* formatting** styles.
+
+**When to use:** Use inline formatting to highlight important words, provide emphasis, show code or paths, or add hyperlinks. This helps create visual hierarchy and improves scanability.
+
+## Spacers and Block Separation
+There are two ways to create visual separation between blocks:
+
+1. **Empty Lines**: Simply add a blank line between blocks
+   **Syntax:** Press Enter twice between blocks
+   **Example:** 
+   First paragraph.
+
+   Second paragraph after an empty line.
+
+2. **HTML Comment Spacer**: For more deliberate spacing between logical sections
+   **Syntax:** <!-- spacer -->
+   **Example:**
+   ## First Section
+   Content here.
+   <!-- spacer -->
+   ## Second Section
+   More content here.
+
+**When to use:** Use empty lines for basic separation between blocks. Use the HTML comment spacer (<!-- spacer -->) to create more obvious visual separation between major logical sections of your document.
+
 {element_docs}
 
 CRITICAL USAGE GUIDELINES:
 
 1. Do NOT start content with a level 1 heading (# Heading). In Notion, the page title is already displayed in the metadata, so starting with an H1 heading is redundant. Begin with H2 (## Heading) or lower for section headings.
 
-2. BACKTICK HANDLING - EXTREMELY IMPORTANT:
+2. INLINE FORMATTING - VERY IMPORTANT:
+   ✅ You can use inline formatting within almost any block type.
+   ✅ Combine **bold**, *italic*, `code`, and other formatting as needed.
+   ✅ Format text to create visual hierarchy and emphasize important points.
+   ❌ DO NOT overuse formatting - be strategic with formatting for best readability.
+
+3. BACKTICK HANDLING - EXTREMELY IMPORTANT:
    ❌ NEVER wrap entire content or responses in triple backticks (```).
    ❌ DO NOT use triple backticks (```) for anything except CODE BLOCKS or DIAGRAMS.
    ❌ DO NOT use triple backticks to mark or highlight regular text or examples.
    ✅ USE triple backticks ONLY for actual programming code, pseudocode, or specialized notation.
+   ✅ For inline code, use single backticks (`code`).
    ✅ When showing Markdown syntax examples, use inline code formatting with single backticks.
 
-3. Use inline formatting (bold, italic, etc.) across all content to enhance readability.
-   Proper typography is essential for creating scannable, well-structured documents.
+4. BLOCK SEPARATION - IMPORTANT:
+   ✅ Use empty lines between different blocks to ensure proper rendering in Notion.
+   ✅ For major logical sections, add the HTML comment spacer: <!-- spacer -->
+   ✅ This spacer creates better visual breaks between key sections of your document.
+   ⚠️ While headings can sometimes work without an empty line before the following paragraph, including empty lines between all block types ensures consistent rendering.
 
-4. Notion's extensions to Markdown provide richer formatting options than standard Markdown
-   while maintaining the familiar Markdown syntax for basic elements.
-
-5. Always structure content with clear headings, lists, and paragraphs to create visually appealing
-   and well-organized documents.
+5. TOGGLE BLOCKS - NOTE:
+   ✅ For toggle blocks and collapsible headings, use pipe prefixes (|) for content.
+   ✅ Each line within a toggle should start with a pipe character followed by a space.
+   ❌ Do not use the pipe character for any other blocks.
 
 6. CONTENT FORMATTING - CRITICAL:
    ❌ DO NOT include introductory phrases like "I understand that..." or "Here's the content...".
    ✅ Provide ONLY the requested content directly without any prefacing text or meta-commentary.
    ✅ Generate just the content itself, formatted according to these guidelines.
-"""
+    """
 
     @staticmethod
     def generate_element_doc(element_class: Type[NotionBlockElement]) -> str:
@@ -59,17 +107,16 @@ CRITICAL USAGE GUIDELINES:
         # Get the element content
         content = element_class.get_llm_prompt_content()
 
-        # Format the element documentation in a compact way
         doc_parts = [
             f"## {element_name}",
-            f"{content['description']}",
-            f"**Syntax:** {content['syntax']}",
-            f"**Example:** {content['examples'][0]}" if content["examples"] else "",
-            f"**When to use:** {content['when_to_use']}",
+            f"{content.description}",
+            f"**Syntax:** {content.syntax}",
+            f"**Example:** {content.examples[0]}" if content.examples else "",
+            f"**When to use:** {content.when_to_use}",
         ]
 
-        if "avoid" in content and content["avoid"]:
-            doc_parts.append(f"**Avoid:** {content['avoid']}")
+        if content.avoid:
+            doc_parts.append(f"**Avoid:** {content.avoid}")
 
         return "\n".join([part for part in doc_parts if part])
 

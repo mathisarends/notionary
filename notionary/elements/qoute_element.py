@@ -1,7 +1,10 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class QuoteElement(NotionBlockElement):
@@ -147,16 +150,22 @@ class QuoteElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the quote element.
         """
-        return {
-            "description": "Creates blockquotes that visually distinguish quoted text.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Creates blockquotes that visually distinguish quoted text."
+            )
+            .with_usage_guidelines(
                 "Use blockquotes for quoting external sources, highlighting important statements, "
                 "or creating visual emphasis for key information."
-            ),
-            "syntax": "> Quoted text",
-            "examples": [
-                "> This is a simple blockquote",
-                "> This is a multi-line quote\n> that continues on the next line",
-                "> Important note:\n> This quote spans\n> multiple lines.",
-            ],
-        }
+            )
+            .with_syntax("> Quoted text")
+            .with_examples(
+                [
+                    "> This is a simple blockquote",
+                    "> This is a multi-line quote\n> that continues on the next line",
+                    "> Important note:\n> This quote spans\n> multiple lines.",
+                ]
+            )
+            .build()
+        )

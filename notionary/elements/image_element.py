@@ -1,7 +1,10 @@
 import re
 from typing import Dict, Any, Optional, List
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class ImageElement(NotionBlockElement):
@@ -108,17 +111,23 @@ class ImageElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the image element.
         """
-        return {
-            "description": "Embeds an image from an external URL into your document.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Embeds an image from an external URL into your document."
+            )
+            .with_usage_guidelines(
                 "Use images to include visual content such as diagrams, screenshots, charts, photos, or illustrations "
                 "that enhance your document. Images can make complex information easier to understand, create visual interest, "
                 "or provide evidence for your points."
-            ),
-            "syntax": "![Caption](https://example.com/image.jpg)",
-            "examples": [
-                "![Data visualization showing monthly trends](https://example.com/chart.png)",
-                "![](https://example.com/screenshot.jpg)",
-                '![Company logo](https://company.com/logo.png "Company Inc. logo")',
-            ],
-        }
+            )
+            .with_syntax("![Caption](https://example.com/image.jpg)")
+            .with_examples(
+                [
+                    "![Data visualization showing monthly trends](https://example.com/chart.png)",
+                    "![](https://example.com/screenshot.jpg)",
+                    '![Company logo](https://company.com/logo.png "Company Inc. logo")',
+                ]
+            )
+            .build()
+        )

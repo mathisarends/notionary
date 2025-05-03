@@ -1,7 +1,10 @@
 import re
 from typing import Dict, Any, Optional, List
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class EmbedElement(NotionBlockElement):
@@ -102,18 +105,24 @@ class EmbedElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the embed element.
         """
-        return {
-            "description": "Embeds external content from websites, PDFs, Google Maps, and other sources directly in your document.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Embeds external content from websites, PDFs, Google Maps, and other sources directly in your document."
+            )
+            .with_usage_guidelines(
                 "Use embeds when you want to include external content that isn't just a video or image. "
                 "Embeds are great for interactive content, reference materials, or live data sources."
-            ),
-            "syntax": "<embed:Caption>(https://example.com)",
-            "examples": [
-                "<embed:Course materials>(https://drive.google.com/file/d/123456/view)",
-                "<embed:Our office location>(https://www.google.com/maps?q=San+Francisco)",
-                "<embed:Latest announcement>(https://twitter.com/NotionHQ/status/1234567890)",
-                "<embed:Project documentation>(https://github.com/username/repo)",
-                "<embed>(https://example.com/important-reference.pdf)",
-            ],
-        }
+            )
+            .with_syntax("<embed:Caption>(https://example.com)")
+            .with_examples(
+                [
+                    "<embed:Course materials>(https://drive.google.com/file/d/123456/view)",
+                    "<embed:Our office location>(https://www.google.com/maps?q=San+Francisco)",
+                    "<embed:Latest announcement>(https://twitter.com/NotionHQ/status/1234567890)",
+                    "<embed:Project documentation>(https://github.com/username/repo)",
+                    "<embed>(https://example.com/important-reference.pdf)",
+                ]
+            )
+            .build()
+        )

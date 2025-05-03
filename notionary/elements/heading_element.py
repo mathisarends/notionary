@@ -2,7 +2,10 @@ import re
 from typing import Dict, Any, Optional
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
@@ -74,13 +77,21 @@ class HeadingElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the heading element.
         """
-        return {
-            "description": "Use Markdown headings (#, ##, ###) to structure content hierarchically.",
-            "when_to_use": "Use to group content into sections and define a visual hierarchy.",
-            "syntax": "## Your Heading Text",
-            "examples": [
-                "# Main Title",
-                "## Section Title",
-                "### Subsection Title",
-            ],
-        }
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Use Markdown headings (#, ##, ###) to structure content hierarchically."
+            )
+            .with_usage_guidelines(
+                "Use to group content into sections and define a visual hierarchy."
+            )
+            .with_syntax("## Your Heading Text")
+            .with_examples(
+                [
+                    "# Main Title",
+                    "## Section Title",
+                    "### Subsection Title",
+                ]
+            )
+            .build()
+        )

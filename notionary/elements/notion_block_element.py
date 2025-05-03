@@ -1,4 +1,3 @@
-import inspect
 from typing import Dict, Any, Optional
 from abc import ABC
 
@@ -33,4 +32,3 @@ class NotionBlockElement(ABC):
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         """Returns a dictionary with information for LLM prompts about this element."""
-        return {"description": inspect.cleandoc(cls.__doc__ or ""), "examples": []}

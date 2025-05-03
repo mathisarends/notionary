@@ -1,7 +1,10 @@
 from typing import Dict, Any, Optional
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
@@ -54,18 +57,27 @@ class ParagraphElement(NotionBlockElement):
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        Returns structured LLM prompt metadata for the paragraph element.
+        Returns structured LLM prompt metadata for the paragraph element,
+        including information about supported inline formatting.
         """
-        return {
-            "description": "Creates standard paragraph blocks for regular text content.",
-            "when_to_use": (
-                "Use paragraphs for normal text content. Paragraphs are the default block type and will be used "
-                "when no other specific formatting is applied."
-            ),
-            "syntax": "Just write text normally without any special prefix",
-            "examples": [
-                "This is a simple paragraph with plain text.",
-                "This paragraph has **bold** and *italic* formatting.",
-                "You can also include [links](https://example.com) or `inline code`.",
-            ],
-        }
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Creates standard paragraph blocks for regular text content with support for inline formatting: "
+                "**bold**, *italic*, `code`, ~~strikethrough~~, __underline__, and [links](url)."
+            )
+            .with_usage_guidelines(
+                "Use for normal text content. Paragraphs are the default block type when no specific formatting is applied. "
+                "Apply inline formatting to highlight key points or provide links to resources."
+            )
+            .with_syntax("Just write text normally without any special prefix")
+            .with_examples(
+                [
+                    "This is a simple paragraph with plain text.",
+                    "This paragraph has **bold** and *italic* formatting.",
+                    "You can include [links](https://example.com) or `inline code`.",
+                    "Advanced formatting: ~~strikethrough~~ and __underlined text__.",
+                ]
+            )
+            .build()
+        )
