@@ -34,7 +34,7 @@ class PageContentManager(LoggingMixin):
         self._chunker = NotionPageContentChunker()
 
     async def append_markdown(
-        self, markdown_text: str
+        self, markdown_text: str, append_divider: bool = False
     ) -> str:
         """
         Append markdown text to a Notion page, automatically handling content length limits.
@@ -45,17 +45,34 @@ class PageContentManager(LoggingMixin):
             append_divider: If True, appends a divider after the markdown content (default: False)
         """
         try:
-            blocks = self._markdown_to_notion_converter.convert(markdown_text)
+            # If the converter supports append_divider, pass it; else ignore for now
+            try:
+                blocks = self._markdown_to_notion_converter.convert(markdown_text, append_divider=append_divider)
+            except TypeError:
+                blocks = self._markdown_to_notion_converter.convert(markdown_text)
             fixed_blocks = self._chunker.fix_blocks_content_length(blocks)
 
-            result = await self._client.patch(
-                f"blocks/{self.page_id}/children", {"children": fixed_blocks}
-            )
-            return (
-                "Successfully added text to the page."
-                if result
-                else "Failed to add text."
-            )
+            # Notion API only allows up to 100 blocks per request
+            BATCH_SIZE = 100
+            total_blocks = len(fixed_blocks)
+            num_batches = (total_blocks + BATCH_SIZE - 1) // BATCH_SIZE
+            all_success = True
+            for batch_num in range(num_batches):
+                batch = fixed_blocks[batch_num * BATCH_SIZE : (batch_num + 1) * BATCH_SIZE]
+                result = await self._client.patch(
+                    f"blocks/{self.page_id}/children", {"children": batch}
+                )
+                if not result:
+                    self.logger.error(f"Failed to add batch {batch_num+1}/{num_batches} to page.")
+                    all_success = False
+                    break
+                else:
+                    self.logger.info(f"Successfully added batch {batch_num+1}/{num_batches} ({len(batch)} blocks) to page.")
+            if all_success:
+                return f"Successfully added {total_blocks} blocks to the page in {num_batches} batch(es)."
+            else:
+                return f"Failed to add all blocks. See logs for details."
+
         except Exception as e:
             self.logger.error("Error appending markdown: %s", str(e))
             raise
