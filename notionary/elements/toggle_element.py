@@ -7,12 +7,12 @@ from notionary.elements.prompts.element_prompt_content import ElementPromptConte
 
 class ToggleElement(NotionBlockElement):
     """
-    Verbesserte ToggleElement-Klasse, die Kontext berücksichtigt.
+    Verbesserte ToggleElement-Klasse mit Pipe-Syntax statt Einrückung.
     """
 
     TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+(.+)$")
-    INDENT_PATTERN = re.compile(r"^(\s{2,}|\t+)(.+)$")
-
+    PIPE_CONTENT_PATTERN = re.compile(r"^\|\s?(.*)$")
+    
     TRANSCRIPT_TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+Transcript$")
 
     @staticmethod
@@ -49,78 +49,92 @@ class ToggleElement(NotionBlockElement):
         lines: List[str], start_index: int
     ) -> Tuple[List[str], int]:
         """
-        Extract the nested content of a toggle element.
+        Extrahiert den verschachtelten Inhalt eines Toggle-Elements mit Pipe-Syntax.
+        Vereinfachte Version mit geringerer kognitiver Komplexität.
 
         Args:
-            lines: All lines of text
-            start_index: Starting index to look for nested content
+            lines: Alle Textzeilen
+            start_index: Startindex für die Suche nach verschachtelten Inhalten
 
         Returns:
-            Tuple of (nested_content_lines, next_line_index)
+            Tuple aus (verschachtelte_Inhaltszeilen, nächster_Zeilenindex)
         """
         nested_content = []
         current_index = start_index
-
+        
         while current_index < len(lines):
-            line = lines[current_index]
-
-            # Empty line is still part of toggle content
-            if not line.strip():
-                nested_content.append("")
+            current_line = lines[current_index]
+            
+            # Fall 1: Leere Zeile - kann Teil des Inhalts sein, wenn die nächste Zeile eine Pipe hat
+            if not current_line.strip():
+                if ToggleElement.is_next_line_pipe_content(lines, current_index):
+                    nested_content.append("")
+                    current_index += 1
+                    continue
+                else:
+                    # Leere Zeile ohne nachfolgende Pipe beendet den Inhalt
+                    break
+                    
+            # Fall 2: Zeile mit Pipe-Präfix - Teil des Inhalts
+            pipe_content = ToggleElement.extract_pipe_content(current_line)
+            if pipe_content is not None:
+                nested_content.append(pipe_content)
                 current_index += 1
                 continue
-
-            # Check if line is indented (part of toggle content)
-            if line.startswith("  ") or line.startswith("\t"):
-                # Extract content with indentation removed
-                content_line = ToggleElement._remove_indentation(line)
-                nested_content.append(content_line)
-                current_index += 1
-                continue
-
-            # Non-indented, non-empty line marks the end of toggle content
+                
+            # Fall 3: Normale Zeile ohne Pipe - Ende des verschachtelten Inhalts
             break
-
+            
         return nested_content, current_index
 
     @staticmethod
-    def _remove_indentation(line: str) -> str:
-        """Remove indentation from a line, handling both spaces and tabs."""
-        if line.startswith("\t"):
-            return line[1:]
-        else:
-            # Find number of leading spaces
-            leading_spaces = len(line) - len(line.lstrip(" "))
-            # Remove at least 2 spaces, but not more than what's there
-            return line[min(2, leading_spaces) :]
+    def is_next_line_pipe_content(lines: List[str], current_index: int) -> bool:
+        """Prüft, ob die nächste Zeile mit einem Pipe-Präfix beginnt."""
+        next_index = current_index + 1
+        return (next_index < len(lines) and 
+                ToggleElement.PIPE_CONTENT_PATTERN.match(lines[next_index]) is not None)
+
+    @staticmethod
+    def extract_pipe_content(line: str) -> Optional[str]:
+        """
+        Extrahiert den Inhalt einer Zeile mit Pipe-Präfix.
+        
+        Returns:
+            Den Inhalt ohne Pipe oder None, wenn keine Pipe-Syntax gefunden wurde
+        """
+        pipe_match = ToggleElement.PIPE_CONTENT_PATTERN.match(line)
+        if pipe_match:
+            return pipe_match.group(1)
+        return None
+
 
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
-        """Convert Notion toggle block to markdown toggle."""
+        """
+        Konvertiert einen Notion-Toggle-Block in Markdown mit Pipe-Syntax.
+        Optimiert mit Python-Konventionen für ungenutzte Variablen.
+        """
         if block.get("type") != "toggle":
             return None
 
         toggle_data = block.get("toggle", {})
 
-        # Extract title from rich_text
+        # Titel aus rich_text extrahieren
         title = ToggleElement._extract_text_content(toggle_data.get("rich_text", []))
 
-        # Create the toggle line
+        # Toggle-Zeile erstellen
         toggle_line = f"+++ {title}"
 
-        # Process children if any
+        # Kinder verarbeiten, falls vorhanden
         children = toggle_data.get("children", [])
-        if children:
-            child_lines = []
-            for child_block in children:
-                # This would need to be handled by a full converter that can dispatch
-                # to the appropriate element type for each child block
-                child_markdown = "  [Nested content]"  # Placeholder
-                child_lines.append(f"  {child_markdown}")
-
-            return toggle_line + "\n" + "\n".join(child_lines)
-
-        return toggle_line
+        if not children:
+            return toggle_line
+            
+        # Für jedes Kind eine Zeile mit Pipe-Syntax hinzufügen
+        # Wir verwenden _ für die ungenutzte Variable
+        child_lines = ["| [Nested content]" for _ in children]
+        
+        return toggle_line + "\n" + "\n".join(child_lines)
 
     @staticmethod
     def is_multiline() -> bool:
@@ -138,6 +152,7 @@ class ToggleElement(NotionBlockElement):
                 result += text_obj.get("plain_text", "")
         return result
 
+
     @classmethod
     def find_matches(
         cls,
@@ -146,7 +161,8 @@ class ToggleElement(NotionBlockElement):
         context_aware: bool = True,
     ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
-        Verbesserte find_matches-Methode, die Kontext beim Finden von Toggles berücksichtigt.
+        Verbesserte find_matches-Methode mit Pipe-Syntax für verschachtelte Inhalte.
+        Mit reduzierter kognitiver Komplexität durch bessere Strukturierung.
 
         Args:
             text: Der zu durchsuchende Text
@@ -161,56 +177,94 @@ class ToggleElement(NotionBlockElement):
 
         toggle_blocks = []
         lines = text.split("\n")
-
-        i = 0
-        while i < len(lines):
-            line = lines[i]
-
-            # Check if line is a toggle
-            if not cls.match_markdown(line):
-                i += 1
+        current_line_index = 0
+        
+        while current_line_index < len(lines):
+            current_line = lines[current_line_index]
+            
+            # Überprüfen, ob die aktuelle Zeile ein Toggle ist
+            if not cls._is_toggle_line(current_line):
+                current_line_index += 1
                 continue
-
-            is_transcript_toggle = cls.TRANSCRIPT_TOGGLE_PATTERN.match(line.strip())
-
-            if context_aware and is_transcript_toggle:
-                if i > 0 and lines[i - 1].strip().startswith("- "):
-                    pass
-                else:
-                    i += 1
-                    continue
-
-            start_pos = 0
-            for j in range(i):
-                start_pos += len(lines[j]) + 1
-
-            toggle_block = cls.markdown_to_notion(line)
+                
+            # Transcript-Toggle-Kontextverarbeitung
+            if cls._should_skip_transcript_toggle(current_line, lines, current_line_index, context_aware):
+                current_line_index += 1
+                continue
+                
+            # Toggle-Block erstellen und Position berechnen
+            start_position = cls._calculate_start_position(lines, current_line_index)
+            toggle_block = cls.markdown_to_notion(current_line)
+            
             if not toggle_block:
-                i += 1
+                current_line_index += 1
                 continue
-
-            # Extract nested content
-            nested_content, next_index = cls.extract_nested_content(lines, i + 1)
-
-            # Calculate ending position
-            end_pos = start_pos + len(line) + sum(len(l) + 1 for l in nested_content)
-
-            if nested_content and process_nested_content:
-                nested_text = "\n".join(nested_content)
-                nested_blocks = process_nested_content(nested_text)
-                if nested_blocks:
-                    toggle_block["toggle"]["children"] = nested_blocks
-
-            toggle_blocks.append((start_pos, end_pos, toggle_block))
-
-            i = next_index
-
+                
+            # Verschachtelte Inhalte extrahieren und verarbeiten
+            nested_content, next_line_index = cls.extract_nested_content(lines, current_line_index + 1)
+            end_position = cls._calculate_end_position(start_position, current_line, nested_content)
+            
+            # Verschachtelte Inhalte verarbeiten, wenn vorhanden
+            cls._process_nested_content_if_needed(nested_content, process_nested_content, toggle_block)
+            
+            # Toggle-Block mit Positionsinformationen speichern
+            toggle_blocks.append((start_position, end_position, toggle_block))
+            current_line_index = next_line_index
+            
         return toggle_blocks
+        
+    @staticmethod
+    def _is_toggle_line(line: str) -> bool:
+        """Prüft, ob eine Zeile ein Toggle-Element ist."""
+        return bool(ToggleElement.TOGGLE_PATTERN.match(line.strip()))
+        
+    @classmethod
+    def _should_skip_transcript_toggle(cls, line: str, lines: List[str], current_index: int, context_aware: bool) -> bool:
+        """Entscheidet, ob ein Transcript-Toggle übersprungen werden soll basierend auf dem Kontext."""
+        is_transcript_toggle = cls.TRANSCRIPT_TOGGLE_PATTERN.match(line.strip())
+        
+        if not (context_aware and is_transcript_toggle):
+            return False
+            
+        # Nur Transcript-Toggles behalten, die nach einer Listen-Zeile kommen
+        has_list_item_before = current_index > 0 and lines[current_index - 1].strip().startswith("- ")
+        return not has_list_item_before
+        
+    @staticmethod
+    def _calculate_start_position(lines: List[str], current_index: int) -> int:
+        """Berechnet die Startposition in Zeichen für den aktuellen Zeilenindex."""
+        start_pos = 0
+        for index in range(current_index):
+            start_pos += len(lines[index]) + 1  # +1 für Zeilenumbruch
+        return start_pos
+        
+    @staticmethod
+    def _calculate_end_position(start_pos: int, current_line: str, nested_content: List[str]) -> int:
+        """Berechnet die Endposition eines Toggle-Blocks inkl. verschachtelter Inhalte."""
+        line_length = len(current_line)
+        nested_content_length = sum(len(line) + 1 for line in nested_content)  # +1 für jeden Zeilenumbruch
+        return start_pos + line_length + nested_content_length
+        
+    @staticmethod
+    def _process_nested_content_if_needed(
+        nested_content: List[str], 
+        process_function: Optional[Callable], 
+        toggle_block: Dict[str, Any]
+    ) -> None:
+        """Verarbeitet verschachtelte Inhalte mit der gegebenen Funktion, wenn vorhanden."""
+        if not (nested_content and process_function):
+            return
+            
+        nested_text = "\n".join(nested_content)
+        nested_blocks = process_function(nested_text)
+        
+        if nested_blocks:
+            toggle_block["toggle"]["children"] = nested_blocks
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        Returns structured LLM prompt metadata for the toggle element.
+        Returns structured LLM prompt metadata for the toggle element with pipe syntax examples.
         """
         return {
             "description": "Toggle elements are collapsible sections that help organize and hide detailed information.",
@@ -218,9 +272,9 @@ class ToggleElement(NotionBlockElement):
                 "Use toggles for supplementary information that's not essential for the first reading, "
                 "such as details, examples, or technical information."
             ),
-            "syntax": "+++ Toggle Title",
+            "syntax": "+++ Toggle Title\n| Toggle content with pipe prefix",
             "examples": [
-                "+++ Key Findings\n  The research demonstrates **three main conclusions**:\n  1. First important point\n  2. Second important point",
-                "+++ FAQ\n  **Q: When should I use toggles?**\n  *A: Use toggles for supplementary information.*",
+                "+++ Key Findings\n| The research demonstrates **three main conclusions**:\n| 1. First important point\n| 2. Second important point",
+                "+++ FAQ\n| **Q: When should I use toggles?**\n| *A: Use toggles for supplementary information.*",
             ],
         }

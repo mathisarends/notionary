@@ -7,9 +7,10 @@ from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
 class ToggleableHeadingElement(NotionBlockElement):
-    """Handles conversion between Markdown collapsible headings and Notion toggleable heading blocks."""
+    """Handles conversion between Markdown collapsible headings and Notion toggleable heading blocks with pipe syntax."""
 
     PATTERN = re.compile(r"^\+(?P<level>#{1,3})\s+(?P<content>.+)$")
+    PIPE_CONTENT_PATTERN = re.compile(r"^\|\s?(.*)$")
 
     @staticmethod
     def match_markdown(text: str) -> bool:
@@ -49,7 +50,7 @@ class ToggleableHeadingElement(NotionBlockElement):
 
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
-        """Convert Notion toggleable heading block to markdown collapsible heading."""
+        """Convert Notion toggleable heading block to markdown collapsible heading with pipe syntax."""
         block_type = block.get("type", "")
 
         if not block_type.startswith("heading_"):
@@ -71,7 +72,7 @@ class ToggleableHeadingElement(NotionBlockElement):
         rich_text = heading_data.get("rich_text", [])
         text = TextInlineFormatter.extract_text_with_formatting(rich_text)
         prefix = "#" * level
-        return f">{prefix} {text or ''}"
+        return f"+{prefix} {text or ''}"
 
     @staticmethod
     def is_multiline() -> bool:
@@ -86,7 +87,7 @@ class ToggleableHeadingElement(NotionBlockElement):
         context_aware: bool = True,
     ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
-        Find all collapsible heading matches in the text.
+        Find all collapsible heading matches in the text with pipe syntax for nested content.
 
         Args:
             text: The text to process
@@ -120,47 +121,45 @@ class ToggleableHeadingElement(NotionBlockElement):
                 i += 1
                 continue
 
-            # Extract nested content (indented lines following the heading)
+            # Extract nested content (lines with pipe prefix)
             nested_content = []
             next_index = i + 1
 
             while next_index < len(lines):
                 next_line = lines[next_index]
 
-                # Empty line is still part of nested content
+                # Empty line is still part of nested content if followed by pipe content
                 if not next_line.strip():
-                    nested_content.append("")
-                    next_index += 1
-                    continue
-
-                # Check if the line is indented (part of nested content)
-                if next_line.startswith("  ") or next_line.startswith("\t"):
-                    # Remove indentation
-                    if next_line.startswith("\t"):
-                        content_line = next_line[1:]
+                    # Look ahead to see if next line is pipe content
+                    if (next_index + 1 < len(lines) and 
+                        cls.PIPE_CONTENT_PATTERN.match(lines[next_index + 1])):
+                        nested_content.append("")
+                        next_index += 1
+                        continue
                     else:
-                        # Remove at least 2 spaces, but not more than what's there
-                        leading_spaces = len(next_line) - len(next_line.lstrip(" "))
-                        content_line = next_line[min(2, leading_spaces) :]
+                        # Empty line not followed by pipe content ends the nested content
+                        break
 
+                # Check if line uses pipe syntax (part of nested content)
+                pipe_match = cls.PIPE_CONTENT_PATTERN.match(next_line)
+                if pipe_match:
+                    # Extract content without the pipe
+                    content_line = pipe_match.group(1)
                     nested_content.append(content_line)
                     next_index += 1
                     continue
 
-                # Check if the next line is another heading of the same or lower level
-                # which would end the current heading's content
-                if next_line.startswith(">"):
+                # Check if the next line is another heading which would end the current content
+                if cls.PATTERN.match(next_line):
                     break
 
-                # Non-indented, non-empty, non-heading line
+                # Non-pipe, non-empty, non-heading line
                 break
 
             # Calculate ending position
             end_pos = start_pos + len(line)
             if nested_content:
-                end_pos += sum(
-                    len(l) + 1 for l in nested_content
-                )  # +1 for each newline
+                end_pos += sum(len(l) + 1 for l in nested_content)  # +1 for each newline
 
             # Process nested content if provided
             if nested_content and process_nested_content:
@@ -177,16 +176,16 @@ class ToggleableHeadingElement(NotionBlockElement):
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        Returns structured LLM prompt metadata for the collapsible heading element.
+        Returns structured LLM prompt metadata for the collapsible heading element with pipe syntax.
         """
         return {
             "description": "Collapsible headings combine heading structure with toggleable visibility.",
             "when_to_use": "Use when you want to create a structured section that can be expanded or collapsed.",
-            "syntax": ">## Collapsible Heading",
+            "syntax": "+# Collapsible Heading\n| Content with pipe prefix",
             "examples": [
-                "+# Main Collapsible Section\n  Content under the section",
-                "+## Subsection\n  This content is hidden until expanded",
-                "+### Detailed Information\n  Technical details go here",
+                "+# Main Collapsible Section\n| Content under the section",
+                "+## Subsection\n| This content is hidden until expanded",
+                "+### Detailed Information\n| Technical details go here",
             ],
         }
 

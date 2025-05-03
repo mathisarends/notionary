@@ -7,10 +7,11 @@ from notionary.elements.registry.block_element_registry_builder import (
 
 
 class MarkdownToNotionConverter:
-    """Converts Markdown text to Notion API block format with support for nested structures."""
+    """Converts Markdown text to Notion API block format with support for pipe syntax for nested structures."""
 
     SPACER_MARKER = "<!-- spacer -->"
     TOGGLE_ELEMENT_TYPES = ["ToggleElement", "ToggleableHeadingElement"]
+    PIPE_CONTENT_PATTERN = r"^\|\s?(.*)$"
 
     def __init__(self, block_registry: Optional[BlockElementRegistry] = None):
         """Initialize the converter with an optional custom block registry."""
@@ -146,12 +147,12 @@ class MarkdownToNotionConverter:
 
     def _overlaps_with_excluded_positions(self, start_pos, end_pos, excluded_positions):
         """Check if a range overlaps with any excluded positions."""
-        return any(start_pos <= pos <= end_pos for pos in excluded_positions)
+        return any(pos in excluded_positions for pos in range(start_pos, end_pos + 1))
 
     def _process_text_lines(
         self, text: str, exclude_blocks: List[Tuple[int, int, Dict[str, Any]]]
     ) -> List[Tuple[int, int, Dict[str, Any]]]:
-        """Process text line by line, excluding already processed ranges."""
+        """Process text line by line, excluding already processed ranges and handling pipe syntax lines."""
         if not text:
             return []
 
@@ -170,10 +171,9 @@ class MarkdownToNotionConverter:
             line_length = len(line) + 1  # +1 for newline
             line_end = current_pos + line_length - 1
 
-            # Skip excluded lines
-            if self._overlaps_with_excluded_positions(
-                current_pos, line_end, excluded_positions
-            ):
+            # Skip excluded lines and pipe syntax lines (they're part of toggleable content)
+            if (self._overlaps_with_excluded_positions(current_pos, line_end, excluded_positions) or
+                self._is_pipe_syntax_line(line)):
                 current_pos += line_length
                 continue
 
@@ -198,6 +198,11 @@ class MarkdownToNotionConverter:
         )
 
         return line_blocks
+
+    def _is_pipe_syntax_line(self, line: str) -> bool:
+        """Check if a line uses pipe syntax (for nested content)."""
+        import re
+        return bool(re.match(self.PIPE_CONTENT_PATTERN, line))
 
     def _process_line(
         self,
@@ -385,7 +390,7 @@ class MarkdownToNotionConverter:
         self, blocks: List[Dict[str, Any]], block_index: int
     ) -> bool:
         """Determine if we need to add a spacer after the current block."""
-        # Check if this is the last block (always need a spacer)
+        # Check if this is the last block (no need for spacer)
         if block_index + 1 >= len(blocks):
             return False
 

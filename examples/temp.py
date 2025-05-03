@@ -32,6 +32,7 @@ async def main():
         print(f'✅ Found: "{title}" {icon} → {url}')
 
 # TODO: Gucken wie das hier gelesen wird
+
         markdown_content = """
 # Main Title 
 
@@ -74,12 +75,12 @@ $[Podcast Episode](https://storage.googleapis.com/audio_summaries/ep_ai_summary_
 - [x] Create initial timeline
 
 +++ Toggle Title
-  The research demonstrates **three main conclusions**:
-  1. First important point
-  2. Second important point
+| The research demonstrates **three main conclusions**:
+| 1. First important point
+| 2. Second important point
 
 +## Collapsible Heading
-  This content is hidden until expanded
+| This content is hidden until expanded
 
 ---
 
@@ -89,6 +90,15 @@ print('Hello, world!')
 
 Check the meeting notes at @[1a6389d5-7bd3-80c5-9a87-e90b034989d0]
 Deadline is @date[2023-12-31]
+
+
++++ Umsatzstatistiken
+| Hier ist unsere Umsatzstatistik für Q2:
+| 
+| | Produkt | Umsatz | Gewinn |
+| | ------- | ------ | ------ |
+| | Produkt A | €10.000 | €4.000 |
+| | Produkt B | €15.000 | €6.000 |
         """
 
         await page.append_markdown(markdown_content)
