@@ -11,19 +11,19 @@ class HeadingElement(NotionBlockElement):
 
     PATTERN = re.compile(r"^(#{1,3})\s(.+)$")
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown heading."""
         return bool(HeadingElement.PATTERN.match(text))
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block is a Notion heading."""
         block_type: str = block.get("type", "")
         return block_type.startswith("heading_") and block_type[-1] in "123"
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown heading to Notion heading block."""
         header_match = HeadingElement.PATTERN.match(text)
         if not header_match:
@@ -42,8 +42,8 @@ class HeadingElement(NotionBlockElement):
             },
         }
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion heading block to markdown heading."""
         block_type = block.get("type", "")
 
@@ -65,8 +65,8 @@ class HeadingElement(NotionBlockElement):
         prefix = "#" * level
         return f"{prefix} {text or ''}"
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         return False
 
     @classmethod

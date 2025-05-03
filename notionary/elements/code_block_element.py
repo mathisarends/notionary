@@ -20,18 +20,18 @@ class CodeBlockElement(NotionBlockElement):
 
     PATTERN = re.compile(r"```(\w*)\n([\s\S]+?)```", re.MULTILINE)
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if text contains a markdown code block."""
         return bool(CodeBlockElement.PATTERN.search(text))
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block is a Notion code block."""
         return block.get("type") == "code"
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown code block to Notion code block."""
         match = CodeBlockElement.PATTERN.search(text)
         if not match:
@@ -65,8 +65,8 @@ class CodeBlockElement(NotionBlockElement):
             },
         }
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion code block to markdown code block."""
         if block.get("type") != "code":
             return None
@@ -84,8 +84,8 @@ class CodeBlockElement(NotionBlockElement):
         # Format as a markdown code block
         return f"```{language}\n{content}\n```"
 
-    @staticmethod
-    def find_matches(text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
+    @classmethod
+    def find_matches(cls, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
         Find all code block matches in the text and return their positions.
 
@@ -130,8 +130,8 @@ class CodeBlockElement(NotionBlockElement):
 
         return matches
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         return True
 
     @classmethod

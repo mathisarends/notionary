@@ -27,20 +27,20 @@ class CalloutElement(NotionBlockElement):
     DEFAULT_EMOJI = "💡"
     DEFAULT_COLOR = "gray_background"
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown callout."""
         return text.strip().startswith("!>") and bool(
             CalloutElement.PATTERN.match(text)
         )
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block is a Notion callout."""
         return block.get("type") == "callout"
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown callout to Notion callout block."""
         callout_match = CalloutElement.PATTERN.match(text)
         if not callout_match:
@@ -61,8 +61,8 @@ class CalloutElement(NotionBlockElement):
             },
         }
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion callout block to markdown callout."""
         if block.get("type") != "callout":
             return None
@@ -85,8 +85,8 @@ class CalloutElement(NotionBlockElement):
 
         return f"!> {emoji_str}{text}"
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         return False
 
     @classmethod

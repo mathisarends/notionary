@@ -21,8 +21,8 @@ class TableElement(NotionBlockElement):
     ROW_PATTERN = re.compile(r"^\s*\|(.+)\|\s*$")
     SEPARATOR_PATTERN = re.compile(r"^\s*\|([\s\-:|]+)\|\s*$")
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if text contains a markdown table."""
         lines = text.split("\n")
 
@@ -39,13 +39,13 @@ class TableElement(NotionBlockElement):
 
         return False
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block is a Notion table."""
         return block.get("type") == "table"
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown table to Notion table block."""
         if not TableElement.match_markdown(text):
             return None
@@ -76,8 +76,8 @@ class TableElement(NotionBlockElement):
             },
         }
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion table block to markdown table."""
         if block.get("type") != "table":
             return None
@@ -138,13 +138,13 @@ class TableElement(NotionBlockElement):
 
         return "\n".join(table_rows)
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         """Indicates if this element handles content that spans multiple lines."""
         return True
 
-    @staticmethod
-    def _find_table_start(lines: List[str]) -> Optional[int]:
+    @classmethod
+    def _find_table_start(cls, lines: List[str]) -> Optional[int]:
         """Find the start index of a table in the lines."""
         for i in range(len(lines) - 2):
             if (
@@ -155,16 +155,16 @@ class TableElement(NotionBlockElement):
                 return i
         return None
 
-    @staticmethod
-    def _find_table_end(lines: List[str], start_idx: int) -> int:
+    @classmethod
+    def _find_table_end(cls, lines: List[str], start_idx: int) -> int:
         """Find the end index of a table, starting from start_idx."""
         end_idx = start_idx + 3  # Minimum: Header, Separator, one data row
         while end_idx < len(lines) and TableElement.ROW_PATTERN.match(lines[end_idx]):
             end_idx += 1
         return end_idx
 
-    @staticmethod
-    def _extract_table_rows(table_lines: List[str]) -> List[List[str]]:
+    @classmethod
+    def _extract_table_rows(cls, table_lines: List[str]) -> List[List[str]]:
         """Extract row contents from table lines, excluding separator line."""
         rows = []
         for i, line in enumerate(table_lines):
@@ -174,8 +174,8 @@ class TableElement(NotionBlockElement):
                     rows.append(cells)
         return rows
 
-    @staticmethod
-    def _normalize_row_lengths(rows: List[List[str]], column_count: int) -> None:
+    @classmethod
+    def _normalize_row_lengths(cls, rows: List[List[str]], column_count: int) -> None:
         """Normalize row lengths to the specified column count."""
         for row in rows:
             if len(row) < column_count:
@@ -183,8 +183,8 @@ class TableElement(NotionBlockElement):
             elif len(row) > column_count:
                 del row[column_count:]
 
-    @staticmethod
-    def _parse_table_row(row_text: str) -> List[str]:
+    @classmethod
+    def _parse_table_row(cls, row_text: str) -> List[str]:
         """Convert table row text to cell contents."""
         row_content = row_text.strip()
 
@@ -195,8 +195,8 @@ class TableElement(NotionBlockElement):
 
         return [cell.strip() for cell in row_content.split("|")]
 
-    @staticmethod
-    def _create_table_rows(rows: List[List[str]]) -> List[Dict[str, Any]]:
+    @classmethod
+    def _create_table_rows(cls, rows: List[List[str]]) -> List[Dict[str, Any]]:
         """Create Notion table rows from cell contents."""
         table_rows = []
 
@@ -230,8 +230,8 @@ class TableElement(NotionBlockElement):
 
         return table_rows
 
-    @staticmethod
-    def find_matches(text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
+    @classmethod
+    def find_matches(cls, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
         Find all tables in the text and return their positions.
 
@@ -272,8 +272,8 @@ class TableElement(NotionBlockElement):
 
         return matches
 
-    @staticmethod
-    def _calculate_position(lines: List[str], start: int, end: int) -> int:
+    @classmethod
+    def _calculate_position(cls, lines: List[str], start: int, end: int) -> int:
         """Calculate the text position in characters from line start to end."""
         position = 0
         for i in range(start, end):

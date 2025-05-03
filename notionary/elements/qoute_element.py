@@ -12,8 +12,8 @@ class QuoteElement(NotionBlockElement):
     # then optional whitespace, and captures any text after that
     quote_pattern = re.compile(r"^\s*>\s?(.*)", re.MULTILINE)
 
-    @staticmethod
-    def find_matches(text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
+    @classmethod
+    def find_matches(cls, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
         Find all blockquote matches in the text and return their positions and blocks.
         """
@@ -47,8 +47,8 @@ class QuoteElement(NotionBlockElement):
 
         return matches
 
-    @staticmethod
-    def is_consecutive_quote(text: str, quote_matches: List, index: int) -> bool:
+    @classmethod
+    def is_consecutive_quote(cls, text: str, quote_matches: List, index: int) -> bool:
         """Checks if the current quote is part of the previous quote sequence."""
         prev_end = quote_matches[index - 1].end()
         curr_start = quote_matches[index].start()
@@ -62,8 +62,8 @@ class QuoteElement(NotionBlockElement):
 
         return False
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown blockquote to Notion block."""
         if not text:
             return None
@@ -95,8 +95,8 @@ class QuoteElement(NotionBlockElement):
 
         return {"type": "quote", "quote": {"rich_text": rich_text, "color": "default"}}
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion quote block to markdown."""
         if block.get("type") != "quote":
             return None
@@ -116,23 +116,23 @@ class QuoteElement(NotionBlockElement):
 
         return "\n".join(formatted_lines)
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if this element can handle the given markdown text."""
         return bool(QuoteElement.quote_pattern.search(text))
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if this element can handle the given Notion block."""
         return block.get("type") == "quote"
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         """Blockquotes can span multiple lines."""
         return True
 
-    @staticmethod
-    def _extract_text_content(rich_text: List[Dict[str, Any]]) -> str:
+    @classmethod
+    def _extract_text_content(cls, rich_text: List[Dict[str, Any]]) -> str:
         """Extract plain text content from Notion rich_text elements."""
         result = ""
         for text_obj in rich_text:

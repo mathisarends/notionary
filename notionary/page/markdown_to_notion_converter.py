@@ -172,8 +172,9 @@ class MarkdownToNotionConverter:
             line_end = current_pos + line_length - 1
 
             # Skip excluded lines and pipe syntax lines (they're part of toggleable content)
-            if (self._overlaps_with_excluded_positions(current_pos, line_end, excluded_positions) or
-                self._is_pipe_syntax_line(line)):
+            if self._overlaps_with_excluded_positions(
+                current_pos, line_end, excluded_positions
+            ) or self._is_pipe_syntax_line(line):
                 current_pos += line_length
                 continue
 
@@ -202,6 +203,7 @@ class MarkdownToNotionConverter:
     def _is_pipe_syntax_line(self, line: str) -> bool:
         """Check if a line uses pipe syntax (for nested content)."""
         import re
+
         return bool(re.match(self.PIPE_CONTENT_PATTERN, line))
 
     def _process_line(

@@ -16,40 +16,34 @@ class AudioElement(NotionBlockElement):
     Supports various audio URLs including direct audio file links from CDNs and other sources.
     """
 
-    # Regex pattern for audio syntax
-    PATTERN = re.compile(
-        r"^\$\[(.*?)\]"  # $[Caption] part
-        + r'\((https?://[^\s"]+)'  # (URL part
-        + r"\)$"  # closing parenthesis
-    )
+    PATTERN = re.compile(r"^\$\[(.*?)\]" + r'\((https?://[^\s"]+)' + r"\)$")
 
-    # Audio file extensions
     AUDIO_EXTENSIONS = [".mp3", ".wav", ".ogg", ".m4a", ".flac", ".aac"]
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown audio embed."""
         text = text.strip()
-        return text.startswith("$[") and bool(AudioElement.PATTERN.match(text))
+        return text.startswith("$[") and bool(cls.PATTERN.match(text))
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block is a Notion audio."""
         return block.get("type") == "audio"
 
-    @staticmethod
-    def is_audio_url(url: str) -> bool:
+    @classmethod
+    def is_audio_url(cls, url: str) -> bool:
         """Check if URL points to an audio file."""
         return (
-            any(url.lower().endswith(ext) for ext in AudioElement.AUDIO_EXTENSIONS)
+            any(url.lower().endswith(ext) for ext in cls.AUDIO_EXTENSIONS)
             or "audio" in url.lower()
             or "storage.googleapis.com/audio_summaries" in url.lower()
         )
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown audio embed to Notion audio block."""
-        audio_match = AudioElement.PATTERN.match(text.strip())
+        audio_match = cls.PATTERN.match(text.strip())
         if not audio_match:
             return None
 
@@ -60,7 +54,7 @@ class AudioElement(NotionBlockElement):
             return None
 
         # Make sure this is an audio URL
-        if not AudioElement.is_audio_url(url):
+        if not cls.is_audio_url(url):
             # If not obviously an audio URL, we'll still accept it as the user might know better
             pass
 
@@ -78,8 +72,8 @@ class AudioElement(NotionBlockElement):
 
         return audio_block
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion audio block to markdown audio embed."""
         if block.get("type") != "audio":
             return None
@@ -101,17 +95,17 @@ class AudioElement(NotionBlockElement):
         caption = ""
         caption_rich_text = audio_data.get("caption", [])
         if caption_rich_text:
-            caption = AudioElement._extract_text_content(caption_rich_text)
+            caption = cls._extract_text_content(caption_rich_text)
 
         return f"$[{caption}]({url})"
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         """Audio embeds are single-line elements."""
         return False
 
-    @staticmethod
-    def _extract_text_content(rich_text: List[Dict[str, Any]]) -> str:
+    @classmethod
+    def _extract_text_content(cls, rich_text: List[Dict[str, Any]]) -> str:
         """Extract plain text content from Notion rich_text elements."""
         result = ""
         for text_obj in rich_text:

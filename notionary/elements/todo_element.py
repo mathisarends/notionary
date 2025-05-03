@@ -20,20 +20,20 @@ class TodoElement(NotionBlockElement):
     TODO_PATTERN = re.compile(r"^\s*[-*+]\s+\[\s?\]\s+(.+)$")
     DONE_PATTERN = re.compile(r"^\s*[-*+]\s+\[x\]\s+(.+)$")
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown todo item."""
         return bool(
             TodoElement.TODO_PATTERN.match(text) or TodoElement.DONE_PATTERN.match(text)
         )
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block is a Notion to_do block."""
         return block.get("type") == "to_do"
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown todo item to Notion to_do block."""
         done_match = TodoElement.DONE_PATTERN.match(text)
         if done_match:
@@ -47,8 +47,8 @@ class TodoElement(NotionBlockElement):
 
         return None
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion to_do block to markdown todo item."""
         if block.get("type") != "to_do":
             return None
@@ -64,8 +64,8 @@ class TodoElement(NotionBlockElement):
         checkbox = "[x]" if checked else "[ ]"
         return f"- {checkbox} {content}"
 
-    @staticmethod
-    def _create_todo_block(content: str, checked: bool) -> Dict[str, Any]:
+    @classmethod
+    def _create_todo_block(cls, content: str, checked: bool) -> Dict[str, Any]:
         """
         Create a Notion to_do block.
 
@@ -85,8 +85,8 @@ class TodoElement(NotionBlockElement):
             },
         }
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         return False
 
     @classmethod

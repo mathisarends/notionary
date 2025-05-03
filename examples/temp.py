@@ -31,7 +31,7 @@ async def main():
 
         print(f'✅ Found: "{title}" {icon} → {url}')
 
-# TODO: Gucken wie das hier gelesen wird
+        # TODO: Gucken wie das hier gelesen wird
 
         markdown_content = """
 # Main Title 
@@ -101,8 +101,9 @@ Deadline is @date[2023-12-31]
 | | Produkt B | €15.000 | €6.000 |
         """
 
-        await page.append_markdown(markdown_content)
-
+        result = await page.append_markdown(markdown_content)
+        print(f"✅ Markdown content appended: {result}")
+    
     except Exception as e:
         print(f"❌ Error while loading page from URL: {e}")
 

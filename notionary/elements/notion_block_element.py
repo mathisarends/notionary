@@ -8,36 +8,29 @@ from notionary.elements.prompts.element_prompt_content import ElementPromptConte
 class NotionBlockElement(ABC):
     """Base class for elements that can be converted between Markdown and Notion."""
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown to Notion block."""
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion block to markdown."""
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if this element can handle the given markdown text."""
-        return bool(NotionBlockElement.markdown_to_notion(text))
+        return bool(cls.markdown_to_notion(text))  # Now calls the class's version
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if this element can handle the given Notion block."""
-        return bool(NotionBlockElement.notion_to_markdown(block))
+        return bool(cls.notion_to_markdown(block))  # Now calls the class's version
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         return False
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """
-        Returns a dictionary with information for LLM prompts about this element.
-        This default implementation extracts information from the class docstring.
-        Subclasses should override this method to provide more structured information.
-
-        Returns:
-            Dictionary with documentation information
-        """
+        """Returns a dictionary with information for LLM prompts about this element."""
         return {"description": inspect.cleandoc(cls.__doc__ or ""), "examples": []}

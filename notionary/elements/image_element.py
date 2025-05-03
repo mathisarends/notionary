@@ -22,20 +22,20 @@ class ImageElement(NotionBlockElement):
         + r"\)$"  # closing parenthesis
     )
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown image."""
         return text.strip().startswith("![") and bool(
             ImageElement.PATTERN.match(text.strip())
         )
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block is a Notion image."""
         return block.get("type") == "image"
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown image to Notion image block."""
         image_match = ImageElement.PATTERN.match(text.strip())
         if not image_match:
@@ -61,8 +61,8 @@ class ImageElement(NotionBlockElement):
 
         return image_block
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion image block to markdown image."""
         if block.get("type") != "image":
             return None
@@ -88,8 +88,8 @@ class ImageElement(NotionBlockElement):
 
         return f"![{caption}]({url})"
 
-    @staticmethod
-    def _extract_text_content(rich_text: List[Dict[str, Any]]) -> str:
+    @classmethod
+    def _extract_text_content(cls, rich_text: List[Dict[str, Any]]) -> str:
         """Extract plain text content from Notion rich_text elements."""
         result = ""
         for text_obj in rich_text:
@@ -99,8 +99,8 @@ class ImageElement(NotionBlockElement):
                 result += text_obj.get("plain_text", "")
         return result
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         return False
 
     @classmethod

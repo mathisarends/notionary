@@ -8,8 +8,8 @@ from notionary.elements.text_inline_formatter import TextInlineFormatter
 class BulletedListElement(NotionBlockElement):
     """Class for converting between Markdown bullet lists and Notion bulleted list items."""
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown bulleted list item to Notion block."""
         pattern = re.compile(
             r"^(\s*)[*\-+]\s+(?!\[[ x]\])(.+)$"
@@ -28,8 +28,8 @@ class BulletedListElement(NotionBlockElement):
             "bulleted_list_item": {"rich_text": rich_text, "color": "default"},
         }
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion bulleted list item block to markdown."""
         if block.get("type") != "bulleted_list_item":
             return None
@@ -39,14 +39,14 @@ class BulletedListElement(NotionBlockElement):
 
         return f"- {content}"
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if this element can handle the given markdown text."""
         pattern = re.compile(r"^(\s*)[*\-+]\s+(?!\[[ x]\])(.+)$")
         return bool(pattern.match(text))
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if this element can handle the given Notion block."""
         return block.get("type") == "bulleted_list_item"
 

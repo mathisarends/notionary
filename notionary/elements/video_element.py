@@ -30,19 +30,19 @@ class VideoElement(NotionBlockElement):
         re.compile(r"(?:https?://)?(?:www\.)?youtu\.be/([a-zA-Z0-9_-]{11})"),
     ]
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown video embed."""
         text = text.strip()
         return text.startswith("@[") and bool(VideoElement.PATTERN.match(text))
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block is a Notion video."""
         return block.get("type") == "video"
 
-    @staticmethod
-    def is_youtube_url(url: str) -> bool:
+    @classmethod
+    def is_youtube_url(cls, url: str) -> bool:
         """Check if URL is a YouTube video and return video ID if it is."""
         for pattern in VideoElement.YOUTUBE_PATTERNS:
             match = pattern.match(url)
@@ -50,8 +50,8 @@ class VideoElement(NotionBlockElement):
                 return True
         return False
 
-    @staticmethod
-    def get_youtube_id(url: str) -> Optional[str]:
+    @classmethod
+    def get_youtube_id(cls, url: str) -> Optional[str]:
         """Extract YouTube video ID from URL."""
         for pattern in VideoElement.YOUTUBE_PATTERNS:
             match = pattern.match(url)
@@ -59,8 +59,8 @@ class VideoElement(NotionBlockElement):
                 return match.group(1)
         return None
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown video embed to Notion video block."""
         video_match = VideoElement.PATTERN.match(text.strip())
         if not video_match:
@@ -88,8 +88,8 @@ class VideoElement(NotionBlockElement):
 
         return video_block
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion video block to markdown video embed."""
         if block.get("type") != "video":
             return None
@@ -114,13 +114,13 @@ class VideoElement(NotionBlockElement):
 
         return f"@[{caption}]({url})"
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         """Videos are single-line elements."""
         return False
 
-    @staticmethod
-    def _extract_text_content(rich_text: List[Dict[str, Any]]) -> str:
+    @classmethod
+    def _extract_text_content(cls, rich_text: List[Dict[str, Any]]) -> str:
         """Extract plain text content from Notion rich_text elements."""
         result = ""
         for text_obj in rich_text:

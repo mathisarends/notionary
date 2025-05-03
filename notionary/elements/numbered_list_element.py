@@ -8,8 +8,8 @@ from notionary.elements.text_inline_formatter import TextInlineFormatter
 class NumberedListElement(NotionBlockElement):
     """Class for converting between Markdown numbered lists and Notion numbered list items."""
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown numbered list item to Notion block."""
         pattern = re.compile(r"^\s*(\d+)\.\s+(.+)$")
         numbered_match = pattern.match(text)
@@ -26,8 +26,8 @@ class NumberedListElement(NotionBlockElement):
             "numbered_list_item": {"rich_text": rich_text, "color": "default"},
         }
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion numbered list item block to markdown."""
         if block.get("type") != "numbered_list_item":
             return None
@@ -37,19 +37,19 @@ class NumberedListElement(NotionBlockElement):
 
         return f"1. {content}"
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if this element can handle the given markdown text."""
         pattern = re.compile(r"^\s*\d+\.\s+(.+)$")
         return bool(pattern.match(text))
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if this element can handle the given Notion block."""
         return block.get("type") == "numbered_list_item"
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         return False
 
     @classmethod

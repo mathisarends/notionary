@@ -88,6 +88,7 @@ class ToggleableHeadingElement(NotionBlockElement):
     ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
         Find all collapsible heading matches in the text with pipe syntax for nested content.
+        Improved version with reduced cognitive complexity.
 
         Args:
             text: The text to process
@@ -102,76 +103,143 @@ class ToggleableHeadingElement(NotionBlockElement):
 
         collapsible_blocks = []
         lines = text.split("\n")
+        line_index = 0
 
-        i = 0
-        while i < len(lines):
-            line = lines[i]
+        while line_index < len(lines):
+            current_line = lines[line_index]
 
-            # Check if line is a collapsible heading
-            if not cls.match_markdown(line):
-                i += 1
+            # Skip non-collapsible heading lines
+            if not cls._is_collapsible_heading(current_line):
+                line_index += 1
                 continue
 
-            start_pos = 0
-            for j in range(i):
-                start_pos += len(lines[j]) + 1
+            # Process collapsible heading
+            start_position = cls._calculate_line_position(lines, line_index)
+            heading_block = cls.markdown_to_notion(current_line)
 
-            heading_block = cls.markdown_to_notion(line)
             if not heading_block:
-                i += 1
+                line_index += 1
                 continue
 
-            # Extract nested content (lines with pipe prefix)
-            nested_content = []
-            next_index = i + 1
+            # Extract and process nested content
+            nested_content, next_line_index = cls._extract_nested_content(
+                lines, line_index + 1
+            )
+            end_position = cls._calculate_block_end_position(
+                start_position, current_line, nested_content
+            )
 
-            while next_index < len(lines):
-                next_line = lines[next_index]
+            cls._process_nested_content(
+                heading_block, nested_content, process_nested_content
+            )
 
-                # Empty line is still part of nested content if followed by pipe content
-                if not next_line.strip():
-                    # Look ahead to see if next line is pipe content
-                    if (next_index + 1 < len(lines) and 
-                        cls.PIPE_CONTENT_PATTERN.match(lines[next_index + 1])):
-                        nested_content.append("")
-                        next_index += 1
-                        continue
-                    else:
-                        # Empty line not followed by pipe content ends the nested content
-                        break
-
-                # Check if line uses pipe syntax (part of nested content)
-                pipe_match = cls.PIPE_CONTENT_PATTERN.match(next_line)
-                if pipe_match:
-                    # Extract content without the pipe
-                    content_line = pipe_match.group(1)
-                    nested_content.append(content_line)
-                    next_index += 1
-                    continue
-
-                # Check if the next line is another heading which would end the current content
-                if cls.PATTERN.match(next_line):
-                    break
-
-                # Non-pipe, non-empty, non-heading line
-                break
-
-            # Calculate ending position
-            end_pos = start_pos + len(line)
-            if nested_content:
-                end_pos += sum(len(l) + 1 for l in nested_content)  # +1 for each newline
-
-            # Process nested content if provided
-            if nested_content and process_nested_content:
-                nested_text = "\n".join(nested_content)
-                nested_blocks = process_nested_content(nested_text)
-                if nested_blocks:
-                    heading_block[heading_block["type"]]["children"] = nested_blocks
-
-            collapsible_blocks.append((start_pos, end_pos, heading_block))
-            i = next_index
+            # Add block to results
+            collapsible_blocks.append((start_position, end_position, heading_block))
+            line_index = next_line_index
 
         return collapsible_blocks
+
+    @classmethod
+    def _is_collapsible_heading(cls, line: str) -> bool:
+        """Check if a line represents a collapsible heading."""
+        return bool(cls.PATTERN.match(line))
+
+    @staticmethod
+    def _calculate_line_position(lines: List[str], current_index: int) -> int:
+        """Calculate the character position of a line in the text."""
+        position = 0
+        for i in range(current_index):
+            position += len(lines[i]) + 1  # +1 for newline
+        return position
+
+    @classmethod
+    def _extract_nested_content(
+        cls, lines: List[str], start_index: int
+    ) -> Tuple[List[str], int]:
+        """
+        Extract nested content with pipe syntax from lines following a collapsible heading.
+
+        Args:
+            lines: All text lines
+            start_index: Index to start looking for nested content
+
+        Returns:
+            Tuple of (nested_content, next_line_index)
+        """
+        nested_content = []
+        current_index = start_index
+
+        while current_index < len(lines):
+            current_line = lines[current_index]
+
+            # Case 1: Empty line - check if it's followed by pipe content
+            if not current_line.strip():
+                if cls._is_next_line_pipe_content(lines, current_index):
+                    nested_content.append("")
+                    current_index += 1
+                    continue
+
+            # Case 2: Pipe content line - part of nested content
+            pipe_content = cls._extract_pipe_content(current_line)
+            if pipe_content is not None:
+                nested_content.append(pipe_content)
+                current_index += 1
+                continue
+
+            # Case 3: Another collapsible heading - ends current heading's content
+            if cls.PATTERN.match(current_line):
+                break
+
+            # Case 4: Any other line - ends nested content
+            break
+
+        return nested_content, current_index
+
+    @classmethod
+    def _is_next_line_pipe_content(cls, lines: List[str], current_index: int) -> bool:
+        """Check if the next line uses pipe syntax for nested content."""
+        next_index = current_index + 1
+        if next_index >= len(lines):
+            return False
+        return bool(cls.PIPE_CONTENT_PATTERN.match(lines[next_index]))
+
+    @classmethod
+    def _extract_pipe_content(cls, line: str) -> Optional[str]:
+        """Extract content from a line with pipe prefix."""
+        pipe_match = cls.PIPE_CONTENT_PATTERN.match(line)
+        if not pipe_match:
+            return None
+        return pipe_match.group(1)
+
+    @staticmethod
+    def _calculate_block_end_position(
+        start_position: int, heading_line: str, nested_content: List[str]
+    ) -> int:
+        """Calculate the end position of a collapsible heading block including nested content."""
+        block_length = len(heading_line)
+        if nested_content:
+            # Add length of each nested content line plus newline
+            nested_length = sum(len(line) + 1 for line in nested_content)
+            block_length += nested_length
+        return start_position + block_length
+
+    @classmethod
+    def _process_nested_content(
+        cls,
+        heading_block: Dict[str, Any],
+        nested_content: List[str],
+        processor: Optional[Callable],
+    ) -> None:
+        """Process nested content with the provided callback function if available."""
+        if not (nested_content and processor):
+            return
+
+        nested_text = "\n".join(nested_content)
+        nested_blocks = processor(nested_text)
+
+        if nested_blocks:
+            block_type = heading_block["type"]
+            heading_block[block_type]["children"] = nested_blocks
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

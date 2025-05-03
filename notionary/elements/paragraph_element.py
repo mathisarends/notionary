@@ -8,8 +8,8 @@ from notionary.elements.text_inline_formatter import TextInlineFormatter
 class ParagraphElement(NotionBlockElement):
     """Handles conversion between Markdown paragraphs and Notion paragraph blocks."""
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """
         Check if text is a markdown paragraph.
         Paragraphs are essentially any text that isn't matched by other block elements.
@@ -17,13 +17,13 @@ class ParagraphElement(NotionBlockElement):
         """
         return True
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block is a Notion paragraph."""
         return block.get("type") == "paragraph"
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown paragraph to Notion paragraph block."""
         if not text.strip():
             return None
@@ -35,8 +35,8 @@ class ParagraphElement(NotionBlockElement):
             },
         }
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion paragraph block to markdown paragraph."""
         if block.get("type") != "paragraph":
             return None
@@ -47,8 +47,8 @@ class ParagraphElement(NotionBlockElement):
         text = TextInlineFormatter.extract_text_with_formatting(rich_text)
         return text if text else None
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         return False
 
     @classmethod
