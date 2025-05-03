@@ -1,7 +1,10 @@
 import re
 from typing import Dict, Any, Optional, List
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class EmbedElement(NotionBlockElement):
@@ -20,19 +23,19 @@ class EmbedElement(NotionBlockElement):
         r"^<embed(?:\:(.*?))?>(?:\s*)" + r'\((https?://[^\s"]+)' + r"\)$"
     )
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown embed."""
         text = text.strip()
         return text.startswith("<embed") and bool(EmbedElement.PATTERN.match(text))
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block is a Notion embed."""
         return block.get("type") == "embed"
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown embed to Notion embed block."""
         embed_match = EmbedElement.PATTERN.match(text.strip())
         if not embed_match:
@@ -58,8 +61,8 @@ class EmbedElement(NotionBlockElement):
 
         return embed_block
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion embed block to markdown embed."""
         if block.get("type") != "embed":
             return None
@@ -78,16 +81,16 @@ class EmbedElement(NotionBlockElement):
 
         if caption:
             return f"<embed:{caption}>({url})"
-        else:
-            return f"<embed>({url})"
 
-    @staticmethod
-    def is_multiline() -> bool:
+        return f"<embed>({url})"
+
+    @classmethod
+    def is_multiline(cls) -> bool:
         """Embeds are single-line elements."""
         return False
 
-    @staticmethod
-    def _extract_text_content(rich_text: List[Dict[str, Any]]) -> str:
+    @classmethod
+    def _extract_text_content(cls, rich_text: List[Dict[str, Any]]) -> str:
         """Extract plain text content from Notion rich_text elements."""
         result = ""
         for text_obj in rich_text:
@@ -102,18 +105,24 @@ class EmbedElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the embed element.
         """
-        return {
-            "description": "Embeds external content from websites, PDFs, Google Maps, and other sources directly in your document.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Embeds external content from websites, PDFs, Google Maps, and other sources directly in your document."
+            )
+            .with_usage_guidelines(
                 "Use embeds when you want to include external content that isn't just a video or image. "
                 "Embeds are great for interactive content, reference materials, or live data sources."
-            ),
-            "syntax": "<embed:Caption>(https://example.com)",
-            "examples": [
-                "<embed:Course materials>(https://drive.google.com/file/d/123456/view)",
-                "<embed:Our office location>(https://www.google.com/maps?q=San+Francisco)",
-                "<embed:Latest announcement>(https://twitter.com/NotionHQ/status/1234567890)",
-                "<embed:Project documentation>(https://github.com/username/repo)",
-                "<embed>(https://example.com/important-reference.pdf)",
-            ],
-        }
+            )
+            .with_syntax("<embed:Caption>(https://example.com)")
+            .with_examples(
+                [
+                    "<embed:Course materials>(https://drive.google.com/file/d/123456/view)",
+                    "<embed:Our office location>(https://www.google.com/maps?q=San+Francisco)",
+                    "<embed:Latest announcement>(https://twitter.com/NotionHQ/status/1234567890)",
+                    "<embed:Project documentation>(https://github.com/username/repo)",
+                    "<embed>(https://example.com/important-reference.pdf)",
+                ]
+            )
+            .build()
+        )

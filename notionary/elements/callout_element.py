@@ -1,8 +1,10 @@
 import re
 from typing import Dict, Any, Optional
-from typing_extensions import override
 
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 from notionary.elements.notion_block_element import NotionBlockElement
 
@@ -28,23 +30,20 @@ class CalloutElement(NotionBlockElement):
     DEFAULT_EMOJI = "💡"
     DEFAULT_COLOR = "gray_background"
 
-    @override
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown callout."""
         return text.strip().startswith("!>") and bool(
             CalloutElement.PATTERN.match(text)
         )
 
-    @override
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block is a Notion callout."""
         return block.get("type") == "callout"
 
-    @override
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown callout to Notion callout block."""
         callout_match = CalloutElement.PATTERN.match(text)
         if not callout_match:
@@ -65,9 +64,8 @@ class CalloutElement(NotionBlockElement):
             },
         }
 
-    @override
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion callout block to markdown callout."""
         if block.get("type") != "callout":
             return None
@@ -90,28 +88,38 @@ class CalloutElement(NotionBlockElement):
 
         return f"!> {emoji_str}{text}"
 
-    @override
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         return False
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        Returns a dictionary with all information needed for LLM prompts about this element.
+        Returns structured LLM prompt metadata for the callout element.
         Includes description, usage guidance, syntax options, and examples.
         """
-        return {
-            "description": "Creates a callout block to highlight important information with an icon.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Creates a callout block to highlight important information with an icon."
+            )
+            .with_usage_guidelines(
                 "Use callouts when you want to draw attention to important information, "
-                "tips, warnings, or notes that stand out from the main content."
-            ),
-            "syntax": "!> [emoji] Text",
-            "examples": [
-                "!> This is a default callout with the light bulb emoji",
-                "!> [🔔] This is a callout with a bell emoji",
-                "!> [⚠️] Warning: This is an important note to pay attention to",
-                "!> [💡] Tip: Add emoji that matches your content's purpose",
-            ],
-        }
+                "tips, warnings, or notes that stand out from the main content. "
+                "The emoji MUST be enclosed in square brackets to properly display."
+            )
+            .with_syntax("!> [emoji] Text")
+            .with_examples(
+                [
+                    "!> [💡] This is a default callout with the light bulb emoji",
+                    "!> [🔔] This is a callout with a bell emoji",
+                    "!> [⚠️] Warning: This is an important note to pay attention to",
+                    "!> [💡] Tip: Add emoji that matches your content's purpose",
+                ]
+            )
+            .with_avoidance_guidelines(
+                "NEVER omit the square brackets around the emoji. The format MUST be !> [emoji] and not !> emoji. "
+                "Without the square brackets, Notion will not properly render the callout with the specified emoji."
+            )
+            .build()
+        )

@@ -1,17 +1,18 @@
 import re
 from typing import Dict, Any, Optional
-from typing_extensions import override
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
 class BulletedListElement(NotionBlockElement):
     """Class for converting between Markdown bullet lists and Notion bulleted list items."""
 
-    @override
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown bulleted list item to Notion block."""
         pattern = re.compile(
             r"^(\s*)[*\-+]\s+(?!\[[ x]\])(.+)$"
@@ -30,8 +31,8 @@ class BulletedListElement(NotionBlockElement):
             "bulleted_list_item": {"rich_text": rich_text, "color": "default"},
         }
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion bulleted list item block to markdown."""
         if block.get("type") != "bulleted_list_item":
             return None
@@ -41,14 +42,14 @@ class BulletedListElement(NotionBlockElement):
 
         return f"- {content}"
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if this element can handle the given markdown text."""
         pattern = re.compile(r"^(\s*)[*\-+]\s+(?!\[[ x]\])(.+)$")
         return bool(pattern.match(text))
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if this element can handle the given Notion block."""
         return block.get("type") == "bulleted_list_item"
 
@@ -57,13 +58,19 @@ class BulletedListElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the bulleted list element.
         """
-        return {
-            "description": "Creates bulleted list items for unordered lists.",
-            "when_to_use": "Use for lists where order doesn't matter, such as features, options, or items without hierarchy.",
-            "syntax": "- Item text",
-            "examples": [
-                "- First item\n- Second item\n- Third item",
-                "* Apple\n* Banana\n* Cherry",
-                "+ Task A\n+ Task B",
-            ],
-        }
+        return (
+            ElementPromptBuilder()
+            .with_description("Creates bulleted list items for unordered lists.")
+            .with_usage_guidelines(
+                "Use for lists where order doesn't matter, such as features, options, or items without hierarchy."
+            )
+            .with_syntax("- Item text")
+            .with_examples(
+                [
+                    "- First item\n- Second item\n- Third item",
+                    "* Apple\n* Banana\n* Cherry",
+                    "+ Task A\n+ Task B",
+                ]
+            )
+            .build()
+        )

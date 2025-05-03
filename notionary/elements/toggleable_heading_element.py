@@ -2,15 +2,19 @@ import re
 from typing import Dict, Any, Optional, List, Tuple, Callable
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
 class ToggleableHeadingElement(NotionBlockElement):
-    """Handles conversion between Markdown collapsible headings and Notion toggleable heading blocks."""
+    """Handles conversion between Markdown collapsible headings and Notion toggleable heading blocks with pipe syntax."""
 
     PATTERN = re.compile(r"^\+(?P<level>#{1,3})\s+(?P<content>.+)$")
-    
+    PIPE_CONTENT_PATTERN = re.compile(r"^\|\s?(.*)$")
+
     @staticmethod
     def match_markdown(text: str) -> bool:
         """Check if text is a markdown collapsible heading."""
@@ -22,7 +26,7 @@ class ToggleableHeadingElement(NotionBlockElement):
         block_type: str = block.get("type", "")
         if not block_type.startswith("heading_") or block_type[-1] not in "123":
             return False
-        
+
         # Check if it has the is_toggleable property set to true
         heading_data = block.get(block_type, {})
         return heading_data.get("is_toggleable", False) is True
@@ -49,7 +53,7 @@ class ToggleableHeadingElement(NotionBlockElement):
 
     @staticmethod
     def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
-        """Convert Notion toggleable heading block to markdown collapsible heading."""
+        """Convert Notion toggleable heading block to markdown collapsible heading with pipe syntax."""
         block_type = block.get("type", "")
 
         if not block_type.startswith("heading_"):
@@ -63,7 +67,7 @@ class ToggleableHeadingElement(NotionBlockElement):
             return None
 
         heading_data = block.get(block_type, {})
-        
+
         # Check if it's toggleable
         if not heading_data.get("is_toggleable", False):
             return None
@@ -71,7 +75,7 @@ class ToggleableHeadingElement(NotionBlockElement):
         rich_text = heading_data.get("rich_text", [])
         text = TextInlineFormatter.extract_text_with_formatting(rich_text)
         prefix = "#" * level
-        return f">{prefix} {text or ''}"
+        return f"+{prefix} {text or ''}"
 
     @staticmethod
     def is_multiline() -> bool:
@@ -86,7 +90,8 @@ class ToggleableHeadingElement(NotionBlockElement):
         context_aware: bool = True,
     ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
-        Find all collapsible heading matches in the text.
+        Find all collapsible heading matches in the text with pipe syntax for nested content.
+        Improved version with reduced cognitive complexity.
 
         Args:
             text: The text to process
@@ -101,100 +106,164 @@ class ToggleableHeadingElement(NotionBlockElement):
 
         collapsible_blocks = []
         lines = text.split("\n")
+        line_index = 0
 
-        i = 0
-        while i < len(lines):
-            line = lines[i]
+        while line_index < len(lines):
+            current_line = lines[line_index]
 
-            # Check if line is a collapsible heading
-            if not cls.match_markdown(line):
-                i += 1
+            # Skip non-collapsible heading lines
+            if not cls._is_collapsible_heading(current_line):
+                line_index += 1
                 continue
 
-            start_pos = 0
-            for j in range(i):
-                start_pos += len(lines[j]) + 1
+            # Process collapsible heading
+            start_position = cls._calculate_line_position(lines, line_index)
+            heading_block = cls.markdown_to_notion(current_line)
 
-            heading_block = cls.markdown_to_notion(line)
             if not heading_block:
-                i += 1
+                line_index += 1
                 continue
 
-            # Extract nested content (indented lines following the heading)
-            nested_content = []
-            next_index = i + 1
-            
-            while next_index < len(lines):
-                next_line = lines[next_index]
-                
-                # Empty line is still part of nested content
-                if not next_line.strip():
-                    nested_content.append("")
-                    next_index += 1
-                    continue
+            # Extract and process nested content
+            nested_content, next_line_index = cls._extract_nested_content(
+                lines, line_index + 1
+            )
+            end_position = cls._calculate_block_end_position(
+                start_position, current_line, nested_content
+            )
 
-                # Check if the line is indented (part of nested content)
-                if next_line.startswith("  ") or next_line.startswith("\t"):
-                    # Remove indentation
-                    if next_line.startswith("\t"):
-                        content_line = next_line[1:]
-                    else:
-                        # Remove at least 2 spaces, but not more than what's there
-                        leading_spaces = len(next_line) - len(next_line.lstrip(" "))
-                        content_line = next_line[min(2, leading_spaces):]
-                    
-                    nested_content.append(content_line)
-                    next_index += 1
-                    continue
-                
-                # Check if the next line is another heading of the same or lower level
-                # which would end the current heading's content
-                if next_line.startswith(">"):
-                    break
-                
-                # Non-indented, non-empty, non-heading line
-                break
+            cls._process_nested_content(
+                heading_block, nested_content, process_nested_content
+            )
 
-            # Calculate ending position
-            end_pos = start_pos + len(line)
-            if nested_content:
-                end_pos += sum(len(l) + 1 for l in nested_content)  # +1 for each newline
-
-            # Process nested content if provided
-            if nested_content and process_nested_content:
-                nested_text = "\n".join(nested_content)
-                nested_blocks = process_nested_content(nested_text)
-                if nested_blocks:
-                    heading_block[heading_block["type"]]["children"] = nested_blocks
-
-            collapsible_blocks.append((start_pos, end_pos, heading_block))
-            i = next_index
+            # Add block to results
+            collapsible_blocks.append((start_position, end_position, heading_block))
+            line_index = next_line_index
 
         return collapsible_blocks
 
     @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """
-        Returns structured LLM prompt metadata for the collapsible heading element.
-        """
-        return {
-            "description": "Collapsible headings combine heading structure with toggleable visibility.",
-            "when_to_use": "Use when you want to create a structured section that can be expanded or collapsed.",
-            "syntax": ">## Collapsible Heading",
-            "examples": [
-                "># Main Collapsible Section\n  Content under the section",
-                ">## Subsection\n  This content is hidden until expanded",
-                ">### Detailed Information\n  Technical details go here",
-            ],
-        }
+    def _is_collapsible_heading(cls, line: str) -> bool:
+        """Check if a line represents a collapsible heading."""
+        return bool(cls.PATTERN.match(line))
 
     @staticmethod
-    def _extract_text_content(rich_text: List[Dict[str, Any]]) -> str:
-        """Extract plain text content from Notion rich_text elements."""
-        result = ""
-        for text_obj in rich_text:
-            if text_obj.get("type") == "text":
-                result += text_obj.get("text", {}).get("content", "")
-            elif "plain_text" in text_obj:
-                result += text_obj.get("plain_text", "")
-        return result
+    def _calculate_line_position(lines: List[str], current_index: int) -> int:
+        """Calculate the character position of a line in the text."""
+        position = 0
+        for i in range(current_index):
+            position += len(lines[i]) + 1  # +1 for newline
+        return position
+
+    @classmethod
+    def _extract_nested_content(
+        cls, lines: List[str], start_index: int
+    ) -> Tuple[List[str], int]:
+        """
+        Extract nested content with pipe syntax from lines following a collapsible heading.
+
+        Args:
+            lines: All text lines
+            start_index: Index to start looking for nested content
+
+        Returns:
+            Tuple of (nested_content, next_line_index)
+        """
+        nested_content = []
+        current_index = start_index
+
+        while current_index < len(lines):
+            current_line = lines[current_index]
+
+            # Case 1: Empty line - check if it's followed by pipe content
+            if not current_line.strip():
+                if cls._is_next_line_pipe_content(lines, current_index):
+                    nested_content.append("")
+                    current_index += 1
+                    continue
+
+            # Case 2: Pipe content line - part of nested content
+            pipe_content = cls._extract_pipe_content(current_line)
+            if pipe_content is not None:
+                nested_content.append(pipe_content)
+                current_index += 1
+                continue
+
+            # Case 3: Another collapsible heading - ends current heading's content
+            if cls.PATTERN.match(current_line):
+                break
+
+            # Case 4: Any other line - ends nested content
+            break
+
+        return nested_content, current_index
+
+    @classmethod
+    def _is_next_line_pipe_content(cls, lines: List[str], current_index: int) -> bool:
+        """Check if the next line uses pipe syntax for nested content."""
+        next_index = current_index + 1
+        if next_index >= len(lines):
+            return False
+        return bool(cls.PIPE_CONTENT_PATTERN.match(lines[next_index]))
+
+    @classmethod
+    def _extract_pipe_content(cls, line: str) -> Optional[str]:
+        """Extract content from a line with pipe prefix."""
+        pipe_match = cls.PIPE_CONTENT_PATTERN.match(line)
+        if not pipe_match:
+            return None
+        return pipe_match.group(1)
+
+    @staticmethod
+    def _calculate_block_end_position(
+        start_position: int, heading_line: str, nested_content: List[str]
+    ) -> int:
+        """Calculate the end position of a collapsible heading block including nested content."""
+        block_length = len(heading_line)
+        if nested_content:
+            # Add length of each nested content line plus newline
+            nested_length = sum(len(line) + 1 for line in nested_content)
+            block_length += nested_length
+        return start_position + block_length
+
+    @classmethod
+    def _process_nested_content(
+        cls,
+        heading_block: Dict[str, Any],
+        nested_content: List[str],
+        processor: Optional[Callable],
+    ) -> None:
+        """Process nested content with the provided callback function if available."""
+        if not (nested_content and processor):
+            return
+
+        nested_text = "\n".join(nested_content)
+        nested_blocks = processor(nested_text)
+
+        if nested_blocks:
+            block_type = heading_block["type"]
+            heading_block[block_type]["children"] = nested_blocks
+
+    @classmethod
+    def get_llm_prompt_content(cls) -> ElementPromptContent:
+        """
+        Returns structured LLM prompt metadata for the collapsible heading element with pipe syntax.
+        """
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Collapsible headings combine heading structure with toggleable visibility."
+            )
+            .with_usage_guidelines(
+                "Use when you want to create a structured section that can be expanded or collapsed."
+            )
+            .with_syntax("+# Collapsible Heading\n| Content with pipe prefix")
+            .with_examples(
+                [
+                    "+# Main Collapsible Section\n| Content under the section",
+                    "+## Subsection\n| This content is hidden until expanded",
+                    "+### Detailed Information\n| Technical details go here",
+                ]
+            )
+            .build()
+        )

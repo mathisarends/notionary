@@ -1,8 +1,6 @@
 from typing import Dict, Any, List, Optional
 
-from notionary.elements.registry.block_element_registry import (
-    BlockElementRegistry,
-)
+from notionary.elements.registry.block_element_registry import BlockElementRegistry
 from notionary.elements.registry.block_element_registry_builder import (
     BlockElementRegistryBuilder,
 )
@@ -11,12 +9,12 @@ from notionary.elements.registry.block_element_registry_builder import (
 class NotionToMarkdownConverter:
     """Converts Notion blocks to Markdown text with support for nested structures."""
 
+    TOGGLE_ELEMENT_TYPES = ["toggle", "toggleable_heading"]
+    LIST_ITEM_TYPES = ["numbered_list_item", "bulleted_list_item"]
+
     def __init__(self, block_registry: Optional[BlockElementRegistry] = None):
         """
         Initialize the NotionToMarkdownConverter.
-
-        Args:
-            block_registry: Optional registry of Notion block elements
         """
         self._block_registry = (
             block_registry or BlockElementRegistryBuilder().create_full_registry()
@@ -25,12 +23,6 @@ class NotionToMarkdownConverter:
     def convert(self, blocks: List[Dict[str, Any]]) -> str:
         """
         Convert Notion blocks to Markdown text, handling nested structures.
-
-        Args:
-            blocks: List of Notion blocks
-
-        Returns:
-            Markdown text
         """
         if not blocks:
             return ""
@@ -47,12 +39,6 @@ class NotionToMarkdownConverter:
     def _convert_single_block_with_children(self, block: Dict[str, Any]) -> str:
         """
         Process a single block, including any children.
-
-        Args:
-            block: Notion block to process
-
-        Returns:
-            Markdown representation of the block and its children
         """
         if not block:
             return ""
@@ -68,16 +54,13 @@ class NotionToMarkdownConverter:
 
         block_type = block.get("type", "")
 
-        if block_type == "toggle":
+        if block_type in self.TOGGLE_ELEMENT_TYPES:
             return self._format_toggle_with_children(block_markdown, children_markdown)
 
-        if block_type in ["numbered_list_item", "bulleted_list_item"]:
+        if block_type in self.LIST_ITEM_TYPES:
             return self._format_list_item_with_children(
                 block_markdown, children_markdown
             )
-
-        if block_type in ["column_list", "column"]:
-            return children_markdown
 
         return self._format_standard_block_with_children(
             block_markdown, children_markdown
@@ -86,12 +69,6 @@ class NotionToMarkdownConverter:
     def _has_children(self, block: Dict[str, Any]) -> bool:
         """
         Check if block has children that need processing.
-
-        Args:
-            block: Notion block to check
-
-        Returns:
-            True if block has children to process
         """
         return block.get("has_children", False) and "children" in block
 
@@ -99,14 +76,7 @@ class NotionToMarkdownConverter:
         self, toggle_markdown: str, children_markdown: str
     ) -> str:
         """
-        Format toggle block with its children content.
-
-        Args:
-            toggle_markdown: Markdown for the toggle itself
-            children_markdown: Markdown for toggle's children
-
-        Returns:
-            Formatted markdown with indented children
+        Format toggle or toggleable_heading block with its children content.
         """
         indented_children = self._indent_text(children_markdown)
         return f"{toggle_markdown}\n{indented_children}"
@@ -116,13 +86,6 @@ class NotionToMarkdownConverter:
     ) -> str:
         """
         Format list item with its children content.
-
-        Args:
-            item_markdown: Markdown for the list item itself
-            children_markdown: Markdown for item's children
-
-        Returns:
-            Formatted markdown with indented children
         """
         indented_children = self._indent_text(children_markdown)
         return f"{item_markdown}\n{indented_children}"
@@ -132,26 +95,12 @@ class NotionToMarkdownConverter:
     ) -> str:
         """
         Format standard block with its children content.
-
-        Args:
-            block_markdown: Markdown for the block itself
-            children_markdown: Markdown for block's children
-
-        Returns:
-            Formatted markdown with children after block
         """
         return f"{block_markdown}\n\n{children_markdown}"
 
     def _indent_text(self, text: str, spaces: int = 4) -> str:
         """
         Indent each line of text with specified number of spaces.
-
-        Args:
-            text: Text to indent
-            spaces: Number of spaces to use for indentation
-
-        Returns:
-            Indented text
         """
         indent = " " * spaces
         return "\n".join([f"{indent}{line}" for line in text.split("\n")])
@@ -159,12 +108,6 @@ class NotionToMarkdownConverter:
     def extract_toggle_content(self, blocks: List[Dict[str, Any]]) -> str:
         """
         Extract only the content of toggles from blocks.
-
-        Args:
-            blocks: List of Notion blocks
-
-        Returns:
-            Markdown text with toggle contents
         """
         if not blocks:
             return ""
@@ -181,12 +124,8 @@ class NotionToMarkdownConverter:
     ) -> None:
         """
         Recursively extract toggle content from a block and its children.
-
-        Args:
-            block: Block to process
-            result: List to collect toggle content
         """
-        if self._is_toggle_with_children(block):
+        if self._is_toggle_or_heading_with_children(block):
             self._add_toggle_header_to_result(block, result)
             self._add_toggle_children_to_result(block, result)
 
@@ -194,31 +133,27 @@ class NotionToMarkdownConverter:
             for child in block["children"]:
                 self._extract_toggle_content_recursive(child, result)
 
-    def _is_toggle_with_children(self, block: Dict[str, Any]) -> bool:
+    def _is_toggle_or_heading_with_children(self, block: Dict[str, Any]) -> bool:
         """
-        Check if block is a toggle with children.
-
-        Args:
-            block: Block to check
-
-        Returns:
-            True if block is a toggle with children
+        Check if block is a toggle or toggleable_heading with children.
         """
-        return block.get("type") == "toggle" and "children" in block
+        return block.get("type") in self.TOGGLE_ELEMENT_TYPES and "children" in block
 
     def _add_toggle_header_to_result(
         self, block: Dict[str, Any], result: List[str]
     ) -> None:
         """
         Add toggle header text to result list.
-
-        Args:
-            block: Toggle block
-            result: List to add header to
         """
-        toggle_text = self._extract_text_from_rich_text(
-            block.get("toggle", {}).get("rich_text", [])
-        )
+        block_type = block.get("type")
+        rich_text = None
+
+        if block_type == "toggle":
+            rich_text = block.get("toggle", {}).get("rich_text", [])
+        elif block_type == "toggleable_heading":
+            rich_text = block.get("toggleable_heading", {}).get("rich_text", [])
+
+        toggle_text = self._extract_text_from_rich_text(rich_text or [])
 
         if toggle_text:
             result.append(f"### {toggle_text}")
@@ -228,10 +163,6 @@ class NotionToMarkdownConverter:
     ) -> None:
         """
         Add formatted toggle children to result list.
-
-        Args:
-            block: Toggle block with children
-            result: List to add children content to
         """
         for child in block.get("children", []):
             child_type = child.get("type")
@@ -248,12 +179,6 @@ class NotionToMarkdownConverter:
     def _extract_text_from_rich_text(self, rich_text: List[Dict[str, Any]]) -> str:
         """
         Extract plain text from Notion's rich text array.
-
-        Args:
-            rich_text: List of rich text objects
-
-        Returns:
-            Concatenated plain text
         """
         if not rich_text:
             return ""

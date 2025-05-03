@@ -2,7 +2,10 @@ import re
 from typing import Dict, Any, Optional, List, Tuple
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class BookmarkElement(NotionBlockElement):
@@ -29,20 +32,20 @@ class BookmarkElement(NotionBlockElement):
         + r"\)$"  # closing parenthesis
     )
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown bookmark."""
         return text.strip().startswith("[bookmark]") and bool(
             BookmarkElement.PATTERN.match(text.strip())
         )
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block is a Notion bookmark."""
         return block.get("type") in ["bookmark", "external-bookmark"]
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown bookmark to Notion bookmark block."""
         bookmark_match = BookmarkElement.PATTERN.match(text.strip())
         if not bookmark_match:
@@ -120,8 +123,8 @@ class BookmarkElement(NotionBlockElement):
 
         return {"type": "bookmark", "bookmark": bookmark_data}
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion bookmark block to markdown bookmark."""
         block_type = block.get("type", "")
 
@@ -158,13 +161,13 @@ class BookmarkElement(NotionBlockElement):
 
         return f"[bookmark]({url})"
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         """Bookmarks are single-line elements."""
         return False
 
-    @staticmethod
-    def _extract_text_content(rich_text: List[Dict[str, Any]]) -> str:
+    @classmethod
+    def _extract_text_content(cls, rich_text: List[Dict[str, Any]]) -> str:
         """Extract plain text content from Notion rich_text elements."""
         result = ""
         for text_obj in rich_text:
@@ -174,8 +177,8 @@ class BookmarkElement(NotionBlockElement):
                 result += text_obj.get("plain_text", "")
         return result
 
-    @staticmethod
-    def _parse_caption(caption: List[Dict[str, Any]]) -> Tuple[str, str]:
+    @classmethod
+    def _parse_caption(cls, caption: List[Dict[str, Any]]) -> Tuple[str, str]:
         """
         Parse Notion caption into title and description components.
         Returns a tuple of (title, description).
@@ -196,17 +199,23 @@ class BookmarkElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the bookmark element.
         """
-        return {
-            "description": "Creates a bookmark that links to an external website.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description("Creates a bookmark that links to an external website.")
+            .with_usage_guidelines(
                 "Use bookmarks when you want to reference external content while keeping the page clean and organized. "
                 "Bookmarks display a preview card for the linked content."
-            ),
-            "syntax": '[bookmark](https://example.com "Optional Title" "Optional Description")',
-            "examples": [
-                "[bookmark](https://example.com)",
-                '[bookmark](https://example.com "Example Title")',
-                '[bookmark](https://example.com "Example Title" "Example description of the site")',
-                '[bookmark](https://github.com "GitHub" "Where the world builds software")',
-            ],
-        }
+            )
+            .with_syntax(
+                '[bookmark](https://example.com "Optional Title" "Optional Description")'
+            )
+            .with_examples(
+                [
+                    "[bookmark](https://example.com)",
+                    '[bookmark](https://example.com "Example Title")',
+                    '[bookmark](https://example.com "Example Title" "Example description of the site")',
+                    '[bookmark](https://github.com "GitHub" "Where the world builds software")',
+                ]
+            )
+            .build()
+        )

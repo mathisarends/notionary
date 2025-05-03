@@ -17,6 +17,8 @@ from notionary.util.logging_mixin import LoggingMixin
 
 
 class PageContentManager(LoggingMixin):
+    BATCH_SIZE = 100
+    
     def __init__(
         self,
         page_id: str,
@@ -33,45 +35,39 @@ class PageContentManager(LoggingMixin):
         )
         self._chunker = NotionPageContentChunker()
 
-    async def append_markdown(
-        self, markdown_text: str, append_divider: bool = False
-    ) -> str:
+    async def append_markdown(self, markdown_text: str, append_divider = False) -> str:
         """
         Append markdown text to a Notion page, automatically handling content length limits.
-        First strips out triple backtick markdown fences if they wrap the entire content.
 
         Args:
             markdown_text: The markdown text to append
             append_divider: If True, appends a divider after the markdown content (default: False)
         """
         try:
-            # If the converter supports append_divider, pass it; else ignore for now
-            try:
-                blocks = self._markdown_to_notion_converter.convert(markdown_text, append_divider=append_divider)
-            except TypeError:
-                blocks = self._markdown_to_notion_converter.convert(markdown_text)
+            # Just the markdown synthax for the divider as it will be converted to a Notion divider block
+            if append_divider:
+                markdown_text = markdown_text + "\n\n---\n\n"
+                
+            blocks = self._markdown_to_notion_converter.convert(markdown_text)
             fixed_blocks = self._chunker.fix_blocks_content_length(blocks)
 
-            # Notion API only allows up to 100 blocks per request
-            BATCH_SIZE = 100
             total_blocks = len(fixed_blocks)
-            num_batches = (total_blocks + BATCH_SIZE - 1) // BATCH_SIZE
+            num_batches = (total_blocks + self.BATCH_SIZE - 1) // self.BATCH_SIZE
+            
             all_success = True
             for batch_num in range(num_batches):
-                batch = fixed_blocks[batch_num * BATCH_SIZE : (batch_num + 1) * BATCH_SIZE]
-                result = await self._client.patch(
-                    f"blocks/{self.page_id}/children", {"children": batch}
-                )
-                if not result:
-                    self.logger.error(f"Failed to add batch {batch_num+1}/{num_batches} to page.")
+                start_idx = batch_num * self.BATCH_SIZE
+                end_idx = min((batch_num + 1) * self.BATCH_SIZE, total_blocks)
+                batch = fixed_blocks[start_idx:end_idx]
+                
+                batch_success = await self._process_batch(batch, batch_num, num_batches)
+                if not batch_success:
                     all_success = False
                     break
-                else:
-                    self.logger.info(f"Successfully added batch {batch_num+1}/{num_batches} ({len(batch)} blocks) to page.")
+            
             if all_success:
                 return f"Successfully added {total_blocks} blocks to the page in {num_batches} batch(es)."
-            else:
-                return f"Failed to add all blocks. See logs for details."
+            return "Failed to add all blocks. See logs for details."
 
         except Exception as e:
             self.logger.error("Error appending markdown: %s", str(e))
@@ -175,9 +171,7 @@ class PageContentManager(LoggingMixin):
             if parent_id is None
             else await self.get_block_children(parent_id)
         )
-        
-        print("blocks", json.dumps(blocks, indent=2))
-        
+
         if not blocks:
             return []
 
@@ -199,3 +193,19 @@ class PageContentManager(LoggingMixin):
     async def get_text(self) -> str:
         blocks = await self.get_page_blocks_with_children()
         return self._notion_to_markdown_converter.convert(blocks)
+
+
+    async def _process_batch(self, batch: List[Dict], batch_num: int, num_batches: int) -> bool:
+        """
+        Verarbeitet einen einzelnen Batch von Blöcken und gibt zurück, ob es erfolgreich war.
+        """
+        result = await self._client.patch(
+            f"blocks/{self.page_id}/children", {"children": batch}
+        )
+        
+        if not result:
+            self.logger.error("Failed to add batch %d/%d to page.", batch_num + 1, num_batches)
+            return False
+            
+        self.logger.info("Successfully added batch %d/%d (%d blocks) to page.", batch_num + 1, num_batches, len(batch))
+        return True

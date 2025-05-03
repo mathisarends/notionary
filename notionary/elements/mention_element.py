@@ -3,7 +3,10 @@ from typing import Dict, Any, Optional, List
 from typing_extensions import override
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class MentionElement(NotionBlockElement):
@@ -46,16 +49,16 @@ class MentionElement(NotionBlockElement):
         },
     }
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if text contains a markdown mention."""
         for mention_type in MentionElement.MENTION_TYPES.values():
             if re.search(mention_type["pattern"], text):
                 return True
         return False
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block contains a mention."""
         supported_block_types = [
             "paragraph",
@@ -74,8 +77,8 @@ class MentionElement(NotionBlockElement):
 
         return any(text_item.get("type") == "mention" for text_item in rich_text)
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown text with mentions to a Notion paragraph block."""
         if not MentionElement.match_markdown(text):
             return None
@@ -87,8 +90,8 @@ class MentionElement(NotionBlockElement):
             "paragraph": {"rich_text": rich_text, "color": "default"},
         }
 
-    @staticmethod
-    def _process_markdown_with_mentions(text: str) -> List[Dict[str, Any]]:
+    @classmethod
+    def _process_markdown_with_mentions(cls, text: str) -> List[Dict[str, Any]]:
         """Convert markdown mentions to Notion rich_text format."""
         mentions = []
 
@@ -136,8 +139,8 @@ class MentionElement(NotionBlockElement):
 
         return rich_text
 
-    @staticmethod
-    def _create_text_item(content: str) -> Dict[str, Any]:
+    @classmethod
+    def _create_text_item(cls, content: str) -> Dict[str, Any]:
         """Create a text item with default annotations."""
         text_item = {
             "type": "text",
@@ -147,8 +150,8 @@ class MentionElement(NotionBlockElement):
         }
         return text_item
 
-    @staticmethod
-    def _default_annotations() -> Dict[str, Any]:
+    @classmethod
+    def _default_annotations(cls) -> Dict[str, Any]:
         """Return default annotations for rich text."""
         return {
             "bold": False,
@@ -159,8 +162,8 @@ class MentionElement(NotionBlockElement):
             "color": "default",
         }
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Extract mentions from Notion block and convert to markdown format."""
         block_type = block.get("type")
         if not block_type or block_type not in block:
@@ -176,8 +179,8 @@ class MentionElement(NotionBlockElement):
 
         return None
 
-    @staticmethod
-    def _process_rich_text_with_mentions(rich_text: List[Dict[str, Any]]) -> str:
+    @classmethod
+    def _process_rich_text_with_mentions(cls, rich_text: List[Dict[str, Any]]) -> str:
         """Convert rich text with mentions to markdown string."""
         result = []
 
@@ -197,8 +200,8 @@ class MentionElement(NotionBlockElement):
 
         return "".join(result)
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         return False
 
     @classmethod
@@ -206,13 +209,21 @@ class MentionElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the mention element.
         """
-        return {
-            "description": "References to Notion pages, databases, or dates within text content.",
-            "when_to_use": "When you want to link to other Notion content within your text.",
-            "syntax": "@[page-id]",
-            "examples": [
-                "Check the meeting notes at @[1a6389d5-7bd3-80c5-9a87-e90b034989d0]",
-                "Deadline is @date[2023-12-31]",
-                "Use the structure in @db[1a6389d5-7bd3-80e9-b199-000cfb3fa0b3]",
-            ],
-        }
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "References to Notion pages, databases, or dates within text content."
+            )
+            .with_usage_guidelines(
+                "When you want to link to other Notion content within your text."
+            )
+            .with_syntax("@[page-id]")
+            .with_examples(
+                [
+                    "Check the meeting notes at @[1a6389d5-7bd3-80c5-9a87-e90b034989d0]",
+                    "Deadline is @date[2023-12-31]",
+                    "Use the structure in @db[1a6389d5-7bd3-80e9-b199-000cfb3fa0b3]",
+                ]
+            )
+            .build()
+        )

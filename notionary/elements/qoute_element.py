@@ -1,66 +1,72 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class QuoteElement(NotionBlockElement):
     """Class for converting between Markdown blockquotes and Notion quote blocks."""
-    
+
     # Regular expression pattern to match Markdown blockquote lines
-    # Matches lines that start with optional whitespace, followed by '>', 
+    # Matches lines that start with optional whitespace, followed by '>',
     # then optional whitespace, and captures any text after that
     quote_pattern = re.compile(r"^\s*>\s?(.*)", re.MULTILINE)
 
-    @staticmethod
-    def find_matches(text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
+    @classmethod
+    def find_matches(cls, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
         Find all blockquote matches in the text and return their positions and blocks.
         """
         matches = []
         quote_matches = list(QuoteElement.quote_pattern.finditer(text))
-        
+
         if not quote_matches:
             return []
-        
+
         current_match_index = 0
         while current_match_index < len(quote_matches):
             start_match = quote_matches[current_match_index]
             start_pos = start_match.start()
-            
+
             next_match_index = current_match_index + 1
-            while (next_match_index < len(quote_matches) and 
-                QuoteElement.is_consecutive_quote(text, quote_matches, next_match_index)):
+            while next_match_index < len(
+                quote_matches
+            ) and QuoteElement.is_consecutive_quote(
+                text, quote_matches, next_match_index
+            ):
                 next_match_index += 1
-                
+
             end_pos = quote_matches[next_match_index - 1].end()
             quote_text = text[start_pos:end_pos]
-            
+
             block = QuoteElement.markdown_to_notion(quote_text)
             if block:
                 matches.append((start_pos, end_pos, block))
-            
+
             current_match_index = next_match_index
-        
+
         return matches
-    
-    @staticmethod
-    def is_consecutive_quote(text: str, quote_matches: List, index: int) -> bool:
+
+    @classmethod
+    def is_consecutive_quote(cls, text: str, quote_matches: List, index: int) -> bool:
         """Checks if the current quote is part of the previous quote sequence."""
         prev_end = quote_matches[index - 1].end()
         curr_start = quote_matches[index].start()
         gap_text = text[prev_end:curr_start]
-        
+
         if gap_text.count("\n") == 1:
             return True
-        
+
         if gap_text.strip() == "" and gap_text.count("\n") <= 2:
             return True
-            
+
         return False
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown blockquote to Notion block."""
         if not text:
             return None
@@ -92,8 +98,8 @@ class QuoteElement(NotionBlockElement):
 
         return {"type": "quote", "quote": {"rich_text": rich_text, "color": "default"}}
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion quote block to markdown."""
         if block.get("type") != "quote":
             return None
@@ -113,23 +119,23 @@ class QuoteElement(NotionBlockElement):
 
         return "\n".join(formatted_lines)
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if this element can handle the given markdown text."""
         return bool(QuoteElement.quote_pattern.search(text))
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if this element can handle the given Notion block."""
         return block.get("type") == "quote"
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         """Blockquotes can span multiple lines."""
         return True
 
-    @staticmethod
-    def _extract_text_content(rich_text: List[Dict[str, Any]]) -> str:
+    @classmethod
+    def _extract_text_content(cls, rich_text: List[Dict[str, Any]]) -> str:
         """Extract plain text content from Notion rich_text elements."""
         result = ""
         for text_obj in rich_text:
@@ -144,16 +150,22 @@ class QuoteElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the quote element.
         """
-        return {
-            "description": "Creates blockquotes that visually distinguish quoted text.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Creates blockquotes that visually distinguish quoted text."
+            )
+            .with_usage_guidelines(
                 "Use blockquotes for quoting external sources, highlighting important statements, "
                 "or creating visual emphasis for key information."
-            ),
-            "syntax": "> Quoted text",
-            "examples": [
-                "> This is a simple blockquote",
-                "> This is a multi-line quote\n> that continues on the next line",
-                "> Important note:\n> This quote spans\n> multiple lines.",
-            ],
-        }
+            )
+            .with_syntax("> Quoted text")
+            .with_examples(
+                [
+                    "> This is a simple blockquote",
+                    "> This is a multi-line quote\n> that continues on the next line",
+                    "> Important note:\n> This quote spans\n> multiple lines.",
+                ]
+            )
+            .build()
+        )

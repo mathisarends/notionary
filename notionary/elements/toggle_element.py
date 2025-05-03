@@ -2,37 +2,40 @@ import re
 from typing import Dict, Any, Optional, List, Tuple, Callable
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class ToggleElement(NotionBlockElement):
     """
-    Verbesserte ToggleElement-Klasse, die Kontext berücksichtigt.
+    Improved ToggleElement class using pipe syntax instead of indentation.
     """
 
     TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+(.+)$")
-    INDENT_PATTERN = re.compile(r"^(\s{2,}|\t+)(.+)$")
+    PIPE_CONTENT_PATTERN = re.compile(r"^\|\s?(.*)$")
 
     TRANSCRIPT_TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+Transcript$")
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
-        """Check if text is a markdown toggle."""
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
+        """Check if the text is a markdown toggle."""
         return bool(ToggleElement.TOGGLE_PATTERN.match(text.strip()))
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
-        """Check if block is a Notion toggle."""
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
+        """Check if the block is a Notion toggle block."""
         return block.get("type") == "toggle"
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
-        """Convert markdown toggle to Notion toggle block."""
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+        """Convert markdown toggle line to Notion toggle block."""
         toggle_match = ToggleElement.TOGGLE_PATTERN.match(text.strip())
         if not toggle_match:
             return None
 
-        # Extract content
+        # Extract toggle title
         title = toggle_match.group(1)
 
         return {
@@ -40,20 +43,20 @@ class ToggleElement(NotionBlockElement):
             "toggle": {
                 "rich_text": [{"type": "text", "text": {"content": title}}],
                 "color": "default",
-                "children": [], 
+                "children": [],
             },
         }
 
-    @staticmethod
+    @classmethod
     def extract_nested_content(
-        lines: List[str], start_index: int
+        cls, lines: List[str], start_index: int
     ) -> Tuple[List[str], int]:
         """
-        Extract the nested content of a toggle element.
+        Extracts the nested content lines of a toggle block using pipe syntax.
 
         Args:
-            lines: All lines of text
-            start_index: Starting index to look for nested content
+            lines: All lines of text.
+            start_index: Starting index to look for nested content.
 
         Returns:
             Tuple of (nested_content_lines, next_line_index)
@@ -62,41 +65,57 @@ class ToggleElement(NotionBlockElement):
         current_index = start_index
 
         while current_index < len(lines):
-            line = lines[current_index]
+            current_line = lines[current_index]
 
-            # Empty line is still part of toggle content
-            if not line.strip():
-                nested_content.append("")
+            # Case 1: Empty line - could be part of the content if next line is a pipe line
+            if not current_line.strip():
+                if ToggleElement.is_next_line_pipe_content(lines, current_index):
+                    nested_content.append("")
+                    current_index += 1
+                    continue
+                else:
+                    # Empty line not followed by pipe ends the block
+                    break
+
+            # Case 2: Pipe-prefixed line - part of the nested content
+            pipe_content = ToggleElement.extract_pipe_content(current_line)
+            if pipe_content is not None:
+                nested_content.append(pipe_content)
                 current_index += 1
                 continue
 
-            # Check if line is indented (part of toggle content)
-            if line.startswith("  ") or line.startswith("\t"):
-                # Extract content with indentation removed
-                content_line = ToggleElement._remove_indentation(line)
-                nested_content.append(content_line)
-                current_index += 1
-                continue
-
-            # Non-indented, non-empty line marks the end of toggle content
+            # Case 3: Regular line - end of nested content
             break
 
         return nested_content, current_index
 
-    @staticmethod
-    def _remove_indentation(line: str) -> str:
-        """Remove indentation from a line, handling both spaces and tabs."""
-        if line.startswith("\t"):
-            return line[1:]
-        else:
-            # Find number of leading spaces
-            leading_spaces = len(line) - len(line.lstrip(" "))
-            # Remove at least 2 spaces, but not more than what's there
-            return line[min(2, leading_spaces) :]
+    @classmethod
+    def is_next_line_pipe_content(cls, lines: List[str], current_index: int) -> bool:
+        """Checks if the next line starts with a pipe prefix."""
+        next_index = current_index + 1
+        return (
+            next_index < len(lines)
+            and ToggleElement.PIPE_CONTENT_PATTERN.match(lines[next_index]) is not None
+        )
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
-        """Convert Notion toggle block to markdown toggle."""
+    @classmethod
+    def extract_pipe_content(cls, line: str) -> Optional[str]:
+        """
+        Extracts content from a line with pipe prefix.
+
+        Returns:
+            The content without the pipe, or None if not a pipe-prefixed line.
+        """
+        pipe_match = ToggleElement.PIPE_CONTENT_PATTERN.match(line)
+        if pipe_match:
+            return pipe_match.group(1)
+        return None
+
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
+        """
+        Converts a Notion toggle block into markdown using pipe-prefixed lines.
+        """
         if block.get("type") != "toggle":
             return None
 
@@ -105,31 +124,27 @@ class ToggleElement(NotionBlockElement):
         # Extract title from rich_text
         title = ToggleElement._extract_text_content(toggle_data.get("rich_text", []))
 
-        # Create the toggle line
+        # Create toggle line
         toggle_line = f"+++ {title}"
 
-        # Process children if any
+        # Process children if available
         children = toggle_data.get("children", [])
-        if children:
-            child_lines = []
-            for child_block in children:
-                # This would need to be handled by a full converter that can dispatch
-                # to the appropriate element type for each child block
-                child_markdown = "  [Nested content]"  # Placeholder
-                child_lines.append(f"  {child_markdown}")
+        if not children:
+            return toggle_line
 
-            return toggle_line + "\n" + "\n".join(child_lines)
+        # Add a placeholder line for each child using pipe syntax
+        child_lines = ["| [Nested content]" for _ in children]
 
-        return toggle_line
+        return toggle_line + "\n" + "\n".join(child_lines)
 
-    @staticmethod
-    def is_multiline() -> bool:
-        """Toggle blocks can span multiple lines due to their nested content."""
+    @classmethod
+    def is_multiline(cls) -> bool:
+        """Toggle blocks can span multiple lines due to nested content."""
         return True
 
-    @staticmethod
-    def _extract_text_content(rich_text: List[Dict[str, Any]]) -> str:
-        """Extract plain text content from Notion rich_text elements."""
+    @classmethod
+    def _extract_text_content(cls, rich_text: List[Dict[str, Any]]) -> str:
+        """Extracts plain text content from Notion rich_text blocks."""
         result = ""
         for text_obj in rich_text:
             if text_obj.get("type") == "text":
@@ -146,81 +161,142 @@ class ToggleElement(NotionBlockElement):
         context_aware: bool = True,
     ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
-        Verbesserte find_matches-Methode, die Kontext beim Finden von Toggles berücksichtigt.
+        Finds all toggle elements in markdown using pipe syntax for nested content.
 
         Args:
-            text: Der zu durchsuchende Text
-            process_nested_content: Optionale Callback-Funktion zur Verarbeitung verschachtelter Inhalte
-            context_aware: Ob der Kontext (vorhergehende Zeilen) beim Finden von Toggles berücksichtigt werden soll
+            text: The markdown input.
+            process_nested_content: Optional function to parse nested content into blocks.
+            context_aware: Whether to skip contextually irrelevant transcript toggles.
 
         Returns:
-            Liste von (start_pos, end_pos, block) Tupeln
+            List of (start_pos, end_pos, block) tuples.
         """
         if not text:
             return []
 
         toggle_blocks = []
         lines = text.split("\n")
+        current_line_index = 0
 
-        i = 0
-        while i < len(lines):
-            line = lines[i]
+        while current_line_index < len(lines):
+            current_line = lines[current_line_index]
 
-            # Check if line is a toggle
-            if not cls.match_markdown(line):
-                i += 1
+            # Check if the current line is a toggle
+            if not cls._is_toggle_line(current_line):
+                current_line_index += 1
                 continue
 
-            is_transcript_toggle = cls.TRANSCRIPT_TOGGLE_PATTERN.match(line.strip())
+            # Skip transcript toggles if required by context
+            if cls._should_skip_transcript_toggle(
+                current_line, lines, current_line_index, context_aware
+            ):
+                current_line_index += 1
+                continue
 
-            if context_aware and is_transcript_toggle:
-                if i > 0 and lines[i - 1].strip().startswith("- "):
-                    pass
-                else:
-                    i += 1
-                    continue
+            # Create toggle block and determine character positions
+            start_position = cls._calculate_start_position(lines, current_line_index)
+            toggle_block = cls.markdown_to_notion(current_line)
 
-            start_pos = 0
-            for j in range(i):
-                start_pos += len(lines[j]) + 1
-
-            toggle_block = cls.markdown_to_notion(line)
             if not toggle_block:
-                i += 1
+                current_line_index += 1
                 continue
 
             # Extract nested content
-            nested_content, next_index = cls.extract_nested_content(lines, i + 1)
+            nested_content, next_line_index = cls.extract_nested_content(
+                lines, current_line_index + 1
+            )
+            end_position = cls._calculate_end_position(
+                start_position, current_line, nested_content
+            )
 
-            # Calculate ending position
-            end_pos = start_pos + len(line) + sum(len(l) + 1 for l in nested_content)
+            # Process nested content if needed
+            cls._process_nested_content_if_needed(
+                nested_content, process_nested_content, toggle_block
+            )
 
-            if nested_content and process_nested_content:
-                nested_text = "\n".join(nested_content)
-                nested_blocks = process_nested_content(nested_text)
-                if nested_blocks:
-                    toggle_block["toggle"]["children"] = nested_blocks
-
-            toggle_blocks.append((start_pos, end_pos, toggle_block))
-
-            i = next_index
+            # Save result
+            toggle_blocks.append((start_position, end_position, toggle_block))
+            current_line_index = next_line_index
 
         return toggle_blocks
 
     @classmethod
+    def _is_toggle_line(cls, line: str) -> bool:
+        """Checks whether the given line is a markdown toggle."""
+        return bool(ToggleElement.TOGGLE_PATTERN.match(line.strip()))
+
+    @classmethod
+    def _should_skip_transcript_toggle(
+        cls, line: str, lines: List[str], current_index: int, context_aware: bool
+    ) -> bool:
+        """Determines if a transcript toggle should be skipped based on the surrounding context."""
+        is_transcript_toggle = cls.TRANSCRIPT_TOGGLE_PATTERN.match(line.strip())
+
+        if not (context_aware and is_transcript_toggle):
+            return False
+
+        # Only keep transcript toggles that follow a list item
+        has_list_item_before = current_index > 0 and lines[
+            current_index - 1
+        ].strip().startswith("- ")
+        return not has_list_item_before
+
+    @classmethod
+    def _calculate_start_position(cls, lines: List[str], current_index: int) -> int:
+        """Calculates the character start position of a line within the full text."""
+        start_pos = 0
+        for index in range(current_index):
+            start_pos += len(lines[index]) + 1  # +1 for line break
+        return start_pos
+
+    @classmethod
+    def _calculate_end_position(
+        cls, start_pos: int, current_line: str, nested_content: List[str]
+    ) -> int:
+        """Calculates the end position of a toggle block including nested lines."""
+        line_length = len(current_line)
+        nested_content_length = sum(
+            len(line) + 1 for line in nested_content
+        )  # +1 for each line break
+        return start_pos + line_length + nested_content_length
+
+    @classmethod
+    def _process_nested_content_if_needed(
+        cls,
+        nested_content: List[str],
+        process_function: Optional[Callable],
+        toggle_block: Dict[str, Any],
+    ) -> None:
+        """Processes nested content using the provided function if applicable."""
+        if not (nested_content and process_function):
+            return
+
+        nested_text = "\n".join(nested_content)
+        nested_blocks = process_function(nested_text)
+
+        if nested_blocks:
+            toggle_block["toggle"]["children"] = nested_blocks
+
+    @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        Returns structured LLM prompt metadata for the toggle element.
+        Returns structured LLM prompt metadata for the toggle element with pipe syntax examples.
         """
-        return {
-            "description": "Toggle elements are collapsible sections that help organize and hide detailed information.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Toggle elements are collapsible sections that help organize and hide detailed information."
+            )
+            .with_usage_guidelines(
                 "Use toggles for supplementary information that's not essential for the first reading, "
                 "such as details, examples, or technical information."
-            ),
-            "syntax": "+++ Toggle Title",
-            "examples": [
-                "+++ Key Findings\n  The research demonstrates **three main conclusions**:\n  1. First important point\n  2. Second important point",
-                "+++ FAQ\n  **Q: When should I use toggles?**\n  *A: Use toggles for supplementary information.*",
-            ],
-        }
+            )
+            .with_syntax("+++ Toggle Title\n| Toggle content with pipe prefix")
+            .with_examples(
+                [
+                    "+++ Key Findings\n| The research demonstrates **three main conclusions**:\n| 1. First important point\n| 2. Second important point",
+                    "+++ FAQ\n| **Q: When should I use toggles?**\n| *A: Use toggles for supplementary information.*",
+                ]
+            )
+            .build()
+        )

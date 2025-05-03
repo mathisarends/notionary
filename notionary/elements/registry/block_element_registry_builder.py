@@ -18,7 +18,7 @@ from notionary.elements.callout_element import CalloutElement
 from notionary.elements.code_block_element import CodeBlockElement
 from notionary.elements.divider_element import DividerElement
 from notionary.elements.table_element import TableElement
-from notionary.elements.todo_lists import TodoElement
+from notionary.elements.todo_element import TodoElement
 from notionary.elements.qoute_element import QuoteElement
 from notionary.elements.image_element import ImageElement
 from notionary.elements.toggleable_heading_element import ToggleableHeadingElement
@@ -242,7 +242,7 @@ class BlockElementRegistryBuilder:
 
     def with_mention(self) -> BlockElementRegistryBuilder:
         return self.add_element(MentionElement)
-    
+
     def with_toggleable_heading_element(self) -> BlockElementRegistryBuilder:
         return self.add_element(ToggleableHeadingElement)
 

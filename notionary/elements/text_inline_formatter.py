@@ -1,7 +1,10 @@
 from typing import Dict, Any, List, Tuple
 import re
 
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class TextInlineFormatter:
@@ -15,7 +18,6 @@ class TextInlineFormatter:
     - Strikethrough: ~~text~~
     - Code: `text`
     - Links: [text](url)
-    - Highlights: ==text== (default yellow) or ==color:text== (custom color)
     """
 
     # Format patterns for matching Markdown formatting
@@ -214,18 +216,24 @@ class TextInlineFormatter:
         """
         Returns structured LLM prompt metadata for inline formatting.
         """
-        return {
-            "description": "Enables inline formatting like bold, italics, strikethrough, code, links, and underlining for enhanced readability and emphasis.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Enables inline formatting like bold, italics, strikethrough, code, links, and underlining for enhanced readability and emphasis."
+            )
+            .with_usage_guidelines(
                 "Use inline formatting to highlight important words, provide emphasis, show code or paths, or add hyperlinks. "
                 "Helps create a visual hierarchy and improves scanability of long texts."
-            ),
-            "syntax": "**bold**, *italic*, `code`, [text](url)",
-            "examples": [
-                "This is a **bold** word.",
-                "Use *italics* for emphasis.",
-                "Mark outdated content like ~~this~~.",
-                "Write `config.json` to reference a file.",
-                "Visit [Notion](https://notion.so) for more info.",
-            ],
-        }
+            )
+            .with_syntax("**bold**, *italic*, `code`, [text](url)")
+            .with_examples(
+                [
+                    "This is a **bold** word.",
+                    "Use *italics* for emphasis.",
+                    "Mark outdated content like ~~this~~.",
+                    "Write `config.json` to reference a file.",
+                    "Visit [Notion](https://notion.so) for more info.",
+                ]
+            )
+            .build()
+        )

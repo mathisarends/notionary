@@ -2,7 +2,10 @@ import re
 from typing import Dict, Any, Optional
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.elements.prompts.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
@@ -11,19 +14,19 @@ class HeadingElement(NotionBlockElement):
 
     PATTERN = re.compile(r"^(#{1,3})\s(.+)$")
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown heading."""
         return bool(HeadingElement.PATTERN.match(text))
 
-    @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    @classmethod
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block is a Notion heading."""
         block_type: str = block.get("type", "")
         return block_type.startswith("heading_") and block_type[-1] in "123"
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown heading to Notion heading block."""
         header_match = HeadingElement.PATTERN.match(text)
         if not header_match:
@@ -32,7 +35,7 @@ class HeadingElement(NotionBlockElement):
         level = len(header_match.group(1))
         if not 1 <= level <= 3:
             return None
-            
+
         content = header_match.group(2)
 
         return {
@@ -42,8 +45,8 @@ class HeadingElement(NotionBlockElement):
             },
         }
 
-    @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion heading block to markdown heading."""
         block_type = block.get("type", "")
 
@@ -65,8 +68,8 @@ class HeadingElement(NotionBlockElement):
         prefix = "#" * level
         return f"{prefix} {text or ''}"
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         return False
 
     @classmethod
@@ -74,13 +77,21 @@ class HeadingElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the heading element.
         """
-        return {
-            "description": "Use Markdown headings (#, ##, ###) to structure content hierarchically.",
-            "when_to_use": "Use to group content into sections and define a visual hierarchy.",
-            "syntax": "## Your Heading Text",
-            "examples": [
-                "# Main Title",
-                "## Section Title",
-                "### Subsection Title",
-            ],
-        }
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Use Markdown headings (#, ##, ###) to structure content hierarchically."
+            )
+            .with_usage_guidelines(
+                "Use to group content into sections and define a visual hierarchy."
+            )
+            .with_syntax("## Your Heading Text")
+            .with_examples(
+                [
+                    "# Main Title",
+                    "## Section Title",
+                    "### Subsection Title",
+                ]
+            )
+            .build()
+        )

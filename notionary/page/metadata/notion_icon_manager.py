@@ -26,19 +26,25 @@ class NotionPageIconManager(LoggingMixin):
         Retrieves the page icon - either emoji or external URL.
 
         Returns:
-            str: Emoji character or URL if set, None if no icon
+            Optional[str]: Emoji character or URL if set, None if no icon
         """
         page_data = await self._client.get_page(self.page_id)
 
-        if not page_data or "icon" not in page_data:
-            return None
+        if not page_data:
+            return ""
 
-        icon_data = page_data.get("icon", {})
+        # Get icon data, default to empty dict if not present or None
+        icon_data = page_data.get("icon")
+
+        # If icon is None or not present, return None
+        if not icon_data:
+            return ""
+
         icon_type = icon_data.get("type")
 
         if icon_type == "emoji":
             return icon_data.get("emoji")
-        elif icon_type == "external":
+        if icon_type == "external":
             return icon_data.get("external", {}).get("url")
 
-        return None
+        return ""
