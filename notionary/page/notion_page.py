@@ -204,7 +204,7 @@ class NotionPage(LoggingMixin):
         """
         return await self._page_icon_manager.set_icon(emoji, external_url)
 
-    async def get_icon(self) -> Optional[str]:
+    async def get_icon(self) -> str:
         """
         Retrieve the page icon - either emoji or external URL.
 

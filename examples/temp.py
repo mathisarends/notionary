@@ -111,12 +111,12 @@ Check detailed notes at @[project-main-doc]
 ![Data Flow Diagram](https://example.com/data-flow.png)
         """
 
-        result = await page.append_markdown(python_documentation)
-        print(f"✅ Markdown appended: {result}")
-        
+        """ result = await page.append_markdown(python_documentation)
+        print(f"✅ Markdown appended: {result}") """
+
         prompt = page.block_registry.generate_llm_prompt()
         print(f"Prompt: {prompt}")
-        
+
     except Exception as e:
         print(f"❌ Error while loading page from URL: {traceback.format_exc(e)}")
 

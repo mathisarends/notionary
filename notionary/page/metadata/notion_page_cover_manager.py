@@ -40,4 +40,14 @@ class NotionPageCoverManager(LoggingMixin):
         if not page_data:
             return ""
 
-        return page_data.get("cover", {}).get("external", {}).get("url", "")
+        cover = page_data.get("cover")
+
+        if not cover or not isinstance(cover, dict):
+            return ""
+
+        external = cover.get("external")
+
+        if not external or not isinstance(external, dict):
+            return ""
+
+        return external.get("url", "")
