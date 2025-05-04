@@ -130,7 +130,7 @@ class NotionPage(LoggingMixin):
             self._url_loaded = True
         return self._url
 
-    async def append_markdown(self, markdown: str) -> str:
+    async def append_markdown(self, markdown: str, append_divider = False) -> str:
         """
         Append markdown content to the page.
 
@@ -140,7 +140,7 @@ class NotionPage(LoggingMixin):
         Returns:
             str: Status or confirmation message.
         """
-        return await self._page_content_manager.append_markdown(markdown_text=markdown)
+        return await self._page_content_manager.append_markdown(markdown_text=markdown, append_divider=append_divider)
 
     async def clear(self) -> str:
         """
