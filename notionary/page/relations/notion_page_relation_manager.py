@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any, Dict, List, Optional
 from notionary.notion_client import NotionClient
 from notionary.page.relations.notion_page_title_resolver import (
@@ -7,7 +8,6 @@ from notionary.page.relations.relation_operation_result import (
     RelationOperationResult,
 )
 from notionary.util.logging_mixin import LoggingMixin
-from notionary.util.page_id_utils import is_valid_uuid
 
 
 class NotionRelationManager(LoggingMixin):
@@ -243,7 +243,7 @@ class NotionRelationManager(LoggingMixin):
 
         return None
 
-    async def add_relation(
+    async def _set_relations_by_page_ids(
         self, property_name: str, page_ids: List[str]
     ) -> Optional[Dict[str, Any]]:
         """
@@ -256,11 +256,7 @@ class NotionRelationManager(LoggingMixin):
         Returns:
             Optional[Dict[str, Any]]: API response or None on error
         """
-        existing_relations = await self.get_relation_values(property_name) or []
-
-        all_relations = list(set(existing_relations + page_ids))
-
-        relation_payload = {"relation": [{"id": page_id} for page_id in all_relations]}
+        relation_payload = {"relation": [{"id": page_id} for page_id in page_ids]}
 
         try:
             result = await self._client.patch(
@@ -288,31 +284,36 @@ class NotionRelationManager(LoggingMixin):
         Returns:
             RelationOperationResult: Result of the operation with details on which pages were found and added
         """
-        found_pages = []
-        not_found_pages = []
-        page_ids = []
-
         self.logger.info(
             "Attempting to add %d relation(s) to property '%s'",
             len(page_titles),
             property_name,
         )
 
-        for page in page_titles:
-            if is_valid_uuid(page):
-                page_ids.append(page)
-                found_pages.append(page)
-                self.logger.debug("Using page ID directly: %s", page)
+        # Resolve titles to IDs - get all page IDs for the titles
+        resolution_results = await asyncio.gather(
+            *(self._page_title_resolver.get_page_id_by_title(title) for title in page_titles)
+        )
+        
+        # Filter out None values from resolution results and create found/not found lists
+        found_pages = []
+        page_ids = []
+        not_found_pages = []
+        
+        for title, page_id in zip(page_titles, resolution_results):
+            if page_id:
+                found_pages.append(title)
+                page_ids.append(page_id)
+                self.logger.debug("Found page ID %s for title '%s'", page_id, title)
             else:
-                page_id = await self._page_title_resolver.get_page_id_by_title(page)
-                if page_id:
-                    page_ids.append(page_id)
-                    found_pages.append(page)
-                    self.logger.debug("Found page ID %s for title '%s'", page_id, page)
-                else:
-                    not_found_pages.append(page)
-                    self.logger.warning("No page found with title '%s'", page)
+                not_found_pages.append(title)
+                self.logger.warning("No page found with title '%s'", title)
 
+        # Print debugs to verify what's actually going to the API
+        self.logger.debug("Page IDs being sent to API: %s", page_ids)
+        print("Page IDs being sent to API:", page_ids)
+        
+        # Return early if no pages were found
         if not page_ids:
             self.logger.warning(
                 "No valid page IDs found for any of the titles, no changes applied"
@@ -321,68 +322,41 @@ class NotionRelationManager(LoggingMixin):
                 property_name, not_found_pages
             )
 
-        api_response = await self.add_relation(property_name, page_ids)
-
-        if api_response:
-            result = RelationOperationResult.from_success(
+        api_response = await self._set_relations_by_page_ids(property_name, page_ids)
+        
+        # Handle the API response
+        if not api_response:
+            self.logger.error("Failed to add relations to '%s' (API error)", property_name)
+            return RelationOperationResult.from_no_api_response(
                 property_name=property_name,
                 found_pages=found_pages,
-                not_found_pages=not_found_pages,
                 page_ids_added=page_ids,
-                api_response=api_response,
             )
-
-            if not_found_pages:
-                not_found_str = "', '".join(not_found_pages)
-                self.logger.info(
-                    "Added %d relation(s) to '%s', but couldn't find pages: '%s'",
-                    len(page_ids),
-                    property_name,
-                    not_found_str,
-                )
-            else:
-                self.logger.info(
-                    "Successfully added all %d relation(s) to '%s'",
-                    len(page_ids),
-                    property_name,
-                )
-
-            return result
-
-        self.logger.error("Failed to add relations to '%s' (API error)", property_name)
-        return RelationOperationResult.from_no_api_response(
+        
+        # Log success with appropriate message
+        if not_found_pages:
+            not_found_str = "', '".join(not_found_pages)
+            self.logger.info(
+                "Added %d relation(s) to '%s', but couldn't find pages: '%s'",
+                len(page_ids),
+                property_name,
+                not_found_str,
+            )
+        else:
+            self.logger.info(
+                "Successfully added all %d relation(s) to '%s'",
+                len(page_ids),
+                property_name,
+            )
+        
+        # Return success result
+        return RelationOperationResult.from_success(
             property_name=property_name,
             found_pages=found_pages,
+            not_found_pages=not_found_pages,
             page_ids_added=page_ids,
+            api_response=api_response,
         )
-
-    async def set_relations(
-        self, property_name: str, page_ids: List[str]
-    ) -> Optional[Dict[str, Any]]:
-        """
-        Sets the relations to the specified IDs (replaces existing ones).
-
-        Args:
-            property_name: Name of the relation property
-            page_ids: List of page IDs to set
-
-        Returns:
-            Optional[Dict[str, Any]]: API response or None on error
-        """
-        relation_payload = {"relation": [{"id": page_id} for page_id in page_ids]}
-
-        try:
-            result = await self._client.patch(
-                f"pages/{self._page_id}",
-                {"properties": {property_name: relation_payload}},
-            )
-
-            self._page_properties = None
-
-            return result
-        except Exception as e:
-            self.logger.error("Error setting relations: %s", str(e))
-            return None
 
     async def get_all_relations(self) -> Dict[str, List[str]]:
         """Returns all relation properties and their values."""

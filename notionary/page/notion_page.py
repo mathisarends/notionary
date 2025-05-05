@@ -365,21 +365,21 @@ class NotionPage(LoggingMixin):
         return await self._relation_manager.get_relation_options(property_name, limit)
 
     async def add_relations_by_name(
-        self, relation_property_name: str, page_titles: Union[str, List[str]]
-    ) -> Optional[Dict[str, Any]]:
-        """
-        Add one or more relations to a relation property.
+            self, relation_property_name: str, page_titles: List[str]
+        ) -> Optional[Dict[str, Any]]:
+            """
+            Add one or more relations to a relation property.
 
-        Args:
-            relation_property_name: The name of the relation property.
-            page_titles: One or more page titles to relate to.
+            Args:
+                relation_property_name: The name of the relation property.
+                page_titles: A list of page titles to relate to.
 
-        Returns:
-            Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
-        """
-        return await self._relation_manager.add_relation_by_name(
-            property_name=relation_property_name, page_titles=page_titles
-        )
+            Returns:
+                Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
+            """
+            return await self._relation_manager.add_relation_by_name(
+                property_name=relation_property_name, page_titles=page_titles
+            )
 
     async def get_relation_values(self, property_name: str) -> List[str]:
         """

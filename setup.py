@@ -2,7 +2,7 @@ from setuptools import setup, find_namespace_packages
 
 setup(
     name="notionary",
-    version="0.1.28",
+    version="0.1.29",
     packages=find_namespace_packages(include=["notionary*"]),
     install_requires=[
         "httpx>=0.28.0",
