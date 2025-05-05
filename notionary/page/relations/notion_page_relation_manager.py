@@ -292,14 +292,17 @@ class NotionRelationManager(LoggingMixin):
 
         # Resolve titles to IDs - get all page IDs for the titles
         resolution_results = await asyncio.gather(
-            *(self._page_title_resolver.get_page_id_by_title(title) for title in page_titles)
+            *(
+                self._page_title_resolver.get_page_id_by_title(title)
+                for title in page_titles
+            )
         )
-        
+
         # Filter out None values from resolution results and create found/not found lists
         found_pages = []
         page_ids = []
         not_found_pages = []
-        
+
         for title, page_id in zip(page_titles, resolution_results):
             if page_id:
                 found_pages.append(title)
@@ -312,7 +315,7 @@ class NotionRelationManager(LoggingMixin):
         # Print debugs to verify what's actually going to the API
         self.logger.debug("Page IDs being sent to API: %s", page_ids)
         print("Page IDs being sent to API:", page_ids)
-        
+
         # Return early if no pages were found
         if not page_ids:
             self.logger.warning(
@@ -323,16 +326,18 @@ class NotionRelationManager(LoggingMixin):
             )
 
         api_response = await self._set_relations_by_page_ids(property_name, page_ids)
-        
+
         # Handle the API response
         if not api_response:
-            self.logger.error("Failed to add relations to '%s' (API error)", property_name)
+            self.logger.error(
+                "Failed to add relations to '%s' (API error)", property_name
+            )
             return RelationOperationResult.from_no_api_response(
                 property_name=property_name,
                 found_pages=found_pages,
                 page_ids_added=page_ids,
             )
-        
+
         # Log success with appropriate message
         if not_found_pages:
             not_found_str = "', '".join(not_found_pages)
@@ -348,7 +353,7 @@ class NotionRelationManager(LoggingMixin):
                 len(page_ids),
                 property_name,
             )
-        
+
         # Return success result
         return RelationOperationResult.from_success(
             property_name=property_name,

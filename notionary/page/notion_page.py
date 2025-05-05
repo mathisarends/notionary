@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from notionary.elements.registry.block_element_registry import BlockElementRegistry
 from notionary.elements.registry.block_element_registry_builder import (
@@ -47,7 +47,7 @@ class NotionPage(LoggingMixin):
         self._block_element_registry = (
             BlockElementRegistryBuilder.create_full_registry()
         )
-
+        
         self._page_content_manager = PageContentManager(
             page_id=self._page_id,
             client=self._client,
@@ -73,14 +73,59 @@ class NotionPage(LoggingMixin):
         self._property_manager = PagePropertyManager(
             self._page_id, self._client, self._metadata, self._db_relation
         )
+        
+    @classmethod
+    async def create_from_page_id(cls, page_id: str, token: Optional[str] = None) -> 'NotionPage':
+        """
+        Create a NotionPage from a page ID.
+
+        Args:
+            page_id: The ID of the Notion page
+            token: Optional Notion API token (uses environment variable if not provided)
+
+        Returns:
+            An initialized NotionPage instance
+        """
+        from notionary.page.notion_page_factory import NotionPageFactory
+        cls.logger.info("Creating page from ID: %s", page_id)
+        return await NotionPageFactory().from_page_id(page_id, token)
+
+    @classmethod
+    async def create_from_url(cls, url: str, token: Optional[str] = None) -> 'NotionPage':
+        """
+        Create a NotionPage from a Notion URL.
+
+        Args:
+            url: The URL of the Notion page
+            token: Optional Notion API token (uses environment variable if not provided)
+
+        Returns:
+            An initialized NotionPage instance
+        """
+        from notionary.page.notion_page_factory import NotionPageFactory
+        cls.logger.info("Creating page from URL: %s", url)
+        return await NotionPageFactory().from_url(url, token)
+
+    @classmethod
+    async def create_from_page_name(cls, page_name: str, token: Optional[str] = None) -> 'NotionPage':
+        """
+        Create a NotionPage by finding a page with a matching name.
+        Uses fuzzy matching to find the closest match to the given name.
+
+        Args:
+            page_name: The name of the Notion page to search for
+            token: Optional Notion API token (uses environment variable if not provided)
+
+        Returns:
+            An initialized NotionPage instance
+        """
+        from notionary.page.notion_page_factory import NotionPageFactory
+        return await NotionPageFactory().from_page_name(page_name, token)
 
     @property
     def id(self) -> str:
         """
         Get the ID of the page.
-
-        Returns:
-            str: The page ID.
         """
         return self._page_id
 
@@ -130,7 +175,7 @@ class NotionPage(LoggingMixin):
             self._url_loaded = True
         return self._url
 
-    async def append_markdown(self, markdown: str, append_divider = False) -> str:
+    async def append_markdown(self, markdown: str, append_divider=False) -> str:
         """
         Append markdown content to the page.
 
@@ -140,7 +185,9 @@ class NotionPage(LoggingMixin):
         Returns:
             str: Status or confirmation message.
         """
-        return await self._page_content_manager.append_markdown(markdown_text=markdown, append_divider=append_divider)
+        return await self._page_content_manager.append_markdown(
+            markdown_text=markdown, append_divider=append_divider
+        )
 
     async def clear(self) -> str:
         """
@@ -365,21 +412,21 @@ class NotionPage(LoggingMixin):
         return await self._relation_manager.get_relation_options(property_name, limit)
 
     async def add_relations_by_name(
-            self, relation_property_name: str, page_titles: List[str]
-        ) -> Optional[Dict[str, Any]]:
-            """
-            Add one or more relations to a relation property.
+        self, relation_property_name: str, page_titles: List[str]
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Add one or more relations to a relation property.
 
-            Args:
-                relation_property_name: The name of the relation property.
-                page_titles: A list of page titles to relate to.
+        Args:
+            relation_property_name: The name of the relation property.
+            page_titles: A list of page titles to relate to.
 
-            Returns:
-                Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
-            """
-            return await self._relation_manager.add_relation_by_name(
-                property_name=relation_property_name, page_titles=page_titles
-            )
+        Returns:
+            Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
+        """
+        return await self._relation_manager.add_relation_by_name(
+            property_name=relation_property_name, page_titles=page_titles
+        )
 
     async def get_relation_values(self, property_name: str) -> List[str]:
         """
