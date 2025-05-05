@@ -22,11 +22,6 @@ class NotionDatabaseFactory(LoggingMixin):
     """
 
     @classmethod
-    def class_logger(cls):
-        """Class logger - for class methods"""
-        return logging.getLogger(cls.__name__)
-
-    @classmethod
     async def from_database_id(
         cls, database_id: str, token: Optional[str] = None
     ) -> NotionDatabase:
@@ -40,14 +35,12 @@ class NotionDatabaseFactory(LoggingMixin):
         Returns:
             An initialized NotionDatabaseManager instance
         """
-        logger = cls.class_logger()
-
         try:
             formatted_id = format_uuid(database_id) or database_id
 
             manager = NotionDatabase(formatted_id, token)
 
-            logger.info(
+            cls.logger.info(
                 "Successfully created database manager for ID: %s", formatted_id
             )
             return manager
@@ -58,7 +51,7 @@ class NotionDatabaseFactory(LoggingMixin):
             raise
         except Exception as e:
             error_msg = f"Error connecting to database {database_id}: {str(e)}"
-            logger.error(error_msg)
+            cls.logger.error(error_msg)
             raise DatabaseConnectionError(error_msg) from e
 
     @classmethod
@@ -76,13 +69,12 @@ class NotionDatabaseFactory(LoggingMixin):
         Returns:
             An initialized NotionDatabaseManager instance
         """
-        logger = cls.class_logger()
-        logger.debug("Searching for database with name: %s", database_name)
+        cls.logger.debug("Searching for database with name: %s", database_name)
 
         client = NotionClient(token=token)
 
         try:
-            logger.debug("Using search endpoint to find databases")
+            cls.logger.debug("Using search endpoint to find databases")
 
             search_payload = {
                 "filter": {"property": "object", "value": "database"},
@@ -93,17 +85,17 @@ class NotionDatabaseFactory(LoggingMixin):
 
             if not response or "results" not in response:
                 error_msg = "Failed to fetch databases using search endpoint"
-                logger.error(error_msg)
+                cls.logger.error(error_msg)
                 raise DatabaseConnectionError(error_msg)
 
             databases = response.get("results", [])
 
             if not databases:
                 error_msg = "No databases found"
-                logger.warning(error_msg)
+                cls.logger.warning(error_msg)
                 raise DatabaseNotFoundException(database_name, error_msg)
 
-            logger.debug("Found %d databases, searching for best match", len(databases))
+            cls.logger.debug("Found %d databases, searching for best match", len(databases))
 
             best_match = None
             best_score = 0
@@ -121,19 +113,19 @@ class NotionDatabaseFactory(LoggingMixin):
 
             if best_score < 0.6 or not best_match:
                 error_msg = f"No good database name match found for '{database_name}'. Best match had score {best_score:.2f}"
-                logger.warning(error_msg)
+                cls.logger.warning(error_msg)
                 raise DatabaseNotFoundException(database_name, error_msg)
 
             database_id = best_match.get("id")
 
             if not database_id:
                 error_msg = "Best match database has no ID"
-                logger.error(error_msg)
+                cls.logger.error(error_msg)
                 raise DatabaseParsingError(error_msg)
 
             matched_name = cls._extract_title_from_database(best_match)
 
-            logger.info(
+            cls.logger.info(
                 "Found matching database: '%s' (ID: %s) with score: %.2f",
                 matched_name,
                 database_id,
@@ -142,7 +134,7 @@ class NotionDatabaseFactory(LoggingMixin):
 
             manager = NotionDatabase(database_id, token)
 
-            logger.info("Successfully created database manager for '%s'", matched_name)
+            cls.logger.info("Successfully created database manager for '%s'", matched_name)
             await client.close()
             return manager
 
@@ -151,7 +143,7 @@ class NotionDatabaseFactory(LoggingMixin):
             raise
         except Exception as e:
             error_msg = f"Error finding database by name: {str(e)}"
-            logger.error(error_msg)
+            cls.logger.error(error_msg)
             await client.close()
             raise DatabaseConnectionError(error_msg) from e
 

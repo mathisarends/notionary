@@ -3,3 +3,6 @@ disable=missing-docstring
 
 [DESIGN]
 min-public-methods=1
+
+[MESSAGES CONTROL]
+disable=import-outside-toplevel

@@ -2,6 +2,7 @@ from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from notionary.notion_client import NotionClient
 from notionary.page.notion_page import NotionPage
+from notionary.util import warn_direct_constructor_usage
 from notionary.util.logging_mixin import LoggingMixin
 from notionary.util.page_id_utils import format_uuid
 
@@ -13,6 +14,7 @@ class NotionDatabase(LoggingMixin):
     for further page operations.
     """
 
+    @warn_direct_constructor_usage
     def __init__(self, database_id: str, token: Optional[str] = None):
         """
         Initialize the minimal database manager.
@@ -23,6 +25,29 @@ class NotionDatabase(LoggingMixin):
         """
         self.database_id = format_uuid(database_id) or database_id
         self._client = NotionClient(token=token)
+        
+    @classmethod
+    async def from_database_id(
+        cls, database_id: str, token: Optional[str] = None
+    ) -> "NotionDatabase":
+        """
+        Create a NotionDatabase from a database ID.
+        Delegates to NotionDatabaseFactory.
+        """
+        from notionary.database.notion_database_factory import NotionDatabaseFactory
+        return await NotionDatabaseFactory.from_database_id(database_id, token)
+
+    @classmethod
+    async def from_database_name(
+        cls, database_name: str, token: Optional[str] = None
+    ) -> "NotionDatabase":
+        """
+        Create a NotionDatabase by finding a database with a matching name.
+        Delegates to NotionDatabaseFactory.
+        """
+        from notionary.database.notion_database_factory import NotionDatabaseFactory
+        return await NotionDatabaseFactory.from_database_name(database_name, token)        
+
 
     async def create_blank_page(self) -> Optional[NotionPage]:
         """

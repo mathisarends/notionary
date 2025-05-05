@@ -19,6 +19,7 @@ from notionary.page.relations.notion_page_relation_manager import (
 )
 from notionary.page.content.page_content_manager import PageContentManager
 from notionary.page.properites.page_property_manager import PagePropertyManager
+from notionary.util.warn_direct_constructor_usage import warn_direct_constructor_usage
 from notionary.util.logging_mixin import LoggingMixin
 from notionary.util.page_id_utils import extract_and_validate_page_id
 from notionary.page.relations.page_database_relation import PageDatabaseRelation
@@ -29,6 +30,7 @@ class NotionPage(LoggingMixin):
     High-Level Facade for managing content and metadata of a Notion page.
     """
 
+    @warn_direct_constructor_usage
     def __init__(
         self,
         page_id: Optional[str] = None,
