@@ -49,7 +49,7 @@ class NotionPage(LoggingMixin):
         self._block_element_registry = (
             BlockElementRegistryBuilder.create_full_registry()
         )
-        
+
         self._page_content_manager = PageContentManager(
             page_id=self._page_id,
             client=self._client,
@@ -75,9 +75,11 @@ class NotionPage(LoggingMixin):
         self._property_manager = PagePropertyManager(
             self._page_id, self._client, self._metadata, self._db_relation
         )
-        
+
     @classmethod
-    async def create_from_page_id(cls, page_id: str, token: Optional[str] = None) -> 'NotionPage':
+    async def create_from_page_id(
+        cls, page_id: str, token: Optional[str] = None
+    ) -> "NotionPage":
         """
         Create a NotionPage from a page ID.
 
@@ -89,11 +91,14 @@ class NotionPage(LoggingMixin):
             An initialized NotionPage instance
         """
         from notionary.page.notion_page_factory import NotionPageFactory
+
         cls.logger.info("Creating page from ID: %s", page_id)
         return await NotionPageFactory().from_page_id(page_id, token)
 
     @classmethod
-    async def create_from_url(cls, url: str, token: Optional[str] = None) -> 'NotionPage':
+    async def create_from_url(
+        cls, url: str, token: Optional[str] = None
+    ) -> "NotionPage":
         """
         Create a NotionPage from a Notion URL.
 
@@ -105,11 +110,14 @@ class NotionPage(LoggingMixin):
             An initialized NotionPage instance
         """
         from notionary.page.notion_page_factory import NotionPageFactory
+
         cls.logger.info("Creating page from URL: %s", url)
         return await NotionPageFactory().from_url(url, token)
 
     @classmethod
-    async def create_from_page_name(cls, page_name: str, token: Optional[str] = None) -> 'NotionPage':
+    async def create_from_page_name(
+        cls, page_name: str, token: Optional[str] = None
+    ) -> "NotionPage":
         """
         Create a NotionPage by finding a page with a matching name.
         Uses fuzzy matching to find the closest match to the given name.
@@ -122,6 +130,7 @@ class NotionPage(LoggingMixin):
             An initialized NotionPage instance
         """
         from notionary.page.notion_page_factory import NotionPageFactory
+
         return await NotionPageFactory().from_page_name(page_name, token)
 
     @property
@@ -381,23 +390,6 @@ class NotionPage(LoggingMixin):
             return await db_service.get_property_type(property_name)
         return None
 
-    async def get_database_metadata(
-        self, include_types: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
-        """
-        Get complete metadata about the database this page belongs to.
-
-        Args:
-            include_types: Optional list of property types to include. If None, all properties are included.
-
-        Returns:
-            Dict[str, Any]: Database metadata or empty dict if not a database page.
-        """
-        db_service = await self._get_db_property_service()
-        if db_service:
-            return await db_service.get_database_metadata(include_types)
-        return {"properties": {}}
-
     async def get_relation_options(
         self, property_name: str, limit: int = 100
     ) -> List[Dict[str, Any]]:
@@ -502,6 +494,7 @@ class NotionPage(LoggingMixin):
         self.logger.debug("Loaded page title: %s", self._title)
         return self._title
 
+    # TODO: This Logic here exists multiple times in the codebase. Refactor it to a common place.
     def _extract_title_from_page_data(self, page_data: Dict[str, Any]) -> str:
         """
         Extract title from page data.

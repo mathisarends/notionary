@@ -25,7 +25,7 @@ class NotionDatabase(LoggingMixin):
         """
         self.database_id = format_uuid(database_id) or database_id
         self._client = NotionClient(token=token)
-        
+
     @classmethod
     async def from_database_id(
         cls, database_id: str, token: Optional[str] = None
@@ -35,6 +35,7 @@ class NotionDatabase(LoggingMixin):
         Delegates to NotionDatabaseFactory.
         """
         from notionary.database.notion_database_factory import NotionDatabaseFactory
+
         return await NotionDatabaseFactory.from_database_id(database_id, token)
 
     @classmethod
@@ -46,8 +47,8 @@ class NotionDatabase(LoggingMixin):
         Delegates to NotionDatabaseFactory.
         """
         from notionary.database.notion_database_factory import NotionDatabaseFactory
-        return await NotionDatabaseFactory.from_database_name(database_name, token)        
 
+        return await NotionDatabaseFactory.from_database_name(database_name, token)
 
     async def create_blank_page(self) -> Optional[NotionPage]:
         """

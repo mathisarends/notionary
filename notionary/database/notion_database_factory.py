@@ -95,7 +95,9 @@ class NotionDatabaseFactory(LoggingMixin):
                 cls.logger.warning(error_msg)
                 raise DatabaseNotFoundException(database_name, error_msg)
 
-            cls.logger.debug("Found %d databases, searching for best match", len(databases))
+            cls.logger.debug(
+                "Found %d databases, searching for best match", len(databases)
+            )
 
             best_match = None
             best_score = 0
@@ -134,7 +136,9 @@ class NotionDatabaseFactory(LoggingMixin):
 
             manager = NotionDatabase(database_id, token)
 
-            cls.logger.info("Successfully created database manager for '%s'", matched_name)
+            cls.logger.info(
+                "Successfully created database manager for '%s'", matched_name
+            )
             await client.close()
             return manager
 

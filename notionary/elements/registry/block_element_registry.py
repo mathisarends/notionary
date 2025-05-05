@@ -34,30 +34,10 @@ class BlockElementRegistry:
             return True
         return False
 
-    def contains(self, element_class: Type[NotionBlockElement]) -> bool:
-        """
-        Check if the registry contains the specified element class.
-        """
-        return element_class in self._elements
-
-    def clear(self):
-        """Clear the registry completely."""
-        self._elements.clear()
-        return self
-
     def find_markdown_handler(self, text: str) -> Optional[Type[NotionBlockElement]]:
         """Find an element that can handle the given markdown text."""
         for element in self._elements:
             if element.match_markdown(text):
-                return element
-        return None
-
-    def find_notion_handler(
-        self, block: Dict[str, Any]
-    ) -> Optional[Type[NotionBlockElement]]:
-        """Find an element that can handle the given Notion block."""
-        for element in self._elements:
-            if element.match_notion(block):
                 return element
         return None
 
@@ -70,7 +50,7 @@ class BlockElementRegistry:
 
     def notion_to_markdown(self, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion block to markdown using registered elements."""
-        handler = self.find_notion_handler(block)
+        handler = self._find_notion_handler(block)
         if handler:
             return handler.notion_to_markdown(block)
         return None
@@ -94,3 +74,12 @@ class BlockElementRegistry:
             element_classes = [TextInlineFormatter] + element_classes
 
         return MarkdownSyntaxPromptBuilder.generate_system_prompt(element_classes)
+
+    def _find_notion_handler(
+        self, block: Dict[str, Any]
+    ) -> Optional[Type[NotionBlockElement]]:
+        """Find an element that can handle the given Notion block."""
+        for element in self._elements:
+            if element.match_notion(block):
+                return element
+        return None
