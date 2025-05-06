@@ -15,7 +15,7 @@ import textwrap
 from notionary import NotionDatabaseFactory
 from notionary.exceptions.database_exceptions import DatabaseNotFoundException
 
-DATABASE_NAME = "WISSEN/NOTIZEN"  # YOUR_DATABASE_NAME_HERE
+DATABASE_NAME = "WISSEN/NOTIZEN"
 
 
 async def main():
@@ -33,7 +33,7 @@ async def main():
         print("📝 Setting page properties...")
 
         await page_manager.set_title("Notionary Demo Example Page")
-        await page_manager.set_page_icon("🌟")
+        await page_manager.set_icon("🌟")
         await page_manager.set_random_gradient_cover()
 
         print("🎨 Page styled with title, icon and cover")
@@ -60,6 +60,9 @@ async def main():
         )
 
         await page_manager.append_markdown(content)
+        
+        url = await page_manager.get_url()
+        print(f"🔗 Page URL: {url}")
 
         print("📋 Content added successfully")
 

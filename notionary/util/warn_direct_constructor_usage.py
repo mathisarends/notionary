@@ -4,7 +4,6 @@ from typing import Callable, Any, TypeVar, cast
 
 F = TypeVar("F", bound=Callable[..., Any])
 
-
 def warn_direct_constructor_usage(func: F) -> F:
     """
     Method decorator that logs a warning when the constructor is called directly
@@ -19,25 +18,27 @@ def warn_direct_constructor_usage(func: F) -> F:
         # Get the call stack
         stack = inspect.stack()
 
-        # Default assumption: not from factory
         self._from_factory = False
 
-        # Check if we have enough stack frames to determine the caller
-        if len(stack) < 3:
-            # Call the original __init__ and return early
-            return func(self, *args, **kwargs)
+        search_depth = min(6, len(stack))
+        
+        for i in range(1, search_depth):
+            if i >= len(stack):
+                break
+                
+            caller_frame = stack[i]
+            caller_name = caller_frame.function
+            
+            # Debug logging might be helpful during development
+            # print(f"Frame {i}: {caller_name}")
+            
+            # If called from a factory method, mark it and break
+            if caller_name.startswith("create_from_") or caller_name.startswith("from_"):
+                self._from_factory = True
+                break
 
-        # Check if the call is from a factory method
-        caller_frame = stack[2]
-        caller_name = caller_frame.function
-
-        # If called from a factory method, mark it and return
-        if caller_name.startswith("create_from_") or caller_name.startswith("from_"):
-            self._from_factory = True
-            return func(self, *args, **kwargs)
-
-        # If we got here, it's a direct constructor call - log a warning
-        if hasattr(self, "logger"):
+        # If not from factory, log warning
+        if not self._from_factory and hasattr(self, "logger"):
             self.logger.warning(
                 "Advisory: Direct constructor usage is discouraged. "
                 "Consider using factory methods like create_from_page_id(), "

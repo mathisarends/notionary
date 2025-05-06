@@ -1,3 +1,4 @@
+from __future__ import annotations 
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from notionary.notion_client import NotionClient
@@ -29,7 +30,7 @@ class NotionDatabase(LoggingMixin):
     @classmethod
     async def from_database_id(
         cls, database_id: str, token: Optional[str] = None
-    ) -> "NotionDatabase":
+    ) -> NotionDatabase:
         """
         Create a NotionDatabase from a database ID.
         Delegates to NotionDatabaseFactory.
@@ -41,7 +42,7 @@ class NotionDatabase(LoggingMixin):
     @classmethod
     async def from_database_name(
         cls, database_name: str, token: Optional[str] = None
-    ) -> "NotionDatabase":
+    ) -> NotionDatabase:
         """
         Create a NotionDatabase by finding a database with a matching name.
         Delegates to NotionDatabaseFactory.
@@ -67,8 +68,10 @@ class NotionDatabase(LoggingMixin):
                 self.logger.info(
                     "Created blank page %s in database %s", page_id, self.database_id
                 )
-
-                return NotionPage(page_id=page_id)
+                
+                return NotionPage.from_page_id(
+                    page_id=page_id, token=self._client.token
+                )
 
             self.logger.warning("Page creation failed: invalid response")
             return None
@@ -171,44 +174,14 @@ class NotionDatabase(LoggingMixin):
 
             for page in result["results"]:
                 page_id: str = page.get("id", "")
-                title = self._extract_page_title(page)
 
-                page_url = f"https://notion.so/{page_id.replace('-', '')}"
-
-                notion_page_manager = NotionPage(
-                    page_id=page_id, title=title, url=page_url
+                
+                yield NotionPage.create_from_page_id(
+                    page_id=page_id, token=self._client.token
                 )
-                yield notion_page_manager
-
-            # Update pagination parameters
+                
             has_more = result.get("has_more", False)
             start_cursor = result.get("next_cursor") if has_more else None
-
-    def _extract_page_title(self, page: Dict[str, Any]) -> str:
-        """
-        Extracts the title from a Notion page object.
-
-        Args:
-            page: The Notion page object
-
-        Returns:
-            The extracted title as a string, or an empty string if no title found
-        """
-        properties = page.get("properties", {})
-        if not properties:
-            return ""
-
-        for prop_value in properties.values():
-            if prop_value.get("type") != "title":
-                continue
-
-            title_array = prop_value.get("title", [])
-            if not title_array:
-                continue
-
-            return title_array[0].get("plain_text", "")
-
-        return ""
 
     async def delete_page(self, page_id: str) -> Dict[str, Any]:
         """

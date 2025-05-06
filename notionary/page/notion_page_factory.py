@@ -16,7 +16,7 @@ class NotionPageFactory(LoggingMixin):
     MAX_SUGGESTIONS = 5
 
     @classmethod
-    async def from_page_id(
+    def from_page_id(
         cls, page_id: str, token: Optional[str] = None
     ) -> NotionPage:
         """Create a NotionPage from a page ID."""
@@ -32,7 +32,7 @@ class NotionPageFactory(LoggingMixin):
             raise
 
     @classmethod
-    async def from_url(cls, url: str, token: Optional[str] = None) -> NotionPage:
+    def from_url(cls, url: str, token: Optional[str] = None) -> NotionPage:
         """Create a NotionPage from a Notion URL."""
 
         try:

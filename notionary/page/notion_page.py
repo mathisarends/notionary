@@ -1,5 +1,6 @@
-import re
+from __future__ import annotations 
 from typing import Any, Dict, List, Optional
+import re
 
 from notionary.elements.registry.block_element_registry import BlockElementRegistry
 from notionary.elements.registry.block_element_registry_builder import (
@@ -78,9 +79,9 @@ class NotionPage(LoggingMixin):
         )
 
     @classmethod
-    async def create_from_page_id(
+    def from_page_id(
         cls, page_id: str, token: Optional[str] = None
-    ) -> "NotionPage":
+    ) -> NotionPage:
         """
         Create a NotionPage from a page ID.
 
@@ -94,12 +95,12 @@ class NotionPage(LoggingMixin):
         from notionary.page.notion_page_factory import NotionPageFactory
 
         cls.logger.info("Creating page from ID: %s", page_id)
-        return await NotionPageFactory().from_page_id(page_id, token)
+        return NotionPageFactory().from_page_id(page_id, token)
 
     @classmethod
-    async def create_from_url(
+    def from_url(
         cls, url: str, token: Optional[str] = None
-    ) -> "NotionPage":
+    ) -> NotionPage:
         """
         Create a NotionPage from a Notion URL.
 
@@ -113,12 +114,12 @@ class NotionPage(LoggingMixin):
         from notionary.page.notion_page_factory import NotionPageFactory
 
         cls.logger.info("Creating page from URL: %s", url)
-        return await NotionPageFactory().from_url(url, token)
+        return NotionPageFactory().from_url(url, token)
 
     @classmethod
-    async def create_from_page_name(
+    async def from_page_name(
         cls, page_name: str, token: Optional[str] = None
-    ) -> "NotionPage":
+    ) -> NotionPage:
         """
         Create a NotionPage by finding a page with a matching name.
         Uses fuzzy matching to find the closest match to the given name.
