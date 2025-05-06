@@ -21,7 +21,7 @@ class DatabasePropertyService(LoggingMixin):
         self._client = client
         self._schema = None
 
-    async def load_schema(self, force_refresh=False) -> bool:
+    async def load_schema(self, force_refresh: bool = False) -> bool:
         """
         Loads the database schema.
 
@@ -29,25 +29,22 @@ class DatabasePropertyService(LoggingMixin):
             force_refresh: Whether to force a refresh of the schema
 
         Returns:
-            bool: True if schema loaded successfully, False otherwise
+            True if schema loaded successfully, False otherwise.
         """
         if self._schema is not None and not force_refresh:
             return True
 
         try:
-            database = await self._client.get(f"databases/{self._database_id}")
-            if database and "properties" in database:
-                self._schema = database["properties"]
-                self.logger.debug("Loaded schema for database %s", self._database_id)
-                return True
-            else:
-                self.logger.error(
-                    "Failed to load schema: missing 'properties' in response"
-                )
-                return False
+            database = await self._client.get_database(self._database_id)
+
+            self._schema = database.properties
+            self.logger.debug("Loaded schema for database %s", self._database_id)
+            return True
+
         except Exception as e:
-            self.logger.error("Error loading database schema: %s", str(e))
+            self.logger.error("Error loading database schema for %s: %s", self._database_id, str(e))
             return False
+
 
     async def _ensure_schema_loaded(self) -> None:
         """

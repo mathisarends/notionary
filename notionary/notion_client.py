@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Dict, Any, Optional, Union
 import httpx
 from dotenv import load_dotenv
+from notionary.models.notion_database_response import NotionDatabaserResponse
 from notionary.models.notion_page_response import NotionPageResponse
 from notionary.util.logging_mixin import LoggingMixin
 
@@ -55,6 +56,7 @@ class NotionClient(LoggingMixin):
             await self.client.aclose()
             self.client = None
 
+    # Das hier für die unterschiedlichen responses hier noch richtig typne wäre gut.
     async def get(self, endpoint: str) -> Optional[Dict[str, Any]]:
         """
         Sends a GET request to the specified Notion API endpoint.
@@ -66,6 +68,18 @@ class NotionClient(LoggingMixin):
             A dictionary with the response data, or None if the request failed.
         """
         return await self._make_request(HttpMethod.GET, endpoint)
+    
+    async def get_database(self, database_id: str) -> NotionDatabaserResponse:
+        """
+        Ruft die Metadaten einer Notion-Datenbank anhand ihrer ID ab und gibt sie als NotionPageResponse zurück.
+
+        Args:
+            database_id: Die Notion-Datenbank-ID.
+
+        Returns:
+            Ein NotionPageResponse-Objekt mit den Datenbankmetadaten.
+        """
+        return NotionDatabaserResponse.model_validate(await self.get(f"databases/{database_id}"))
 
     async def get_page(self, page_id: str) -> NotionPageResponse:
         """
@@ -78,7 +92,7 @@ class NotionClient(LoggingMixin):
             Ein NotionPageResponse-Objekt mit den Seitenmetadaten.
         """
         return NotionPageResponse.model_validate(await self.get(f"pages/{page_id}"))
-
+    
     async def post(
         self, endpoint: str, data: Optional[Dict[str, Any]] = None
     ) -> Optional[Dict[str, Any]]:

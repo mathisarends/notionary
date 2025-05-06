@@ -133,28 +133,23 @@ class NotionRelationManager(LoggingMixin):
             property_name: Name of the relation property
 
         Returns:
-            Optional[Dict[str, Any]]: Relation details or None
+            The "relation" field of the property, or None if not found or not of type "relation".
         """
         database_id = await self._ensure_database_id()
         if not database_id:
             return None
 
         try:
-            database = await self._client.get(f"databases/{database_id}")
-            if not database or "properties" not in database:
+            database = await self._client.get_database(database_id)
+
+            prop_data = database.properties.get(property_name)
+            if not prop_data:
                 return None
-
-            properties = database["properties"]
-
-            if property_name not in properties:
-                return None
-
-            prop_data = properties[property_name]
 
             if prop_data.get("type") != "relation":
                 return None
 
-            return prop_data.get("relation", {})
+            return prop_data.get("relation")
 
         except Exception as e:
             self.logger.error("Error retrieving relation details: %s", str(e))

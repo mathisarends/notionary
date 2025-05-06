@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from notionary.notion_client import NotionClient
@@ -217,22 +218,17 @@ class NotionDatabase(LoggingMixin):
         Retrieve the last edited time of the database.
 
         Returns:
-            ISO 8601 timestamp string of the last database edit, or None if request fails
+            ISO 8601 timestamp string of the last database edit, or None if request fails.
         """
         try:
-            response = await self._client.get(f"databases/{self.database_id}")
+            db = await self._client.get_database(self.database_id)
 
-            if response and "last_edited_time" in response:
-                return response["last_edited_time"]
-
-            self.logger.warning(
-                "Could not retrieve last_edited_time for database %s", self.database_id
-            )
-            return None
+            return db.last_edited_time
 
         except Exception as e:
-            self.logger.error("Error fetching last_edited_time: %s", str(e))
+            self.logger.error("Error fetching last_edited_time for database %s: %s", self.database_id, str(e))
             return None
+
 
     async def close(self) -> None:
         """Close the client connection."""

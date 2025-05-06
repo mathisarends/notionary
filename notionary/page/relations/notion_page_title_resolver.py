@@ -92,7 +92,7 @@ class NotionPageTitleResolver(LoggingMixin):
             The title of the page, or None if not found.
         """
         try:
-            page = await self._client.get(f"pages/{page_id}")
+            page = await self._client.get_page(page_id)
             return self._extract_page_title(page)
 
         except Exception as e:
