@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Dict, Any, Optional, Union
 import httpx
 from dotenv import load_dotenv
+from notionary.models.notion_page_response import NotionPageResponse
 from notionary.util.logging_mixin import LoggingMixin
 
 
@@ -66,17 +67,17 @@ class NotionClient(LoggingMixin):
         """
         return await self._make_request(HttpMethod.GET, endpoint)
 
-    async def get_page(self, page_id: str) -> Optional[Dict[str, Any]]:
+    async def get_page(self, page_id: str) -> NotionPageResponse:
         """
-        Fetches metadata for a Notion page by its ID.
+        Ruft die Metadaten einer Notion-Seite anhand ihrer ID ab und gibt sie als NotionPageResponse zurück.
 
         Args:
-            page_id: The Notion page ID.
+            page_id: Die Notion-Seiten-ID.
 
         Returns:
-            A dictionary with the page data, or None if the request failed.
+            Ein NotionPageResponse-Objekt mit den Seitenmetadaten.
         """
-        return await self.get(f"pages/{page_id}")
+        return NotionPageResponse.model_validate(await self.get(f"pages/{page_id}"))
 
     async def post(
         self, endpoint: str, data: Optional[Dict[str, Any]] = None

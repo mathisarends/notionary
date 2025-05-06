@@ -60,7 +60,7 @@ async def main():
         )
 
         await page_manager.append_markdown(content)
-        
+
         url = await page_manager.get_url()
         print(f"🔗 Page URL: {url}")
 

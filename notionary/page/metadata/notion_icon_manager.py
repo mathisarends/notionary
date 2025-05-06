@@ -1,5 +1,7 @@
+import json
 from typing import Any, Dict, Optional
 
+from notionary.models.notion_page_response import EmojiIcon, ExternalIcon, FileIcon
 from notionary.notion_client import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
 
@@ -26,25 +28,19 @@ class NotionPageIconManager(LoggingMixin):
         Retrieves the page icon - either emoji or external URL.
 
         Returns:
-            Optional[str]: Emoji character or URL if set, None if no icon
+            Optional[str]: Emoji character or URL if set, None if no icon.
         """
-        page_data = await self._client.get_page(self.page_id)
+        page_response = await self._client.get_page(self.page_id)
+        if not page_response or not page_response.icon:
+            return None
 
-        if not page_data:
-            return ""
+        icon = page_response.icon
 
-        # Get icon data, default to empty dict if not present or None
-        icon_data = page_data.get("icon")
+        if isinstance(icon, EmojiIcon):
+            return icon.emoji
+        elif isinstance(icon, ExternalIcon):
+            return icon.external.url
+        elif isinstance(icon, FileIcon):
+            return icon.file.url
 
-        # If icon is None or not present, return None
-        if not icon_data:
-            return ""
-
-        icon_type = icon_data.get("type")
-
-        if icon_type == "emoji":
-            return icon_data.get("emoji")
-        if icon_type == "external":
-            return icon_data.get("external", {}).get("url")
-
-        return ""
+        return None

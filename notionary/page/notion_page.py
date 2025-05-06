@@ -1,4 +1,4 @@
-from __future__ import annotations 
+from __future__ import annotations
 from typing import Any, Dict, List, Optional
 import re
 
@@ -79,9 +79,7 @@ class NotionPage(LoggingMixin):
         )
 
     @classmethod
-    def from_page_id(
-        cls, page_id: str, token: Optional[str] = None
-    ) -> NotionPage:
+    def from_page_id(cls, page_id: str, token: Optional[str] = None) -> NotionPage:
         """
         Create a NotionPage from a page ID.
 
@@ -98,9 +96,7 @@ class NotionPage(LoggingMixin):
         return NotionPageFactory().from_page_id(page_id, token)
 
     @classmethod
-    def from_url(
-        cls, url: str, token: Optional[str] = None
-    ) -> NotionPage:
+    def from_url(cls, url: str, token: Optional[str] = None) -> NotionPage:
         """
         Create a NotionPage from a Notion URL.
 
@@ -175,7 +171,7 @@ class NotionPage(LoggingMixin):
         if not self._title_loaded:
             await self._load_page_title()
         return self._title
-    
+
     async def set_title(self, title: str) -> Optional[Dict[str, Any]]:
         """
         Set the title of the page.
@@ -257,7 +253,7 @@ class NotionPage(LoggingMixin):
             Optional[str]: The icon emoji or URL, or None if no icon is set.
         """
         return await self._page_icon_manager.get_icon()
-    
+
     async def set_icon(
         self, emoji: Optional[str] = None, external_url: Optional[str] = None
     ) -> Optional[Dict[str, Any]]:
@@ -273,7 +269,7 @@ class NotionPage(LoggingMixin):
         """
         return await self._page_icon_manager.set_icon(emoji, external_url)
 
-    async def get_cover(self) -> str:
+    async def get_cover_url(self) -> str:
         """
         Get the URL of the page cover image.
 
@@ -412,7 +408,7 @@ class NotionPage(LoggingMixin):
         """
         return await self._relation_manager.get_all_relations()
 
-    async def get_last_edited_time(self) -> str:
+    async def get_last_edit_time(self) -> str:
         """
         Get the timestamp when the page was last edited.
 
@@ -420,12 +416,10 @@ class NotionPage(LoggingMixin):
             str: ISO 8601 formatted timestamp string of when the page was last edited.
         """
         try:
-            page_data = await self._client.get_page(self._page_id)
-            if "last_edited_time" in page_data:
-                return page_data["last_edited_time"]
-
-            self.logger.warning("last_edited_time not found in page data")
-            return ""
+            page_response = await self._client.get_page(self._page_id)
+            return (
+                page_response.last_edited_time if page_response.last_edited_by else ""
+            )
 
         except Exception as e:
             self.logger.error("Error retrieving last edited time: %s", str(e))

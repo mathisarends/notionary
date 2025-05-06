@@ -1,3 +1,4 @@
+import json
 import logging
 import asyncio
 import traceback
@@ -12,7 +13,7 @@ async def main():
 
     try:
         print("Searching for page by name...")
-        page = await NotionPage.create_from_page_name("Paradoxe Intention")
+        page = await NotionPage.from_page_name("#936 - Alex Hutchinson - How To Rewire Your Brain To Take More Risks")
 
         icon, title, url = await asyncio.gather(
             page.get_icon(), page.get_title(), page.get_url()
@@ -20,8 +21,8 @@ async def main():
 
         print(f'✅ Found: "{title}" {icon} → {url}')
 
-        """ await page.add_relations_by_name(relation_property_name="Projekte", page_titles=["Thesis", "Vizro"])
-        print("✅ Relations added successfully.") """
+        result = await page.get_cover_url()
+        print(f"✅ Icon: {result}")
 
     except Exception as e:
         print(f"❌ Error: {e}")

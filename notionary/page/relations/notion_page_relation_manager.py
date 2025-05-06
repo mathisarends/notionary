@@ -36,18 +36,18 @@ class NotionRelationManager(LoggingMixin):
 
     async def _get_page_properties(self, force_refresh: bool = False) -> Dict[str, Any]:
         """
-        Loads the properties of the page.
+        Lädt die Eigenschaften der Seite.
 
         Args:
-            force_refresh: If True, a fresh API call will be made
+            force_refresh: Wenn True, wird ein neuer API-Aufruf durchgeführt.
 
         Returns:
-            Dict[str, Any]: The properties of the page
+            Dict[str, Any]: Die Eigenschaften der Seite.
         """
         if self._page_properties is None or force_refresh:
             page_data = await self._client.get_page(self._page_id)
-            if page_data and "properties" in page_data:
-                self._page_properties = page_data["properties"]
+            if page_data:
+                self._page_properties = page_data.properties or {}
             else:
                 self._page_properties = {}
 

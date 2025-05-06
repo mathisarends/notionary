@@ -4,6 +4,7 @@ from typing import Callable, Any, TypeVar, cast
 
 F = TypeVar("F", bound=Callable[..., Any])
 
+
 def warn_direct_constructor_usage(func: F) -> F:
     """
     Method decorator that logs a warning when the constructor is called directly
@@ -21,19 +22,21 @@ def warn_direct_constructor_usage(func: F) -> F:
         self._from_factory = False
 
         search_depth = min(6, len(stack))
-        
+
         for i in range(1, search_depth):
             if i >= len(stack):
                 break
-                
+
             caller_frame = stack[i]
             caller_name = caller_frame.function
-            
+
             # Debug logging might be helpful during development
             # print(f"Frame {i}: {caller_name}")
-            
+
             # If called from a factory method, mark it and break
-            if caller_name.startswith("create_from_") or caller_name.startswith("from_"):
+            if caller_name.startswith("create_from_") or caller_name.startswith(
+                "from_"
+            ):
                 self._from_factory = True
                 break
 

@@ -16,9 +16,7 @@ class NotionPageFactory(LoggingMixin):
     MAX_SUGGESTIONS = 5
 
     @classmethod
-    def from_page_id(
-        cls, page_id: str, token: Optional[str] = None
-    ) -> NotionPage:
+    def from_page_id(cls, page_id: str, token: Optional[str] = None) -> NotionPage:
         """Create a NotionPage from a page ID."""
         try:
             formatted_id = format_uuid(page_id) or page_id
@@ -95,7 +93,7 @@ class NotionPageFactory(LoggingMixin):
                 best_score,
             )
 
-            page = NotionPage(page_id=page_id, title=matched_name, token=token)
+            page = NotionPage.from_page_id(page_id=page_id, token=token)
             cls.logger.info("Successfully created page instance for '%s'", matched_name)
 
             await client.close()

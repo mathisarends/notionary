@@ -34,20 +34,12 @@ class NotionPageCoverManager(LoggingMixin):
 
     async def get_cover_url(self) -> str:
         """Retrieves the current cover image URL of the page."""
-
         page_data = await self._client.get_page(self.page_id)
 
-        if not page_data:
+        if not page_data or not page_data.cover:
             return ""
 
-        cover = page_data.get("cover")
+        if page_data.cover.type == "external":
+            return page_data.cover.external.url
 
-        if not cover or not isinstance(cover, dict):
-            return ""
-
-        external = cover.get("external")
-
-        if not external or not isinstance(external, dict):
-            return ""
-
-        return external.get("url", "")
+        return ""

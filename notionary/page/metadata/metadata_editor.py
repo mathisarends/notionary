@@ -59,10 +59,8 @@ class MetadataEditor(LoggingMixin):
         page_data = await self._client.get_page(self.page_id)
         property_schema = {}
 
-        if not page_data or "properties" not in page_data:
-            return property_schema
-
-        for prop_name, prop_data in page_data["properties"].items():
+        for prop_name, prop_data in page_data.properties.items():
+            # Annahme: prop_data ist immer noch ein Dict
             prop_type = prop_data.get("type")
             property_schema[prop_name] = {
                 "id": prop_data.get("id"),

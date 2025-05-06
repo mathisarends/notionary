@@ -1,4 +1,5 @@
 from typing import Dict, Any, List, Optional
+from notionary.models.notion_page_response import NotionPageResponse
 from notionary.notion_client import NotionClient
 from notionary.page.metadata.metadata_editor import MetadataEditor
 from notionary.page.properites.property_operation_result import (
@@ -36,9 +37,7 @@ class PagePropertyManager(LoggingMixin):
     async def get_properties(self) -> Dict[str, Any]:
         """Retrieves all properties of the page."""
         page_data = await self._get_page_data()
-        if page_data and "properties" in page_data:
-            return page_data["properties"]
-        return {}
+        return page_data.properties if page_data.properties else {}
 
     async def get_property_value(self, property_name: str, relation_getter=None) -> Any:
         """
@@ -147,7 +146,7 @@ class PagePropertyManager(LoggingMixin):
             return await db_service.get_option_names(property_name)
         return []
 
-    async def _get_page_data(self, force_refresh=False) -> Dict[str, Any]:
+    async def _get_page_data(self, force_refresh=False) -> NotionPageResponse:
         """Gets the page data and caches it for future use."""
         if self._page_data is None or force_refresh:
             self._page_data = await self._client.get_page(self._page_id)

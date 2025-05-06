@@ -1,4 +1,5 @@
 from typing import Dict, Optional, Any
+from notionary.models.notion_page_response import DatabaseParent, NotionPageResponse
 from notionary.notion_client import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
 
@@ -23,7 +24,7 @@ class PageDatabaseRelation(LoggingMixin):
         self._database_schema = None
         self._page_data = None
 
-    async def _get_page_data(self, force_refresh=False) -> Dict[str, Any]:
+    async def _get_page_data(self, force_refresh=False) -> NotionPageResponse:
         """
         Gets the page data and caches it for future use.
 
@@ -39,22 +40,19 @@ class PageDatabaseRelation(LoggingMixin):
 
     async def get_parent_database_id(self) -> Optional[str]:
         """
-        Gets the ID of the database this page belongs to, if any.
-
-        Returns:
-            Optional[str]: The database ID or None if the page doesn't belong to a database
+        Returns the ID of the database this page belongs to, if any.
         """
         if self._parent_database_id is not None:
             return self._parent_database_id
 
         page_data = await self._get_page_data()
 
-        if not page_data or "parent" not in page_data:
+        if not page_data:
             return None
 
-        parent = page_data.get("parent", {})
-        if parent.get("type") == "database_id":
-            self._parent_database_id = parent.get("database_id")
+        parent = page_data.parent
+        if isinstance(parent, DatabaseParent):
+            self._parent_database_id = parent.database_id
             return self._parent_database_id
 
         return None

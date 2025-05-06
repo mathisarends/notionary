@@ -1,4 +1,4 @@
-from __future__ import annotations 
+from __future__ import annotations
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from notionary.notion_client import NotionClient
@@ -24,7 +24,7 @@ class NotionDatabase(LoggingMixin):
             database_id: ID of the Notion database
             token: Optional Notion API token
         """
-        self.database_id = format_uuid(database_id) or database_id
+        self.database_id = database_id
         self._client = NotionClient(token=token)
 
     @classmethod
@@ -68,7 +68,7 @@ class NotionDatabase(LoggingMixin):
                 self.logger.info(
                     "Created blank page %s in database %s", page_id, self.database_id
                 )
-                
+
                 return NotionPage.from_page_id(
                     page_id=page_id, token=self._client.token
                 )
@@ -151,7 +151,6 @@ class NotionDatabase(LoggingMixin):
         start_cursor: Optional[str] = None
         has_more = True
 
-        # Prepare the query body
         body: Dict[str, Any] = {"page_size": page_size}
 
         if filter_conditions:
@@ -175,11 +174,8 @@ class NotionDatabase(LoggingMixin):
             for page in result["results"]:
                 page_id: str = page.get("id", "")
 
-                
-                yield NotionPage.create_from_page_id(
-                    page_id=page_id, token=self._client.token
-                )
-                
+                yield NotionPage.from_page_id(page_id=page_id, token=self._client.token)
+
             has_more = result.get("has_more", False)
             start_cursor = result.get("next_cursor") if has_more else None
 
