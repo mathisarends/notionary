@@ -4,9 +4,6 @@ from notionary.page.metadata.metadata_editor import MetadataEditor
 from notionary.page.properites.property_operation_result import (
     PropertyOperationResult,
 )
-from notionary.page.relations.notion_page_title_resolver import (
-    NotionPageTitleResolver,
-)
 from notionary.page.properites.database_property_service import (
     DatabasePropertyService,
 )
@@ -35,7 +32,6 @@ class PagePropertyManager(LoggingMixin):
         self._db_property_service = None
 
         self._extractor = PropertyValueExtractor(self.logger)
-        self._title_resolver = NotionPageTitleResolver(client)
 
     async def get_properties(self) -> Dict[str, Any]:
         """Retrieves all properties of the page."""

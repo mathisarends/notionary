@@ -17,40 +17,69 @@ class NotionPageTitleResolver(LoggingMixin):
                 {"query": title, "filter": {"value": "page", "property": "object"}},
             )
 
-            for result in search_results.get("results", []):
-                properties = result.get("properties", {})
-                if not properties:
-                    continue
+            page_id = self._find_matching_page_in_results(
+                search_results.get("results", []), title
+            )
+            if page_id:
+                self.logger.debug(f"Found page with title '{title}' and ID: {page_id}")
+                return page_id
 
-                for prop_value in properties.values():
-                    if prop_value.get("type") != "title":
-                        continue
-
-                    title_texts = prop_value.get("title", [])
-                    if not title_texts:
-                        continue
-
-                    page_title = " ".join(
-                        [t.get("plain_text", "") for t in title_texts]
-                    )
-
-                    if not page_title:
-                        continue
-
-                    if page_title == title or title in page_title:
-                        self.logger.debug(
-                            "Found page: '%s' with ID: %s",
-                            page_title,
-                            result.get("id"),
-                        )
-                        return result.get("id")
-
-            self.logger.debug("No page found with title '%s'", title)
+            self.logger.debug(f"No page found with title '{title}'")
             return None
 
         except Exception as e:
-            self.logger.error("Error while searching for page '%s': %s", title, e)
+            self.logger.error(f"Error while searching for page '{title}': {e}")
             return None
+
+    def _find_matching_page_in_results(
+        self, results, search_title: str
+    ) -> Optional[str]:
+        """
+        Extracts and compares page titles from search results to find matching pages.
+
+        Args:
+            results: List of search result items from Notion API
+            search_title: The title to search for
+
+        Returns:
+            Page ID if a match is found, None otherwise
+        """
+        for result in results:
+            page_title = self._extract_page_title(result)
+            if not page_title:
+                continue
+
+            if page_title == search_title or search_title in page_title:
+                return result.get("id")
+
+        return None
+
+    def _extract_page_title(self, page_data: dict) -> Optional[str]:
+        """
+        Extracts the title from a Notion page object.
+
+        Args:
+            page_data: Page data from Notion API
+
+        Returns:
+            Page title as string if found, None otherwise
+        """
+        properties = page_data.get("properties", {})
+        if not properties:
+            return None
+
+        for prop_value in properties.values():
+            if prop_value.get("type") != "title":
+                continue
+
+            title_texts = prop_value.get("title", [])
+            if not title_texts:
+                continue
+
+            page_title = " ".join([t.get("plain_text", "") for t in title_texts])
+            return page_title if page_title else None
+
+        return None
 
     async def get_title_by_page_id(self, page_id: str) -> Optional[str]:
         """
@@ -64,23 +93,8 @@ class NotionPageTitleResolver(LoggingMixin):
         """
         try:
             page = await self._client.get(f"pages/{page_id}")
-            properties = page.get("properties", {})
-
-            for prop in properties.values():
-                if prop.get("type") != "title":
-                    continue
-
-                title_parts = prop.get("title", [])
-                if not title_parts:
-                    continue
-
-                title = " ".join([t.get("plain_text", "") for t in title_parts])
-                if title:
-                    return title
-
-            self.logger.debug("No title found for page ID '%s'", page_id)
-            return None
+            return self._extract_page_title(page)
 
         except Exception as e:
-            self.logger.error("Error retrieving title for page ID '%s': %s", page_id, e)
+            self.logger.error(f"Error retrieving title for page ID '{page_id}': {e}")
             return None

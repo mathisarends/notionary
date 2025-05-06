@@ -2,7 +2,7 @@ from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from notionary.notion_client import NotionClient
 from notionary.page.notion_page import NotionPage
-from notionary.util import warn_direct_constructor_usage
+from notionary.util.warn_direct_constructor_usage import warn_direct_constructor_usage
 from notionary.util.logging_mixin import LoggingMixin
 from notionary.util.page_id_utils import format_uuid
 

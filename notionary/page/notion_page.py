@@ -19,6 +19,7 @@ from notionary.page.relations.notion_page_relation_manager import (
 )
 from notionary.page.content.page_content_manager import PageContentManager
 from notionary.page.properites.page_property_manager import PagePropertyManager
+from notionary.page.relations.notion_page_title_resolver import NotionPageTitleResolver
 from notionary.util.warn_direct_constructor_usage import warn_direct_constructor_usage
 from notionary.util.logging_mixin import LoggingMixin
 from notionary.util.page_id_utils import extract_and_validate_page_id
@@ -27,7 +28,7 @@ from notionary.page.relations.page_database_relation import PageDatabaseRelation
 
 class NotionPage(LoggingMixin):
     """
-    High-Level Facade for managing content and metadata of a Notion page.
+    Managing content and metadata of a Notion page.
     """
 
     @warn_direct_constructor_usage
@@ -173,6 +174,22 @@ class NotionPage(LoggingMixin):
         if not self._title_loaded:
             await self._load_page_title()
         return self._title
+    
+    async def set_title(self, title: str) -> Optional[Dict[str, Any]]:
+        """
+        Set the title of the page.
+
+        Args:
+            title: The new title.
+
+        Returns:
+            Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
+        """
+        result = await self._metadata.set_title(title)
+        if result:
+            self._title = title
+            self._title_loaded = True
+        return result
 
     async def get_url(self) -> str:
         """
@@ -222,7 +239,7 @@ class NotionPage(LoggingMixin):
         await self._page_content_manager.clear()
         return await self._page_content_manager.append_markdown(markdown)
 
-    async def get_text(self) -> str:
+    async def get_text_content(self) -> str:
         """
         Get the text content of the page.
 
@@ -231,23 +248,16 @@ class NotionPage(LoggingMixin):
         """
         return await self._page_content_manager.get_text()
 
-    async def set_title(self, title: str) -> Optional[Dict[str, Any]]:
+    async def get_icon(self) -> str:
         """
-        Set the title of the page.
-
-        Args:
-            title: The new title.
+        Retrieve the page icon - either emoji or external URL.
 
         Returns:
-            Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
+            Optional[str]: The icon emoji or URL, or None if no icon is set.
         """
-        result = await self._metadata.set_title(title)
-        if result:
-            self._title = title
-            self._title_loaded = True
-        return result
-
-    async def set_page_icon(
+        return await self._page_icon_manager.get_icon()
+    
+    async def set_icon(
         self, emoji: Optional[str] = None, external_url: Optional[str] = None
     ) -> Optional[Dict[str, Any]]:
         """
@@ -262,16 +272,7 @@ class NotionPage(LoggingMixin):
         """
         return await self._page_icon_manager.set_icon(emoji, external_url)
 
-    async def get_icon(self) -> str:
-        """
-        Retrieve the page icon - either emoji or external URL.
-
-        Returns:
-            Optional[str]: The icon emoji or URL, or None if no icon is set.
-        """
-        return await self._page_icon_manager.get_icon()
-
-    async def get_cover_url(self) -> str:
+    async def get_cover(self) -> str:
         """
         Get the URL of the page cover image.
 
@@ -280,7 +281,7 @@ class NotionPage(LoggingMixin):
         """
         return await self._page_cover_manager.get_cover_url()
 
-    async def set_page_cover(self, external_url: str) -> Optional[Dict[str, Any]]:
+    async def set_cover(self, external_url: str) -> Optional[Dict[str, Any]]:
         """
         Set the cover image for the page using an external URL.
 
@@ -300,15 +301,6 @@ class NotionPage(LoggingMixin):
             Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
         """
         return await self._page_cover_manager.set_random_gradient_cover()
-
-    async def get_properties(self) -> Dict[str, Any]:
-        """
-        Retrieve all properties of the page.
-
-        Returns:
-            Dict[str, Any]: Dictionary of property names and their values.
-        """
-        return await self._property_manager.get_properties()
 
     async def get_property_value(self, property_name: str) -> Any:
         """
@@ -342,24 +334,6 @@ class NotionPage(LoggingMixin):
             value=value,
         )
 
-    async def is_database_page(self) -> bool:
-        """
-        Check if this page belongs to a database.
-
-        Returns:
-            bool: True if the page belongs to a database, False otherwise.
-        """
-        return await self._db_relation.is_database_page()
-
-    async def get_parent_database_id(self) -> Optional[str]:
-        """
-        Get the ID of the database this page belongs to, if any.
-
-        Returns:
-            Optional[str]: The database ID or None if the page doesn't belong to a database.
-        """
-        return await self._db_relation.get_parent_database_id()
-
     async def get_available_options_for_property(self, property_name: str) -> List[str]:
         """
         Get the available option names for a property (select, multi_select, status).
@@ -374,21 +348,6 @@ class NotionPage(LoggingMixin):
         if db_service:
             return await db_service.get_option_names(property_name)
         return []
-
-    async def get_property_type(self, property_name: str) -> Optional[str]:
-        """
-        Get the type of a specific property.
-
-        Args:
-            property_name: The name of the property.
-
-        Returns:
-            Optional[str]: The type of the property or None if not found.
-        """
-        db_service = await self._get_db_property_service()
-        if db_service:
-            return await db_service.get_property_type(property_name)
-        return None
 
     async def get_relation_options(
         self, property_name: str, limit: int = 100
@@ -478,52 +437,10 @@ class NotionPage(LoggingMixin):
         Returns:
             str: The page title.
         """
-        if self._title is not None:
-            return self._title
-
-        self.logger.debug("Lazy loading page title for page: %s", self._page_id)
-        try:
-            # Retrieve page data
-            page_data = await self._client.get(f"pages/{self._page_id}")
-            self._title = self._extract_title_from_page_data(page_data)
-        except Exception as e:
-            self.logger.error("Error loading page title: %s", str(e))
-            self._title = "Untitled"
-
-        self._title_loaded = True
-        self.logger.debug("Loaded page title: %s", self._title)
-        return self._title
-
-    # TODO: This Logic here exists multiple times in the codebase. Refactor it to a common place.
-    def _extract_title_from_page_data(self, page_data: Dict[str, Any]) -> str:
-        """
-        Extract title from page data.
-
-        Args:
-            page_data: The page data from Notion API
-
-        Returns:
-            str: The extracted title or "Untitled" if not found
-        """
-        if "properties" not in page_data:
-            return "Untitled"
-
-        for prop_value in page_data["properties"].values():
-            if prop_value.get("type") != "title":
-                continue
-
-            title_array = prop_value.get("title", [])
-            if not title_array:
-                continue
-
-            text_parts = []
-            for text_obj in title_array:
-                if "plain_text" in text_obj:
-                    text_parts.append(text_obj["plain_text"])
-
-            return "".join(text_parts) or "Untitled"
-
-        return "Untitled"
+        notion_page_title_resolver = NotionPageTitleResolver(self._client)
+        return await notion_page_title_resolver.get_title_by_page_id(
+            page_id=self._page_id
+        )
 
     async def _build_notion_url(self) -> str:
         """
