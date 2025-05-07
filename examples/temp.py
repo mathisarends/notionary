@@ -20,8 +20,8 @@ async def main():
         )
         print(f'✅ Found: "{title}" {icon} → {url}')
         
-        result = await page.clear_page_content()
-        print(f"✅ Cleared page: {result}")
+        text_content = await page.get_text_content()
+        print(f"✅ Text content retrieved: {text_content}...")
 
     except Exception as e:
         print(f"❌ Error: {e}")

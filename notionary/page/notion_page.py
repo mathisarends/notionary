@@ -7,6 +7,7 @@ from notionary.elements.registry.block_element_registry_builder import (
     BlockElementRegistryBuilder,
 )
 from notionary.notion_client import NotionClient
+from notionary.page.content.page_content_retriever import PageContentRetriever
 from notionary.page.metadata.metadata_editor import MetadataEditor
 from notionary.page.metadata.notion_icon_manager import NotionPageIconManager
 from notionary.page.metadata.notion_page_cover_manager import (
@@ -18,7 +19,7 @@ from notionary.page.properites.database_property_service import (
 from notionary.page.relations.notion_page_relation_manager import (
     NotionRelationManager,
 )
-from notionary.page.content.page_content_manager import PageContentManager
+from notionary.page.content.page_content_writer import PageContentWriter
 from notionary.page.properites.page_property_manager import PagePropertyManager
 from notionary.page.relations.notion_page_title_resolver import NotionPageTitleResolver
 from notionary.util.warn_direct_constructor_usage import warn_direct_constructor_usage
@@ -52,11 +53,18 @@ class NotionPage(LoggingMixin):
             BlockElementRegistryBuilder.create_full_registry()
         )
 
-        self._page_content_manager = PageContentManager(
+        self._page_content_writer = PageContentWriter(
             page_id=self._page_id,
             client=self._client,
             block_registry=self._block_element_registry,
         )
+        
+        self._page_content_retriever = PageContentRetriever(
+            page_id=self._page_id,
+            client=self._client,
+            block_registry=self._block_element_registry,
+        )
+        
         self._metadata = MetadataEditor(self._page_id, self._client)
         self._page_cover_manager = NotionPageCoverManager(
             page_id=self._page_id, client=self._client
@@ -157,7 +165,10 @@ class NotionPage(LoggingMixin):
             block_registry: The registry of block elements to use.
         """
         self._block_element_registry = block_registry
-        self._page_content_manager = PageContentManager(
+        self._page_content_writer = PageContentRetriever(
+            page_id=self._page_id, client=self._client, block_registry=block_registry
+        )
+        self._page_content_retriever = PageContentRetriever(
             page_id=self._page_id, client=self._client, block_registry=block_registry
         )
 
@@ -210,7 +221,7 @@ class NotionPage(LoggingMixin):
         Returns:
             str: Status or confirmation message.
         """
-        return await self._page_content_manager.append_markdown(
+        return await self._page_content_writer.append_markdown(
             markdown_text=markdown, append_divider=append_divider
         )
 
@@ -221,7 +232,7 @@ class NotionPage(LoggingMixin):
         Returns:
             str: Status or confirmation message.
         """
-        return await self._page_content_manager.clear_page_content()
+        return await self._page_content_writer.clear_page_content()
 
     async def replace_content(self, markdown: str) -> bool:
         """
@@ -233,8 +244,8 @@ class NotionPage(LoggingMixin):
         Returns:
             str: Status or confirmation message.
         """
-        await self._page_content_manager.clear_page_content()
-        return await self._page_content_manager.append_markdown(markdown_text=markdown, append_divider=False)
+        await self._page_content_writer.clear_page_content()
+        return await self._page_content_writer.append_markdown(markdown_text=markdown, append_divider=False)
 
     async def get_text_content(self) -> str:
         """
@@ -243,7 +254,7 @@ class NotionPage(LoggingMixin):
         Returns:
             str: The text content of the page.
         """
-        return await self._page_content_manager.get_text()
+        return await self._page_content_retriever.get_page_content()
 
     async def get_icon(self) -> str:
         """

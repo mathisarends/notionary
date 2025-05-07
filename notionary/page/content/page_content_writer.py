@@ -17,7 +17,7 @@ from notionary.page.content.notion_page_content_chunker import (
 from notionary.util.logging_mixin import LoggingMixin
 
 
-class PageContentManager(LoggingMixin):
+class PageContentWriter(LoggingMixin):
     def __init__(
         self,
         page_id: str,
@@ -73,7 +73,7 @@ class PageContentManager(LoggingMixin):
             results = blocks_resp.get("results", []) if blocks_resp else [] 
     
             if not results:
-                return True
+                return True  # Keine Blöcke vorhanden = Erfolg
             
             success = True
             for block in results: 
@@ -105,50 +105,3 @@ class PageContentManager(LoggingMixin):
         except Exception as e: 
             self.logger.error("Failed to delete block: %s", str(e)) 
             return False
-
-    async def get_blocks(self) -> List[Dict[str, Any]]:
-        result = await self._client.get(f"blocks/{self.page_id}/children")
-        if not result:
-            self.logger.error("Error retrieving page content: %s", result.error)
-            return []
-        return result.get("results", [])
-
-
-    async def get_block_children(self, block_id: str) -> List[Dict[str, Any]]:
-        result = await self._client.get(f"blocks/{block_id}/children")
-        if not result:
-            self.logger.error("Error retrieving block children: %s", result.error)
-            return []
-        return result.get("results", [])
-
-
-    async def get_page_blocks_with_children(
-        self, parent_id: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
-        blocks = (
-            await self.get_blocks()
-            if parent_id is None
-            else await self.get_block_children(parent_id)
-        )
-
-        if not blocks:
-            return []
-
-        for block in blocks:
-            if not block.get("has_children"):
-                continue
-
-            block_id = block.get("id")
-            if not block_id:
-                continue
-
-            # Recursive call for nested blocks
-            children = await self.get_page_blocks_with_children(block_id)
-            if children:
-                block["children"] = children
-
-        return blocks
-
-    async def get_text(self) -> str:
-        blocks = await self.get_page_blocks_with_children()
-        return self._notion_to_markdown_converter.convert(blocks)
