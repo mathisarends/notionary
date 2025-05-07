@@ -42,9 +42,10 @@ class DatabasePropertyService(LoggingMixin):
             return True
 
         except Exception as e:
-            self.logger.error("Error loading database schema for %s: %s", self._database_id, str(e))
+            self.logger.error(
+                "Error loading database schema for %s: %s", self._database_id, str(e)
+            )
             return False
-
 
     async def _ensure_schema_loaded(self) -> None:
         """

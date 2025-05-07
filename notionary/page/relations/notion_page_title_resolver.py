@@ -33,6 +33,24 @@ class NotionPageTitleResolver(LoggingMixin):
             self.logger.error(f"Error while searching for page '{title}': {e}")
             return None
 
+    async def get_title_by_page_id(self, page_id: str) -> Optional[str]:
+        """
+        Retrieves the title of a Notion page by its page ID.
+
+        Args:
+            page_id: The ID of the Notion page.
+
+        Returns:
+            The title of the page, or None if not found.
+        """
+        try:
+            page = await self._client.get_page(page_id)
+            return self._extract_page_title(page)
+
+        except Exception as e:
+            self.logger.error(f"Error retrieving title for page ID '{page_id}': {e}")
+            return None
+
     def _find_matching_page_in_results(
         self, results, search_title: str
     ) -> Optional[str]:
@@ -55,7 +73,7 @@ class NotionPageTitleResolver(LoggingMixin):
                 return result.get("id")
 
         return None
-    
+
     def _extract_page_title(self, page_response: NotionPageResponse) -> str:
         """
         Extract title from page data.
@@ -69,38 +87,16 @@ class NotionPageTitleResolver(LoggingMixin):
         for prop_value in page_response.properties.values():
             if not isinstance(prop_value, dict):
                 continue
-                
-            # Nur Title-Properties betrachten
+
             if prop_value.get("type") != "title":
                 continue
-                
-            # Title-Array holen
+
             title_array = prop_value.get("title", [])
             if not title_array:
                 continue
-                
-            # Ersten plain_text-Wert zurückgeben
+
             for text_obj in title_array:
                 if "plain_text" in text_obj:
                     return text_obj["plain_text"]
-                    
-        # Kein Titel gefunden
+
         return "Untitled"
-
-    async def get_title_by_page_id(self, page_id: str) -> Optional[str]:
-        """
-        Retrieves the title of a Notion page by its page ID.
-
-        Args:
-            page_id: The ID of the Notion page.
-
-        Returns:
-            The title of the page, or None if not found.
-        """
-        try:
-            page = await self._client.get_page(page_id)
-            return self._extract_page_title(page)
-
-        except Exception as e:
-            self.logger.error(f"Error retrieving title for page ID '{page_id}': {e}")
-            return None

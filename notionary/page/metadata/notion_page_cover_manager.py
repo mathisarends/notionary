@@ -19,14 +19,7 @@ class NotionPageCoverManager(LoggingMixin):
         Returns:
             The URL of the new cover image, or None if the request failed.
         """
-        data = {
-            "cover": {
-                "type": "external",
-                "external": {
-                    "url": external_url
-                }
-            }
-        }
+        data = {"cover": {"type": "external", "external": {"url": external_url}}}
 
         try:
             updated_page = await self._client.patch_page(self.page_id, data=data)

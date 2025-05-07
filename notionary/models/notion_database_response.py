@@ -16,6 +16,7 @@ class TextContent:
     content: str
     link: Optional[str] = None
 
+
 @dataclass
 class RichText:
     type: str
@@ -41,6 +42,7 @@ class NotionDatabaserResponse(BaseModel):
     """
     Represents the response from the Notion API when retrieving a database.
     """
+
     object: Literal["database"]
     id: str
     cover: Optional[Any]

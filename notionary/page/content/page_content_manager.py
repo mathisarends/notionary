@@ -148,9 +148,6 @@ class PageContentManager(LoggingMixin):
         
         if not results:
             return "No blocks to delete."
-        
-        first_result = results[0] if results else None
-        print("first_result", json.dumps(first_result, indent=4))
 
         total_deleted = 0
         total_skipped = 0

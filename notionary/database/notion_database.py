@@ -226,9 +226,12 @@ class NotionDatabase(LoggingMixin):
             return db.last_edited_time
 
         except Exception as e:
-            self.logger.error("Error fetching last_edited_time for database %s: %s", self.database_id, str(e))
+            self.logger.error(
+                "Error fetching last_edited_time for database %s: %s",
+                self.database_id,
+                str(e),
+            )
             return None
-
 
     async def close(self) -> None:
         """Close the client connection."""

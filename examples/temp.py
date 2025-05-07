@@ -1,7 +1,7 @@
 import logging
 import asyncio
 import traceback
-from notionary import NotionPage, NotionDatabase
+from notionary import NotionPage
 
 
 async def main():
@@ -20,7 +20,7 @@ async def main():
         print(f'✅ Found: "{title}" {icon} → {url}')
         
         result = await page.clear()
-        print(f"✅ Cleared: {result}")
+        print(f"✅ Cleared page: {result}")
 
     except Exception as e:
         print(f"❌ Error: {e}")

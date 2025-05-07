@@ -147,7 +147,7 @@ class NotionPage(LoggingMixin):
             BlockElementRegistry: The registry of block elements.
         """
         return self._block_element_registry
-
+    
     @block_registry.setter
     def block_registry(self, block_registry: BlockElementRegistry) -> None:
         """
@@ -433,6 +433,16 @@ class NotionPage(LoggingMixin):
         except Exception as e:
             self.logger.error("Error retrieving last edited time: %s", str(e))
             return ""
+        
+    def get_formatting_prompt(self) -> str:
+        """
+        Get the formatting prompt for the page content manager.
+
+        Returns:
+            str: The formatting prompt.
+        """
+        return self._block_element_registry.generate_llm_prompt()
+
 
     async def _load_page_title(self) -> str:
         """
