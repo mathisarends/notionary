@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from notionary.models.notion_page_response import EmojiIcon, ExternalIcon, FileIcon
 from notionary.notion_client import NotionClient
@@ -11,17 +11,40 @@ class NotionPageIconManager(LoggingMixin):
         self.page_id = page_id
         self._client = client
 
-    async def set_icon(
-        self, emoji: Optional[str] = None, external_url: Optional[str] = None
-    ) -> Optional[Dict[str, Any]]:
-        if emoji:
-            icon = {"type": "emoji", "emoji": emoji}
-        elif external_url:
-            icon = {"type": "external", "external": {"url": external_url}}
-        else:
-            return None
+    async def set_emoji_icon(self, emoji: str) -> Optional[str]:
+        """
+        Sets the page icon to an emoji.
 
-        return await self._client.patch(f"pages/{self.page_id}", {"icon": icon})
+        Args:
+            emoji (str): The emoji character to set as the icon.
+
+        Returns:
+            Optional[str]: The emoji that was set as the icon, or None if the operation failed.
+        """
+        icon = {"type": "emoji", "emoji": emoji}
+        page_response = await self._client.patch_page(page_id=self.page_id, data={"icon": icon})
+        
+        if page_response and page_response.icon and page_response.icon.type == "emoji":
+            return page_response.icon.emoji
+        return None
+
+    async def set_external_icon(self, url: str) -> Optional[str]:
+        """
+        Sets the page icon to an external image.
+
+        Args:
+            url (str): The URL of the external image to set as the icon.
+
+        Returns:
+            Optional[str]: The URL of the external image that was set as the icon, 
+                        or None if the operation failed.
+        """
+        icon = {"type": "external", "external": {"url": url}}
+        page_response = await self._client.patch_page(page_id=self.page_id, data={"icon": icon})
+        
+        if page_response and page_response.icon and page_response.icon.type == "external":
+            return page_response.icon.external.url
+        return None
 
     async def get_icon(self) -> Optional[str]:
         """

@@ -169,7 +169,7 @@ class NotionPage(LoggingMixin):
             str: The page title.
         """
         if not self._title_loaded:
-            await self._load_page_title()
+            self._title = await self._load_page_title()
         return self._title
 
     async def set_title(self, title: str) -> Optional[Dict[str, Any]]:
@@ -254,20 +254,29 @@ class NotionPage(LoggingMixin):
         """
         return await self._page_icon_manager.get_icon()
 
-    async def set_icon(
-        self, emoji: Optional[str] = None, external_url: Optional[str] = None
-    ) -> Optional[Dict[str, Any]]:
+    async def set_emoji_icon(self, emoji: str) -> Optional[Dict[str, Any]]:
         """
-        Set the icon for the page. Provide either emoji or external_url.
+        Sets the page icon to an emoji.
 
         Args:
-            emoji: Optional emoji to use as icon.
-            external_url: Optional URL to an external image to use as icon.
+            emoji (str): The emoji character to set as the icon.
 
         Returns:
             Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
         """
-        return await self._page_icon_manager.set_icon(emoji, external_url)
+        return await self._page_icon_manager.set_emoji_icon(emoji=emoji)
+
+    async def set_external_icon(self, url: str) -> Optional[Dict[str, Any]]:
+        """
+        Sets the page icon to an external image.
+
+        Args:
+            url (str): The URL of the external image to set as the icon.
+
+        Returns:
+            Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
+        """
+        return await self._page_icon_manager.set_external_icon(external_url=url)
 
     async def get_cover_url(self) -> str:
         """
@@ -278,7 +287,7 @@ class NotionPage(LoggingMixin):
         """
         return await self._page_cover_manager.get_cover_url()
 
-    async def set_cover(self, external_url: str) -> Optional[Dict[str, Any]]:
+    async def set_cover(self, external_url: str) -> Optional[str]:
         """
         Set the cover image for the page using an external URL.
 

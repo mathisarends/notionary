@@ -69,6 +69,8 @@ class NotionClient(LoggingMixin):
         """
         return await self._make_request(HttpMethod.GET, endpoint)
     
+    # TODO: Get Blocks implementeren und Patch Blcoks hierfür das Typing finden:
+    
     async def get_database(self, database_id: str) -> NotionDatabaserResponse:
         """
         Ruft die Metadaten einer Notion-Datenbank anhand ihrer ID ab und gibt sie als NotionPageResponse zurück.
@@ -122,6 +124,19 @@ class NotionClient(LoggingMixin):
             A dictionary with the response data, or None if the request failed.
         """
         return await self._make_request(HttpMethod.PATCH, endpoint, data)
+    
+    # TODO: Hierfür noch den Datentypen mit Omit definieren wäre auch noch super stark:
+    async def patch_page(
+        self, page_id: str, data: Optional[Dict[str, Any]] = None
+    ) -> NotionPageResponse:
+        """
+        Sends a PATCH request to update a Notion page.
+
+        Args:
+            page_id: The ID of the page to update.
+            data: Optional dictionary payload to send with the request.
+        """
+        return NotionPageResponse.model_validate(await self.patch(f"pages/{page_id}", data=data))
 
     async def delete(self, endpoint: str) -> bool:
         """

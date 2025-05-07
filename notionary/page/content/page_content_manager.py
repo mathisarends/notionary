@@ -1,4 +1,6 @@
-from typing import Any, Dict, List, Optional
+import asyncio
+import json
+from typing import Any, Dict, List, Optional, Tuple
 
 from notionary.elements.registry.block_element_registry import BlockElementRegistry
 from notionary.notion_client import NotionClient
@@ -92,7 +94,7 @@ class PageContentManager(LoggingMixin):
 
     async def delete_block_with_children(
         self, block: Dict[str, Any], skip_databases: bool
-    ) -> tuple[int, int]:
+    ) -> Tuple[int, int]:
         """
         Delete a block and all its children, optionally skipping databases.
         Returns a tuple of (deleted_count, skipped_count).
@@ -108,18 +110,20 @@ class PageContentManager(LoggingMixin):
         ]:
             return 0, 1
 
-        if skip_databases and await self.has_database_descendant(block["id"]):
-            return 0, 1
-
-        # Process children first
+        # Process children in parallel
         if block.get("has_children", False):
             children_resp = await self._client.get(f"blocks/{block['id']}/children")
-            for child in children_resp.get("results", []):
-                child_deleted, child_skipped = await self.delete_block_with_children(
-                    child, skip_databases
-                )
-                deleted += child_deleted
-                skipped += child_skipped
+            children = children_resp.get("results", [])
+            
+            if children:
+                # Process all children in parallel
+                tasks = [self.delete_block_with_children(child, skip_databases) 
+                        for child in children]
+                results = await asyncio.gather(*tasks)
+                
+                for child_deleted, child_skipped in results:
+                    deleted += child_deleted
+                    skipped += child_skipped
 
         # Then delete the block itself
         if await self._client.delete(f"blocks/{block['id']}"):
@@ -127,26 +131,73 @@ class PageContentManager(LoggingMixin):
 
         return deleted, skipped
 
-    async def clear(self, skip_databases: bool = True) -> str:
+    async def clear(self, skip_databases: bool = True, batch_size: int = 10) -> str:
         """
-        Clear the content of the page, optionally preserving databases.
+        Clear the content of the page in parallel, optionally preserving databases.
+        
+        Args:
+            skip_databases: If True, will not delete databases or blocks containing databases
+            batch_size: Number of blocks to process in parallel
+            
+        Returns:
+            A string describing how many blocks were deleted and skipped
         """
+        # Get all top-level blocks
         blocks_resp = await self._client.get(f"blocks/{self.page_id}/children")
         results = blocks_resp.get("results", []) if blocks_resp else []
+        
+        if not results:
+            return "No blocks to delete."
+        
+        first_result = results[0] if results else None
+        print("first_result", json.dumps(first_result, indent=4))
 
         total_deleted = 0
         total_skipped = 0
-
-        for block in results:
-            deleted, skipped = await self.delete_block_with_children(
-                block, skip_databases
+        
+        # Process blocks in batches to avoid overwhelming the API
+        for i in range(0, len(results), batch_size):
+            batch = results[i:i + batch_size]
+            
+            # Pre-check which blocks have databases if needed
+            if skip_databases:
+                has_db_tasks = [self.has_database_descendant(block["id"]) for block in batch]
+                has_database = await asyncio.gather(*has_db_tasks)
+            else:
+                has_database = [False] * len(batch)
+            
+            # Create tasks for blocks that don't have databases (if skipping)
+            tasks = []
+            skip_indices = []
+            
+            for j, block in enumerate(batch):
+                block_type = block.get("type")
+                skip_this_block = (skip_databases and 
+                                (block_type in ["child_database", "database", "linked_database"] or 
+                                has_database[j]))
+                
+                if skip_this_block:
+                    skip_indices.append(j)
+                else:
+                    tasks.append(self.delete_block_with_children(block, skip_databases))
+            
+            # Process deletion tasks in parallel
+            if tasks:
+                results = await asyncio.gather(*tasks)
+                for deleted, skipped in results:
+                    total_deleted += deleted
+                    total_skipped += skipped
+            
+            # Count skipped blocks
+            total_skipped += len(skip_indices)
+            
+            # Log progress
+            self.logger.info(
+                f"Processed batch {i//batch_size + 1}/{(len(results) + batch_size - 1)//batch_size}: "
+                f"Deleted {total_deleted} blocks, skipped {total_skipped} blocks so far."
             )
-            total_deleted += deleted
-            total_skipped += skipped
-
-        return (
-            f"Deleted {total_deleted} blocks. Skipped {total_skipped} database blocks."
-        )
+        
+        return f"Deleted {total_deleted} blocks. Skipped {total_skipped} database blocks."
 
     async def get_blocks(self) -> List[Dict[str, Any]]:
         result = await self._client.get(f"blocks/{self.page_id}/children")

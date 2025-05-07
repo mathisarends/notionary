@@ -9,13 +9,31 @@ class NotionPageCoverManager(LoggingMixin):
         self.page_id = page_id
         self._client = client
 
-    async def set_cover(self, external_url: str) -> Optional[Dict[str, Any]]:
-        """Sets a cover image from an external URL."""
+    async def set_cover(self, external_url: str) -> Optional[str]:
+        """
+        Sets a cover image from an external URL and returns the new URL if successful.
 
-        return await self._client.patch(
-            f"pages/{self.page_id}",
-            {"cover": {"type": "external", "external": {"url": external_url}}},
-        )
+        Args:
+            external_url: The URL to be set as the external cover image.
+
+        Returns:
+            The URL of the new cover image, or None if the request failed.
+        """
+        data = {
+            "cover": {
+                "type": "external",
+                "external": {
+                    "url": external_url
+                }
+            }
+        }
+
+        try:
+            updated_page = await self._client.patch_page(self.page_id, data=data)
+            return updated_page.cover.external.url
+        except Exception as e:
+            self.logger.error("Failed to set cover image: %s", str(e))
+            return None
 
     async def set_random_gradient_cover(self) -> Optional[Dict[str, Any]]:
         """Sets a random gradient cover from Notion's default gradient covers."""

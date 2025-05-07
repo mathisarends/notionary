@@ -1,4 +1,6 @@
+import json
 from typing import Optional
+from notionary.models.notion_page_response import NotionPageResponse
 from notionary.notion_client import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
 
@@ -53,33 +55,37 @@ class NotionPageTitleResolver(LoggingMixin):
                 return result.get("id")
 
         return None
-
-    def _extract_page_title(self, page_data: dict) -> Optional[str]:
+    
+    def _extract_page_title(self, page_response: NotionPageResponse) -> str:
         """
-        Extracts the title from a Notion page object.
+        Extract title from page data.
 
         Args:
-            page_data: Page data from Notion API
+            page_response: The page data from Notion API
 
         Returns:
-            Page title as string if found, None otherwise
+            str: The extracted title or "Untitled" if not found
         """
-        properties = page_data.get("properties", {})
-        if not properties:
-            return None
-
-        for prop_value in properties.values():
+        for prop_value in page_response.properties.values():
+            if not isinstance(prop_value, dict):
+                continue
+                
+            # Nur Title-Properties betrachten
             if prop_value.get("type") != "title":
                 continue
-
-            title_texts = prop_value.get("title", [])
-            if not title_texts:
+                
+            # Title-Array holen
+            title_array = prop_value.get("title", [])
+            if not title_array:
                 continue
-
-            page_title = " ".join([t.get("plain_text", "") for t in title_texts])
-            return page_title if page_title else None
-
-        return None
+                
+            # Ersten plain_text-Wert zurückgeben
+            for text_obj in title_array:
+                if "plain_text" in text_obj:
+                    return text_obj["plain_text"]
+                    
+        # Kein Titel gefunden
+        return "Untitled"
 
     async def get_title_by_page_id(self, page_id: str) -> Optional[str]:
         """
