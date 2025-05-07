@@ -200,7 +200,7 @@ class NotionPage(LoggingMixin):
             self._url_loaded = True
         return self._url
 
-    async def append_markdown(self, markdown: str, append_divider=False) -> str:
+    async def append_markdown(self, markdown: str, append_divider=False) -> bool:
         """
         Append markdown content to the page.
 
@@ -214,16 +214,16 @@ class NotionPage(LoggingMixin):
             markdown_text=markdown, append_divider=append_divider
         )
 
-    async def clear(self) -> str:
+    async def clear_page_content(self) -> bool:
         """
         Clear all content from the page.
 
         Returns:
             str: Status or confirmation message.
         """
-        return await self._page_content_manager.clear()
+        return await self._page_content_manager.clear_page_content()
 
-    async def replace_content(self, markdown: str) -> str:
+    async def replace_content(self, markdown: str) -> bool:
         """
         Replace the entire page content with new markdown content.
 
@@ -233,8 +233,8 @@ class NotionPage(LoggingMixin):
         Returns:
             str: Status or confirmation message.
         """
-        await self._page_content_manager.clear()
-        return await self._page_content_manager.append_markdown(markdown)
+        await self._page_content_manager.clear_page_content()
+        return await self._page_content_manager.append_markdown(markdown_text=markdown, append_divider=False)
 
     async def get_text_content(self) -> str:
         """
