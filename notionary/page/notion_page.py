@@ -28,6 +28,7 @@ from notionary.util.page_id_utils import extract_and_validate_page_id
 from notionary.page.relations.page_database_relation import PageDatabaseRelation
 
 
+# TODO: Get Values for fields (no matter if relation or not)
 class NotionPage(LoggingMixin):
     """
     Managing content and metadata of a Notion page.
@@ -58,13 +59,13 @@ class NotionPage(LoggingMixin):
             client=self._client,
             block_registry=self._block_element_registry,
         )
-        
+
         self._page_content_retriever = PageContentRetriever(
             page_id=self._page_id,
             client=self._client,
             block_registry=self._block_element_registry,
         )
-        
+
         self._metadata = MetadataEditor(self._page_id, self._client)
         self._page_cover_manager = NotionPageCoverManager(
             page_id=self._page_id, client=self._client
@@ -155,7 +156,7 @@ class NotionPage(LoggingMixin):
             BlockElementRegistry: The registry of block elements.
         """
         return self._block_element_registry
-    
+
     @block_registry.setter
     def block_registry(self, block_registry: BlockElementRegistry) -> None:
         """
@@ -171,6 +172,15 @@ class NotionPage(LoggingMixin):
         self._page_content_retriever = PageContentRetriever(
             page_id=self._page_id, client=self._client, block_registry=block_registry
         )
+
+    def get_formatting_prompt(self) -> str:
+        """
+        Get the formatting prompt for the page content manager.
+
+        Returns:
+            str: The formatting prompt.
+        """
+        return self._block_element_registry.generate_llm_prompt()
 
     async def get_title(self) -> str:
         """
@@ -248,8 +258,10 @@ class NotionPage(LoggingMixin):
         if not clear_result:
             self.logger.error("Failed to clear page content before replacement")
             return False
-        
-        return await self._page_content_writer.append_markdown(markdown_text=markdown, append_divider=False)
+
+        return await self._page_content_writer.append_markdown(
+            markdown_text=markdown, append_divider=False
+        )
 
     async def get_text_content(self) -> str:
         """
@@ -269,7 +281,7 @@ class NotionPage(LoggingMixin):
         """
         return await self._page_icon_manager.get_icon()
 
-    async def set_emoji_icon(self, emoji: str) ->  Optional[str]:
+    async def set_emoji_icon(self, emoji: str) -> Optional[str]:
         """
         Sets the page icon to an emoji.
 
@@ -334,19 +346,19 @@ class NotionPage(LoggingMixin):
             Any: The value of the property.
         """
         properties = await self._property_manager._get_properties()
-        
+
         if property_name not in properties:
             return None
-            
+
         prop_data = properties[property_name]
         prop_type = prop_data.get("type")
-        
+
         if prop_type == "relation":
             return await self._relation_manager.get_relation_values(property_name)
-        
-        # Für alle anderen Eigenschaftstypen verwenden wir den PropertyManager
+
         return await self._property_manager.get_property_value(property_name)
 
+    # TODO: Das hier muss noch auch auf die Relations hier angepasst werden damit das hier passt.
     async def set_property_by_name(
         self, property_name: str, value: Any
     ) -> Optional[Dict[str, Any]]:
@@ -365,36 +377,34 @@ class NotionPage(LoggingMixin):
             value=value,
         )
 
-    # TODO: Will das hier mit der unterne Hier zusammenlegen (Aber Relation Options funktioniert auch nicht)
-    async def get_options_for_property(self, property_name: str) -> List[str]:
+    async def get_options_for_property(
+        self, property_name: str, limit: int = 100
+    ) -> List[str]:
         """
-        Get the available option names for a property (select, multi_select, status).
+        Get the available options for a property (select, multi_select, status, relation).
 
         Args:
             property_name: The name of the property.
+            limit: Maximum number of options to return (only affects relation properties).
 
         Returns:
-            List[str]: List of available option names.
+            List[str]: List of available option names or page titles.
         """
+        property_type = await self._get_property_type(property_name)
+
+        if property_type is None:
+            return []
+
+        if property_type == "relation":
+            return await self._relation_manager.get_relation_options(
+                property_name, limit
+            )
+
         db_service = await self._get_db_property_service()
         if db_service:
             return await db_service.get_option_names(property_name)
+
         return []
-
-    async def get_relation_options(
-            self, property_name: str, limit: int = 100
-        ) -> List[str]:
-            """
-            Return available options for a relation property.
-
-            Args:
-                property_name: The name of the relation property.
-                limit: Maximum number of options to return.
-
-            Returns:
-                List[str]: List of page titles that can be used for this relation.
-            """
-            return await self._relation_manager.get_relation_options(property_name, limit)
 
     async def add_relations_by_name(
         self, relation_property_name: str, page_titles: List[str]
@@ -425,24 +435,6 @@ class NotionPage(LoggingMixin):
         """
         return await self._relation_manager.get_relation_values(property_name)
 
-    async def get_relation_property_ids(self) -> List[str]:
-        """
-        Return a list of all relation property names.
-
-        Returns:
-            List[str]: List of relation property names.
-        """
-        return await self._relation_manager.get_relation_property_ids()
-
-    async def get_all_relations(self) -> Dict[str, List[str]]:
-        """
-        Return all relation properties and their values.
-
-        Returns:
-            Dict[str, List[str]]: Dictionary mapping relation property names to their values.
-        """
-        return await self._relation_manager.get_all_relations()
-
     async def get_last_edit_time(self) -> str:
         """
         Get the timestamp when the page was last edited.
@@ -459,16 +451,6 @@ class NotionPage(LoggingMixin):
         except Exception as e:
             self.logger.error("Error retrieving last edited time: %s", str(e))
             return ""
-        
-    def get_formatting_prompt(self) -> str:
-        """
-        Get the formatting prompt for the page content manager.
-
-        Returns:
-            str: The formatting prompt.
-        """
-        return self._block_element_registry.generate_llm_prompt()
-
 
     async def _load_page_title(self) -> str:
         """
@@ -519,3 +501,21 @@ class NotionPage(LoggingMixin):
         self._db_property_service = DatabasePropertyService(database_id, self._client)
         await self._db_property_service.load_schema()
         return self._db_property_service
+
+    async def _get_property_type(self, property_name: str) -> Optional[str]:
+        """
+        Get the type of a specific property.
+
+        Args:
+            property_name: The name of the property.
+
+        Returns:
+            Optional[str]: The type of the property, or None if not found.
+        """
+        properties = await self._property_manager._get_properties()
+
+        if property_name not in properties:
+            return None
+
+        prop_data = properties[property_name]
+        return prop_data.get("type")

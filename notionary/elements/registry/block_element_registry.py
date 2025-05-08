@@ -33,14 +33,14 @@ class BlockElementRegistry:
             self._elements.remove(element_class)
             return True
         return False
-    
+
     def contains(self, element_class: Type[NotionBlockElement]) -> bool:
         """
         Prüft, ob ein bestimmtes Element im Registry enthalten ist.
-            
+
         Args:
             element_class: Die zu prüfende Element-Klasse
-                
+
         Returns:
             bool: True, wenn das Element enthalten ist, sonst False
         """

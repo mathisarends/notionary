@@ -232,7 +232,7 @@ class NotionPageRelationManager(LoggingMixin):
     async def get_all_relations(self) -> Dict[str, List[str]]:
         """
         Returns all relation properties and their values.
-        
+
         Returns:
             Dict[str, List[str]]: Dictionary of property names and their values
         """
@@ -246,7 +246,7 @@ class NotionPageRelationManager(LoggingMixin):
             result[prop_name] = await self.get_relation_values(prop_name)
 
         return result
-    
+
     async def _get_relation_details(
         self, property_name: str
     ) -> Optional[Dict[str, Any]]:
@@ -298,7 +298,6 @@ class NotionPageRelationManager(LoggingMixin):
 
         return self._page_properties
 
-
     async def _ensure_database_id(self) -> Optional[str]:
         """
         Ensures the database_id is available. Loads it if necessary.
@@ -310,7 +309,7 @@ class NotionPageRelationManager(LoggingMixin):
             return self._database_id
 
         page_data = await self._client.get_page(self._page_id)
-        
+
         if not page_data or not page_data.parent:
             return None
 

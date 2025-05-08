@@ -5,7 +5,7 @@ from notionary.util.logging_mixin import LoggingMixin
 
 
 class PropertyValueExtractor(LoggingMixin):
-    
+
     async def extract(
         self,
         property_name: str,

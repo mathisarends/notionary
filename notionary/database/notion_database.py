@@ -196,7 +196,7 @@ class NotionDatabase(LoggingMixin):
             data = {"archived": True}
 
             result = await self._client.patch_page(formatted_page_id, data)
-            
+
             if not result:
                 self.logger.error("Error deleting page %s", formatted_page_id)
                 return False

@@ -14,14 +14,14 @@ async def main():
     try:
         print("Searching for page by name...")
         page = await NotionPage.from_page_name("Neuer Title")
-        
+
         icon, title, url = await asyncio.gather(
             page.get_icon(), page.get_title(), page.get_url()
         )
         print(f'✅ Found: "{title}" {icon} → {url}')
 
-        relation_options = await page.get_relation_options(property_name="Thema")
-        print(f"✅ Relation options: {relation_options}")
+        status = await page.set_property_by_name("Thema", "Smart-Home")
+        print(f"✅ Status set to: {status}")
 
     except Exception as e:
         print(f"❌ Error: {e}")

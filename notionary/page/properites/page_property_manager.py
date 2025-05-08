@@ -46,7 +46,9 @@ class PagePropertyManager(LoggingMixin):
         prop_data = properties[property_name]
         return await self._extractor.extract(property_name, prop_data, relation_getter)
 
-    async def set_property_by_name(self, property_name: str, value: Any) -> Optional[Any]:
+    async def set_property_by_name(
+        self, property_name: str, value: Any
+    ) -> Optional[Any]:
         """
         Set a property value by name, automatically detecting the property type.
 
@@ -62,13 +64,13 @@ class PagePropertyManager(LoggingMixin):
         if property_type == "relation":
             self.logger.warning(
                 "Property '%s' is of type 'relation'. Relations must be set using the RelationManager.",
-                property_name
+                property_name,
             )
             return None
 
         is_db_page = await self._db_relation.is_database_page()
         db_service = None
-        
+
         if is_db_page:
             db_service = await self._init_db_property_service()
 
@@ -76,7 +78,7 @@ class PagePropertyManager(LoggingMixin):
             is_valid, error_message, available_options = (
                 await db_service.validate_property_value(property_name, value)
             )
-            
+
             if not is_valid:
                 if available_options:
                     options_str = "', '".join(available_options)
@@ -84,7 +86,7 @@ class PagePropertyManager(LoggingMixin):
                         "%s\nAvailable options for '%s': '%s'",
                         error_message,
                         property_name,
-                        options_str
+                        options_str,
                     )
                 else:
                     self.logger.warning(
@@ -97,12 +99,14 @@ class PagePropertyManager(LoggingMixin):
         api_response = await self._metadata_editor.set_property_by_name(
             property_name, value
         )
-        
+
         if api_response:
             await self.invalidate_cache()
             return value
-        
-        self.logger.warning("Failed to set property '%s' (no API response)", property_name)
+
+        self.logger.warning(
+            "Failed to set property '%s' (no API response)", property_name
+        )
         return None
 
     async def get_property_type(self, property_name: str) -> Optional[str]:
