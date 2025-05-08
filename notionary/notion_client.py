@@ -127,7 +127,6 @@ class NotionClient(LoggingMixin):
         """
         return await self._make_request(HttpMethod.PATCH, endpoint, data)
 
-    # TODO: Hierfür noch den Datentypen mit Omit definieren wäre auch noch super stark:
     async def patch_page(
         self, page_id: str, data: Optional[Dict[str, Any]] = None
     ) -> NotionPageResponse:

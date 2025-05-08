@@ -30,7 +30,7 @@ class NotionPageIconManager(LoggingMixin):
             return page_response.icon.emoji
         return None
 
-    async def set_external_icon(self, url: str) -> Optional[str]:
+    async def set_external_icon(self, external_icon_url: str) -> Optional[str]:
         """
         Sets the page icon to an external image.
 
@@ -41,7 +41,7 @@ class NotionPageIconManager(LoggingMixin):
             Optional[str]: The URL of the external image that was set as the icon,
                         or None if the operation failed.
         """
-        icon = {"type": "external", "external": {"url": url}}
+        icon = {"type": "external", "external": {"url": external_icon_url}}
         page_response = await self._client.patch_page(
             page_id=self.page_id, data={"icon": icon}
         )
@@ -69,9 +69,9 @@ class NotionPageIconManager(LoggingMixin):
 
         if isinstance(icon, EmojiIcon):
             return icon.emoji
-        elif isinstance(icon, ExternalIcon):
+        if isinstance(icon, ExternalIcon):
             return icon.external.url
-        elif isinstance(icon, FileIcon):
+        if isinstance(icon, FileIcon):
             return icon.file.url
 
         return None

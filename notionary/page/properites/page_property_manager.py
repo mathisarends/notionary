@@ -2,9 +2,6 @@ from typing import Dict, Any, List, Optional
 from notionary.models.notion_page_response import NotionPageResponse
 from notionary.notion_client import NotionClient
 from notionary.page.metadata.metadata_editor import MetadataEditor
-from notionary.page.properites.property_operation_result import (
-    PropertyOperationResult,
-)
 from notionary.page.properites.database_property_service import (
     DatabasePropertyService,
 )
@@ -32,12 +29,7 @@ class PagePropertyManager(LoggingMixin):
         self._db_relation = db_relation
         self._db_property_service = None
 
-        self._extractor = PropertyValueExtractor(self.logger)
-
-    async def get_properties(self) -> Dict[str, Any]:
-        """Retrieves all properties of the page."""
-        page_data = await self._get_page_data()
-        return page_data.properties if page_data.properties else {}
+        self._extractor = PropertyValueExtractor()
 
     async def get_property_value(self, property_name: str, relation_getter=None) -> Any:
         """
@@ -47,16 +39,14 @@ class PagePropertyManager(LoggingMixin):
             property_name: Name of the property to get
             relation_getter: Optional callback function to get relation values
         """
-        properties = await self.get_properties()
+        properties = await self._get_properties()
         if property_name not in properties:
             return None
 
         prop_data = properties[property_name]
         return await self._extractor.extract(property_name, prop_data, relation_getter)
 
-    async def set_property_by_name(
-        self, property_name: str, value: Any
-    ) -> PropertyOperationResult:
+    async def set_property_by_name(self, property_name: str, value: Any) -> Optional[Any]:
         """
         Set a property value by name, automatically detecting the property type.
 
@@ -65,72 +55,55 @@ class PagePropertyManager(LoggingMixin):
             value: Value to set
 
         Returns:
-            PropertyOperationResult: Result of the operation with status, error messages,
-                                    and available options if applicable
+            Optional[Any]: The new value if successful, None if failed
         """
         property_type = await self.get_property_type(property_name)
 
         if property_type == "relation":
-            result = PropertyOperationResult.from_relation_type_error(
-                property_name, value
+            self.logger.warning(
+                "Property '%s' is of type 'relation'. Relations must be set using the RelationManager.",
+                property_name
             )
-            self.logger.warning(result.error)
-            return result
+            return None
 
-        if not await self._db_relation.is_database_page():
-            api_response = await self._metadata_editor.set_property_by_name(
-                property_name, value
+        is_db_page = await self._db_relation.is_database_page()
+        db_service = None
+        
+        if is_db_page:
+            db_service = await self._init_db_property_service()
+
+        if db_service:
+            is_valid, error_message, available_options = (
+                await db_service.validate_property_value(property_name, value)
             )
-            if api_response:
-                await self.invalidate_cache()
-                return PropertyOperationResult.from_success(
-                    property_name, value, api_response
-                )
-            return PropertyOperationResult.from_no_api_response(property_name, value)
-
-        db_service = await self._init_db_property_service()
-
-        if not db_service:
-            api_response = await self._metadata_editor.set_property_by_name(
-                property_name, value
-            )
-            if api_response:
-                await self.invalidate_cache()
-                return PropertyOperationResult.from_success(
-                    property_name, value, api_response
-                )
-            return PropertyOperationResult.from_no_api_response(property_name, value)
-
-        is_valid, error_message, available_options = (
-            await db_service.validate_property_value(property_name, value)
-        )
-
-        if not is_valid:
-            if available_options:
-                options_str = "', '".join(available_options)
-                detailed_error = f"{error_message}\nAvailable options for '{property_name}': '{options_str}'"
-                self.logger.warning(detailed_error)
-            else:
-                self.logger.warning(
-                    "%s\nNo valid options available for '%s'",
-                    error_message,
-                    property_name,
-                )
-
-            return PropertyOperationResult.from_error(
-                property_name, error_message, value, available_options
-            )
+            
+            if not is_valid:
+                if available_options:
+                    options_str = "', '".join(available_options)
+                    self.logger.warning(
+                        "%s\nAvailable options for '%s': '%s'",
+                        error_message,
+                        property_name,
+                        options_str
+                    )
+                else:
+                    self.logger.warning(
+                        "%s\nNo valid options available for '%s'",
+                        error_message,
+                        property_name,
+                    )
+                return None
 
         api_response = await self._metadata_editor.set_property_by_name(
             property_name, value
         )
+        
         if api_response:
             await self.invalidate_cache()
-            return PropertyOperationResult.from_success(
-                property_name, value, api_response
-            )
-
-        return PropertyOperationResult.from_no_api_response(property_name, value)
+            return value
+        
+        self.logger.warning("Failed to set property '%s' (no API response)", property_name)
+        return None
 
     async def get_property_type(self, property_name: str) -> Optional[str]:
         """Gets the type of a specific property."""
@@ -168,3 +141,8 @@ class PagePropertyManager(LoggingMixin):
         self._db_property_service = DatabasePropertyService(database_id, self._client)
         await self._db_property_service.load_schema()
         return self._db_property_service
+
+    async def _get_properties(self) -> Dict[str, Any]:
+        """Retrieves all properties of the page."""
+        page_data = await self._get_page_data()
+        return page_data.properties if page_data.properties else {}

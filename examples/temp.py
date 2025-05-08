@@ -1,6 +1,6 @@
 import logging
+import time
 import asyncio
-import textwrap
 import traceback
 from notionary import NotionPage
 
@@ -13,15 +13,15 @@ async def main():
 
     try:
         print("Searching for page by name...")
-        page = await NotionPage.from_page_name("#936 - Alex Hutchinson - How To Rewire Your Brain To Take More Risks")
+        page = await NotionPage.from_page_name("Neuer Title")
         
         icon, title, url = await asyncio.gather(
             page.get_icon(), page.get_title(), page.get_url()
         )
         print(f'✅ Found: "{title}" {icon} → {url}')
-        
-        text_content = await page.get_text_content()
-        print(f"✅ Text content retrieved: {text_content}...")
+
+        relation_options = await page.get_relation_options(property_name="Thema")
+        print(f"✅ Relation options: {relation_options}")
 
     except Exception as e:
         print(f"❌ Error: {e}")

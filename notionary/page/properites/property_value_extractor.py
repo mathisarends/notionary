@@ -1,11 +1,11 @@
 import asyncio
 from typing import Any, Awaitable, Callable
 
+from notionary.util.logging_mixin import LoggingMixin
 
-class PropertyValueExtractor:
-    def __init__(self, logger=None):
-        self.logger = logger
 
+class PropertyValueExtractor(LoggingMixin):
+    
     async def extract(
         self,
         property_name: str,

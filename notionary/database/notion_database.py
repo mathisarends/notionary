@@ -180,7 +180,7 @@ class NotionDatabase(LoggingMixin):
             has_more = result.get("has_more", False)
             start_cursor = result.get("next_cursor") if has_more else None
 
-    async def delete_page(self, page_id: str) -> Dict[str, Any]:
+    async def archive_page(self, page_id: str) -> bool:
         """
         Delete (archive) a page.
 
@@ -188,30 +188,27 @@ class NotionDatabase(LoggingMixin):
             page_id: The ID of the page to delete
 
         Returns:
-            Dict with success status, message, and page_id when successful
+            bool: True if successful, False otherwise
         """
         try:
-            formatted_page_id = format_uuid(page_id) or page_id
+            formatted_page_id = format_uuid(page_id)
 
-            # Archive the page (Notion's way of deleting)
             data = {"archived": True}
 
-            result = await self._client.patch(f"pages/{formatted_page_id}", data)
+            result = await self._client.patch_page(formatted_page_id, data)
+            
             if not result:
                 self.logger.error("Error deleting page %s", formatted_page_id)
-                return {
-                    "success": False,
-                    "message": f"Failed to delete page {formatted_page_id}",
-                }
+                return False
 
             self.logger.info(
                 "Page %s successfully deleted (archived)", formatted_page_id
             )
-            return {"success": True, "page_id": formatted_page_id}
+            return True
 
         except Exception as e:
-            self.logger.error("Error in delete_page: %s", str(e))
-            return {"success": False, "message": f"Error: {str(e)}"}
+            self.logger.error("Error in archive_page: %s", str(e))
+            return False
 
     async def get_last_edited_time(self) -> Optional[str]:
         """

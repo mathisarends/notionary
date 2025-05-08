@@ -17,7 +17,7 @@ from notionary.page.properites.database_property_service import (
     DatabasePropertyService,
 )
 from notionary.page.relations.notion_page_relation_manager import (
-    NotionRelationManager,
+    NotionPageRelationManager,
 )
 from notionary.page.content.page_content_writer import PageContentWriter
 from notionary.page.properites.page_property_manager import PagePropertyManager
@@ -78,7 +78,7 @@ class NotionPage(LoggingMixin):
         )
         self._db_property_service = None
 
-        self._relation_manager = NotionRelationManager(
+        self._relation_manager = NotionPageRelationManager(
             page_id=self._page_id, client=self._client
         )
 
@@ -244,7 +244,11 @@ class NotionPage(LoggingMixin):
         Returns:
             str: Status or confirmation message.
         """
-        await self._page_content_writer.clear_page_content()
+        clear_result = await self._page_content_writer.clear_page_content()
+        if not clear_result:
+            self.logger.error("Failed to clear page content before replacement")
+            return False
+        
         return await self._page_content_writer.append_markdown(markdown_text=markdown, append_divider=False)
 
     async def get_text_content(self) -> str:
@@ -265,7 +269,7 @@ class NotionPage(LoggingMixin):
         """
         return await self._page_icon_manager.get_icon()
 
-    async def set_emoji_icon(self, emoji: str) -> Optional[Dict[str, Any]]:
+    async def set_emoji_icon(self, emoji: str) ->  Optional[str]:
         """
         Sets the page icon to an emoji.
 
@@ -277,7 +281,7 @@ class NotionPage(LoggingMixin):
         """
         return await self._page_icon_manager.set_emoji_icon(emoji=emoji)
 
-    async def set_external_icon(self, url: str) -> Optional[Dict[str, Any]]:
+    async def set_external_icon(self, url: str) -> Optional[str]:
         """
         Sets the page icon to an external image.
 
@@ -287,9 +291,9 @@ class NotionPage(LoggingMixin):
         Returns:
             Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
         """
-        return await self._page_icon_manager.set_external_icon(external_url=url)
+        return await self._page_icon_manager.set_external_icon(external_icon_url=url)
 
-    async def get_cover_url(self) -> str:
+    async def get_cover_url(self) -> Optional[str]:
         """
         Get the URL of the page cover image.
 
@@ -329,9 +333,19 @@ class NotionPage(LoggingMixin):
         Returns:
             Any: The value of the property.
         """
-        return await self._property_manager.get_property_value(
-            property_name, self._relation_manager.get_relation_values
-        )
+        properties = await self._property_manager._get_properties()
+        
+        if property_name not in properties:
+            return None
+            
+        prop_data = properties[property_name]
+        prop_type = prop_data.get("type")
+        
+        if prop_type == "relation":
+            return await self._relation_manager.get_relation_values(property_name)
+        
+        # Für alle anderen Eigenschaftstypen verwenden wir den PropertyManager
+        return await self._property_manager.get_property_value(property_name)
 
     async def set_property_by_name(
         self, property_name: str, value: Any
@@ -351,7 +365,8 @@ class NotionPage(LoggingMixin):
             value=value,
         )
 
-    async def get_available_options_for_property(self, property_name: str) -> List[str]:
+    # TODO: Will das hier mit der unterne Hier zusammenlegen (Aber Relation Options funktioniert auch nicht)
+    async def get_options_for_property(self, property_name: str) -> List[str]:
         """
         Get the available option names for a property (select, multi_select, status).
 
@@ -367,19 +382,19 @@ class NotionPage(LoggingMixin):
         return []
 
     async def get_relation_options(
-        self, property_name: str, limit: int = 100
-    ) -> List[Dict[str, Any]]:
-        """
-        Return available options for a relation property.
+            self, property_name: str, limit: int = 100
+        ) -> List[str]:
+            """
+            Return available options for a relation property.
 
-        Args:
-            property_name: The name of the relation property.
-            limit: Maximum number of options to return.
+            Args:
+                property_name: The name of the relation property.
+                limit: Maximum number of options to return.
 
-        Returns:
-            List[Dict[str, Any]]: List of available relation options.
-        """
-        return await self._relation_manager.get_relation_options(property_name, limit)
+            Returns:
+                List[str]: List of page titles that can be used for this relation.
+            """
+            return await self._relation_manager.get_relation_options(property_name, limit)
 
     async def add_relations_by_name(
         self, relation_property_name: str, page_titles: List[str]

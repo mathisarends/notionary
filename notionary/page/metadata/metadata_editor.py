@@ -10,15 +10,31 @@ class MetadataEditor(LoggingMixin):
         self._client = client
         self._property_formatter = NotionPropertyFormatter()
 
-    async def set_title(self, title: str) -> Optional[Dict[str, Any]]:
-        return await self._client.patch(
-            f"pages/{self.page_id}",
-            {
+    async def set_title(self, title: str) -> Optional[str]:
+        """
+        Sets the title of the page.
+        
+        Args:
+            title: The new title for the page.
+            
+        Returns:
+            Optional[str]: The new title if successful, None otherwise.
+        """
+        try:
+            data = {
                 "properties": {
                     "title": {"title": [{"type": "text", "text": {"content": title}}]}
                 }
-            },
-        )
+            }
+            
+            result = await self._client.patch_page(self.page_id, data)
+            
+            if result:
+                return title
+            return None
+        except Exception as e:
+            self.logger.error("Error setting page title: %s", str(e))
+            return None
 
     async def set_property(
         self, property_name: str, property_value: Any, property_type: str
