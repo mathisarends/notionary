@@ -138,21 +138,22 @@ class NotionPageRelationManager(LoggingMixin):
             self.logger.error("Error retrieving relation options: %s", str(e))
             return []
 
-    async def add_relation_by_name(
+    async def set_relation_values_by_page_titles(
         self, property_name: str, page_titles: List[str]
     ) -> RelationOperationResult:
         """
-        Adds one or more relations based on page titles.
+        Sets relation values based on page titles, replacing any existing relations.
 
         Args:
             property_name: Name of the relation property
-            page_titles: List of page titles to link
+            page_titles: List of page titles to set as relations
 
         Returns:
-            RelationOperationResult: Result of the operation with details on which pages were found and added
+            RelationOperationResult: Result of the operation with details on which pages
+                                    were found and set as relations
         """
         self.logger.info(
-            "Attempting to add %d relation(s) to property '%s'",
+            "Setting %d relation(s) for property '%s'",
             len(page_titles),
             property_name,
         )
@@ -165,7 +166,6 @@ class NotionPageRelationManager(LoggingMixin):
             )
         )
 
-        # Filter out None values from resolution results and create found/not found lists
         found_pages = []
         page_ids = []
         not_found_pages = []
@@ -179,7 +179,6 @@ class NotionPageRelationManager(LoggingMixin):
                 not_found_pages.append(title)
                 self.logger.warning("No page found with title '%s'", title)
 
-        # Print debugs to verify what's actually going to the API
         self.logger.debug("Page IDs being sent to API: %s", page_ids)
 
         # Return early if no pages were found
@@ -193,10 +192,9 @@ class NotionPageRelationManager(LoggingMixin):
 
         api_response = await self._set_relations_by_page_ids(property_name, page_ids)
 
-        # Handle the API response
         if not api_response:
             self.logger.error(
-                "Failed to add relations to '%s' (API error)", property_name
+                "Failed to set relations for '%s' (API error)", property_name
             )
             return RelationOperationResult.from_no_api_response(
                 property_name=property_name,
@@ -208,14 +206,14 @@ class NotionPageRelationManager(LoggingMixin):
         if not_found_pages:
             not_found_str = "', '".join(not_found_pages)
             self.logger.info(
-                "Added %d relation(s) to '%s', but couldn't find pages: '%s'",
+                "Set %d relation(s) for '%s', but couldn't find pages: '%s'",
                 len(page_ids),
                 property_name,
                 not_found_str,
             )
         else:
             self.logger.info(
-                "Successfully added all %d relation(s) to '%s'",
+                "Successfully set all %d relation(s) for '%s'",
                 len(page_ids),
                 property_name,
             )

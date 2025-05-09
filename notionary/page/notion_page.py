@@ -28,7 +28,6 @@ from notionary.util.page_id_utils import extract_and_validate_page_id
 from notionary.page.relations.page_database_relation import PageDatabaseRelation
 
 
-# TODO: Get Values for fields (no matter if relation or not)
 class NotionPage(LoggingMixin):
     """
     Managing content and metadata of a Notion page.
@@ -190,7 +189,7 @@ class NotionPage(LoggingMixin):
             str: The page title.
         """
         if not self._title_loaded:
-            self._title = await self._load_page_title()
+            self._title = await self._fetch_page_title()
         return self._title
 
     async def set_title(self, title: str) -> Optional[Dict[str, Any]]:
@@ -217,7 +216,7 @@ class NotionPage(LoggingMixin):
             str: The page URL.
         """
         if not self._url_loaded:
-            self._url = await self._build_notion_url()
+            self._url = await self._generate_url_from_title()
             self._url_loaded = True
         return self._url
 
@@ -335,7 +334,7 @@ class NotionPage(LoggingMixin):
         """
         return await self._page_cover_manager.set_random_gradient_cover()
 
-    async def get_property_value(self, property_name: str) -> Any:
+    async def get_property_value_by_name(self, property_name: str) -> Any:
         """
         Get the value of a specific property.
 
@@ -357,25 +356,6 @@ class NotionPage(LoggingMixin):
             return await self._relation_manager.get_relation_values(property_name)
 
         return await self._property_manager.get_property_value(property_name)
-
-    # TODO: Das hier muss noch auch auf die Relations hier angepasst werden damit das hier passt.
-    async def set_property_by_name(
-        self, property_name: str, value: Any
-    ) -> Optional[Dict[str, Any]]:
-        """
-        Set the value of a specific property by its name.
-
-        Args:
-            property_name: The name of the property.
-            value: The new value to set.
-
-        Returns:
-            Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
-        """
-        return await self._property_manager.set_property_by_name(
-            property_name=property_name,
-            value=value,
-        )
 
     async def get_options_for_property(
         self, property_name: str, limit: int = 100
@@ -406,7 +386,25 @@ class NotionPage(LoggingMixin):
 
         return []
 
-    async def add_relations_by_name(
+    async def set_property_value_by_name(
+        self, property_name: str, value: Any
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Set the value of a specific property by its name.
+
+        Args:
+            property_name: The name of the property.
+            value: The new value to set.
+
+        Returns:
+            Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
+        """
+        return await self._property_manager.set_property_by_name(
+            property_name=property_name,
+            value=value,
+        )
+
+    async def set_relation_property_values_by_name(
         self, relation_property_name: str, page_titles: List[str]
     ) -> Optional[Dict[str, Any]]:
         """
@@ -419,11 +417,11 @@ class NotionPage(LoggingMixin):
         Returns:
             Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
         """
-        return await self._relation_manager.add_relation_by_name(
+        return await self._relation_manager.set_relation_values_by_page_titles(
             property_name=relation_property_name, page_titles=page_titles
         )
 
-    async def get_relation_values(self, property_name: str) -> List[str]:
+    async def get_relation_property_values_by_name(self, property_name: str) -> List[str]:
         """
         Return the current relation values for a property.
 
@@ -452,7 +450,7 @@ class NotionPage(LoggingMixin):
             self.logger.error("Error retrieving last edited time: %s", str(e))
             return ""
 
-    async def _load_page_title(self) -> str:
+    async def _fetch_page_title(self) -> str:
         """
         Load the page title from Notion API if not already loaded.
 
@@ -464,14 +462,14 @@ class NotionPage(LoggingMixin):
             page_id=self._page_id
         )
 
-    async def _build_notion_url(self) -> str:
+    async def _generate_url_from_title(self) -> str:
         """
         Build a Notion URL from the page ID, including the title if available.
 
         Returns:
             str: The Notion URL for the page.
         """
-        title = await self._load_page_title()
+        title = await self._fetch_page_title()
 
         url_title = ""
         if title and title != "Untitled":

@@ -12,7 +12,7 @@ class MetadataEditor(LoggingMixin):
     def __init__(self, page_id: str, client: NotionClient):
         """
         Initialize the metadata editor.
-        
+
         Args:
             page_id: The ID of the Notion page
             client: The Notion API client
@@ -97,10 +97,9 @@ class MetadataEditor(LoggingMixin):
 
         try:
             result = await self._client.patch_page(
-                self.page_id,
-                {"properties": {property_name: property_payload}}
+                self.page_id, {"properties": {property_name: property_payload}}
             )
-            
+
             if result:
                 return property_name
             return None
