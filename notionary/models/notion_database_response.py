@@ -38,7 +38,7 @@ class Parent:
 
 
 @dataclass
-class NotionDatabaserResponse(BaseModel):
+class NotionDatabaseResponse(BaseModel):
     """
     Represents the response from the Notion API when retrieving a database.
     """

@@ -171,7 +171,7 @@ class NotionPage(LoggingMixin):
             block_registry: The registry of block elements to use.
         """
         self._block_element_registry = block_registry
-        self._page_content_writer = PageContentRetriever(
+        self._page_content_writer = PageContentWriter(
             page_id=self._page_id, client=self._client, block_registry=block_registry
         )
         self._page_content_retriever = PageContentRetriever(

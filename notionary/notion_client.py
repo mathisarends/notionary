@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Dict, Any, Optional, Union
 import httpx
 from dotenv import load_dotenv
-from notionary.models.notion_database_response import NotionDatabaserResponse
+from notionary.models.notion_database_response import NotionDatabaseResponse
 from notionary.models.notion_page_response import NotionPageResponse
 from notionary.util.logging_mixin import LoggingMixin
 
@@ -71,7 +71,7 @@ class NotionClient(LoggingMixin):
 
     # TODO: Get Blocks implementeren und Patch Blcoks hierfür das Typing finden:
 
-    async def get_database(self, database_id: str) -> NotionDatabaserResponse:
+    async def get_database(self, database_id: str) -> NotionDatabaseResponse:
         """
         Ruft die Metadaten einer Notion-Datenbank anhand ihrer ID ab und gibt sie als NotionPageResponse zurück.
 
@@ -81,7 +81,7 @@ class NotionClient(LoggingMixin):
         Returns:
             Ein NotionPageResponse-Objekt mit den Datenbankmetadaten.
         """
-        return NotionDatabaserResponse.model_validate(
+        return NotionDatabaseResponse.model_validate(
             await self.get(f"databases/{database_id}")
         )
 
