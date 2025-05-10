@@ -219,20 +219,22 @@ class TextInlineFormatter:
         return (
             ElementPromptBuilder()
             .with_description(
-                "Enables inline formatting like bold, italics, strikethrough, code, links, and underlining for enhanced readability and emphasis."
+                "Inline formatting can be used within most block types to style your text. You can combine multiple formatting options."
             )
             .with_usage_guidelines(
                 "Use inline formatting to highlight important words, provide emphasis, show code or paths, or add hyperlinks. "
-                "Helps create a visual hierarchy and improves scanability of long texts."
+                "This helps create visual hierarchy and improves readability."
             )
-            .with_syntax("**bold**, *italic*, `code`, [text](url)")
+            .with_syntax("**bold**, *italic*, `code`, ~~strikethrough~~, __underline__, [text](url)")
             .with_examples(
                 [
-                    "This is a **bold** word.",
-                    "Use *italics* for emphasis.",
-                    "Mark outdated content like ~~this~~.",
-                    "Write `config.json` to reference a file.",
-                    "Visit [Notion](https://notion.so) for more info.",
+                    "This text has a **bold** word.",
+                    "This text has an *italic* word.",
+                    "This text has `code` formatting.",
+                    "This text has ~~strikethrough~~ formatting.",
+                    "This text has __underlined__ formatting.",
+                    "This has a [hyperlink](https://example.com).",
+                    "You can **combine *different* formatting** styles."
                 ]
             )
             .build()

@@ -1,5 +1,4 @@
 import logging
-import time
 import asyncio
 import traceback
 from notionary import NotionPage
@@ -20,10 +19,8 @@ async def main():
         )
         print(f'✅ Found: "{title}" {icon} → {url}')
 
-        status = await page.set_relation_property_values_by_name("Projekte", ["Thesis", "Vizro", "KnowSphere"])
-        thema = await page.set_relation_property_values_by_name("Thema", ["Personen", "Usability", "Lernen"])
-        print(f"✅ Status set to: {status}")
-        print(f"✅ Thema set to: {thema}")
+        prompt = page.get_notion_markdown_syntax_prompt()
+        print(f"✅ Prompt: {prompt}")
 
     except Exception as e:
         print(f"❌ Error: {e}")

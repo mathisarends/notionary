@@ -1,9 +1,7 @@
 from typing import Dict, Any, Optional, List, Type
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.synthax_prompt_builder import (
-    MarkdownSyntaxPromptBuilder,
-)
+from notionary.elements.prompts.markdown_syntax_prompt_generator import MarkdownSyntaxPromptGenerator
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
@@ -85,7 +83,7 @@ class BlockElementRegistry:
         if "TextInlineFormatter" not in formatter_names:
             element_classes = [TextInlineFormatter] + element_classes
 
-        return MarkdownSyntaxPromptBuilder.generate_system_prompt(element_classes)
+        return MarkdownSyntaxPromptGenerator.generate_system_prompt(element_classes)
 
     def _find_notion_handler(
         self, block: Dict[str, Any]
