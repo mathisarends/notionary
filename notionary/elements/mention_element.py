@@ -3,7 +3,7 @@ from typing import Dict, Any, Optional, List
 from typing_extensions import override
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.element_prompt_content import (
+from notionary.prompting.element_prompt_content import (
     ElementPromptBuilder,
     ElementPromptContent,
 )

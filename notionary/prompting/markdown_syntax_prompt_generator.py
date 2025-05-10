@@ -21,7 +21,7 @@ class MarkdownSyntaxPromptGenerator:
         Lädt das Prompt-Template aus der Markdown-Datei.
         """
         current_dir = Path(__file__).parent
-        template_path = current_dir / "notion_syntax_prompt.md"
+        template_path = current_dir /  "res/notion_syntax_prompt.md"
 
         try:
             with open(template_path, "r", encoding="utf-8") as file:

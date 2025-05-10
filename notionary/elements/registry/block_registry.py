@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Dict, Any, Optional, List, Set, Type
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.markdown_syntax_prompt_generator import (
+from notionary.prompting.markdown_syntax_prompt_generator import (
     MarkdownSyntaxPromptGenerator,
 )
 from notionary.elements.text_inline_formatter import TextInlineFormatter

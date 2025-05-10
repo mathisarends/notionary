@@ -17,7 +17,8 @@ async def main():
         icon, title, url = await asyncio.gather(
             page.get_icon(), page.get_title(), page.get_url()
         )
-        print(f'✅ Found: "{title}" {icon} → {url}')
+        prompt_content = page.get_notion_markdown_syntax_prompt()
+        print("promt_content", prompt_content)
 
     except Exception as e:
         print(f"❌ Error: {e}")

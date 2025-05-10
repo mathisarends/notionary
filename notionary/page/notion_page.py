@@ -178,7 +178,7 @@ class NotionPage(LoggingMixin):
             page_id=self._page_id, client=self._client, block_registry=block_registry
         )
 
-    def get_notion_markdown_syntax_prompt(self) -> str:
+    def get_notion_markdown_system_prompt(self) -> str:
         """
         Get the formatting prompt for the page content manager.
 

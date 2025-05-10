@@ -1,7 +1,7 @@
 from typing import Dict, Any, Optional
 from abc import ABC
 
-from notionary.elements.prompts.element_prompt_content import ElementPromptContent
+from notionary.prompting.element_prompt_content import ElementPromptContent
 
 
 class NotionBlockElement(ABC):

@@ -295,7 +295,7 @@ class TestNotionPageSmoke:
     async def test_get_formatting_prompt(self):
         """Test getting the formatting prompt."""
         page = await self._get_test_page()
-        prompt = page.get_formatting_prompt()
+        prompt = page.get_notion_markdown_system_prompt()
         assert prompt is not None
         assert isinstance(prompt, str)
         print(f"Formatting prompt length: {len(prompt)}")

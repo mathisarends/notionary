@@ -1,7 +1,7 @@
 from typing import Dict, Any, List, Tuple
 import re
 
-from notionary.elements.prompts.element_prompt_content import (
+from notionary.prompting.element_prompt_content import (
     ElementPromptBuilder,
     ElementPromptContent,
 )
