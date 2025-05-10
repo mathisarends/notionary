@@ -1,4 +1,3 @@
-import json
 from typing import Any, Dict, List, Optional
 
 from notionary.elements.registry.block_registry import BlockRegistry

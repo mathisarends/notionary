@@ -114,14 +114,6 @@ class CodeBlockElement(NotionBlockElement):
                         {
                             "type": "text",
                             "text": {"content": content},
-                            "annotations": {
-                                "bold": False,
-                                "italic": False,
-                                "strikethrough": False,
-                                "underline": False,
-                                "code": False,
-                                "color": "default",
-                            },
                             "plain_text": content,
                         }
                     ],

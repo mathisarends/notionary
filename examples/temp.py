@@ -1,4 +1,5 @@
 import logging
+from textwrap import dedent
 import asyncio
 import traceback
 from notionary import NotionPage
@@ -12,16 +13,24 @@ async def main():
 
     try:
         print("Searching for page by name...")
-        page = await NotionPage.from_page_name("Paradoxe Intention")
+        page = await NotionPage.from_page_name("Adapter Pattern in GoF Design")
 
         icon, title, url = await asyncio.gather(
             page.get_icon(), page.get_title(), page.get_url()
         )
         print(f"Page found: {page.id}")
-        print(f"{icon} → {title} → {url}")
+        print(f"{icon} → {title} → {url}")  
+        
+        code = dedent("""
+        ```python
+        def greet(name: str) -> str:
+            return f"Hello, {name}!"
 
-        system_prompt = page.get_notion_markdown_system_prompt()
-        print(f"System prompt: {system_prompt}")
+        print(greet("Mathis"))
+        ```
+        """)
+        
+        await page.append_markdown(markdown=code)
 
     except Exception as e:
         print(f"❌ Error: {e}")
