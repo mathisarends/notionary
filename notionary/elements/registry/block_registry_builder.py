@@ -67,7 +67,7 @@ class BlockRegistryBuilder:
             .with_paragraphs()
             .with_toggleable_heading_element()
         ).build()
-        
+
     @classmethod
     def create_minimal_registry(cls) -> BlockRegistry:
         """

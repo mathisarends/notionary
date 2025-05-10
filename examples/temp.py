@@ -19,10 +19,10 @@ async def main():
         )
         print(f"Page found: {page.id}")
         print(f"{icon} → {title} → {url}")
-        
-        status = await page.set_property_value_by_name("Status", "Fertig")
-        print(f"Status: {status}")
-        
+
+        theme_opt = await page.get_options_for_property("Thema")
+        print(f"Theme: {theme_opt}")
+
     except Exception as e:
         print(f"❌ Error: {e}")
         print(f"Traceback: {traceback.format_exc()}")

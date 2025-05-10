@@ -69,8 +69,6 @@ class NotionClient(LoggingMixin):
         """
         return await self._make_request(HttpMethod.GET, endpoint)
 
-    # TODO: Get Blocks implementeren und Patch Blcoks hierfür das Typing finden:
-
     async def get_database(self, database_id: str) -> NotionDatabaseResponse:
         """
         Ruft die Metadaten einer Notion-Datenbank anhand ihrer ID ab und gibt sie als NotionPageResponse zurück.
