@@ -19,8 +19,6 @@ async def main():
         )
         print(f'✅ Found: "{title}" {icon} → {url}')
 
-        page.block_registry.builder.with_audio().build()
-
     except Exception as e:
         print(f"❌ Error: {e}")
         print(f"Traceback: {traceback.format_exc()}")

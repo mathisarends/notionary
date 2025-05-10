@@ -2,7 +2,9 @@ from __future__ import annotations
 from typing import Dict, Any, Optional, List, Set, Type
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.prompts.markdown_syntax_prompt_generator import MarkdownSyntaxPromptGenerator
+from notionary.elements.prompts.markdown_syntax_prompt_generator import (
+    MarkdownSyntaxPromptGenerator,
+)
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 from notionary.elements.notion_block_element import NotionBlockElement
@@ -14,14 +16,14 @@ class BlockRegistry:
     def __init__(self, elements=None):
         """
         Initialize a new registry instance.
-        
+
         Args:
             elements: Initial elements to register
             builder: The builder that created this registry (optional)
         """
         self._elements: List[NotionBlockElement] = []
         self._element_types: Set[Type[NotionBlockElement]] = set()
-        
+
         if elements:
             for element in elements:
                 self.register(element)
@@ -31,13 +33,15 @@ class BlockRegistry:
         Convert this registry to a builder for modifications.
         Imports only when needed to avoid circular imports.
         """
-        from notionary.elements.registry.block_registry_builder import BlockRegistryBuilder
-        
+        from notionary.elements.registry.block_registry_builder import (
+            BlockRegistryBuilder,
+        )
+
         builder = BlockRegistryBuilder()
         for element in self._elements:
             builder.add_element(element)
         return builder
-    
+
     @property
     def builder(self):
         """
@@ -49,16 +53,16 @@ class BlockRegistry:
     def register(self, element_class: Type[NotionBlockElement]) -> bool:
         """
         Register an element class.
-        
+
         Args:
             element_class: The element class to register
-            
+
         Returns:
             bool: True if element was added, False if it already existed
         """
         if element_class in self._element_types:
             return False
-            
+
         self._elements.append(element_class)
         self._element_types.add(element_class)
         return True
@@ -134,4 +138,3 @@ class BlockRegistry:
             if element.match_notion(block):
                 return element
         return None
-

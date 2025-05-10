@@ -23,7 +23,7 @@ class ElementPromptContent:
 
     avoid: Optional[str] = None
     """Optional field listing scenarios when this element should be avoided."""
-    
+
     is_standard_markdown: bool = False
     """Indicates whether this element follows standard Markdown syntax (and does not require full examples)."""
 
@@ -34,7 +34,9 @@ class ElementPromptContent:
         if not self.syntax:
             raise ValueError("Syntax is required")
         if not self.examples and not self.is_standard_markdown:
-            raise ValueError("At least one example is required unless it's standard markdown.")
+            raise ValueError(
+                "At least one example is required unless it's standard markdown."
+            )
         if not self.when_to_use:
             raise ValueError("Usage guidelines are required")
 
@@ -82,7 +84,7 @@ class ElementPromptBuilder:
         """Set the scenarios when this element should be avoided."""
         self._avoid = avoid
         return self
-    
+
     def with_standard_markdown(self) -> Self:
         """Indicate that this element follows standard Markdown syntax."""
         self._examples = []
@@ -104,7 +106,9 @@ class ElementPromptBuilder:
         if not self._syntax:
             raise ValueError("Syntax is required")
         if not self._examples and not self._is_standard_markdown:
-            raise ValueError("At least one example is required unless it's standard markdown.")
+            raise ValueError(
+                "At least one example is required unless it's standard markdown."
+            )
         if not self._when_to_use:
             raise ValueError("Usage guidelines are required")
 
@@ -114,5 +118,5 @@ class ElementPromptBuilder:
             examples=self._examples,
             when_to_use=self._when_to_use,
             avoid=self._avoid,
-            is_standard_markdown=self._is_standard_markdown
+            is_standard_markdown=self._is_standard_markdown,
         )

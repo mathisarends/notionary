@@ -47,9 +47,7 @@ class NotionPage(LoggingMixin):
         self._title_loaded = title is not None
         self._url_loaded = url is not None
 
-        self._block_element_registry = (
-            BlockRegistryBuilder.create_full_registry()
-        )
+        self._block_element_registry = BlockRegistryBuilder.create_full_registry()
 
         self._page_content_writer = PageContentWriter(
             page_id=self._page_id,
@@ -153,6 +151,16 @@ class NotionPage(LoggingMixin):
             BlockElementRegistry: The registry of block elements.
         """
         return self._block_element_registry
+
+    @property
+    def block_registry_builder(self) -> BlockRegistryBuilder:
+        """
+        Get the block element registry builder associated with this page.
+
+        Returns:
+            BlockElementRegistryBuilder: The builder for block elements.
+        """
+        return self._block_element_registry.builder
 
     @block_registry.setter
     def block_registry(self, block_registry: BlockRegistry) -> None:
@@ -419,7 +427,9 @@ class NotionPage(LoggingMixin):
             property_name=relation_property_name, page_titles=page_titles
         )
 
-    async def get_relation_property_values_by_name(self, property_name: str) -> List[str]:
+    async def get_relation_property_values_by_name(
+        self, property_name: str
+    ) -> List[str]:
         """
         Return the current relation values for a property.
 

@@ -22,9 +22,9 @@ class MarkdownSyntaxPromptGenerator:
         """
         current_dir = Path(__file__).parent
         template_path = current_dir / "notion_syntax_prompt.md"
-        
+
         try:
-            with open(template_path, 'r', encoding='utf-8') as file:
+            with open(template_path, "r", encoding="utf-8") as file:
                 return file.read()
         except FileNotFoundError:
             raise FileNotFoundError(f"Template file not found at {template_path}")
@@ -52,7 +52,7 @@ class MarkdownSyntaxPromptGenerator:
             doc_parts.append("**Examples:**")
             for example in content.examples:
                 doc_parts.append(example)
-        
+
         doc_parts.append(f"**When to use:** {content.when_to_use}")
 
         if content.avoid:

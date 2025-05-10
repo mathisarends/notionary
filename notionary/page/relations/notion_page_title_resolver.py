@@ -2,6 +2,7 @@ from typing import Optional, Dict, Any, List
 from notionary.notion_client import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
 
+
 class NotionPageTitleResolver(LoggingMixin):
     def __init__(self, client: NotionClient):
         self._client = client
@@ -15,21 +16,21 @@ class NotionPageTitleResolver(LoggingMixin):
                 "search",
                 {"query": title, "filter": {"value": "page", "property": "object"}},
             )
-            
+
             results = search_results.get("results", [])
-            
+
             if not results:
                 self.logger.debug(f"No page found with title '{title}'")
                 return None
-            
+
             # Durchsuche die Ergebnisse nach dem passenden Titel
             for result in results:
                 properties = result.get("properties", {})
                 page_title = self._extract_page_title_from_properties(properties)
-                
+
                 if page_title == title:
                     return result.get("id")
-                    
+
             self.logger.debug(f"No matching page found with title '{title}'")
             return None
 
@@ -99,5 +100,5 @@ class NotionPageTitleResolver(LoggingMixin):
                         return text_obj["plain_text"]
         except Exception as e:
             self.logger.error(f"Error extracting page title from properties: {e}")
-            
+
         return "Untitled"

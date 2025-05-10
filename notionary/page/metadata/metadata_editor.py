@@ -120,19 +120,19 @@ class MetadataEditor(LoggingMixin):
         # Property types that can have options
         option_types = {
             "select": "select",
-            "multi_select": "multi_select", 
-            "status": "status"
+            "multi_select": "multi_select",
+            "status": "status",
         }
 
         for prop_name, prop_data in page_data.properties.items():
             prop_type = prop_data.get("type")
-            
+
             schema_entry = {
                 "id": prop_data.get("id"),
                 "type": prop_type,
                 "name": prop_name,
             }
-            
+
             # Check if this property type can have options
             if prop_type in option_types:
                 option_key = option_types[prop_type]
@@ -144,7 +144,7 @@ class MetadataEditor(LoggingMixin):
                     self.logger.warning(
                         "Error processing property schema for '%s': %s", prop_name, e
                     )
-            
+
             property_schema[prop_name] = schema_entry
 
         return property_schema

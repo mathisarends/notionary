@@ -67,6 +67,20 @@ class BlockRegistryBuilder:
             .with_paragraphs()
             .with_toggleable_heading_element()
         ).build()
+        
+    @classmethod
+    def create_minimal_registry(cls) -> BlockRegistry:
+        """
+        Create a minimal registry with just essential text elements.
+        Suitable for basic note-taking.
+        """
+        builder = cls()
+        return (
+            builder.with_paragraphs()
+            .with_headings()
+            .with_bulleted_list()
+            .with_numbered_list()
+        ).build()
 
     def add_element(
         self, element_class: Type[NotionBlockElement]

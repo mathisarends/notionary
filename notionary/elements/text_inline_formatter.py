@@ -225,7 +225,9 @@ class TextInlineFormatter:
                 "Use inline formatting to highlight important words, provide emphasis, show code or paths, or add hyperlinks. "
                 "This helps create visual hierarchy and improves readability."
             )
-            .with_syntax("**bold**, *italic*, `code`, ~~strikethrough~~, __underline__, [text](url)")
+            .with_syntax(
+                "**bold**, *italic*, `code`, ~~strikethrough~~, __underline__, [text](url)"
+            )
             .with_examples(
                 [
                     "This text has a **bold** word.",
@@ -234,7 +236,7 @@ class TextInlineFormatter:
                     "This text has ~~strikethrough~~ formatting.",
                     "This text has __underlined__ formatting.",
                     "This has a [hyperlink](https://example.com).",
-                    "You can **combine *different* formatting** styles."
+                    "You can **combine *different* formatting** styles.",
                 ]
             )
             .build()
