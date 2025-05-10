@@ -5,9 +5,6 @@ from notionary.notion_client import NotionClient
 from notionary.page.relations.notion_page_title_resolver import (
     NotionPageTitleResolver,
 )
-from notionary.page.relations.relation_operation_result import (
-    RelationOperationResult,
-)
 from notionary.util.logging_mixin import LoggingMixin
 
 
@@ -140,7 +137,7 @@ class NotionPageRelationManager(LoggingMixin):
 
     async def set_relation_values_by_page_titles(
         self, property_name: str, page_titles: List[str]
-    ) -> RelationOperationResult:
+    ) -> List[str]:
         """
         Sets relation values based on page titles, replacing any existing relations.
 
@@ -149,8 +146,7 @@ class NotionPageRelationManager(LoggingMixin):
             page_titles: List of page titles to set as relations
 
         Returns:
-            RelationOperationResult: Result of the operation with details on which pages
-                                    were found and set as relations
+            List[str]: List of page titles that were successfully set as relations
         """
         self.logger.info(
             "Setting %d relation(s) for property '%s'",
@@ -158,7 +154,6 @@ class NotionPageRelationManager(LoggingMixin):
             property_name,
         )
 
-        # Resolve titles to IDs - get all page IDs for the titles
         resolution_results = await asyncio.gather(
             *(
                 self._page_title_resolver.get_page_id_by_title(title)
@@ -181,14 +176,11 @@ class NotionPageRelationManager(LoggingMixin):
 
         self.logger.debug("Page IDs being sent to API: %s", page_ids)
 
-        # Return early if no pages were found
         if not page_ids:
             self.logger.warning(
                 "No valid page IDs found for any of the titles, no changes applied"
             )
-            return RelationOperationResult.from_no_pages_found(
-                property_name, not_found_pages
-            )
+            return []
 
         api_response = await self._set_relations_by_page_ids(property_name, page_ids)
 
@@ -196,13 +188,8 @@ class NotionPageRelationManager(LoggingMixin):
             self.logger.error(
                 "Failed to set relations for '%s' (API error)", property_name
             )
-            return RelationOperationResult.from_no_api_response(
-                property_name=property_name,
-                found_pages=found_pages,
-                page_ids_added=page_ids,
-            )
+            return []
 
-        # Log success with appropriate message
         if not_found_pages:
             not_found_str = "', '".join(not_found_pages)
             self.logger.info(
@@ -218,14 +205,7 @@ class NotionPageRelationManager(LoggingMixin):
                 property_name,
             )
 
-        # Return success result
-        return RelationOperationResult.from_success(
-            property_name=property_name,
-            found_pages=found_pages,
-            not_found_pages=not_found_pages,
-            page_ids_added=page_ids,
-            api_response=api_response,
-        )
+        return found_pages
 
     async def get_all_relations(self) -> Dict[str, List[str]]:
         """
@@ -357,14 +337,14 @@ class NotionPageRelationManager(LoggingMixin):
         relation_payload = {"relation": [{"id": page_id} for page_id in page_ids]}
 
         try:
-            result = await self._client.patch_page(
+            page_response: NotionPageResponse = await self._client.patch_page(
                 self._page_id,
                 {"properties": {property_name: relation_payload}},
             )
 
             self._page_properties = None
 
-            return result
+            return page_response
         except Exception as e:
             self.logger.error("Error adding relation: %s", str(e))
             return None

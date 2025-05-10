@@ -27,7 +27,7 @@ class NotionPageTitleResolver(LoggingMixin):
                 properties = result.get("properties", {})
                 page_title = self._extract_page_title_from_properties(properties)
                 
-                if page_title == title or title in page_title:
+                if page_title == title:
                     return result.get("id")
                     
             self.logger.debug(f"No matching page found with title '{title}'")

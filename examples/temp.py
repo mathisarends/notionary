@@ -20,8 +20,10 @@ async def main():
         )
         print(f'✅ Found: "{title}" {icon} → {url}')
 
-        status = await page.get_relation_property_values_by_name("Thema")
+        status = await page.set_relation_property_values_by_name("Projekte", ["Thesis", "Vizro", "KnowSphere"])
+        thema = await page.set_relation_property_values_by_name("Thema", ["Personen", "Usability", "Lernen"])
         print(f"✅ Status set to: {status}")
+        print(f"✅ Thema set to: {thema}")
 
     except Exception as e:
         print(f"❌ Error: {e}")
@@ -30,5 +32,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-# TODO: Smoke Test ergänzen.

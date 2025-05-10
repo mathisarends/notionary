@@ -406,7 +406,7 @@ class NotionPage(LoggingMixin):
 
     async def set_relation_property_values_by_name(
         self, relation_property_name: str, page_titles: List[str]
-    ) -> Optional[Dict[str, Any]]:
+    ) -> List[str]:
         """
         Add one or more relations to a relation property.
 

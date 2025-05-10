@@ -117,33 +117,34 @@ class MetadataEditor(LoggingMixin):
         page_data = await self._client.get_page(self.page_id)
         property_schema = {}
 
+        # Property types that can have options
+        option_types = {
+            "select": "select",
+            "multi_select": "multi_select", 
+            "status": "status"
+        }
+
         for prop_name, prop_data in page_data.properties.items():
             prop_type = prop_data.get("type")
-            property_schema[prop_name] = {
+            
+            schema_entry = {
                 "id": prop_data.get("id"),
                 "type": prop_type,
                 "name": prop_name,
             }
-
-            try:
-                if prop_type == "select" and "select" in prop_data:
-                    if isinstance(prop_data["select"], dict):
-                        property_schema[prop_name]["options"] = prop_data["select"].get(
-                            "options", []
-                        )
-                elif prop_type == "multi_select" and "multi_select" in prop_data:
-                    if isinstance(prop_data["multi_select"], dict):
-                        property_schema[prop_name]["options"] = prop_data[
-                            "multi_select"
-                        ].get("options", [])
-                elif prop_type == "status" and "status" in prop_data:
-                    if isinstance(prop_data["status"], dict):
-                        property_schema[prop_name]["options"] = prop_data["status"].get(
-                            "options", []
-                        )
-            except Exception as e:
-                self.logger.warning(
-                    "Error processing property schema for '%s': %s", prop_name, e
-                )
+            
+            # Check if this property type can have options
+            if prop_type in option_types:
+                option_key = option_types[prop_type]
+                try:
+                    prop_type_data = prop_data.get(option_key, {})
+                    if isinstance(prop_type_data, dict):
+                        schema_entry["options"] = prop_type_data.get("options", [])
+                except Exception as e:
+                    self.logger.warning(
+                        "Error processing property schema for '%s': %s", prop_name, e
+                    )
+            
+            property_schema[prop_name] = schema_entry
 
         return property_schema

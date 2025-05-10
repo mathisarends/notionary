@@ -46,7 +46,6 @@ class PagePropertyManager(LoggingMixin):
         prop_data = properties[property_name]
         return await self._extractor.extract(property_name, prop_data, relation_getter)
 
-    # TODO: Ich finde hier sollten auch relations gesetzt werden können. für eienn einheitlichen Umngang
     async def set_property_by_name(
         self, property_name: str, value: Any
     ) -> Optional[Any]:
