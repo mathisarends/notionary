@@ -1,14 +1,9 @@
+
 from pydantic import BaseModel
 from dataclasses import dataclass
 from typing import Optional, List, Dict, Any, Literal
 
 from notionary.models.notion_page_response import Icon
-
-
-@dataclass
-class TextContent:
-    content: str
-    link: Optional[str] = None
 
 
 @dataclass
@@ -33,11 +28,11 @@ class User:
 
 @dataclass
 class Parent:
-    type: Literal["page_id", "workspace"]
+    type: Literal["page_id", "workspace", "block_id"]
     page_id: Optional[str] = None
+    block_id: Optional[str] = None  # Added block_id field
 
 
-@dataclass
 class NotionDatabaseResponse(BaseModel):
     """
     Represents the response from the Notion API when retrieving a database.
