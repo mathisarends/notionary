@@ -19,8 +19,7 @@ async def main():
         )
         print(f'✅ Found: "{title}" {icon} → {url}')
 
-        prompt = page.get_notion_markdown_syntax_prompt()
-        print(f"✅ Prompt: {prompt}")
+        page.block_registry.builder.with_audio().build()
 
     except Exception as e:
         print(f"❌ Error: {e}")
