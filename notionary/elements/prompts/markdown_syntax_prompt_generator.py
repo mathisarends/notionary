@@ -51,7 +51,7 @@ class MarkdownSyntaxPromptGenerator:
         if content.examples:
             doc_parts.append("**Examples:**")
             for example in content.examples:
-                doc_parts.append(f"- {example}")
+                doc_parts.append(example)
         
         doc_parts.append(f"**When to use:** {content.when_to_use}")
 

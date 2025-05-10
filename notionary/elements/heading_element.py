@@ -86,12 +86,6 @@ class HeadingElement(NotionBlockElement):
                 "Use to group content into sections and define a visual hierarchy."
             )
             .with_syntax("## Your Heading Text")
-            .with_examples(
-                [
-                    "# Main Title",
-                    "## Section Title",
-                    "### Subsection Title",
-                ]
-            )
+            .with_standard_markdown()
             .build()
         )

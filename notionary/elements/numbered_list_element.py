@@ -67,11 +67,6 @@ class NumberedListElement(NotionBlockElement):
                 "Use for lists where order matters, such as steps, rankings, or sequential items."
             )
             .with_syntax("1. Item text")
-            .with_examples(
-                [
-                    "1. First step\n2. Second step\n3. Third step",
-                    "1. Gather materials\n2. Assemble parts\n3. Test the result",
-                ]
-            )
+            .with_standard_markdown()
             .build()
         )

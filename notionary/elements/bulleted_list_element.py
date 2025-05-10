@@ -65,12 +65,6 @@ class BulletedListElement(NotionBlockElement):
                 "Use for lists where order doesn't matter, such as features, options, or items without hierarchy."
             )
             .with_syntax("- Item text")
-            .with_examples(
-                [
-                    "- First item\n- Second item\n- Third item",
-                    "* Apple\n* Banana\n* Cherry",
-                    "+ Task A\n+ Task B",
-                ]
-            )
+            .with_standard_markdown()
             .build()
         )

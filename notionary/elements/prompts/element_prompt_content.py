@@ -23,6 +23,9 @@ class ElementPromptContent:
 
     avoid: Optional[str] = None
     """Optional field listing scenarios when this element should be avoided."""
+    
+    is_standard_markdown: bool = False
+    """Indicates whether this element follows standard Markdown syntax (and does not require full examples)."""
 
     def __post_init__(self):
         """Validates that the content meets minimum requirements."""
@@ -30,8 +33,8 @@ class ElementPromptContent:
             raise ValueError("Description is required")
         if not self.syntax:
             raise ValueError("Syntax is required")
-        if not self.examples:
-            raise ValueError("At least one example is required")
+        if not self.examples and not self.is_standard_markdown:
+            raise ValueError("At least one example is required unless it's standard markdown.")
         if not self.when_to_use:
             raise ValueError("Usage guidelines are required")
 
@@ -48,6 +51,7 @@ class ElementPromptBuilder:
         self._examples: List[str] = []
         self._when_to_use: Optional[str] = None
         self._avoid: Optional[str] = None
+        self._is_standard_markdown = False
 
     def with_description(self, description: str) -> Self:
         """Set the description of the element."""
@@ -78,6 +82,12 @@ class ElementPromptBuilder:
         """Set the scenarios when this element should be avoided."""
         self._avoid = avoid
         return self
+    
+    def with_standard_markdown(self) -> Self:
+        """Indicate that this element follows standard Markdown syntax."""
+        self._examples = []
+        self._is_standard_markdown = True
+        return self
 
     def build(self) -> ElementPromptContent:
         """
@@ -93,8 +103,8 @@ class ElementPromptBuilder:
             raise ValueError("Description is required")
         if not self._syntax:
             raise ValueError("Syntax is required")
-        if not self._examples:
-            raise ValueError("At least one example is required")
+        if not self._examples and not self._is_standard_markdown:
+            raise ValueError("At least one example is required unless it's standard markdown.")
         if not self._when_to_use:
             raise ValueError("Usage guidelines are required")
 
@@ -104,4 +114,5 @@ class ElementPromptBuilder:
             examples=self._examples,
             when_to_use=self._when_to_use,
             avoid=self._avoid,
+            is_standard_markdown=self._is_standard_markdown
         )
