@@ -20,8 +20,8 @@ async def main():
         print(f"Page found: {page.id}")
         print(f"{icon} → {title} → {url}")
 
-        theme_opt = await page.get_options_for_property("Thema")
-        print(f"Theme: {theme_opt}")
+        system_prompt = page.get_notion_markdown_system_prompt()
+        print(f"System prompt: {system_prompt}")
 
     except Exception as e:
         print(f"❌ Error: {e}")
