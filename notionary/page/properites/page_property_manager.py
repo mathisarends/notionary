@@ -62,6 +62,13 @@ class PagePropertyManager(LoggingMixin):
         """
         property_type = await self.get_property_type(property_name)
 
+        if property_type == "relation":
+            self.logger.warning(
+                "Property '%s' is of type 'relation'. Relations must be set using the RelationManager.",
+                property_name,
+            )
+            return None
+
         is_db_page = await self._db_relation.is_database_page()
         db_service = None
 
