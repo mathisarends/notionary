@@ -8,8 +8,8 @@ from notionary.elements.embed_element import EmbedElement
 from notionary.elements.mention_element import MentionElement
 from notionary.elements.notion_block_element import NotionBlockElement
 from notionary.elements.numbered_list_element import NumberedListElement
-from notionary.elements.registry.block_element_registry import (
-    BlockElementRegistry,
+from notionary.elements.registry.block_registry import (
+    BlockRegistry,
 )
 
 from notionary.elements.paragraph_element import ParagraphElement
@@ -27,9 +27,9 @@ from notionary.elements.toggle_element import ToggleElement
 from notionary.elements.bookmark_element import BookmarkElement
 
 
-class BlockElementRegistryBuilder:
+class BlockRegistryBuilder:
     """
-    True builder for constructing BlockElementRegistry instances.
+    True builder for constructing BlockRegistry instances.
 
     This builder allows for incremental construction of registry instances
     with specific configurations of block elements.
@@ -40,7 +40,7 @@ class BlockElementRegistryBuilder:
         self._elements = OrderedDict()
 
     @classmethod
-    def create_full_registry(cls) -> BlockElementRegistry:
+    def create_full_registry(cls) -> BlockRegistry:
         """
         Start with all standard elements in recommended order.
         """
@@ -246,23 +246,23 @@ class BlockElementRegistryBuilder:
     def with_toggleable_heading_element(self) -> BlockElementRegistryBuilder:
         return self.add_element(ToggleableHeadingElement)
 
-    def build(self) -> BlockElementRegistry:
+    def build(self) -> BlockRegistry:
         """
-        Build and return the configured BlockElementRegistry instance.
+        Build and return the configured BlockRegistry instance.
 
         This automatically ensures that ParagraphElement is at the end
         of the registry (if present) as a fallback element, unless
         this behavior was explicitly disabled.
 
         Returns:
-            A configured BlockElementRegistry instance
+            A configured BlockRegistry instance
         """
         if ParagraphElement.__name__ not in self._elements:
             self.add_element(ParagraphElement)
         else:
             self._ensure_paragraph_at_end()
 
-        registry = BlockElementRegistry()
+        registry = BlockRegistry()
 
         # Add elements in the recorded order
         for element_class in self._elements.values():

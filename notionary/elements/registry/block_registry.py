@@ -5,7 +5,7 @@ from notionary.elements.prompts.markdown_syntax_prompt_generator import Markdown
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
-class BlockElementRegistry:
+class BlockRegistry:
     """Registry of elements that can convert between Markdown and Notion."""
 
     def __init__(self, elements=None):
@@ -73,7 +73,7 @@ class BlockElementRegistry:
         """Get all registered elements."""
         return self._elements.copy()
 
-    def generate_llm_prompt(self) -> str:
+    def get_notion_markdown_syntax_prompt(self) -> str:
         """
         Generates an LLM system prompt that describes the Markdown syntax of all registered elements.
         """

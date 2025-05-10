@@ -1,8 +1,7 @@
 import json
 from typing import Any, Dict, List, Optional
 
-from notionary.elements.divider_element import DividerElement
-from notionary.elements.registry.block_element_registry import BlockElementRegistry
+from notionary.elements.registry.block_registry import BlockRegistry
 from notionary.notion_client import NotionClient
 
 from notionary.page.notion_to_markdown_converter import (
@@ -16,7 +15,7 @@ class PageContentRetriever(LoggingMixin):
         self,
         page_id: str,
         client: NotionClient,
-        block_registry: BlockElementRegistry,
+        block_registry: BlockRegistry,
     ):
         self.page_id = page_id
         self._client = client

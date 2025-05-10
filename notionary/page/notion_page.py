@@ -2,10 +2,8 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 import re
 
-from notionary.elements.registry.block_element_registry import BlockElementRegistry
-from notionary.elements.registry.block_element_registry_builder import (
-    BlockElementRegistryBuilder,
-)
+from notionary.elements.registry.block_registry import BlockRegistry
+from notionary.elements.registry.block_registry_builder import BlockRegistryBuilder
 from notionary.notion_client import NotionClient
 from notionary.page.content.page_content_retriever import PageContentRetriever
 from notionary.page.metadata.metadata_editor import MetadataEditor
@@ -50,7 +48,7 @@ class NotionPage(LoggingMixin):
         self._url_loaded = url is not None
 
         self._block_element_registry = (
-            BlockElementRegistryBuilder.create_full_registry()
+            BlockRegistryBuilder.create_full_registry()
         )
 
         self._page_content_writer = PageContentWriter(
@@ -147,7 +145,7 @@ class NotionPage(LoggingMixin):
         return self._page_id
 
     @property
-    def block_registry(self) -> BlockElementRegistry:
+    def block_registry(self) -> BlockRegistry:
         """
         Get the block element registry associated with this page.
 
@@ -157,7 +155,7 @@ class NotionPage(LoggingMixin):
         return self._block_element_registry
 
     @block_registry.setter
-    def block_registry(self, block_registry: BlockElementRegistry) -> None:
+    def block_registry(self, block_registry: BlockRegistry) -> None:
         """
         Set the block element registry for the page content manager.
 
@@ -179,7 +177,7 @@ class NotionPage(LoggingMixin):
         Returns:
             str: The formatting prompt.
         """
-        return self._block_element_registry.generate_llm_prompt()
+        return self._block_element_registry.get_notion_markdown_syntax_prompt()
 
     async def get_title(self) -> str:
         """

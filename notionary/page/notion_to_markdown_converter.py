@@ -1,8 +1,8 @@
 from typing import Dict, Any, List, Optional
 
-from notionary.elements.registry.block_element_registry import BlockElementRegistry
-from notionary.elements.registry.block_element_registry_builder import (
-    BlockElementRegistryBuilder,
+from notionary.elements.registry.block_registry import BlockRegistry
+from notionary.elements.registry.block_registry_builder import (
+    BlockRegistryBuilder,
 )
 
 
@@ -12,12 +12,12 @@ class NotionToMarkdownConverter:
     TOGGLE_ELEMENT_TYPES = ["toggle", "toggleable_heading"]
     LIST_ITEM_TYPES = ["numbered_list_item", "bulleted_list_item"]
 
-    def __init__(self, block_registry: Optional[BlockElementRegistry] = None):
+    def __init__(self, block_registry: Optional[BlockRegistry] = None):
         """
         Initialize the NotionToMarkdownConverter.
         """
         self._block_registry = (
-            block_registry or BlockElementRegistryBuilder().create_full_registry()
+            block_registry or BlockRegistryBuilder().create_full_registry()
         )
 
     def convert(self, blocks: List[Dict[str, Any]]) -> str:

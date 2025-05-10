@@ -15,11 +15,10 @@ CRITICAL USAGE GUIDELINES:
 2. INLINE FORMATTING - VERY IMPORTANT:
    ✅ You can use inline formatting within almost any block type.
    ✅ Combine **bold**, _italic_, `code`, and other formatting as needed.
-   ✅ Format text to create visual hierarchy and emphasize important points.
-   ❌ DO NOT overuse formatting - be strategic with formatting for best readability.
+   ✅ Format text to create visual hierarchy and emphasize important points.❌ DO NOT overuse formatting - be strategic with formatting for best readability.
 
 3. BACKTICK HANDLING - EXTREMELY IMPORTANT:
-   ❌ NEVER wrap entire content or responses in triple backticks (`).
+   ❌ NEVER wrap entire content or responses in triple backticks (`).   
 ❌ DO NOT use triple backticks (`) for anything except CODE BLOCKS or DIAGRAMS.
    ❌ DO NOT use triple backticks to mark or highlight regular text or examples.
    ✅ USE triple backticks ONLY for actual programming code, pseudocode, or specialized notation.

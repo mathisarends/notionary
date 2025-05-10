@@ -1,8 +1,8 @@
 from typing import Dict, Any, List, Optional, Tuple
 
-from notionary.elements.registry.block_element_registry import BlockElementRegistry
-from notionary.elements.registry.block_element_registry_builder import (
-    BlockElementRegistryBuilder,
+from notionary.elements.registry.block_registry import BlockRegistry
+from notionary.elements.registry.block_registry_builder import (
+    BlockRegistryBuilder,
 )
 
 
@@ -13,10 +13,10 @@ class MarkdownToNotionConverter:
     TOGGLE_ELEMENT_TYPES = ["ToggleElement", "ToggleableHeadingElement"]
     PIPE_CONTENT_PATTERN = r"^\|\s?(.*)$"
 
-    def __init__(self, block_registry: Optional[BlockElementRegistry] = None):
+    def __init__(self, block_registry: Optional[BlockRegistry] = None):
         """Initialize the converter with an optional custom block registry."""
         self._block_registry = (
-            block_registry or BlockElementRegistryBuilder().create_full_registry()
+            block_registry or BlockRegistryBuilder().create_full_registry()
         )
 
     def convert(self, markdown_text: str) -> List[Dict[str, Any]]:

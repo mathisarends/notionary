@@ -7,9 +7,9 @@ from .database.database_discovery import DatabaseDiscovery
 from .page.notion_page import NotionPage
 from .page.notion_page_factory import NotionPageFactory
 
-from .elements.registry.block_element_registry import BlockElementRegistry
-from .elements.registry.block_element_registry_builder import (
-    BlockElementRegistryBuilder,
+from .elements.registry.block_registry import BlockRegistry
+from .elements.registry.block_registry_builder import (
+    BlockRegistryBuilder,
 )
 
 __all__ = [
@@ -19,6 +19,6 @@ __all__ = [
     "DatabaseDiscovery",
     "NotionPage",
     "NotionPageFactory",
-    "BlockElementRegistry",
-    "BlockElementRegistryBuilder",
+    "BlockRegistry",
+    "BlockRegistryBuilder",
 ]
