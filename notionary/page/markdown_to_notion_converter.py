@@ -9,7 +9,7 @@ from notionary.elements.registry.block_registry_builder import (
 class MarkdownToNotionConverter:
     """Converts Markdown text to Notion API block format with support for pipe syntax for nested structures."""
 
-    SPACER_MARKER = "<!-- spacer -->"
+    # CHANGED: Removed SPACER_MARKER constant
     TOGGLE_ELEMENT_TYPES = ["ToggleElement", "ToggleableHeadingElement"]
     PIPE_CONTENT_PATTERN = r"^\|\s?(.*)$"
 
@@ -219,15 +219,7 @@ class MarkdownToNotionConverter:
         """Process a single line of text."""
         line_length = len(line) + 1  # +1 for newline
 
-        # Check for spacer
-        if self._is_spacer_line(line):
-            line_blocks.append((current_pos, line_end, self._create_empty_paragraph()))
-            return self._update_line_state(
-                current_pos + line_length,
-                current_paragraph,
-                paragraph_start,
-                in_todo_sequence,
-            )
+        # CHANGED: Removed spacer check, empty lines now act as spacers directly
 
         # Handle todo items
         todo_block = self._extract_todo_item(line)
@@ -246,11 +238,13 @@ class MarkdownToNotionConverter:
         if in_todo_sequence:
             in_todo_sequence = False
 
-        # Handle empty lines
+        # Handle empty lines - they are now treated as spacers
         if not line.strip():
             self._process_paragraph(
                 current_paragraph, paragraph_start, current_pos, line_blocks
             )
+            # CHANGED: Add empty paragraph (spacer) for empty lines
+            line_blocks.append((current_pos, line_end, self._create_empty_paragraph()))
             return self._update_line_state(
                 current_pos + line_length, [], paragraph_start, False
             )
@@ -278,9 +272,7 @@ class MarkdownToNotionConverter:
             in_todo_sequence,
         )
 
-    def _is_spacer_line(self, line: str) -> bool:
-        """Check if a line is a spacer marker."""
-        return line.strip() == self.SPACER_MARKER
+    # CHANGED: Removed _is_spacer_line method completely
 
     def _process_todo_line(
         self,
