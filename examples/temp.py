@@ -21,18 +21,35 @@ async def main():
         print(f"Page found: {page.id}")
         print(f"{icon} → {title} → {url}")
 
-        code = dedent(
+        columns_content = dedent(
             """
-        ```python
-        def greet(name: str) -> str:
-            return f"Hello, {name}!"
+            ::: columns
+            ::: column
+            ## Python Code
+            ```python
+            def greet(name: str) -> str:
+                return f"Hello, {name}!"
 
-        print(greet("Mathis"))
-        ```
-        Caption: Eine einfache Begrüßungsfunktion mit Type Hints
-        """
+            print(greet("Mathis"))
+            ```
+            Caption: Eine einfache Begrüßungsfunktion
+            :::
+            ::: column
+            ## JavaScript Equivalent
+            ```javascript
+            function greet(name) {
+                return `Hello, ${name}!`;
+            }
+
+            console.log(greet("Mathis"));
+            ```
+            Caption: Die gleiche Funktion in JavaScript
+            :::
+            :::
+            """
         )
-        await page.append_markdown(markdown=code)
+
+        await page.append_markdown(markdown=columns_content)
 
     except Exception as e:
         print(f"❌ Error: {e}")

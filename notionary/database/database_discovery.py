@@ -26,7 +26,37 @@ class DatabaseDiscovery(LoggingMixin):
         self._client = client if client else NotionClient()
         self.logger.info("DatabaseDiscovery initialized")
 
-    async def discover(self, page_size: int = 100) -> List[Tuple[str, str]]:
+    async def __call__(self, page_size: int = 100) -> List[Tuple[str, str]]:
+        """
+        Discover databases and print the results in a nicely formatted way.
+
+        This is a convenience method that discovers databases and handles
+        the formatting and printing of results.
+
+        Args:
+            page_size: The number of databases to fetch per request
+
+        Returns:
+            The same list of databases as discover() for further processing
+        """
+        databases = await self._discover(page_size)
+
+        if not databases:
+            print("\n⚠️ No databases found!")
+            print("Please ensure your Notion integration has access to databases.")
+            print(
+                "You need to share the databases with your integration in Notion settings."
+            )
+            return databases
+
+        print(f"✅ Found {len(databases)} databases:")
+
+        for i, (title, db_id) in enumerate(databases, 1):
+            print(f"{i}. {title} (ID: {db_id})")
+
+        return databases
+
+    async def _discover(self, page_size: int = 100) -> List[Tuple[str, str]]:
         """
         Discover all accessible databases and return their titles and IDs.
 
@@ -45,36 +75,6 @@ class DatabaseDiscovery(LoggingMixin):
 
             title = self._extract_database_title(database)
             databases.append((title, db_id))
-
-        return databases
-
-    async def discover_and_print(self, page_size: int = 100) -> List[Tuple[str, str]]:
-        """
-        Discover databases and print the results in a nicely formatted way.
-
-        This is a convenience method that discovers databases and handles
-        the formatting and printing of results.
-
-        Args:
-            page_size: The number of databases to fetch per request
-
-        Returns:
-            The same list of databases as discover() for further processing
-        """
-        databases = await self.discover(page_size)
-
-        if not databases:
-            print("\n⚠️ No databases found!")
-            print("Please ensure your Notion integration has access to databases.")
-            print(
-                "You need to share the databases with your integration in Notion settings."
-            )
-            return databases
-
-        print(f"✅ Found {len(databases)} databases:")
-
-        for i, (title, db_id) in enumerate(databases, 1):
-            print(f"{i}. {title} (ID: {db_id})")
 
         return databases
 

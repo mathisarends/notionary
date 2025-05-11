@@ -1,4 +1,5 @@
 from typing import Any, Dict
+from textwrap import dedent
 
 from notionary.elements.divider_element import DividerElement
 from notionary.elements.registry.block_registry import BlockRegistry
@@ -39,6 +40,8 @@ class PageContentWriter(LoggingMixin):
         Append markdown text to a Notion page, automatically handling content length limits.
 
         """
+        markdown_text = "\n".join(line.lstrip() for line in markdown_text.split("\n"))
+
         if append_divider and not self.block_registry.contains(DividerElement):
             self.logger.warning(
                 "DividerElement not registered. Appending divider skipped."

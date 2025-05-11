@@ -24,8 +24,7 @@ class CodeBlockElement(NotionBlockElement):
     """
 
     PATTERN = re.compile(
-        r"```(\w*)\n([\s\S]+?)```(?:\n(?:Caption|caption):\s*(.+))?", 
-        re.MULTILINE
+        r"```(\w*)\n([\s\S]+?)```(?:\n(?:Caption|caption):\s*(.+))?", re.MULTILINE
     )
 
     @classmethod
@@ -102,7 +101,7 @@ class CodeBlockElement(NotionBlockElement):
 
         # Format as a markdown code block
         result = f"```{language}\n{content}\n```"
-        
+
         # Add caption if present
         if caption_text.strip():
             result += f"\nCaption: {caption_text}"
@@ -190,7 +189,7 @@ class CodeBlockElement(NotionBlockElement):
                     "```python\nprint('Hello, world!')\n```\nCaption: Basic Python greeting example",
                     '```json\n{"name": "Alice", "age": 30}\n```\nCaption: User data structure',
                     "```mermaid\nflowchart TD\n  A --> B\n```\nCaption: Simple flow diagram",
-                    "```bash\ngit commit -m \"Initial commit\"\n```",  # Without caption
+                    '```bash\ngit commit -m "Initial commit"\n```',  # Without caption
                 ]
             )
             .with_avoidance_guidelines(

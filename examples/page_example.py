@@ -1,51 +1,52 @@
 """
-# Notionary: Rich Notion Page Example
-=========================================
+# Notionary: Page Management Example
+===================================
 
-This example demonstrates how to create a feature-rich Notion page using the NotionPageManager
-and custom Markdown extensions supported by Notionary.
+This example demonstrates how to find and modify Notion pages,
+including content updates, property changes, and formatting.
 
-## Features
-- Connect to a Notion page using its URL
-- Update page properties and metadata (title, icon, cover)
-- Create rich content using custom Markdown syntax
-- Showcase various Notion blocks (callouts, toggles, etc.)
+IMPORTANT: Replace PAGE_NAME with the name of an existing Notion page.
+The factory will use fuzzy matching to find the closest match to this name.
 """
 
 import asyncio
 from notionary import NotionPage
-from notionary.exceptions.database_exceptions import PageOperationError
 
-from examples.ressources.markdown_demo import MARKDOWN_EXAMPLE
+PAGE_NAME = "Meeting Notes"
 
 
 async def main():
-    """Create a rich Notion page showcasing various content blocks."""
-
-    url = "https://www.notion.so/Notionary-Rich-Markdown-Demo-1cd389d57bd381e58be9d35ce24adf3d?pvs=4"
-
-    page_manager = NotionPage(url=url)
+    """Demonstrate page operations with Notionary."""
+    print("📄 Notionary Page Example")
+    print("========================")
 
     try:
-        print("🎨 Setting page metadata...")
+        print(f"\n🔎 Finding page '{PAGE_NAME}'...")
+        page = await NotionPage.from_page_name(PAGE_NAME)
 
-        await page_manager.set_title("Notionary Rich Markdown Demo")
-        await page_manager.set_page_icon(emoji="✨")
-        await page_manager.set_page_cover(
-            "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200"
-        )
+        print("✨ Updating page properties...")
 
-        print("✨ Updating page with rich content...")
-        await page_manager.replace_content(markdown=MARKDOWN_EXAMPLE)
+        # Update icon and cover
+        await page.set_emoji_icon("📝")
+        await page.set_random_gradient_cover()
 
-        print("🎉 Page updated successfully with rich content!")
-        print("🔗 Open the page in Notion to see the results")
+        # Get current title for display
+        current_title = await page.get_title()
+        print(f"📌 Current title: {current_title}")
 
-        await page_manager.clear()
+        page_content = await page.get_text_content()
+        print(f"📜 Current content: {page_content}")
 
-    except PageOperationError as e:
-        print(f"❌ Error updating page: {e}")
+        page_url = await page.get_url()
+        print(f"🔗 View page: {page_url}")
+
+        print("\n📋 Page structure:")
+
+    except Exception as e:
+        print(f"❌ Error: {e}")
 
 
 if __name__ == "__main__":
+    print("🚀 Starting Notionary page example...")
     asyncio.run(main())
+    print("✅ Example completed!")

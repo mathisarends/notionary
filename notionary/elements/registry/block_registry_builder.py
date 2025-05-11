@@ -27,6 +27,7 @@ from notionary.elements.toggleable_heading_element import ToggleableHeadingEleme
 from notionary.elements.video_element import VideoElement
 from notionary.elements.toggle_element import ToggleElement
 from notionary.elements.bookmark_element import BookmarkElement
+from notionary.elements.column_element import ColumnsElement
 
 
 class BlockRegistryBuilder:
@@ -65,6 +66,7 @@ class BlockRegistryBuilder:
             .with_audio()
             .with_mention()
             .with_paragraphs()
+            .with_columns()
             .with_toggleable_heading_element()
         ).build()
 
@@ -261,6 +263,12 @@ class BlockRegistryBuilder:
 
     def with_toggleable_heading_element(self) -> BlockRegistryBuilder:
         return self.add_element(ToggleableHeadingElement)
+
+    def with_columns(self) -> BlockRegistryBuilder:
+        """
+        Add support for column elements.
+        """
+        return self.add_element(ColumnsElement)
 
     def build(self) -> BlockRegistry:
         """
