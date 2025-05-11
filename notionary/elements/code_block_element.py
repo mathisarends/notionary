@@ -15,13 +15,18 @@ class CodeBlockElement(NotionBlockElement):
     ```language
     code content
     ```
+    Caption: optional caption text
 
     Where:
     - language is optional and specifies the programming language
     - code content is the code to be displayed
+    - Caption line is optional and must appear immediately after the closing ```
     """
 
-    PATTERN = re.compile(r"```(\w*)\n([\s\S]+?)```", re.MULTILINE)
+    PATTERN = re.compile(
+        r"```(\w*)\n([\s\S]+?)```(?:\n(?:Caption|caption):\s*(.+))?", 
+        re.MULTILINE
+    )
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
@@ -42,31 +47,36 @@ class CodeBlockElement(NotionBlockElement):
 
         language = match.group(1) or "plain text"
         content = match.group(2)
+        caption = match.group(3)
 
         if content.endswith("\n"):
             content = content[:-1]
 
-        return {
+        block = {
             "type": "code",
             "code": {
                 "rich_text": [
                     {
                         "type": "text",
                         "text": {"content": content},
-                        "annotations": {
-                            "bold": False,
-                            "italic": False,
-                            "strikethrough": False,
-                            "underline": False,
-                            "code": False,
-                            "color": "default",
-                        },
                         "plain_text": content,
                     }
                 ],
                 "language": language,
             },
         }
+
+        # Add caption if provided
+        if caption and caption.strip():
+            block["code"]["caption"] = [
+                {
+                    "type": "text",
+                    "text": {"content": caption.strip()},
+                    "plain_text": caption.strip(),
+                }
+            ]
+
+        return block
 
     @classmethod
     def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
@@ -84,8 +94,20 @@ class CodeBlockElement(NotionBlockElement):
 
         language = code_data.get("language", "")
 
+        # Extract caption if present
+        caption_text = ""
+        caption_data = code_data.get("caption", [])
+        for caption_block in caption_data:
+            caption_text += caption_block.get("plain_text", "")
+
         # Format as a markdown code block
-        return f"```{language}\n{content}\n```"
+        result = f"```{language}\n{content}\n```"
+        
+        # Add caption if present
+        if caption_text.strip():
+            result += f"\nCaption: {caption_text}"
+
+        return result
 
     @classmethod
     def find_matches(cls, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
@@ -102,6 +124,7 @@ class CodeBlockElement(NotionBlockElement):
         for match in CodeBlockElement.PATTERN.finditer(text):
             language = match.group(1) or "plain text"
             content = match.group(2)
+            caption = match.group(3)
 
             # Remove trailing newline if present
             if content.endswith("\n"):
@@ -121,6 +144,16 @@ class CodeBlockElement(NotionBlockElement):
                 },
             }
 
+            # Add caption if provided
+            if caption and caption.strip():
+                block["code"]["caption"] = [
+                    {
+                        "type": "text",
+                        "text": {"content": caption.strip()},
+                        "plain_text": caption.strip(),
+                    }
+                ]
+
             matches.append((match.start(), match.end(), block))
 
         return matches
@@ -139,25 +172,34 @@ class CodeBlockElement(NotionBlockElement):
             .with_description(
                 "Use fenced code blocks to format content as code. Supports language annotations like "
                 "'python', 'json', or 'mermaid'. Useful for displaying code, configurations, command-line "
-                "examples, or diagram syntax. Also suitable for explaining or visualizing systems with diagram languages."
+                "examples, or diagram syntax. Also suitable for explaining or visualizing systems with diagram languages. "
+                "Code blocks can include optional captions for better documentation."
             )
             .with_usage_guidelines(
                 "Use code blocks when you want to present technical content like code snippets, terminal commands, "
-                "JSON structures, or system diagrams. Especially helpful when structure and formatting are essential."
+                "JSON structures, or system diagrams. Especially helpful when structure and formatting are essential. "
+                "Add captions to provide context, explanations, or titles for your code blocks."
             )
-            .with_syntax("```language\ncode content\n```")
+            .with_syntax(
+                "```language\ncode content\n```\nCaption: optional caption text\n\n"
+                "OR\n\n"
+                "```language\ncode content\n```"
+            )
             .with_examples(
                 [
-                    "```python\nprint('Hello, world!')\n```",
-                    '```json\n{"name": "Alice", "age": 30}\n```',
-                    "```mermaid\nflowchart TD\n  A --> B\n```",
+                    "```python\nprint('Hello, world!')\n```\nCaption: Basic Python greeting example",
+                    '```json\n{"name": "Alice", "age": 30}\n```\nCaption: User data structure',
+                    "```mermaid\nflowchart TD\n  A --> B\n```\nCaption: Simple flow diagram",
+                    "```bash\ngit commit -m \"Initial commit\"\n```",  # Without caption
                 ]
             )
             .with_avoidance_guidelines(
                 "NEVER EVER wrap markdown content with ```markdown. Markdown should be written directly without code block formatting. "
                 "NEVER use ```markdown under any circumstances. "
                 "For Mermaid diagrams, use ONLY the default styling without colors, backgrounds, or custom styling attributes. "
-                "Keep Mermaid diagrams simple and minimal without any styling or color modifications."
+                "Keep Mermaid diagrams simple and minimal without any styling or color modifications. "
+                "Captions must appear immediately after the closing ``` on a new line starting with 'Caption:' - "
+                "no empty lines between the code block and the caption."
             )
             .build()
         )

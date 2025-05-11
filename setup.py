@@ -2,7 +2,7 @@ from setuptools import setup, find_namespace_packages
 
 setup(
     name="notionary",
-    version="0.2.5",
+    version="0.2.6",
     packages=find_namespace_packages(include=["notionary*"]),
     install_requires=["httpx>=0.28.0", "python-dotenv>=1.1.0", "pydantic>=2.11.4"],
     author="Mathis Arends",
