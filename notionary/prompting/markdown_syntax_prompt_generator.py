@@ -34,23 +34,29 @@ class MarkdownSyntaxPromptGenerator:
     - For inline code, use single backticks (`code`).
     - When showing Markdown syntax examples, use inline code formatting with single backticks.
 
-    3. EMPTY LINES AND BLOCK SEPARATION - VERY IMPORTANT:
-    - NEVER place an empty line directly after a heading - heading and content must be visually connected
-    - Use dividers (---) sparingly only when necessary for significant visual separation between major sections
-
-    4. CONTENT FORMATTING - CRITICAL:
+    3. CONTENT FORMATTING - CRITICAL:
     - DO NOT include introductory phrases like "I understand that..." or "Here's the content...".
     - Provide ONLY the requested content directly without any prefacing text or meta-commentary.
     - Generate just the content itself, formatted according to these guidelines.
+    - USE INLINE FORMATTING to enhance readability:
+        - Use *italic* for emphasis, terminology, and definitions
+        - Use `code` for technical terms, file paths, variables, and commands
+        - Use **bold** sparingly for truly important information
+        - Use appropriate inline formatting naturally throughout the content, but don't overuse it
 
-    5. USER INSTRUCTIONS - VERY IMPORTANT:
+    4. USER INSTRUCTIONS - VERY IMPORTANT:
     - Follow the user's formatting instructions EXACTLY and in the specified order
     - When the user requests specific elements (e.g., "first a callout, then 4 bullet points"), create them in that precise sequence
     - Adhere strictly to any structural requirements provided by the user
     - Do not deviate from or reinterpret the user's formatting requests
+
+   5. ADD EMOJIS TO HEADINGS - REQUIRED UNLESS EXPLICITLY TOLD NOT TO:
+   - ALWAYS add appropriate emojis at the beginning of headings to improve structure and readability
+   - Choose emojis that represent the content or theme of each section
+   - Format as: ## 🚀 Heading Text (with space after emoji)
+   - Only omit emojis if the user explicitly instructs you not to use them
     """
     )
-
 
     @staticmethod
     def generate_element_doc(element_class: Type[NotionBlockElement]) -> str:

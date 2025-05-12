@@ -50,25 +50,30 @@ class MarkdownToNotionConverter:
         processed_lines = []
         found_first_heading = False
         
-        for line in lines:
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            
             # Check if line is a heading
             if re.match(self.HEADING_PATTERN, line):
                 if found_first_heading:
-                    # Add spacer before all headings except the first one
-                    processed_lines.append('')
+                    # Only add a single spacer line before headings (no extra line breaks)
                     processed_lines.append(self.SPACER_MARKER)
-                    processed_lines.append('')
                 else:
                     found_first_heading = True
+                
+                processed_lines.append(line)
             
             # Check if line is a divider
             elif re.match(self.DIVIDER_PATTERN, line):
-                # Add spacer before all dividers
-                processed_lines.append('')
+                # Only add a single spacer line before dividers (no extra line breaks)
                 processed_lines.append(self.SPACER_MARKER)
-                processed_lines.append('')
+                processed_lines.append(line)
             
-            processed_lines.append(line)
+            else:
+                processed_lines.append(line)
+            
+            i += 1
         
         return '\n'.join(processed_lines)
 
