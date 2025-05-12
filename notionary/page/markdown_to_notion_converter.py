@@ -1,4 +1,5 @@
 from typing import Dict, Any, List, Optional, Tuple
+import re
 
 from notionary.elements.registry.block_registry import BlockRegistry
 from notionary.elements.registry.block_registry_builder import (
@@ -9,9 +10,11 @@ from notionary.elements.registry.block_registry_builder import (
 class MarkdownToNotionConverter:
     """Converts Markdown text to Notion API block format with support for pipe syntax for nested structures."""
 
-    # CHANGED: Removed SPACER_MARKER constant
+    SPACER_MARKER = "---spacer---"
     TOGGLE_ELEMENT_TYPES = ["ToggleElement", "ToggleableHeadingElement"]
     PIPE_CONTENT_PATTERN = r"^\|\s?(.*)$"
+    HEADING_PATTERN = r"^(#{1,6})\s+(.+)$"
+    DIVIDER_PATTERN = r"^-{3,}$"
 
     def __init__(self, block_registry: Optional[BlockRegistry] = None):
         """Initialize the converter with an optional custom block registry."""
@@ -24,9 +27,12 @@ class MarkdownToNotionConverter:
         if not markdown_text:
             return []
 
+        # Preprocess markdown to add spacers before headings and dividers
+        processed_markdown = self._add_spacers_before_elements(markdown_text)
+
         # Collect all blocks with their positions in the text
         all_blocks_with_positions = self._collect_all_blocks_with_positions(
-            markdown_text
+            processed_markdown
         )
 
         # Sort all blocks by their position in the text
@@ -37,6 +43,34 @@ class MarkdownToNotionConverter:
 
         # Process spacing between blocks
         return self._process_block_spacing(blocks)
+
+    def _add_spacers_before_elements(self, markdown_text: str) -> str:
+        """Add spacer markers before every heading (except the first one) and before every divider."""
+        lines = markdown_text.split('\n')
+        processed_lines = []
+        found_first_heading = False
+        
+        for line in lines:
+            # Check if line is a heading
+            if re.match(self.HEADING_PATTERN, line):
+                if found_first_heading:
+                    # Add spacer before all headings except the first one
+                    processed_lines.append('')
+                    processed_lines.append(self.SPACER_MARKER)
+                    processed_lines.append('')
+                else:
+                    found_first_heading = True
+            
+            # Check if line is a divider
+            elif re.match(self.DIVIDER_PATTERN, line):
+                # Add spacer before all dividers
+                processed_lines.append('')
+                processed_lines.append(self.SPACER_MARKER)
+                processed_lines.append('')
+            
+            processed_lines.append(line)
+        
+        return '\n'.join(processed_lines)
 
     def _collect_all_blocks_with_positions(
         self, markdown_text: str
@@ -75,13 +109,10 @@ class MarkdownToNotionConverter:
         if not toggleable_elements:
             return []
 
-        # Process each toggleable element type
         for element in toggleable_elements:
-            if hasattr(element, "find_matches"):
-                # Find matches with context awareness
-                matches = element.find_matches(text, self.convert, context_aware=True)
-                if matches:
-                    toggleable_blocks.extend(matches)
+            matches = element.find_matches(text, self.convert, context_aware=True)
+            if matches:
+                toggleable_blocks.extend(matches)
 
         return toggleable_blocks
 
@@ -112,9 +143,6 @@ class MarkdownToNotionConverter:
 
         multiline_blocks = []
         for element in multiline_elements:
-            if not hasattr(element, "find_matches"):
-                continue
-
             matches = element.find_matches(text)
 
             if not matches:
@@ -202,8 +230,6 @@ class MarkdownToNotionConverter:
 
     def _is_pipe_syntax_line(self, line: str) -> bool:
         """Check if a line uses pipe syntax (for nested content)."""
-        import re
-
         return bool(re.match(self.PIPE_CONTENT_PATTERN, line))
 
     def _process_line(
@@ -219,7 +245,15 @@ class MarkdownToNotionConverter:
         """Process a single line of text."""
         line_length = len(line) + 1  # +1 for newline
 
-        # CHANGED: Removed spacer check, empty lines now act as spacers directly
+        # Check for spacer
+        if self._is_spacer_line(line):
+            line_blocks.append((current_pos, line_end, self._create_empty_paragraph()))
+            return self._update_line_state(
+                current_pos + line_length,
+                current_paragraph,
+                paragraph_start,
+                in_todo_sequence,
+            )
 
         # Handle todo items
         todo_block = self._extract_todo_item(line)
@@ -238,13 +272,11 @@ class MarkdownToNotionConverter:
         if in_todo_sequence:
             in_todo_sequence = False
 
-        # Handle empty lines - they are now treated as spacers
+        # Handle empty lines
         if not line.strip():
             self._process_paragraph(
                 current_paragraph, paragraph_start, current_pos, line_blocks
             )
-            # CHANGED: Add empty paragraph (spacer) for empty lines
-            line_blocks.append((current_pos, line_end, self._create_empty_paragraph()))
             return self._update_line_state(
                 current_pos + line_length, [], paragraph_start, False
             )
@@ -272,7 +304,9 @@ class MarkdownToNotionConverter:
             in_todo_sequence,
         )
 
-    # CHANGED: Removed _is_spacer_line method completely
+    def _is_spacer_line(self, line: str) -> bool:
+        """Check if a line is a spacer marker."""
+        return line.strip() == self.SPACER_MARKER
 
     def _process_todo_line(
         self,

@@ -1,8 +1,10 @@
 import logging
-from textwrap import dedent
 import asyncio
 import traceback
 from notionary import NotionPage
+
+from langchain_openai import ChatOpenAI
+from langchain.schema import HumanMessage, SystemMessage
 
 
 async def main():
@@ -20,36 +22,24 @@ async def main():
         )
         print(f"Page found: {page.id}")
         print(f"{icon} → {title} → {url}")
+        
+        llm = ChatOpenAI(model="gpt-4o-mini")
 
-        columns_content = dedent(
-            """
-            ::: columns
-            ::: column
-            ## Python Code
-            ```python
-            def greet(name: str) -> str:
-                return f"Hello, {name}!"
-
-            print(greet("Mathis"))
-            ```
-            Caption: Eine einfache Begrüßungsfunktion
-            :::
-            ::: column
-            ## JavaScript Equivalent
-            ```javascript
-            function greet(name) {
-                return `Hello, ${name}!`;
-            }
-
-            console.log(greet("Mathis"));
-            ```
-            Caption: Die gleiche Funktion in JavaScript
-            :::
-            :::
-            """
+        base_system_prompt = page.get_notion_markdown_system_prompt()
+        human_prompt = "White me a notion Entry about web rtc and its usages for video conferencing with a fitting mermaid diagramm"
+        
+        response = await llm.ainvoke(
+            [
+                SystemMessage(content=base_system_prompt),
+                HumanMessage(content=human_prompt),
+            ]
         )
-
-        await page.append_markdown(markdown=columns_content)
+        
+        print(f"Response: {response.content}")
+        
+        markdown_appended = await page.append_markdown(markdown=response.content, append_divider=True)
+        print(f"Markdown appended: {markdown_appended}")
+        
 
     except Exception as e:
         print(f"❌ Error: {e}")

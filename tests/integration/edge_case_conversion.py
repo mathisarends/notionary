@@ -11,15 +11,12 @@ async def multiple_toggler_integrations():
 +++ 🎧 Audio Summary
     $[AI-generated audio summary](https://storage.googleapis.com/audio_summaries/ep_ai_summary_127d02ec-ca12-4312-a5ed-cb14b185480c.mp3)
 
-<!-- spacer -->
-
 ## ⬆️ Key Insights
 - The interplay between the nervous system and muscle fibers is critical for effective muscle contraction and movement coordination.
 - Adequate nutrition, particularly protein and electrolytes, coupled with proper recovery practices, is essential for optimizing muscle growth and performance.
 - Regular strength training helps offset age-related muscle decline and improves overall posture and functional movement.
 - Simple tools like grip strength measurements and heart rate variability can provide valuable insights into recovery status and training readiness.
 
-<!-- spacer -->
 ---
 
 ### 💪 1. Understanding Muscle Strength

@@ -66,7 +66,6 @@ class BlockRegistryBuilder:
             .with_audio()
             .with_mention()
             .with_paragraphs()
-            .with_columns()
             .with_toggleable_heading_element()
         ).build()
 

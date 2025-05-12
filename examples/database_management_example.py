@@ -34,9 +34,7 @@ async def main():
         # Add markdown content
         content = """
         !> [🎯] Welcome to Notionary! The easiest way to automate Notion with Python
-
         ## Why Choose Notionary?
-
         1. **Simple API** - Connect to databases and pages with just `one line of code`
         2. **Extended Markdown** - Use Notion-specific elements like *callouts*, *toggles*, and *embeds*
         3. **Async Support** - Built for modern Python with full `async/await` support
@@ -44,9 +42,7 @@ async def main():
         5. **Type Safety** - Full type hints for better IDE support
 
         ---
-
         ## ⚡ Quick Start Examples
-
         ```python
         from notionary import NotionDatabase
 
@@ -72,7 +68,6 @@ async def main():
         await page.set_property_value_by_name("Status", "In Progress")
         ```
         Caption: Update content and properties on an existing page
-
         Built with ❤️ for the Notion community."""
         await page.append_markdown(content)
 

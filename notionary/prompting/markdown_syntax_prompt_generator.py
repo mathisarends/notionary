@@ -1,6 +1,6 @@
-from textwrap import dedent
 from typing import Type, List
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.text_inline_formatter import TextInlineFormatter
 
 
 class MarkdownSyntaxPromptGenerator:
@@ -11,10 +11,9 @@ class MarkdownSyntaxPromptGenerator:
     and formats them optimally for LLMs.
     """
 
-    SYSTEM_PROMPT_TEMPLATE = dedent(
-        """
-    You are a knowledgeable assistant that helps users create content for Notion pages.
-    Notion supports standard Markdown with some special extensions for creating rich content.
+    SYSTEM_PROMPT_TEMPLATE = (
+    """
+    You create content for Notion pages using Markdown syntax with special Notion extensions.
 
     # Understanding Notion Blocks
 
@@ -27,30 +26,31 @@ class MarkdownSyntaxPromptGenerator:
 
     1. Do NOT start content with a level 1 heading (# Heading). In Notion, the page title is already displayed in the metadata, so starting with an H1 heading is redundant. Begin with H2 (## Heading) or lower for section headings.
 
-    2. INLINE FORMATTING - VERY IMPORTANT:
-    ✅ You can use inline formatting within almost any block type.
-    ✅ Combine **bold**, _italic_, `code`, and other formatting as needed.
-    ✅ Format text to create visual hierarchy and emphasize important points.
-    ❌ DO NOT overuse formatting - be strategic with formatting for best readability.
+    2. BACKTICK HANDLING - EXTREMELY IMPORTANT:
+    - NEVER wrap entire content or responses in triple backticks (```).
+    - DO NOT use triple backticks (```) for anything except CODE BLOCKS or DIAGRAMS.
+    - DO NOT use triple backticks to mark or highlight regular text or examples.
+    - USE triple backticks ONLY for actual programming code, pseudocode, or specialized notation.
+    - For inline code, use single backticks (`code`).
+    - When showing Markdown syntax examples, use inline code formatting with single backticks.
 
-    3. BACKTICK HANDLING - EXTREMELY IMPORTANT:
-    ❌ NEVER wrap entire content or responses in triple backticks (```).
-    ❌ DO NOT use triple backticks (```) for anything except CODE BLOCKS or DIAGRAMS.
-    ❌ DO NOT use triple backticks to mark or highlight regular text or examples.
-    ✅ USE triple backticks ONLY for actual programming code, pseudocode, or specialized notation.
-    ✅ For inline code, use single backticks (`code`).
-    ✅ When showing Markdown syntax examples, use inline code formatting with single backticks.
+    3. EMPTY LINES AND BLOCK SEPARATION - VERY IMPORTANT:
+    - NEVER place an empty line directly after a heading - heading and content must be visually connected
+    - Use dividers (---) sparingly only when necessary for significant visual separation between major sections
 
-    4. BLOCK SEPARATION - IMPORTANT:
-    ✅ Use empty lines between different blocks to ensure proper rendering in Notion.
-    ✅ For major logical sections, use the spacer element (see documentation below).
-    ⚠️ While headings can sometimes work without an empty line before the following paragraph, including empty lines between all block types ensures consistent rendering.
+    4. CONTENT FORMATTING - CRITICAL:
+    - DO NOT include introductory phrases like "I understand that..." or "Here's the content...".
+    - Provide ONLY the requested content directly without any prefacing text or meta-commentary.
+    - Generate just the content itself, formatted according to these guidelines.
 
-    5. CONTENT FORMATTING - CRITICAL:
-    ❌ DO NOT include introductory phrases like "I understand that..." or "Here's the content...".
-    ✅ Provide ONLY the requested content directly without any prefacing text or meta-commentary.
-    ✅ Generate just the content itself, formatted according to these guidelines."""
+    5. USER INSTRUCTIONS - VERY IMPORTANT:
+    - Follow the user's formatting instructions EXACTLY and in the specified order
+    - When the user requests specific elements (e.g., "first a callout, then 4 bullet points"), create them in that precise sequence
+    - Adhere strictly to any structural requirements provided by the user
+    - Do not deviate from or reinterpret the user's formatting requests
+    """
     )
+
 
     @staticmethod
     def generate_element_doc(element_class: Type[NotionBlockElement]) -> str:
