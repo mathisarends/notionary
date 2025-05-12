@@ -38,8 +38,15 @@ class PageContentWriter(LoggingMixin):
     async def append_markdown(self, markdown_text: str, append_divider=False) -> bool:
         """
         Append markdown text to a Notion page, automatically handling content length limits.
-
         """
+        # Check for leading whitespace in the first three lines and log a warning if found
+        first_three_lines = markdown_text.split('\n')[:3]
+        if any(line.startswith(' ') or line.startswith('\t') for line in first_three_lines):
+            self.logger.warning(
+                "Leading whitespace detected in input markdown. Consider using textwrap.dedent or similar logic: "
+                "this code is indented the wrong way, which could lead to formatting issues."
+            )
+        
         markdown_text = "\n".join(line.lstrip() for line in markdown_text.split("\n"))
 
         if append_divider and not self.block_registry.contains(DividerElement):
@@ -48,7 +55,7 @@ class PageContentWriter(LoggingMixin):
             )
             append_divider = False
 
-        # Append divider in markdonw format as it will be converted to a Notion divider block
+        # Append divider in markdown format as it will be converted to a Notion divider block
         if append_divider:
             markdown_text = markdown_text + "\n\n---\n\n"
 

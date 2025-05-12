@@ -57,7 +57,7 @@ class DividerElement(NotionBlockElement):
                 "Creates a horizontal divider line to visually separate sections of content."
             )
             .with_usage_guidelines(
-                "Use to create clear visual breaks between different sections without requiring headings."
+                "Use dividers only sparingly and only when the user explicitly asks for them. Dividers create strong visual breaks between content sections, so they should not be used unless specifically requested by the user."
             )
             .with_syntax("---")
             .with_examples(

@@ -26,8 +26,20 @@ async def main():
         llm = ChatOpenAI(model="gpt-4o-mini")
 
         base_system_prompt = page.get_notion_markdown_system_prompt()
-        human_prompt = "White me a notion Entry about web rtc and its usages for video conferencing with a fitting mermaid diagramm"
-        
+        human_prompt = """
+        Write me a comprehensive Notion entry about WebRTC and its usages for video conferencing. 
+
+        Please structure your response as follows:
+        1. Start with a clear introduction to WebRTC technology with a callout element
+        2. Explain key components and architecture
+        3. Detail specific use cases for video conferencing
+        4. Include a section with a practical code example showing basic WebRTC implementation (JavaScript)
+        5. Embed a mermaid diagram showing the WebRTC communication flow
+        6. Include a section that references a YouTube tutorial
+        7. Conclude with future trends and developments
+
+        Make the content technical but accessible. Use appropriate emojis for all headings, format code properly, and use italics for technical terms when first introduced.
+        """
         response = await llm.ainvoke(
             [
                 SystemMessage(content=base_system_prompt),
