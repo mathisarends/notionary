@@ -127,6 +127,31 @@ Notionary extends standard Markdown with special syntax to support Notion-specif
 | 3. Add content with replace_content() or append_markdown()
 ```
 
+### Multi-Column Layout
+
+```markdown
+::: columns
+::: column
+
+## Left Column
+
+- Item 1
+- Item 2
+- Item 3
+  :::
+  ::: column
+
+## Right Column
+
+This text appears in the second column. Multi-column layouts are perfect for:
+
+- Comparing features
+- Creating side-by-side content
+- Improving readability of wide content
+  :::
+  :::
+```
+
 ### Code Blocks
 
 ```python
@@ -170,6 +195,7 @@ custom_registry = (
     .with_headings()
     .with_callouts()
     .with_toggles()
+    .with_columns()  # Include multi-column support
     .with_code()
     .with_todos()
     .with_paragraphs()
@@ -179,7 +205,7 @@ custom_registry = (
 # Apply this registry to a page
 page = NotionPage.from_url("https://www.notion.so/your-page-url")
 page.block_registry = custom_registry
-ark
+
 # Replace content using only supported elements
 await page.replace_content("# Custom heading with selected elements only")
 ```
