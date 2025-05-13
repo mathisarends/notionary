@@ -1,5 +1,4 @@
 from typing import Any, Dict
-from textwrap import dedent
 
 from notionary.elements.divider_element import DividerElement
 from notionary.elements.registry.block_registry import BlockRegistry
@@ -38,17 +37,7 @@ class PageContentWriter(LoggingMixin):
     async def append_markdown(self, markdown_text: str, append_divider=False) -> bool:
         """
         Append markdown text to a Notion page, automatically handling content length limits.
-        """
-        # Check for leading whitespace in the first three lines and log a warning if found
-        first_three_lines = markdown_text.split('\n')[:3]
-        if any(line.startswith(' ') or line.startswith('\t') for line in first_three_lines):
-            self.logger.warning(
-                "Leading whitespace detected in input markdown. Consider using textwrap.dedent or similar logic: "
-                "this code is indented the wrong way, which could lead to formatting issues."
-            )
-        
-        markdown_text = "\n".join(line.lstrip() for line in markdown_text.split("\n"))
-
+        """        
         if append_divider and not self.block_registry.contains(DividerElement):
             self.logger.warning(
                 "DividerElement not registered. Appending divider skipped."
@@ -57,7 +46,9 @@ class PageContentWriter(LoggingMixin):
 
         # Append divider in markdown format as it will be converted to a Notion divider block
         if append_divider:
-            markdown_text = markdown_text + "\n\n---\n\n"
+            markdown_text = markdown_text + "\n---"
+            
+        markdown_text = self._process_markdown_whitespace(markdown_text)
 
         try:
             blocks = self._markdown_to_notion_converter.convert(markdown_text)
@@ -111,3 +102,99 @@ class PageContentWriter(LoggingMixin):
         except Exception as e:
             self.logger.error("Failed to delete block: %s", str(e))
             return False
+
+
+    def _process_markdown_whitespace(self, markdown_text: str) -> str:
+        """
+        Process markdown text to preserve code structure while removing unnecessary indentation.
+        Strips all leading whitespace from regular lines, but preserves relative indentation
+        within code blocks.
+        
+        Args:
+            markdown_text: Original markdown text with potential leading whitespace
+            
+        Returns:
+            Processed markdown text with corrected whitespace
+        """
+        lines = markdown_text.split('\n')
+        if not lines:
+            return ""
+            
+        processed_lines = []
+        in_code_block = False
+        current_code_block = []
+        
+        for line in lines:
+            # Handle code block markers
+            if self._is_code_block_marker(line):
+                if not in_code_block:
+                    # Starting a new code block
+                    in_code_block = True
+                    processed_lines.append(self._process_code_block_start(line))
+                    current_code_block = []
+                    continue
+                    
+                # Ending a code block
+                processed_lines.extend(self._process_code_block_content(current_code_block))
+                processed_lines.append('```')
+                in_code_block = False
+                continue
+                
+            # Handle code block content
+            if in_code_block:
+                current_code_block.append(line)
+                continue
+                
+            # Handle regular text
+            processed_lines.append(line.lstrip())
+        
+        # Handle unclosed code block
+        if in_code_block and current_code_block:
+            processed_lines.extend(self._process_code_block_content(current_code_block))
+            processed_lines.append('```')
+        
+        return '\n'.join(processed_lines)
+
+    def _is_code_block_marker(self, line: str) -> bool:
+        """Check if a line is a code block marker."""
+        return line.lstrip().startswith('```')
+
+    def _process_code_block_start(self, line: str) -> str:
+        """Extract and normalize the code block opening marker."""
+        language = line.lstrip().replace('```', '', 1).strip()
+        return '```' + language
+
+    def _process_code_block_content(self, code_lines: list) -> list:
+        """
+        Normalize code block indentation by removing the minimum common indentation.
+        
+        Args:
+            code_lines: List of code block content lines
+            
+        Returns:
+            List of processed code lines with normalized indentation
+        """
+        if not code_lines:
+            return []
+            
+        # Find non-empty lines to determine minimum indentation
+        non_empty_code_lines = [line for line in code_lines if line.strip()]
+        if not non_empty_code_lines:
+            return [''] * len(code_lines)  # All empty lines stay empty
+        
+        # Calculate minimum indentation
+        min_indent = min(len(line) - len(line.lstrip()) for line in non_empty_code_lines)
+        if min_indent == 0:
+            return code_lines  # No common indentation to remove
+        
+        # Process each line
+        processed_code_lines = []
+        for line in code_lines:
+            if not line.strip():
+                processed_code_lines.append('')  # Keep empty lines empty
+                continue
+                
+            # Remove exactly the minimum indentation
+            processed_code_lines.append(line[min_indent:])
+                
+        return processed_code_lines

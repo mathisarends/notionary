@@ -1,113 +1,276 @@
 import re
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional, List, Tuple, Callable
+
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.prompting.element_prompt_content import (
-    ElementPromptBuilder,
-    ElementPromptContent,
-)
+from notionary.prompting.element_prompt_content import ElementPromptContent
 
 
-# Fix Column Element
-class ColumnsElement(NotionBlockElement):
+class ColumnElement(NotionBlockElement):
     """
-    Handles conversion between Markdown column syntax and Notion column_list blocks.
+    Handles conversion between custom Markdown column syntax and Notion column blocks.
 
-    Note: Due to Notion's column structure, this element requires special handling.
-    It returns a column_list block with placeholder content, as the actual columns
-    must be added as children after the column_list is created.
+    Markdown column syntax:
+    ::: columns
+    ::: column
+    Content for first column
+    :::
+    ::: column
+    Content for second column
+    :::
+    :::
+
+    This creates a column layout in Notion with the specified content in each column.
     """
 
-    PATTERN = re.compile(
-        r"^::: columns\n((?:::: column\n(?:.*?\n)*?:::\n?)+):::\s*$",
-        re.MULTILINE | re.DOTALL,
-    )
+    COLUMNS_START = re.compile(r"^:::\s*columns\s*$")
+    COLUMN_START = re.compile(r"^:::\s*column\s*$")
+    BLOCK_END = re.compile(r"^:::\s*$")
 
-    COLUMN_PATTERN = re.compile(r"::: column\n(.*?):::", re.DOTALL)
+    _converter_callback = None
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        """Check if text contains a columns block."""
-        return bool(cls.PATTERN.search(text))
+    def set_converter_callback(
+        cls, callback: Callable[[str], List[Dict[str, Any]]]
+    ) -> None:
+        """
+        Setze die Callback-Funktion, die zum Konvertieren von Markdown zu Notion-Blöcken verwendet wird.
 
-    @classmethod
-    def match_notion(cls, block: Dict[str, Any]) -> bool:
-        """Check if block is a Notion column_list block."""
+        Args:
+            callback: Funktion, die Markdown-Text annimmt und eine Liste von Notion-Blöcken zurückgibt
+        """
+        cls._converter_callback = callback
+
+    @staticmethod
+    def match_markdown(text: str) -> bool:
+        """Check if text starts a columns block."""
+        return bool(ColumnElement.COLUMNS_START.match(text.strip()))
+
+    @staticmethod
+    def match_notion(block: Dict[str, Any]) -> bool:
+        """Check if block is a Notion column_list."""
         return block.get("type") == "column_list"
 
-    @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
-        """Convert markdown columns to Notion column_list block."""
-        match = cls.PATTERN.search(text)
-        if not match:
+    @staticmethod
+    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+        """
+        Convert markdown column syntax to Notion column blocks.
+
+        Note: This only processes the first line (columns start).
+        The full column content needs to be processed separately.
+        """
+        if not ColumnElement.COLUMNS_START.match(text.strip()):
             return None
 
-        columns_content = match.group(1)
-        column_matches = cls.COLUMN_PATTERN.findall(columns_content)
+        # Create an empty column_list block
+        # Child columns will be added by the column processor
+        return {"type": "column_list", "column_list": {"children": []}}
 
-        if not column_matches:
-            return None
-
-        return {"type": "column_list", "column_list": {}}
-
-    @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
-        """Convert Notion column_list block to markdown columns."""
+    @staticmethod
+    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+        """Convert Notion column_list block to markdown column syntax."""
         if block.get("type") != "column_list":
             return None
 
-        # In a real implementation, you'd need to fetch the child column blocks
-        # This is a placeholder showing the expected output format
-        markdown = "::: columns\n"
+        column_children = block.get("column_list", {}).get("children", [])
 
-        # Placeholder for column content extraction
-        # In reality, you'd iterate through the child blocks
-        markdown += "::: column\nColumn content here\n:::\n"
+        # Start the columns block
+        result = ["::: columns"]
 
-        markdown += ":::"
-        return markdown
+        # Process each column
+        for column_block in column_children:
+            if column_block.get("type") == "column":
+                result.append("::: column")
+
+            for _ in column_block.get("column", {}).get("children", []):
+                result.append("  [Column content]")  # Placeholder
+
+                result.append(":::")
+
+        # End the columns block
+        result.append(":::")
+
+        return "\n".join(result)
+
+    @staticmethod
+    def is_multiline() -> bool:
+        """Column blocks span multiple lines."""
+        return True
 
     @classmethod
-    def find_matches(cls, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
+    def find_matches(
+        cls, text: str, converter_callback: Optional[Callable] = None
+    ) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
-        Find all column block matches in the text and return their positions.
+        Find all column block matches in the text and return their positions and blocks.
 
         Args:
-            text: The text to search in
+            text: The input markdown text
+            converter_callback: Optional callback to convert nested content
 
         Returns:
-            List of tuples with (start_pos, end_pos, block_data)
+            List of tuples (start_pos, end_pos, block)
         """
-        matches = []
-        for match in cls.PATTERN.finditer(text):
-            block_data = cls.markdown_to_notion(match.group(0))
-            if block_data:
-                matches.append((match.start(), match.end(), block_data))
+        # Wenn ein Callback übergeben wurde, nutze diesen, sonst die gespeicherte Referenz
+        converter = converter_callback or cls._converter_callback
+        if not converter:
+            raise ValueError(
+                "No converter callback provided for ColumnElement. Call set_converter_callback first or provide converter_callback parameter."
+            )
 
-        return matches
+        matches = []
+        lines = text.split("\n")
+        i = 0
+
+        while i < len(lines):
+            # Skip non-column lines
+            if not ColumnElement.COLUMNS_START.match(lines[i].strip()):
+                i += 1
+                continue
+
+            # Process a column block and add to matches
+            column_block_info = cls._process_column_block(lines, i, converter)
+            matches.append(column_block_info)
+
+            # Skip to the end of the processed column block
+            i = column_block_info[3]  # i is returned as the 4th element in the tuple
+
+        return [(start, end, block) for start, end, block, _ in matches]
 
     @classmethod
-    def is_multiline(cls) -> bool:
-        return True
+    def _process_column_block(
+        cls, lines: List[str], start_index: int, converter_callback: Callable
+    ) -> Tuple[int, int, Dict[str, Any], int]:
+        """
+        Process a complete column block structure from the given starting line.
+
+        Args:
+            lines: All lines of the text
+            start_index: Index of the column block start line
+            converter_callback: Callback function to convert markdown to notion blocks
+
+        Returns:
+            Tuple of (start_pos, end_pos, block, next_line_index)
+        """
+        columns_start = start_index
+        columns_block = cls.markdown_to_notion(lines[start_index].strip())
+        columns_children = []
+
+        next_index = cls._collect_columns(
+            lines, start_index + 1, columns_children, converter_callback
+        )
+
+        # Add columns to the main block
+        if columns_children:
+            columns_block["column_list"]["children"] = columns_children
+
+        # Calculate positions
+        start_pos = sum(len(lines[j]) + 1 for j in range(columns_start))
+        end_pos = sum(len(lines[j]) + 1 for j in range(next_index))
+
+        return (start_pos, end_pos, columns_block, next_index)
+
+    @classmethod
+    def _collect_columns(
+        cls,
+        lines: List[str],
+        start_index: int,
+        columns_children: List[Dict[str, Any]],
+        converter_callback: Callable,
+    ) -> int:
+        """
+        Collect all columns within a column block structure.
+
+        Args:
+            lines: All lines of the text
+            start_index: Index to start collecting from
+            columns_children: List to append collected columns to
+            converter_callback: Callback function to convert column content
+
+        Returns:
+            Next line index after all columns have been processed
+        """
+        i = start_index
+        in_column = False
+        column_content = []
+
+        while i < len(lines):
+            current_line = lines[i].strip()
+
+            if cls.COLUMNS_START.match(current_line):
+                break
+
+            if cls.COLUMN_START.match(current_line):
+                cls._finalize_column(
+                    column_content, columns_children, in_column, converter_callback
+                )
+                column_content = []
+                in_column = True
+                i += 1
+                continue
+
+            if cls.BLOCK_END.match(current_line) and in_column:
+                cls._finalize_column(
+                    column_content, columns_children, in_column, converter_callback
+                )
+                column_content = []
+                in_column = False
+                i += 1
+                continue
+
+            if cls.BLOCK_END.match(current_line) and not in_column:
+                i += 1
+                break
+
+            if in_column:
+                column_content.append(lines[i])
+
+            i += 1
+
+        cls._finalize_column(
+            column_content, columns_children, in_column, converter_callback
+        )
+
+        return i
+
+    @staticmethod
+    def _finalize_column(
+        column_content: List[str],
+        columns_children: List[Dict[str, Any]],
+        in_column: bool,
+        converter_callback: Callable,
+    ) -> None:
+        """
+        Finalize a column by processing its content and adding it to the columns_children list.
+
+        Args:
+            column_content: Content lines of the column
+            columns_children: List to append the column block to
+            in_column: Whether we're currently in a column (if False, does nothing)
+            converter_callback: Callback function to convert column content
+        """
+        if not (in_column and column_content):
+            return
+
+        # Process column content using the provided callback
+        column_blocks = converter_callback("\n".join(column_content))
+
+        # Create column block
+        column_block = {"type": "column", "column": {"children": column_blocks}}
+        columns_children.append(column_block)
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
-        Returns structured LLM prompt metadata for the columns element.
+        Returns structured LLM prompt metadata for the column layout element.
         """
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Create multi-column layouts using Pandoc-style fenced divs. Perfect for side-by-side comparisons, "
-                "parallel content, or creating newsletter-style layouts. Each column can contain any markdown content "
-                "including headers, lists, images, and even nested blocks."
-            )
-            .with_usage_guidelines(
-                "Use columns when you need to present information side-by-side for comparison, create visual balance "
-                "in your layout, or organize related content in parallel. Great for pros/cons lists, before/after "
-                "comparisons, or displaying multiple related items. Keep column content balanced in length for best "
-                "visual results."
-            )
-            .with_syntax(
+        return {
+            "description": "Creates a multi-column layout that displays content side by side.",
+            "when_to_use": (
+                "Use columns sparingly, only for direct comparisons or when parallel presentation significantly improves readability. "
+                "Best for pros/cons lists, feature comparisons, or pairing images with descriptions. "
+                "Avoid overusing as it can complicate document structure."
+            ),
+            "syntax": (
                 "::: columns\n"
                 "::: column\n"
                 "Content for first column\n"
@@ -116,89 +279,29 @@ class ColumnsElement(NotionBlockElement):
                 "Content for second column\n"
                 ":::\n"
                 ":::"
-            )
-            .with_examples(
-                [
-                    # Simple two-column example
-                    "::: columns\n"
-                    "::: column\n"
-                    "### Pros\n"
-                    "- Fast performance\n"
-                    "- Easy to use\n"
-                    "- Great documentation\n"
-                    ":::\n"
-                    "::: column\n"
-                    "### Cons\n"
-                    "- Limited customization\n"
-                    "- Requires subscription\n"
-                    "- No offline mode\n"
-                    ":::\n"
-                    ":::",
-                    # Three-column example
-                    "::: columns\n"
-                    "::: column\n"
-                    "**Python**\n"
-                    "```python\n"
-                    "print('Hello')\n"
-                    "```\n"
-                    ":::\n"
-                    "::: column\n"
-                    "**JavaScript**\n"
-                    "```javascript\n"
-                    "console.log('Hello');\n"
-                    "```\n"
-                    ":::\n"
-                    "::: column\n"
-                    "**Ruby**\n"
-                    "```ruby\n"
-                    "puts 'Hello'\n"
-                    "```\n"
-                    ":::\n"
-                    ":::",
-                    # Mixed content example
-                    "::: columns\n"
-                    "::: column\n"
-                    "![Image](url)\n"
-                    "Product photo\n"
-                    ":::\n"
-                    "::: column\n"
-                    "## Product Details\n"
-                    "- Price: $99\n"
-                    "- Weight: 2kg\n"
-                    "- Color: Blue\n"
-                    "\n"
-                    "[Order Now](link)\n"
-                    ":::\n"
-                    ":::",
-                ]
-            )
-            .with_avoidance_guidelines(
-                "Avoid nesting column blocks within column blocks - this creates confusing layouts. "
-                "Don't use columns for content that should be read sequentially. Keep the number of columns "
-                "reasonable (2-4 max) for readability. Ensure each ::: marker is on its own line with proper "
-                "nesting. Don't mix column syntax with regular markdown formatting on the same line."
-            )
-            .build()
-        )
-
-    @classmethod
-    def get_column_content(cls, text: str) -> List[str]:
-        """
-        Extract the content of individual columns from the markdown.
-        This is a helper method that can be used by the implementation
-        to process column content separately.
-
-        Args:
-            text: The complete columns markdown block
-
-        Returns:
-            List of column content strings
-        """
-        match = cls.PATTERN.search(text)
-        if not match:
-            return []
-
-        columns_content = match.group(1)
-        return [
-            content.strip() for content in cls.COLUMN_PATTERN.findall(columns_content)
-        ]
+            ),
+            "examples": [
+                "::: columns\n"
+                "::: column\n"
+                "## Features\n"
+                "- Fast response time\n"
+                "- Intuitive interface\n"
+                "- Regular updates\n"
+                ":::\n"
+                "::: column\n"
+                "## Benefits\n"
+                "- Increased productivity\n"
+                "- Better collaboration\n"
+                "- Simplified workflows\n"
+                ":::\n"
+                ":::",
+                "::: columns\n"
+                "::: column\n"
+                "![Image placeholder](/api/placeholder/400/320)\n"
+                ":::\n"
+                "::: column\n"
+                "This text appears next to the image, creating a media-with-caption style layout that's perfect for documentation or articles.\n"
+                ":::\n"
+                ":::",
+            ],
+        }

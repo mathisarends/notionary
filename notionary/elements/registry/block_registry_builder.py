@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import List, Type
 from collections import OrderedDict
 
+from notionary.elements.column_element import ColumnElement
 from notionary.elements.notion_block_element import NotionBlockElement
 
 from notionary.elements.audio_element import AudioElement
@@ -27,7 +28,6 @@ from notionary.elements.toggleable_heading_element import ToggleableHeadingEleme
 from notionary.elements.video_element import VideoElement
 from notionary.elements.toggle_element import ToggleElement
 from notionary.elements.bookmark_element import BookmarkElement
-from notionary.elements.column_element import ColumnsElement
 
 
 class BlockRegistryBuilder:
@@ -267,7 +267,7 @@ class BlockRegistryBuilder:
         """
         Add support for column elements.
         """
-        return self.add_element(ColumnsElement)
+        return self.add_element(ColumnElement)
 
     def build(self) -> BlockRegistry:
         """
