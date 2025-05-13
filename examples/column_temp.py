@@ -113,10 +113,11 @@ async def main():
         :::
         :::
         """
-        
-        markdown_appended = await page.append_markdown(markdown=markdown, append_divider=True)
+
+        markdown_appended = await page.append_markdown(
+            markdown=markdown, append_divider=True
+        )
         print(f"Markdown appended: {markdown_appended}")
-        
 
     except Exception as e:
         print(f"❌ Error: {e}")

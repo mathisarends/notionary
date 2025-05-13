@@ -14,6 +14,7 @@ from notionary import NotionPage
 
 PAGE_NAME = "Jarvis Clipboard"
 
+
 # TODO: Build the prompts for that here and evaluate outcomes.
 # Export prompting module so nobody has to "merk sich stuff"
 async def main():
@@ -24,7 +25,7 @@ async def main():
     try:
         print(f"\n🔎 Finding page '{PAGE_NAME}'...")
         page = await NotionPage.from_page_name(PAGE_NAME)
-        
+
         system_prompt = page.get_notion_markdown_system_prompt()
         print(f"System prompt: {system_prompt}")
 

@@ -11,8 +11,7 @@ class MarkdownSyntaxPromptGenerator:
     and formats them optimally for LLMs.
     """
 
-    SYSTEM_PROMPT_TEMPLATE = (
-    """
+    SYSTEM_PROMPT_TEMPLATE = """
     You create content for Notion pages using Markdown syntax with special Notion extensions.
 
     # Understanding Notion Blocks
@@ -56,7 +55,6 @@ class MarkdownSyntaxPromptGenerator:
    - Format as: ## 🚀 Heading Text (with space after emoji)
    - Only omit emojis if the user explicitly instructs you not to use them
     """
-    )
 
     @staticmethod
     def generate_element_doc(element_class: Type[NotionBlockElement]) -> str:

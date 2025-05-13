@@ -128,7 +128,9 @@ class ColumnElement(NotionBlockElement):
                 continue
 
             # Process a column block and add to matches
-            column_block_info = cls._process_column_block(lines, i, converter)
+            column_block_info = cls._process_column_block(
+                lines=lines, start_index=i, converter_callback=converter
+            )
             matches.append(column_block_info)
 
             # Skip to the end of the processed column block
@@ -250,18 +252,57 @@ class ColumnElement(NotionBlockElement):
         """
         if not (in_column and column_content):
             return
+        
+        processed_content = ColumnElement._preprocess_column_content(column_content)
 
-        # Process column content using the provided callback
-        column_blocks = converter_callback("\n".join(column_content))
+        column_blocks = converter_callback("\n".join(processed_content))
 
         # Create column block
         column_block = {"type": "column", "column": {"children": column_blocks}}
         columns_children.append(column_block)
-        
+
     @classmethod
     def is_multiline(cls) -> bool:
         """Column blocks span multiple lines."""
         return True
+    
+    @staticmethod
+    def _preprocess_column_content(lines: List[str]) -> List[str]:
+        """
+        Preprocess column content to handle special cases like first headings.
+        
+        This removes any spacer markers that might have been added before the first
+        heading in a column, as each column should have its own heading context.
+        
+        Args:
+            lines: The lines of content for the column
+            
+        Returns:
+            Processed lines ready for conversion
+        """
+        from notionary.page.markdown_to_notion_converter import MarkdownToNotionConverter
+
+        processed_lines = []
+        found_first_heading = False
+        spacer_marker = MarkdownToNotionConverter.SPACER_MARKER
+        
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            
+            # Check if this is a heading line
+            if re.match(r"^(#{1,6})\s+(.+)$", line.strip()):
+                # If it's the first heading, look ahead to check for spacer
+                if not found_first_heading and i > 0 and processed_lines and processed_lines[-1] == spacer_marker:
+                    # Remove spacer before first heading in column
+                    processed_lines.pop()
+                
+                found_first_heading = True
+            
+            processed_lines.append(line)
+            i += 1
+        
+        return processed_lines
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

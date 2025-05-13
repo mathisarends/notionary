@@ -22,7 +22,7 @@ class MarkdownToNotionConverter:
         self._block_registry = (
             block_registry or BlockRegistryBuilder().create_full_registry()
         )
-        
+
         if self._block_registry.contains(ColumnElement):
             ColumnElement.set_converter_callback(self.convert)
 
@@ -33,6 +33,7 @@ class MarkdownToNotionConverter:
 
         # Preprocess markdown to add spacers before headings and dividers
         processed_markdown = self._add_spacers_before_elements(markdown_text)
+        print("Processed Markdown:", processed_markdown)
 
         # Collect all blocks with their positions in the text
         all_blocks_with_positions = self._collect_all_blocks_with_positions(
@@ -49,67 +50,133 @@ class MarkdownToNotionConverter:
         return self._process_block_spacing(blocks)
 
     def _add_spacers_before_elements(self, markdown_text: str) -> str:
-        """Add spacer markers before every heading (except the first one) and before every divider, 
-        but ignore content inside code blocks."""
-        lines = markdown_text.split('\n')
+        """Add spacer markers before every heading (except the first one) and before every divider,
+        but ignore content inside code blocks and consecutive headings."""
+        lines = markdown_text.split("\n")
         processed_lines = []
         found_first_heading = False
         in_code_block = False
-        
+        last_line_was_spacer = False
+        last_non_empty_was_heading = False
+
         i = 0
         while i < len(lines):
             line = lines[i]
-            
+
             # Check for code block boundaries and handle accordingly
             if self._is_code_block_marker(line):
                 in_code_block = not in_code_block
                 processed_lines.append(line)
+                if line.strip():  # If not empty
+                    last_non_empty_was_heading = False
+                last_line_was_spacer = False
                 i += 1
                 continue
-            
+
             # Skip processing markdown inside code blocks
             if in_code_block:
                 processed_lines.append(line)
+                if line.strip():  # If not empty
+                    last_non_empty_was_heading = False
+                last_line_was_spacer = False
                 i += 1
                 continue
-            
-            # Process line outside code blocks
-            self._process_line_for_spacers(
-                line, processed_lines, found_first_heading
+
+            # Process line with context about consecutive headings
+            result = self._process_line_for_spacers(
+                line,
+                processed_lines,
+                found_first_heading,
+                last_line_was_spacer,
+                last_non_empty_was_heading,
             )
-            
-            # Update first heading flag
-            if not found_first_heading and re.match(self.HEADING_PATTERN, line):
-                found_first_heading = True
-            
+
+            last_line_was_spacer = result["added_spacer"]
+
+            # Update tracking of consecutive headings and first heading
+            if line.strip():  # Not empty line
+                is_heading = re.match(self.HEADING_PATTERN, line) is not None
+                if is_heading:
+                    if not found_first_heading:
+                        found_first_heading = True
+                    last_non_empty_was_heading = True
+                elif line.strip() != self.SPACER_MARKER:  # Not a spacer or heading
+                    last_non_empty_was_heading = False
+
             i += 1
-        
-        return '\n'.join(processed_lines)
+
+        return "\n".join(processed_lines)
 
     def _is_code_block_marker(self, line: str) -> bool:
         """Check if a line is a code block marker (start or end)."""
-        return line.strip().startswith('```')
+        return line.strip().startswith("```")
 
     def _process_line_for_spacers(
-        self, line: str, processed_lines: List[str], found_first_heading: bool
-    ) -> None:
-        """Process a single line to add spacers before headings and dividers if needed."""
+        self,
+        line: str,
+        processed_lines: List[str],
+        found_first_heading: bool,
+        last_line_was_spacer: bool,
+        last_non_empty_was_heading: bool,
+    ) -> Dict[str, bool]:
+        """
+        Process a single line to add spacers before headings and dividers if needed.
+
+        Args:
+            line: The line to process
+            processed_lines: List of already processed lines to append to
+            found_first_heading: Whether the first heading has been found
+            last_line_was_spacer: Whether the last added line was a spacer
+            last_non_empty_was_heading: Whether the last non-empty line was a heading
+
+        Returns:
+            Dictionary with processing results
+        """
+        added_spacer = False
+        line_stripped = line.strip()
+        is_empty = not line_stripped
+
+        # Skip empty lines
+        if is_empty:
+            processed_lines.append(line)
+            return {"added_spacer": False}
+
         # Check if line is a heading
         if re.match(self.HEADING_PATTERN, line):
-            if found_first_heading:
-                # Only add a single spacer line before headings (no extra line breaks)
+            if (
+                found_first_heading
+                and not last_line_was_spacer
+                and not last_non_empty_was_heading
+            ):
+                # Add spacer only if:
+                # 1. Not the first heading
+                # 2. Last non-empty line was not a heading
+                # 3. Last line was not already a spacer
                 processed_lines.append(self.SPACER_MARKER)
-            
+                added_spacer = True
+
             processed_lines.append(line)
-        
+
         # Check if line is a divider
         elif re.match(self.DIVIDER_PATTERN, line):
-            # Only add a single spacer line before dividers (no extra line breaks)
-            processed_lines.append(self.SPACER_MARKER)
+            if not last_line_was_spacer:
+                # Only add a single spacer line before dividers (no extra line breaks)
+                processed_lines.append(self.SPACER_MARKER)
+                added_spacer = True
+
             processed_lines.append(line)
-        
+
+        # Check if this line itself is a spacer
+        elif line_stripped == self.SPACER_MARKER:
+            # Never add consecutive spacers
+            if not last_line_was_spacer:
+                processed_lines.append(line)
+                added_spacer = True
+
         else:
             processed_lines.append(line)
+
+        return {"added_spacer": added_spacer}
 
     def _collect_all_blocks_with_positions(
         self, markdown_text: str

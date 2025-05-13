@@ -126,7 +126,7 @@ class BlockRegistry:
 
         formatter_names = [e.__name__ for e in element_classes]
         if "TextInlineFormatter" not in formatter_names:
-            element_classes = element_classes +  [TextInlineFormatter]
+            element_classes = element_classes + [TextInlineFormatter]
 
         return MarkdownSyntaxPromptGenerator.generate_system_prompt(element_classes)
 

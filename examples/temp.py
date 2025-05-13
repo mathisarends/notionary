@@ -22,7 +22,7 @@ async def main():
         )
         print(f"Page found: {page.id}")
         print(f"{icon} → {title} → {url}")
-        
+
         llm = ChatOpenAI(model="gpt-4o-mini")
 
         base_system_prompt = page.get_notion_markdown_system_prompt()
@@ -46,12 +46,13 @@ async def main():
                 HumanMessage(content=human_prompt),
             ]
         )
-        
+
         print(f"Response: {response.content}")
-        
-        markdown_appended = await page.append_markdown(markdown=response.content, append_divider=True)
+
+        markdown_appended = await page.append_markdown(
+            markdown=response.content, append_divider=True
+        )
         print(f"Markdown appended: {markdown_appended}")
-        
 
     except Exception as e:
         print(f"❌ Error: {e}")
