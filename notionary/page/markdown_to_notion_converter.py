@@ -1,6 +1,7 @@
 from typing import Dict, Any, List, Optional, Tuple
 import re
 
+from notionary.elements.column_element import ColumnElement
 from notionary.elements.registry.block_registry import BlockRegistry
 from notionary.elements.registry.block_registry_builder import (
     BlockRegistryBuilder,
@@ -21,6 +22,9 @@ class MarkdownToNotionConverter:
         self._block_registry = (
             block_registry or BlockRegistryBuilder().create_full_registry()
         )
+        
+        if self._block_registry.contains(ColumnElement):
+            ColumnElement.set_converter_callback(self.convert)
 
     def convert(self, markdown_text: str) -> List[Dict[str, Any]]:
         """Convert markdown text to Notion API block format."""
@@ -45,37 +49,67 @@ class MarkdownToNotionConverter:
         return self._process_block_spacing(blocks)
 
     def _add_spacers_before_elements(self, markdown_text: str) -> str:
-        """Add spacer markers before every heading (except the first one) and before every divider."""
+        """Add spacer markers before every heading (except the first one) and before every divider, 
+        but ignore content inside code blocks."""
         lines = markdown_text.split('\n')
         processed_lines = []
         found_first_heading = False
+        in_code_block = False
         
         i = 0
         while i < len(lines):
             line = lines[i]
             
-            # Check if line is a heading
-            if re.match(self.HEADING_PATTERN, line):
-                if found_first_heading:
-                    # Only add a single spacer line before headings (no extra line breaks)
-                    processed_lines.append(self.SPACER_MARKER)
-                else:
-                    found_first_heading = True
-                
+            # Check for code block boundaries and handle accordingly
+            if self._is_code_block_marker(line):
+                in_code_block = not in_code_block
                 processed_lines.append(line)
+                i += 1
+                continue
             
-            # Check if line is a divider
-            elif re.match(self.DIVIDER_PATTERN, line):
-                # Only add a single spacer line before dividers (no extra line breaks)
-                processed_lines.append(self.SPACER_MARKER)
+            # Skip processing markdown inside code blocks
+            if in_code_block:
                 processed_lines.append(line)
+                i += 1
+                continue
             
-            else:
-                processed_lines.append(line)
+            # Process line outside code blocks
+            self._process_line_for_spacers(
+                line, processed_lines, found_first_heading
+            )
+            
+            # Update first heading flag
+            if not found_first_heading and re.match(self.HEADING_PATTERN, line):
+                found_first_heading = True
             
             i += 1
         
         return '\n'.join(processed_lines)
+
+    def _is_code_block_marker(self, line: str) -> bool:
+        """Check if a line is a code block marker (start or end)."""
+        return line.strip().startswith('```')
+
+    def _process_line_for_spacers(
+        self, line: str, processed_lines: List[str], found_first_heading: bool
+    ) -> None:
+        """Process a single line to add spacers before headings and dividers if needed."""
+        # Check if line is a heading
+        if re.match(self.HEADING_PATTERN, line):
+            if found_first_heading:
+                # Only add a single spacer line before headings (no extra line breaks)
+                processed_lines.append(self.SPACER_MARKER)
+            
+            processed_lines.append(line)
+        
+        # Check if line is a divider
+        elif re.match(self.DIVIDER_PATTERN, line):
+            # Only add a single spacer line before dividers (no extra line breaks)
+            processed_lines.append(self.SPACER_MARKER)
+            processed_lines.append(line)
+        
+        else:
+            processed_lines.append(line)
 
     def _collect_all_blocks_with_positions(
         self, markdown_text: str

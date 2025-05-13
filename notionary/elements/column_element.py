@@ -257,6 +257,11 @@ class ColumnElement(NotionBlockElement):
         # Create column block
         column_block = {"type": "column", "column": {"children": column_blocks}}
         columns_children.append(column_block)
+        
+    @classmethod
+    def is_multiline(cls) -> bool:
+        """Column blocks span multiple lines."""
+        return True
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

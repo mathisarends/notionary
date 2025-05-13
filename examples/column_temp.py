@@ -21,19 +21,98 @@ async def main():
         print(f"{icon} → {title} → {url}")
 
         markdown = """
-        Dies ist ein Text mit Einrückung.
-        - Punkt 1 mit Einrückung
-            - Unterpunkt mit noch mehr Einrückung
+        ::: columns
+        ::: column
+        # Technische Spezifikationen
+
+        Die **XYZ-5000** bietet folgende Spezifikationen:
+
+        - **Prozessor**: Quantum Core i9-12900K
+        - **Arbeitsspeicher**: 64GB DDR5-5600
+        - **Grafikkarte**: Ultra RTX 4090 Ti
+        - **Speicher**: 4TB NVMe SSD (Gen4)
+
+        > "Die schnellste Workstation, die wir je getestet haben." - TechMagazin
 
         ```python
-        def hello_world():
-            print("Hello, World!")
-            if True:
-                print("Eingerückt!")
+        # Benchmark-Ergebnisse
+        scores = {
+            'Rendering': 14500,
+            'Compilation': 9800,
+            'Machine Learning': 21300
+        }
         ```
-        
-        !> This should demonstrate a callout element.
-        """        
+        :::
+
+        ::: column
+        ## Anwendungsbereiche
+
+        1. **3D-Modellierung und Rendering**
+        * Architekturvisualisierung
+        * Produktdesign
+        * Filmproduktion
+
+        2. **Softwareentwicklung**
+        * Kompilierung großer Codebases
+        * Virtualisierung
+        * Containerisierung
+
+        3. **Datenanalyse**
+        * Big Data Processing
+        * Machine Learning Training
+        * Neural Network Inference
+
+        ---
+
+        ### Branchen-Referenzen
+
+        | Branche | Einsatzbereich | Effizienzsteigerung |
+        |---------|----------------|---------------------|
+        | Gaming  | Level-Design   | +87%                |
+        | Medizin | CT-Analyse     | +92%                |
+        | Finanz  | Risikomodelle  | +78%                |
+
+        !> Unser Support-Team steht Ihnen bei Fragen zur Implementierung zur Verfügung.
+        :::
+
+        ::: column
+        ## Preisgestaltung & Support
+
+        ### Basis-Paket
+        - Grundkonfiguration
+        - 2 Jahre Garantie
+        - Basic Support (E-Mail)
+        - 4.999 €
+
+        ### Professional-Paket
+        - Erweiterte Konfiguration
+        - 4 Jahre Garantie
+        - Premium Support (24/7)
+        - 7.499 €
+
+        ### Enterprise-Paket
+        - Maximale Konfiguration
+        - 5 Jahre Garantie
+        - Dedizierter Support-Manager
+        - Individuelle Preisgestaltung
+
+        ```javascript
+        // Finanzierungsrechner
+        function calculateMonthlyRate(price, months, interestRate) {
+            const monthlyInterest = interestRate / 12 / 100;
+            return price * monthlyInterest * Math.pow(1 + monthlyInterest, months) 
+                / (Math.pow(1 + monthlyInterest, months) - 1);
+        }
+        ```
+
+        ### Partner-Netzwerk
+        * **Frankfurt**: TechSolutions GmbH
+        * **Berlin**: DigiTech Berlin
+        * **München**: BavarianBytes AG
+        * **Hamburg**: NordBit Systems
+        :::
+        :::
+        """
         
         markdown_appended = await page.append_markdown(markdown=markdown, append_divider=True)
         print(f"Markdown appended: {markdown_appended}")
