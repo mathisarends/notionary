@@ -40,6 +40,7 @@ class ElementPromptContent:
         if not self.when_to_use:
             raise ValueError("Usage guidelines are required")
 
+
 class ElementPromptBuilder:
     """
     Builder class for creating ElementPromptContent with a fluent interface.
