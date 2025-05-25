@@ -4,7 +4,7 @@ from notionary.elements.divider_element import DividerElement
 from notionary.elements.registry.block_registry import BlockRegistry
 from notionary.notion_client import NotionClient
 
-from notionary.page.markdown_to_notion_converter import (
+from notionary.page.formatting.markdown_to_notion_converter import (
     MarkdownToNotionConverter,
 )
 from notionary.page.notion_to_markdown_converter import (

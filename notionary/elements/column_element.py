@@ -2,6 +2,7 @@ import re
 from typing import Dict, Any, Optional, List, Tuple, Callable
 
 from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.page.formatting.spacer_rules import SPACER_MARKER
 from notionary.prompting.element_prompt_content import ElementPromptBuilder, ElementPromptContent
 
 
@@ -280,11 +281,10 @@ class ColumnElement(NotionBlockElement):
         Returns:
             Processed lines ready for conversion
         """
-        from notionary.page.markdown_to_notion_converter import MarkdownToNotionConverter
+        from notionary.page.formatting.markdown_to_notion_converter import MarkdownToNotionConverter
 
         processed_lines = []
         found_first_heading = False
-        spacer_marker = MarkdownToNotionConverter.SPACER_MARKER
         
         i = 0
         while i < len(lines):
@@ -293,7 +293,7 @@ class ColumnElement(NotionBlockElement):
             # Check if this is a heading line
             if re.match(r"^(#{1,6})\s+(.+)$", line.strip()):
                 # If it's the first heading, look ahead to check for spacer
-                if not found_first_heading and i > 0 and processed_lines and processed_lines[-1] == spacer_marker:
+                if not found_first_heading and i > 0 and processed_lines and processed_lines[-1] == SPACER_MARKER:
                     # Remove spacer before first heading in column
                     processed_lines.pop()
                 
