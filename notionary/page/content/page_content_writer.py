@@ -44,7 +44,7 @@ class PageContentWriter(LoggingMixin):
             )
             append_divider = False
 
-        # Append divider in markdown format as it will be converted to a Notion divider block (eher davor als danach wie ich finde.)
+        # Append divider in markdown format as it will be converted to a Notion divider block
         if append_divider:
             markdown_text = markdown_text + "---\n"
 

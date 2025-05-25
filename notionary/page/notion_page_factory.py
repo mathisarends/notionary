@@ -14,6 +14,8 @@ class NotionPageFactory(LoggingMixin):
 
     MATCH_THRESHOLD = 0.6
     MAX_SUGGESTIONS = 5
+    PAGE_SIZE = 100
+    EARLY_STOP_THRESHOLD = 0.95
 
     @classmethod
     def from_page_id(cls, page_id: str, token: Optional[str] = None) -> NotionPage:
@@ -58,18 +60,14 @@ class NotionPageFactory(LoggingMixin):
         client = NotionClient(token=token)
 
         try:
-            # Fetch pages
-            pages = await cls._search_pages(client)
-            if not pages:
-                cls.logger.warning("No pages found matching '%s'", page_name)
-                raise ValueError(f"No pages found matching '{page_name}'")
-
-            # Find best match
-            best_match, best_score, suggestions = cls._find_best_match(pages, page_name)
+            # Search with pagination and early stopping
+            best_match, best_score, all_suggestions = await cls._search_pages_with_matching(
+                client, page_name
+            )
 
             # Check if match is good enough
             if best_score < cls.MATCH_THRESHOLD or not best_match:
-                suggestion_msg = cls._format_suggestions(suggestions)
+                suggestion_msg = cls._format_suggestions(all_suggestions)
                 cls.logger.warning(
                     "No good match found for '%s'. Best score: %.2f",
                     page_name,
@@ -105,22 +103,153 @@ class NotionPageFactory(LoggingMixin):
             raise
 
     @classmethod
-    async def _search_pages(cls, client: NotionClient) -> List[Dict[str, Any]]:
-        """Search for pages using the Notion API."""
-        cls.logger.debug("Using search endpoint to find pages")
+    async def _search_pages_with_matching(
+        cls, client: NotionClient, query: str
+    ) -> Tuple[Optional[Dict[str, Any]], float, List[str]]:
+        """
+        Search for pages with pagination and find the best match.
+        Includes early stopping for performance optimization.
+        """
+        cls.logger.debug("Starting paginated search for query: %s", query)
+        
+        best_match = None
+        best_score = 0
+        all_suggestions = []
+        page_count = 0
+        
+        # Track suggestions across all pages
+        all_matches = []
+        
+        next_cursor = None
+        
+        while True:
+            # Fetch current page batch
+            pages_batch = await cls._fetch_pages_batch(client, next_cursor)
+            
+            if not pages_batch:
+                cls.logger.debug("No more pages to fetch")
+                break
+                
+            pages = pages_batch.get("results", [])
+            page_count += len(pages)
+            cls.logger.debug("Processing batch of %d pages (total processed: %d)", 
+                           len(pages), page_count)
+            
+            # Process current batch
+            batch_match, batch_score, batch_suggestions = cls._find_best_match_in_batch(
+                pages, query, best_score
+            )
+            
+            # Update global best if we found a better match
+            if batch_score > best_score:
+                best_score = batch_score
+                best_match = batch_match
+                cls.logger.debug("New best match found with score: %.2f", best_score)
+            
+            # Collect all matches for suggestions
+            for page in pages:
+                title = cls._extract_title_from_page(page)
+                score = SequenceMatcher(None, query.lower(), title.lower()).ratio()
+                all_matches.append((title, score))
+            
+            # Early stopping: if we found a very good match, stop searching
+            if best_score >= cls.EARLY_STOP_THRESHOLD:
+                cls.logger.info(
+                    "Early stopping: found excellent match with score %.2f", best_score
+                )
+                break
+            
+            # Check for next page
+            next_cursor = pages_batch.get("next_cursor")
+            if not next_cursor:
+                cls.logger.debug("Reached end of pages")
+                break
+        
+        # Generate final suggestions from all matches
+        all_matches.sort(key=lambda x: x[1], reverse=True)
+        all_suggestions = [title for title, _ in all_matches[:cls.MAX_SUGGESTIONS]]
+        
+        cls.logger.info(
+            "Search completed. Processed %d pages. Best score: %.2f", 
+            page_count, best_score
+        )
+        
+        return best_match, best_score, all_suggestions
 
+    @classmethod
+    async def _fetch_pages_batch(
+        cls, client: NotionClient, next_cursor: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Fetch a single batch of pages from the Notion API."""
         search_payload = {
             "filter": {"property": "object", "value": "page"},
-            "page_size": 100,
+            "page_size": cls.PAGE_SIZE,
         }
+        
+        if next_cursor:
+            search_payload["start_cursor"] = next_cursor
+        
+        try:
+            response = await client.post("search", search_payload)
+            
+            if not response:
+                cls.logger.error("Empty response from search endpoint")
+                return {}
+                
+            return response
+            
+        except Exception as e:
+            cls.logger.error("Error fetching pages batch: %s", str(e))
+            raise
 
-        response = await client.post("search", search_payload)
+    @classmethod
+    def _find_best_match_in_batch(
+        cls, pages: List[Dict[str, Any]], query: str, current_best_score: float
+    ) -> Tuple[Optional[Dict[str, Any]], float, List[str]]:
+        """Find the best matching page in a single batch."""
+        batch_best_match = None
+        batch_best_score = current_best_score
+        
+        for page in pages:
+            title = cls._extract_title_from_page(page)
+            score = SequenceMatcher(None, query.lower(), title.lower()).ratio()
+            
+            if score > batch_best_score:
+                batch_best_score = score
+                batch_best_match = page
+        
+        # Get batch suggestions (not used in the main algorithm but kept for compatibility)
+        batch_suggestions = []
+        
+        return batch_best_match, batch_best_score, batch_suggestions
 
-        if not response or "results" not in response:
-            cls.logger.error("Failed to fetch pages using search endpoint")
-            raise ValueError("Failed to fetch pages using search endpoint")
-
-        return response.get("results", [])
+    @classmethod
+    async def _search_pages(cls, client: NotionClient) -> List[Dict[str, Any]]:
+        """
+        Legacy method - kept for backward compatibility.
+        Now uses the paginated approach internally.
+        """
+        cls.logger.warning(
+            "_search_pages is deprecated. Use _search_pages_with_matching instead."
+        )
+        
+        all_pages = []
+        next_cursor = None
+        
+        while True:
+            batch = await cls._fetch_pages_batch(client, next_cursor)
+            if not batch:
+                break
+                
+            pages = batch.get("results", [])
+            all_pages.extend(pages)
+            
+            next_cursor = batch.get("next_cursor")
+            if not next_cursor:
+                break
+        
+        cls.logger.info("Loaded %d total pages", len(all_pages))
+        return all_pages
 
     @classmethod
     def _find_best_match(
