@@ -2,7 +2,7 @@ import re
 from typing import Dict, Any, Optional, List, Tuple, Callable
 
 from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.prompting.element_prompt_content import ElementPromptContent
+from notionary.prompting.element_prompt_content import ElementPromptBuilder, ElementPromptContent
 
 
 class ColumnElement(NotionBlockElement):
@@ -309,14 +309,19 @@ class ColumnElement(NotionBlockElement):
         """
         Returns structured LLM prompt metadata for the column layout element.
         """
-        return {
-            "description": "Creates a multi-column layout that displays content side by side.",
-            "when_to_use": (
+        return (
+            ElementPromptBuilder()
+            .with_description(
+                "Creates a multi-column layout that displays content side by side."
+            )
+            .with_usage_guidelines(
                 "Use columns sparingly, only for direct comparisons or when parallel presentation significantly improves readability. "
-                "Best for pros/cons lists, feature comparisons, or pairing images with descriptions. "
-                "Avoid overusing as it can complicate document structure."
-            ),
-            "syntax": (
+                "Best for pros/cons lists, feature comparisons, or pairing images with descriptions."
+            )
+            .with_avoidance_guidelines(
+                "Avoid overusing as it can complicate document structure. Do not use for simple content that works better in linear format."
+            )
+            .with_syntax(
                 "::: columns\n"
                 "::: column\n"
                 "Content for first column\n"
@@ -325,8 +330,8 @@ class ColumnElement(NotionBlockElement):
                 "Content for second column\n"
                 ":::\n"
                 ":::"
-            ),
-            "examples": [
+            )
+            .with_examples([
                 "::: columns\n"
                 "::: column\n"
                 "## Features\n"
@@ -341,13 +346,15 @@ class ColumnElement(NotionBlockElement):
                 "- Simplified workflows\n"
                 ":::\n"
                 ":::",
+                
                 "::: columns\n"
                 "::: column\n"
                 "![Image placeholder](/api/placeholder/400/320)\n"
                 ":::\n"
                 "::: column\n"
-                "This text appears next to the image, creating a media-with-caption style layout that's perfect for documentation or articles.\n"
+                "This text appears next to the image, creating a media-with-caption style layout.\n"
                 ":::\n"
-                ":::",
-            ],
-        }
+                ":::"
+            ])
+            .build()
+        )

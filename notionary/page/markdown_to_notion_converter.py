@@ -86,7 +86,6 @@ class MarkdownToNotionConverter:
             result = self._process_line_for_spacers(
                 line,
                 processed_lines,
-                found_first_heading,
                 last_line_was_spacer,
                 last_non_empty_was_heading,
             )
@@ -115,7 +114,6 @@ class MarkdownToNotionConverter:
         self,
         line: str,
         processed_lines: List[str],
-        found_first_heading: bool,
         last_line_was_spacer: bool,
         last_non_empty_was_heading: bool,
     ) -> Dict[str, bool]:
@@ -143,15 +141,21 @@ class MarkdownToNotionConverter:
 
         # Check if line is a heading
         if re.match(self.HEADING_PATTERN, line):
+            # Check if there's content before this heading (excluding spacers)
+            has_content_before = any(
+                processed_line.strip() and processed_line.strip() != self.SPACER_MARKER 
+                for processed_line in processed_lines
+            )
+            
             if (
-                found_first_heading
+                has_content_before
                 and not last_line_was_spacer
                 and not last_non_empty_was_heading
             ):
-                # Add spacer only if:
-                # 1. Not the first heading
-                # 2. Last non-empty line was not a heading
-                # 3. Last line was not already a spacer
+                # Add spacer if:
+                # 1. There's content before this heading
+                # 2. Last line was not already a spacer
+                # 3. Last non-empty line was not a heading
                 processed_lines.append(self.SPACER_MARKER)
                 added_spacer = True
 

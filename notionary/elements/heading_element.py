@@ -85,6 +85,9 @@ class HeadingElement(NotionBlockElement):
             .with_usage_guidelines(
                 "Use to group content into sections and define a visual hierarchy."
             )
+            .with_avoidance_guidelines(
+                "Only H1-H3 syntax is supported. H4 and deeper heading levels are not available."
+            )
             .with_syntax("## Your Heading Text")
             .with_standard_markdown()
             .build()

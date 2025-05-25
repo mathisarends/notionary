@@ -1,63 +1,56 @@
-import logging
+"""
+# Notionary: Page Management Example
+===================================
+
+This example demonstrates how to find and modify Notion pages,
+including content updates, property changes, and formatting.
+
+IMPORTANT: Replace PAGE_NAME with the name of an existing Notion page.
+The factory will use fuzzy matching to find the closest match to this name.
+"""
+
 import asyncio
-import traceback
 from notionary import NotionPage
 
-from langchain_openai import ChatOpenAI
-from langchain.schema import HumanMessage, SystemMessage
+PAGE_NAME = "Jarvis Clipboard"
 
 
 async def main():
-    """Tests batch processing by appending many blocks to a Notion page."""
-
-    logger = logging.getLogger("notionary")
-    logger.setLevel(logging.DEBUG)
+    """Demonstrate page operations with Notionary."""
+    print("📄 Notionary Page Example")
+    print("========================")
 
     try:
-        print("Searching for page by name...")
-        page = await NotionPage.from_page_name("Jarvis Clipboard")
+        print(f"\n🔎 Finding page '{PAGE_NAME}'...")
+        page = await NotionPage.from_page_name(PAGE_NAME)
 
-        icon, title, url = await asyncio.gather(
-            page.get_icon(), page.get_title(), page.get_url()
-        )
-        print(f"Page found: {page.id}")
-        print(f"{icon} → {title} → {url}")
+        print("✨ Updating page properties...")
 
-        llm = ChatOpenAI(model="gpt-4o-mini")
+        prompt = page.get_notion_markdown_system_prompt()
+        print(f"📝 System Prompt:\n{prompt}\n")
+        
+        markdown = """        
+!> [📝] Key insight: Understanding the critical components of a successful SaaS engineering concept requires focusing on both market validation and technical structuring.
 
-        base_system_prompt = page.get_notion_markdown_system_prompt()
-        human_prompt = """
-        Write me a comprehensive Notion entry about WebRTC and its usages for video conferencing. 
+- Proven Market Value: Ensure there is a demand and willingness to pay.
+- **Focus on UI First:** Prioritize user interface development.
+- Supabase: Supports MCP with cursor functionality.
+- Implement effective cursor rules for efficient operation.
 
-        Please structure your response as follows:
-        1. Start with a clear introduction to WebRTC technology with a callout element
-        2. Explain key components and architecture
-        3. Detail specific use cases for video conferencing
-        4. Include a section with a practical code example showing basic WebRTC implementation (JavaScript)
-        5. Embed a mermaid diagram showing the WebRTC communication flow
-        6. Include a section that references a YouTube tutorial
-        7. Conclude with future trends and developments
-
-        Make the content technical but accessible. Use appropriate emojis for all headings, format code properly, and use italics for technical terms when first introduced.
-        """
-        response = await llm.ainvoke(
-            [
-                SystemMessage(content=base_system_prompt),
-                HumanMessage(content=human_prompt),
-            ]
-        )
-
-        print(f"Response: {response.content}")
-
-        markdown_appended = await page.append_markdown(
-            markdown=response.content, append_divider=True
-        )
-        print(f"Markdown appended: {markdown_appended}")
+### 🚀 Schrittweise
+- **UI:** Begin with user interface design.
+- **Datamodell:** Develop a robust data model.
+- **Connect:** Establish necessary connections and integrations.
+- **Polish:** Refine and enhance the application.
+"""
+        
+        await page.append_markdown(markdown, append_divider=True)
 
     except Exception as e:
         print(f"❌ Error: {e}")
-        print(f"Traceback: {traceback.format_exc()}")
 
 
 if __name__ == "__main__":
+    print("🚀 Starting Notionary page example...")
     asyncio.run(main())
+    print("✅ Example completed!")
