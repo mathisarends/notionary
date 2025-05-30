@@ -152,6 +152,36 @@ class NotionClient(LoggingMixin):
         result = await self._make_request(HttpMethod.DELETE, endpoint)
         return result is not None
 
+    async def upload_file(self, file_path: str, max_part_size=20*1024*1024) -> dict:
+        upload = await self._create_file_upload(file_path, max_part_size)
+        file_upload_id = upload["id"]
+        num_parts = upload["number_of_parts"]["total"]
+
+        with open(file_path, "rb") as f:
+            for part_number in range(1, num_parts + 1):
+                part_data = f.read(max_part_size)
+                await self._send_file_part(file_upload_id, part_number, part_data)
+        return await self._complete_file_upload(file_upload_id)
+
+    async def _create_file_upload(self, filename: str, max_part_size: int) -> Optional[Dict[str, Any]]:
+        data = {
+            "mode": "multi_part",
+            "filename": filename,
+            "content_type": mimetypes.guess_type(filename)[0] or 'application/octet-stream',
+            "number_of_parts": math.ceil(os.path.getsize(filename) / max_part_size)
+        }
+        return await self.post("/file_uploads", data=data)
+
+    async def _send_file_part(self, file_upload_id: str, part_number: int, file_part_data: bytes) -> dict:
+        url = f"{self.BASE_URL}/file_uploads/{file_upload_id}/send"
+        data = {"part_number": str(part_number)}
+        headers = {"Content-Type": "multipart/form-data; boundary=9fec9660cb6f09b74688cba7c1e14ee0"}
+        return await self.client.post(url, data=data, files={"file": file_part_data}, headers=headers)
+
+    async def _complete_file_upload(self, file_upload_id: str) -> dict:
+        url = f"/file_uploads/{file_upload_id}/complete"
+        return await self.post(url)
+
     async def _make_request(
         self,
         method: Union[HttpMethod, str],
