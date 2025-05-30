@@ -29,6 +29,7 @@ class TextInlineFormatter:
         (r"~~(.+?)~~", {"strikethrough": True}),
         (r"`(.+?)`", {"code": True}),
         (r"\[(.+?)\]\((.+?)\)", {"link": True}),
+        (r"@\[([0-9a-f-]+)\]", {"mention": True}),
     ]
 
     @classmethod
@@ -87,10 +88,14 @@ class TextInlineFormatter:
                     cls._create_text_element(remaining_text[:earliest_pos], {})
                 )
 
-            elif "link" in earliest_format:
+            if "link" in earliest_format:
                 content = earliest_match.group(1)
                 url = earliest_match.group(2)
                 segments.append(cls._create_link_element(content, url))
+
+            elif "mention" in earliest_format:
+                id = earliest_match.group(1)
+                segments.append(cls._create_mention_element(id))
 
             else:
                 content = earliest_match.group(1)
@@ -150,6 +155,23 @@ class TextInlineFormatter:
             "text": {"content": text, "link": {"url": url}},
             "annotations": cls._default_annotations(),
             "plain_text": text,
+        }
+
+    @classmethod
+    def _create_mention_element(cls, id: str) -> Dict[str, Any]:
+        """
+        Create a Notion mention element.
+
+        Args:
+            id: The page ID
+
+        Returns:
+            Notion rich_text element with mention
+        """
+        return {
+            "type": "mention",
+            "mention": {"type": "page", "page": {"id": id}},
+            "annotations": cls._default_annotations(),
         }
 
     @classmethod
