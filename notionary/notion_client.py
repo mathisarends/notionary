@@ -4,6 +4,7 @@ import weakref
 from enum import Enum
 from typing import Dict, Any, Optional, Union
 import httpx
+import mimetypes
 from dotenv import load_dotenv
 from notionary.models.notion_database_response import NotionDatabaseResponse
 from notionary.models.notion_page_response import NotionPageResponse
