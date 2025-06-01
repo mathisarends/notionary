@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import os
 import math
 import mimetypes
@@ -69,9 +68,7 @@ class NotionFileUploader(LoggingMixin):
                     return result
             except httpx.ReadTimeout:
                 retries -= 1
-                self.logger.warning(
-                    f"Timeout during single-part upload, retrying"
-                )
+                self.logger.warning("Timeout during single-part upload, retrying")
             except Exception as e:
                 self.logger.warning(
                     f"Single-part upload failed, trying multi-part: {e}"
@@ -236,18 +233,21 @@ class NotionFileUploader(LoggingMixin):
                 # Explicit content type and boundary are needed because of bug in the httpx package
                 # that strips the auto-generated boundary from the header erroneously, causing Notion to
                 # refuse the upload.
-                headers = {"Content-Type": "multipart/form-data; boundary=9fec9660cb6f09b74688cba7c1e14ee0"}
-                response = await self.notion_client.client.post(url, data=data, files=files, headers=headers)
+                headers = {
+                    "Content-Type": "multipart/form-data; boundary=9fec9660cb6f09b74688cba7c1e14ee0"
+                }
+                response = await self.notion_client.client.post(
+                    url, data=data, files=files, headers=headers
+                )
                 response.raise_for_status()
                 return True
             except httpx.ReadTimeout:
                 retries -= 1
-                self.logger.warning(
-                    f"Timeout during multi-part upload, retrying"
-                )
+                self.logger.warning("Timeout during multi-part upload, retrying")
             except Exception:
                 return False
         return False
+
     async def _complete_file_upload(
         self, file_upload_id: str
     ) -> Optional[NotionFileUploadResponse]:

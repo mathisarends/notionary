@@ -25,12 +25,12 @@ async def main():
         file_path = os.path.join(script_dir, "res", "picture.jpg")
 
         print(f"📤 Uploading: {os.path.basename(file_path)}...")
-        
+
         upload_result = await client.upload_file(file_path=file_path)
 
         if upload_result:
             filename = upload_result.filename or os.path.basename(file_path)
-            
+
             print(f"✅ Upload ID: {upload_result.id}")
             print(f"📁 File: {filename} • Status: {upload_result.status}")
         else:
