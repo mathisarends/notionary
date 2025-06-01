@@ -4,8 +4,8 @@ import json
 import os
 import math
 import mimetypes
-from typing import Optional, TYPE_CHECKING
 import httpx
+from typing import Optional, TYPE_CHECKING
 from notionary.models.notion_file_upload_response import NotionFileUploadResponse
 from notionary.util.logging_mixin import LoggingMixin
 
@@ -54,18 +54,24 @@ class NotionFileUploader(LoggingMixin):
             self.logger.error(f"File not found: {file_path}")
             return None
 
+        retries = 3
         file_size = os.path.getsize(file_path)
         file_size_mb = file_size / (1024 * 1024)
 
         self.logger.info(f"Starting upload: {file_path} ({file_size_mb:.2f}MB)")
 
         # Use single-part for smaller files unless explicitly forced to multi-part
-        if not force_multipart and file_size <= 20 * 1024 * 1024:
+        while retries > 0 and not force_multipart and file_size <= 20 * 1024 * 1024:
             try:
                 result = await self._upload_single_part(file_path)
                 if result:
                     self.logger.info(f"Single-part upload successful: {file_path}")
                     return result
+            except httpx.ReadTimeout:
+                retries -= 1
+                self.logger.warning(
+                    f"Timeout during single-part upload, retrying"
+                )
             except Exception as e:
                 self.logger.warning(
                     f"Single-part upload failed, trying multi-part: {e}"
@@ -220,18 +226,28 @@ class NotionFileUploader(LoggingMixin):
         Returns:
             True if part was uploaded successfully, False otherwise.
         """
+        retries = 3
         url = f"{self.notion_client.BASE_URL}/file_uploads/{file_upload_id}/send"
 
-        try:
-            files = {"file": file_part_data}
-            data = {"part_number": str(part_number)}
-            response = await self.notion_client.client.post(url, data=data, files=files)
-            response.raise_for_status()
-            return True
-
-        except Exception:
-            return False
-
+        while retries > 0:
+            try:
+                files = {"file": file_part_data}
+                data = {"part_number": str(part_number)}
+                # Explicit content type and boundary are needed because of bug in the httpx package
+                # that strips the auto-generated boundary from the header erroneously, causing Notion to
+                # refuse the upload.
+                headers = {"Content-Type": "multipart/form-data; boundary=9fec9660cb6f09b74688cba7c1e14ee0"}
+                response = await self.notion_client.client.post(url, data=data, files=files, headers=headers)
+                response.raise_for_status()
+                return True
+            except httpx.ReadTimeout:
+                retries -= 1
+                self.logger.warning(
+                    f"Timeout during multi-part upload, retrying"
+                )
+            except Exception:
+                return False
+        return False
     async def _complete_file_upload(
         self, file_upload_id: str
     ) -> Optional[NotionFileUploadResponse]:
