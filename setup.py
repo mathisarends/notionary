@@ -4,7 +4,12 @@ setup(
     name="notionary",
     version="0.2.10",
     packages=find_namespace_packages(include=["notionary*"]),
-    install_requires=["httpx>=0.28.0", "python-dotenv>=1.1.0", "pydantic>=2.11.4"],
+    install_requires=[
+        "httpx>=0.28.0", 
+        "python-dotenv>=1.1.0", 
+        "pydantic>=2.11.4",
+        "posthog>=3.0.0",
+    ],
     author="Mathis Arends",
     author_email="mathisarends27@gmail.com",
     description="A toolkit to convert between Markdown and Notion blocks",

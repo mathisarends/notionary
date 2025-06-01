@@ -1,3 +1,5 @@
+__version__ = "0.2.10"
+
 from .notion_client import NotionClient
 
 from .database.notion_database import NotionDatabase
@@ -11,6 +13,10 @@ from .elements.registry.block_registry import BlockRegistry
 from .elements.registry.block_registry_builder import (
     BlockRegistryBuilder,
 )
+
+# init telemetry
+from .telemetry.telemetry import NotionaryTelemetry
+_telemetry = NotionaryTelemetry()
 
 __all__ = [
     "NotionClient",

@@ -1,9 +1,0 @@
-2025-05-05 20:51:58,863 - notionary - INFO - Starting Notion page relation test
-2025-05-05 20:51:58,863 - notionary - INFO - Searching for page by name...
-2025-05-05 20:52:00,790 - notionary - DEBUG - Page ID: 1e4389d5-7bd3-8070-8761-f02379c0b85b
-2025-05-05 20:52:00,790 - notionary - DEBUG - Relation manager: <notionary.page.relations.notion_page_relation_manager.NotionRelationManager object at 0x000002988CD4FAD0>
-2025-05-05 20:52:00,790 - notionary - INFO - Attempting to add relations for page titles: ['Thesis', 'Vizro']
-2025-05-05 20:52:10,414 - notionary - DEBUG - Existing relations for 'Projekte': ['Thesis']
-2025-05-05 20:52:14,132 - notionary - INFO - Result of add_relations_by_name: Error: Failed to update relation (no API response)
-2025-05-05 20:52:14,531 - notionary - INFO - Starting Notion page relation test
-2025-05-05 20:52:14,531 - notionary - INFO - Searching for page by name...
