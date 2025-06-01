@@ -87,7 +87,7 @@ class TextInlineFormatter:
                     cls._create_text_element(remaining_text[:earliest_pos], {})
                 )
 
-            elif "link" in earliest_format:
+            if "link" in earliest_format:
                 content = earliest_match.group(1)
                 url = earliest_match.group(2)
                 segments.append(cls._create_link_element(content, url))
