@@ -1,13 +1,13 @@
 from typing import Dict, Any, Optional
 
-from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.elements.notion_block_element import NotionBlockElement, auto_track_conversions
 from notionary.prompting.element_prompt_content import (
     ElementPromptBuilder,
     ElementPromptContent,
 )
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
-
+@auto_track_conversions
 class ParagraphElement(NotionBlockElement):
     """Handles conversion between Markdown paragraphs and Notion paragraph blocks."""
 
