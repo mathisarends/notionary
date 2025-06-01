@@ -11,6 +11,7 @@ SPACER_MARKER = "---spacer---"
 
 class LineType(Enum):
     """Enum for different line types"""
+
     EMPTY = "empty"
     HEADING = "heading"
     DIVIDER = "divider"
@@ -24,6 +25,7 @@ class LineType(Enum):
 @dataclass
 class LineContext:
     """Context of a line for spacer rule application"""
+
     line: str
     line_number: int
     line_type: LineType
@@ -39,6 +41,7 @@ class LineContext:
 @dataclass
 class SpacerDecision:
     """Decision about inserting a spacer"""
+
     should_add_spacer: bool
     reason: str
     rule_name: str
@@ -47,6 +50,7 @@ class SpacerDecision:
 @dataclass
 class ProcessingResult:
     """Result of processing a single line"""
+
     output_lines: List[str]
     new_state: Dict[str, Any]
     spacer_added: bool = False
@@ -192,27 +196,29 @@ class CodeBlockSpacerRule(SpacerRule):
 
 class StateBuilder:
     """Builder for creating and updating state"""
-    
+
     def __init__(self, initial_state: Dict[str, Any]):
         self._state = initial_state.copy()
-    
+
     def toggle_code_block(self) -> StateBuilder:
         """Toggle the code block state"""
         self._state["in_code_block"] = not self._state.get("in_code_block", False)
         return self
-    
+
     def set_last_line_was_spacer(self, value: bool) -> StateBuilder:
         """Set whether the last line was a spacer"""
         self._state["last_line_was_spacer"] = value
         return self
-    
-    def update_content_tracking(self, line_type: LineType, has_content: bool) -> StateBuilder:
+
+    def update_content_tracking(
+        self, line_type: LineType, has_content: bool
+    ) -> StateBuilder:
         """Update content tracking state"""
         if has_content:
-            self._state["last_non_empty_was_heading"] = (line_type == LineType.HEADING)
+            self._state["last_non_empty_was_heading"] = line_type == LineType.HEADING
             self._state["has_content_before"] = True
         return self
-    
+
     def build(self) -> Dict[str, Any]:
         """Build the final state"""
         return self._state
@@ -220,12 +226,12 @@ class StateBuilder:
 
 class LineProcessor(ABC):
     """Abstract processor for different line types"""
-    
+
     @abstractmethod
     def can_process(self, line_type: LineType) -> bool:
         """Check if this processor can handle the line type"""
         pass
-    
+
     @abstractmethod
     def process(self, context: LineContext, state: Dict[str, Any]) -> ProcessingResult:
         """Process the line and return the result"""
@@ -234,136 +240,126 @@ class LineProcessor(ABC):
 
 class EmptyLineProcessor(LineProcessor):
     """Processor for empty lines"""
-    
+
     def can_process(self, line_type: LineType) -> bool:
         return line_type == LineType.EMPTY
-    
+
     def process(self, context: LineContext, state: Dict[str, Any]) -> ProcessingResult:
-        new_state = (StateBuilder(state)
-                    .set_last_line_was_spacer(False)
-                    .build())
-        
-        return ProcessingResult(
-            output_lines=[context.line],
-            new_state=new_state
-        )
+        new_state = StateBuilder(state).set_last_line_was_spacer(False).build()
+
+        return ProcessingResult(output_lines=[context.line], new_state=new_state)
 
 
 class CodeBlockMarkerProcessor(LineProcessor):
     """Processor for code block markers"""
-    
+
     def can_process(self, line_type: LineType) -> bool:
         return line_type == LineType.CODE_BLOCK_MARKER
-    
+
     def process(self, context: LineContext, state: Dict[str, Any]) -> ProcessingResult:
-        new_state = (StateBuilder(state)
-                    .toggle_code_block()
-                    .set_last_line_was_spacer(False)
-                    .update_content_tracking(context.line_type, bool(context.content))
-                    .build())
-        
-        return ProcessingResult(
-            output_lines=[context.line],
-            new_state=new_state
+        new_state = (
+            StateBuilder(state)
+            .toggle_code_block()
+            .set_last_line_was_spacer(False)
+            .update_content_tracking(context.line_type, bool(context.content))
+            .build()
         )
+
+        return ProcessingResult(output_lines=[context.line], new_state=new_state)
 
 
 class SpacerMarkerProcessor(LineProcessor):
     """Processor for spacer marker lines"""
-    
+
     def __init__(self, spacer_marker: str, rules: List[SpacerRule]):
         self.spacer_marker = spacer_marker
         self.rules = rules
-    
+
     def can_process(self, line_type: LineType) -> bool:
         return line_type == LineType.SPACER_MARKER
-    
+
     def process(self, context: LineContext, state: Dict[str, Any]) -> ProcessingResult:
         # Apply spacer rules
         spacer_decision = self._get_spacer_decision(context)
-        
+
         output_lines = []
         spacer_added = False
-        
+
         if spacer_decision.should_add_spacer:
             output_lines.append(context.line)
             spacer_added = True
-        
-        new_state = (StateBuilder(state)
-                    .set_last_line_was_spacer(spacer_added)
-                    .build())
-        
+
+        new_state = StateBuilder(state).set_last_line_was_spacer(spacer_added).build()
+
         return ProcessingResult(
-            output_lines=output_lines,
-            new_state=new_state,
-            spacer_added=spacer_added
+            output_lines=output_lines, new_state=new_state, spacer_added=spacer_added
         )
-    
+
     def _get_spacer_decision(self, context: LineContext) -> SpacerDecision:
         """Get spacer decision from rules"""
         for rule in self.rules:
             if rule.applies_to(context):
                 return rule.should_add_spacer(context)
-        
+
         # Default: don't add spacer
         return SpacerDecision(False, "No applicable rule found", "DefaultRule")
 
 
 class RegularContentProcessor(LineProcessor):
     """Processor for regular content lines"""
-    
+
     def __init__(self, spacer_marker: str, rules: List[SpacerRule]):
         self.spacer_marker = spacer_marker
         self.rules = rules
-    
+
     def can_process(self, line_type: LineType) -> bool:
         return line_type in [
-            LineType.HEADING, 
-            LineType.DIVIDER, 
-            LineType.TODO_ITEM, 
+            LineType.HEADING,
+            LineType.DIVIDER,
+            LineType.TODO_ITEM,
             LineType.REGULAR_CONTENT,
-            LineType.PIPE_SYNTAX
+            LineType.PIPE_SYNTAX,
         ]
-    
+
     def process(self, context: LineContext, state: Dict[str, Any]) -> ProcessingResult:
         output_lines = []
         spacer_added = False
-        
+
         # Check if we should add a spacer before this line
         spacer_decision = self._get_spacer_decision(context)
-        
+
         if spacer_decision.should_add_spacer:
             output_lines.append(self.spacer_marker)
             spacer_added = True
-        
+
         # Add the original line
         output_lines.append(context.line)
-        
+
         # Build new state
-        new_state = (StateBuilder(state)
-                    .set_last_line_was_spacer(spacer_added)
-                    .update_content_tracking(context.line_type, bool(context.content))
-                    .build())
-        
-        return ProcessingResult(
-            output_lines=output_lines,
-            new_state=new_state,
-            spacer_added=spacer_added
+        new_state = (
+            StateBuilder(state)
+            .set_last_line_was_spacer(spacer_added)
+            .update_content_tracking(context.line_type, bool(context.content))
+            .build()
         )
-    
+
+        return ProcessingResult(
+            output_lines=output_lines, new_state=new_state, spacer_added=spacer_added
+        )
+
     def _get_spacer_decision(self, context: LineContext) -> SpacerDecision:
         """Get spacer decision from rules"""
         for rule in self.rules:
             if rule.applies_to(context):
                 return rule.should_add_spacer(context)
-        
+
         # Default: don't add spacer
         return SpacerDecision(False, "No applicable rule found", "DefaultRule")
 
 
 class LineProcessorFactory:
     """Factory for creating line processors"""
-    
+
     def __init__(self, spacer_marker: str, rules: List[SpacerRule]):
         self.processors = [
             EmptyLineProcessor(),
@@ -371,7 +367,7 @@ class LineProcessorFactory:
             SpacerMarkerProcessor(spacer_marker, rules),
             RegularContentProcessor(spacer_marker, rules),
         ]
-    
+
     def get_processor(self, line_type: LineType) -> Optional[LineProcessor]:
         """Get appropriate processor for the line type"""
         for processor in self.processors:
@@ -382,13 +378,10 @@ class LineProcessorFactory:
 
 class ContextFactory:
     """Factory for creating line contexts"""
-    
+
     @staticmethod
     def create_context(
-        line: str, 
-        line_number: int, 
-        line_type: LineType, 
-        state: Dict[str, Any]
+        line: str, line_number: int, line_type: LineType, state: Dict[str, Any]
     ) -> LineContext:
         """Create a LineContext from line and state"""
         return LineContext(
@@ -411,11 +404,11 @@ class SpacerRuleEngine:
     def __init__(self, rules: Optional[List[SpacerRule]] = None):
         self.rules = rules or self._get_default_rules()
         self.SPACER_MARKER = SPACER_MARKER
-        
+
         # Initialize factories
         self.processor_factory = LineProcessorFactory(
-            self.SPACER_MARKER, 
-            self.rules, 
+            self.SPACER_MARKER,
+            self.rules,
         )
         self.context_factory = ContextFactory()
 
@@ -424,7 +417,7 @@ class SpacerRuleEngine:
     ) -> Tuple[List[str], Dict[str, Any]]:
         """
         Processes a line and returns the resulting lines + new state
-        
+
         Returns:
             Tuple[List[str], Dict[str, Any]]: (processed_lines, new_state)
         """
@@ -432,30 +425,30 @@ class SpacerRuleEngine:
         line_type = self._determine_line_type(
             line, context_state.get("in_code_block", False)
         )
-        
+
         # Step 2: Create context (factory pattern)
         context = self.context_factory.create_context(
             line, line_number, line_type, context_state
         )
-        
+
         # Step 3: Get appropriate processor (strategy pattern)
         processor = self.processor_factory.get_processor(line_type)
         if not processor:
             # Fallback to original line
             return [line], context_state.copy()
-        
+
         # Step 4: Process line (delegation)
         result = processor.process(context, context_state)
-        
+
         return result.output_lines, result.new_state
 
     def _get_default_rules(self) -> List[SpacerRule]:
         """Default rule set"""
         return [
-            CodeBlockSpacerRule(),        # Highest priority - code blocks
-            ConsecutiveSpacerRule(),      # Prevent duplicate spacers
-            HeadingSpacerRule(),          # Spacer before headings
-            DividerSpacerRule(),          # Spacer before dividers
+            CodeBlockSpacerRule(),  # Highest priority - code blocks
+            ConsecutiveSpacerRule(),  # Prevent duplicate spacers
+            HeadingSpacerRule(),  # Spacer before headings
+            DividerSpacerRule(),  # Spacer before dividers
         ]
 
     def _determine_line_type(self, line: str, in_code_block: bool) -> LineType:

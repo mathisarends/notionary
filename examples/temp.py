@@ -212,7 +212,7 @@ We use various tools and integrations to streamline our workflow:
 
         print("✅ Successfully added sophisticated content with:")
         print("   • Multiple heading levels and toggleable headings")
-        print("   • Callouts with different emojis and styles") 
+        print("   • Callouts with different emojis and styles")
         print("   • Code blocks with syntax highlighting")
         print("   • Complex tables with financial data")
         print("   • Todo items and task management")

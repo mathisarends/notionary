@@ -1,11 +1,11 @@
 from __future__ import annotations
-import json
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from notionary.notion_client import NotionClient
 from notionary.page.notion_page import NotionPage
+from notionary.telemetry import NotionaryTelemetry
 from notionary.util.warn_direct_constructor_usage import warn_direct_constructor_usage
-from notionary.util.logging_mixin import LoggingMixin
+from notionary.util import LoggingMixin
 from notionary.util.page_id_utils import format_uuid
 
 
@@ -26,10 +26,11 @@ class NotionDatabase(LoggingMixin):
             token: Optional Notion API token
         """
         self.database_id = database_id
+        self._telemetry = NotionaryTelemetry.get_instance()
         self._client = NotionClient(token=token)
 
     @classmethod
-    async def from_database_id(
+    def from_database_id(
         cls, database_id: str, token: Optional[str] = None
     ) -> NotionDatabase:
         """
@@ -38,7 +39,7 @@ class NotionDatabase(LoggingMixin):
         """
         from notionary.database.notion_database_factory import NotionDatabaseFactory
 
-        return await NotionDatabaseFactory.from_database_id(database_id, token)
+        return NotionDatabaseFactory.from_database_id(database_id, token)
 
     @classmethod
     async def from_database_name(

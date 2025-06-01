@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
 
-from notionary.util.logging_mixin import LoggingMixin
+from notionary.util import LoggingMixin
 
 
 class NotionPropertyFormatter(LoggingMixin):

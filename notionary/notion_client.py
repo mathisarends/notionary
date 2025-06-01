@@ -7,7 +7,7 @@ import httpx
 from dotenv import load_dotenv
 from notionary.models.notion_database_response import NotionDatabaseResponse
 from notionary.models.notion_page_response import NotionPageResponse
-from notionary.util.logging_mixin import LoggingMixin
+from notionary.util import LoggingMixin
 
 
 class HttpMethod(Enum):

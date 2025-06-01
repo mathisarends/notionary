@@ -8,8 +8,10 @@ def setup_logging():
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
-    
+
+
 setup_logging()
+
 
 class LoggingMixin:
     # Class attribute with proper typing

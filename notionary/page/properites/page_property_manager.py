@@ -9,7 +9,7 @@ from notionary.page.relations.page_database_relation import PageDatabaseRelation
 from notionary.page.properites.property_value_extractor import (
     PropertyValueExtractor,
 )
-from notionary.util.logging_mixin import LoggingMixin
+from notionary.util import LoggingMixin
 
 
 class PagePropertyManager(LoggingMixin):

@@ -1,6 +1,6 @@
 import re
 from typing import Any, Dict, List
-from notionary.util.logging_mixin import LoggingMixin
+from notionary.util import LoggingMixin
 
 
 class NotionPageContentChunker(LoggingMixin):

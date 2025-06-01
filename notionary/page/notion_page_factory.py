@@ -2,10 +2,12 @@ from typing import List, Optional, Dict, Any, Tuple
 from difflib import SequenceMatcher
 
 from notionary import NotionPage, NotionClient
-from notionary.util.logging_mixin import LoggingMixin
-from notionary.util.page_id_utils import format_uuid, extract_and_validate_page_id
+from notionary.telemetry import track_usage
+from notionary.util import LoggingMixin
+from notionary.util import format_uuid, extract_and_validate_page_id
+from notionary.util import singleton
 
-
+@singleton
 class NotionPageFactory(LoggingMixin):
     """
     Factory class for creating NotionPage instances.
@@ -18,8 +20,10 @@ class NotionPageFactory(LoggingMixin):
     EARLY_STOP_THRESHOLD = 0.95
 
     @classmethod
+    @track_usage('page_factory_method_used', {'method': 'from_page_id'})
     def from_page_id(cls, page_id: str, token: Optional[str] = None) -> NotionPage:
         """Create a NotionPage from a page ID."""
+        
         try:
             formatted_id = format_uuid(page_id) or page_id
             page = NotionPage(page_id=formatted_id, token=token)
@@ -32,6 +36,7 @@ class NotionPageFactory(LoggingMixin):
             raise
 
     @classmethod
+    @track_usage('page_factory_method_used', {'method': 'from_url'})
     def from_url(cls, url: str, token: Optional[str] = None) -> NotionPage:
         """Create a NotionPage from a Notion URL."""
 
@@ -51,6 +56,7 @@ class NotionPageFactory(LoggingMixin):
             raise
 
     @classmethod
+    @track_usage('page_factory_method_used', {'method': 'from_page_name'})
     async def from_page_name(
         cls, page_name: str, token: Optional[str] = None
     ) -> NotionPage:
@@ -58,7 +64,7 @@ class NotionPageFactory(LoggingMixin):
         cls.logger.debug("Searching for page with name: %s", page_name)
 
         client = NotionClient(token=token)
-
+        
         try:
             # Search with pagination and early stopping
             best_match, best_score, all_suggestions = (

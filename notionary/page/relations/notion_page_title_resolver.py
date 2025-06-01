@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Any, List
 from notionary.notion_client import NotionClient
-from notionary.util.logging_mixin import LoggingMixin
+from notionary.util import LoggingMixin
 
 
 class NotionPageTitleResolver(LoggingMixin):

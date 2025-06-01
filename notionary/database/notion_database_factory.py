@@ -1,4 +1,3 @@
-import logging
 from typing import List, Optional, Dict, Any
 from difflib import SequenceMatcher
 
@@ -11,10 +10,13 @@ from notionary.exceptions.database_exceptions import (
     DatabaseParsingError,
     NotionDatabaseException,
 )
-from notionary.util.logging_mixin import LoggingMixin
-from notionary.util.page_id_utils import format_uuid
+from notionary.telemetry import track_usage
+from notionary.util import LoggingMixin
+from notionary.util import format_uuid
+from notionary.util import singleton
 
 
+@singleton
 class NotionDatabaseFactory(LoggingMixin):
     """
     Factory class for creating NotionDatabaseManager instances.
@@ -22,7 +24,8 @@ class NotionDatabaseFactory(LoggingMixin):
     """
 
     @classmethod
-    async def from_database_id(
+    @track_usage('page_factory_method_used', {'method': 'from_page_id'})
+    def from_database_id(
         cls, database_id: str, token: Optional[str] = None
     ) -> NotionDatabase:
         """
@@ -35,6 +38,7 @@ class NotionDatabaseFactory(LoggingMixin):
         Returns:
             An initialized NotionDatabaseManager instance
         """
+
         try:
             formatted_id = format_uuid(database_id) or database_id
 
@@ -55,6 +59,7 @@ class NotionDatabaseFactory(LoggingMixin):
             raise DatabaseConnectionError(error_msg) from e
 
     @classmethod
+    @track_usage('page_factory_method_used', {'method': 'from_url'})
     async def from_database_name(
         cls, database_name: str, token: Optional[str] = None
     ) -> NotionDatabase:
@@ -72,7 +77,7 @@ class NotionDatabaseFactory(LoggingMixin):
         cls.logger.debug("Searching for database with name: %s", database_name)
 
         client = NotionClient(token=token)
-
+        
         try:
             cls.logger.debug("Using search endpoint to find databases")
 

@@ -21,7 +21,7 @@ from notionary.page.content.page_content_writer import PageContentWriter
 from notionary.page.properites.page_property_manager import PagePropertyManager
 from notionary.page.relations.notion_page_title_resolver import NotionPageTitleResolver
 from notionary.util.warn_direct_constructor_usage import warn_direct_constructor_usage
-from notionary.util.logging_mixin import LoggingMixin
+from notionary.util import LoggingMixin
 from notionary.util.page_id_utils import extract_and_validate_page_id
 from notionary.page.relations.page_database_relation import PageDatabaseRelation
 

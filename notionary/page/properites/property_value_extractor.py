@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, Awaitable, Callable
 
-from notionary.util.logging_mixin import LoggingMixin
+from notionary.util import LoggingMixin
 
 
 class PropertyValueExtractor(LoggingMixin):

@@ -1,7 +1,7 @@
 from typing import Dict, Optional, Any
 from notionary.models.notion_page_response import DatabaseParent, NotionPageResponse
 from notionary.notion_client import NotionClient
-from notionary.util.logging_mixin import LoggingMixin
+from notionary.util import LoggingMixin
 
 
 class PageDatabaseRelation(LoggingMixin):

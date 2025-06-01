@@ -14,8 +14,8 @@ from .elements.registry.block_registry_builder import (
     BlockRegistryBuilder,
 )
 
-# init telemetry
 from .telemetry.telemetry import NotionaryTelemetry
+
 _telemetry = NotionaryTelemetry()
 
 __all__ = [

@@ -5,7 +5,7 @@ from notionary.notion_client import NotionClient
 from notionary.page.relations.notion_page_title_resolver import (
     NotionPageTitleResolver,
 )
-from notionary.util.logging_mixin import LoggingMixin
+from notionary.util import LoggingMixin
 
 
 class NotionPageRelationManager(LoggingMixin):

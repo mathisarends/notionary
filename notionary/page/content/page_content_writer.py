@@ -13,7 +13,7 @@ from notionary.page.notion_to_markdown_converter import (
 from notionary.page.content.notion_page_content_chunker import (
     NotionPageContentChunker,
 )
-from notionary.util.logging_mixin import LoggingMixin
+from notionary.util import LoggingMixin
 
 
 class PageContentWriter(LoggingMixin):

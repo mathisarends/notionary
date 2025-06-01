@@ -6,7 +6,7 @@ from notionary.notion_client import NotionClient
 from notionary.page.notion_to_markdown_converter import (
     NotionToMarkdownConverter,
 )
-from notionary.util.logging_mixin import LoggingMixin
+from notionary.util import LoggingMixin
 
 
 class PageContentRetriever(LoggingMixin):
