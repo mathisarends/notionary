@@ -1,4 +1,4 @@
-from .notion_client import NotionClient
+from .clients.notion_client import NotionClient
 
 from .database.notion_database import NotionDatabase
 from .database.notion_database_factory import NotionDatabaseFactory

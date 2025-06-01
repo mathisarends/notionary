@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any
 from difflib import SequenceMatcher
 
 from notionary.database.notion_database import NotionDatabase
-from notionary.notion_client import NotionClient
+from notionary import NotionClient
 from notionary.exceptions.database_exceptions import (
     DatabaseConnectionError,
     DatabaseInitializationError,

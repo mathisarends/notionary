@@ -1,6 +1,6 @@
 from typing import Dict, Any, List, Optional
 from notionary.models.notion_page_response import NotionPageResponse
-from notionary.notion_client import NotionClient
+from notionary import NotionClient
 from notionary.page.metadata.metadata_editor import MetadataEditor
 from notionary.page.properites.database_property_service import (
     DatabasePropertyService,

@@ -3,7 +3,10 @@ from typing import Dict, Any, Optional, List, Tuple, Callable
 
 from notionary.elements.notion_block_element import NotionBlockElement
 from notionary.page.formatting.spacer_rules import SPACER_MARKER
-from notionary.prompting.element_prompt_content import ElementPromptBuilder, ElementPromptContent
+from notionary.prompting.element_prompt_content import (
+    ElementPromptBuilder,
+    ElementPromptContent,
+)
 
 
 class ColumnElement(NotionBlockElement):
@@ -253,7 +256,7 @@ class ColumnElement(NotionBlockElement):
         """
         if not (in_column and column_content):
             return
-        
+
         processed_content = ColumnElement._preprocess_column_content(column_content)
 
         column_blocks = converter_callback("\n".join(processed_content))
@@ -266,42 +269,49 @@ class ColumnElement(NotionBlockElement):
     def is_multiline(cls) -> bool:
         """Column blocks span multiple lines."""
         return True
-    
+
     @staticmethod
     def _preprocess_column_content(lines: List[str]) -> List[str]:
         """
         Preprocess column content to handle special cases like first headings.
-        
+
         This removes any spacer markers that might have been added before the first
         heading in a column, as each column should have its own heading context.
-        
+
         Args:
             lines: The lines of content for the column
-            
+
         Returns:
             Processed lines ready for conversion
         """
-        from notionary.page.formatting.markdown_to_notion_converter import MarkdownToNotionConverter
+        from notionary.page.formatting.markdown_to_notion_converter import (
+            MarkdownToNotionConverter,
+        )
 
         processed_lines = []
         found_first_heading = False
-        
+
         i = 0
         while i < len(lines):
             line = lines[i]
-            
+
             # Check if this is a heading line
             if re.match(r"^(#{1,6})\s+(.+)$", line.strip()):
                 # If it's the first heading, look ahead to check for spacer
-                if not found_first_heading and i > 0 and processed_lines and processed_lines[-1] == SPACER_MARKER:
+                if (
+                    not found_first_heading
+                    and i > 0
+                    and processed_lines
+                    and processed_lines[-1] == SPACER_MARKER
+                ):
                     # Remove spacer before first heading in column
                     processed_lines.pop()
-                
+
                 found_first_heading = True
-            
+
             processed_lines.append(line)
             i += 1
-        
+
         return processed_lines
 
     @classmethod
@@ -331,30 +341,31 @@ class ColumnElement(NotionBlockElement):
                 ":::\n"
                 ":::"
             )
-            .with_examples([
-                "::: columns\n"
-                "::: column\n"
-                "## Features\n"
-                "- Fast response time\n"
-                "- Intuitive interface\n"
-                "- Regular updates\n"
-                ":::\n"
-                "::: column\n"
-                "## Benefits\n"
-                "- Increased productivity\n"
-                "- Better collaboration\n"
-                "- Simplified workflows\n"
-                ":::\n"
-                ":::",
-                
-                "::: columns\n"
-                "::: column\n"
-                "![Image placeholder](/api/placeholder/400/320)\n"
-                ":::\n"
-                "::: column\n"
-                "This text appears next to the image, creating a media-with-caption style layout.\n"
-                ":::\n"
-                ":::"
-            ])
+            .with_examples(
+                [
+                    "::: columns\n"
+                    "::: column\n"
+                    "## Features\n"
+                    "- Fast response time\n"
+                    "- Intuitive interface\n"
+                    "- Regular updates\n"
+                    ":::\n"
+                    "::: column\n"
+                    "## Benefits\n"
+                    "- Increased productivity\n"
+                    "- Better collaboration\n"
+                    "- Simplified workflows\n"
+                    ":::\n"
+                    ":::",
+                    "::: columns\n"
+                    "::: column\n"
+                    "![Image placeholder](/api/placeholder/400/320)\n"
+                    ":::\n"
+                    "::: column\n"
+                    "This text appears next to the image, creating a media-with-caption style layout.\n"
+                    ":::\n"
+                    ":::",
+                ]
+            )
             .build()
         )
