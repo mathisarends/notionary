@@ -2,12 +2,13 @@
 # Notionary: File Upload Test
 ============================
 
-Simple test for file upload functionality.
+Simple test for file upload functionality with Pydantic validation.
 """
 
 import asyncio
-import json
 import os
+import traceback
+
 from notionary import NotionClient
 
 
@@ -20,38 +21,30 @@ async def main():
     try:
         client = NotionClient()
 
-        # Korrekte Pfad-Erstellung
-        file_path = os.path.join(os.getcwd(), "examples", "res", "picture.jpg")
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(script_dir, "res", "picture.jpg")
 
-        # Prüfen ob Datei existiert
-        if not os.path.exists(file_path):
-            print(f"❌ File not found: {file_path}")
-            print("💡 Create a 'res' folder and add 'picture.jpg' or adjust the path")
-            return
-
-        print(f"📤 Uploading file: {file_path}")
-
-        # File Upload
+        print(f"📤 Uploading: {os.path.basename(file_path)}...")
+        
         upload_result = await client.upload_file(file_path=file_path)
 
         if upload_result:
-            print("✅ File uploaded successfully!")
-            print("upload_result:", json.dumps(upload_result, indent=2))
-            print(f"🔗 Upload ID: {upload_result.get('id', 'Unknown')}")
-            print(f"📊 Result: {upload_result}")
+            filename = upload_result.filename or os.path.basename(file_path)
+            
+            print(f"✅ Upload ID: {upload_result.id}")
+            print(f"📁 File: {filename} • Status: {upload_result.status}")
         else:
-            print("❌ File upload failed")
+            print("❌ Upload failed")
 
     except Exception as e:
         print(f"❌ Error: {e}")
-
+        traceback.print_exc()
     finally:
-        # Client schließen
         if client:
             await client.close()
 
 
 if __name__ == "__main__":
-    print("🚀 Starting file upload test...")
+    print("🚀 Starting upload test...")
     asyncio.run(main())
-    print("✅ File upload test completed!")
+    print("✅ Test completed!")

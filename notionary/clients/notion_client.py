@@ -7,6 +7,7 @@ import httpx
 from dotenv import load_dotenv
 from notionary.clients.notion_file_uploader import NotionFileUploader
 from notionary.models.notion_database_response import NotionDatabaseResponse
+from notionary.models.notion_file_upload_response import NotionFileUploadResponse
 from notionary.models.notion_page_response import NotionPageResponse
 from notionary.util.logging_mixin import LoggingMixin
 
@@ -160,7 +161,7 @@ class NotionClient(LoggingMixin):
         file_path: str,
         max_part_size: int = 20 * 1024 * 1024,
         force_multipart: bool = False,
-    ) -> Optional[dict]:
+    ) -> Optional[NotionFileUploadResponse]:
         """
         Uploads a file to Notion using the optimal method (single-part or multi-part).
 
@@ -174,7 +175,7 @@ class NotionClient(LoggingMixin):
             force_multipart: If True, forces multi-part upload regardless of file size.
 
         Returns:
-            Upload result dictionary with file_upload ID and metadata, or None if failed.
+            Validated NotionFileUploadResponse with file_upload ID and metadata, or None if failed.
         """
         return await self._file_uploader.upload_file(
             file_path, max_part_size, force_multipart

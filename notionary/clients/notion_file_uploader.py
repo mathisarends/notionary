@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import json
 import os
 import math
 import mimetypes
-from typing import Dict, Any, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 import httpx
+from notionary.models.notion_file_upload_response import NotionFileUploadResponse
 from notionary.util.logging_mixin import LoggingMixin
 
 if TYPE_CHECKING:
@@ -32,7 +34,7 @@ class NotionFileUploader(LoggingMixin):
         file_path: str,
         max_part_size: int = 20 * 1024 * 1024,
         force_multipart: bool = False,
-    ) -> Optional[dict]:
+    ) -> Optional[NotionFileUploadResponse]:
         """
         Uploads a file to Notion using the optimal method (single-part or multi-part).
 
@@ -46,7 +48,7 @@ class NotionFileUploader(LoggingMixin):
             force_multipart: If True, forces multi-part upload regardless of file size.
 
         Returns:
-            Upload result dictionary with file_upload ID and metadata, or None if failed.
+            Validated NotionFileUploadResponse or None if failed.
         """
         if not os.path.exists(file_path):
             self.logger.error(f"File not found: {file_path}")
@@ -72,25 +74,35 @@ class NotionFileUploader(LoggingMixin):
         # Fallback to multi-part or when explicitly requested
         return await self._upload_multipart(file_path, max_part_size)
 
-    async def _upload_single_part(self, file_path: str) -> Optional[dict]:
+    async def _upload_single_part(
+        self, file_path: str
+    ) -> Optional[NotionFileUploadResponse]:
         """
         Internal method for single-part file upload using Direct Upload method.
 
         Creates an upload object, uploads file content directly to the provided URL,
         and completes the upload process.
+
+        Returns:
+            Validated NotionFileUploadResponse or None if failed.
         """
         filename = os.path.basename(file_path)
         content_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"
 
         # Step 1: Create file upload object
-        upload = await self.notion_client.post("file_uploads", data={})
-        if not upload:
+        upload_response = await self.notion_client.post("file_uploads", data={})
+        if not upload_response:
             return None
 
-        file_upload_id = upload["id"]
-        upload_url = upload.get("upload_url")
+        # Validate and parse the response
+        try:
+            upload = NotionFileUploadResponse.model_validate(upload_response)
+        except Exception as e:
+            self.logger.error(f"Failed to validate upload response: {e}")
+            return None
 
-        if not upload_url:
+        if not upload.upload_url:
+            self.logger.error("No upload URL in response")
             return None
 
         # Step 2: Upload file content
@@ -105,7 +117,7 @@ class NotionFileUploader(LoggingMixin):
 
         async with httpx.AsyncClient() as upload_client:
             response = await upload_client.post(
-                upload_url, files=files, headers=upload_headers
+                upload.upload_url, files=files, headers=upload_headers
             )
             response.raise_for_status()
 
@@ -113,11 +125,14 @@ class NotionFileUploader(LoggingMixin):
 
     async def _upload_multipart(
         self, file_path: str, max_part_size: int
-    ) -> Optional[dict]:
+    ) -> Optional[NotionFileUploadResponse]:
         """
         Internal method for multi-part file upload for large files.
 
         Creates upload object, sends file in chunks, and completes the upload.
+
+        Returns:
+            Validated NotionFileUploadResponse or None if failed.
         """
         file_size = os.path.getsize(file_path)
         file_size_mb = file_size / (1024 * 1024)
@@ -131,8 +146,10 @@ class NotionFileUploader(LoggingMixin):
         if not upload:
             return None
 
-        file_upload_id = upload["id"]
-        expected_parts = upload["number_of_parts"]["total"]
+        file_upload_id = upload.id
+        expected_parts = (
+            upload.number_of_parts.total if upload.number_of_parts else num_parts
+        )
 
         with open(file_path, "rb") as f:
             for part_number in range(1, expected_parts + 1):
@@ -146,6 +163,8 @@ class NotionFileUploader(LoggingMixin):
                     return None
 
         result = await self._complete_file_upload(file_upload_id)
+        if not result:
+            return None
 
         if result:
             self.logger.info(f"Multi-part upload completed: {file_path}")
@@ -154,7 +173,7 @@ class NotionFileUploader(LoggingMixin):
 
     async def _create_file_upload(
         self, filename: str, max_part_size: int
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[NotionFileUploadResponse]:
         """
         Creates a multi-part file upload object with the specified parameters.
 
@@ -163,7 +182,7 @@ class NotionFileUploader(LoggingMixin):
             max_part_size: Maximum size per upload part.
 
         Returns:
-            File upload object or None if creation failed.
+            Validated NotionFileUploadResponse or None if creation failed.
         """
         file_size = os.path.getsize(filename)
         num_parts = math.ceil(file_size / max_part_size)
@@ -177,7 +196,15 @@ class NotionFileUploader(LoggingMixin):
             "number_of_parts": num_parts,
         }
 
-        return await self.notion_client.post("file_uploads", data=data)
+        response = await self.notion_client.post("file_uploads", data=data)
+        if not response:
+            return None
+
+        try:
+            return NotionFileUploadResponse.model_validate(response)
+        except Exception as e:
+            self.logger.error(f"Failed to validate multi-part upload response: {e}")
+            return None
 
     async def _send_file_part(
         self, file_upload_id: str, part_number: int, file_part_data: bytes
@@ -205,7 +232,9 @@ class NotionFileUploader(LoggingMixin):
         except Exception:
             return False
 
-    async def _complete_file_upload(self, file_upload_id: str) -> Optional[dict]:
+    async def _complete_file_upload(
+        self, file_upload_id: str
+    ) -> Optional[NotionFileUploadResponse]:
         """
         Completes a multi-part file upload and finalizes the process.
 
@@ -213,6 +242,16 @@ class NotionFileUploader(LoggingMixin):
             file_upload_id: The upload session ID.
 
         Returns:
-            Final upload result or None if completion failed.
+            Validated NotionFileUploadResponse or None if completion failed.
         """
-        return await self.notion_client.post(f"file_uploads/{file_upload_id}/complete")
+        response = await self.notion_client.post(
+            f"file_uploads/{file_upload_id}/complete"
+        )
+        if not response:
+            return None
+
+        try:
+            return NotionFileUploadResponse.model_validate(response)
+        except Exception as e:
+            self.logger.error(f"Failed to validate completion response: {e}")
+            return None
