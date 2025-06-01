@@ -1,5 +1,5 @@
 from typing import Optional, Dict, Any, List
-from notionary.notion_client import NotionClient
+from notionary import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
 
 

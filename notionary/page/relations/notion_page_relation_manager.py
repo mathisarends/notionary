@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, Dict, List, Optional
 from notionary.models.notion_page_response import DatabaseParent, NotionPageResponse
-from notionary.notion_client import NotionClient
+from notionary import NotionClient
 from notionary.page.relations.notion_page_title_resolver import (
     NotionPageTitleResolver,
 )

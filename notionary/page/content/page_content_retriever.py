@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional
 
 from notionary.elements.registry.block_registry import BlockRegistry
-from notionary.notion_client import NotionClient
+from notionary import NotionClient
 
 from notionary.page.notion_to_markdown_converter import (
     NotionToMarkdownConverter,

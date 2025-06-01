@@ -6,7 +6,7 @@ from typing import (
     Any,
     Tuple,
 )
-from notionary.notion_client import NotionClient
+from notionary import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
 
 

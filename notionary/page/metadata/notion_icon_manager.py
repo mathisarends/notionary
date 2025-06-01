@@ -2,7 +2,7 @@ import json
 from typing import Optional
 
 from notionary.models.notion_page_response import EmojiIcon, ExternalIcon, FileIcon
-from notionary.notion_client import NotionClient
+from notionary import NotionClient
 from notionary.util.logging_mixin import LoggingMixin
 
 

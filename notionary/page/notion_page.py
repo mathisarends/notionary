@@ -4,7 +4,7 @@ import re
 
 from notionary.elements.registry.block_registry import BlockRegistry
 from notionary.elements.registry.block_registry_builder import BlockRegistryBuilder
-from notionary.notion_client import NotionClient
+from notionary import NotionClient
 from notionary.page.content.page_content_retriever import PageContentRetriever
 from notionary.page.metadata.metadata_editor import MetadataEditor
 from notionary.page.metadata.notion_icon_manager import NotionPageIconManager
