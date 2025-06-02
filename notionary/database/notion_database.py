@@ -26,7 +26,7 @@ class NotionDatabase(LoggingMixin):
             token: Optional Notion API token
         """
         self.database_id = database_id
-        self._telemetry = NotionaryTelemetry.get_instance()
+        self._telemetry = NotionaryTelemetry()
         self._client = NotionClient(token=token)
 
     @classmethod

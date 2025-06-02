@@ -34,6 +34,13 @@ def get_paste_tips():
             "• Some terminals: [cyan]Shift+Insert[/cyan]",
         ]
 
+def show_paste_tips():
+    """Show platform-specific paste tips"""
+    console.print("\n[bold yellow]💡 Paste Tips:[/bold yellow]")
+    for tip in get_paste_tips():
+        console.print(tip)
+    console.print()
+
 def get_notion_secret() -> str:
     """Get NOTION_SECRET using the same logic as NotionClient"""
     load_dotenv()
@@ -72,7 +79,9 @@ def init():
         # No key found, start setup
         console.print(Panel.fit(
             "[bold green]🚀 Notionary Setup[/bold green]\n"
-            "Enter your Notion Integration Key to get started...",
+            "Enter your Notion Integration Key to get started...\n\n"
+            "[bold blue]🔗 Create an Integration Key or get an existing one:[/bold blue]\n"
+            "[cyan]https://www.notion.so/profile/integrations[/cyan]",
             title="Initialization"
         ))
         setup_new_key()
@@ -80,12 +89,12 @@ def init():
 def setup_new_key():
     """Handle the key setup process"""
     try:
-        console.print("\n[bold yellow]💡 Paste Tips:[/bold yellow]")
-        for tip in get_paste_tips():
-            console.print(tip)
+        # Show Integration Key creation link
+        console.print("\n[bold blue]🔗 Create an Integration Key:[/bold blue]")
+        console.print("[cyan]https://www.notion.so/profile/integrations[/cyan]")
         console.print()
         
-        # Normal input for copy/paste support
+        # Get integration key
         integration_key = Prompt.ask(
             "[bold cyan]Notion Integration Key[/bold cyan]"
         )
@@ -99,10 +108,9 @@ def setup_new_key():
         integration_key = integration_key.strip()
         
         # Check for common paste issues
-        if integration_key in ["^V", "^v"]:
+        if integration_key in ["^V", "^v", "^C", "^c"]:
             console.print("[bold red]❌ Paste didn't work! Try:[/bold red]")
-            for tip in get_paste_tips():
-                console.print(f"  {tip}")
+            show_paste_tips()
             return
         
         # Show masked feedback that paste worked
@@ -116,6 +124,19 @@ def setup_new_key():
             if not Confirm.ask("Continue anyway?"):
                 return
         
+        # Save the key
+        if save_integration_key(integration_key):
+            return  # Success!
+        
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Setup cancelled.[/yellow]")
+    except Exception as e:
+        console.print(f"\n[bold red]❌ Error during setup: {e}[/bold red]")
+        raise click.Abort()
+
+def save_integration_key(integration_key: str) -> bool:
+    """Save the integration key to .env file"""
+    try:
         # .env Datei im aktuellen Verzeichnis erstellen/aktualisieren
         env_file = Path.cwd() / ".env"
         
@@ -150,15 +171,14 @@ def setup_new_key():
             console.print("\n[bold green]✅ Integration Key saved and verified![/bold green]")
             console.print(f"[dim]Configuration: {env_file}[/dim]")
             console.print("\n[blue]Ready to use notionary in your Python code! 🚀[/blue]")
+            return True
         else:
             console.print("\n[bold red]❌ Error: Key verification failed![/bold red]")
-            return
-        
-    except KeyboardInterrupt:
-        console.print("\n[yellow]Setup cancelled.[/yellow]")
+            return False
+            
     except Exception as e:
-        console.print(f"\n[bold red]❌ Error during setup: {e}[/bold red]")
-        raise click.Abort()
+        console.print(f"\n[bold red]❌ Error saving key: {e}[/bold red]")
+        return False
 
 if __name__ == '__main__':
     main()
