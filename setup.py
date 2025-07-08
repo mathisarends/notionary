@@ -9,7 +9,10 @@ setup(
         "python-dotenv>=1.1.0",
         "pydantic>=2.11.4",
         "posthog>=3.0.0",
-        "click>=8.0.0", 
+        "click>=8.0.0",
+        "openai>=1.30.1",
+        "langchain>=0.2.0",
+        "tiktoken>=0.6.0",
     ],
     entry_points={
         'console_scripts': [
