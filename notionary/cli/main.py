@@ -6,11 +6,35 @@ Notionary CLI - Integration Key Setup
 import click
 import os
 import platform
+import asyncio
+import logging
 from pathlib import Path
 from dotenv import load_dotenv
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt, Confirm
+from rich.table import Table
+from rich import box
+from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
+from notionary.notion_client import NotionClient
+from notionary.database.database_discovery import DatabaseDiscovery
+
+# Disable logging for CLI usage
+def disable_notionary_logging():
+    """Disable logging for notionary modules when used in CLI"""
+    # Option 1: Set to WARNING level (recommended for CLI)
+    logging.getLogger('notionary').setLevel(logging.WARNING)
+    logging.getLogger('DatabaseDiscovery').setLevel(logging.WARNING)
+    logging.getLogger('NotionClient').setLevel(logging.WARNING)
+
+def enable_verbose_logging():
+    """Enable verbose logging for debugging (use with --verbose flag)"""
+    logging.getLogger('notionary').setLevel(logging.DEBUG)
+    logging.getLogger('DatabaseDiscovery').setLevel(logging.DEBUG)
+    logging.getLogger('NotionClient').setLevel(logging.DEBUG)
+
+# Initialize logging configuration for CLI
+disable_notionary_logging()
 
 console = Console()
 
@@ -46,12 +70,126 @@ def get_notion_secret() -> str:
     load_dotenv()
     return os.getenv("NOTION_SECRET", "")
 
+async def fetch_notion_databases_with_progress():
+    """Fetch databases using DatabaseDiscovery with progress animation"""
+    try:
+        # Initialize NotionClient and DatabaseDiscovery
+        client = NotionClient()
+        discovery = DatabaseDiscovery(client)
+        
+        # Create progress display with custom spinner
+        with Progress(
+            SpinnerColumn(spinner_name="dots12", style="cyan"),
+            TextColumn("[bold blue]Discovering databases..."),
+            TimeElapsedColumn(),
+            console=console,
+            transient=True
+        ) as progress:
+            # Add progress task
+            task = progress.add_task("Fetching...", total=None)
+            
+            # Fetch databases
+            databases = await discovery._discover(page_size=50)
+            
+            # Update progress to show completion
+            progress.update(task, description=f"[bold green]Found {len(databases)} databases!")
+            
+            # Brief pause to show completion
+            await asyncio.sleep(0.5)
+        
+        return {"databases": databases, "success": True}
+        
+    except Exception as e:
+        return {"error": str(e), "success": False}
+
+def show_databases_overview(api_key: str):
+    """Show available databases with nice formatting"""
+    console.print("\n[bold blue]🔍 Connecting to Notion...[/bold blue]")
+    
+    # Run async function in sync context
+    try:
+        result = asyncio.run(fetch_notion_databases_with_progress())
+    except Exception as e:
+        console.print(Panel.fit(
+            f"[bold red]❌ Unexpected error[/bold red]\n\n"
+            f"[red]{str(e)}[/red]\n\n"
+            "[yellow]Please check:[/yellow]\n"
+            "• Your internet connection\n"
+            "• Your integration key validity\n"
+            "• Try running the command again",
+            title="Connection Error"
+        ))
+        return
+    
+    if not result["success"]:
+        console.print(Panel.fit(
+            f"[bold red]❌ Could not fetch databases[/bold red]\n\n"
+            f"[red]{result['error']}[/red]\n\n"
+            "[yellow]Common issues:[/yellow]\n"
+            "• Check your integration key\n"
+            "• Make sure your integration has access to databases\n"
+            "• Visit your integration settings to grant access",
+            title="Connection Error"
+        ))
+        return
+    
+    databases = result["databases"]
+    
+    if not databases:
+        console.print(Panel.fit(
+            "[bold yellow]⚠️  No databases found[/bold yellow]\n\n"
+            "Your integration key is valid, but no databases are accessible.\n\n"
+            "[bold blue]To grant access:[/bold blue]\n"
+            "1. Go to any Notion database\n"
+            "2. Click the '...' menu (top right)\n"
+            "3. Go to 'Add connections'\n"
+            "4. Find and select your integration\n\n"
+            "[cyan]https://www.notion.so/help/add-and-manage-connections-with-the-api[/cyan]",
+            title="No Databases Available"
+        ))
+        return
+    
+    # Create beautiful table
+    table = Table(
+        title=f"📊 Available Databases ({len(databases)} found)",
+        box=box.ROUNDED,
+        title_style="bold green",
+        header_style="bold cyan"
+    )
+    
+    table.add_column("#", style="dim", justify="right", width=3)
+    table.add_column("Database Name", style="bold white", min_width=25)
+    table.add_column("ID", style="dim cyan", min_width=36)
+    
+    for i, (title, db_id) in enumerate(databases, 1):
+        table.add_row(
+            str(i),
+            title or "Untitled Database",
+            db_id
+        )
+    
+    console.print("\n")
+    console.print(table)
+    
+    # Success message with next steps
+    console.print(Panel.fit(
+        "[bold green]🎉 Setup Complete![/bold green]\n\n"
+        f"Found [bold cyan]{len(databases)}[/bold cyan] accessible database(s).\n"
+        "You can now use notionary in your Python code!\n\n"
+        "[bold yellow]💡 Tip:[/bold yellow] Run [cyan]notionary db[/cyan] anytime to see this overview again.",
+        title="Ready to Go!"
+    ))
+
 @click.group()
 @click.version_option()  # Automatische Version aus setup.py
-def main():
+@click.option('--verbose', '-v', is_flag=True, help='Enable verbose logging')
+def main(verbose):
     """
     Notionary CLI - Notion API Integration
     """
+    if verbose:
+        enable_verbose_logging()
+        console.print("[dim]Verbose logging enabled[/dim]")
     pass
 
 @main.command()
@@ -70,11 +208,19 @@ def init():
             title="Already Configured"
         ))
         
-        # Option to reconfigure
-        if Confirm.ask("\n[yellow]Would you like to update your key?[/yellow]"):
+        # Option to reconfigure or show databases
+        choice = Prompt.ask(
+            "\n[yellow]What would you like to do?[/yellow]",
+            choices=["show", "update", "exit"],
+            default="show"
+        )
+        
+        if choice == "show":
+            show_databases_overview(existing_key)
+        elif choice == "update":
             setup_new_key()
         else:
-            console.print("\n[blue]No changes made. Happy coding! 🚀[/blue]")
+            console.print("\n[blue]Happy coding! 🚀[/blue]")
     else:
         # No key found, start setup
         console.print(Panel.fit(
@@ -85,6 +231,23 @@ def init():
             title="Initialization"
         ))
         setup_new_key()
+
+@main.command()
+def db() -> None:
+    """
+    Show available Notion databases
+    """
+    existing_key = get_notion_secret()
+    
+    if not existing_key:
+        console.print(Panel.fit(
+            "[bold red]❌ No Integration Key found![/bold red]\n\n"
+            "Please run [cyan]notionary init[/cyan] first to set up your key.",
+            title="Not Configured"
+        ))
+        return
+    
+    show_databases_overview(existing_key)
 
 def setup_new_key():
     """Handle the key setup process"""
@@ -126,7 +289,8 @@ def setup_new_key():
         
         # Save the key
         if save_integration_key(integration_key):
-            return  # Success!
+            # Show databases overview after successful setup
+            show_databases_overview(integration_key)
         
     except KeyboardInterrupt:
         console.print("\n[yellow]Setup cancelled.[/yellow]")
@@ -170,7 +334,6 @@ def save_integration_key(integration_key: str) -> bool:
         if written_key == integration_key:
             console.print("\n[bold green]✅ Integration Key saved and verified![/bold green]")
             console.print(f"[dim]Configuration: {env_file}[/dim]")
-            console.print("\n[blue]Ready to use notionary in your Python code! 🚀[/blue]")
             return True
         else:
             console.print("\n[bold red]❌ Error: Key verification failed![/bold red]")

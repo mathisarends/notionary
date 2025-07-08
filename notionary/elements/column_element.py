@@ -1,14 +1,13 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple, Callable
 
-from notionary.elements.notion_block_element import NotionBlockElement, auto_track_conversions
+from notionary.elements.notion_block_element import NotionBlockElement
 from notionary.page.formatting.spacer_rules import SPACER_MARKER
 from notionary.prompting.element_prompt_content import (
     ElementPromptBuilder,
     ElementPromptContent,
 )
 
-@auto_track_conversions
 class ColumnElement(NotionBlockElement):
     """
     Handles conversion between custom Markdown column syntax and Notion column blocks.

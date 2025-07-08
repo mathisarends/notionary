@@ -2,7 +2,6 @@ from typing import List, Optional, Dict, Any, Tuple
 from difflib import SequenceMatcher
 
 from notionary import NotionPage, NotionClient
-from notionary.telemetry import track_usage
 from notionary.util import LoggingMixin
 from notionary.util import format_uuid, extract_and_validate_page_id
 from notionary.util import singleton
@@ -20,7 +19,6 @@ class NotionPageFactory(LoggingMixin):
     EARLY_STOP_THRESHOLD = 0.95
 
     @classmethod
-    @track_usage('page_factory_method_used', {'method': 'from_page_id'})
     def from_page_id(cls, page_id: str, token: Optional[str] = None) -> NotionPage:
         """Create a NotionPage from a page ID."""
         
@@ -36,7 +34,6 @@ class NotionPageFactory(LoggingMixin):
             raise
 
     @classmethod
-    @track_usage('page_factory_method_used', {'method': 'from_url'})
     def from_url(cls, url: str, token: Optional[str] = None) -> NotionPage:
         """Create a NotionPage from a Notion URL."""
 
@@ -56,7 +53,6 @@ class NotionPageFactory(LoggingMixin):
             raise
 
     @classmethod
-    @track_usage('page_factory_method_used', {'method': 'from_page_name'})
     async def from_page_name(
         cls, page_name: str, token: Optional[str] = None
     ) -> NotionPage:

@@ -10,7 +10,6 @@ from notionary.exceptions.database_exceptions import (
     DatabaseParsingError,
     NotionDatabaseException,
 )
-from notionary.telemetry import track_usage
 from notionary.util import LoggingMixin
 from notionary.util import format_uuid
 from notionary.util import singleton
@@ -24,7 +23,6 @@ class NotionDatabaseFactory(LoggingMixin):
     """
 
     @classmethod
-    @track_usage('page_factory_method_used', {'method': 'from_page_id'})
     def from_database_id(
         cls, database_id: str, token: Optional[str] = None
     ) -> NotionDatabase:
@@ -59,7 +57,6 @@ class NotionDatabaseFactory(LoggingMixin):
             raise DatabaseConnectionError(error_msg) from e
 
     @classmethod
-    @track_usage('page_factory_method_used', {'method': 'from_url'})
     async def from_database_name(
         cls, database_name: str, token: Optional[str] = None
     ) -> NotionDatabase:

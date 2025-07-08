@@ -1,12 +1,11 @@
 import re
 from typing import Dict, Any, Optional, List
-from notionary.elements.notion_block_element import NotionBlockElement, auto_track_conversions
+from notionary.elements.notion_block_element import NotionBlockElement
 from notionary.prompting.element_prompt_content import (
     ElementPromptBuilder,
     ElementPromptContent,
 )
 
-@auto_track_conversions
 class AudioElement(NotionBlockElement):
     """
     Handles conversion between Markdown audio embeds and Notion audio blocks.

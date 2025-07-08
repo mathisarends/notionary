@@ -14,10 +14,6 @@ from .elements.registry.block_registry_builder import (
     BlockRegistryBuilder,
 )
 
-from .telemetry.telemetry import NotionaryTelemetry
-
-_telemetry = NotionaryTelemetry()
-
 __all__ = [
     "NotionClient",
     "NotionDatabase",

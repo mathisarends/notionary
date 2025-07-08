@@ -1,13 +1,12 @@
 import re
 from typing import Dict, Any, Optional
-from notionary.elements.notion_block_element import NotionBlockElement, auto_track_conversions
+from notionary.elements.notion_block_element import NotionBlockElement
 from notionary.prompting.element_prompt_content import (
     ElementPromptBuilder,
     ElementPromptContent,
 )
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
-@auto_track_conversions
 class NumberedListElement(NotionBlockElement):
     """Class for converting between Markdown numbered lists and Notion numbered list items."""
 

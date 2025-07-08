@@ -3,7 +3,6 @@ from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from notionary.notion_client import NotionClient
 from notionary.page.notion_page import NotionPage
-from notionary.telemetry import NotionaryTelemetry
 from notionary.util.warn_direct_constructor_usage import warn_direct_constructor_usage
 from notionary.util import LoggingMixin
 from notionary.util.page_id_utils import format_uuid
@@ -26,7 +25,6 @@ class NotionDatabase(LoggingMixin):
             token: Optional Notion API token
         """
         self.database_id = database_id
-        self._telemetry = NotionaryTelemetry()
         self._client = NotionClient(token=token)
 
     @classmethod
