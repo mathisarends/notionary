@@ -7,6 +7,7 @@ from notionary.prompting.element_prompt_content import (
 )
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
+
 class TodoElement(NotionBlockElement):
     """
     Handles conversion between Markdown todo items and Notion to_do blocks.

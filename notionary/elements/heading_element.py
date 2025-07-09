@@ -8,6 +8,7 @@ from notionary.prompting.element_prompt_content import (
 )
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
+
 class HeadingElement(NotionBlockElement):
     """Handles conversion between Markdown headings and Notion heading blocks."""
 

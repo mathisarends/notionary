@@ -8,6 +8,7 @@ from notionary.prompting.element_prompt_content import (
 )
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
+
 class ToggleableHeadingElement(NotionBlockElement):
     """Handles conversion between Markdown collapsible headings and Notion toggleable heading blocks with pipe syntax."""
 

@@ -6,6 +6,7 @@ from notionary.prompting.element_prompt_content import (
     ElementPromptContent,
 )
 
+
 class EmbedElement(NotionBlockElement):
     """
     Handles conversion between Markdown embeds and Notion embed blocks.

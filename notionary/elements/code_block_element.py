@@ -6,6 +6,7 @@ from notionary.prompting.element_prompt_content import (
     ElementPromptContent,
 )
 
+
 class CodeBlockElement(NotionBlockElement):
     """
     Handles conversion between Markdown code blocks and Notion code blocks.

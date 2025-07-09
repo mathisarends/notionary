@@ -6,15 +6,17 @@ from notionary.page.notion_page import NotionPage
 from notionary.database.notion_database import NotionDatabase
 from notionary.util import LoggingMixin
 
+
 class SearchObjectType(Enum):
     """Supported search object types."""
+
     PAGE = "page"
     DATABASE = "database"
 
 
 class SearchResult:
     """Represents a single search result."""
-    
+
     def __init__(
         self,
         object_type: SearchObjectType,
@@ -24,7 +26,7 @@ class SearchResult:
         parent_type: Optional[str] = None,
         parent_id: Optional[str] = None,
         last_edited_time: Optional[str] = None,
-        created_time: Optional[str] = None
+        created_time: Optional[str] = None,
     ):
         self.object_type = object_type
         self.id = id
@@ -34,7 +36,7 @@ class SearchResult:
         self.parent_id = parent_id
         self.last_edited_time = last_edited_time
         self.created_time = created_time
-    
+
     def __repr__(self) -> str:
         return f"SearchResult(type={self.object_type.value}, title='{self.title}', id='{self.id}')"
 
@@ -59,7 +61,7 @@ class GlobalSearch(LoggingMixin):
         query: str,
         limit: int = 100,
         object_type: Optional[SearchObjectType] = None,
-        sort_by_last_edited: bool = True
+        sort_by_last_edited: bool = True,
     ) -> List[SearchResult]:
         """
         Search across all accessible pages and databases.
@@ -75,30 +77,29 @@ class GlobalSearch(LoggingMixin):
         """
         try:
             # Build search request
-            search_body: Dict[str, Any] = {
-                "query": query,
-                "page_size": min(limit, 100)
-            }
+            search_body: Dict[str, Any] = {"query": query, "page_size": min(limit, 100)}
 
             # Add object type filter if specified
             if object_type:
                 search_body["filter"] = {
                     "property": "object",
-                    "value": object_type.value
+                    "value": object_type.value,
                 }
 
             # Add sorting
             if sort_by_last_edited:
                 search_body["sort"] = {
                     "direction": "descending",
-                    "timestamp": "last_edited_time"
+                    "timestamp": "last_edited_time",
                 }
 
             # Execute search
             result = await self._client.post("search", search_body)
 
             if not result or "results" not in result:
-                self.logger.warning("Search returned empty results for query: %s", query)
+                self.logger.warning(
+                    "Search returned empty results for query: %s", query
+                )
                 return []
 
             # Parse results
@@ -109,8 +110,7 @@ class GlobalSearch(LoggingMixin):
                     search_results.append(search_result)
 
             self.logger.info(
-                "Global search for '%s' found %d results", 
-                query, len(search_results)
+                "Global search for '%s' found %d results", query, len(search_results)
             )
             return search_results
 
@@ -119,10 +119,7 @@ class GlobalSearch(LoggingMixin):
             return []
 
     async def search_pages(
-        self,
-        query: str,
-        limit: int = 100,
-        in_database_id: Optional[str] = None
+        self, query: str, limit: int = 100, in_database_id: Optional[str] = None
     ) -> List[Tuple[NotionPage, str]]:
         """
         Search specifically for pages.
@@ -136,9 +133,7 @@ class GlobalSearch(LoggingMixin):
             List of (NotionPage, title) tuples
         """
         search_results = await self.search_all(
-            query=query,
-            limit=limit,
-            object_type=SearchObjectType.PAGE
+            query=query, limit=limit, object_type=SearchObjectType.PAGE
         )
 
         pages = []
@@ -153,9 +148,7 @@ class GlobalSearch(LoggingMixin):
         return pages
 
     async def find_database_by_title(
-        self,
-        title: str,
-        exact_match: bool = False
+        self, title: str, exact_match: bool = False
     ) -> Optional[NotionDatabase]:
         """
         Find a database by its title.
@@ -180,9 +173,7 @@ class GlobalSearch(LoggingMixin):
         return None
 
     async def search_recent(
-        self,
-        limit: int = 20,
-        object_type: Optional[SearchObjectType] = None
+        self, limit: int = 20, object_type: Optional[SearchObjectType] = None
     ) -> List[SearchResult]:
         """
         Get recently edited pages/databases.
@@ -195,10 +186,7 @@ class GlobalSearch(LoggingMixin):
             List of SearchResult objects sorted by last edited time
         """
         return await self.search_all(
-            query="",
-            limit=limit,
-            object_type=object_type,
-            sort_by_last_edited=True
+            query="", limit=limit, object_type=object_type, sort_by_last_edited=True
         )
 
     def _parse_search_result(self, item: Dict[str, Any]) -> Optional[SearchResult]:
@@ -238,7 +226,7 @@ class GlobalSearch(LoggingMixin):
                 parent_type=parent_type,
                 parent_id=parent_id,
                 created_time=created_time,
-                last_edited_time=last_edited_time
+                last_edited_time=last_edited_time,
             )
 
         except Exception as e:
@@ -254,8 +242,7 @@ class GlobalSearch(LoggingMixin):
                     title_array = prop_value.get("title", [])
                     if title_array:
                         return "".join(
-                            text_obj.get("plain_text", "")
-                            for text_obj in title_array
+                            text_obj.get("plain_text", "") for text_obj in title_array
                         )
             return "Untitled"
         except Exception:
@@ -267,8 +254,7 @@ class GlobalSearch(LoggingMixin):
             title_array = database_data.get("title", [])
             if title_array:
                 return "".join(
-                    text_obj.get("plain_text", "")
-                    for text_obj in title_array
+                    text_obj.get("plain_text", "") for text_obj in title_array
                 )
             return "Untitled Database"
         except Exception:

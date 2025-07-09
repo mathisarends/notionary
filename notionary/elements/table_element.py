@@ -7,6 +7,7 @@ from notionary.prompting.element_prompt_content import (
     ElementPromptContent,
 )
 
+
 class TableElement(NotionBlockElement):
     """
     Handles conversion between Markdown tables and Notion table blocks.

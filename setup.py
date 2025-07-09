@@ -15,8 +15,8 @@ setup(
         "tiktoken>=0.6.0",
     ],
     entry_points={
-        'console_scripts': [
-            'notionary=notionary.cli.main:main',
+        "console_scripts": [
+            "notionary=notionary.cli.main:main",
         ],
     },
     author="Mathis Arends",

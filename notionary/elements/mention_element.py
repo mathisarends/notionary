@@ -8,6 +8,7 @@ from notionary.prompting.element_prompt_content import (
     ElementPromptContent,
 )
 
+
 class MentionElement(NotionBlockElement):
     """
     Handles conversion between Markdown mentions and Notion mention elements.

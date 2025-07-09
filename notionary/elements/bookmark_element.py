@@ -7,6 +7,7 @@ from notionary.prompting.element_prompt_content import (
     ElementPromptContent,
 )
 
+
 class BookmarkElement(NotionBlockElement):
     """
     Handles conversion between Markdown bookmarks and Notion bookmark blocks.

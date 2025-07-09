@@ -8,6 +8,7 @@ from notionary.prompting.element_prompt_content import (
     ElementPromptContent,
 )
 
+
 class ColumnElement(NotionBlockElement):
     """
     Handles conversion between custom Markdown column syntax and Notion column blocks.

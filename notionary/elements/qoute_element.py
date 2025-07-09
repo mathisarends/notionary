@@ -6,6 +6,7 @@ from notionary.prompting.element_prompt_content import (
     ElementPromptContent,
 )
 
+
 class QuoteElement(NotionBlockElement):
     """Class for converting between Markdown blockquotes and Notion quote blocks."""
 

@@ -8,6 +8,7 @@ from notionary.prompting.element_prompt_content import (
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 from notionary.elements.notion_block_element import NotionBlockElement
 
+
 class CalloutElement(NotionBlockElement):
     """
     Handles conversion between Markdown callouts and Notion callout blocks.

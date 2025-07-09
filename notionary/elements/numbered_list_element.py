@@ -7,6 +7,7 @@ from notionary.prompting.element_prompt_content import (
 )
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
+
 class NumberedListElement(NotionBlockElement):
     """Class for converting between Markdown numbered lists and Notion numbered list items."""
 

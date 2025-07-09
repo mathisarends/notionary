@@ -6,6 +6,7 @@ from notionary.prompting.element_prompt_content import (
     ElementPromptContent,
 )
 
+
 class VideoElement(NotionBlockElement):
     """
     Handles conversion between Markdown video embeds and Notion video blocks.

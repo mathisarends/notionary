@@ -6,23 +6,15 @@ from langchain_core.language_models.chat_models import BaseChatModel
 class PlannerResponse(BaseModel):
     state_analysis: str
     progress_evaluation: str
-    challenges: List[str]
     next_steps: List[str]
     reasoning: str
     
     
 class AgentSettings(BaseModel):
 	"""Configuration options for the Agent"""
-	override_system_message: str | None = None
-	extend_system_message: str | None = None
-	max_actions_per_step: int = 5
-	use_thinking: bool = True
-	max_history_items: int = 40
-
 	content_extraction_llm: BaseChatModel | None = None
 	planner_llm: BaseChatModel | None = None
 	planner_interval: int = 1
-	extend_planner_system_message: str | None = None
     
 class AgentBrain(BaseModel):
 	thinking: str | None = None
@@ -65,7 +57,7 @@ class AgentStep(BaseModel):
  
  
 class AgentState(BaseModel):
-    user_input: str
+    task: str
     n_steps: int = 1
     last_result: Optional[str] = None
     plan: Optional[PlannerResponse] = None
@@ -73,5 +65,7 @@ class AgentState(BaseModel):
     errors: List[str] = Field(default_factory=list)
 
     agent_steps: List[AgentStep] = Field(default_factory=list)
+    
+    memory: str = ""
 
     last_model_output: AgentOutput | None = None

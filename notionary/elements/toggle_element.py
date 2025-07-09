@@ -7,6 +7,7 @@ from notionary.prompting.element_prompt_content import (
     ElementPromptContent,
 )
 
+
 class ToggleElement(NotionBlockElement):
     """
     Improved ToggleElement class using pipe syntax instead of indentation.

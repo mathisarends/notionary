@@ -38,31 +38,29 @@ class NotionDatabase(LoggingMixin):
         from notionary.database.notion_database_factory import NotionDatabaseFactory
 
         return NotionDatabaseFactory.from_database_id(database_id, token)
-    
+
     async def search_pages_global(
-        self,
-        query: str,
-        limit: int = 100
+        self, query: str, limit: int = 100
     ) -> List[Tuple[NotionPage, str, str]]:
         """
         Nutzt die globale Notion Search API - sehr effizient!
-        
+
         Args:
             query: Suchbegriff
             limit: Maximale Anzahl Ergebnisse
-            
+
         Returns:
             List of (NotionPage, title, parent_type)
         """
         try:
-            search_result = await self._client.post("search", {
-                "query": query,
-                "filter": {
-                    "property": "object",
-                    "value": "page"
+            search_result = await self._client.post(
+                "search",
+                {
+                    "query": query,
+                    "filter": {"property": "object", "value": "page"},
+                    "page_size": min(limit, 100),
                 },
-                "page_size": min(limit, 100)
-            })
+            )
 
             if not search_result or "results" not in search_result:
                 return []
@@ -75,38 +73,42 @@ class NotionDatabase(LoggingMixin):
 
                 # Prüfen ob die Seite aus unserer Datenbank stammt
                 parent = page_data.get("parent", {})
-                if (parent.get("type") == "database_id" and 
-                    parent.get("database_id") == self.database_id):
-                    
+                if (
+                    parent.get("type") == "database_id"
+                    and parent.get("database_id") == self.database_id
+                ):
+
                     title = self._extract_title_from_page_data(page_data)
                     page = NotionPage.from_page_id(page_id, token=self._client.token)
                     matches.append((page, title, "database"))
 
             self.logger.info(
                 "Global search for '%s' found %d matches in database %s",
-                query, len(matches), self.database_id
+                query,
+                len(matches),
+                self.database_id,
             )
             return matches
 
         except Exception as e:
             self.logger.error("Error in global search: %s", str(e))
             return []
-        
+
     def _extract_title_from_page_data(self, page_data: Dict[str, Any]) -> str:
-            """Extrahiert Titel aus Notion Page Data"""
-            try:
-                if "properties" in page_data:
-                    for prop_value in page_data["properties"].values():
-                        if prop_value.get("type") == "title":
-                            title_array = prop_value.get("title", [])
-                            if title_array:
-                                return "".join(
-                                    text_obj.get("plain_text", "") 
-                                    for text_obj in title_array
-                                )
-                return "Untitled"
-            except Exception:
-                return "Untitled"
+        """Extrahiert Titel aus Notion Page Data"""
+        try:
+            if "properties" in page_data:
+                for prop_value in page_data["properties"].values():
+                    if prop_value.get("type") == "title":
+                        title_array = prop_value.get("title", [])
+                        if title_array:
+                            return "".join(
+                                text_obj.get("plain_text", "")
+                                for text_obj in title_array
+                            )
+            return "Untitled"
+        except Exception:
+            return "Untitled"
 
     @classmethod
     async def from_database_name(

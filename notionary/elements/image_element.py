@@ -6,6 +6,7 @@ from notionary.prompting.element_prompt_content import (
     ElementPromptContent,
 )
 
+
 class ImageElement(NotionBlockElement):
     """
     Handles conversion between Markdown images and Notion image blocks.

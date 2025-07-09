@@ -2,21 +2,23 @@ import asyncio
 from dataclasses import dataclass
 from notionary import NotionDatabase
 
-@dataclass  
+
+@dataclass
 class OnboardingPageResult:
     url: str
     tile: str
     emoji: str
+
 
 async def generate_doc_for_database(
     datbase_name: str,
 ) -> OnboardingPageResult:
     database = await NotionDatabase.from_database_name(datbase_name)
     page = await database.create_blank_page()
-    
+
     page_title = "Welcome to Notionary!"
     page_icon = "📚"
-    
+
     markdown_content = """!> [🚀] This page was created fully automatically and serves as a showcase of what is possible with Notionary.
 
     ---
@@ -95,21 +97,20 @@ async def generate_doc_for_database(
 
     Happy building with Notionary! 🎉"""
 
-    
     await page.set_title(page_title)
     await page.set_emoji_icon(page_icon)
     await page.set_random_gradient_cover()
     await page.append_markdown(markdown_content)
-    
+
     url = await page.get_url()
-    
+
     return OnboardingPageResult(
         url=url,
         tile=page_title,
         emoji=page_icon,
     )
-    
-    
+
+
 if __name__ == "__main__":
     print("🚀 Starting Notionary onboarding page generation...")
     result = asyncio.run(generate_doc_for_database("Wissen & Notizen"))

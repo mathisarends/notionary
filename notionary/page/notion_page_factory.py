@@ -6,6 +6,7 @@ from notionary.util import LoggingMixin
 from notionary.util import format_uuid, extract_and_validate_page_id
 from notionary.util import singleton
 
+
 @singleton
 class NotionPageFactory(LoggingMixin):
     """
@@ -21,7 +22,7 @@ class NotionPageFactory(LoggingMixin):
     @classmethod
     def from_page_id(cls, page_id: str, token: Optional[str] = None) -> NotionPage:
         """Create a NotionPage from a page ID."""
-        
+
         try:
             formatted_id = format_uuid(page_id) or page_id
             page = NotionPage(page_id=formatted_id, token=token)
@@ -60,7 +61,7 @@ class NotionPageFactory(LoggingMixin):
         cls.logger.debug("Searching for page with name: %s", page_name)
 
         client = NotionClient(token=token)
-        
+
         try:
             # Search with pagination and early stopping
             best_match, best_score, all_suggestions = (

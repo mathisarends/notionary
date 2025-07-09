@@ -7,6 +7,7 @@ from notionary.prompting.element_prompt_content import (
     ElementPromptContent,
 )
 
+
 class DividerElement(NotionBlockElement):
     """
     Handles conversion between Markdown horizontal dividers and Notion divider blocks.

@@ -7,6 +7,7 @@ from notionary.prompting.element_prompt_content import (
 )
 from notionary.elements.text_inline_formatter import TextInlineFormatter
 
+
 class BulletedListElement(NotionBlockElement):
     """Class for converting between Markdown bullet lists and Notion bulleted list items."""
 

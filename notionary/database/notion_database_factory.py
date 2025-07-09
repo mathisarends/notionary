@@ -74,7 +74,7 @@ class NotionDatabaseFactory(LoggingMixin):
         cls.logger.debug("Searching for database with name: %s", database_name)
 
         client = NotionClient(token=token)
-        
+
         try:
             cls.logger.debug("Using search endpoint to find databases")
 
