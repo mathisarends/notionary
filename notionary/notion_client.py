@@ -48,39 +48,19 @@ class NotionClient(LoggingMixin):
     async def get(self, endpoint: str) -> Optional[Dict[str, Any]]:
         """
         Sends a GET request to the specified Notion API endpoint.
-
-        Args:
-            endpoint: The relative API path (e.g., 'databases/<id>').
-
-        Returns:
-            A dictionary with the response data, or None if the request failed.
         """
         return await self._make_request(HttpMethod.GET, endpoint)
 
     async def get_database(self, database_id: str) -> NotionDatabaseResponse:
         """
-        Ruft die Metadaten einer Notion-Datenbank anhand ihrer ID ab und gibt sie als NotionPageResponse zurück.
-
-        Args:
-            database_id: Die Notion-Datenbank-ID.
-
-        Returns:
-            Ein NotionPageResponse-Objekt mit den Datenbankmetadaten.
+        Gets metadata for a Notion database by its ID.
         """
-        return NotionDatabaseResponse.model_validate(
-            await self.get(f"databases/{database_id}")
-        )
+        response = await self.get(f"databases/{database_id}")
+        return NotionDatabaseResponse.model_validate(response)
         
     async def query_database_by_title(self, database_id: str, page_title: str) -> NotionQueryDatabaseResponse:
         """
         Queries a Notion database by title and returns the database response.
-
-        Args:
-            database_id: The ID of the Notion database.
-            page_title: The title of the page to query.
-
-        Returns:
-            A NotionDatabaseResponse object with the queried database data.
         """
         query = {
             "filter": {
@@ -98,12 +78,6 @@ class NotionClient(LoggingMixin):
     async def search_pages_global(self, query: str, sort_ascending = True, limit = 100) -> NotionQueryDatabaseResponse:
         """
         Searches for pages in Notion using the search endpoint.
-
-        Args:
-            query: The search query string.
-
-        Returns:
-            A NotionQueryDatabaseResponse object with the search results.
         """
         sort_order = "ascending" if sort_ascending else "descending"
         
@@ -127,8 +101,10 @@ class NotionClient(LoggingMixin):
         sort_ascending: bool = True,
         limit: int = 100
     ) -> NotionDatabaseSearchResponse:
+        """
+        Searches for databases in Notion using the search endpoint.
+        """
         sort_order = "ascending" if sort_ascending else "descending"
-        
         search_payload = {
             "query": query,
             "filter": {"property": "object", "value": "database"},
@@ -138,19 +114,12 @@ class NotionClient(LoggingMixin):
             },
             "page_size": min(limit, 100),
         }
-
         result = await self.post("search", search_payload)
         return NotionDatabaseSearchResponse.model_validate(result)
 
     async def get_page(self, page_id: str) -> NotionPageResponse:
         """
-        Ruft die Metadaten einer Notion-Seite anhand ihrer ID ab und gibt sie als NotionPageResponse zurück.
-
-        Args:
-            page_id: Die Notion-Seiten-ID.
-
-        Returns:
-            Ein NotionPageResponse-Objekt mit den Seitenmetadaten.
+        Gets metadata for a Notion page by its ID.
         """
         return NotionPageResponse.model_validate(await self.get(f"pages/{page_id}"))
 
@@ -159,13 +128,6 @@ class NotionClient(LoggingMixin):
     ) -> Optional[Dict[str, Any]]:
         """
         Sends a POST request to the specified Notion API endpoint.
-
-        Args:
-            endpoint: The relative API path.
-            data: Optional dictionary payload to send with the request.
-
-        Returns:
-            A dictionary with the response data, or None if the request failed.
         """
         return await self._make_request(HttpMethod.POST, endpoint, data)
 
@@ -174,13 +136,6 @@ class NotionClient(LoggingMixin):
     ) -> Optional[Dict[str, Any]]:
         """
         Sends a PATCH request to the specified Notion API endpoint.
-
-        Args:
-            endpoint: The relative API path.
-            data: Optional dictionary payload to send with the request.
-
-        Returns:
-            A dictionary with the response data, or None if the request failed.
         """
         return await self._make_request(HttpMethod.PATCH, endpoint, data)
 
@@ -189,10 +144,6 @@ class NotionClient(LoggingMixin):
     ) -> NotionPageResponse:
         """
         Sends a PATCH request to update a Notion page.
-
-        Args:
-            page_id: The ID of the page to update.
-            data: Optional dictionary payload to send with the request.
         """
         return NotionPageResponse.model_validate(
             await self.patch(f"pages/{page_id}", data=data)
@@ -201,12 +152,6 @@ class NotionClient(LoggingMixin):
     async def delete(self, endpoint: str) -> bool:
         """
         Sends a DELETE request to the specified Notion API endpoint.
-
-        Args:
-            endpoint: The relative API path.
-
-        Returns:
-            True if the request was successful, False otherwise.
         """
         result = await self._make_request(HttpMethod.DELETE, endpoint)
         return result is not None
@@ -218,7 +163,7 @@ class NotionClient(LoggingMixin):
         data: Optional[Dict[str, Any]] = None,
     ) -> Optional[Dict[str, Any]]:
         """
-        Führt eine HTTP-Anfrage aus und gibt direkt die Daten zurück oder None bei Fehler.
+        Executes an HTTP request and returns the data or None on error.
         """
         url = f"{self.BASE_URL}/{endpoint.lstrip('/')}"
         method_str = (
