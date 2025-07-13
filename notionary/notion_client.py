@@ -1,13 +1,12 @@
 import asyncio
 import os
-import weakref
 from enum import Enum
 from typing import Dict, Any, Optional, Union
 import httpx
 from dotenv import load_dotenv
 from notionary.models.notion_database_response import NotionDatabaseResponse, NotionDatabaseSearchResponse, NotionQueryDatabaseResponse
 from notionary.models.notion_page_response import NotionPageResponse
-from notionary.util import LoggingMixin
+from notionary.util import LoggingMixin, singleton
 
 
 class HttpMethod(Enum):
@@ -16,13 +15,12 @@ class HttpMethod(Enum):
     PATCH = "patch"
     DELETE = "delete"
 
-
+@singleton
 class NotionClient(LoggingMixin):
     """Verbesserter Notion-Client mit automatischer Ressourcenverwaltung."""
 
     BASE_URL = "https://api.notion.com/v1"
     NOTION_VERSION = "2022-06-28"
-    _instances = weakref.WeakSet()
 
     def __init__(self, token: Optional[str] = None, timeout: int = 30):
         load_dotenv()
@@ -37,16 +35,6 @@ class NotionClient(LoggingMixin):
         }
 
         self.client = httpx.AsyncClient(headers=self.headers, timeout=timeout)
-
-        self._instances.add(self)
-
-    @classmethod
-    async def close_all(cls):
-        """
-        Closes all active NotionClient instances and releases resources.
-        """
-        for instance in list(cls._instances):
-            await instance.close()
 
     async def close(self):
         """
@@ -107,7 +95,7 @@ class NotionClient(LoggingMixin):
         return NotionQueryDatabaseResponse.model_validate(result)
     
     
-    async def search_pages_global(self, query: str, sort_ascending = True) -> NotionQueryDatabaseResponse:
+    async def search_pages_global(self, query: str, sort_ascending = True, limit = 100) -> NotionQueryDatabaseResponse:
         """
         Searches for pages in Notion using the search endpoint.
 
@@ -126,13 +114,19 @@ class NotionClient(LoggingMixin):
                 "direction": sort_order,
                 "timestamp": "last_edited_time"
             },
-            "page_size": 100,
+            "page_size": min(limit, 100),
         }
 
         result = await self.post("search", search_payload)
         return NotionQueryDatabaseResponse.model_validate(result)   
 
-    async def search_databases_global(self, query: str, sort_ascending: bool = True) -> NotionDatabaseSearchResponse:
+
+    async def search_databases_global(
+        self, 
+        query: str, 
+        sort_ascending: bool = True,
+        limit: int = 100
+    ) -> NotionDatabaseSearchResponse:
         sort_order = "ascending" if sort_ascending else "descending"
         
         search_payload = {
@@ -142,12 +136,11 @@ class NotionClient(LoggingMixin):
                 "direction": sort_order,
                 "timestamp": "last_edited_time"
             },
-            "page_size": 100,
+            "page_size": min(limit, 100),
         }
 
         result = await self.post("search", search_payload)
         return NotionDatabaseSearchResponse.model_validate(result)
-
 
     async def get_page(self, page_id: str) -> NotionPageResponse:
         """
