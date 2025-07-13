@@ -1,11 +1,8 @@
 from __future__ import annotations
 from typing import Optional, List, TYPE_CHECKING
-from notionary import NotionClient, NotionPageFactory, NotionDatabaseFactory
+from notionary import NotionClient, NotionPage, NotionDatabase
 
 from notionary.util import LoggingMixin, singleton
-
-if TYPE_CHECKING:
-    from notionary import NotionPage, NotionDatabase
 
 
 @singleton
@@ -26,16 +23,16 @@ class GlobalSearchService(LoggingMixin):
         """Search for pages globally across Notion workspace."""
 
         response = await self.client.search_pages(query)
-        return [NotionPageFactory.from_page_id(page.id) for page in response.results]
+        return [NotionPage.from_page_id(page.id) for page in response.results]
 
-    async def search_databases(self, query: str) -> List[NotionDatabase]:
+    async def search_databases(self, query: str, limit: int) -> List[NotionDatabase]:
         """
         Search for databases globally across the Notion workspace.
         """
 
-        response = await self.client.search_databases(query)
+        response = await self.client.search_databases(query=query, limit=limit)
         return [
-            NotionDatabaseFactory.from_database_id(database.id)
+            NotionDatabase.from_database_id(database.id)
             for database in response.results
         ]
 

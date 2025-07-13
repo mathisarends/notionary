@@ -7,6 +7,12 @@ from notionary.page.notion_page import NotionPage
 from notionary.util.warn_direct_constructor_usage import warn_direct_constructor_usage
 from notionary.util import LoggingMixin
 from notionary.util.page_id_utils import format_uuid
+from notionary.exceptions.database_exceptions import (
+    DatabaseConnectionError,
+    DatabaseInitializationError,
+    DatabaseNotFoundException,
+    NotionDatabaseException,
+)
 
 
 class NotionDatabase(LoggingMixin):
@@ -34,11 +40,22 @@ class NotionDatabase(LoggingMixin):
     ) -> NotionDatabase:
         """
         Create a NotionDatabase from a database ID.
-        Delegates to NotionDatabaseFactory.
-        """
-        from notionary.database.notion_database_factory import NotionDatabaseFactory
 
-        return NotionDatabaseFactory.from_database_id(database_id, token)
+        Args:
+            database_id: The ID of the Notion database
+            token: Optional Notion API token (uses environment variable if not provided)
+
+        Returns:
+            An initialized NotionDatabase instance
+        """
+        formatted_id = format_uuid(database_id) or database_id
+
+        instance = cls(formatted_id, token)
+
+        cls.logger.info(
+            "Successfully created database manager for ID: %s", formatted_id
+        )
+        return instance
 
     @classmethod
     async def from_database_name(
@@ -46,11 +63,65 @@ class NotionDatabase(LoggingMixin):
     ) -> NotionDatabase:
         """
         Create a NotionDatabase by finding a database with a matching name.
-        Delegates to NotionDatabaseFactory.
-        """
-        from notionary.database.notion_database_factory import NotionDatabaseFactory
+        Uses Notion's search API and takes the first (best) result.
 
-        return await NotionDatabaseFactory.from_database_name(database_name, token)
+        Args:
+            database_name: The name of the Notion database to search for
+            token: Optional Notion API token (uses environment variable if not provided)
+
+        Returns:
+            An initialized NotionDatabase instance
+        """
+        from notionary.search import GlobalSearchService
+
+        cls.logger.debug("Searching for database with name: %s", database_name)
+        search_service = GlobalSearchService()
+
+        try:
+            cls.logger.debug("Using search endpoint to find databases")
+
+            databases = await search_service.search_databases(database_name, limit=1)
+
+            if not databases:
+                cls.logger.warning("No databases found for name: %s", database_name)
+                raise DatabaseNotFoundException(database_name)
+
+            # Take the first result - Notion's search already ranks by relevance
+            matched_db = databases[0]
+            database_id = matched_db.database_id
+            matched_name = await matched_db.get_title()
+
+            cls.logger.info(
+                "Found matching database: '%s' (ID: %s)",
+                matched_name,
+                database_id,
+            )
+
+            manager = cls(database_id, token)
+
+            cls.logger.info(
+                "Successfully created database manager for '%s'", matched_name
+            )
+            return manager
+        except Exception as e:
+            error_msg = f"Error finding database by name: {str(e)}"
+            cls.logger.error(error_msg)
+            raise DatabaseConnectionError(error_msg) from e
+
+    @classmethod
+    def _extract_text_from_rich_text(cls, rich_text: List[Dict[str, Any]]) -> str:
+        """
+        Extract plain text from a rich text array.
+        """
+        if not rich_text:
+            return ""
+
+        text_parts = []
+        for text_obj in rich_text:
+            if "plain_text" in text_obj:
+                text_parts.append(text_obj["plain_text"])
+
+        return "".join(text_parts)
 
     async def create_blank_page(self) -> Optional[NotionPage]:
         """
@@ -247,7 +318,7 @@ class NotionDatabase(LoggingMixin):
                 str(e),
             )
             return None
-    
+
     async def get_title(self) -> Optional[str]:
         """
         Retrieve the title of the database.
