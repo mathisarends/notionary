@@ -7,13 +7,15 @@ from notionary.models.notion_database_response import (
 )
 from notionary.notion_client import NotionClient
 from notionary.page.notion_page import NotionPage
-from notionary.util.warn_direct_constructor_usage import warn_direct_constructor_usage
 from notionary.util import LoggingMixin
 from notionary.util.page_id_utils import format_uuid
 from notionary.exceptions.database_exceptions import (
     DatabaseConnectionError,
     DatabaseNotFoundException,
 )
+
+from notionary.common.filter_builder import FilterBuilder
+
 
 
 class NotionDatabase(LoggingMixin):
@@ -23,7 +25,6 @@ class NotionDatabase(LoggingMixin):
     for further page operations.
     """
 
-    @warn_direct_constructor_usage
     def __init__(self, database_id: str, token: Optional[str] = None):
         """
         Initialize the minimal database manager.
@@ -106,24 +107,6 @@ class NotionDatabase(LoggingMixin):
             self.logger.error("Error creating blank page: %s", str(e))
             return None
 
-    async def query_database_by_title(self, page_title: str) -> List[NotionPage]:
-        """
-        Query the database for pages with a specific title.
-        """
-        search_results: NotionQueryDatabaseResponse = (
-            await self._client.query_database_by_title(
-                database_id=self.database_id, page_title=page_title
-            )
-        )
-
-        page_results: List[NotionPage] = []
-
-        for page in search_results.results:
-            page = NotionPage.from_page_id(page_id=page.id, token=self._client.token)
-            page_results.append(page)
-
-        return page_results
-
     async def archive_page(self, page_id: str) -> bool:
         """
         Delete (archive) a page.
@@ -148,7 +131,84 @@ class NotionDatabase(LoggingMixin):
             self.logger.error("Error in archive_page: %s", str(e))
             return False
 
-    async def iter_pages(
+    async def query_database_by_title(self, page_title: str) -> List[NotionPage]:
+        """
+        Query the database for pages with a specific title.
+        """
+        search_results: NotionQueryDatabaseResponse = (
+            await self._client.query_database_by_title(
+                database_id=self.database_id, page_title=page_title
+            )
+        )
+
+        page_results: List[NotionPage] = []
+
+        for page in search_results.results:
+            page = NotionPage.from_page_id(page_id=page.id, token=self._client.token)
+            page_results.append(page)
+
+        return page_results
+
+    async def iter_pages_updated_within(
+        self, hours: int = 24, page_size: int = 100
+    ) -> AsyncGenerator[NotionPage, None]:
+        """
+        Iterate through pages edited in the last N hours using FilterBuilder.
+        """
+
+        filter_builder = FilterBuilder()
+        filter_builder.with_updated_last_n_hours(hours).with_page_size(page_size)
+        filter_conditions = filter_builder.build()
+
+        async for page in self._iter_pages(
+            page_size=page_size, filter_conditions=filter_conditions
+        ):
+            yield page
+
+    async def get_all_pages(self) -> List[NotionPage]:
+        """
+        Get all pages in the database (use with caution for large databases).
+        """
+        pages = []
+        async for page in self._iter_pages():
+            pages.append(page)
+        return pages
+
+    async def get_last_edited_time(self) -> Optional[str]:
+        """
+        Retrieve the last edited time of the database.
+
+        Returns:
+            ISO 8601 timestamp string of the last database edit, or None if request fails.
+        """
+        try:
+            db = await self._client.get_database(self.database_id)
+
+            return db.last_edited_time
+
+        except Exception as e:
+            self.logger.error(
+                "Error fetching last_edited_time for database %s: %s",
+                self.database_id,
+                str(e),
+            )
+            return None
+
+    async def get_title(self) -> Optional[str]:
+        """
+        Retrieve the title of the database.
+        """
+        try:
+            db = await self._client.get_database(self.database_id)
+            return db.title[0].plain_text
+
+        except Exception as e:
+            self.logger.error(
+                "Error fetching title for database %s: %s", self.database_id, str(e)
+            )
+            return None
+
+    async def _iter_pages(
         self,
         page_size: int = 100,
         filter_conditions: Optional[Dict[str, Any]] = None,
@@ -188,37 +248,3 @@ class NotionDatabase(LoggingMixin):
 
             has_more = result.has_more
             start_cursor = result.next_cursor if has_more else None
-
-    async def get_last_edited_time(self) -> Optional[str]:
-        """
-        Retrieve the last edited time of the database.
-
-        Returns:
-            ISO 8601 timestamp string of the last database edit, or None if request fails.
-        """
-        try:
-            db = await self._client.get_database(self.database_id)
-
-            return db.last_edited_time
-
-        except Exception as e:
-            self.logger.error(
-                "Error fetching last_edited_time for database %s: %s",
-                self.database_id,
-                str(e),
-            )
-            return None
-
-    async def get_title(self) -> Optional[str]:
-        """
-        Retrieve the title of the database.
-        """
-        try:
-            db = await self._client.get_database(self.database_id)
-            return db.title[0].plain_text
-
-        except Exception as e:
-            self.logger.error(
-                "Error fetching title for database %s: %s", self.database_id, str(e)
-            )
-            return None

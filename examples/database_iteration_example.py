@@ -24,20 +24,13 @@ async def main():
         database_name=YOUR_DATABASE_NAME
     )
 
-    twenty_four_hours_ago = datetime.now() - timedelta(hours=24)
-
-    filter_conditions = {
-        "timestamp": "created_time",
-        "created_time": {"after": twenty_four_hours_ago.isoformat()},
-    }
-
+    print("Seiten, die in den letzten 24 Stunden bearbeitet wurden:")
     count = 0
-    async for page in db_manager.iter_pages(filter_conditions=filter_conditions):
+    async for page in db_manager.iter_pages_updated_within(hours=24):
         count += 1
         title, url, icon = await asyncio.gather(
             page.get_title(), page.get_url(), page.get_icon()
         )
-
         print(f"{count:2d}. {icon} {title}")
         print(f"    └─ {url}")
 
