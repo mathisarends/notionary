@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Dict, Any, Optional, Union
 import httpx
 from dotenv import load_dotenv
-from notionary.models.notion_database_response import NotionDatabaseResponse
+from notionary.models.notion_database_response import NotionDatabaseResponse, NotionQueryDatabaseResponse
 from notionary.models.notion_page_response import NotionPageResponse
 from notionary.util import LoggingMixin
 
@@ -82,6 +82,29 @@ class NotionClient(LoggingMixin):
         return NotionDatabaseResponse.model_validate(
             await self.get(f"databases/{database_id}")
         )
+        
+    async def query_database_by_title(self, database_id: str, page_title: str) -> NotionQueryDatabaseResponse:
+        """
+        Queries a Notion database by title and returns the database response.
+
+        Args:
+            database_id: The ID of the Notion database.
+            page_title: The title of the page to query.
+
+        Returns:
+            A NotionDatabaseResponse object with the queried database data.
+        """
+        query = {
+            "filter": {
+                "property": "title",
+                "title": {
+                    "contains": page_title
+                }
+            }
+        }
+        
+        result =  await self.post(f"databases/{database_id}/query", data=query)
+        return NotionQueryDatabaseResponse.model_validate(result)
 
     async def get_page(self, page_id: str) -> NotionPageResponse:
         """

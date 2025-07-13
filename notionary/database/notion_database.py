@@ -303,3 +303,16 @@ class NotionDatabase(LoggingMixin):
     async def close(self) -> None:
         """Close the client connection."""
         await self._client.close()
+
+if __name__ == "__main__":
+    import asyncio
+
+    async def main():
+        db = await NotionDatabase.from_database_name("Wissen & Notizen")
+
+        result = await db._client.query_database_by_title(db.database_id, "Notion Agent")
+        
+        for test in result.results:
+            print("test", test)
+        
+    asyncio.run(main())

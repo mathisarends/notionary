@@ -75,7 +75,6 @@ class WorkspaceParent:
 Parent = Union[DatabaseParent, PageParent, WorkspaceParent]
 
 
-@dataclass
 class NotionPageResponse(BaseModel):
     """
     Represents a full Notion page object as returned by the Notion API.
