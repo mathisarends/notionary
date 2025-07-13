@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
 
+from notionary.models.notion_database_response import NotionQueryDatabaseResponse
 from notionary.notion_client import NotionClient
 from notionary.page.notion_page import NotionPage
 from notionary.util.warn_direct_constructor_usage import warn_direct_constructor_usage
@@ -38,77 +39,6 @@ class NotionDatabase(LoggingMixin):
         from notionary.database.notion_database_factory import NotionDatabaseFactory
 
         return NotionDatabaseFactory.from_database_id(database_id, token)
-
-    async def search_pages_global(
-        self, query: str, limit: int = 100
-    ) -> List[Tuple[NotionPage, str, str]]:
-        """
-        Nutzt die globale Notion Search API - sehr effizient!
-
-        Args:
-            query: Suchbegriff
-            limit: Maximale Anzahl Ergebnisse
-
-        Returns:
-            List of (NotionPage, title, parent_type)
-        """
-        try:
-            search_result = await self._client.post(
-                "search",
-                {
-                    "query": query,
-                    "filter": {"property": "object", "value": "page"},
-                    "page_size": min(limit, 100),
-                },
-            )
-
-            if not search_result or "results" not in search_result:
-                return []
-
-            matches = []
-            for page_data in search_result["results"]:
-                page_id = page_data.get("id")
-                if not page_id:
-                    continue
-
-                # Prüfen ob die Seite aus unserer Datenbank stammt
-                parent = page_data.get("parent", {})
-                if (
-                    parent.get("type") == "database_id"
-                    and parent.get("database_id") == self.database_id
-                ):
-
-                    title = self._extract_title_from_page_data(page_data)
-                    page = NotionPage.from_page_id(page_id, token=self._client.token)
-                    matches.append((page, title, "database"))
-
-            self.logger.info(
-                "Global search for '%s' found %d matches in database %s",
-                query,
-                len(matches),
-                self.database_id,
-            )
-            return matches
-
-        except Exception as e:
-            self.logger.error("Error in global search: %s", str(e))
-            return []
-
-    def _extract_title_from_page_data(self, page_data: Dict[str, Any]) -> str:
-        """Extrahiert Titel aus Notion Page Data"""
-        try:
-            if "properties" in page_data:
-                for prop_value in page_data["properties"].values():
-                    if prop_value.get("type") == "title":
-                        title_array = prop_value.get("title", [])
-                        if title_array:
-                            return "".join(
-                                text_obj.get("plain_text", "")
-                                for text_obj in title_array
-                            )
-            return "Untitled"
-        except Exception:
-            return "Untitled"
 
     @classmethod
     async def from_database_name(
@@ -249,6 +179,22 @@ class NotionDatabase(LoggingMixin):
 
             has_more = result.get("has_more", False)
             start_cursor = result.get("next_cursor") if has_more else None
+            
+    async def query_database_by_title(
+        self, page_title: str) -> List[NotionPage]:
+        """
+        Query the database for pages with a specific title.
+        """
+        search_results: NotionQueryDatabaseResponse = await self._client.query_database_by_title(database_id=self.database_id, page_title=page_title)
+        
+        page_results: List[NotionPage] = []
+        
+        for page in search_results.results:
+            page = NotionPage.from_page_id(page_id=page.id, token=self._client.token)
+            page_results.append(page)
+            
+        return page_results
+        
 
     async def archive_page(self, page_id: str) -> bool:
         """
@@ -310,9 +256,9 @@ if __name__ == "__main__":
     async def main():
         db = await NotionDatabase.from_database_name("Wissen & Notizen")
 
-        result = await db._client.query_database_by_title(db.database_id, "Notion Agent")
+        page_results = await db.query_database_by_title("Notion Agent")
         
-        for test in result.results:
-            print("test", test)
+        for page in page_results:
+            text_content = await page.get_text_content()
         
     asyncio.run(main())

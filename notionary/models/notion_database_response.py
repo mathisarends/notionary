@@ -183,16 +183,15 @@ class NotionPage(BaseModel):
     url: str
     public_url: Optional[str] = None
 
-# Query response
-@dataclass
+
 class NotionQueryDatabaseResponse(BaseModel):
     """
     Complete Notion database query response model based on actual API data.
     """
-    object: str  # 'list'
+    object: str
     results: List[NotionPage]
     next_cursor: Optional[str] = None
     has_more: bool
-    type: str  # 'page_or_database'
-    page_or_database: Dict[str, Any]  # Usually empty dict
+    type: str
+    page_or_database: Dict[str, Any]
     request_id: str
