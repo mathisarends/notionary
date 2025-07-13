@@ -258,7 +258,5 @@ if __name__ == "__main__":
 
         page_results = await db.query_database_by_title("Notion Agent")
         
-        for page in page_results:
-            text_content = await page.get_text_content()
         
     asyncio.run(main())

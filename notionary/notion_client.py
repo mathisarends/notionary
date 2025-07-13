@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Dict, Any, Optional, Union
 import httpx
 from dotenv import load_dotenv
-from notionary.models.notion_database_response import NotionDatabaseResponse, NotionQueryDatabaseResponse
+from notionary.models.notion_database_response import NotionDatabaseResponse, NotionDatabaseSearchResponse, NotionQueryDatabaseResponse
 from notionary.models.notion_page_response import NotionPageResponse
 from notionary.util import LoggingMixin
 
@@ -105,6 +105,49 @@ class NotionClient(LoggingMixin):
         
         result =  await self.post(f"databases/{database_id}/query", data=query)
         return NotionQueryDatabaseResponse.model_validate(result)
+    
+    
+    async def search_pages_global(self, query: str, sort_ascending = True) -> NotionQueryDatabaseResponse:
+        """
+        Searches for pages in Notion using the search endpoint.
+
+        Args:
+            query: The search query string.
+
+        Returns:
+            A NotionQueryDatabaseResponse object with the search results.
+        """
+        sort_order = "ascending" if sort_ascending else "descending"
+        
+        search_payload = {
+            "query": query,
+            "filter": {"property": "object", "value": "page"},
+            "sort": {
+                "direction": sort_order,
+                "timestamp": "last_edited_time"
+            },
+            "page_size": 100,
+        }
+
+        result = await self.post("search", search_payload)
+        return NotionQueryDatabaseResponse.model_validate(result)   
+
+    async def search_databases_global(self, query: str, sort_ascending: bool = True) -> NotionDatabaseSearchResponse:
+        sort_order = "ascending" if sort_ascending else "descending"
+        
+        search_payload = {
+            "query": query,
+            "filter": {"property": "object", "value": "database"},
+            "sort": {
+                "direction": sort_order,
+                "timestamp": "last_edited_time"
+            },
+            "page_size": 100,
+        }
+
+        result = await self.post("search", search_payload)
+        return NotionDatabaseSearchResponse.model_validate(result)
+
 
     async def get_page(self, page_id: str) -> NotionPageResponse:
         """
