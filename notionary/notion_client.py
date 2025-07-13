@@ -4,16 +4,33 @@ from enum import Enum
 from typing import Dict, Any, Optional, Union
 import httpx
 from dotenv import load_dotenv
-from notionary.models.notion_database_response import NotionDatabaseResponse, NotionDatabaseSearchResponse, NotionQueryDatabaseResponse
+from notionary.models.notion_database_response import (
+    NotionDatabaseResponse,
+    NotionDatabaseSearchResponse,
+    NotionQueryDatabaseResponse,
+)
 from notionary.models.notion_page_response import NotionPageResponse
 from notionary.util import LoggingMixin, singleton
 
+load_dotenv()
+
 
 class HttpMethod(Enum):
+    """
+    Enumeration of supported HTTP methods for API requests.
+
+    Attributes:
+        GET:    HTTP GET method, used for retrieving data.
+        POST:   HTTP POST method, used for creating resources or sending data.
+        PATCH:  HTTP PATCH method, used for partial updates of resources.
+        DELETE: HTTP DELETE method, used for deleting resources.
+    """
+
     GET = "get"
     POST = "post"
     PATCH = "patch"
     DELETE = "delete"
+
 
 @singleton
 class NotionClient(LoggingMixin):
@@ -23,8 +40,7 @@ class NotionClient(LoggingMixin):
     NOTION_VERSION = "2022-06-28"
 
     def __init__(self, token: Optional[str] = None, timeout: int = 30):
-        load_dotenv()
-        self.token = token or os.getenv("NOTION_SECRET", "")
+        self.token = token or self.find_token()
         if not self.token:
             raise ValueError("Notion API token is required")
 
@@ -36,15 +52,23 @@ class NotionClient(LoggingMixin):
 
         self.client = httpx.AsyncClient(headers=self.headers, timeout=timeout)
 
-    async def close(self):
-        """
-        Closes the HTTP client for this instance and releases resources.
-        """
-        if hasattr(self, "client") and self.client:
-            await self.client.aclose()
-            self.client = None
+    def __del__(self):
+        if not hasattr(self, "client") or not self.client:
+            return
 
-    # Das hier für die unterschiedlichen responses hier noch richtig typne wäre gut.
+        try:
+            loop = asyncio.get_event_loop()
+            if not loop.is_running():
+                self.logger.warning(
+                    "Event loop not running, could not auto-close NotionClient"
+                )
+                return
+
+            loop.create_task(self.close())
+            self.logger.debug("Created cleanup task for NotionClient")
+        except RuntimeError:
+            self.logger.warning("No event loop available for auto-closing NotionClient")
+
     async def get(self, endpoint: str) -> Optional[Dict[str, Any]]:
         """
         Sends a GET request to the specified Notion API endpoint.
@@ -57,49 +81,38 @@ class NotionClient(LoggingMixin):
         """
         response = await self.get(f"databases/{database_id}")
         return NotionDatabaseResponse.model_validate(response)
-        
-    async def query_database_by_title(self, database_id: str, page_title: str) -> NotionQueryDatabaseResponse:
+
+    async def query_database_by_title(
+        self, database_id: str, page_title: str
+    ) -> NotionQueryDatabaseResponse:
         """
         Queries a Notion database by title and returns the database response.
         """
-        query = {
-            "filter": {
-                "property": "title",
-                "title": {
-                    "contains": page_title
-                }
-            }
-        }
-        
-        result =  await self.post(f"databases/{database_id}/query", data=query)
+        query = {"filter": {"property": "title", "title": {"contains": page_title}}}
+
+        result = await self.post(f"databases/{database_id}/query", data=query)
         return NotionQueryDatabaseResponse.model_validate(result)
-    
-    
-    async def search_pages_global(self, query: str, sort_ascending = True, limit = 100) -> NotionQueryDatabaseResponse:
+
+    async def search_pages(
+        self, query: str, sort_ascending=True, limit=100
+    ) -> NotionQueryDatabaseResponse:
         """
         Searches for pages in Notion using the search endpoint.
         """
         sort_order = "ascending" if sort_ascending else "descending"
-        
+
         search_payload = {
             "query": query,
             "filter": {"property": "object", "value": "page"},
-            "sort": {
-                "direction": sort_order,
-                "timestamp": "last_edited_time"
-            },
+            "sort": {"direction": sort_order, "timestamp": "last_edited_time"},
             "page_size": min(limit, 100),
         }
 
         result = await self.post("search", search_payload)
-        return NotionQueryDatabaseResponse.model_validate(result)   
+        return NotionQueryDatabaseResponse.model_validate(result)
 
-
-    async def search_databases_global(
-        self, 
-        query: str, 
-        sort_ascending: bool = True,
-        limit: int = 100
+    async def search_databases(
+        self, query: str, sort_ascending: bool = True, limit: int = 100
     ) -> NotionDatabaseSearchResponse:
         """
         Searches for databases in Notion using the search endpoint.
@@ -108,10 +121,7 @@ class NotionClient(LoggingMixin):
         search_payload = {
             "query": query,
             "filter": {"property": "object", "value": "database"},
-            "sort": {
-                "direction": sort_order,
-                "timestamp": "last_edited_time"
-            },
+            "sort": {"direction": sort_order, "timestamp": "last_edited_time"},
             "page_size": min(limit, 100),
         }
         result = await self.post("search", search_payload)
@@ -198,19 +208,22 @@ class NotionClient(LoggingMixin):
             self.logger.error("Request error (%s): %s", url, error_msg)
             return None
 
-    def __del__(self):
+    async def close(self):
+        """
+        Closes the HTTP client for this instance and releases resources.
+        """
         if not hasattr(self, "client") or not self.client:
             return
 
-        try:
-            loop = asyncio.get_event_loop()
-            if not loop.is_running():
-                self.logger.warning(
-                    "Event loop not running, could not auto-close NotionClient"
-                )
-                return
+        await self.client.aclose()
+        self.client = None
 
-            loop.create_task(self.close())
-            self.logger.debug("Created cleanup task for NotionClient")
-        except RuntimeError:
-            self.logger.warning("No event loop available for auto-closing NotionClient")
+    def find_token(self) -> Optional[str]:
+        """
+        Finds the Notion API token from environment variables or raises an error if not found.
+        """
+        for var in ("NOTION_SECRET", "NOTION_API_KEY", "NOTION_TOKEN"):
+            token = os.getenv(var)
+            if token:
+                return token
+        return None

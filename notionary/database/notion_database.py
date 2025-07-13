@@ -179,22 +179,24 @@ class NotionDatabase(LoggingMixin):
 
             has_more = result.get("has_more", False)
             start_cursor = result.get("next_cursor") if has_more else None
-            
-    async def query_database_by_title(
-        self, page_title: str) -> List[NotionPage]:
+
+    async def query_database_by_title(self, page_title: str) -> List[NotionPage]:
         """
         Query the database for pages with a specific title.
         """
-        search_results: NotionQueryDatabaseResponse = await self._client.query_database_by_title(database_id=self.database_id, page_title=page_title)
-        
+        search_results: NotionQueryDatabaseResponse = (
+            await self._client.query_database_by_title(
+                database_id=self.database_id, page_title=page_title
+            )
+        )
+
         page_results: List[NotionPage] = []
-        
+
         for page in search_results.results:
             page = NotionPage.from_page_id(page_id=page.id, token=self._client.token)
             page_results.append(page)
-            
+
         return page_results
-        
 
     async def archive_page(self, page_id: str) -> bool:
         """
@@ -245,10 +247,25 @@ class NotionDatabase(LoggingMixin):
                 str(e),
             )
             return None
+    
+    async def get_title(self) -> Optional[str]:
+        """
+        Retrieve the title of the database.
 
-    async def close(self) -> None:
-        """Close the client connection."""
-        await self._client.close()
+        Returns:
+            The title of the database, or None if it cannot be retrieved.
+        """
+        try:
+            db = await self._client.get_database(self.database_id)
+            print("db", db.title)
+            return db.title[0].plain_text
+
+        except Exception as e:
+            self.logger.error(
+                "Error fetching title for database %s: %s", self.database_id, str(e)
+            )
+            return None
+
 
 if __name__ == "__main__":
     import asyncio
@@ -257,6 +274,5 @@ if __name__ == "__main__":
         db = await NotionDatabase.from_database_name("Wissen & Notizen")
 
         page_results = await db.query_database_by_title("Notion Agent")
-        
-        
+
     asyncio.run(main())

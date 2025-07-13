@@ -2,12 +2,10 @@ from typing import List, Optional, Dict, Any
 from difflib import SequenceMatcher
 
 from notionary.database.notion_database import NotionDatabase
-from notionary.notion_client import NotionClient
 from notionary.exceptions.database_exceptions import (
     DatabaseConnectionError,
     DatabaseInitializationError,
     DatabaseNotFoundException,
-    DatabaseParsingError,
     NotionDatabaseException,
 )
 from notionary.util import LoggingMixin
@@ -71,63 +69,45 @@ class NotionDatabaseFactory(LoggingMixin):
         Returns:
             An initialized NotionDatabaseManager instance
         """
+        from notionary.search import GlobalSearchService
+        
         cls.logger.debug("Searching for database with name: %s", database_name)
-
-        client = NotionClient(token=token)
+        search_service = GlobalSearchService()
 
         try:
             cls.logger.debug("Using search endpoint to find databases")
 
-            search_payload = {
-                "filter": {"property": "object", "value": "database"},
-                "page_size": 100,
-            }
-
-            response = await client.post("search", search_payload)
-
-            if not response or "results" not in response:
-                error_msg = "Failed to fetch databases using search endpoint"
-                cls.logger.error(error_msg)
-                raise DatabaseConnectionError(error_msg)
-
-            databases = response.get("results", [])
+            databases = await search_service.search_databases(database_name)
 
             if not databases:
-                error_msg = "No databases found"
-                cls.logger.warning(error_msg)
-                raise DatabaseNotFoundException(database_name, error_msg)
+                cls.logger.warning("No databases found for name: %s", database_name)
+                raise DatabaseNotFoundException(database_name)
 
             cls.logger.debug(
                 "Found %d databases, searching for best match", len(databases)
             )
 
-            best_match = None
+            best_match_db = None
             best_score = 0
 
             for db in databases:
-                title = cls._extract_title_from_database(db)
-
+                title = await db.get_title()
+                
                 score = SequenceMatcher(
                     None, database_name.lower(), title.lower()
                 ).ratio()
 
                 if score > best_score:
                     best_score = score
-                    best_match = db
+                    best_match_db = db
 
-            if best_score < 0.6 or not best_match:
+            if best_score < 0.6 or not best_match_db:
                 error_msg = f"No good database name match found for '{database_name}'. Best match had score {best_score:.2f}"
                 cls.logger.warning(error_msg)
                 raise DatabaseNotFoundException(database_name, error_msg)
 
-            database_id = best_match.get("id")
-
-            if not database_id:
-                error_msg = "Best match database has no ID"
-                cls.logger.error(error_msg)
-                raise DatabaseParsingError(error_msg)
-
-            matched_name = cls._extract_title_from_database(best_match)
+            database_id = best_match_db.database_id
+            matched_name = await best_match_db.get_title()
 
             cls.logger.info(
                 "Found matching database: '%s' (ID: %s) with score: %.2f",
@@ -141,38 +121,14 @@ class NotionDatabaseFactory(LoggingMixin):
             cls.logger.info(
                 "Successfully created database manager for '%s'", matched_name
             )
-            await client.close()
             return manager
 
         except NotionDatabaseException:
-            await client.close()
             raise
         except Exception as e:
             error_msg = f"Error finding database by name: {str(e)}"
             cls.logger.error(error_msg)
-            await client.close()
             raise DatabaseConnectionError(error_msg) from e
-
-    @classmethod
-    def _extract_title_from_database(cls, database: Dict[str, Any]) -> str:
-        """
-        Extract the title from a database object.
-        """
-        try:
-            if "title" in database:
-                return cls._extract_text_from_rich_text(database["title"])
-
-            if "properties" in database and "title" in database["properties"]:
-                title_prop = database["properties"]["title"]
-                if "title" in title_prop:
-                    return cls._extract_text_from_rich_text(title_prop["title"])
-
-            return "Untitled"
-
-        except Exception as e:
-            error_msg = f"Error extracting database title: {str(e)}"
-            cls.class_logger().warning(error_msg)
-            raise DatabaseParsingError(error_msg) from e
 
     @classmethod
     def _extract_text_from_rich_text(cls, rich_text: List[Dict[str, Any]]) -> str:

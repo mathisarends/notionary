@@ -10,6 +10,7 @@ The factory will use fuzzy matching to find the closest match to this name.
 """
 
 import asyncio
+import traceback
 from notionary import NotionDatabase
 
 DATABASE_NAME = "WISSEN/NOTIZEN"
@@ -74,7 +75,7 @@ async def main():
         print(f"✅ Page created: {await page.get_url()}")
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"❌ Error: {traceback.format_exc(e)}")
 
 
 if __name__ == "__main__":
