@@ -13,7 +13,7 @@ import time
 import asyncio
 import traceback
 import random
-from notionary import NotionPageFactory
+from notionary import NotionPage
 
 YOUR_PAGE_NAME = "Jarvis Clipboard"
 
@@ -81,7 +81,7 @@ async def main():
     """Tests batch processing by appending many blocks to a Notion page."""
     try:
         print("Searching for page by name...")
-        page = await NotionPageFactory.from_page_name(YOUR_PAGE_NAME)
+        page = await NotionPage.from_page_name(YOUR_PAGE_NAME)
 
         icon, title, url = await asyncio.gather(
             page.get_icon(), page.get_title(), page.get_url()

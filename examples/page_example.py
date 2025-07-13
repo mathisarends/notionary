@@ -2,33 +2,26 @@
 # Notionary: Page Management Example
 ===================================
 
-This example demonstrates how to find and modify Notion pages,
-including content updates, property changes, and formatting.
+This example demonstrates how to find and display Notion page information
+using only getter methods (no modifications).
 
 IMPORTANT: Replace PAGE_NAME with the name of an existing Notion page.
-The factory will use fuzzy matching to find the closest match to this name.
 """
 
 import asyncio
 from notionary import NotionPage
 
-PAGE_NAME = "Meeting Notes"
+PAGE_NAME = "Jarvis Clipboad"
 
 
 async def main():
-    """Demonstrate page operations with Notionary."""
-    print("📄 Notionary Page Example")
+    """Demonstrate page getters with Notionary."""
+    print("📄 Notionary Page Example (Getters Only)")
     print("========================")
 
     try:
         print(f"\n🔎 Finding page '{PAGE_NAME}'...")
         page = await NotionPage.from_page_name(PAGE_NAME)
-
-        print("✨ Updating page properties...")
-
-        # Update icon and cover
-        await page.set_emoji_icon("📝")
-        await page.set_random_gradient_cover()
 
         # Get current title for display
         current_title = await page.get_title()
@@ -40,7 +33,11 @@ async def main():
         page_url = await page.get_url()
         print(f"🔗 View page: {page_url}")
 
-        print("\n📋 Page structure:")
+        page_icon = await page.get_icon()
+        print(f"🏷️ Icon: {page_icon}")
+
+        page_cover = await page.get_cover_url()
+        print(f"🖼️ Cover URL: {page_cover}")
 
     except Exception as e:
         print(f"❌ Error: {e}")

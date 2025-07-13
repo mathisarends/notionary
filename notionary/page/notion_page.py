@@ -23,6 +23,7 @@ from notionary.page.relations.notion_page_title_resolver import NotionPageTitleR
 from notionary.util.warn_direct_constructor_usage import warn_direct_constructor_usage
 from notionary.util import LoggingMixin
 from notionary.util.page_id_utils import extract_and_validate_page_id
+from notionary.util import format_uuid
 from notionary.page.relations.page_database_relation import PageDatabaseRelation
 
 
@@ -94,10 +95,10 @@ class NotionPage(LoggingMixin):
         Returns:
             An initialized NotionPage instance
         """
-        from notionary.page.notion_page_factory import NotionPageFactory
-
-        cls.logger.info("Creating page from ID: %s", page_id)
-        return NotionPageFactory().from_page_id(page_id, token)
+        formatted_id = format_uuid(page_id) or page_id
+        page = cls(page_id=formatted_id, token=token)
+        cls.logger.info("Successfully created page instance for ID: %s", formatted_id)
+        return page
 
     @classmethod
     def from_url(cls, url: str, token: Optional[str] = None) -> NotionPage:
@@ -111,10 +112,20 @@ class NotionPage(LoggingMixin):
         Returns:
             An initialized NotionPage instance
         """
-        from notionary.page.notion_page_factory import NotionPageFactory
+        try:
+            page_id = extract_and_validate_page_id(url=url)
+            if not page_id:
+                cls.logger.error("Could not extract valid page ID from URL: %s", url)
+                raise ValueError(f"Invalid URL: {url}")
 
-        cls.logger.info("Creating page from URL: %s", url)
-        return NotionPageFactory().from_url(url, token)
+            page = cls(page_id=page_id, url=url, token=token)
+            cls.logger.info(
+                "Successfully created page instance from URL for ID: %s", page_id
+            )
+            return page
+        except Exception as e:
+            cls.logger.error("Error connecting to page with URL %s: %s", url, str(e))
+            raise
 
     @classmethod
     async def from_page_name(
@@ -122,18 +133,37 @@ class NotionPage(LoggingMixin):
     ) -> NotionPage:
         """
         Create a NotionPage by finding a page with a matching name.
-        Uses fuzzy matching to find the closest match to the given name.
-
-        Args:
-            page_name: The name of the Notion page to search for
-            token: Optional Notion API token (uses environment variable if not provided)
-
-        Returns:
-            An initialized NotionPage instance
+        Uses Notion's search API and takes the first (best) result.
         """
-        from notionary.page.notion_page_factory import NotionPageFactory
+        from notionary.search import GlobalSearchService
 
-        return await NotionPageFactory().from_page_name(page_name, token)
+        cls.logger.debug("Searching for page with name: %s", page_name)
+        search_service = GlobalSearchService(token=token)
+
+        try:
+            cls.logger.debug("Using search endpoint to find pages")
+
+            pages = await search_service.search_pages(page_name)
+
+            if not pages:
+                cls.logger.warning("No pages found for name: %s", page_name)
+                raise ValueError(f"No pages found for name: {page_name}")
+
+            matched_page = pages[0]
+            matched_name = await matched_page.get_title()
+
+            cls.logger.info(
+                "Found matching page: '%s' (ID: %s)",
+                matched_name,
+                matched_page.id,
+            )
+
+            cls.logger.info("Successfully created page instance for '%s'", matched_name)
+            return matched_page
+
+        except Exception as e:
+            cls.logger.error("Error finding page by name: %s", str(e))
+            raise
 
     @property
     def id(self) -> str:
