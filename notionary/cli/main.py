@@ -16,8 +16,7 @@ from rich.prompt import Prompt, Confirm
 from rich.table import Table
 from rich import box
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
-from notionary.notion_client import NotionClient
-from notionary.database.database_discovery import DatabaseDiscovery
+from notionary.workspace.workspace import NotionWorkspace
 
 
 # Disable logging for CLI usage
@@ -80,9 +79,7 @@ def get_notion_secret() -> str:
 async def fetch_notion_databases_with_progress():
     """Fetch databases using DatabaseDiscovery with progress animation"""
     try:
-        # Initialize NotionClient and DatabaseDiscovery
-        client = NotionClient()
-        discovery = DatabaseDiscovery(client)
+        workspace = NotionWorkspace()
 
         # Create progress display with custom spinner
         with Progress(
@@ -96,7 +93,7 @@ async def fetch_notion_databases_with_progress():
             task = progress.add_task("Fetching...", total=None)
 
             # Fetch databases
-            databases = await discovery._discover(page_size=50)
+            databases = await workspace.list_all_databases(limit=50)
 
             # Update progress to show completion
             progress.update(

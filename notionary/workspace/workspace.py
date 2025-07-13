@@ -1,6 +1,7 @@
 from typing import Optional, List
 from notionary import NotionPage, NotionDatabase, NotionClient
 from notionary.util import LoggingMixin
+from notionary.common.search_filter_builder import SearchFilterBuilder
 
 
 class NotionWorkspace(LoggingMixin):
@@ -42,40 +43,25 @@ class NotionWorkspace(LoggingMixin):
 
         return databases[0] if databases else None
 
-    async def crate_database(self, title: str, properties: dict) -> NotionDatabase:
-        """
-        Create a new database in the Notion workspace.
-
-        Args:
-            title: The title of the new database.
-            properties: A dictionary defining the properties of the database.
-
-        Returns:
-            The created NotionDatabase instance.
-        """
-
-    async def list_all_databases(self, page_size: int = 100) -> List[NotionDatabase]:
+    async def list_all_databases(self, limit: int = 100) -> List[NotionDatabase]:
         """
         List all databases in the workspace.
         Returns a list of NotionDatabase instances.
         """
-        databases = []
-        start_cursor = None
-        while True:
-            body = {
-                "filter": {"value": "database", "property": "object"},
-                "page_size": page_size,
-            }
-            if start_cursor:
-                body["start_cursor"] = start_cursor
-            result = await self.client.post("search", data=body)
-            if not result or "results" not in result:
-                break
-            for database in result["results"]:
-                db_id = database.get("id")
-                if db_id:
-                    databases.append(NotionDatabase.from_database_id(db_id))
-            if not result.get("has_more") or not result.get("next_cursor"):
-                break
-            start_cursor = result["next_cursor"]
-        return databases
+        database_results = await self.client.search_databases(query="", limit=limit)
+        return [
+            NotionDatabase.from_database_id(database.id)
+            for database in database_results.results
+        ]
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    async def main():
+        workspace = NotionWorkspace()
+        databases = await workspace.list_all_databases()
+        for db in databases:
+            print(f"Database ID: {db.database_id}, Title: {await db.get_title()}")
+            
+    asyncio.run(create_database_test())

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 
@@ -29,6 +29,16 @@ class FilterBuilder:
 
     def __init__(self, config: FilterConfig = None):
         self.config = config or FilterConfig()
+
+    def with_page_object_filter(self) -> FilterBuilder:
+        """Filter: Nur Datenbank-Objekte (Notion API search)."""
+        self.config.conditions.append({"value": "page", "property": "object"})
+        return self
+
+    def with_database_object_filter(self) -> FilterBuilder:
+        """Filter: Nur Datenbank-Objekte (Notion API search)."""
+        self.config.conditions.append({"value": "database", "property": "object"})
+        return self
 
     # TIMESTAMP FILTERS (Created/Updated)
     def with_created_after(self, date: datetime) -> FilterBuilder:
