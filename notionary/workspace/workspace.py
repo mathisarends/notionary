@@ -15,20 +15,20 @@ class NotionWorkspace(LoggingMixin):
         """
         self.client = NotionClient(token=token)
 
-    async def search_pages(self, query: str):
+    async def search_pages(self, query: str) -> List[NotionPage]:
         """
         Search for pages globally across Notion workspace.
         """
         response = await self.client.search_pages(query)
         return [NotionPage.from_page_id(page.id) for page in response.results]
-
-    async def search_databases(self, query: str, limit: int = 10):
+    
+    async def search_databases(self, query: str, limit: int = 100) -> List[NotionDatabase]:
         """
         Search for databases globally across the Notion workspace.
         """
         response = await self.client.search_databases(query=query, limit=limit)
         return [
-            NotionDatabase.from_database_id(database.id)
+            await NotionDatabase.from_database_id(database.id)
             for database in response.results
         ]
 
@@ -50,7 +50,7 @@ class NotionWorkspace(LoggingMixin):
         """
         database_results = await self.client.search_databases(query="", limit=limit)
         return [
-            NotionDatabase.from_database_id(database.id)
+            await NotionDatabase.from_database_id(database.id)
             for database in database_results.results
         ]
 
@@ -64,4 +64,4 @@ if __name__ == "__main__":
         for db in databases:
             print(f"Database ID: {db.database_id}, Title: {await db.get_title()}")
             
-    asyncio.run(create_database_test())
+    asyncio.run(main())

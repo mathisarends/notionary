@@ -24,28 +24,66 @@ class NotionDatabase(LoggingMixin):
     for further page operations.
     """
 
-    def __init__(self, database_id: str, token: Optional[str] = None):
+    def __init__(self, database_id: str, title: str, url: str, emoji: Optional[str] = None, token: Optional[str] = None):
         """
         Initialize the minimal database manager.
         """
-        self.database_id = database_id
+        self._database_id = database_id
+        self._title = title
+        self._url = url
+        self._emoji = emoji
+        
         self._client = NotionClient(token=token)
 
+    @property
+    def database_id(self) -> str:
+        """Get the database ID (readonly)."""
+        return self._database_id
+
+    @property
+    def title(self) -> str:
+        """Get the database title (readonly)."""
+        return self._title
+    
+    @property
+    def url(self) -> str:   
+        """Get the database URL (readonly)."""
+        return self._url
+
+    @property
+    def emoji(self) -> Optional[str]:
+        """Get the database emoji (readonly)."""
+        return self._emoji
+
     @classmethod
-    def from_database_id(
+    async def from_database_id(
         cls, database_id: str, token: Optional[str] = None
     ) -> NotionDatabase:
         """
         Create a NotionDatabase from a database ID.
         """
         formatted_id = format_uuid(database_id) or database_id
+        
+        temp_client = NotionClient(token=token)
+        
+        try:
+            db = await temp_client.get_database(formatted_id)
+            title = db.title[0].plain_text
+            url = db.url
+            emoji = db.icon.emoji if db.icon else None
+            
+            instance = cls(formatted_id, title, url=url, emoji=emoji, token=token)
 
-        instance = cls(formatted_id, token)
-
-        cls.logger.info(
-            "Successfully created database manager for ID: %s", formatted_id
-        )
-        return instance
+            cls.logger.info(
+                "Successfully created database manager for ID: %s (Title: '%s', URL: '%s')", 
+                formatted_id, title, url
+            )
+            return instance
+            
+        except Exception as e:
+            error_msg = f"Error fetching database info for ID {formatted_id}: {str(e)}"
+            cls.logger.error(error_msg)
+            raise DatabaseConnectionError(error_msg) from e
 
     @classmethod
     async def from_database_name(
@@ -72,20 +110,28 @@ class NotionDatabase(LoggingMixin):
             # Take the first result - Notion's search already ranks by relevance
             matched_db = databases[0]
             database_id = matched_db.database_id
-            matched_name = await matched_db.get_title()
+            
+            # Query the database to get current title, url and emoji
+            temp_client = NotionClient(token=token)
+            db = await temp_client.get_database(database_id)
+            title = db.title[0].plain_text if db.title else "Untitled Database"
+            url = db.url
+            emoji = db.icon.emoji if db.icon else None
 
             cls.logger.info(
-                "Found matching database: '%s' (ID: %s)",
-                matched_name,
+                "Found matching database: '%s' (ID: %s, URL: '%s')",
+                title,
                 database_id,
+                url
             )
 
-            manager = cls(database_id, token)
+            manager = cls(database_id, title, url=url, emoji=emoji, token=token)
 
             cls.logger.info(
-                "Successfully created database manager for '%s'", matched_name
+                "Successfully created database manager for '%s'", title
             )
             return manager
+            
         except Exception as e:
             error_msg = f"Error finding database by name: {str(e)}"
             cls.logger.error(error_msg)
@@ -96,11 +142,11 @@ class NotionDatabase(LoggingMixin):
         Create a new blank page in the database with minimal properties.
         """
         try:
-            craeate_page_response: NotionPageResponse = await self._client.create_page(
+            create_page_response: NotionPageResponse = await self._client.create_page(
                 parent_database_id=self.database_id
             )
 
-            return NotionPage.from_page_id(page_id=craeate_page_response.id)
+            return NotionPage.from_page_id(page_id=create_page_response.id)
 
         except Exception as e:
             self.logger.error("Error creating blank page: %s", str(e))
@@ -193,19 +239,31 @@ class NotionDatabase(LoggingMixin):
             )
             return None
 
-    async def get_title(self) -> Optional[str]:
+    async def refresh_metadata(self) -> bool:
         """
-        Retrieve the title of the database.
+        Refresh the database metadata (title, url and emoji) from remote state.
+        
+        Returns:
+            True if refresh was successful, False otherwise.
         """
         try:
             db = await self._client.get_database(self.database_id)
-            return db.title[0].plain_text
+            self._title = db.title[0].plain_text if db.title else "Untitled Database"
+            self._url = db.url
+            self._emoji = db.icon.emoji if db.icon else None
+            
+            self.logger.info(
+                "Successfully refreshed metadata for database %s: title='%s', url='%s', emoji='%s'",
+                self.database_id, self._title, self._url, self._emoji
+            )
+            return True
 
         except Exception as e:
             self.logger.error(
-                "Error fetching title for database %s: %s", self.database_id, str(e)
+                "Error refreshing metadata for database %s: %s", 
+                self.database_id, str(e)
             )
-            return None
+            return False
 
     def create_filter(self) -> FilterBuilder:
         """Create a new filter builder for this database."""
@@ -216,7 +274,7 @@ class NotionDatabase(LoggingMixin):
     ):
         """Iterate pages using a filter builder."""
         filter_config = filter_builder.build()
-        print(f"Using filter: {filter_config}")
+        self.logger.debug("Using filter: %s", filter_config)
         async for page in self._iter_pages(
             page_size=page_size, filter_conditions=filter_config
         ):
@@ -232,7 +290,7 @@ class NotionDatabase(LoggingMixin):
         Directly queries the Notion API without using the schema.
         """
         self.logger.debug(
-            "Iterating pages with page_size: %d, filter: %s, sorts: %s",
+            "Iterating pages with page_size: %d, filter: %s",
             page_size,
             filter_conditions,
         )

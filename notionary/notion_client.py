@@ -121,16 +121,17 @@ class NotionClient(LoggingMixin):
         """
         Searches for pages in Notion using the search endpoint.
         """
-        sort_order = "ascending" if sort_ascending else "descending"
+        from notionary.common.search_filter_builder import SearchFilterBuilder
+        
+        search_filter = (
+            SearchFilterBuilder()
+            .with_query(query)
+            .with_pages_only()
+            .with_sort_direction("ascending" if sort_ascending else "descending")
+            .with_page_size(limit)
+        )
 
-        search_payload = {
-            "query": query,
-            "filter": {"property": "object", "value": "page"},
-            "sort": {"direction": sort_order, "timestamp": "last_edited_time"},
-            "page_size": min(limit, 100),
-        }
-
-        result = await self.post("search", search_payload)
+        result = await self.post("search", search_filter.build())
         return NotionQueryDatabaseResponse.model_validate(result)
 
     async def search_databases(
@@ -139,14 +140,17 @@ class NotionClient(LoggingMixin):
         """
         Searches for databases in Notion using the search endpoint.
         """
-        sort_order = "ascending" if sort_ascending else "descending"
-        search_payload = {
-            "query": query,
-            "filter": {"property": "object", "value": "database"},
-            "sort": {"direction": sort_order, "timestamp": "last_edited_time"},
-            "page_size": min(limit, 100),
-        }
-        result = await self.post("search", search_payload)
+        from notionary.common.search_filter_builder import SearchFilterBuilder
+        
+        search_filter = (
+            SearchFilterBuilder()
+            .with_query(query)
+            .with_databases_only()
+            .with_sort_direction("ascending" if sort_ascending else "descending")
+            .with_page_size(limit)
+        )
+        
+        result = await self.post("search", search_filter.build())
         return NotionDatabaseSearchResponse.model_validate(result)
 
     async def get_page(self, page_id: str) -> NotionPageResponse:
@@ -209,9 +213,9 @@ class NotionClient(LoggingMixin):
                 method_str in [HttpMethod.POST.value, HttpMethod.PATCH.value]
                 and data is not None
             ):
-                response = await getattr(self.client, method_str)(url, json=data)
+                response: httpx.Response = await getattr(self.client, method_str)(url, json=data)
             else:
-                response = await getattr(self.client, method_str)(url)
+                response: httpx.Response = await getattr(self.client, method_str)(url)
 
             response.raise_for_status()
             result_data = response.json()

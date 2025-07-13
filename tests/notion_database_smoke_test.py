@@ -48,7 +48,7 @@ class TestNotionDatabaseSmoke:
             TestNotionDatabaseSmoke.database_id = database.database_id
 
         # Create database from ID
-        database_from_id = await NotionDatabase.from_database_id(
+        database_from_id = await await NotionDatabase.from_database_id(
             TestNotionDatabaseSmoke.database_id, self.token
         )
         assert database_from_id is not None
@@ -180,7 +180,7 @@ class TestNotionDatabaseSmoke:
     async def _get_test_database(self):
         """Helper method to get the test database."""
         if hasattr(TestNotionDatabaseSmoke, "database_id"):
-            return await NotionDatabase.from_database_id(
+            return await await NotionDatabase.from_database_id(
                 TestNotionDatabaseSmoke.database_id, self.token
             )
         else:
@@ -232,7 +232,7 @@ async def run_all_tests():
 
     # Close the database connection at the end
     if hasattr(TestNotionDatabaseSmoke, "database_id"):
-        database = await NotionDatabase.from_database_id(
+        database = await await NotionDatabase.from_database_id(
             TestNotionDatabaseSmoke.database_id, test_instance.token
         )
         await database.close()
