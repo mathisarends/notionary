@@ -98,6 +98,8 @@ class NotionClient(LoggingMixin):
         Queries a Notion database with the provided filter and sorts.
         """
         result = await self.post(f"databases/{database_id}/query", data=query_data)
+        print(f"Querying database {database_id} with data: {query_data}")
+        print("Query result:", result)
         return NotionQueryDatabaseResponse.model_validate(result)
 
     async def query_database_by_title(

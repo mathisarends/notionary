@@ -17,7 +17,6 @@ from notionary.exceptions.database_exceptions import (
 from notionary.common.filter_builder import FilterBuilder
 
 
-
 class NotionDatabase(LoggingMixin):
     """
     Minimal manager for Notion databases.
@@ -56,15 +55,15 @@ class NotionDatabase(LoggingMixin):
         Create a NotionDatabase by finding a database with a matching name.
         Uses Notion's search API and takes the first (best) result.
         """
-        from notionary.search import GlobalSearchService
+        from notionary.workspace.workspace import NotionWorkspace
 
         cls.logger.debug("Searching for database with name: %s", database_name)
-        search_service = GlobalSearchService()
+        workspace = NotionWorkspace()
 
         try:
             cls.logger.debug("Using search endpoint to find databases")
 
-            databases = await search_service.search_databases(database_name, limit=1)
+            databases = await workspace.search_databases(database_name, limit=1)
 
             if not databases:
                 cls.logger.warning("No databases found for name: %s", database_name)
@@ -207,6 +206,21 @@ class NotionDatabase(LoggingMixin):
                 "Error fetching title for database %s: %s", self.database_id, str(e)
             )
             return None
+
+    def create_filter(self) -> FilterBuilder:
+        """Create a new filter builder for this database."""
+        return FilterBuilder()
+
+    async def iter_pages_with_filter(
+        self, filter_builder: FilterBuilder, page_size: int = 100
+    ):
+        """Iterate pages using a filter builder."""
+        filter_config = filter_builder.build()
+        print(f"Using filter: {filter_config}")
+        async for page in self._iter_pages(
+            page_size=page_size, filter_conditions=filter_config
+        ):
+            yield page
 
     async def _iter_pages(
         self,

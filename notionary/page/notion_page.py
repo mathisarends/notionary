@@ -128,22 +128,20 @@ class NotionPage(LoggingMixin):
             raise
 
     @classmethod
-    async def from_page_name(
-        cls, page_name: str, token: Optional[str] = None
-    ) -> NotionPage:
+    async def from_page_name(cls, page_name: str) -> NotionPage:
         """
         Create a NotionPage by finding a page with a matching name.
         Uses Notion's search API and takes the first (best) result.
         """
-        from notionary.search import GlobalSearchService
+        from notionary.workspace.workspace import NotionWorkspace
 
         cls.logger.debug("Searching for page with name: %s", page_name)
-        search_service = GlobalSearchService(token=token)
+        workspace = NotionWorkspace()
 
         try:
             cls.logger.debug("Using search endpoint to find pages")
 
-            pages = await search_service.search_pages(page_name)
+            pages = await workspace.search_pages(page_name)
 
             if not pages:
                 cls.logger.warning("No pages found for name: %s", page_name)

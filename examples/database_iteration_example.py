@@ -13,7 +13,6 @@ on all Notion pages. You can customize the filter conditions based on your
 specific database properties.
 """
 
-from datetime import datetime, timedelta
 from notionary import NotionDatabase
 
 YOUR_DATABASE_NAME = "WISSEN/NOTIZEN"
@@ -35,7 +34,20 @@ async def main():
         print(f"    └─ {url}")
 
 
+async def elegant_example():
+    db = await NotionDatabase.from_database_name(YOUR_DATABASE_NAME)
+
+    # Method-Chaining direkt auf Database
+    async for page in db.iter_pages_with_filter(
+        db.create_filter()
+        .with_created_last_n_days(3)
+        .with_status_equals("Status", "Entwurf")
+    ):
+        title = await page.get_title()
+        print(f"John's recent task: {title}")
+
+
 if __name__ == "__main__":
     import asyncio
 
-    asyncio.run(main())
+    asyncio.run(elegant_example())
