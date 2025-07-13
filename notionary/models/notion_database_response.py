@@ -266,9 +266,7 @@ class NotionDatabaseResponse(BaseModel):
     in_trash: bool
 
 
-# Page object
-@dataclass
-class NotionPage(BaseModel):
+class NotionPageResponse(BaseModel):
     object: Literal["page"]
     id: str
     created_time: str
@@ -291,7 +289,7 @@ class NotionQueryResponse(BaseModel):
     """
 
     object: Literal["list"]
-    results: List[Union[NotionPage, NotionDatabaseResponse]]
+    results: List[Union[NotionPageResponse, NotionDatabaseResponse]]
     next_cursor: Optional[str] = None
     has_more: bool
     type: Literal["page_or_database"]
@@ -306,7 +304,7 @@ class NotionQueryDatabaseResponse(BaseModel):
     """
 
     object: Literal["list"]
-    results: List[NotionPage]
+    results: List[NotionPageResponse]
     next_cursor: Optional[str] = None
     has_more: bool
     type: Literal["page_or_database"]
@@ -321,7 +319,7 @@ class NotionSearchResponse(BaseModel):
     """
 
     object: Literal["list"]
-    results: List[Union[NotionPage, NotionDatabaseResponse]]
+    results: List[Union[NotionPageResponse, NotionDatabaseResponse]]
     next_cursor: Optional[str] = None
     has_more: bool
     type: Literal["page_or_database"]

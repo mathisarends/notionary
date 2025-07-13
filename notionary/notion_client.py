@@ -82,15 +82,37 @@ class NotionClient(LoggingMixin):
         response = await self.get(f"databases/{database_id}")
         return NotionDatabaseResponse.model_validate(response)
 
+    async def create_page(
+        self, parent_database_id: Optional[str]
+    ) -> NotionPageResponse:
+        response = await self.post(
+            "pages", {"parent": {"database_id": parent_database_id}, "properties": {}}
+        )
+
+        return NotionPageResponse.model_validate(response)
+
+    async def query_database(
+        self, database_id, query_data: Dict[str, Any]
+    ) -> NotionQueryDatabaseResponse:
+        """
+        Queries a Notion database with the provided filter and sorts.
+        """
+        result = await self.post(f"databases/{database_id}/query", data=query_data)
+        return NotionQueryDatabaseResponse.model_validate(result)
+
     async def query_database_by_title(
         self, database_id: str, page_title: str
     ) -> NotionQueryDatabaseResponse:
         """
         Queries a Notion database by title and returns the database response.
         """
-        query = {"filter": {"property": "title", "title": {"contains": page_title}}}
+        query_data = {
+            "filter": {"property": "title", "title": {"contains": page_title}}
+        }
 
-        result = await self.post(f"databases/{database_id}/query", data=query)
+        result = await self.query_database(
+            database_id=database_id, query_data=query_data
+        )
         return NotionQueryDatabaseResponse.model_validate(result)
 
     async def search_pages(

@@ -1,52 +1,44 @@
-from dataclasses import dataclass
 from typing import Literal, Optional, Dict, Any, Union
 
 from pydantic import BaseModel
 
 
-@dataclass
-class User:
+class User(BaseModel):
     """Represents a Notion user object."""
 
     object: str
     id: str
 
 
-@dataclass
-class ExternalFile:
+class ExternalFile(BaseModel):
     """Represents an external file, e.g., for cover images."""
 
     url: str
 
 
-@dataclass
-class Cover:
+class Cover(BaseModel):
     """Cover image for a Notion page."""
 
     type: str
     external: ExternalFile
 
 
-@dataclass
-class EmojiIcon:
+class EmojiIcon(BaseModel):
     type: Literal["emoji"]
     emoji: str
 
 
-@dataclass
-class ExternalIcon:
+class ExternalIcon(BaseModel):
     type: Literal["external"]
     external: ExternalFile
 
 
-@dataclass
-class FileObject:
+class FileObject(BaseModel):
     url: str
     expiry_time: str
 
 
-@dataclass
-class FileIcon:
+class FileIcon(BaseModel):
     type: Literal["file"]
     file: FileObject
 
@@ -54,20 +46,17 @@ class FileIcon:
 Icon = Union[EmojiIcon, ExternalIcon, FileIcon]
 
 
-@dataclass
-class DatabaseParent:
+class DatabaseParent(BaseModel):
     type: Literal["database_id"]
     database_id: str
 
 
-@dataclass
-class PageParent:
+class PageParent(BaseModel):
     type: Literal["page_id"]
     page_id: str
 
 
-@dataclass
-class WorkspaceParent:
+class WorkspaceParent(BaseModel):
     type: Literal["workspace"]
     workspace: bool = True
 

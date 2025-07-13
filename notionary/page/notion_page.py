@@ -488,6 +488,22 @@ class NotionPage(LoggingMixin):
             self.logger.error("Error retrieving last edited time: %s", str(e))
             return ""
 
+    async def archive(self) -> bool:
+        """
+        Archive the page by moving it to the trash.
+
+        Returns:
+            bool: True if the page was successfully archived, False otherwise.
+        """
+        try:
+            result = await self._client.patch_page(
+                page_id=self._page_id, data={"archived": True}
+            )
+            return result is not None
+        except Exception as e:
+            self.logger.error("Error archiving page %s: %s", self._page_id, str(e))
+            return False
+
     async def _fetch_page_title(self) -> str:
         """
         Load the page title from Notion API if not already loaded.
