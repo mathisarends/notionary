@@ -4,15 +4,14 @@ from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from notionary.database.client import NotionDatabaseClient
 from notionary.models.notion_database_response import (
+    NotionDatabaseResponse,
     NotionPageResponse,
     NotionQueryDatabaseResponse,
 )
-from notionary.models.notion_page_response import EmojiIcon
 from notionary.page.notion_page import NotionPage
 from notionary.util import LoggingMixin
 from notionary.util.page_id_utils import format_uuid
 from notionary.exceptions.database_exceptions import (
-    DatabaseConnectionError,
     DatabaseNotFoundException,
 )
 
@@ -42,7 +41,7 @@ class NotionDatabase(LoggingMixin):
         self._url = url
         self._emoji = emoji
 
-        self._client = NotionDatabaseClient(token=token)
+        self.client = NotionDatabaseClient(token=token)
 
     @classmethod
     async def from_database_id(
@@ -53,31 +52,9 @@ class NotionDatabase(LoggingMixin):
         """
         formatted_id = format_uuid(database_id) or database_id
 
-        database_client = NotionDatabaseClient(token=token)
-
-        try:
-            db = await database_client.get_database(formatted_id)
-            title = db.title[0].plain_text
-            url = db.url
-
-            emoji = db.icon.emoji if db.icon.type == "emoji" else None
-
-            emoji = db.icon.type == "emoji" if db.icon else None
-
-            instance = cls(formatted_id, title, url=url, emoji=emoji, token=token)
-
-            cls.logger.info(
-                "Successfully created database manager for ID: %s (Title: '%s', URL: '%s')",
-                formatted_id,
-                title,
-                url,
-            )
-            return instance
-
-        except Exception as e:
-            error_msg = f"Error fetching database info for ID {formatted_id}: {str(e)}"
-            cls.logger.error(error_msg)
-            raise DatabaseConnectionError(error_msg) from e
+        async with NotionDatabaseClient(token=token) as client:
+            db_response = await client.get_database(formatted_id)
+            return cls._create_from_response(db_response, formatted_id, token)
 
     @classmethod
     async def from_database_name(
@@ -85,53 +62,20 @@ class NotionDatabase(LoggingMixin):
     ) -> NotionDatabase:
         """
         Create a NotionDatabase by finding a database with a matching name.
-        Uses Notion's search API and takes the first (best) result.
         """
-        from notionary.workspace.workspace import NotionWorkspace
+        cls.logger.debug("Searching for database: %s", database_name)
 
-        cls.logger.debug("Searching for database with name: %s", database_name)
-        workspace = NotionWorkspace()
+        async with NotionDatabaseClient(token=token) as client:
+            search_result = await client.search_databases(database_name, limit=1)
 
-        try:
-            cls.logger.debug("Using search endpoint to find databases")
-
-            databases = await workspace.search_databases(database_name, limit=1)
-
-            if not databases:
+            if not search_result.results:
                 cls.logger.warning("No databases found for name: %s", database_name)
                 raise DatabaseNotFoundException(database_name)
 
-            # Take the first result - Notion's search already ranks by relevance
-            matched_db = databases[0]
-            database_id = matched_db.database_id
+            database_id = search_result.results[0].id
+            db_response = await client.get_database(database_id)
 
-            # Query the database to get current title, url and emoji
-            temp_client = NotionDatabaseClient(token=token)
-            db = await temp_client.get_database(database_id)
-            title = db.title[0].plain_text if db.title else "Untitled Database"
-            url = db.url
-            emoji = (
-                getattr(db.icon, "emoji", None)
-                if db.icon and isinstance(db.icon, EmojiIcon)
-                else None
-            )
-
-            cls.logger.info(
-                "Found matching database: '%s' (ID: %s, URL: '%s')",
-                title,
-                database_id,
-                url,
-            )
-
-            manager = cls(database_id, title, url=url, emoji=emoji, token=token)
-
-            cls.logger.info("Successfully created database manager for '%s'", title)
-            return manager
-
-        except Exception as e:
-            error_msg = f"Error finding database by name: {str(e)}"
-            cls.logger.error(error_msg)
-            raise DatabaseConnectionError(error_msg) from e
+            return cls._create_from_response(db_response, database_id, token)
 
     @property
     def database_id(self) -> str:
@@ -158,7 +102,7 @@ class NotionDatabase(LoggingMixin):
         Create a new blank page in the database with minimal properties.
         """
         try:
-            create_page_response: NotionPageResponse = await self._client.create_page(
+            create_page_response: NotionPageResponse = await self.client.create_page(
                 parent_database_id=self.database_id
             )
 
@@ -173,7 +117,7 @@ class NotionDatabase(LoggingMixin):
         Update the database title.
         """
         try:
-            result = await self._client.update_database_title(
+            result = await self.client.update_database_title(
                 database_id=self.database_id, title=new_title
             )
 
@@ -190,7 +134,7 @@ class NotionDatabase(LoggingMixin):
         Update the database emoji.
         """
         try:
-            result = await self._client.update_database_emoji(
+            result = await self.client.update_database_emoji(
                 database_id=self.database_id, emoji=new_emoji
             )
 
@@ -207,10 +151,10 @@ class NotionDatabase(LoggingMixin):
         Update the database cover image.
         """
         try:
-            result = await self._client.update_database_cover_image(
+            result = await self.client.update_database_cover_image(
                 database_id=self.database_id, image_url=image_url
             )
-            
+
             if result.cover and result.cover.external:
                 return result.cover.external.url
             return None
@@ -227,13 +171,13 @@ class NotionDatabase(LoggingMixin):
         ]
         random_cover_url = random.choice(default_notion_covers)
         return await self.set_cover_image(random_cover_url)
-    
+
     async def set_external_icon(self, external_icon_url: str) -> Optional[str]:
         """
         Update the database icon with an external image URL.
         """
         try:
-            result = await self._client.update_database_external_icon(
+            result = await self.client.update_database_external_icon(
                 database_id=self.database_id, icon_url=external_icon_url
             )
 
@@ -250,7 +194,7 @@ class NotionDatabase(LoggingMixin):
         Query the database for pages with a specific title.
         """
         search_results: NotionQueryDatabaseResponse = (
-            await self._client.query_database_by_title(
+            await self.client.query_database_by_title(
                 database_id=self.database_id, page_title=page_title
             )
         )
@@ -258,7 +202,7 @@ class NotionDatabase(LoggingMixin):
         page_results: List[NotionPage] = []
 
         for page in search_results.results:
-            page = NotionPage.from_page_id(page_id=page.id, token=self._client.token)
+            page = NotionPage.from_page_id(page_id=page.id, token=self.client.token)
             page_results.append(page)
 
         return page_results
@@ -296,7 +240,7 @@ class NotionDatabase(LoggingMixin):
             ISO 8601 timestamp string of the last database edit, or None if request fails.
         """
         try:
-            db = await self._client.get_database(self.database_id)
+            db = await self.client.get_database(self.database_id)
 
             return db.last_edited_time
 
@@ -351,7 +295,7 @@ class NotionDatabase(LoggingMixin):
             if start_cursor:
                 current_body["start_cursor"] = start_cursor
 
-            result = await self._client.query_database(
+            result = await self.client.query_database(
                 database_id=self.database_id, query_data=current_body
             )
 
@@ -359,7 +303,42 @@ class NotionDatabase(LoggingMixin):
                 return
 
             for page in result.results:
-                yield NotionPage.from_page_id(page_id=page.id, token=self._client.token)
+                yield NotionPage.from_page_id(page_id=page.id, token=self.client.token)
 
             has_more = result.has_more
             start_cursor = result.next_cursor if has_more else None
+
+    @classmethod
+    def _create_from_response(
+        cls, db_response: NotionDatabaseResponse, database_id: str, token: Optional[str]
+    ) -> NotionDatabase:
+        """
+        Create NotionDatabase instance from API response.
+        """
+        title = cls._extract_title(db_response)
+        emoji = cls._extract_emoji(db_response)
+        url = db_response.url
+
+        instance = cls(database_id, title, url, emoji, token)
+
+        cls.logger.info("Created database manager: '%s' (ID: %s)", title, database_id)
+
+        return instance
+
+    @staticmethod
+    def _extract_title(db_response: NotionDatabaseResponse) -> str:
+        """Extract title from database response."""
+        if db_response.title and len(db_response.title) > 0:
+            return db_response.title[0].plain_text
+        return "Untitled Database"
+
+    @staticmethod
+    def _extract_emoji(db_response: NotionDatabaseResponse) -> Optional[str]:
+        """Extract emoji from database response."""
+        if not db_response.icon:
+            return None
+
+        if hasattr(db_response.icon, "type") and db_response.icon.type == "emoji":
+            return getattr(db_response.icon, "emoji", None)
+
+        return None
