@@ -32,7 +32,9 @@ class ExternalIcon(BaseModel):
     type: Literal["external"]
     external: ExternalFile
 
+
 Icon = Union[EmojiIcon, ExternalIcon]
+
 
 class DatabaseParent(BaseModel):
     type: Literal["database_id"]

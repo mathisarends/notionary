@@ -1,4 +1,5 @@
 import traceback
+import asyncio
 from notionary import NotionDatabase
 
 
@@ -12,7 +13,7 @@ async def main():
         db = await NotionDatabase.from_database_name("Wissen/Notizen")
 
         await db.set_emoji("❤️")
-        
+
         url = await db.set_random_gradient_cover()
         print(f"Cover set to: {url}")
 
@@ -21,6 +22,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    import asyncio
 
     asyncio.run(main())

@@ -1,5 +1,5 @@
 from typing import Any, Dict, Optional
-from notionary.notion_client import NotionClient
+from notionary.page.client import NotionPageClient
 from notionary.page.properites.property_formatter import NotionPropertyFormatter
 from notionary.util import LoggingMixin
 
@@ -9,7 +9,7 @@ class MetadataEditor(LoggingMixin):
     Manages and edits the metadata and properties of a Notion page.
     """
 
-    def __init__(self, page_id: str, client: NotionClient):
+    def __init__(self, page_id: str, client: NotionPageClient):
         """
         Initialize the metadata editor.
 

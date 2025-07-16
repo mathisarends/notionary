@@ -1,10 +1,10 @@
 from typing import Optional, Dict, Any, List
-from notionary.notion_client import NotionClient
+from notionary.page.client import NotionPageClient
 from notionary.util import LoggingMixin
 
 
 class NotionPageTitleResolver(LoggingMixin):
-    def __init__(self, client: NotionClient):
+    def __init__(self, client: NotionPageClient):
         self._client = client
 
     async def get_page_id_by_title(self, title: str) -> Optional[str]:

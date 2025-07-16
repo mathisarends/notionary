@@ -1,5 +1,5 @@
 from typing import Dict, List, Optional, Any, Tuple
-from notionary.notion_client import NotionClient
+from notionary.database.client import NotionDatabaseClient
 from notionary.util import LoggingMixin
 
 
@@ -9,7 +9,7 @@ class DatabasePropertyService(LoggingMixin):
     Provides specialized methods for retrieving property information and validating values.
     """
 
-    def __init__(self, database_id: str, client: NotionClient):
+    def __init__(self, database_id: str):
         """
         Initialize the database property service.
 
@@ -18,7 +18,7 @@ class DatabasePropertyService(LoggingMixin):
             client: Instance of NotionClient
         """
         self._database_id = database_id
-        self._client = client
+        self._client = NotionDatabaseClient()
         self._schema = None
 
     async def load_schema(self, force_refresh: bool = False) -> bool:

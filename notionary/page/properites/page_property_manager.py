@@ -1,6 +1,5 @@
 from typing import Dict, Any, List, Optional
 from notionary.models.notion_page_response import NotionPageResponse
-from notionary.notion_client import NotionClient
 from notionary.page.metadata.metadata_editor import MetadataEditor
 from notionary.page.properites.database_property_service import (
     DatabasePropertyService,
@@ -18,12 +17,10 @@ class PagePropertyManager(LoggingMixin):
     def __init__(
         self,
         page_id: str,
-        client: NotionClient,
         metadata_editor: MetadataEditor,
         db_relation: PageDatabaseRelation,
     ):
         self._page_id = page_id
-        self._client = client
         self._page_data = None
         self._metadata_editor = metadata_editor
         self._db_relation = db_relation
@@ -142,7 +139,7 @@ class PagePropertyManager(LoggingMixin):
         if not database_id:
             return None
 
-        self._db_property_service = DatabasePropertyService(database_id, self._client)
+        self._db_property_service = DatabasePropertyService(database_id)
         await self._db_property_service.load_schema()
         return self._db_property_service
 

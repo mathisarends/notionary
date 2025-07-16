@@ -4,7 +4,7 @@ import re
 
 from notionary.elements.registry.block_registry import BlockRegistry
 from notionary.elements.registry.block_registry_builder import BlockRegistryBuilder
-from notionary.notion_client import NotionClient
+from notionary.page.client import NotionPageClient
 from notionary.page.content.page_content_retriever import PageContentRetriever
 from notionary.page.metadata.metadata_editor import MetadataEditor
 from notionary.page.metadata.notion_icon_manager import NotionPageIconManager
@@ -43,7 +43,7 @@ class NotionPage(LoggingMixin):
         self._page_id = extract_and_validate_page_id(page_id=page_id, url=url)
         self._url = url
         self._title = title
-        self._client = NotionClient(token=token)
+        self._client = NotionPageClient(token=token)
         self._page_data = None
         self._title_loaded = title is not None
         self._url_loaded = url is not None
@@ -58,7 +58,6 @@ class NotionPage(LoggingMixin):
 
         self._page_content_retriever = PageContentRetriever(
             page_id=self._page_id,
-            client=self._client,
             block_registry=self._block_element_registry,
         )
 
@@ -548,7 +547,7 @@ class NotionPage(LoggingMixin):
         if not database_id:
             return None
 
-        self._db_property_service = DatabasePropertyService(database_id, self._client)
+        self._db_property_service = DatabasePropertyService(database_id)
         await self._db_property_service.load_schema()
         return self._db_property_service
 

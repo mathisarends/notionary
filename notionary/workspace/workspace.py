@@ -1,7 +1,8 @@
 from typing import Optional, List
-from notionary import NotionPage, NotionDatabase, NotionClient
+from notionary import NotionPage, NotionDatabase
+from notionary.database.client import NotionDatabaseClient
+from notionary.page.client import NotionPageClient
 from notionary.util import LoggingMixin
-from notionary.common.search_filter_builder import SearchFilterBuilder
 
 
 class NotionWorkspace(LoggingMixin):
@@ -11,15 +12,16 @@ class NotionWorkspace(LoggingMixin):
 
     def __init__(self, token: Optional[str] = None):
         """
-        Initialize the workspace with a Notion client.
+        Initialize the workspace with a Notion database_client.
         """
-        self.client = NotionClient(token=token)
+        self.database_client = NotionDatabaseClient(token=token)
+        self.page_client = NotionPageClient(token=token)
 
     async def search_pages(self, query: str) -> List[NotionPage]:
         """
         Search for pages globally across Notion workspace.
         """
-        response = await self.client.search_pages(query)
+        response = await self.page_client.search_pages(query)
         return [NotionPage.from_page_id(page.id) for page in response.results]
 
     async def search_databases(
@@ -28,7 +30,7 @@ class NotionWorkspace(LoggingMixin):
         """
         Search for databases globally across the Notion workspace.
         """
-        response = await self.client.search_databases(query=query, limit=limit)
+        response = await self.database_client.search_databases(query=query, limit=limit)
         return [
             await NotionDatabase.from_database_id(database.id)
             for database in response.results
@@ -50,20 +52,12 @@ class NotionWorkspace(LoggingMixin):
         List all databases in the workspace.
         Returns a list of NotionDatabase instances.
         """
-        database_results = await self.client.search_databases(query="", limit=limit)
+        database_results = await self.database_client.search_databases(
+            query="", limit=limit
+        )
         return [
             await NotionDatabase.from_database_id(database.id)
             for database in database_results.results
         ]
 
-
-if __name__ == "__main__":
-    import asyncio
-
-    async def main():
-        workspace = NotionWorkspace()
-        databases = await workspace.list_all_databases()
-        for db in databases:
-            print(f"Database ID: {db.database_id}, Title: {await db.get_title()}")
-
-    asyncio.run(main())
+    # TODO: Create database would be nice here

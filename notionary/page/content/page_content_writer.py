@@ -2,8 +2,8 @@ from typing import Any, Dict
 
 from notionary.elements.divider_element import DividerElement
 from notionary.elements.registry.block_registry import BlockRegistry
-from notionary.notion_client import NotionClient
 
+from notionary.page.client import NotionPageClient
 from notionary.page.formatting.markdown_to_notion_converter import (
     MarkdownToNotionConverter,
 )
@@ -20,7 +20,7 @@ class PageContentWriter(LoggingMixin):
     def __init__(
         self,
         page_id: str,
-        client: NotionClient,
+        client: NotionPageClient,
         block_registry: BlockRegistry,
     ):
         self.page_id = page_id

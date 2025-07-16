@@ -1,11 +1,11 @@
 import random
 from typing import Any, Dict, Optional
-from notionary.notion_client import NotionClient
+from notionary.page.client import NotionPageClient
 from notionary.util import LoggingMixin
 
 
 class NotionPageCoverManager(LoggingMixin):
-    def __init__(self, page_id: str, client: NotionClient):
+    def __init__(self, page_id: str, client: NotionPageClient):
         self.page_id = page_id
         self._client = client
 

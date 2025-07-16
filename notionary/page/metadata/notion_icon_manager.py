@@ -1,12 +1,12 @@
 from typing import Optional
 
 from notionary.models.notion_page_response import EmojiIcon, ExternalIcon
-from notionary.notion_client import NotionClient
+from notionary.page.client import NotionPageClient
 from notionary.util import LoggingMixin
 
 
 class NotionPageIconManager(LoggingMixin):
-    def __init__(self, page_id: str, client: NotionClient):
+    def __init__(self, page_id: str, client: NotionPageClient):
         self.page_id = page_id
         self._client = client
 

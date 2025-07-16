@@ -1,7 +1,6 @@
 from typing import Any, Dict, List, Optional
 
 from notionary.elements.registry.block_registry import BlockRegistry
-from notionary.notion_client import NotionClient
 
 from notionary.page.notion_to_markdown_converter import (
     NotionToMarkdownConverter,
@@ -13,11 +12,9 @@ class PageContentRetriever(LoggingMixin):
     def __init__(
         self,
         page_id: str,
-        client: NotionClient,
         block_registry: BlockRegistry,
     ):
         self.page_id = page_id
-        self._client = client
         self._notion_to_markdown_converter = NotionToMarkdownConverter(
             block_registry=block_registry
         )

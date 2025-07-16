@@ -1,6 +1,6 @@
-from typing import Dict, Optional, Any
+from typing import Optional
 from notionary.models.notion_page_response import DatabaseParent, NotionPageResponse
-from notionary.notion_client import NotionClient
+from notionary.page.client import NotionPageClient
 from notionary.util import LoggingMixin
 
 
@@ -10,7 +10,7 @@ class PageDatabaseRelation(LoggingMixin):
     Provides methods to access database schema and property options.
     """
 
-    def __init__(self, page_id: str, client: NotionClient):
+    def __init__(self, page_id: str, client: NotionPageClient):
         """
         Initialize the page-database relationship handler.
 

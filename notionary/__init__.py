@@ -1,6 +1,5 @@
 __version__ = "0.2.10"
 
-from .notion_client import NotionClient
 
 from .database.notion_database import NotionDatabase
 
@@ -13,7 +12,6 @@ from .elements.registry.block_registry_builder import (
 )
 
 __all__ = [
-    "NotionClient",
     "NotionDatabase",
     "NotionPage",
     "NotionWorkspace",
