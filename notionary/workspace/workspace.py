@@ -21,8 +21,10 @@ class NotionWorkspace(LoggingMixin):
         """
         response = await self.client.search_pages(query)
         return [NotionPage.from_page_id(page.id) for page in response.results]
-    
-    async def search_databases(self, query: str, limit: int = 100) -> List[NotionDatabase]:
+
+    async def search_databases(
+        self, query: str, limit: int = 100
+    ) -> List[NotionDatabase]:
         """
         Search for databases globally across the Notion workspace.
         """
@@ -63,5 +65,5 @@ if __name__ == "__main__":
         databases = await workspace.list_all_databases()
         for db in databases:
             print(f"Database ID: {db.database_id}, Title: {await db.get_title()}")
-            
+
     asyncio.run(main())

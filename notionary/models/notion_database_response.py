@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from dataclasses import dataclass
 from typing import Optional, List, Dict, Any, Literal, Union
 
+from notionary.models.notion_page_response import Cover, Icon
+
 
 # Reusing existing types from your codebase
 @dataclass
@@ -30,12 +32,6 @@ class Parent:
     page_id: Optional[str] = None
     block_id: Optional[str] = None
     database_id: Optional[str] = None
-
-
-# Icon (reusing from your existing Icon import)
-class NotionIcon(BaseModel):
-    type: str  # 'emoji', 'external', 'file'
-    emoji: Optional[str] = None
 
 
 # Rich text types for Pydantic models
@@ -248,7 +244,8 @@ class NotionDatabaseResponse(BaseModel):
     object: Literal["database"]
     id: str
     cover: Optional[Any] = None
-    icon: Optional[NotionIcon] = None
+    icon: Optional[Icon] = None
+    cover: Optional[Cover]
     created_time: str
     last_edited_time: str
     created_by: NotionUser
@@ -274,7 +271,7 @@ class NotionPageResponse(BaseModel):
     created_by: NotionUser
     last_edited_by: NotionUser
     cover: Optional[NotionCover] = None
-    icon: Optional[NotionIcon] = None
+    icon: Optional[Icon] = None
     parent: NotionParent
     archived: bool
     in_trash: bool

@@ -1,7 +1,6 @@
-import json
 from typing import Optional
 
-from notionary.models.notion_page_response import EmojiIcon, ExternalIcon, FileIcon
+from notionary.models.notion_page_response import EmojiIcon, ExternalIcon
 from notionary.notion_client import NotionClient
 from notionary.util import LoggingMixin
 
@@ -71,7 +70,5 @@ class NotionPageIconManager(LoggingMixin):
             return icon.emoji
         if isinstance(icon, ExternalIcon):
             return icon.external.url
-        if isinstance(icon, FileIcon):
-            return icon.file.url
 
         return None

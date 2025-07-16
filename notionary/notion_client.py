@@ -82,6 +82,15 @@ class NotionClient(LoggingMixin):
         response = await self.get(f"databases/{database_id}")
         return NotionDatabaseResponse.model_validate(response)
 
+    async def patch_database(
+        self, database_id: str, data: Dict[str, Any]
+    ) -> NotionDatabaseResponse:
+        """
+        Updates a Notion database with the provided data.
+        """
+        response = await self.patch(f"databases/{database_id}", data=data)
+        return NotionDatabaseResponse.model_validate(response)
+
     async def create_page(
         self, parent_database_id: Optional[str]
     ) -> NotionPageResponse:
@@ -122,7 +131,7 @@ class NotionClient(LoggingMixin):
         Searches for pages in Notion using the search endpoint.
         """
         from notionary.common.search_filter_builder import SearchFilterBuilder
-        
+
         search_filter = (
             SearchFilterBuilder()
             .with_query(query)
@@ -135,13 +144,13 @@ class NotionClient(LoggingMixin):
         return NotionQueryDatabaseResponse.model_validate(result)
 
     async def search_databases(
-        self, query = "", sort_ascending: bool = True, limit: int = 100
+        self, query="", sort_ascending: bool = True, limit: int = 100
     ) -> NotionDatabaseSearchResponse:
         """
         Searches for databases in Notion using the search endpoint.
         """
         from notionary.common.search_filter_builder import SearchFilterBuilder
-        
+
         search_filter = (
             SearchFilterBuilder()
             .with_query(query)
@@ -149,7 +158,7 @@ class NotionClient(LoggingMixin):
             .with_sort_direction("ascending" if sort_ascending else "descending")
             .with_page_size(limit)
         )
-        
+
         result = await self.post("search", search_filter.build())
         return NotionDatabaseSearchResponse.model_validate(result)
 
@@ -213,7 +222,9 @@ class NotionClient(LoggingMixin):
                 method_str in [HttpMethod.POST.value, HttpMethod.PATCH.value]
                 and data is not None
             ):
-                response: httpx.Response = await getattr(self.client, method_str)(url, json=data)
+                response: httpx.Response = await getattr(self.client, method_str)(
+                    url, json=data
+                )
             else:
                 response: httpx.Response = await getattr(self.client, method_str)(url)
 

@@ -32,19 +32,7 @@ class ExternalIcon(BaseModel):
     type: Literal["external"]
     external: ExternalFile
 
-
-class FileObject(BaseModel):
-    url: str
-    expiry_time: str
-
-
-class FileIcon(BaseModel):
-    type: Literal["file"]
-    file: FileObject
-
-
-Icon = Union[EmojiIcon, ExternalIcon, FileIcon]
-
+Icon = Union[EmojiIcon, ExternalIcon]
 
 class DatabaseParent(BaseModel):
     type: Literal["database_id"]
