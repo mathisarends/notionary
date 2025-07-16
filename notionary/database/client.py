@@ -5,6 +5,7 @@ from notionary.base_notion_client import BaseNotionClient
 from notionary.models.notion_database_response import (
     NotionDatabaseResponse,
     NotionDatabaseSearchResponse,
+    NotionPageResponse,
     NotionQueryDatabaseResponse,
 )
 from notionary.util import singleton
@@ -82,21 +83,42 @@ class NotionDatabaseClient(BaseNotionClient):
 
         response = await self.post("search", search_data)
         return NotionDatabaseSearchResponse.model_validate(response)
-
-    async def update_database_title(self, database_id: str, title: str) -> bool:
+    
+    async def create_page(self, parent_database_id: str) -> NotionPageResponse:
         """
-        Updates just the title of a database.
+        Creates a new blank page in the given database with minimal properties.
+        """
+        page_data = {
+            "parent": {"database_id": parent_database_id},
+            "properties": {},
+        }
+        response = await self.post("pages", page_data)
+        return NotionPageResponse.model_validate(response)
+
+    async def update_database_title(self, database_id: str, title: str) -> NotionDatabaseResponse:
+        """
+        Updates the title of a database.
         """
         data = {"title": [{"text": {"content": title}}]}
+        return await self.patch_database(database_id, data)
 
-        result = await self.patch_database(database_id, data)
-        return result is not None
-
-    async def update_database_emoji(self, database_id: str, emoji: str) -> bool:
+    async def update_database_emoji(self, database_id: str, emoji: str) -> NotionDatabaseResponse:
         """
         Updates the emoji/icon of a database.
         """
         data = {"icon": {"type": "emoji", "emoji": emoji}}
+        return await self.patch_database(database_id, data)
 
-        result = await self.patch_database(database_id, data)
-        return result is not None
+    async def update_database_cover_image(self, database_id: str, image_url: str) -> NotionDatabaseResponse:
+        """
+        Updates the cover image of a database.
+        """
+        data = {"cover": {"type": "external", "external": {"url": image_url}}}
+        return await self.patch_database(database_id, data)
+
+    async def update_database_external_icon(self, database_id: str, icon_url: str) -> NotionDatabaseResponse:
+        """
+        Updates the database icon with an external image URL.
+        """
+        data = {"icon": {"type": "external", "external": {"url": icon_url}}}
+        return await self.patch_database(database_id, data)

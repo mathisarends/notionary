@@ -168,43 +168,16 @@ class NotionDatabase(LoggingMixin):
             self.logger.error("Error creating blank page: %s", str(e))
             return None
 
-    async def archive_page(self, page_id: str) -> bool:
-        """
-        Delete (archive) a page.
-        """
-        try:
-            formatted_page_id = format_uuid(page_id)
-
-            result = await self._client.patch_page(
-                formatted_page_id, {"archived": True}
-            )
-
-            if not result:
-                self.logger.error("Error deleting page %s", formatted_page_id)
-                return False
-
-            self.logger.info(
-                "Page %s successfully deleted (archived)", formatted_page_id
-            )
-            return True
-
-        except Exception as e:
-            self.logger.error("Error in archive_page: %s", str(e))
-            return False
-
     async def set_title(self, new_title: str) -> bool:
         """
         Update the database title.
         """
         try:
-            update_data = {"title": [{"text": {"content": new_title}}]}
-
-            result = await self._client.patch_database(
-                database_id=self.database_id, data=update_data
+            result = await self._client.update_database_title(
+                database_id=self.database_id, title=new_title
             )
 
             self._title = result.title[0].plain_text
-
             self.logger.info(f"Successfully updated database title to: {new_title}")
             return True
 
@@ -217,14 +190,11 @@ class NotionDatabase(LoggingMixin):
         Update the database emoji.
         """
         try:
-            icon = {"type": "emoji", "emoji": new_emoji}
-
-            result = await self._client.patch_database(
-                database_id=self.database_id, data={"icon": icon}
+            result = await self._client.update_database_emoji(
+                database_id=self.database_id, emoji=new_emoji
             )
 
             self._emoji = result.icon.emoji if result.icon else None
-
             self.logger.info(f"Successfully updated database emoji to: {new_emoji}")
             return True
 
@@ -237,37 +207,43 @@ class NotionDatabase(LoggingMixin):
         Update the database cover image.
         """
         try:
-            data = {"cover": {"type": "external", "external": {"url": image_url}}}
-
-            result = await self._client.patch_database(
-                database_id=self.database_id, data=data
+            result = await self._client.update_database_cover_image(
+                database_id=self.database_id, image_url=image_url
             )
-            return result.cover.external.url
+            
+            if result.cover and result.cover.external:
+                return result.cover.external.url
+            return None
 
         except Exception as e:
             self.logger.error(f"Error updating database cover image: {str(e)}")
             return None
 
-    async def set_random_gradient_cover(self) -> Optional[Dict[str, Any]]:
-        """Sets a random gradient cover from Notion's default gradient covers."""
+    async def set_random_gradient_cover(self) -> Optional[str]:
+        """Sets a random gradient cover from Notion's default gradient covers (always jpg)."""
         default_notion_covers = [
-            f"https://www.notion.so/images/page-cover/gradients_{i}.{'jpg' if i in (10, 11) else 'png'}"
+            f"https://www.notion.so/images/page-cover/gradients_{i}.jpg"
             for i in range(1, 12)
         ]
         random_cover_url = random.choice(default_notion_covers)
         return await self.set_cover_image(random_cover_url)
-
+    
     async def set_external_icon(self, external_icon_url: str) -> Optional[str]:
+        """
+        Update the database icon with an external image URL.
+        """
         try:
-            icon = {"type": "external", "external": {"url": external_icon_url}}
-            result = await self._client.patch_database(
-                database_id=self.database_id, data={"icon": icon}
+            result = await self._client.update_database_external_icon(
+                database_id=self.database_id, icon_url=external_icon_url
             )
 
-            return result.icon.external.url
+            if result.icon and result.icon.external:
+                return result.icon.external.url
+            return None
 
         except Exception as e:
-            self.logger.error(f"Error updating database emoji: {str(e)}")
+            self.logger.error(f"Error updating database external icon: {str(e)}")
+            return None
 
     async def query_database_by_title(self, page_title: str) -> List[NotionPage]:
         """
