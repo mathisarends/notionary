@@ -1,3 +1,4 @@
+import asyncio
 from typing import Optional, List
 from notionary import NotionPage, NotionDatabase
 from notionary.database.client import NotionDatabaseClient
@@ -22,7 +23,10 @@ class NotionWorkspace(LoggingMixin):
         Search for pages globally across Notion workspace.
         """
         response = await self.page_client.search_pages(query)
-        return [NotionPage.from_page_id(page.id) for page in response.results]
+        # Parallelisiere die Erzeugung der NotionPage-Instanzen
+        return await asyncio.gather(
+            *(NotionPage.from_page_id(page.id) for page in response.results)
+        )
 
     async def search_databases(
         self, query: str, limit: int = 100
@@ -31,11 +35,10 @@ class NotionWorkspace(LoggingMixin):
         Search for databases globally across the Notion workspace.
         """
         response = await self.database_client.search_databases(query=query, limit=limit)
-        return [
-            await NotionDatabase.from_database_id(database.id)
-            for database in response.results
-        ]
-
+        return await asyncio.gather(
+            *(NotionDatabase.from_database_id(database.id) for database in response.results)
+        )
+        
     async def get_database_by_name(
         self, database_name: str
     ) -> Optional[NotionDatabase]:

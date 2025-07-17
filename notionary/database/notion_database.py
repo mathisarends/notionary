@@ -10,11 +10,11 @@ from notionary.models.notion_database_response import (
 )
 from notionary.page.notion_page import NotionPage
 from notionary.util import LoggingMixin
+from notionary.util.factory_decorator import factory_only
 from notionary.util.page_id_utils import format_uuid
 from notionary.exceptions.database_exceptions import (
     DatabaseNotFoundException,
 )
-
 from notionary.common.filter_builder import FilterBuilder
 
 
@@ -25,6 +25,7 @@ class NotionDatabase(LoggingMixin):
     for further page operations.
     """
 
+    @factory_only("from_database_id", "from_database_name")
     def __init__(
         self,
         database_id: str,
@@ -166,7 +167,7 @@ class NotionDatabase(LoggingMixin):
     async def set_random_gradient_cover(self) -> Optional[str]:
         """Sets a random gradient cover from Notion's default gradient covers (always jpg)."""
         default_notion_covers = [
-            f"https://www.notion.so/images/page-cover/gradients_{i}.jpg"
+            f"https://www.notion.so/images/page-cover/gradients_{i}.png"
             for i in range(1, 12)
         ]
         random_cover_url = random.choice(default_notion_covers)
@@ -338,7 +339,8 @@ class NotionDatabase(LoggingMixin):
         if not db_response.icon:
             return None
 
-        if hasattr(db_response.icon, "type") and db_response.icon.type == "emoji":
-            return getattr(db_response.icon, "emoji", None)
+        if db_response.icon.type == "emoji":
+            return db_response.icon.emoji
 
         return None
+    

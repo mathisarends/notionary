@@ -4,6 +4,7 @@ import re
 
 from notionary.elements.registry.block_registry import BlockRegistry
 from notionary.elements.registry.block_registry_builder import BlockRegistryBuilder
+from notionary.models.notion_database_response import NotionPageResponse
 from notionary.page.client import NotionPageClient
 from notionary.page.content.page_content_retriever import PageContentRetriever
 from notionary.page.metadata.metadata_editor import MetadataEditor
@@ -20,6 +21,7 @@ from notionary.page.relations.notion_page_relation_manager import (
 from notionary.page.content.page_content_writer import PageContentWriter
 from notionary.page.properites.page_property_manager import PagePropertyManager
 from notionary.page.relations.notion_page_title_resolver import NotionPageTitleResolver
+from notionary.util.factory_decorator import factory_only
 from notionary.util.warn_direct_constructor_usage import warn_direct_constructor_usage
 from notionary.util import LoggingMixin
 from notionary.util.page_id_utils import extract_and_validate_page_id
@@ -32,21 +34,25 @@ class NotionPage(LoggingMixin):
     Managing content and metadata of a Notion page.
     """
 
-    @warn_direct_constructor_usage
+    @factory_only("from_page_id", "from_url", "from_page_name")
     def __init__(
         self,
-        page_id: Optional[str] = None,
-        title: Optional[str] = None,
-        url: Optional[str] = None,
+        page_id: str,
+        title: str,
+        url: str,
+        emoji: Optional[str] = None,
         token: Optional[str] = None,
     ):
-        self._page_id = extract_and_validate_page_id(page_id=page_id, url=url)
-        self._url = url
+        """
+        Initialize the page manager with all metadata.
+        """
+        self._page_id = page_id
         self._title = title
+        self._url = url
+        self._emoji_icon = emoji
+        
         self._client = NotionPageClient(token=token)
         self._page_data = None
-        self._title_loaded = title is not None
-        self._url_loaded = url is not None
 
         self._block_element_registry = BlockRegistryBuilder.create_full_registry()
 
@@ -59,6 +65,7 @@ class NotionPage(LoggingMixin):
         self._page_content_retriever = PageContentRetriever(
             page_id=self._page_id,
             block_registry=self._block_element_registry,
+            client=self._client,
         )
 
         self._metadata = MetadataEditor(self._page_id, self._client)
@@ -79,11 +86,11 @@ class NotionPage(LoggingMixin):
         )
 
         self._property_manager = PagePropertyManager(
-            self._page_id, self._client, self._metadata, self._db_relation
+            self._page_id, self._metadata, self._db_relation
         )
 
     @classmethod
-    def from_page_id(cls, page_id: str, token: Optional[str] = None) -> NotionPage:
+    async def from_page_id(cls, page_id: str, token: Optional[str] = None) -> NotionPage:
         """
         Create a NotionPage from a page ID.
 
@@ -95,39 +102,13 @@ class NotionPage(LoggingMixin):
             An initialized NotionPage instance
         """
         formatted_id = format_uuid(page_id) or page_id
-        page = cls(page_id=formatted_id, token=token)
-        cls.logger.info("Successfully created page instance for ID: %s", formatted_id)
-        return page
+        
+        async with NotionPageClient(token=token) as client:
+            page_response = await client.get_page(formatted_id)
+            return cls._create_from_response(page_response, formatted_id, token)
 
     @classmethod
-    def from_url(cls, url: str, token: Optional[str] = None) -> NotionPage:
-        """
-        Create a NotionPage from a Notion URL.
-
-        Args:
-            url: The URL of the Notion page
-            token: Optional Notion API token (uses environment variable if not provided)
-
-        Returns:
-            An initialized NotionPage instance
-        """
-        try:
-            page_id = extract_and_validate_page_id(url=url)
-            if not page_id:
-                cls.logger.error("Could not extract valid page ID from URL: %s", url)
-                raise ValueError(f"Invalid URL: {url}")
-
-            page = cls(page_id=page_id, url=url, token=token)
-            cls.logger.info(
-                "Successfully created page instance from URL for ID: %s", page_id
-            )
-            return page
-        except Exception as e:
-            cls.logger.error("Error connecting to page with URL %s: %s", url, str(e))
-            raise
-
-    @classmethod
-    async def from_page_name(cls, page_name: str) -> NotionPage:
+    async def from_page_name(cls, page_name: str, token: Optional[str] = None) -> NotionPage:
         """
         Create a NotionPage by finding a page with a matching name.
         Uses Notion's search API and takes the first (best) result.
@@ -140,23 +121,24 @@ class NotionPage(LoggingMixin):
         try:
             cls.logger.debug("Using search endpoint to find pages")
 
-            pages = await workspace.search_pages(page_name)
+            search_results = await workspace.search_pages(page_name)
 
-            if not pages:
+            if not search_results:
                 cls.logger.warning("No pages found for name: %s", page_name)
                 raise ValueError(f"No pages found for name: {page_name}")
 
-            matched_page = pages[0]
-            matched_name = await matched_page.get_title()
-
-            cls.logger.info(
-                "Found matching page: '%s' (ID: %s)",
-                matched_name,
-                matched_page.id,
-            )
-
-            cls.logger.info("Successfully created page instance for '%s'", matched_name)
-            return matched_page
+            # Get the first result and fetch its full data
+            first_result = search_results[0]
+            page_id = first_result.id
+            
+            async with NotionPageClient(token=token) as client:
+                page_response = await client.get_page(page_id)
+                instance = cls._create_from_response(page_response, page_id, token)
+                
+                cls.logger.info(
+                    "Found matching page: '%s' (ID: %s)", instance.title, page_id
+                )
+                return instance
 
         except Exception as e:
             cls.logger.error("Error finding page by name: %s", str(e))
@@ -168,6 +150,28 @@ class NotionPage(LoggingMixin):
         Get the ID of the page.
         """
         return self._page_id
+    
+    @property
+    def title(self) -> str: 
+        """
+        Get the title of the page.
+        """
+        return self._title
+    
+    @property
+    def url(self) -> str:
+        """
+        Get the URL of the page.
+        If not set, generate it from the title and ID.
+        """
+        return self._url
+    
+    @property
+    def emoji_icon(self) -> Optional[str]:
+        """
+        Get the emoji icon of the page.
+        """
+        return self._emoji_icon
 
     @property
     def block_registry(self) -> BlockRegistry:
@@ -214,17 +218,6 @@ class NotionPage(LoggingMixin):
         """
         return self._block_element_registry.get_notion_markdown_syntax_prompt()
 
-    async def get_title(self) -> str:
-        """
-        Get the title of the page, loading it if necessary.
-
-        Returns:
-            str: The page title.
-        """
-        if not self._title_loaded:
-            self._title = await self._fetch_page_title()
-        return self._title
-
     async def set_title(self, title: str) -> Optional[Dict[str, Any]]:
         """
         Set the title of the page.
@@ -248,6 +241,7 @@ class NotionPage(LoggingMixin):
         Returns:
             str: The page URL.
         """
+        self.url
         if not self._url_loaded:
             self._url = await self._generate_url_from_title()
             self._url_loaded = True
@@ -303,15 +297,6 @@ class NotionPage(LoggingMixin):
             str: The text content of the page.
         """
         return await self._page_content_retriever.get_page_content()
-
-    async def get_icon(self) -> str:
-        """
-        Retrieve the page icon - either emoji or external URL.
-
-        Returns:
-            Optional[str]: The icon emoji or URL, or None if no icon is set.
-        """
-        return await self._page_icon_manager.get_icon()
 
     async def set_emoji_icon(self, emoji: str) -> Optional[str]:
         """
@@ -568,3 +553,48 @@ class NotionPage(LoggingMixin):
 
         prop_data = properties[property_name]
         return prop_data.get("type")
+
+    @classmethod
+    def _create_from_response(
+        cls, 
+        page_response: NotionPageResponse, 
+        page_id: str, 
+        token: Optional[str], 
+    ) -> NotionPage:
+        """
+        Create NotionPage instance from API response.
+        """
+        title = cls._extract_title(page_response)
+        emoji = cls._extract_emoji(page_response)
+        
+        instance = cls(
+            page_id=page_id,
+            title=title,
+            url=page_response.url,
+            emoji=emoji,
+            token=token
+        )
+        
+        cls.logger.info("Created page manager: '%s' (ID: %s)", title, page_id)
+        return instance
+    
+    @staticmethod
+    def _extract_title(page_response: NotionPageResponse) -> str:
+        """Extract title from database response. Returns empty string if not found."""
+        try:
+            return page_response.properties["Title"]["title"][0]["plain_text"]
+        except (KeyError, IndexError, TypeError):
+            return ""
+    
+    @staticmethod
+    def _extract_emoji(page_response: NotionPageResponse) -> Optional[str]:
+        """Extract emoji from database response."""
+        if not page_response.icon:
+            return None
+
+        if  page_response.icon.type == "emoji":
+            return page_response.icon.emoji
+
+        return None
+    
+    

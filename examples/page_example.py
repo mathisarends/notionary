@@ -24,23 +24,25 @@ async def main():
         page = await NotionPage.from_page_name(PAGE_NAME)
 
         # Get current title for display
-        current_title = await page.get_title()
+        current_title = page.title
         print(f"📌 Current title: {current_title}")
 
         page_content = await page.get_text_content()
         print(f"📜 Current content: {page_content}")
 
-        page_url = await page.get_url()
+        page_url = page.url
         print(f"🔗 View page: {page_url}")
 
-        page_icon = await page.get_icon()
+        page_icon = page.emoji_icon
         print(f"🏷️ Icon: {page_icon}")
 
         page_cover = await page.get_cover_url()
         print(f"🖼️ Cover URL: {page_cover}")
 
     except Exception as e:
+        import traceback
         print(f"❌ Error: {e}")
+        print(traceback.format_exc())
 
 
 if __name__ == "__main__":

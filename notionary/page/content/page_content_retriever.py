@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional
 
+from notionary.database.client import NotionDatabaseClient
 from notionary.elements.registry.block_registry import BlockRegistry
 
 from notionary.page.notion_to_markdown_converter import (
@@ -13,11 +14,13 @@ class PageContentRetriever(LoggingMixin):
         self,
         page_id: str,
         block_registry: BlockRegistry,
+        client: NotionDatabaseClient,
     ):
         self.page_id = page_id
         self._notion_to_markdown_converter = NotionToMarkdownConverter(
             block_registry=block_registry
         )
+        self._client = client
 
     async def get_page_content(self) -> str:
         blocks = await self._get_page_blocks_with_children()
