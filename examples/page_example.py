@@ -41,6 +41,7 @@ async def main():
 
     except Exception as e:
         import traceback
+
         print(f"❌ Error: {e}")
         print(traceback.format_exc())
 

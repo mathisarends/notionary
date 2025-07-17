@@ -343,4 +343,3 @@ class NotionDatabase(LoggingMixin):
             return db_response.icon.emoji
 
         return None
-    

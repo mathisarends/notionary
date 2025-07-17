@@ -36,9 +36,12 @@ class NotionWorkspace(LoggingMixin):
         """
         response = await self.database_client.search_databases(query=query, limit=limit)
         return await asyncio.gather(
-            *(NotionDatabase.from_database_id(database.id) for database in response.results)
+            *(
+                NotionDatabase.from_database_id(database.id)
+                for database in response.results
+            )
         )
-        
+
     async def get_database_by_name(
         self, database_name: str
     ) -> Optional[NotionDatabase]:

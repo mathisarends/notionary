@@ -1,4 +1,5 @@
 from __future__ import annotations
+import random
 from typing import Any, Dict, List, Optional
 import re
 
@@ -8,10 +9,6 @@ from notionary.models.notion_database_response import NotionPageResponse
 from notionary.page.client import NotionPageClient
 from notionary.page.content.page_content_retriever import PageContentRetriever
 from notionary.page.metadata.metadata_editor import MetadataEditor
-from notionary.page.metadata.notion_icon_manager import NotionPageIconManager
-from notionary.page.metadata.notion_page_cover_manager import (
-    NotionPageCoverManager,
-)
 from notionary.page.properites.database_property_service import (
     DatabasePropertyService,
 )
@@ -22,9 +19,7 @@ from notionary.page.content.page_content_writer import PageContentWriter
 from notionary.page.properites.page_property_manager import PagePropertyManager
 from notionary.page.relations.notion_page_title_resolver import NotionPageTitleResolver
 from notionary.util.factory_decorator import factory_only
-from notionary.util.warn_direct_constructor_usage import warn_direct_constructor_usage
 from notionary.util import LoggingMixin
-from notionary.util.page_id_utils import extract_and_validate_page_id
 from notionary.util import format_uuid
 from notionary.page.relations.page_database_relation import PageDatabaseRelation
 
@@ -50,7 +45,7 @@ class NotionPage(LoggingMixin):
         self._title = title
         self._url = url
         self._emoji_icon = emoji
-        
+
         self._client = NotionPageClient(token=token)
         self._page_data = None
 
@@ -69,12 +64,6 @@ class NotionPage(LoggingMixin):
         )
 
         self._metadata = MetadataEditor(self._page_id, self._client)
-        self._page_cover_manager = NotionPageCoverManager(
-            page_id=self._page_id, client=self._client
-        )
-        self._page_icon_manager = NotionPageIconManager(
-            page_id=self._page_id, client=self._client
-        )
 
         self._db_relation = PageDatabaseRelation(
             page_id=self._page_id, client=self._client
@@ -90,7 +79,9 @@ class NotionPage(LoggingMixin):
         )
 
     @classmethod
-    async def from_page_id(cls, page_id: str, token: Optional[str] = None) -> NotionPage:
+    async def from_page_id(
+        cls, page_id: str, token: Optional[str] = None
+    ) -> NotionPage:
         """
         Create a NotionPage from a page ID.
 
@@ -102,13 +93,15 @@ class NotionPage(LoggingMixin):
             An initialized NotionPage instance
         """
         formatted_id = format_uuid(page_id) or page_id
-        
+
         async with NotionPageClient(token=token) as client:
             page_response = await client.get_page(formatted_id)
             return cls._create_from_response(page_response, formatted_id, token)
 
     @classmethod
-    async def from_page_name(cls, page_name: str, token: Optional[str] = None) -> NotionPage:
+    async def from_page_name(
+        cls, page_name: str, token: Optional[str] = None
+    ) -> NotionPage:
         """
         Create a NotionPage by finding a page with a matching name.
         Uses Notion's search API and takes the first (best) result.
@@ -130,11 +123,11 @@ class NotionPage(LoggingMixin):
             # Get the first result and fetch its full data
             first_result = search_results[0]
             page_id = first_result.id
-            
+
             async with NotionPageClient(token=token) as client:
                 page_response = await client.get_page(page_id)
                 instance = cls._create_from_response(page_response, page_id, token)
-                
+
                 cls.logger.info(
                     "Found matching page: '%s' (ID: %s)", instance.title, page_id
                 )
@@ -150,14 +143,14 @@ class NotionPage(LoggingMixin):
         Get the ID of the page.
         """
         return self._page_id
-    
+
     @property
-    def title(self) -> str: 
+    def title(self) -> str:
         """
         Get the title of the page.
         """
         return self._title
-    
+
     @property
     def url(self) -> str:
         """
@@ -165,7 +158,7 @@ class NotionPage(LoggingMixin):
         If not set, generate it from the title and ID.
         """
         return self._url
-    
+
     @property
     def emoji_icon(self) -> Optional[str]:
         """
@@ -301,66 +294,80 @@ class NotionPage(LoggingMixin):
     async def set_emoji_icon(self, emoji: str) -> Optional[str]:
         """
         Sets the page icon to an emoji.
-
-        Args:
-            emoji (str): The emoji character to set as the icon.
-
-        Returns:
-            Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
         """
-        return await self._page_icon_manager.set_emoji_icon(emoji=emoji)
+        try:
+            icon = {"type": "emoji", "emoji": emoji}
+            page_response = await self._client.patch_page(
+                page_id=self._page_id, data={"icon": icon}
+            )
+
+            self._emoji = page_response.icon.emoji
+            return page_response.icon.emoji
+        except Exception as e:
+
+            self.logger.error(f"Error updating page emoji: {str(e)}")
+            return None
 
     async def set_external_icon(self, url: str) -> Optional[str]:
         """
         Sets the page icon to an external image.
-
-        Args:
-            url (str): The URL of the external image to set as the icon.
-
-        Returns:
-            Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
         """
-        return await self._page_icon_manager.set_external_icon(external_icon_url=url)
+        try:
+            icon = {"type": "external", "external": {"url": url}}
+            page_response = await self._client.patch_page(
+                page_id=self._page_id, data={"icon": icon}
+            )
+
+            # For external icons, we clear the emoji since we now have external icon
+            self._emoji = None
+            self.logger.info(f"Successfully updated page external icon to: {url}")
+            return page_response.icon.external.url
+
+        except Exception as e:
+            self.logger.error(f"Error updating page external icon: {str(e)}")
+            return None
 
     async def get_cover_url(self) -> Optional[str]:
         """
         Get the URL of the page cover image.
-
-        Returns:
-            str: The URL of the cover image or empty string if not available.
         """
-        return await self._page_cover_manager.get_cover_url()
+        try:
+            page_data = await self._client.get_page(self.id)
+            if not page_data or not page_data.cover:
+                return None
+            if page_data.cover.type == "external":
+                return page_data.cover.external.url
+        except Exception as e:
+            self.logger.error(f"Error fetching cover URL: {str(e)}")
+            return None
 
     async def set_cover(self, external_url: str) -> Optional[str]:
         """
         Set the cover image for the page using an external URL.
-
-        Args:
-            external_url: URL to the external image.
-
-        Returns:
-            Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
         """
-        return await self._page_cover_manager.set_cover(external_url)
+        data = {"cover": {"type": "external", "external": {"url": external_url}}}
+        try:
+            updated_page = await self._client.patch_page(self.id, data=data)
+            return updated_page.cover.external.url
+        except Exception as e:
+            self.logger.error("Failed to set cover image: %s", str(e))
+            return None
 
-    async def set_random_gradient_cover(self) -> Optional[Dict[str, Any]]:
+    async def set_random_gradient_cover(self) -> Optional[str]:
         """
         Set a random gradient as the page cover.
-
-        Returns:
-            Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
         """
-        return await self._page_cover_manager.set_random_gradient_cover()
+        default_notion_covers = [
+            f"https://www.notion.so/images/page-cover/gradients_{i}.png"
+            for i in range(1, 12)
+        ]
+        random_cover_url = random.choice(default_notion_covers)
+        return await self.set_cover(random_cover_url)
+
 
     async def get_property_value_by_name(self, property_name: str) -> Any:
         """
         Get the value of a specific property.
-
-        Args:
-            property_name: The name of the property.
-
-        Returns:
-            Any: The value of the property.
         """
         properties = await self._property_manager._get_properties()
 
@@ -453,29 +460,9 @@ class NotionPage(LoggingMixin):
         """
         return await self._relation_manager.get_relation_values(property_name)
 
-    async def get_last_edit_time(self) -> str:
-        """
-        Get the timestamp when the page was last edited.
-
-        Returns:
-            str: ISO 8601 formatted timestamp string of when the page was last edited.
-        """
-        try:
-            page_response = await self._client.get_page(self._page_id)
-            return (
-                page_response.last_edited_time if page_response.last_edited_by else ""
-            )
-
-        except Exception as e:
-            self.logger.error("Error retrieving last edited time: %s", str(e))
-            return ""
-
     async def archive(self) -> bool:
         """
         Archive the page by moving it to the trash.
-
-        Returns:
-            bool: True if the page was successfully archived, False otherwise.
         """
         try:
             result = await self._client.patch_page(
@@ -556,45 +543,43 @@ class NotionPage(LoggingMixin):
 
     @classmethod
     def _create_from_response(
-        cls, 
-        page_response: NotionPageResponse, 
-        page_id: str, 
-        token: Optional[str], 
+        cls,
+        page_response: NotionPageResponse,
+        page_id: str,
+        token: Optional[str],
     ) -> NotionPage:
         """
         Create NotionPage instance from API response.
         """
         title = cls._extract_title(page_response)
         emoji = cls._extract_emoji(page_response)
-        
+
         instance = cls(
             page_id=page_id,
             title=title,
             url=page_response.url,
             emoji=emoji,
-            token=token
+            token=token,
         )
-        
+
         cls.logger.info("Created page manager: '%s' (ID: %s)", title, page_id)
         return instance
-    
+
     @staticmethod
     def _extract_title(page_response: NotionPageResponse) -> str:
         """Extract title from database response. Returns empty string if not found."""
         try:
-            return page_response.properties["Title"]["title"][0]["plain_text"]
+            return page_response.properties["title"]["title"][0]["plain_text"]
         except (KeyError, IndexError, TypeError):
             return ""
-    
+
     @staticmethod
     def _extract_emoji(page_response: NotionPageResponse) -> Optional[str]:
         """Extract emoji from database response."""
         if not page_response.icon:
             return None
 
-        if  page_response.icon.type == "emoji":
+        if page_response.icon.type == "emoji":
             return page_response.icon.emoji
 
         return None
-    
-    
