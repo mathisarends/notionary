@@ -6,7 +6,7 @@ import re
 from notionary.elements.registry.block_registry import BlockRegistry
 from notionary.elements.registry.block_registry_builder import BlockRegistryBuilder
 from notionary.models.notion_database_response import NotionPageResponse
-from notionary.page.client import NotionPageClient
+from notionary.page.notion_page_client import NotionPageClient
 from notionary.page.content.page_content_retriever import PageContentRetriever
 from notionary.page.metadata.metadata_editor import MetadataEditor
 from notionary.page.properites.database_property_service import (
@@ -60,7 +60,6 @@ class NotionPage(LoggingMixin):
         self._page_content_retriever = PageContentRetriever(
             page_id=self._page_id,
             block_registry=self._block_element_registry,
-            client=self._client,
         )
 
         self._metadata = MetadataEditor(self._page_id, self._client)
@@ -88,9 +87,6 @@ class NotionPage(LoggingMixin):
         Args:
             page_id: The ID of the Notion page
             token: Optional Notion API token (uses environment variable if not provided)
-
-        Returns:
-            An initialized NotionPage instance
         """
         formatted_id = format_uuid(page_id) or page_id
 
@@ -214,18 +210,22 @@ class NotionPage(LoggingMixin):
     async def set_title(self, title: str) -> Optional[Dict[str, Any]]:
         """
         Set the title of the page.
-
-        Args:
-            title: The new title.
-
-        Returns:
-            Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
         """
-        result = await self._metadata.set_title(title)
-        if result:
+        try:
+            data = {
+                "properties": {
+                    "title": {"title": [{"type": "text", "text": {"content": title}}]}
+                }
+            }
+
+            await self._client.patch_page(self._page_id, data)
+
             self._title = title
-            self._title_loaded = True
-        return result
+            return title
+
+        except Exception as e:
+            self.logger.error("Error setting page title: %s", str(e))
+            return None
 
     async def get_url(self) -> str:
         """
@@ -363,7 +363,6 @@ class NotionPage(LoggingMixin):
         ]
         random_cover_url = random.choice(default_notion_covers)
         return await self.set_cover(random_cover_url)
-
 
     async def get_property_value_by_name(self, property_name: str) -> Any:
         """

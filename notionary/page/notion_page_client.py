@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional
 from notionary.base_notion_client import BaseNotionClient
 from notionary.models.notion_page_response import NotionPageResponse
 from notionary.models.notion_database_response import NotionQueryDatabaseResponse
@@ -94,3 +94,17 @@ class NotionPageClient(BaseNotionClient):
         """
         data = {"archived": False}
         return await self.patch_page(page_id, data)
+
+    async def get_page_blocks(self, page_id: str) -> List[Dict[str, Any]]:
+        """
+        Retrieves all blocks of a Notion page.
+        """
+        response = await self.get(f"blocks/{page_id}/children")
+        return response.get("results", [])
+
+    async def get_block_children(self, block_id: str) -> List[Dict[str, Any]]:
+        """
+        Retrieves all children blocks of a specific block.
+        """
+        response = await self.get(f"blocks/{block_id}/children")
+        return response.get("results", [])

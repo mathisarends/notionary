@@ -39,6 +39,12 @@ async def main():
         page_cover = await page.get_cover_url()
         print(f"🖼️ Cover URL: {page_cover}")
 
+        await page.set_title("Updated Title")
+
+        print("✅ Successfully retrieved page information.")
+
+        await page.set_title("Jarvis Clipboad")
+
     except Exception as e:
         import traceback
 
