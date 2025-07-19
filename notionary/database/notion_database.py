@@ -9,11 +9,11 @@ from notionary.models.notion_database_response import (
     NotionQueryDatabaseResponse,
 )
 from notionary.page.notion_page import NotionPage
-from notionary.exceptions.database_exceptions import (
-    DatabaseNotFoundException,
-)
+
+from notionary.database.notion_database_provider import NotionDatabaseProvider
+
 from notionary.common.filter_builder import FilterBuilder
-from notionary.util import FuzzyMatcher, factory_only, LoggingMixin, format_uuid
+from notionary.util import factory_only, LoggingMixin
 
 
 class NotionDatabase(LoggingMixin):
@@ -49,13 +49,10 @@ class NotionDatabase(LoggingMixin):
         cls, database_id: str, token: Optional[str] = None
     ) -> NotionDatabase:
         """
-        Create a NotionDatabase from a database ID.
+        Create a NotionDatabase from a database ID using NotionDatabaseProvider.
         """
-        formatted_id = format_uuid(database_id) or database_id
-
-        async with NotionDatabaseClient(token=token) as client:
-            db_response = await client.get_database(formatted_id)
-            return cls._create_from_response(db_response, token)
+        provider = cls.get_database_provider()
+        return await provider.get_database_by_id(database_id, token)
 
     @classmethod
     async def from_database_name(
@@ -65,49 +62,10 @@ class NotionDatabase(LoggingMixin):
         min_similarity: float = 0.6,
     ) -> NotionDatabase:
         """
-        Create a NotionDatabase by finding a database with fuzzy matching on the title.
+        Create a NotionDatabase by finding a database with fuzzy matching on the title using NotionDatabaseProvider.
         """
-
-        async with NotionDatabaseClient(token=token) as client:
-            search_result = await client.search_databases(database_name, limit=10)
-
-            if not search_result.results:
-                cls.logger.warning("No databases found for name: %s", database_name)
-                raise DatabaseNotFoundException(database_name)
-
-            best_match = FuzzyMatcher.find_best_match(
-                query=database_name,
-                items=search_result.results,
-                text_extractor=lambda db: cls._extract_title(db),
-                min_similarity=min_similarity,
-            )
-
-            if not best_match:
-                available_titles = [
-                    cls._extract_title(db) for db in search_result.results[:5]
-                ]
-                cls.logger.warning(
-                    "No sufficiently similar database found for '%s' (min: %.3f). Available: %s",
-                    database_name,
-                    min_similarity,
-                    available_titles,
-                )
-                raise DatabaseNotFoundException(database_name)
-
-            database_id = best_match.item.id
-
-            db_response = await client.get_database(database_id=database_id)
-
-            instance = cls._create_from_response(db_response, token)
-
-            cls.logger.info(
-                "Created database: '%s' (ID: %s, similarity: %.3f)",
-                instance.title,
-                database_id,
-                best_match.similarity,
-            )
-
-            return instance
+        provider = cls.get_database_provider()
+        return await provider.get_database_by_name(database_name, token, min_similarity)
 
     @property
     def database_id(self) -> str:
@@ -133,6 +91,17 @@ class NotionDatabase(LoggingMixin):
     def properties(self) -> Optional[Dict[str, Any]]:
         """Get the database properties (readonly)."""
         return self._properties
+
+    # Database Provider is a singleton so we can instantiate it here with no worries
+    @property
+    def database_provider(self):
+        """Return a NotionDatabaseProvider instance for this database."""
+        return NotionDatabaseProvider.get_instance()
+
+    @classmethod
+    def get_database_provider(cls):
+        """Return a NotionDatabaseProvider instance for class-level usage."""
+        return NotionDatabaseProvider.get_instance()
 
     async def create_blank_page(self) -> Optional[NotionPage]:
         """
@@ -160,6 +129,9 @@ class NotionDatabase(LoggingMixin):
 
             self._title = result.title[0].plain_text
             self.logger.info(f"Successfully updated database title to: {new_title}")
+            self.database_provider.invalidate_database_cache(
+                database_id=self.database_id
+            )
             return True
 
         except Exception as e:
@@ -177,6 +149,9 @@ class NotionDatabase(LoggingMixin):
 
             self._emoji_icon = result.icon.emoji if result.icon else None
             self.logger.info(f"Successfully updated database emoji to: {new_emoji}")
+            self.database_provider.invalidate_database_cache(
+                database_id=self.database_id
+            )
             return True
 
         except Exception as e:
@@ -193,6 +168,9 @@ class NotionDatabase(LoggingMixin):
             )
 
             if result.cover and result.cover.external:
+                self.database_provider.invalidate_database_cache(
+                    database_id=self.database_id
+                )
                 return result.cover.external.url
             return None
 
@@ -219,6 +197,9 @@ class NotionDatabase(LoggingMixin):
             )
 
             if result.icon and result.icon.external:
+                self.database_provider.invalidate_database_cache(
+                    database_id=self.database_id
+                )
                 return result.icon.external.url
             return None
 
@@ -226,7 +207,6 @@ class NotionDatabase(LoggingMixin):
             self.logger.error(f"Error updating database external icon: {str(e)}")
             return None
 
-    # TODO: Improve typing here (every property has a type and value)
     async def get_options_by_property_name(self, property_name: str) -> List[str]:
         """
         Retrieve all option names for a select, multi_select, status, or relation property.

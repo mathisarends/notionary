@@ -489,7 +489,7 @@ class NotionPage(LoggingMixin):
                 page_id=self._page_id, data=update_data
             )
             self._properties = updated_page_response.properties
-            return extract_property_value(self._properties.get(property_name))
+            return page_titles
         except Exception as e:
             self.logger.error(
                 "Error setting property '%s' to value '%s': %s",
