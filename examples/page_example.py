@@ -9,9 +9,10 @@ IMPORTANT: Replace PAGE_NAME with the name of an existing Notion page.
 """
 
 import asyncio
+import json
 from notionary import NotionPage
 
-PAGE_NAME = "Supabase für mein Bild Problem nutzen"
+PAGE_NAME = "Simplex Algorithmus für das Leben"
 
 
 async def main():
@@ -22,9 +23,9 @@ async def main():
     try:
         print(f"\n🔎 Finding page '{PAGE_NAME}'...")
         page = await NotionPage.from_page_name(PAGE_NAME)
+        property_values = await page.get_property_value_by_name("Thema")
+        print("Property 'Themen' values:", json.dumps(property_values, indent=2))
 
-        options = await page.get_options_for_property("Tags")
-        print(f"Options for 'Tags': {options}")
 
     except Exception as e:
         import traceback

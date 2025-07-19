@@ -40,6 +40,7 @@ class NotionPage(LoggingMixin):
         title: str,
         url: str,
         emoji_icon: Optional[str] = None,
+        properties: Optional[Dict[str, Any]] = None,
         parent_database: Optional[NotionDatabase] = None,
         token: Optional[str] = None,
     ):
@@ -50,6 +51,7 @@ class NotionPage(LoggingMixin):
         self._title = title
         self._url = url
         self._emoji_icon = emoji_icon
+        self._properties = properties
         self._parent_database = parent_database
 
         self._client = NotionPageClient(token=token)
@@ -169,6 +171,13 @@ class NotionPage(LoggingMixin):
         Get the emoji icon of the page.
         """
         return self._emoji_icon
+    
+    @property
+    def properties(self) -> Optional[Dict[str, Any]]:
+        """
+        Get the properties of the page.
+        """
+        return self._properties
 
     @property
     def block_registry(self) -> BlockRegistry:
@@ -238,12 +247,6 @@ class NotionPage(LoggingMixin):
     async def append_markdown(self, markdown: str, append_divider=False) -> bool:
         """
         Append markdown content to the page.
-
-        Args:
-            markdown: The markdown content to append.
-
-        Returns:
-            str: Status or confirmation message.
         """
         return await self._page_content_writer.append_markdown(
             markdown_text=markdown, append_divider=append_divider
@@ -252,9 +255,6 @@ class NotionPage(LoggingMixin):
     async def clear_page_content(self) -> bool:
         """
         Clear all content from the page.
-
-        Returns:
-            str: Status or confirmation message.
         """
         return await self._page_content_writer.clear_page_content()
 
@@ -363,20 +363,36 @@ class NotionPage(LoggingMixin):
         """
         Get the value of a specific property.
         """
-        properties = await self._property_manager._get_properties()
-
-        if property_name not in properties:
+        # Early return (if there is no parent database, we cannot get properties)
+        if not self._parent_database:
             return None
+        
+        database_property_schema = self._parent_database.properties.get(property_name)
+        
+        if not database_property_schema:
+            self.logger.warning(
+                "Property '%s' not found in database schema", property_name
+            )
+            return None
+        
+        property_type = database_property_schema.get("type")
 
-        prop_data = properties[property_name]
-        prop_type = prop_data.get("type")
-
-        if prop_type == "relation":
-            return await self._relation_manager.get_relation_values(property_name)
+        if property_type == "relation":
+           return await self._get_relation_property_values_by_name(property_name)
 
         return await self._property_manager.get_property_value(property_name)
+    
+    async def _get_relation_property_values_by_name(self, property_name: str) -> List[str]:
+        """
+        Retrieve the titles of all related pages for a relation property.
+        """
+        page_property_schema = self.properties.get(property_name)
+        relation_page_ids = [rel.get("id") for rel in page_property_schema.get("relation", [])]
+        notion_pages = [await NotionPage.from_page_id(page_id) for page_id in relation_page_ids]
+        return [page.title for page in notion_pages if page]
+        
 
-    async def get_options_for_property(self, property_name: str) -> List[str]:
+    async def get_options_for_property_by_name(self, property_name: str) -> List[str]:
         """
         Get the available options for a property (select, multi_select, status, relation).
         """
@@ -556,6 +572,7 @@ class NotionPage(LoggingMixin):
             title=title,
             url=page_response.url,
             emoji_icon=emoji,
+            properties=page_response.properties,
             parent_database=parent_database,
             token=token,
         )
@@ -565,10 +582,24 @@ class NotionPage(LoggingMixin):
 
     @staticmethod
     def _extract_title(page_response: NotionPageResponse) -> str:
-        """Extract title from database response. Returns empty string if not found."""
+        """Extract title from page response. Returns empty string if not found."""
+        
+        if not page_response.properties:
+            return ""
+        
+        title_property = next(
+            (prop for prop in page_response.properties.values() 
+            if isinstance(prop, dict) and prop.get("type") == "title"),
+            None
+        )
+        
+        if not title_property or "title" not in title_property:
+            return ""
+        
         try:
-            return page_response.properties["title"]["title"][0]["plain_text"]
-        except (KeyError, IndexError, TypeError):
+            title_parts = title_property["title"]
+            return "".join(part.get("plain_text", "") for part in title_parts)
+        except (KeyError, TypeError, AttributeError):
             return ""
 
     @staticmethod

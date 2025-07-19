@@ -197,6 +197,7 @@ class NotionDatabase(LoggingMixin):
             self.logger.error(f"Error updating database external icon: {str(e)}")
             return None
 
+    # TODO: Improve typing here (every property has a type and value)
     async def get_options_by_property_name(self, property_name: str) -> List[str]:
         """
         Retrieve all option names for a select, multi_select, status, or relation property.
