@@ -76,7 +76,9 @@ class NotionPropertyFormatter(LoggingMixin):
             return {"relation": [{"id": item} for item in value]}
         return {"relation": [{"id": str(value)}]}
 
-    def format_value(self, property_type: str, value: Any) -> Optional[Dict[str, Any]]:
+    def format_value(
+        self, property_name, property_type: str, value: Any
+    ) -> Optional[Dict[str, Any]]:
         """
         Formats a value according to the given Notion property type.
 
@@ -89,8 +91,8 @@ class NotionPropertyFormatter(LoggingMixin):
         """
         formatter = self._formatters.get(property_type)
         if not formatter:
-            if self.logger:
-                self.logger.warning("Unknown property type: %s", property_type)
+            self.logger.warning("Unknown property type: %s", property_type)
             return None
 
-        return formatter(value)
+        formatted_property = formatter(value)
+        return {"properties": {property_name: formatted_property}}

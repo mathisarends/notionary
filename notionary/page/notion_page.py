@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 import random
 import re
@@ -12,7 +13,8 @@ from notionary.page.content.page_content_retriever import PageContentRetriever
 
 
 from notionary.page.content.page_content_writer import PageContentWriter
-from notionary.page.properites.utils import extract_property_value
+from notionary.page.property_formatter import NotionPropertyFormatter
+from notionary.page.utils import extract_property_value
 
 from notionary.util import LoggingMixin, format_uuid, FuzzyMatcher, factory_only
 
@@ -412,56 +414,86 @@ class NotionPage(LoggingMixin):
             )
             return []
 
-    async def set_property_value_by_name(
-        self, property_name: str, value: Any
-    ) -> Optional[Dict[str, Any]]:
+    # Diese Methode hier sollte auch für relation properties funktionieren aber gerne auch eine dedizierte hier
+    async def set_property_value_by_name(self, property_name: str, value: Any) -> Any:
         """
         Set the value of a specific property by its name.
         """
+        if not self._parent_database:
+            return None
+        
+        property_type = self._parent_database.properties.get(property_name).get("type")
 
-    async def set_property_value_by_name(
-        self, property_name: str, value: Any
-    ) -> Optional[Dict[str, Any]]:
-        """
-        Set the value of a specific property by its name.
+        if not property_type:
+            return None
+        
+        if property_type == "relation":
+            return await self.set_relation_property_values_by_name(
+                property_name=property_name, page_titles=value
+            )
 
-        Args:
-            property_name: The name of the property.
-            value: The new value to set.
+        property_formatter = NotionPropertyFormatter()
+        update_data = property_formatter.format_value(
+            property_name=property_name, property_type=property_type, value=value
+        )
 
-        Returns:
-            Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
-        """
-        return None
+        try:
+            updated_page_response = await self._client.patch_page(
+                page_id=self._page_id, data=update_data
+            )
+            self._properties = updated_page_response.properties
+            return extract_property_value(self._properties.get(property_name))
+        except Exception as e:
+            self.logger.error(
+                "Error setting property '%s' to value '%s': %s",
+                property_name,
+                value,
+                str(e),
+            )
+            return None
 
     async def set_relation_property_values_by_name(
-        self, relation_property_name: str, page_titles: List[str]
+        self, property_name: str, page_titles: List[str]
     ) -> List[str]:
         """
         Add one or more relations to a relation property.
-
-        Args:
-            relation_property_name: The name of the relation property.
-            page_titles: A list of page titles to relate to.
-
-        Returns:
-            Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
         """
-        return []
-
-    async def get_relation_property_values_by_name(
-        self, property_name: str
-    ) -> List[str]:
-        """
-        Return the current relation values for a property.
-
-        Args:
-            property_name: The name of the relation property.
-
-        Returns:
-            List[str]: List of relation values.
-        """
-        return []
+        if not self._parent_database:
+            return []
+        
+        property_type = self._parent_database.properties.get(property_name).get("type")
+        
+        # for direct calls
+        if property_type != "relation":
+            return []
+        
+        relation_pages = await asyncio.gather(
+            *(NotionPage.from_page_name(page_name=page_title) for page_title in page_titles)
+        )
+        
+        relation_page_ids = [page.id for page in relation_pages]
+        
+        property_formatter = NotionPropertyFormatter()
+        
+        update_data = property_formatter.format_value(
+            property_name=property_name, property_type="relation", value=relation_page_ids
+        )
+        
+        try:
+            updated_page_response = await self._client.patch_page(
+                page_id=self._page_id, data=update_data
+            )
+            self._properties = updated_page_response.properties
+            return extract_property_value(self._properties.get(property_name))
+        except Exception as e:
+            self.logger.error(
+                "Error setting property '%s' to value '%s': %s",
+                property_name,
+                page_titles,
+                str(e),
+            )
+            return []
+        
 
     async def archive(self) -> bool:
         """
