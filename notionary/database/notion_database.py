@@ -9,13 +9,12 @@ from notionary.models.notion_database_response import (
     NotionQueryDatabaseResponse,
 )
 from notionary.page.notion_page import NotionPage
-from notionary.util import LoggingMixin
-from notionary.util.factory_decorator import factory_only
-from notionary.util.page_id_utils import format_uuid
 from notionary.exceptions.database_exceptions import (
     DatabaseNotFoundException,
 )
 from notionary.common.filter_builder import FilterBuilder
+from notionary.util import FuzzyMatcher, factory_only, LoggingMixin, format_uuid
+
 
 
 class NotionDatabase(LoggingMixin):
@@ -57,28 +56,52 @@ class NotionDatabase(LoggingMixin):
 
         async with NotionDatabaseClient(token=token) as client:
             db_response = await client.get_database(formatted_id)
-            return cls._create_from_response(db_response, formatted_id, token)
+            return cls._create_from_response(db_response, token)
 
     @classmethod
     async def from_database_name(
-        cls, database_name: str, token: Optional[str] = None
+        cls, database_name: str, token: Optional[str] = None, min_similarity: float = 0.6
     ) -> NotionDatabase:
         """
-        Create a NotionDatabase by finding a database with a matching name.
+        Create a NotionDatabase by finding a database with fuzzy matching on the title.
         """
-        cls.logger.debug("Searching for database: %s", database_name)
-
+        
         async with NotionDatabaseClient(token=token) as client:
-            search_result = await client.search_databases(database_name, limit=1)
+            search_result = await client.search_databases(database_name, limit=10)
 
             if not search_result.results:
                 cls.logger.warning("No databases found for name: %s", database_name)
                 raise DatabaseNotFoundException(database_name)
 
-            database_id = search_result.results[0].id
-            db_response = await client.get_database(database_id)
+            best_match = FuzzyMatcher.find_best_match(
+                query=database_name,
+                items=search_result.results,
+                text_extractor=lambda db: cls._extract_title(db),
+                min_similarity=min_similarity
+            )
+            
+            if not best_match:
+                available_titles = [
+                    cls._extract_title(db) for db in search_result.results[:5]
+                ]
+                cls.logger.warning(
+                    "No sufficiently similar database found for '%s' (min: %.3f). Available: %s",
+                    database_name, min_similarity, available_titles
+                )
+                raise DatabaseNotFoundException(database_name)
+            
+            database_id = best_match.item.id 
 
-            return cls._create_from_response(db_response, database_id, token)
+            db_response = await client.get_database(database_id=database_id)
+
+            instance = cls._create_from_response(db_response, token)
+            
+            cls.logger.info(
+                "Created database: '%s' (ID: %s, similarity: %.3f)", 
+                instance.title, database_id, best_match.similarity
+            )
+            
+            return instance
 
     @property
     def database_id(self) -> str:
@@ -350,7 +373,7 @@ class NotionDatabase(LoggingMixin):
 
     @classmethod
     def _create_from_response(
-        cls, db_response: NotionDatabaseResponse, database_id: str, token: Optional[str]
+        cls, db_response: NotionDatabaseResponse, token: Optional[str]
     ) -> NotionDatabase:
         """
         Create NotionDatabase instance from API response.
@@ -359,7 +382,7 @@ class NotionDatabase(LoggingMixin):
         emoji_icon = cls._extract_emoji_icon(db_response)
 
         instance = cls(
-            database_id=database_id,
+            database_id=db_response.id,
             title=title,
             url=db_response.url,
             emoji_icon=emoji_icon,
@@ -367,7 +390,7 @@ class NotionDatabase(LoggingMixin):
             token=token,
         )
 
-        cls.logger.info("Created database manager: '%s' (ID: %s)", title, database_id)
+        cls.logger.info("Created database manager: '%s' (ID: %s)", title, db_response.id)
 
         return instance
 

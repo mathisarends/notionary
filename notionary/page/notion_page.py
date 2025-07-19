@@ -100,7 +100,7 @@ class NotionPage(LoggingMixin):
 
         async with NotionPageClient(token=token) as client:
             page_response = await client.get_page(formatted_id)
-            return await cls._create_from_response(page_response, formatted_id, token)
+            return await cls._create_from_response(page_response, token)
 
     @classmethod
     async def from_page_name(
@@ -112,7 +112,6 @@ class NotionPage(LoggingMixin):
         """
         from notionary.workspace.workspace import NotionWorkspace
 
-        cls.logger.debug("Searching for page with name: %s", page_name)
         workspace = NotionWorkspace()
 
         try:
@@ -137,17 +136,11 @@ class NotionPage(LoggingMixin):
                 )
                 raise ValueError(f"No sufficiently similar page found for '{page_name}'")
 
-            cls.logger.info(
-                "Best match: '%s' (similarity: %.3f)", 
-                best_match.matched_text, best_match.similarity
-            )
-
-            page_id = best_match.item.id
 
             async with NotionPageClient(token=token) as client:
-                page_response = await client.get_page(page_id)
+                page_response = await client.get_page(page_id=best_match.item.id)
                 instance = await cls._create_from_response(
-                    page_response, page_id, token
+                    page_response=page_response, token=token
                 )
                 return instance
 
@@ -572,7 +565,6 @@ class NotionPage(LoggingMixin):
     async def _create_from_response(
         cls,
         page_response: NotionPageResponse,
-        page_id: str,
         token: Optional[str],
     ) -> NotionPage:
         """
@@ -593,7 +585,7 @@ class NotionPage(LoggingMixin):
         )
 
         instance = cls(
-            page_id=page_id,
+            page_id=page_response.id,
             title=title,
             url=page_response.url,
             emoji_icon=emoji,
@@ -602,7 +594,7 @@ class NotionPage(LoggingMixin):
             token=token,
         )
 
-        cls.logger.info("Created page manager: '%s' (ID: %s)", title, page_id)
+        cls.logger.info("Created page manager: '%s' (ID: %s)", title, page_response.id)
         return instance
 
     @staticmethod
