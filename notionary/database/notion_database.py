@@ -16,7 +16,6 @@ from notionary.common.filter_builder import FilterBuilder
 from notionary.util import FuzzyMatcher, factory_only, LoggingMixin, format_uuid
 
 
-
 class NotionDatabase(LoggingMixin):
     """
     Minimal manager for Notion databases.
@@ -60,12 +59,15 @@ class NotionDatabase(LoggingMixin):
 
     @classmethod
     async def from_database_name(
-        cls, database_name: str, token: Optional[str] = None, min_similarity: float = 0.6
+        cls,
+        database_name: str,
+        token: Optional[str] = None,
+        min_similarity: float = 0.6,
     ) -> NotionDatabase:
         """
         Create a NotionDatabase by finding a database with fuzzy matching on the title.
         """
-        
+
         async with NotionDatabaseClient(token=token) as client:
             search_result = await client.search_databases(database_name, limit=10)
 
@@ -77,30 +79,34 @@ class NotionDatabase(LoggingMixin):
                 query=database_name,
                 items=search_result.results,
                 text_extractor=lambda db: cls._extract_title(db),
-                min_similarity=min_similarity
+                min_similarity=min_similarity,
             )
-            
+
             if not best_match:
                 available_titles = [
                     cls._extract_title(db) for db in search_result.results[:5]
                 ]
                 cls.logger.warning(
                     "No sufficiently similar database found for '%s' (min: %.3f). Available: %s",
-                    database_name, min_similarity, available_titles
+                    database_name,
+                    min_similarity,
+                    available_titles,
                 )
                 raise DatabaseNotFoundException(database_name)
-            
-            database_id = best_match.item.id 
+
+            database_id = best_match.item.id
 
             db_response = await client.get_database(database_id=database_id)
 
             instance = cls._create_from_response(db_response, token)
-            
+
             cls.logger.info(
-                "Created database: '%s' (ID: %s, similarity: %.3f)", 
-                instance.title, database_id, best_match.similarity
+                "Created database: '%s' (ID: %s, similarity: %.3f)",
+                instance.title,
+                database_id,
+                best_match.similarity,
             )
-            
+
             return instance
 
     @property
@@ -390,7 +396,9 @@ class NotionDatabase(LoggingMixin):
             token=token,
         )
 
-        cls.logger.info("Created database manager: '%s' (ID: %s)", title, db_response.id)
+        cls.logger.info(
+            "Created database manager: '%s' (ID: %s)", title, db_response.id
+        )
 
         return instance
 

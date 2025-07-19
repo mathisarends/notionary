@@ -18,7 +18,7 @@ class NotionWorkspace(LoggingMixin):
         self.database_client = NotionDatabaseClient(token=token)
         self.page_client = NotionPageClient(token=token)
 
-    async def search_pages(self, query: str, limit = 100) -> List[NotionPage]:
+    async def search_pages(self, query: str, limit=100) -> List[NotionPage]:
         """
         Search for pages globally across Notion workspace.
         """

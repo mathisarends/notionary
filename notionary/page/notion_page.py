@@ -9,17 +9,10 @@ from notionary.models.notion_database_response import NotionPageResponse
 from notionary.models.notion_page_response import DatabaseParent
 from notionary.page.notion_page_client import NotionPageClient
 from notionary.page.content.page_content_retriever import PageContentRetriever
-from notionary.page.metadata.metadata_editor import MetadataEditor
-from notionary.page.properites.database_property_service import (
-    DatabasePropertyService,
-)
-from notionary.page.relations.notion_page_relation_manager import (
-    NotionPageRelationManager,
-)
+
+
 from notionary.page.content.page_content_writer import PageContentWriter
-from notionary.page.properites.page_property_manager import PagePropertyManager
-from notionary.page.relations.notion_page_title_resolver import NotionPageTitleResolver
-from notionary.page.relations.page_database_relation import PageDatabaseRelation
+from notionary.page.properites.utils import extract_property_value
 
 from notionary.util import LoggingMixin, format_uuid, FuzzyMatcher, factory_only
 
@@ -70,21 +63,6 @@ class NotionPage(LoggingMixin):
             block_registry=self._block_element_registry,
         )
 
-        self._metadata = MetadataEditor(self._page_id, self._client)
-
-        self._db_relation = PageDatabaseRelation(
-            page_id=self._page_id, client=self._client
-        )
-        self._db_property_service = None
-
-        self._relation_manager = NotionPageRelationManager(
-            page_id=self._page_id, client=self._client
-        )
-
-        self._property_manager = PagePropertyManager(
-            self._page_id, self._metadata, self._db_relation
-        )
-
     @classmethod
     async def from_page_id(
         cls, page_id: str, token: Optional[str] = None
@@ -115,8 +93,10 @@ class NotionPage(LoggingMixin):
         workspace = NotionWorkspace()
 
         try:
-            search_results: List[NotionPage] = await workspace.search_pages(page_name, limit=10)
-            
+            search_results: List[NotionPage] = await workspace.search_pages(
+                page_name, limit=10
+            )
+
             if not search_results:
                 cls.logger.warning("No pages found for name: %s", page_name)
                 raise ValueError(f"No pages found for name: {page_name}")
@@ -125,17 +105,20 @@ class NotionPage(LoggingMixin):
                 query=page_name,
                 items=search_results,
                 text_extractor=lambda page: page.title,
-                min_similarity=min_similarity
+                min_similarity=min_similarity,
             )
-            
+
             if not best_match:
                 available_titles = [result.title for result in search_results[:5]]
                 cls.logger.warning(
                     "No sufficiently similar page found for '%s' (min: %.3f). Available: %s",
-                    page_name, min_similarity, available_titles
+                    page_name,
+                    min_similarity,
+                    available_titles,
                 )
-                raise ValueError(f"No sufficiently similar page found for '{page_name}'")
-
+                raise ValueError(
+                    f"No sufficiently similar page found for '{page_name}'"
+                )
 
             async with NotionPageClient(token=token) as client:
                 page_response = await client.get_page(page_id=best_match.item.id)
@@ -389,11 +372,9 @@ class NotionPage(LoggingMixin):
                 "Property '%s' not found in page properties", property_name
             )
             return None
-        
-        # TODO. Fix that here
-        property_data = self._properties.get(property_name).get(property_name)
-        return property_data
-        
+
+        property_data = self._properties.get(property_name)
+        return extract_property_value(property_data)
 
     async def _get_relation_property_values_by_name(
         self, property_name: str
@@ -436,6 +417,13 @@ class NotionPage(LoggingMixin):
     ) -> Optional[Dict[str, Any]]:
         """
         Set the value of a specific property by its name.
+        """
+
+    async def set_property_value_by_name(
+        self, property_name: str, value: Any
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Set the value of a specific property by its name.
 
         Args:
             property_name: The name of the property.
@@ -444,10 +432,7 @@ class NotionPage(LoggingMixin):
         Returns:
             Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
         """
-        return await self._property_manager.set_property_by_name(
-            property_name=property_name,
-            value=value,
-        )
+        return None
 
     async def set_relation_property_values_by_name(
         self, relation_property_name: str, page_titles: List[str]
@@ -462,9 +447,7 @@ class NotionPage(LoggingMixin):
         Returns:
             Optional[Dict[str, Any]]: Response data from the API if successful, None otherwise.
         """
-        return await self._relation_manager.set_relation_values_by_page_titles(
-            property_name=relation_property_name, page_titles=page_titles
-        )
+        return []
 
     async def get_relation_property_values_by_name(
         self, property_name: str
@@ -478,7 +461,7 @@ class NotionPage(LoggingMixin):
         Returns:
             List[str]: List of relation values.
         """
-        return await self._relation_manager.get_relation_values(property_name)
+        return []
 
     async def archive(self) -> bool:
         """
@@ -492,74 +475,6 @@ class NotionPage(LoggingMixin):
         except Exception as e:
             self.logger.error("Error archiving page %s: %s", self._page_id, str(e))
             return False
-
-    async def _fetch_page_title(self) -> str:
-        """
-        Load the page title from Notion API if not already loaded.
-
-        Returns:
-            str: The page title.
-        """
-        notion_page_title_resolver = NotionPageTitleResolver(self._client)
-        return await notion_page_title_resolver.get_title_by_page_id(
-            page_id=self._page_id
-        )
-
-    async def _generate_url_from_title(self) -> str:
-        """
-        Build a Notion URL from the page ID, including the title if available.
-
-        Returns:
-            str: The Notion URL for the page.
-        """
-        title = await self._fetch_page_title()
-
-        url_title = ""
-        if title and title != "Untitled":
-            url_title = re.sub(r"[^\w\s-]", "", title)
-            url_title = re.sub(r"[\s]+", "-", url_title)
-            url_title = f"{url_title}-"
-
-        clean_id = self._page_id.replace("-", "")
-
-        return f"https://www.notion.so/{url_title}{clean_id}"
-
-    async def _get_db_property_service(self) -> Optional[DatabasePropertyService]:
-        """
-        Gets the database property service, initializing it if necessary.
-        This is a more intuitive way to work with the instance variable.
-
-        Returns:
-            Optional[DatabasePropertyService]: The database property service or None if not applicable
-        """
-        if self._db_property_service is not None:
-            return self._db_property_service
-
-        database_id = await self._db_relation.get_parent_database_id()
-        if not database_id:
-            return None
-
-        self._db_property_service = DatabasePropertyService(database_id)
-        await self._db_property_service.load_schema()
-        return self._db_property_service
-
-    async def _get_property_type(self, property_name: str) -> Optional[str]:
-        """
-        Get the type of a specific property.
-
-        Args:
-            property_name: The name of the property.
-
-        Returns:
-            Optional[str]: The type of the property, or None if not found.
-        """
-        properties = await self._property_manager._get_properties()
-
-        if property_name not in properties:
-            return None
-
-        prop_data = properties[property_name]
-        return prop_data.get("type")
 
     @classmethod
     async def _create_from_response(
