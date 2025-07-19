@@ -40,7 +40,7 @@ class NotionDatabaseClient(BaseNotionClient):
         return NotionDatabaseResponse.model_validate(response)
 
     async def query_database(
-        self, database_id: str, query_data: Dict[str, Any]
+        self, database_id: str, query_data: Dict[str, Any] = None
     ) -> NotionQueryDatabaseResponse:
         """
         Queries a Notion database with the provided filter and sorts.

@@ -11,7 +11,7 @@ IMPORTANT: Replace PAGE_NAME with the name of an existing Notion page.
 import asyncio
 from notionary import NotionPage
 
-PAGE_NAME = "Jarvis Clipboad"
+PAGE_NAME = "Supabase für mein Bild Problem nutzen"
 
 
 async def main():
@@ -23,27 +23,8 @@ async def main():
         print(f"\n🔎 Finding page '{PAGE_NAME}'...")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        # Get current title for display
-        current_title = page.title
-        print(f"📌 Current title: {current_title}")
-
-        page_content = await page.get_text_content()
-        print(f"📜 Current content: {page_content}")
-
-        page_url = page.url
-        print(f"🔗 View page: {page_url}")
-
-        page_icon = page.emoji_icon
-        print(f"🏷️ Icon: {page_icon}")
-
-        page_cover = await page.get_cover_url()
-        print(f"🖼️ Cover URL: {page_cover}")
-
-        await page.set_title("Updated Title")
-
-        print("✅ Successfully retrieved page information.")
-
-        await page.set_title("Jarvis Clipboad")
+        options = await page.get_options_for_property("Tags")
+        print(f"Options for 'Tags': {options}")
 
     except Exception as e:
         import traceback

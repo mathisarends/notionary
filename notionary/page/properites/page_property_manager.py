@@ -113,13 +113,6 @@ class PagePropertyManager(LoggingMixin):
             return await db_service.get_property_type(property_name)
         return None
 
-    async def get_available_options_for_property(self, property_name: str) -> List[str]:
-        """Gets the available option names for a property."""
-        db_service = await self._init_db_property_service()
-        if db_service:
-            return await db_service.get_option_names(property_name)
-        return []
-
     async def _get_page_data(self, force_refresh=False) -> NotionPageResponse:
         """Gets the page data and caches it for future use."""
         if self._page_data is None or force_refresh:

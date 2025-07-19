@@ -171,13 +171,6 @@ class NotionPage(LoggingMixin):
         return self._emoji_icon
 
     @property
-    def parent_database(self) -> Optional[NotionDatabase]:
-        """
-        Get the parent database of the page, if it exists.
-        """
-        return self._parent_database
-
-    @property
     def block_registry(self) -> BlockRegistry:
         """
         Get the block element registry associated with this page.
@@ -383,34 +376,26 @@ class NotionPage(LoggingMixin):
 
         return await self._property_manager.get_property_value(property_name)
 
-    async def get_options_for_property(
-        self, property_name: str, limit: int = 100
-    ) -> List[str]:
+    async def get_options_for_property(self, property_name: str) -> List[str]:
         """
         Get the available options for a property (select, multi_select, status, relation).
-
-        Args:
-            property_name: The name of the property.
-            limit: Maximum number of options to return (only affects relation properties).
-
-        Returns:
-            List[str]: List of available option names or page titles.
         """
-        property_type = await self._get_property_type(property_name)
-
-        if property_type is None:
+        if not self._parent_database:
+            self.logger.error(
+                "Parent database not set. Cannot get options for property: %s",
+                property_name,
+            )
             return []
 
-        if property_type == "relation":
-            return await self._relation_manager.get_relation_options(
-                property_name, limit
+        try:
+            return await self._parent_database.get_options_by_property_name(
+                property_name=property_name
             )
-
-        db_service = await self._get_db_property_service()
-        if db_service:
-            return await db_service.get_option_names(property_name)
-
-        return []
+        except Exception as e:
+            self.logger.error(
+                "Error getting options for property '%s': %s", property_name, str(e)
+            )
+            return []
 
     async def set_property_value_by_name(
         self, property_name: str, value: Any
@@ -553,7 +538,7 @@ class NotionPage(LoggingMixin):
         Create NotionPage instance from API response.
         """
         from notionary.database.notion_database import NotionDatabase
-        
+
         title = cls._extract_title(page_response)
         emoji = cls._extract_emoji(page_response)
         parent_database_id = cls._extract_parent_database_id(page_response)

@@ -17,8 +17,10 @@ async def main():
         url = await db.set_random_gradient_cover()
         print(f"Cover set to: {url}")
 
-        properties = db.get_options_by_property_name("Tags")
-        print("Properties for 'Tags':", properties)
+        properties = await db.get_options_by_property_name("Projekte")
+        print("Properties for 'Thema':", properties)
+
+        test = db.get_property_type("Tags")
 
     except Exception as e:
         print(f"❌ Error: {traceback.format_exc(e)}")

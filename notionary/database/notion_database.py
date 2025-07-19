@@ -197,30 +197,36 @@ class NotionDatabase(LoggingMixin):
             self.logger.error(f"Error updating database external icon: {str(e)}")
             return None
 
-    # TODO: Diese Beiden müssen hier zusammengehören
-    def get_options_by_property_name(self, property_name: str) -> List[str]:
+    async def get_options_by_property_name(self, property_name: str) -> List[str]:
         """
-        Retrieve all option names for a select, multi_select, or status property.
+        Retrieve all option names for a select, multi_select, status, or relation property.
+
+        Args:
+            property_name: The name of the property in the database schema.
+
+        Returns:
+            A list of option names for the given property. For select, multi_select, or status,
+            returns the option names directly. For relation properties, returns the titles of related pages.
         """
         property_schema = self.properties.get(property_name)
 
         property_type = property_schema.get("type")
-        print("property_type", property_type)
 
-        if property_type not in ["select", "multi_select", "status"]:
-            self.logger.warning(
-                "Property '%s' is not a select, multi_select, or status type. "
-                "Cannot retrieve options.",
-                property_name,
-            )
-            return []
+        if property_type in ["select", "multi_select", "status"]:
+            options = property_schema.get(property_type, {}).get("options", [])
+            return [option.get("name", "") for option in options]
 
-        options = property_schema.get(property_type, {}).get("options", [])
+        if property_type == "relation":
+            return await self._get_relation_options(property_name)
 
-        return [option.get("name", "") for option in options]
+        return []
 
-    """ async def get_relation_options(
-        self, property_name: str, limit = 100) -> List[Dict[str, Any]]: """
+    def get_property_type(self, property_name: str) -> Optional[str]:
+        """
+        Get the type of a property by its name.
+        """
+        property_schema = self.properties.get(property_name)
+        return property_schema.get("type") if property_schema else None
 
     async def query_database_by_title(self, page_title: str) -> List[NotionPage]:
         """
@@ -350,15 +356,13 @@ class NotionDatabase(LoggingMixin):
         """
         title = cls._extract_title(db_response)
         emoji_icon = cls._extract_emoji_icon(db_response)
-        url = db_response.url
-        properties = db_response.properties
 
         instance = cls(
             database_id=database_id,
             title=title,
-            url=url,
+            url=db_response.url,
             emoji_icon=emoji_icon,
-            properties=properties,
+            properties=db_response.properties,
             token=token,
         )
 
@@ -383,3 +387,49 @@ class NotionDatabase(LoggingMixin):
             return db_response.icon.emoji
 
         return None
+
+    def _extract_title_from_page(self, page: NotionPageResponse) -> Optional[str]:
+        """
+        Extracts the title from a NotionPageResponse object.
+        """
+        if not page.properties:
+            return None
+
+        title_property = next(
+            (
+                prop
+                for prop in page.properties.values()
+                if isinstance(prop, dict) and prop.get("type") == "title"
+            ),
+            None,
+        )
+
+        if not title_property or "title" not in title_property:
+            return None
+
+        try:
+            title_parts = title_property["title"]
+            return "".join(part.get("plain_text", "") for part in title_parts)
+
+        except (KeyError, TypeError, AttributeError):
+            return None
+
+    async def _get_relation_options(self, property_name: str) -> List[Dict[str, Any]]:
+        """
+        Retrieve the titles of all pages related to a relation property.
+
+        Args:
+            property_name: The name of the relation property in the database schema.
+
+        Returns:
+            A list of titles for all related pages. Returns an empty list if no related pages are found.
+        """
+        property_schema = self.properties.get(property_name)
+
+        relation_database_id = property_schema.get("relation", {}).get("database_id")
+
+        search_results = await self.client.query_database(
+            database_id=relation_database_id
+        )
+
+        return [self._extract_title_from_page(page) for page in search_results.results]
