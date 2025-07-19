@@ -2,7 +2,7 @@ import asyncio
 from typing import Optional, List
 from notionary import NotionPage, NotionDatabase
 from notionary.database.client import NotionDatabaseClient
-from notionary.page.client import NotionPageClient
+from notionary.page.notion_page_client import NotionPageClient
 from notionary.util import LoggingMixin
 
 

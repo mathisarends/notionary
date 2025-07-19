@@ -1,5 +1,5 @@
 from typing import Any, Dict, Optional
-from notionary.page.client import NotionPageClient
+from notionary.page.notion_page_client import NotionPageClient
 from notionary.page.properites.property_formatter import NotionPropertyFormatter
 from notionary.util import LoggingMixin
 

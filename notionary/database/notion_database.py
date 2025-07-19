@@ -31,7 +31,8 @@ class NotionDatabase(LoggingMixin):
         database_id: str,
         title: str,
         url: str,
-        emoji: Optional[str] = None,
+        emoji_icon: Optional[str] = None,
+        properties: Optional[Dict[str, Any]] = None,
         token: Optional[str] = None,
     ):
         """
@@ -40,7 +41,8 @@ class NotionDatabase(LoggingMixin):
         self._database_id = database_id
         self._title = title
         self._url = url
-        self._emoji = emoji
+        self._emoji_icon = emoji_icon
+        self._properties = properties
 
         self.client = NotionDatabaseClient(token=token)
 
@@ -96,7 +98,12 @@ class NotionDatabase(LoggingMixin):
     @property
     def emoji(self) -> Optional[str]:
         """Get the database emoji (readonly)."""
-        return self._emoji
+        return self._emoji_icon
+
+    @property
+    def properties(self) -> Optional[Dict[str, Any]]:
+        """Get the database properties (readonly)."""
+        return self._properties
 
     async def create_blank_page(self) -> Optional[NotionPage]:
         """
@@ -139,7 +146,7 @@ class NotionDatabase(LoggingMixin):
                 database_id=self.database_id, emoji=new_emoji
             )
 
-            self._emoji = result.icon.emoji if result.icon else None
+            self._emoji_icon = result.icon.emoji if result.icon else None
             self.logger.info(f"Successfully updated database emoji to: {new_emoji}")
             return True
 
@@ -189,6 +196,31 @@ class NotionDatabase(LoggingMixin):
         except Exception as e:
             self.logger.error(f"Error updating database external icon: {str(e)}")
             return None
+
+    # TODO: Diese Beiden müssen hier zusammengehören
+    def get_options_by_property_name(self, property_name: str) -> List[str]:
+        """
+        Retrieve all option names for a select, multi_select, or status property.
+        """
+        property_schema = self.properties.get(property_name)
+
+        property_type = property_schema.get("type")
+        print("property_type", property_type)
+
+        if property_type not in ["select", "multi_select", "status"]:
+            self.logger.warning(
+                "Property '%s' is not a select, multi_select, or status type. "
+                "Cannot retrieve options.",
+                property_name,
+            )
+            return []
+
+        options = property_schema.get(property_type, {}).get("options", [])
+
+        return [option.get("name", "") for option in options]
+
+    """ async def get_relation_options(
+        self, property_name: str, limit = 100) -> List[Dict[str, Any]]: """
 
     async def query_database_by_title(self, page_title: str) -> List[NotionPage]:
         """
@@ -317,10 +349,18 @@ class NotionDatabase(LoggingMixin):
         Create NotionDatabase instance from API response.
         """
         title = cls._extract_title(db_response)
-        emoji = cls._extract_emoji(db_response)
+        emoji_icon = cls._extract_emoji_icon(db_response)
         url = db_response.url
+        properties = db_response.properties
 
-        instance = cls(database_id, title, url, emoji, token)
+        instance = cls(
+            database_id=database_id,
+            title=title,
+            url=url,
+            emoji_icon=emoji_icon,
+            properties=properties,
+            token=token,
+        )
 
         cls.logger.info("Created database manager: '%s' (ID: %s)", title, database_id)
 
@@ -334,7 +374,7 @@ class NotionDatabase(LoggingMixin):
         return "Untitled Database"
 
     @staticmethod
-    def _extract_emoji(db_response: NotionDatabaseResponse) -> Optional[str]:
+    def _extract_emoji_icon(db_response: NotionDatabaseResponse) -> Optional[str]:
         """Extract emoji from database response."""
         if not db_response.icon:
             return None

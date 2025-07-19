@@ -1,11 +1,12 @@
 from __future__ import annotations
 import random
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 import re
 
 from notionary.elements.registry.block_registry import BlockRegistry
 from notionary.elements.registry.block_registry_builder import BlockRegistryBuilder
 from notionary.models.notion_database_response import NotionPageResponse
+from notionary.models.notion_page_response import DatabaseParent
 from notionary.page.notion_page_client import NotionPageClient
 from notionary.page.content.page_content_retriever import PageContentRetriever
 from notionary.page.metadata.metadata_editor import MetadataEditor
@@ -23,6 +24,9 @@ from notionary.util import LoggingMixin
 from notionary.util import format_uuid
 from notionary.page.relations.page_database_relation import PageDatabaseRelation
 
+if TYPE_CHECKING:
+    from notionary import NotionDatabase
+
 
 class NotionPage(LoggingMixin):
     """
@@ -35,7 +39,8 @@ class NotionPage(LoggingMixin):
         page_id: str,
         title: str,
         url: str,
-        emoji: Optional[str] = None,
+        emoji_icon: Optional[str] = None,
+        parent_database: Optional[NotionDatabase] = None,
         token: Optional[str] = None,
     ):
         """
@@ -44,7 +49,8 @@ class NotionPage(LoggingMixin):
         self._page_id = page_id
         self._title = title
         self._url = url
-        self._emoji_icon = emoji
+        self._emoji_icon = emoji_icon
+        self._parent_database = parent_database
 
         self._client = NotionPageClient(token=token)
         self._page_data = None
@@ -92,7 +98,7 @@ class NotionPage(LoggingMixin):
 
         async with NotionPageClient(token=token) as client:
             page_response = await client.get_page(formatted_id)
-            return cls._create_from_response(page_response, formatted_id, token)
+            return await cls._create_from_response(page_response, formatted_id, token)
 
     @classmethod
     async def from_page_name(
@@ -122,7 +128,9 @@ class NotionPage(LoggingMixin):
 
             async with NotionPageClient(token=token) as client:
                 page_response = await client.get_page(page_id)
-                instance = cls._create_from_response(page_response, page_id, token)
+                instance = await cls._create_from_response(
+                    page_response, page_id, token
+                )
 
                 cls.logger.info(
                     "Found matching page: '%s' (ID: %s)", instance.title, page_id
@@ -161,6 +169,13 @@ class NotionPage(LoggingMixin):
         Get the emoji icon of the page.
         """
         return self._emoji_icon
+
+    @property
+    def parent_database(self) -> Optional[NotionDatabase]:
+        """
+        Get the parent database of the page, if it exists.
+        """
+        return self._parent_database
 
     @property
     def block_registry(self) -> BlockRegistry:
@@ -226,19 +241,6 @@ class NotionPage(LoggingMixin):
         except Exception as e:
             self.logger.error("Error setting page title: %s", str(e))
             return None
-
-    async def get_url(self) -> str:
-        """
-        Get the URL of the page, constructing it if necessary.
-
-        Returns:
-            str: The page URL.
-        """
-        self.url
-        if not self._url_loaded:
-            self._url = await self._generate_url_from_title()
-            self._url_loaded = True
-        return self._url
 
     async def append_markdown(self, markdown: str, append_divider=False) -> bool:
         """
@@ -541,7 +543,7 @@ class NotionPage(LoggingMixin):
         return prop_data.get("type")
 
     @classmethod
-    def _create_from_response(
+    async def _create_from_response(
         cls,
         page_response: NotionPageResponse,
         page_id: str,
@@ -550,14 +552,26 @@ class NotionPage(LoggingMixin):
         """
         Create NotionPage instance from API response.
         """
+        from notionary.database.notion_database import NotionDatabase
+        
         title = cls._extract_title(page_response)
         emoji = cls._extract_emoji(page_response)
+        parent_database_id = cls._extract_parent_database_id(page_response)
+
+        parent_database = (
+            await NotionDatabase.from_database_id(
+                database_id=parent_database_id, token=token
+            )
+            if parent_database_id
+            else None
+        )
 
         instance = cls(
             page_id=page_id,
             title=title,
             url=page_response.url,
-            emoji=emoji,
+            emoji_icon=emoji,
+            parent_database=parent_database,
             token=token,
         )
 
@@ -582,3 +596,10 @@ class NotionPage(LoggingMixin):
             return page_response.icon.emoji
 
         return None
+
+    @staticmethod
+    def _extract_parent_database_id(page_response: NotionPageResponse) -> Optional[str]:
+        """Extract parent database ID from page response."""
+        parent = page_response.parent
+        if isinstance(parent, DatabaseParent):
+            return parent.database_id

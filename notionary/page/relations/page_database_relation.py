@@ -1,6 +1,6 @@
 from typing import Optional
 from notionary.models.notion_page_response import DatabaseParent, NotionPageResponse
-from notionary.page.client import NotionPageClient
+from notionary.page.notion_page_client import NotionPageClient
 from notionary.util import LoggingMixin
 
 

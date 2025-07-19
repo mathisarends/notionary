@@ -54,33 +54,6 @@ class DatabasePropertyService(LoggingMixin):
         if self._schema is None:
             await self.load_schema()
 
-    async def get_schema(self) -> Dict[str, Any]:
-        """
-        Gets the database schema.
-
-        Returns:
-            Dict[str, Any]: The database schema
-        """
-        await self._ensure_schema_loaded()
-        return self._schema or {}
-
-    async def get_property_types(self) -> Dict[str, str]:
-        """
-        Gets all property types for the database.
-
-        Returns:
-            Dict[str, str]: Dictionary mapping property names to their types
-        """
-        await self._ensure_schema_loaded()
-
-        if not self._schema:
-            return {}
-
-        return {
-            prop_name: prop_data.get("type", "unknown")
-            for prop_name, prop_data in self._schema.items()
-        }
-
     async def get_property_schema(self, property_name: str) -> Optional[Dict[str, Any]]:
         """
         Gets the schema for a specific property.

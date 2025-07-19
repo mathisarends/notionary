@@ -12,10 +12,13 @@ async def main():
     try:
         db = await NotionDatabase.from_database_name("Wissen/Notizen")
 
-        await db.set_emoji("❤️")
+        await db.set_emoji("📚")
 
         url = await db.set_random_gradient_cover()
         print(f"Cover set to: {url}")
+
+        properties = db.get_options_by_property_name("Tags")
+        print("Properties for 'Tags':", properties)
 
     except Exception as e:
         print(f"❌ Error: {traceback.format_exc(e)}")

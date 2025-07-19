@@ -31,7 +31,7 @@ class PageContentRetriever(LoggingMixin):
         self, parent_id: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         blocks = (
-            await self.client.get_page_blocks()
+            await self.client.get_page_blocks(page_id=self.page_id)
             if parent_id is None
             else await self.client.get_block_children(parent_id)
         )
