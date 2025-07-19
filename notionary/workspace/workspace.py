@@ -18,11 +18,11 @@ class NotionWorkspace(LoggingMixin):
         self.database_client = NotionDatabaseClient(token=token)
         self.page_client = NotionPageClient(token=token)
 
-    async def search_pages(self, query: str) -> List[NotionPage]:
+    async def search_pages(self, query: str, limit = 100) -> List[NotionPage]:
         """
         Search for pages globally across Notion workspace.
         """
-        response = await self.page_client.search_pages(query)
+        response = await self.page_client.search_pages(query, limit=limit)
         # Parallelisiere die Erzeugung der NotionPage-Instanzen
         return await asyncio.gather(
             *(NotionPage.from_page_id(page.id) for page in response.results)

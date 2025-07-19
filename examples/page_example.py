@@ -23,9 +23,8 @@ async def main():
     try:
         print(f"\n🔎 Finding page '{PAGE_NAME}'...")
         page = await NotionPage.from_page_name(PAGE_NAME)
-        property_values = await page.get_property_value_by_name("Thema")
+        property_values = await page.get_property_value_by_name("URL")
         print("Property 'Themen' values:", json.dumps(property_values, indent=2))
-
 
     except Exception as e:
         import traceback

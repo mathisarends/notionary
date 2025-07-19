@@ -1,13 +1,10 @@
-from typing import Dict, Any, List, Optional
+from typing import Callable, Dict, Any, List, Optional
 from notionary.models.notion_page_response import NotionPageResponse
 from notionary.page.metadata.metadata_editor import MetadataEditor
 from notionary.page.properites.database_property_service import (
     DatabasePropertyService,
 )
 from notionary.page.relations.page_database_relation import PageDatabaseRelation
-from notionary.page.properites.property_value_extractor import (
-    PropertyValueExtractor,
-)
 from notionary.util import LoggingMixin
 
 
@@ -26,8 +23,6 @@ class PagePropertyManager(LoggingMixin):
         self._db_relation = db_relation
         self._db_property_service = None
 
-        self._extractor = PropertyValueExtractor()
-
     async def get_property_value(self, property_name: str, relation_getter=None) -> Any:
         """
         Get the value of a specific property.
@@ -41,7 +36,7 @@ class PagePropertyManager(LoggingMixin):
             return None
 
         prop_data = properties[property_name]
-        return await self._extractor.extract(property_name, prop_data, relation_getter)
+        return self.extract_property_value(property_name, prop_data, relation_getter)
 
     async def set_property_by_name(
         self, property_name: str, value: Any
@@ -140,3 +135,59 @@ class PagePropertyManager(LoggingMixin):
         """Retrieves all properties of the page."""
         page_data = await self._get_page_data()
         return page_data.properties if page_data.properties else {}
+
+    def extract_property_value(
+        self,
+        prop_data: dict,
+    ) -> Any:
+        """
+        Extract the value of a Notion property from its data dict.
+        Supports all common Notion property types.
+        """
+        prop_type = prop_data.get("type")
+        if not prop_type:
+            return None
+
+        handlers: dict[str, Callable[[], Any]] = {
+            "title": lambda: "".join(
+                t.get("plain_text", "") for t in prop_data.get("title", [])
+            ),
+            "rich_text": lambda: "".join(
+                t.get("plain_text", "") for t in prop_data.get("rich_text", [])
+            ),
+            "number": lambda: prop_data.get("number"),
+            "select": lambda: (
+                prop_data.get("select", {}).get("name")
+                if prop_data.get("select")
+                else None
+            ),
+            "multi_select": lambda: [
+                o.get("name") for o in prop_data.get("multi_select", [])
+            ],
+            "status": lambda: (
+                prop_data.get("status", {}).get("name")
+                if prop_data.get("status")
+                else None
+            ),
+            "date": lambda: prop_data.get("date"),
+            "checkbox": lambda: prop_data.get("checkbox"),
+            "url": lambda: prop_data.get("url"),
+            "email": lambda: prop_data.get("email"),
+            "phone_number": lambda: prop_data.get("phone_number"),
+            "people": lambda: [p.get("id") for p in prop_data.get("people", [])],
+            "files": lambda: [
+                (
+                    f.get("external", {}).get("url")
+                    if f.get("type") == "external"
+                    else f.get("name")
+                )
+                for f in prop_data.get("files", [])
+            ],
+        }
+
+        handler = handlers.get(prop_type)
+        if handler is None:
+            return None
+
+        result = handler()
+        return result

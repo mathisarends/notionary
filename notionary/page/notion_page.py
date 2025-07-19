@@ -1,6 +1,6 @@
 from __future__ import annotations
-import random
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
+import random
 import re
 
 from notionary.elements.registry.block_registry import BlockRegistry
@@ -19,10 +19,10 @@ from notionary.page.relations.notion_page_relation_manager import (
 from notionary.page.content.page_content_writer import PageContentWriter
 from notionary.page.properites.page_property_manager import PagePropertyManager
 from notionary.page.relations.notion_page_title_resolver import NotionPageTitleResolver
-from notionary.util.factory_decorator import factory_only
-from notionary.util import LoggingMixin
-from notionary.util import format_uuid
 from notionary.page.relations.page_database_relation import PageDatabaseRelation
+
+from notionary.util import LoggingMixin, format_uuid, FuzzyMatcher, factory_only
+
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
@@ -104,11 +104,11 @@ class NotionPage(LoggingMixin):
 
     @classmethod
     async def from_page_name(
-        cls, page_name: str, token: Optional[str] = None
+        cls, page_name: str, token: Optional[str] = None, min_similarity: float = 0.6
     ) -> NotionPage:
         """
-        Create a NotionPage by finding a page with a matching name.
-        Uses Notion's search API and takes the first (best) result.
+        Create a NotionPage by finding a page with fuzzy matching on the title.
+        Uses Notion's search API and fuzzy matching to find the best result.
         """
         from notionary.workspace.workspace import NotionWorkspace
 
@@ -116,26 +116,38 @@ class NotionPage(LoggingMixin):
         workspace = NotionWorkspace()
 
         try:
-            cls.logger.debug("Using search endpoint to find pages")
-
-            search_results = await workspace.search_pages(page_name)
-
+            search_results: List[NotionPage] = await workspace.search_pages(page_name, limit=10)
+            
             if not search_results:
                 cls.logger.warning("No pages found for name: %s", page_name)
                 raise ValueError(f"No pages found for name: {page_name}")
 
-            # Get the first result and fetch its full data
-            first_result = search_results[0]
-            page_id = first_result.id
+            best_match = FuzzyMatcher.find_best_match(
+                query=page_name,
+                items=search_results,
+                text_extractor=lambda page: page.title,
+                min_similarity=min_similarity
+            )
+            
+            if not best_match:
+                available_titles = [result.title for result in search_results[:5]]
+                cls.logger.warning(
+                    "No sufficiently similar page found for '%s' (min: %.3f). Available: %s",
+                    page_name, min_similarity, available_titles
+                )
+                raise ValueError(f"No sufficiently similar page found for '{page_name}'")
+
+            cls.logger.info(
+                "Best match: '%s' (similarity: %.3f)", 
+                best_match.matched_text, best_match.similarity
+            )
+
+            page_id = best_match.item.id
 
             async with NotionPageClient(token=token) as client:
                 page_response = await client.get_page(page_id)
                 instance = await cls._create_from_response(
                     page_response, page_id, token
-                )
-
-                cls.logger.info(
-                    "Found matching page: '%s' (ID: %s)", instance.title, page_id
                 )
                 return instance
 
@@ -171,7 +183,7 @@ class NotionPage(LoggingMixin):
         Get the emoji icon of the page.
         """
         return self._emoji_icon
-    
+
     @property
     def properties(self) -> Optional[Dict[str, Any]]:
         """
@@ -363,34 +375,47 @@ class NotionPage(LoggingMixin):
         """
         Get the value of a specific property.
         """
-        # Early return (if there is no parent database, we cannot get properties)
         if not self._parent_database:
             return None
-        
+
         database_property_schema = self._parent_database.properties.get(property_name)
-        
+
         if not database_property_schema:
             self.logger.warning(
                 "Property '%s' not found in database schema", property_name
             )
             return None
-        
+
         property_type = database_property_schema.get("type")
 
         if property_type == "relation":
-           return await self._get_relation_property_values_by_name(property_name)
+            return await self._get_relation_property_values_by_name(property_name)
 
-        return await self._property_manager.get_property_value(property_name)
-    
-    async def _get_relation_property_values_by_name(self, property_name: str) -> List[str]:
+        if property_name not in self._properties:
+            self.logger.warning(
+                "Property '%s' not found in page properties", property_name
+            )
+            return None
+        
+        # TODO. Fix that here
+        property_data = self._properties.get(property_name).get(property_name)
+        return property_data
+        
+
+    async def _get_relation_property_values_by_name(
+        self, property_name: str
+    ) -> List[str]:
         """
         Retrieve the titles of all related pages for a relation property.
         """
         page_property_schema = self.properties.get(property_name)
-        relation_page_ids = [rel.get("id") for rel in page_property_schema.get("relation", [])]
-        notion_pages = [await NotionPage.from_page_id(page_id) for page_id in relation_page_ids]
+        relation_page_ids = [
+            rel.get("id") for rel in page_property_schema.get("relation", [])
+        ]
+        notion_pages = [
+            await NotionPage.from_page_id(page_id) for page_id in relation_page_ids
+        ]
         return [page.title for page in notion_pages if page]
-        
 
     async def get_options_for_property_by_name(self, property_name: str) -> List[str]:
         """
@@ -583,19 +608,22 @@ class NotionPage(LoggingMixin):
     @staticmethod
     def _extract_title(page_response: NotionPageResponse) -> str:
         """Extract title from page response. Returns empty string if not found."""
-        
+
         if not page_response.properties:
             return ""
-        
+
         title_property = next(
-            (prop for prop in page_response.properties.values() 
-            if isinstance(prop, dict) and prop.get("type") == "title"),
-            None
+            (
+                prop
+                for prop in page_response.properties.values()
+                if isinstance(prop, dict) and prop.get("type") == "title"
+            ),
+            None,
         )
-        
+
         if not title_property or "title" not in title_property:
             return ""
-        
+
         try:
             title_parts = title_property["title"]
             return "".join(part.get("plain_text", "") for part in title_parts)
