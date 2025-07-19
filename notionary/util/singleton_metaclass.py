@@ -1,12 +1,14 @@
 from typing import TypeVar, Dict, Any, Type, cast
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class SingletonMetaClass(type):
     """
     A metaclass that ensures a class has only a single instance.
     Provides a get_instance() method with proper type hinting.
     """
+
     _instances: Dict[Type, Any] = {}
 
     def __call__(cls: Type[T], *args: Any, **kwargs: Any) -> T:

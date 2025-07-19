@@ -1,6 +1,8 @@
+from __future__ import annotations
+from typing import Dict, Any, Optional, List, TYPE_CHECKING
 import re
-from typing import Dict, Any, Optional, List
-from notionary.elements.notion_block_element import NotionBlockElement
+
+from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.prompting.element_prompt_content import (
     ElementPromptBuilder,
     ElementPromptContent,

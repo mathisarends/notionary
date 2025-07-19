@@ -1,6 +1,6 @@
 import unittest
 
-from notionary.elements.table_element import TableElement
+from notionary.blocks import TableElement
 
 
 class TestTableElement(unittest.TestCase):

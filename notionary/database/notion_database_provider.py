@@ -14,7 +14,11 @@ if TYPE_CHECKING:
 class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
     """
     Provider class for creating and caching Notion database instances.
+
     Prevents duplicate database creation when working with multiple pages from the same database.
+    Each Notion page references its parent database to determine selectable properties and options.
+    By caching database instances, this provider avoids excessive network requests when reading options,
+    significantly improving performance for repeated property lookups across many pages.
     """
 
     def __init__(self):

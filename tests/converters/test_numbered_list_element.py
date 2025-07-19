@@ -1,6 +1,6 @@
 import unittest
 
-from notionary.elements.list_element import NumberedListElement
+from notionary.blocks import NumberedListElement
 
 
 class TestNumberedListElement(unittest.TestCase):

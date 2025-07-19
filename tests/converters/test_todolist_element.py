@@ -1,7 +1,7 @@
 import unittest
 
-from notionary.elements.text_inline_formatter import TextInlineFormatter
-from notionary.elements.todo_element import TodoElement
+from notionary.blocks.text_inline_formatter import TextInlineFormatter
+from notionary.blocks import TodoElement
 
 
 class TestTodoElement(unittest.TestCase):

@@ -1,7 +1,7 @@
 import re
 from typing import Dict, Any, Optional
 
-from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.blocks import NotionBlockElement
 from notionary.prompting.element_prompt_content import (
     ElementPromptBuilder,
     ElementPromptContent,

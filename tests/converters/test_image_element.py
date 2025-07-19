@@ -1,6 +1,6 @@
 import unittest
 
-from notionary.elements.image_element import ImageElement
+from notionary.blocks import ImageElement
 
 
 class TestImageElement(unittest.TestCase):

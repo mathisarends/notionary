@@ -1,13 +1,13 @@
 from __future__ import annotations
 from typing import Dict, Any, Optional, List, Set, Type
 
-from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.prompting.markdown_syntax_prompt_generator import (
     MarkdownSyntaxPromptGenerator,
 )
-from notionary.elements.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.text_inline_formatter import TextInlineFormatter
 
-from notionary.elements.notion_block_element import NotionBlockElement
+from notionary.blocks.notion_block_element import NotionBlockElement
 
 
 class BlockRegistry:
@@ -33,7 +33,7 @@ class BlockRegistry:
         Convert this registry to a builder for modifications.
         Imports only when needed to avoid circular imports.
         """
-        from notionary.elements.registry.block_registry_builder import (
+        from notionary.blocks import (
             BlockRegistryBuilder,
         )
 

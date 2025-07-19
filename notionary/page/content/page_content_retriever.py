@@ -1,10 +1,8 @@
 from typing import Any, Dict, List, Optional
 
-from notionary.database.client import NotionDatabaseClient
-from notionary.elements.registry.block_registry import BlockRegistry
+from notionary.blocks.registry.block_registry import BlockRegistry
 
 from notionary.page.notion_block_client import NotionBlockClient
-from notionary.page.notion_page_client import NotionPageClient
 from notionary.page.notion_to_markdown_converter import (
     NotionToMarkdownConverter,
 )

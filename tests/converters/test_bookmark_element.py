@@ -1,5 +1,5 @@
 import unittest
-from notionary.elements.bookmark_element import BookmarkElement
+from notionary.blocks import BookmarkElement
 
 
 class TestBookmarkElement(unittest.TestCase):

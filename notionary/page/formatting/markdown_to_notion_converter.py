@@ -1,9 +1,7 @@
 import re
 from typing import Dict, Any, List, Optional, Tuple
 
-from notionary.elements.column_element import ColumnElement
-from notionary.elements.registry.block_registry import BlockRegistry
-from notionary.elements.registry.block_registry_builder import BlockRegistryBuilder
+from notionary.blocks import ColumnElement, BlockRegistry, BlockRegistryBuilder
 from notionary.page.formatting.spacer_rules import SpacerRule, SpacerRuleEngine
 
 

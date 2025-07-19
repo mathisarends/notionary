@@ -4,8 +4,7 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 import random
 import re
 
-from notionary.elements.registry.block_registry import BlockRegistry
-from notionary.elements.registry.block_registry_builder import BlockRegistryBuilder
+from notionary.blocks import BlockRegistry, BlockRegistryBuilder
 from notionary.models.notion_database_response import NotionPageResponse
 from notionary.models.notion_page_response import DatabaseParent
 from notionary.page.notion_page_client import NotionPageClient
@@ -28,7 +27,7 @@ class NotionPage(LoggingMixin):
     Managing content and metadata of a Notion page.
     """
 
-    @factory_only("from_page_id", "from_url", "from_page_name")
+    @factory_only("from_page_id", "from_page_name")
     def __init__(
         self,
         page_id: str,

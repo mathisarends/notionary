@@ -1,6 +1,6 @@
 import unittest
 
-from notionary.elements.heading_element import HeadingElement
+from notionary.blocks import HeadingElement
 
 
 class TestHeadingElement(unittest.TestCase):

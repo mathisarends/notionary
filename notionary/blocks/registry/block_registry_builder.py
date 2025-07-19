@@ -2,32 +2,29 @@ from __future__ import annotations
 from typing import List, Type
 from collections import OrderedDict
 
-from notionary.elements.column_element import ColumnElement
-from notionary.elements.notion_block_element import NotionBlockElement
-
-from notionary.elements.audio_element import AudioElement
-from notionary.elements.bulleted_list_element import BulletedListElement
-from notionary.elements.embed_element import EmbedElement
-from notionary.elements.mention_element import MentionElement
-from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.numbered_list_element import NumberedListElement
-from notionary.elements.registry.block_registry import (
+from notionary.blocks import (
+    ParagraphElement,
     BlockRegistry,
+    AudioElement,
+    BulletedListElement,
+    CalloutElement,
+    CodeBlockElement,
+    ColumnElement,
+    DividerElement,
+    EmbedElement,
+    HeadingElement,
+    ImageElement,
+    MentionElement,
+    NumberedListElement,
+    TableElement,
+    TodoElement,
+    ToggleElement,
+    ToggleableHeadingElement,
+    VideoElement,
+    BookmarkElement,
+    QuoteElement,
+    NotionBlockElement,
 )
-
-from notionary.elements.paragraph_element import ParagraphElement
-from notionary.elements.heading_element import HeadingElement
-from notionary.elements.callout_element import CalloutElement
-from notionary.elements.code_block_element import CodeBlockElement
-from notionary.elements.divider_element import DividerElement
-from notionary.elements.table_element import TableElement
-from notionary.elements.todo_element import TodoElement
-from notionary.elements.qoute_element import QuoteElement
-from notionary.elements.image_element import ImageElement
-from notionary.elements.toggleable_heading_element import ToggleableHeadingElement
-from notionary.elements.video_element import VideoElement
-from notionary.elements.toggle_element import ToggleElement
-from notionary.elements.bookmark_element import BookmarkElement
 
 
 class BlockRegistryBuilder:

@@ -1,6 +1,6 @@
 import unittest
 
-from notionary.elements.video_element import VideoElement
+from notionary.blocks import VideoElement
 
 
 class TestVideoElement(unittest.TestCase):

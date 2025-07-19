@@ -1,11 +1,12 @@
 import re
 from typing import Dict, Any, Optional
-from notionary.elements.notion_block_element import NotionBlockElement
+
+from notionary.blocks import NotionBlockElement
 from notionary.prompting.element_prompt_content import (
     ElementPromptBuilder,
     ElementPromptContent,
 )
-from notionary.elements.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.text_inline_formatter import TextInlineFormatter
 
 
 class TodoElement(NotionBlockElement):

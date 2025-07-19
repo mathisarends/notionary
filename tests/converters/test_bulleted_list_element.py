@@ -1,6 +1,6 @@
 import unittest
 
-from notionary.elements.list_element import BulletedListElement
+from notionary.blocks import BulletedListElement
 
 
 class TestBulletedListElement(unittest.TestCase):

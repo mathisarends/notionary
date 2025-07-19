@@ -1,5 +1,5 @@
 import unittest
-from notionary.elements.qoute_element import QuoteElement
+from notionary.blocks import QuoteElement
 
 
 class TestQuoteElement(unittest.TestCase):

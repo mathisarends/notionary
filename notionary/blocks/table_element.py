@@ -1,7 +1,8 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple
-from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.text_inline_formatter import TextInlineFormatter
+
+from notionary.blocks import NotionBlockElement
+from notionary.blocks.text_inline_formatter import TextInlineFormatter
 from notionary.prompting.element_prompt_content import (
     ElementPromptBuilder,
     ElementPromptContent,

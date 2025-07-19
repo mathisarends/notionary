@@ -6,10 +6,7 @@ from .database.notion_database import NotionDatabase
 from .page.notion_page import NotionPage
 from .workspace.workspace import NotionWorkspace
 
-from .elements.registry.block_registry import BlockRegistry
-from .elements.registry.block_registry_builder import (
-    BlockRegistryBuilder,
-)
+from .blocks import BlockRegistry, BlockRegistryBuilder
 
 __all__ = [
     "NotionDatabase",

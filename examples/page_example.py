@@ -9,7 +9,6 @@ IMPORTANT: Replace PAGE_NAME with the name of an existing Notion page.
 """
 
 import asyncio
-import json
 from notionary import NotionPage
 
 PAGE_NAME = "Simplex Algorithmus für das Leben"

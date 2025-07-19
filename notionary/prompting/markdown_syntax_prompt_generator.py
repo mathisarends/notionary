@@ -1,6 +1,5 @@
 from typing import Type, List
-from notionary.elements.notion_block_element import NotionBlockElement
-from notionary.elements.text_inline_formatter import TextInlineFormatter
+from notionary.blocks import NotionBlockElement
 
 
 class MarkdownSyntaxPromptGenerator:
