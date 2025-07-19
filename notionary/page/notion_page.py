@@ -421,12 +421,12 @@ class NotionPage(LoggingMixin):
         """
         if not self._parent_database:
             return None
-        
+
         property_type = self._parent_database.properties.get(property_name).get("type")
 
         if not property_type:
             return None
-        
+
         if property_type == "relation":
             return await self.set_relation_property_values_by_name(
                 property_name=property_name, page_titles=value
@@ -460,25 +460,30 @@ class NotionPage(LoggingMixin):
         """
         if not self._parent_database:
             return []
-        
+
         property_type = self._parent_database.properties.get(property_name).get("type")
-        
+
         # for direct calls
         if property_type != "relation":
             return []
-        
+
         relation_pages = await asyncio.gather(
-            *(NotionPage.from_page_name(page_name=page_title) for page_title in page_titles)
+            *(
+                NotionPage.from_page_name(page_name=page_title)
+                for page_title in page_titles
+            )
         )
-        
+
         relation_page_ids = [page.id for page in relation_pages]
-        
+
         property_formatter = NotionPropertyFormatter()
-        
+
         update_data = property_formatter.format_value(
-            property_name=property_name, property_type="relation", value=relation_page_ids
+            property_name=property_name,
+            property_type="relation",
+            value=relation_page_ids,
         )
-        
+
         try:
             updated_page_response = await self._client.patch_page(
                 page_id=self._page_id, data=update_data
@@ -493,7 +498,6 @@ class NotionPage(LoggingMixin):
                 str(e),
             )
             return []
-        
 
     async def archive(self) -> bool:
         """
