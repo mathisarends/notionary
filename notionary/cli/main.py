@@ -16,7 +16,7 @@ from rich.prompt import Prompt, Confirm
 from rich.table import Table
 from rich import box
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
-from notionary.workspace.workspace import NotionWorkspace
+from notionary.workspace import NotionWorkspace
 
 
 # Disable logging for CLI usage

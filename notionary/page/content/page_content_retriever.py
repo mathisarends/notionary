@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from notionary.blocks.registry.block_registry import BlockRegistry
 
-from notionary.page.notion_block_client import NotionBlockClient
+from notionary.blocks import NotionBlockClient
 from notionary.page.notion_to_markdown_converter import (
     NotionToMarkdownConverter,
 )

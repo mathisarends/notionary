@@ -59,7 +59,7 @@ class NotionPageClient(BaseNotionClient):
         """
         Searches for pages in Notion using the search endpoint.
         """
-        from notionary.common.search_filter_builder import SearchFilterBuilder
+        from notionary.page.search_filter_builder import SearchFilterBuilder
 
         search_filter = (
             SearchFilterBuilder()

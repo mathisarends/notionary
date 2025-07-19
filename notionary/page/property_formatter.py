@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional
 from notionary.util import LoggingMixin
 
 
+# TODO: mit dem Utils.py hier im order zusammenfassen
 class NotionPropertyFormatter(LoggingMixin):
     """Class for formatting Notion properties based on their type."""
 

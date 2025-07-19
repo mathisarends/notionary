@@ -12,7 +12,7 @@ from notionary.page.notion_page import NotionPage
 
 from notionary.database.notion_database_provider import NotionDatabaseProvider
 
-from notionary.common.filter_builder import FilterBuilder
+from notionary.database.filter_builder import FilterBuilder
 from notionary.util import factory_only, LoggingMixin
 
 

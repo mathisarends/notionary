@@ -2,12 +2,12 @@ from __future__ import annotations
 from typing import Dict, Any, Optional, List, Set, Type
 
 from notionary.blocks.notion_block_element import NotionBlockElement
-from notionary.prompting.markdown_syntax_prompt_generator import (
+from notionary.page.markdown_syntax_prompt_generator import (
     MarkdownSyntaxPromptGenerator,
 )
 from notionary.blocks.text_inline_formatter import TextInlineFormatter
 
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks import NotionBlockElement
 
 
 class BlockRegistry:
@@ -27,28 +27,6 @@ class BlockRegistry:
         if elements:
             for element in elements:
                 self.register(element)
-
-    def to_builder(self):
-        """
-        Convert this registry to a builder for modifications.
-        Imports only when needed to avoid circular imports.
-        """
-        from notionary.blocks import (
-            BlockRegistryBuilder,
-        )
-
-        builder = BlockRegistryBuilder()
-        for element in self._elements:
-            builder.add_element(element)
-        return builder
-
-    @property
-    def builder(self):
-        """
-        Returns a new builder pre-configured with the current registry elements.
-        Uses lazy import to avoid circular dependencies.
-        """
-        return self.to_builder()
 
     def register(self, element_class: Type[NotionBlockElement]) -> bool:
         """

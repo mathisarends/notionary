@@ -1,5 +1,9 @@
-# base class has to be imported first
+# Order is important here, as some imports depend on others.
+from .prompts.element_prompt_content import ElementPromptContent
+from .prompts.element_prompt_builder import ElementPromptBuilder
+
 from .notion_block_element import NotionBlockElement
+
 
 from .audio_element import AudioElement
 from .bulleted_list_element import BulletedListElement
@@ -25,8 +29,12 @@ from .qoute_element import QuoteElement
 
 from .registry.block_registry import BlockRegistry
 from .registry.block_registry_builder import BlockRegistryBuilder
+from .notion_block_client import NotionBlockClient
+
 
 __all__ = [
+    "ElementPromptContent",
+    "ElementPromptBuilder",
     "NotionBlockElement",
     "AudioElement",
     "BulletedListElement",
@@ -49,4 +57,5 @@ __all__ = [
     "QuoteElement",
     "BlockRegistry",
     "BlockRegistryBuilder",
+    "NotionBlockClient",
 ]

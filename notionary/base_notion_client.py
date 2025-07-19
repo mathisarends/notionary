@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Dict, Any, Optional, Union
 import httpx
 from dotenv import load_dotenv
-from notionary.util import LoggingMixin, singleton
+from notionary.util import LoggingMixin
 
 load_dotenv()
 

@@ -1,10 +1,7 @@
 from typing import Dict, Any, List, Tuple
 import re
 
-from notionary.prompting.element_prompt_content import (
-    ElementPromptBuilder,
-    ElementPromptContent,
-)
+from notionary.blocks import ElementPromptBuilder, ElementPromptContent
 
 
 class TextInlineFormatter:

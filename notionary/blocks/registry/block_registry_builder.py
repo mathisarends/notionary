@@ -1,10 +1,9 @@
 from __future__ import annotations
-from typing import List, Type
+from typing import List, Type, TYPE_CHECKING
 from collections import OrderedDict
 
 from notionary.blocks import (
     ParagraphElement,
-    BlockRegistry,
     AudioElement,
     BulletedListElement,
     CalloutElement,
@@ -25,6 +24,9 @@ from notionary.blocks import (
     QuoteElement,
     NotionBlockElement,
 )
+
+if TYPE_CHECKING:
+    from notionary.blocks import BlockRegistry
 
 
 class BlockRegistryBuilder:
@@ -278,6 +280,8 @@ class BlockRegistryBuilder:
         Returns:
             A configured BlockRegistry instance
         """
+        from notionary.blocks import BlockRegistry
+
         if ParagraphElement.__name__ not in self._elements:
             self.add_element(ParagraphElement)
         else:

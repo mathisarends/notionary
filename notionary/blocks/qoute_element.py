@@ -2,10 +2,7 @@ import re
 from typing import Dict, Any, Optional, List, Tuple
 
 from notionary.blocks import NotionBlockElement
-from notionary.prompting.element_prompt_content import (
-    ElementPromptBuilder,
-    ElementPromptContent,
-)
+from notionary.blocks import ElementPromptContent, ElementPromptBuilder
 
 
 class QuoteElement(NotionBlockElement):

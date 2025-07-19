@@ -2,12 +2,11 @@ from __future__ import annotations
 import asyncio
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 import random
-import re
 
 from notionary.blocks import BlockRegistry, BlockRegistryBuilder
 from notionary.models.notion_database_response import NotionPageResponse
 from notionary.models.notion_page_response import DatabaseParent
-from notionary.page.notion_page_client import NotionPageClient
+from notionary.page.client import NotionPageClient
 from notionary.page.content.page_content_retriever import PageContentRetriever
 
 
@@ -89,7 +88,7 @@ class NotionPage(LoggingMixin):
         Create a NotionPage by finding a page with fuzzy matching on the title.
         Uses Notion's search API and fuzzy matching to find the best result.
         """
-        from notionary.workspace.workspace import NotionWorkspace
+        from notionary.workspace import NotionWorkspace
 
         workspace = NotionWorkspace()
 
@@ -177,32 +176,6 @@ class NotionPage(LoggingMixin):
             BlockElementRegistry: The registry of block elements.
         """
         return self._block_element_registry
-
-    @property
-    def block_registry_builder(self) -> BlockRegistryBuilder:
-        """
-        Get the block element registry builder associated with this page.
-
-        Returns:
-            BlockElementRegistryBuilder: The builder for block elements.
-        """
-        return self._block_element_registry.builder
-
-    @block_registry.setter
-    def block_registry(self, block_registry: BlockRegistry) -> None:
-        """
-        Set the block element registry for the page content manager.
-
-        Args:
-            block_registry: The registry of block elements to use.
-        """
-        self._block_element_registry = block_registry
-        self._page_content_writer = PageContentWriter(
-            page_id=self._page_id, client=self._client, block_registry=block_registry
-        )
-        self._page_content_retriever = PageContentRetriever(
-            page_id=self._page_id, client=self._client, block_registry=block_registry
-        )
 
     def get_notion_markdown_system_prompt(self) -> str:
         """
