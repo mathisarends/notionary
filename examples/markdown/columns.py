@@ -29,14 +29,6 @@ async def main():
         - **Grafikkarte**: Ultra RTX 4090 Ti
         - **Speicher**: 4TB NVMe SSD (Gen4)
 
-
-        ```python
-        # Benchmark-Ergebnisse
-        scores = {
-            'Rendering': 14500,
-            'Compilation': 9800,
-            'Machine Learning': 21300
-        }
         ```
         :::
 

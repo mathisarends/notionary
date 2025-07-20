@@ -20,3 +20,8 @@ Homepage = "https://github.com/mathisarends/notionary"
 
 [project.scripts]
 notionary = "notionary.cli.main:main"
+
+[tool.poetry.group.dev.dependencies]
+mkdocs = "^1.6.1"
+mkdocs-material = "^9.6.15"
+

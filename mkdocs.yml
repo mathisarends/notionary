@@ -1,0 +1,20 @@
+site_name: Notionary
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: blue gray
+      accent: cyan
+    - scheme: slate
+      primary: blue gray
+      accent: cyan
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Features: features.md
+  - Contributing: contributing.md
+
+repo_url: https://github.com/mathisarends/notionary
+repo_name: mathisarends/notionary
+repo_icon: fontawesome/brands/github

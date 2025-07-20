@@ -9,6 +9,9 @@ env/
 .venv/
 .env/
 
+# Mkdocs
+site/
+
 # Distribution / packaging
 build/
 develop-eggs/
