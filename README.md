@@ -1,3 +1,9 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./static/notionary-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./static/notionary-light.png">
+  <img alt="Notionary logo: dark mode shows a white logo, light mode shows a black logo." src="./static/browser-use.png"  width="full">
+</picture>
+
 # Notionary 📝
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
