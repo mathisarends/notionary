@@ -45,7 +45,9 @@ async def main():
         print(f"\n✅ Successfully loaded page '{page.title}'!")
 
     except Exception as e:
+        import traceback
         print(f"❌ Error: {e}")
+        print(f"🔍 Full traceback:\n{traceback.format_exc()}")
         print("💡 Make sure the page name exists in your Notion workspace")
         
 

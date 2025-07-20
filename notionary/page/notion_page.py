@@ -501,7 +501,7 @@ class NotionPage(LoggingMixin):
 
         parent_database = (
             await NotionDatabase.from_database_id(
-                database_id=parent_database_id, token=token
+                id=parent_database_id, token=token
             )
             if parent_database_id
             else None

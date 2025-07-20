@@ -28,7 +28,7 @@ async def main():
         # Display basic database information
         print(f"\n{db.emoji} Database Information:")
         print(f"├── Title: {db.title}")
-        print(f"├── ID: {db.database_id}")
+        print(f"├── ID: {db.id}")
         print(f"└── Visit at: {db.url}")
         
         print("\n📄 Creating a new page...")
@@ -79,7 +79,7 @@ async def main():
         
         await page.append_markdown(content)
 
-        print(f"✅ Page created in database '{db.title}' (ID: {db.database_id})")
+        print(f"✅ Page created in database '{db.title}' (ID: {db.from_database_id})")
         print(f"├── Page title: {page.title}")
         print(f"├── Page emoji: {page.emoji_icon}")
         print(f"└── Visit at: {page.url}")

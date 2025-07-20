@@ -42,7 +42,7 @@ async def workspace_discovery_demo():
             indent = "    " if is_last else "│   "
 
             print(f"{prefix}{icon} {db.title}")
-            print(f"{indent}├── ID: {db.database_id}")
+            print(f"{indent}├── ID: {db.id}")
             print(f"{indent}└── Visit at: {db.url}")
             print()
 

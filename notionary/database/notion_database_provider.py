@@ -55,10 +55,10 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
             database_name, token, min_similarity
         )
 
-        id_cache_key = self._create_id_cache_key(database.database_id)
+        id_cache_key = self._create_id_cache_key(database.id)
         if not force_refresh and id_cache_key in self._database_cache:
             self.logger.debug(
-                f"Found existing cached database by ID: {database.database_id}"
+                f"Found existing cached database by ID: {database.id}"
             )
             existing_database = self._database_cache[id_cache_key]
 
@@ -67,7 +67,7 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
 
         self._cache_database(database, token, database_name)
         self.logger.debug(
-            f"Cached database: {database.title} (ID: {database.database_id})"
+            f"Cached database: {database.title} (ID: {database.id})"
         )
 
         return database
@@ -96,7 +96,7 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
         name_keys_to_remove = [
             cache_key
             for cache_key, cached_db in self._database_cache.items()
-            if (cache_key.startswith("name:") and cached_db.database_id == database_id)
+            if (cache_key.startswith("name:") and cached_db.id == database_id)
         ]
 
         for name_key in name_keys_to_remove:
@@ -173,7 +173,7 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
     ) -> None:
         """Cache a database by both ID and name (if provided)."""
         # Always cache by ID
-        id_cache_key = self._create_id_cache_key(database.database_id)
+        id_cache_key = self._create_id_cache_key(database.id)
         self._database_cache[id_cache_key] = database
 
         if original_name:
@@ -199,7 +199,7 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
         emoji_icon = self._extract_emoji_icon(db_response)
 
         instance = NotionDatabase(
-            database_id=db_response.id,
+            id=db_response.id,
             title=title,
             url=db_response.url,
             emoji_icon=emoji_icon,

@@ -26,7 +26,7 @@ class NotionDatabase(LoggingMixin):
     @factory_only("from_database_id", "from_database_name")
     def __init__(
         self,
-        database_id: str,
+        id: str,
         title: str,
         url: str,
         emoji_icon: Optional[str] = None,
@@ -36,7 +36,7 @@ class NotionDatabase(LoggingMixin):
         """
         Initialize the minimal database manager.
         """
-        self._database_id = database_id
+        self._id = id
         self._title = title
         self._url = url
         self._emoji_icon = emoji_icon
@@ -46,13 +46,13 @@ class NotionDatabase(LoggingMixin):
 
     @classmethod
     async def from_database_id(
-        cls, database_id: str, token: Optional[str] = None
+        cls, id: str, token: Optional[str] = None
     ) -> NotionDatabase:
         """
         Create a NotionDatabase from a database ID using NotionDatabaseProvider.
         """
         provider = cls.get_database_provider()
-        return await provider.get_database_by_id(database_id, token)
+        return await provider.get_database_by_id(id, token)
 
     @classmethod
     async def from_database_name(
@@ -68,9 +68,9 @@ class NotionDatabase(LoggingMixin):
         return await provider.get_database_by_name(database_name, token, min_similarity)
 
     @property
-    def database_id(self) -> str:
+    def id(self) -> str:
         """Get the database ID (readonly)."""
-        return self._database_id
+        return self._id
 
     @property
     def title(self) -> str:
@@ -109,7 +109,7 @@ class NotionDatabase(LoggingMixin):
         """
         try:
             create_page_response: NotionPageResponse = await self.client.create_page(
-                parent_database_id=self.database_id
+                parent_database_id=self.id
             )
 
             return await NotionPage.from_page_id(page_id=create_page_response.id)
@@ -124,13 +124,13 @@ class NotionDatabase(LoggingMixin):
         """
         try:
             result = await self.client.update_database_title(
-                database_id=self.database_id, title=new_title
+                database_id=self.id, title=new_title
             )
 
             self._title = result.title[0].plain_text
             self.logger.info(f"Successfully updated database title to: {new_title}")
             self.database_provider.invalidate_database_cache(
-                database_id=self.database_id
+                database_id=self.id
             )
             return True
 
@@ -144,13 +144,13 @@ class NotionDatabase(LoggingMixin):
         """
         try:
             result = await self.client.update_database_emoji(
-                database_id=self.database_id, emoji=new_emoji
+                database_id=self.id, emoji=new_emoji
             )
 
             self._emoji_icon = result.icon.emoji if result.icon else None
             self.logger.info(f"Successfully updated database emoji to: {new_emoji}")
             self.database_provider.invalidate_database_cache(
-                database_id=self.database_id
+                database_id=self.id
             )
             return True
 
@@ -164,12 +164,12 @@ class NotionDatabase(LoggingMixin):
         """
         try:
             result = await self.client.update_database_cover_image(
-                database_id=self.database_id, image_url=image_url
+                database_id=self.id, image_url=image_url
             )
 
             if result.cover and result.cover.external:
                 self.database_provider.invalidate_database_cache(
-                    database_id=self.database_id
+                    database_id=self.id
                 )
                 return result.cover.external.url
             return None
@@ -193,12 +193,12 @@ class NotionDatabase(LoggingMixin):
         """
         try:
             result = await self.client.update_database_external_icon(
-                database_id=self.database_id, icon_url=external_icon_url
+                database_id=self.id, icon_url=external_icon_url
             )
 
             if result.icon and result.icon.external:
                 self.database_provider.invalidate_database_cache(
-                    database_id=self.database_id
+                    database_id=self.id
                 )
                 return result.icon.external.url
             return None
@@ -244,7 +244,7 @@ class NotionDatabase(LoggingMixin):
         """
         search_results: NotionQueryDatabaseResponse = (
             await self.client.query_database_by_title(
-                database_id=self.database_id, page_title=page_title
+                database_id=self.id, page_title=page_title
             )
         )
 
@@ -296,7 +296,7 @@ class NotionDatabase(LoggingMixin):
         except Exception as e:
             self.logger.error(
                 "Error fetching last_edited_time for database %s: %s",
-                self.database_id,
+                self.id,
                 str(e),
             )
             return None
@@ -345,7 +345,7 @@ class NotionDatabase(LoggingMixin):
                 current_body["start_cursor"] = start_cursor
 
             result = await self.client.query_database(
-                database_id=self.database_id, query_data=current_body
+                database_id=self.id, query_data=current_body
             )
 
             if not result or not result.results:
@@ -368,7 +368,7 @@ class NotionDatabase(LoggingMixin):
         emoji_icon = cls._extract_emoji_icon(db_response)
 
         instance = cls(
-            database_id=db_response.id,
+            id=db_response.id,
             title=title,
             url=db_response.url,
             emoji_icon=emoji_icon,

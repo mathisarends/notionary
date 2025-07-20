@@ -15,7 +15,6 @@ from notionary import NotionDatabase
 YOUR_DATABASE_NAME = "WISSEN/NOTIZEN"
 
 
-
 async def elegant_example():
     db = await NotionDatabase.from_database_name(YOUR_DATABASE_NAME)
 
