@@ -4,105 +4,88 @@
   <img alt="Notionary logo: dark mode shows a white logo, light mode shows a black logo." src="./static/browser-use.png"  width="full">
 </picture>
 
-# Notionary 📝
+<h1 align="center">Notion API simplified for Python developers 🐍</h1>
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-**Notionary** is a powerful Python library for interacting with the Notion API, making it easy to create, update, and manage Notion pages and databases programmatically with a clean, intuitive interface. It's specifically designed to be the foundation for AI-driven Notion content generation.
+- **Object-Oriented Design**: Clean, intuitive classes for Pages, Databases, and Workspaces with full CRUD operations
+- **Rich Markdown to Notion**: Convert extended Markdown (callouts, toggles, columns) directly into beautiful Notion blocks
+- **Smart Discovery**: Find pages and databases by name with fuzzy matching - no more hunting for URLs
+- **Async-First Architecture**: Built for modern Python with full async/await support and high performance
+- **AI-Ready Integration**: Generate LLM system prompts and let AI agents create Notion content seamlessly
 
 ---
 
-## Features
-
-- **Rich Markdown Support**: Create Notion pages using intuitive Markdown syntax with custom extensions
-- **Dynamic Database Operations**: Create, update, and query database entries with schema auto-detection
-- **Extensible Block Registry**: Add, customize, or remove Notion block elements with a flexible registry pattern
-- **LLM-Ready Prompts**: Generate system prompts explaining Markdown syntax for LLMs to create Notion content
-- **Async-First Design**: Built for modern Python with full async/await support
-- **Schema-Based Validation**: Automatic property validation based on database schemas
-- **Intelligent Content Conversion**: Bidirectional conversion between Markdown and Notion blocks
-
----
-
-## Installation
-
+# Quick start
 ```bash
 pip install notionary
 ```
 
----
+- Set up your Notion integration (notion.so/profile/integrations)
+- Add your integration key in your `.env` file.
 
-## Quick Start
+```bash
+NOTION_SECRET=YOUR_INTEGRATION_KEY
+```
 
-### Creating and Managing Pages
-
+### Creating and Managing Pages 🚀
 ```python
-import asyncio
 from notionary import NotionPage
 
 async def main():
-    # Create a page from URL
-    page = NotionPage.from_url("https://www.notion.so/your-page-url")
-
-    # Or find by name
-    page = await NotionPage.from_page_name("My Project Page")
-
-    # Update page metadata
-    await page.set_title("Updated Title")
-    await page.set_emoji_icon("🚀")
-    await page.set_random_gradient_cover()
-
-    # Add markdown content
-    markdown = """
-    # Project Overview
-
-    !> [💡] This page was created programmatically using Notionary.
-
+    # Simpy find an existing page by its title
+    page = await NotionPage.from_page_name("My Test Page")
+    
+    # Add rich content with custom Markdown
+    content = """
+    # 🚀 Generated with Notionary
+    
+    !> [💡] This page was created programmatically!
+    
     ## Features
     - **Rich** Markdown support
-    - Async functionality
-    - Custom syntax extensions
-
-    +++ Implementation Details
-    | Notionary uses a custom converter to transform Markdown into Notion blocks.
-    | This makes it easy to create rich content programmatically.
+    - Database integration
+    - AI-ready content generation
+    
+    +++ Click to see more details
+    | Notionary makes it easy to create beautiful Notion pages
+    | directly from Python code with intuitive Markdown syntax.
     """
+    
+    await page.replace_content(content)
+    print(f"✅ Page updated: {page.url}")
 
-    await page.replace_content(markdown)
-
-if __name__ == "__main__":
-    asyncio.run(main())
+asyncio.run(main())
 ```
 
-### Working with Databases
+---
+
+### Working with Databases 🔥
 
 ```python
 import asyncio
-from notionary import NotionDatabase, DatabaseDiscovery
+from notionary import NotionDatabase
 
 async def main():
-    # Discover available databases
-    discovery = DatabaseDiscovery()
-    await discovery()
+  # Connect to database by name (fuzzy matching)
+  db = await NotionDatabase.from_database_name("Projects")
 
-    # Connect to a database by name
-    db = await NotionDatabase.from_database_name("Projects")
+  # Create a new page with properties
+  page = await db.create_blank_page()
+  await page.set_title("🆕 New Project Entry")
+  await page.set_property_value_by_name("Status", "In Progress")
+  await page.set_property_value_by_name("Priority", "High")
+  
+  # find pages created in the last 7 days
+  count = 0
+  async for page in db.iter_pages_with_filter(
+      db.create_filter().with_created_last_n_days(7)
+  ):
+      count += 1
+      print(f"{count:2d}. {page.emoji_icon or '📄'} {page.title}")
 
-    # Create a new page in the database
-    page = await db.create_blank_page()
-
-    # Set properties
-    await page.set_property_value_by_name("Status", "In Progress")
-    await page.set_property_value_by_name("Priority", "High")
-
-    # Query pages from database
-    async for page in db.iter_pages():
-        title = await page.get_title()
-        print(f"Page: {title}")
-
-if __name__ == "__main__":
-    asyncio.run(main())
+asyncio.run(main())
 ```
 
 ## Custom Markdown Syntax
@@ -190,61 +173,28 @@ def hello_world():
 [bookmark](https://example.com "Title" "Description")
 ```
 
-## Block Registry & Customization
-
-```python
-from notionary import NotionPage, BlockRegistryBuilder
-
-# Create a custom registry with only the elements you need
-custom_registry = (
-    BlockRegistryBuilder()
-    .with_headings()
-    .with_callouts()
-    .with_toggles()
-    .with_columns()  # Include multi-column support
-    .with_code()
-    .with_todos()
-    .with_paragraphs()
-    .build()
-)
-
-# Apply this registry to a page
-page = NotionPage.from_url("https://www.notion.so/your-page-url")
-page.block_registry = custom_registry
-
-# Replace content using only supported elements
-await page.replace_content("# Custom heading with selected elements only")
-```
-
-## AI-Ready: Generate LLM Prompts
-
-```python
-from notionary import BlockRegistryBuilder
-
-# Create a registry with all standard elements
-registry = BlockRegistryBuilder.create_full_registry()
-
-# Generate the LLM system prompt
-llm_system_prompt = registry.get_notion_markdown_syntax_prompt()
-print(llm_system_prompt)
-```
-
 ## Examples
 
-See the `examples/` folder for:
+Explore the `examples/` directory for comprehensive guides:
 
-- [Database discovery and querying](examples/database_discovery_example.py)
-- [Rich page creation with Markdown](examples/page_example.py)
-- [Database management](examples/database_management_example.py)
-- [Iterating through database entries](examples/database_iteration_example.py)
-- [Temporary usage & debugging](examples/temp.py)
+### 🚀 Core Examples
+- [**Page Management**](examples/page_example.py) - Create, update, and manage Notion pages
+- [**Page Operations**](examples/page.py) - Advanced page manipulation and content handling
+- [**Database Operations**](examples/database.py) - Connect to and manage Notion databases
+- [**Database Iteration**](examples/database_iteration.py) - Query and filter database entries
+- [**Workspace Discovery**](examples/workspace_discovery.py) - Explore and discover your Notion workspace
 
-## Perfect for AI Agents and Automation
+### 📝 Markdown Examples
+- [**Basic Formatting**](examples/markdown/basic.py) - Text formatting, lists, and basic elements
+- [**Callouts**](examples/markdown/callout.py) - Create beautiful callout blocks with icons
+- [**Toggles**](examples/markdown/toggle.py) - Collapsible content sections
+- [**Multi-Column Layouts**](examples/markdown/columns.py) - Side-by-side content arrangement
+- [**Code Blocks**](examples/markdown/code.py) - Syntax-highlighted code examples
+- [**Tables**](examples/markdown/table.py) - Structured data presentation
+- [**Media Embeds**](examples/markdown/embed.py) - Images, videos, and rich media
+- [**Audio Content**](examples/markdown/audio.py) - Audio file integration
 
-- **LLM Integration**: Generate Notion-compatible content with any LLM using the system prompt generator
-- **Dynamic Content Generation**: AI agents can generate content in Markdown and render it directly as Notion pages
-- **Schema-Aware Operations**: Automatically validate and format properties based on database schemas
-- **Simplified API**: Clean, intuitive interface for both human developers and AI systems
+Each example is self-contained and demonstrates specific features with practical use cases.
 
 ## Contributing
 
