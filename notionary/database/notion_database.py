@@ -352,7 +352,7 @@ class NotionDatabase(LoggingMixin):
                 return
 
             for page in result.results:
-                yield NotionPage.from_page_id(page_id=page.id, token=self.client.token)
+                yield await NotionPage.from_page_id(page_id=page.id, token=self.client.token)
 
             has_more = result.has_more
             start_cursor = result.next_cursor if has_more else None

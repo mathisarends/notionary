@@ -14,11 +14,8 @@ async def main():
         print("Searching for page by name...")
         page = await NotionPage.from_page_name("Jarvis Clipboard")
 
-        icon, title, url = await asyncio.gather(
-            page.get_icon(), page.get_title(), page.get_url()
-        )
         print(f"Page found: {page.id}")
-        print(f"{icon} → {title} → {url}")
+        print(f"{page.emoji_icon} → {page.title} → {page.url}")
 
         markdown = """
         ::: columns
@@ -32,7 +29,6 @@ async def main():
         - **Grafikkarte**: Ultra RTX 4090 Ti
         - **Speicher**: 4TB NVMe SSD (Gen4)
 
-        > "Die schnellste Workstation, die wir je getestet haben." - TechMagazin
 
         ```python
         # Benchmark-Ergebnisse
