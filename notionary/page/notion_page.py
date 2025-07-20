@@ -186,7 +186,7 @@ class NotionPage(LoggingMixin):
         """
         return self._block_element_registry.get_notion_markdown_syntax_prompt()
 
-    async def set_title(self, title: str) -> Optional[Dict[str, Any]]:
+    async def set_title(self, title: str) -> str:
         """
         Set the title of the page.
         """
@@ -316,7 +316,7 @@ class NotionPage(LoggingMixin):
         """
         default_notion_covers = [
             f"https://www.notion.so/images/page-cover/gradients_{i}.png"
-            for i in range(1, 12)
+            for i in range(1, 10)
         ]
         random_cover_url = random.choice(default_notion_covers)
         return await self.set_cover(random_cover_url)

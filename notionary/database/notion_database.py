@@ -112,7 +112,7 @@ class NotionDatabase(LoggingMixin):
                 parent_database_id=self.database_id
             )
 
-            return NotionPage.from_page_id(page_id=create_page_response.id)
+            return await NotionPage.from_page_id(page_id=create_page_response.id)
 
         except Exception as e:
             self.logger.error("Error creating blank page: %s", str(e))
@@ -182,7 +182,7 @@ class NotionDatabase(LoggingMixin):
         """Sets a random gradient cover from Notion's default gradient covers (always jpg)."""
         default_notion_covers = [
             f"https://www.notion.so/images/page-cover/gradients_{i}.png"
-            for i in range(1, 12)
+            for i in range(1, 10)
         ]
         random_cover_url = random.choice(default_notion_covers)
         return await self.set_cover_image(random_cover_url)
