@@ -1,20 +1,68 @@
-site_name: Notionary
-theme:
-  name: material
-  palette:
-    - scheme: default
-      primary: blue gray
-      accent: cyan
-    - scheme: slate
-      primary: blue gray
-      accent: cyan
+name: Deploy Docs
 
-nav:
-  - Home: index.md
-  - Getting Started: getting-started.md
-  - Features: features.md
-  - Contributing: contributing.md
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
 
-repo_url: https://github.com/mathisarends/notionary
-repo_name: mathisarends/notionary
-repo_icon: fontawesome/brands/github
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with: python-version: "3.11"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --with dev
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build documentation
+        run: |
+          poetry run mkdocs build --clean --strict
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: site
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
