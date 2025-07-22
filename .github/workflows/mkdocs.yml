@@ -30,13 +30,13 @@ jobs:
       # Checks-out your repository
       - uses: actions/checkout@v4
       
-      # Set up Python
+      # Set up Python (updated to v5)
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       
-      # Install Poetry
+      # Install Poetry (updated)
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -44,24 +44,33 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
       
+      # Cache dependencies
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      
       # Install dependencies
       - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --with dev
       
-      # Setup GitHub Pages
+      # Setup GitHub Pages (updated to v5)
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v5
       
       # Build docs with MkDocs
       - name: Build documentation
         run: |
           poetry run mkdocs build --clean --strict
-          # Copy to _site for GitHub Pages
-          cp -r site _site
       
-      # Upload to GitHub Pages
+      # Upload to GitHub Pages (updated to v4)
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
 
   # Deploy to GitHub Pages
   deploy:
@@ -74,4 +83,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
