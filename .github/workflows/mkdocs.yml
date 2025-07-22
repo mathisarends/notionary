@@ -1,77 +1,37 @@
-# Deploy MkDocs Documentation
+# Deploy MkDocs Documentation  
 name: Deploy Docs
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push but only for the "main" branch
   push:
-    branches: [ "main" ]
-  # Allows you to run this workflow manually from the Actions tab
+    branches: [ main ]
   workflow_dispatch:
 
-# Add permissions for GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow only one concurrent deployment
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
-# A workflow run is made up of one or more jobs
 jobs:
-  # Build the documentation
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    
     steps:
-      # Checks-out your repository
       - uses: actions/checkout@v4
-      
-      # Set up Python
+        
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
-      # Install Poetry
+          
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
           version: latest
           virtualenvs-create: true
           virtualenvs-in-project: true
-      
-      # Install dependencies
+          
       - name: Install dependencies
         run: poetry install --with dev
-      
-      # Setup GitHub Pages
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-      
-      # Build docs with MkDocs
-      - name: Build documentation
-        run: |
-          poetry run mkdocs build --clean --strict
-          # Copy to _site for GitHub Pages
-          cp -r site _site
-      
-      # Upload to GitHub Pages
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
-
-  # Deploy to GitHub Pages
-  deploy:
-    if: github.ref == 'refs/heads/main'
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
+        
+      - name: Build docs
+        run: poetry run mkdocs build
+        
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
