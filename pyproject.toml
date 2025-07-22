@@ -1,7 +1,7 @@
 [project]
 name = "notionary"
-version = "0.2.14"
-description = "A toolkit to convert between Markdown and Notion blocks"
+version = "0.2.15"
+description = "Python library for programmatic Notion workspace management - databases, pages, and content with advanced Markdown support"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [
@@ -12,14 +12,14 @@ dependencies = [
     "httpx>=0.28.0",
     "python-dotenv>=1.1.0",
     "pydantic>=2.11.4",
-    "click>=8.0.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/mathisarends/notionary"
 
-[project.scripts]
-notionary = "notionary.cli.main:main"
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.group.dev.dependencies]
 mkdocs = "^1.6.1"
