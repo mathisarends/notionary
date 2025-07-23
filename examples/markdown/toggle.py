@@ -23,12 +23,12 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
-        
+
         print(f"\n{page.emoji_icon} Page Information:")
         print(f"├── Title: {page.title}")
         print(f"├── ID: {page.id}")
         print(f"└── Visit at: {page.url}")
-        
+
         toggle_content = """
         ## 🔽 Toggle Element Examples
 
@@ -38,11 +38,11 @@ async def main():
         | 2. Second important point about performance metrics
         | 3. Third important point about future implications
         """
-        
+
         # Add the markdown content to the page
         print("\n📝 Adding Toggle Element examples...")
         await page.append_markdown(toggle_content)
-        
+
         print(f"\n✅ Successfully added toggle examples to '{page.title}'!")
 
     except Exception as e:

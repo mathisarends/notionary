@@ -8,6 +8,12 @@ from notionary.page.markdown_syntax_prompt_generator import (
 from notionary.blocks.text_inline_formatter import TextInlineFormatter
 
 from notionary.blocks import NotionBlockElement
+from notionary.telemetry import (
+    ProductTelemetry,
+    NotionMarkdownSyntaxPromptEvent,
+    MarkdownToNotionConversionEvent,
+    NotionToMarkdownConversionEvent,
+)
 
 
 class BlockRegistry:
@@ -27,6 +33,8 @@ class BlockRegistry:
         if elements:
             for element in elements:
                 self.register(element)
+
+        self.telemetry = ProductTelemetry()
 
     def register(self, element_class: Type[NotionBlockElement]) -> bool:
         """
@@ -57,13 +65,13 @@ class BlockRegistry:
 
     def contains(self, element_class: Type[NotionBlockElement]) -> bool:
         """
-        Prüft, ob ein bestimmtes Element im Registry enthalten ist.
+        Checks if a specific element is contained in the registry.
 
         Args:
-            element_class: Die zu prüfende Element-Klasse
+            element_class: The element class to check.
 
         Returns:
-            bool: True, wenn das Element enthalten ist, sonst False
+            bool: True if the element is contained, otherwise False.
         """
         return element_class in self._elements
 
@@ -77,14 +85,28 @@ class BlockRegistry:
     def markdown_to_notion(self, text: str) -> Optional[Dict[str, Any]]:
         """Convert markdown to Notion block using registered elements."""
         handler = self.find_markdown_handler(text)
+
         if handler:
+            self.telemetry.capture(
+                MarkdownToNotionConversionEvent(
+                    handler_element_name=handler.__name__,
+                )
+            )
+
             return handler.markdown_to_notion(text)
         return None
 
     def notion_to_markdown(self, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion block to markdown using registered elements."""
         handler = self._find_notion_handler(block)
+
         if handler:
+            self.telemetry.capture(
+                NotionToMarkdownConversionEvent(
+                    handler_element_name=handler.__name__,
+                )
+            )
+
             return handler.notion_to_markdown(block)
         return None
 
@@ -105,6 +127,8 @@ class BlockRegistry:
         formatter_names = [e.__name__ for e in element_classes]
         if "TextInlineFormatter" not in formatter_names:
             element_classes = element_classes + [TextInlineFormatter]
+
+        self.telemetry.capture(NotionMarkdownSyntaxPromptEvent())
 
         return MarkdownSyntaxPromptGenerator.generate_system_prompt(element_classes)
 

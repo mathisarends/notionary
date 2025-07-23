@@ -23,22 +23,22 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
-        
+
         print(f"\n{page.emoji_icon} Page Information:")
         print(f"├── Title: {page.title}")
         print(f"├── ID: {page.id}")
         print(f"└── Visit at: {page.url}")
-        
+
         audio_content = """
         ## 🎵 Audio Element Examples
 
         $[AI in Healthcare - Episode 42](https://storage.googleapis.com/audio_summaries/ep_ai_summary_127d02ec-ca12-4312-a5ed-cb14b185480c.mp3)
         """
-        
+
         # Add the markdown content to the page
         print("\n📝 Adding Audio Element examples...")
         await page.append_markdown(audio_content)
-        
+
         print(f"\n✅ Successfully added audio examples to '{page.title}'!")
 
     except Exception as e:

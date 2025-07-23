@@ -12,7 +12,7 @@ import asyncio
 from notionary import NotionWorkspace
 
 # Replace with your search term
-SEARCH_QUERY = "Jarvis"  
+SEARCH_QUERY = "Jarvis"
 
 
 async def workspace_discovery_demo():

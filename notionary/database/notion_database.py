@@ -13,6 +13,11 @@ from notionary.page.notion_page import NotionPage
 from notionary.database.notion_database_provider import NotionDatabaseProvider
 
 from notionary.database.filter_builder import FilterBuilder
+from notionary.telemetry import (
+    ProductTelemetry,
+    DatabaseFactoryUsedEvent,
+    QueryOperationEvent,
+)
 from notionary.util import factory_only, LoggingMixin
 
 
@@ -22,6 +27,8 @@ class NotionDatabase(LoggingMixin):
     Focused exclusively on creating basic pages and retrieving page managers
     for further page operations.
     """
+    
+    telemetry = ProductTelemetry()
 
     @factory_only("from_database_id", "from_database_name")
     def __init__(
@@ -52,6 +59,10 @@ class NotionDatabase(LoggingMixin):
         Create a NotionDatabase from a database ID using NotionDatabaseProvider.
         """
         provider = cls.get_database_provider()
+        cls.telemetry.capture(
+            DatabaseFactoryUsedEvent(factory_method="from_database_id")
+        )
+
         return await provider.get_database_by_id(id, token)
 
     @classmethod
@@ -65,6 +76,9 @@ class NotionDatabase(LoggingMixin):
         Create a NotionDatabase by finding a database with fuzzy matching on the title using NotionDatabaseProvider.
         """
         provider = cls.get_database_provider()
+        cls.telemetry.capture(
+            DatabaseFactoryUsedEvent(factory_method="from_database_name")
+        )
         return await provider.get_database_by_name(database_name, token, min_similarity)
 
     @property
@@ -129,9 +143,7 @@ class NotionDatabase(LoggingMixin):
 
             self._title = result.title[0].plain_text
             self.logger.info(f"Successfully updated database title to: {new_title}")
-            self.database_provider.invalidate_database_cache(
-                database_id=self.id
-            )
+            self.database_provider.invalidate_database_cache(database_id=self.id)
             return True
 
         except Exception as e:
@@ -149,9 +161,7 @@ class NotionDatabase(LoggingMixin):
 
             self._emoji_icon = result.icon.emoji if result.icon else None
             self.logger.info(f"Successfully updated database emoji to: {new_emoji}")
-            self.database_provider.invalidate_database_cache(
-                database_id=self.id
-            )
+            self.database_provider.invalidate_database_cache(database_id=self.id)
             return True
 
         except Exception as e:
@@ -168,9 +178,7 @@ class NotionDatabase(LoggingMixin):
             )
 
             if result.cover and result.cover.external:
-                self.database_provider.invalidate_database_cache(
-                    database_id=self.id
-                )
+                self.database_provider.invalidate_database_cache(database_id=self.id)
                 return result.cover.external.url
             return None
 
@@ -197,9 +205,7 @@ class NotionDatabase(LoggingMixin):
             )
 
             if result.icon and result.icon.external:
-                self.database_provider.invalidate_database_cache(
-                    database_id=self.id
-                )
+                self.database_provider.invalidate_database_cache(database_id=self.id)
                 return result.icon.external.url
             return None
 
@@ -251,8 +257,14 @@ class NotionDatabase(LoggingMixin):
         page_results: List[NotionPage] = []
 
         for page in search_results.results:
-            page = NotionPage.from_page_id(page_id=page.id, token=self.client.token)
+            page = await NotionPage.from_page_id(
+                page_id=page.id, token=self.client.token
+            )
             page_results.append(page)
+
+        self.telemetry.capture(
+            QueryOperationEvent(query_type="query_database_by_title")
+        )
 
         return page_results
 
@@ -289,7 +301,7 @@ class NotionDatabase(LoggingMixin):
             ISO 8601 timestamp string of the last database edit, or None if request fails.
         """
         try:
-            db = await self.client.get_database(self.database_id)
+            db = await self.client.get_database(self.id)
 
             return db.last_edited_time
 
@@ -352,7 +364,9 @@ class NotionDatabase(LoggingMixin):
                 return
 
             for page in result.results:
-                yield await NotionPage.from_page_id(page_id=page.id, token=self.client.token)
+                yield await NotionPage.from_page_id(
+                    page_id=page.id, token=self.client.token
+                )
 
             has_more = result.has_more
             start_cursor = result.next_cursor if has_more else None

@@ -57,18 +57,14 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
 
         id_cache_key = self._create_id_cache_key(database.id)
         if not force_refresh and id_cache_key in self._database_cache:
-            self.logger.debug(
-                f"Found existing cached database by ID: {database.id}"
-            )
+            self.logger.debug(f"Found existing cached database by ID: {database.id}")
             existing_database = self._database_cache[id_cache_key]
 
             self._database_cache[name_cache_key] = existing_database
             return existing_database
 
         self._cache_database(database, token, database_name)
-        self.logger.debug(
-            f"Cached database: {database.title} (ID: {database.id})"
-        )
+        self.logger.debug(f"Cached database: {database.title} (ID: {database.id})")
 
         return database
 

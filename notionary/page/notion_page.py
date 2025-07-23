@@ -500,9 +500,7 @@ class NotionPage(LoggingMixin):
         parent_database_id = cls._extract_parent_database_id(page_response)
 
         parent_database = (
-            await NotionDatabase.from_database_id(
-                id=parent_database_id, token=token
-            )
+            await NotionDatabase.from_database_id(id=parent_database_id, token=token)
             if parent_database_id
             else None
         )

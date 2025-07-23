@@ -23,12 +23,12 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
-        
+
         print(f"\n{page.emoji_icon} Page Information:")
         print(f"├── Title: {page.title}")
         print(f"├── ID: {page.id}")
         print(f"└── Visit at: {page.url}")
-        
+
         embed_content = """
         ## 🌐 YouTube Gallery
         ::: columns
@@ -49,11 +49,11 @@ async def main():
         :::
         :::
         """
-        
+
         # Add the markdown content to the page
         print("\n📝 Adding Embed Element examples...")
         await page.append_markdown(embed_content)
-        
+
         print(f"\n✅ Successfully added embed examples to '{page.title}'!")
 
     except Exception as e:

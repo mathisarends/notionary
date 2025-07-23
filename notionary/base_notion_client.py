@@ -194,7 +194,7 @@ class BaseNotionClient(LoggingMixin, ABC):
         token = next(
             (
                 os.getenv(var)
-                for var in ("NOTION_SECRET", "NOTION_API_KEY", "NOTION_TOKEN")
+                for var in ("NOTION_SECRET", "NOTION_INTEGRATION_KEY", "NOTION_TOKEN")
                 if os.getenv(var)
             ),
             None,

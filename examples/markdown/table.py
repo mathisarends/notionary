@@ -23,12 +23,12 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
-        
+
         print(f"\n{page.emoji_icon} Page Information:")
         print(f"├── Title: {page.title}")
         print(f"├── ID: {page.id}")
         print(f"└── Visit at: {page.url}")
-        
+
         table_content = """
         ## 📊 Table Element Examples
 
@@ -53,11 +53,11 @@ async def main():
         | Mobile App | Medium | 45% | 2025-09-30 |
         | API Integration | Low | 20% | 2025-10-15 |
         """
-        
+
         # Add the markdown content to the page
         print("\n📝 Adding Table Element examples...")
         await page.append_markdown(table_content)
-        
+
         print(f"\n✅ Successfully added table examples to '{page.title}'!")
 
     except Exception as e:

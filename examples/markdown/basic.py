@@ -23,12 +23,12 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
-        
+
         print(f"\n{page.emoji_icon} Page Information:")
         print(f"├── Title: {page.title}")
         print(f"├── ID: {page.id}")
         print(f"└── Visit at: {page.url}")
-        
+
         basic_content = """
         ### Text Formatting
         This paragraph demonstrates **bold text**, *italic text*, and `inline code`. 
@@ -74,11 +74,11 @@ async def main():
         - `content` for markdown text
         - `properties` for page metadata
         """
-        
+
         # Add the markdown content to the page
         print("\n📝 Adding basic markdown examples...")
         await page.append_markdown(basic_content)
-        
+
         print(f"\n✅ Successfully added basic markdown to '{page.title}'!")
 
     except Exception as e:

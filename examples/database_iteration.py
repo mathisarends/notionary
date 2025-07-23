@@ -21,8 +21,7 @@ async def elegant_example():
     print("Pages created in the last 3 days:")
     count = 0
     async for page in db.iter_pages_with_filter(
-        db.create_filter()
-        .with_created_last_n_days(3)
+        db.create_filter().with_created_last_n_days(3)
     ):
         count += 1
         print(f"{count:2d}. {page.emoji_icon if page.emoji_icon else ""} {page.title}")
@@ -31,4 +30,5 @@ async def elegant_example():
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(elegant_example())

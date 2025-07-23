@@ -23,7 +23,7 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
-        
+
         text_content = await page.get_text_content()
 
         # Display basic page information
@@ -31,12 +31,12 @@ async def main():
         print(f"├── Title: {page.title}")
         print(f"├── ID: {page.id}")
         print(f"└── Visit at: {page.url}")
-        
+
         # Display truncated text content
         print("\n📄 Markdown Text Content (Preview):")
         if text_content:
             truncated_text = truncate_text(text_content)
-            
+
             print(f"├── Length: {len(text_content)} characters")
             print(f"└── Preview: {repr(truncated_text)}")
         else:
@@ -46,19 +46,20 @@ async def main():
 
     except Exception as e:
         import traceback
+
         print(f"❌ Error: {e}")
         print(f"🔍 Full traceback:\n{traceback.format_exc()}")
         print("💡 Make sure the page name exists in your Notion workspace")
-        
+
 
 def truncate_text(text: str, max_length: int = 400) -> str:
     """Truncate text to specified length and add ellipsis if needed."""
     if not text:
         return ""
-    
+
     if len(text) <= max_length:
         return text
-    
+
     return text[:max_length] + "..."
 
 

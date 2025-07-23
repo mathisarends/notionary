@@ -23,12 +23,12 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
-        
+
         print(f"\n{page.emoji_icon} Page Information:")
         print(f"├── Title: {page.title}")
         print(f"├── ID: {page.id}")
         print(f"└── Visit at: {page.url}")
-        
+
         codeblock_content = """
         ## 💻 CodeBlock Element Examples
 
@@ -135,11 +135,11 @@ async def main():
         ```
         Caption: Notion workspace entity relationship diagram
         """
-        
+
         # Add the markdown content to the page
         print("\n📝 Adding CodeBlock Element examples...")
         await page.append_markdown(codeblock_content)
-        
+
         print(f"\n✅ Successfully added codeblock examples to '{page.title}'!")
 
     except Exception as e:
