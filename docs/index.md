@@ -1,7 +1,5 @@
 # Notionary
 
-The Notion API is powerful but rather hard to use, especially for complex tasks. For quick and dirty automation, the code gets messy real fast. Notionary fixes this.
-
 Transform complex Notion API interactions into simple, Pythonic code. Whether you're building AI agents, automating workflows, or creating dynamic content, Notionary makes it effortless.
 
 ```python
