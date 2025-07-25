@@ -1,6 +1,6 @@
-from typing import Literal, Optional, Dict, Any, Union
+from dataclasses import dataclass
+from typing import Literal, Optional
 from pydantic import BaseModel
-
 
 class PersonUser(BaseModel):
     """Person user details"""
@@ -50,3 +50,23 @@ class NotionBotUserResponse(NotionUserResponse):
     # Bot users should have these fields, but they can still be None
     type: Literal["bot"]
     bot: Optional[BotUser] = None
+    
+class NotionUsersListResponse(BaseModel):
+    """
+    Response model for paginated users list from /v1/users endpoint.
+    Follows Notion's standard pagination pattern.
+    """
+    
+    object: Literal["list"]
+    results: list[NotionUserResponse]
+    next_cursor: Optional[str] = None
+    has_more: bool
+    type: Literal["user"]
+    user: dict = {} 
+    
+# TODO: This is not used so use it
+@dataclass
+class WorkspaceInfo:
+    """Dataclass to hold workspace information for bot users."""
+    name: Optional[str] = None
+    limits: Optional[WorkspaceLimits] = None

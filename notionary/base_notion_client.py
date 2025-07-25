@@ -93,14 +93,19 @@ class BaseNotionClient(LoggingMixin, ABC):
         self._is_initialized = False
         self.logger.debug("NotionClient closed")
 
-    async def get(self, endpoint: str) -> Optional[Dict[str, Any]]:
+    async def get(
+        self, 
+        endpoint: str, 
+        params: Optional[Dict[str, Any]] = None
+    ) -> Optional[Dict[str, Any]]:
         """
         Sends a GET request to the specified Notion API endpoint.
 
         Args:
             endpoint: The API endpoint (without base URL)
+            params: Query parameters to include in the request
         """
-        return await self._make_request(HttpMethod.GET, endpoint)
+        return await self._make_request(HttpMethod.GET, endpoint, params=params)
 
     async def post(
         self, endpoint: str, data: Optional[Dict[str, Any]] = None
@@ -141,6 +146,7 @@ class BaseNotionClient(LoggingMixin, ABC):
         method: Union[HttpMethod, str],
         endpoint: str,
         data: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
     ) -> Optional[Dict[str, Any]]:
         """
         Executes an HTTP request and returns the data or None on error.
@@ -149,6 +155,7 @@ class BaseNotionClient(LoggingMixin, ABC):
             method: HTTP method to use
             endpoint: API endpoint
             data: Request body data (for POST/PATCH)
+            params: Query parameters (for GET requests)
         """
         await self.ensure_initialized()
 
@@ -160,15 +167,21 @@ class BaseNotionClient(LoggingMixin, ABC):
         try:
             self.logger.debug("Sending %s request to %s", method_str.upper(), url)
 
+            request_kwargs = {}
+            
+            # Add query parameters for GET requests
+            if params:
+                request_kwargs["params"] = params
+                
             if (
                 method_str in [HttpMethod.POST.value, HttpMethod.PATCH.value]
                 and data is not None
             ):
-                response: httpx.Response = await getattr(self.client, method_str)(
-                    url, json=data
-                )
-            else:
-                response: httpx.Response = await getattr(self.client, method_str)(url)
+                request_kwargs["json"] = data
+
+            response: httpx.Response = await getattr(self.client, method_str)(
+                url, **request_kwargs
+            )
 
             response.raise_for_status()
             result_data = response.json()

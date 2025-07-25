@@ -10,7 +10,7 @@ from notionary.util import LoggingMixin
 class NotionWorkspace(LoggingMixin):
     """
     Represents a Notion workspace, providing methods to interact with databases, pages, and limited user operations.
-    
+
     Note: Due to Notion API limitations, bulk user operations (listing all users) are not supported.
     Only individual user queries and bot user information are available.
     """
@@ -75,7 +75,7 @@ class NotionWorkspace(LoggingMixin):
     async def get_current_bot_user(self) -> Optional[NotionUser]:
         """
         Get the current bot user from the API token.
-        
+
         Returns:
             Optional[NotionUser]: Current bot user or None if failed
         """
@@ -84,10 +84,10 @@ class NotionWorkspace(LoggingMixin):
     async def get_user_by_id(self, user_id: str) -> Optional[NotionUser]:
         """
         Get a specific user by their ID.
-        
+
         Args:
             user_id: The ID of the user to retrieve
-            
+
         Returns:
             Optional[NotionUser]: The user or None if not found/failed
         """
@@ -96,7 +96,7 @@ class NotionWorkspace(LoggingMixin):
     async def get_workspace_info(self) -> Optional[dict]:
         """
         Get available workspace information including bot details.
-        
+
         Returns:
             Optional[dict]: Workspace information or None if failed to get bot user
         """

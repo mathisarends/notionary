@@ -1,8 +1,9 @@
-from typing import Optional
+from typing import Optional, List
 from notionary.base_notion_client import BaseNotionClient
 from notionary.user.models import (
-    NotionUserResponse,
     NotionBotUserResponse,
+    NotionUserResponse,
+    NotionUsersListResponse,
 )
 from notionary.util import singleton
 
@@ -12,26 +13,20 @@ class NotionUserClient(BaseNotionClient):
     """
     Client for Notion user-specific operations.
     Inherits base HTTP functionality from BaseNotionClient.
-    
+
     Note: The Notion API only supports individual user queries and bot user info.
-    There is NO endpoint to list all workspace users via the standard API.
+    List users endpoint is available but only returns workspace members (no guests).
     """
 
     async def get_user(self, user_id: str) -> Optional[NotionUserResponse]:
         """
         Retrieve a user by their ID.
-        
-        Args:
-            user_id: The ID of the user to retrieve
-            
-        Returns:
-            Optional[NotionUserResponse]: The user object or None if failed
         """
         response = await self.get(f"users/{user_id}")
         if response is None:
             self.logger.error("Failed to fetch user %s - API returned None", user_id)
             return None
-        
+
         try:
             return NotionUserResponse.model_validate(response)
         except Exception as e:
@@ -41,27 +36,78 @@ class NotionUserClient(BaseNotionClient):
     async def get_bot_user(self) -> Optional[NotionBotUserResponse]:
         """
         Retrieve your token's bot user information.
-        
-        Returns:
-            Optional[NotionBotUserResponse]: The bot user object with full details or None if failed
         """
         response = await self.get("users/me")
         if response is None:
             self.logger.error("Failed to fetch bot user - API returned None")
             return None
-        
+
         try:
             return NotionBotUserResponse.model_validate(response)
         except Exception as e:
             self.logger.error("Failed to validate bot user response: %s", e)
             return None
 
+    async def list_users(
+        self, 
+        page_size: int = 100, 
+        start_cursor: Optional[str] = None
+    ) -> Optional[NotionUsersListResponse]:
+        """
+        List all users in the workspace (paginated).
+        
+        Note: Guests are not included in the response.
+        """
+        params = {"page_size": min(page_size, 100)}  # API max is 100
+        if start_cursor:
+            params["start_cursor"] = start_cursor
+            
+        response = await self.get("users", params=params)
+        if response is None:
+            self.logger.error("Failed to fetch users list - API returned None")
+            return None
+
+        try:
+            return NotionUsersListResponse.model_validate(response)
+        except Exception as e:
+            self.logger.error("Failed to validate users list response: %s", e)
+            return None
+
+    async def get_all_users(self) -> List[NotionUserResponse]:
+        """
+        Get all users in the workspace by handling pagination automatically.
+        """
+        all_users = []
+        start_cursor = None
+        
+        while True:
+            try:
+                response = await self.list_users(
+                    page_size=100, 
+                    start_cursor=start_cursor
+                )
+                
+                if not response or not response.results:
+                    break
+                    
+                all_users.extend(response.results)
+                
+                # Check if there are more pages
+                if not response.has_more or not response.next_cursor:
+                    break
+                    
+                start_cursor = response.next_cursor
+                
+            except Exception as e:
+                self.logger.error("Error fetching all users: %s", str(e))
+                break
+        
+        self.logger.info("Retrieved %d total users from workspace", len(all_users))
+        return all_users
+
     async def get_workspace_name(self) -> Optional[str]:
         """
         Get the workspace name from the bot user.
-        
-        Returns:
-            Optional[str]: Workspace name if available
         """
         try:
             bot_user = await self.get_bot_user()
@@ -75,9 +121,6 @@ class NotionUserClient(BaseNotionClient):
     async def get_workspace_limits(self) -> Optional[dict]:
         """
         Get workspace limits from the bot user.
-        
-        Returns:
-            Optional[dict]: Workspace limits if available
         """
         try:
             bot_user = await self.get_bot_user()
