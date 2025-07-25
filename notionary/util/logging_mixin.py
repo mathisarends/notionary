@@ -1,13 +1,23 @@
 import logging
-import inspect
 from typing import Optional, ClassVar
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def setup_logging():
+    """
+    Sets up logging configuration for the application.
+    """
+    log_level = os.getenv("LOG_LEVEL", "WARNING").upper()
     logging.basicConfig(
-        level=logging.INFO,
+        level=getattr(logging, log_level),
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
+
+    logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 setup_logging()
@@ -31,16 +41,6 @@ class LoggingMixin:
         if not hasattr(self, "_logger"):
             self._logger = logging.getLogger(self.__class__.__name__)
         return self._logger
-
-    @staticmethod
-    def static_logger() -> logging.Logger:
-        """Static logger - for static methods"""
-        stack = inspect.stack()
-        for frame_info in stack[1:]:
-            class_name = LoggingMixin._get_class_name_from_frame(frame_info.frame)
-            if class_name:
-                return logging.getLogger(class_name)
-        return logging.getLogger("UnknownStaticContext")
 
     @staticmethod
     def _get_class_name_from_frame(frame) -> Optional[str]:

@@ -256,12 +256,11 @@ class NotionDatabase(LoggingMixin):
         )
 
         page_results: list[NotionPage] = []
-        
+
         if search_results.results:
             page_tasks = [
                 NotionPage.from_page_id(
-                    page_id=page_response.id, 
-                    token=self.client.token
+                    page_id=page_response.id, token=self.client.token
                 )
                 for page_response in search_results.results
             ]
@@ -282,7 +281,7 @@ class NotionDatabase(LoggingMixin):
         filter_builder = DatabaseFilterBuilder()
         filter_builder.with_updated_last_n_hours(hours)
         filter_conditions = filter_builder.build()
-        
+
         async for page in self._iter_pages(page_size, filter_conditions):
             yield page
 
@@ -292,19 +291,18 @@ class NotionDatabase(LoggingMixin):
         Uses asyncio.gather to parallelize NotionPage creation per API batch.
         """
         pages: list[NotionPage] = []
-        
+
         async for batch in self._paginate_database(page_size=100):
             # Parallelize NotionPage creation for this batch
             page_tasks = [
                 NotionPage.from_page_id(
-                    page_id=page_response.id, 
-                    token=self.client.token
+                    page_id=page_response.id, token=self.client.token
                 )
                 for page_response in batch
             ]
             batch_pages = await asyncio.gather(*page_tasks)
             pages.extend(batch_pages)
-        
+
         return pages
 
     async def get_last_edited_time(self) -> Optional[str]:
@@ -335,11 +333,11 @@ class NotionDatabase(LoggingMixin):
         """
         Asynchronous generator that yields NotionPage objects from the database.
         Directly queries the Notion API without using the schema.
-        
+
         Args:
             page_size: Number of pages to fetch per request
             filter_conditions: Optional filter conditions
-            
+
         Yields:
             NotionPage objects
         """
@@ -352,8 +350,7 @@ class NotionDatabase(LoggingMixin):
         async for batch in self._paginate_database(page_size, filter_conditions):
             for page_response in batch:
                 yield await NotionPage.from_page_id(
-                    page_id=page_response.id, 
-                    token=self.client.token
+                    page_id=page_response.id, token=self.client.token
                 )
 
     @classmethod
@@ -452,34 +449,33 @@ class NotionDatabase(LoggingMixin):
     ) -> AsyncGenerator[list[NotionPageResponse], None]:
         """
         Central pagination logic for Notion Database queries.
-        
+
         Args:
             page_size: Number of pages per request (max 100)
             filter_conditions: Optional filter conditions for the query
-            
+
         Yields:
             Batches of NotionPageResponse objects
         """
         start_cursor: Optional[str] = None
         has_more = True
-        
+
         while has_more:
             query_data: Dict[str, Any] = {"page_size": page_size}
-            
+
             if start_cursor:
                 query_data["start_cursor"] = start_cursor
             if filter_conditions:
                 query_data["filter"] = filter_conditions
-            
+
             result: NotionQueryDatabaseResponse = await self.client.query_database(
-                database_id=self.id, 
-                query_data=query_data
+                database_id=self.id, query_data=query_data
             )
-            
+
             if not result or not result.results:
                 return
-            
+
             yield result.results
-            
+
             has_more = result.has_more
             start_cursor = result.next_cursor if has_more else None
