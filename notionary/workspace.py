@@ -3,20 +3,25 @@ from typing import Optional, List
 from notionary import NotionPage, NotionDatabase
 from notionary.database.client import NotionDatabaseClient
 from notionary.page.client import NotionPageClient
+from notionary.user import NotionUser, NotionUserManager
 from notionary.util import LoggingMixin
 
 
 class NotionWorkspace(LoggingMixin):
     """
-    Represents a Notion workspace, providing methods to interact with databases and pages.
+    Represents a Notion workspace, providing methods to interact with databases, pages, and limited user operations.
+    
+    Note: Due to Notion API limitations, bulk user operations (listing all users) are not supported.
+    Only individual user queries and bot user information are available.
     """
 
     def __init__(self, token: Optional[str] = None):
         """
-        Initialize the workspace with a Notion database_client.
+        Initialize the workspace with Notion clients.
         """
         self.database_client = NotionDatabaseClient(token=token)
         self.page_client = NotionPageClient(token=token)
+        self.user_manager = NotionUserManager(token=token)
 
     async def search_pages(self, query: str, limit=100) -> List[NotionPage]:
         """
@@ -65,5 +70,36 @@ class NotionWorkspace(LoggingMixin):
             await NotionDatabase.from_database_id(database.id)
             for database in database_results.results
         ]
+
+    # User-related methods (limited due to API constraints)
+    async def get_current_bot_user(self) -> Optional[NotionUser]:
+        """
+        Get the current bot user from the API token.
+        
+        Returns:
+            Optional[NotionUser]: Current bot user or None if failed
+        """
+        return await self.user_manager.get_current_bot_user()
+
+    async def get_user_by_id(self, user_id: str) -> Optional[NotionUser]:
+        """
+        Get a specific user by their ID.
+        
+        Args:
+            user_id: The ID of the user to retrieve
+            
+        Returns:
+            Optional[NotionUser]: The user or None if not found/failed
+        """
+        return await self.user_manager.get_user_by_id(user_id)
+
+    async def get_workspace_info(self) -> Optional[dict]:
+        """
+        Get available workspace information including bot details.
+        
+        Returns:
+            Optional[dict]: Workspace information or None if failed to get bot user
+        """
+        return await self.user_manager.get_workspace_info()
 
     # TODO: Create database would be nice here
