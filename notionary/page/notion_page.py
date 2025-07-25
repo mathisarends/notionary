@@ -493,7 +493,7 @@ class NotionPage(LoggingMixin):
         """
         Create NotionPage instance from API response.
         """
-        from notionary.database.notion_database import NotionDatabase
+        from notionary.database.database import NotionDatabase
 
         title = cls._extract_title(page_response)
         emoji = cls._extract_emoji(page_response)

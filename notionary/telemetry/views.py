@@ -25,6 +25,7 @@ class DatabaseFactoryUsedEvent(BaseTelemetryEvent):
     def name(self) -> str:
         return "database_factory_used"
 
+
 @dataclass
 class QueryOperationEvent(BaseTelemetryEvent):
     """Event fired when a query operation is performed"""
@@ -34,7 +35,8 @@ class QueryOperationEvent(BaseTelemetryEvent):
     @property
     def name(self) -> str:
         return "query_operation"
-    
+
+
 @dataclass
 class NotionMarkdownSyntaxPromptEvent(BaseTelemetryEvent):
     """Event fired when Notion Markdown syntax is used"""
@@ -43,12 +45,16 @@ class NotionMarkdownSyntaxPromptEvent(BaseTelemetryEvent):
     def name(self) -> str:
         return "notion_markdown_syntax_used"
 
+
 # Tracks markdown conversion
 @dataclass
 class MarkdownToNotionConversionEvent(BaseTelemetryEvent):
     """Event fired when markdown is converted to Notion blocks"""
-    handler_element_name: Optional[str] = None  # e.g. "HeadingElement", "ParagraphElement"
-    
+
+    handler_element_name: Optional[str] = (
+        None  # e.g. "HeadingElement", "ParagraphElement"
+    )
+
     @property
     def name(self) -> str:
         return "markdown_to_notion_conversion"
@@ -57,8 +63,11 @@ class MarkdownToNotionConversionEvent(BaseTelemetryEvent):
 @dataclass
 class NotionToMarkdownConversionEvent(BaseTelemetryEvent):
     """Event fired when Notion blocks are converted to markdown"""
-    handler_element_name: Optional[str] = None  # e.g. "HeadingElement", "ParagraphElement"  
-    
+
+    handler_element_name: Optional[str] = (
+        None  # e.g. "HeadingElement", "ParagraphElement"
+    )
+
     @property
     def name(self) -> str:
         return "notion_to_markdown_conversion"

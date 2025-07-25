@@ -256,12 +256,16 @@ class NotionDatabase(LoggingMixin):
         )
 
         page_results: list[NotionPage] = []
-
-        for page in search_results.results:
-            page = await NotionPage.from_page_id(
-                page_id=page.id, token=self.client.token
-            )
-            page_results.append(page)
+        
+        if search_results.results:
+            page_tasks = [
+                NotionPage.from_page_id(
+                    page_id=page_response.id, 
+                    token=self.client.token
+                )
+                for page_response in search_results.results
+            ]
+            page_results = await asyncio.gather(*page_tasks)
 
         self.telemetry.capture(
             QueryOperationEvent(query_type="query_database_by_title")
@@ -275,49 +279,32 @@ class NotionDatabase(LoggingMixin):
         """
         Iterate through pages edited in the last N hours using DatabaseFilterBuilder.
         """
-
         filter_builder = DatabaseFilterBuilder()
-        filter_builder.with_updated_last_n_hours(hours).with_page_size(page_size)
+        filter_builder.with_updated_last_n_hours(hours)
         filter_conditions = filter_builder.build()
-
-        async for page in self._iter_pages(
-            page_size=page_size, filter_conditions=filter_conditions
-        ):
+        
+        async for page in self._iter_pages(page_size, filter_conditions):
             yield page
 
     async def get_all_pages(self) -> list[NotionPage]:
         """
         Get all pages in the database (use with caution for large databases).
-        Uses asyncio.gather to parallelize NotionPage creation per API page.
+        Uses asyncio.gather to parallelize NotionPage creation per API batch.
         """
         pages: list[NotionPage] = []
-        start_cursor: Optional[str] = None
-        has_more = True
-        body: Dict[str, Any] = {"page_size": 100}
-
-        while has_more:
-            current_body = body.copy()
-            if start_cursor:
-                current_body["start_cursor"] = start_cursor
-
-            result = await self.client.query_database(
-                database_id=self.id, query_data=current_body
-            )
-
-            if not result or not result.results:
-                break
-
+        
+        async for batch in self._paginate_database(page_size=100):
             # Parallelize NotionPage creation for this batch
             page_tasks = [
-                NotionPage.from_page_id(page_id=page.id, token=self.client.token)
-                for page in result.results
+                NotionPage.from_page_id(
+                    page_id=page_response.id, 
+                    token=self.client.token
+                )
+                for page_response in batch
             ]
             batch_pages = await asyncio.gather(*page_tasks)
             pages.extend(batch_pages)
-
-            has_more = result.has_more
-            start_cursor = result.next_cursor if has_more else None
-
+        
         return pages
 
     async def get_last_edited_time(self) -> Optional[str]:
@@ -340,29 +327,21 @@ class NotionDatabase(LoggingMixin):
             )
             return None
 
-    def create_filter(self) -> DatabaseFilterBuilder:
-        """Create a new filter builder for this database."""
-        return DatabaseFilterBuilder()
-
-    async def iter_pages_with_filter(
-        self, filter_builder: DatabaseFilterBuilder, page_size: int = 100
-    ):
-        """Iterate pages using a filter builder."""
-        filter_config = filter_builder.build()
-        self.logger.debug("Using filter: %s", filter_config)
-        async for page in self._iter_pages(
-            page_size=page_size, filter_conditions=filter_config
-        ):
-            yield page
-
     async def _iter_pages(
         self,
         page_size: int = 100,
         filter_conditions: Optional[Dict[str, Any]] = None,
     ) -> AsyncGenerator[NotionPage, None]:
         """
-        Asynchronous generator that yields pages from the database.
+        Asynchronous generator that yields NotionPage objects from the database.
         Directly queries the Notion API without using the schema.
+        
+        Args:
+            page_size: Number of pages to fetch per request
+            filter_conditions: Optional filter conditions
+            
+        Yields:
+            NotionPage objects
         """
         self.logger.debug(
             "Iterating pages with page_size: %d, filter: %s",
@@ -370,33 +349,12 @@ class NotionDatabase(LoggingMixin):
             filter_conditions,
         )
 
-        start_cursor: Optional[str] = None
-        has_more = True
-
-        body: Dict[str, Any] = {"page_size": page_size}
-
-        if filter_conditions:
-            body["filter"] = filter_conditions
-
-        while has_more:
-            current_body = body.copy()
-            if start_cursor:
-                current_body["start_cursor"] = start_cursor
-
-            result = await self.client.query_database(
-                database_id=self.id, query_data=current_body
-            )
-
-            if not result or not result.results:
-                return
-
-            for page in result.results:
+        async for batch in self._paginate_database(page_size, filter_conditions):
+            for page_response in batch:
                 yield await NotionPage.from_page_id(
-                    page_id=page.id, token=self.client.token
+                    page_id=page_response.id, 
+                    token=self.client.token
                 )
-
-            has_more = result.has_more
-            start_cursor = result.next_cursor if has_more else None
 
     @classmethod
     def _create_from_response(
@@ -486,3 +444,42 @@ class NotionDatabase(LoggingMixin):
         )
 
         return [self._extract_title_from_page(page) for page in search_results.results]
+
+    async def _paginate_database(
+        self,
+        page_size: int = 100,
+        filter_conditions: Optional[Dict[str, Any]] = None,
+    ) -> AsyncGenerator[list[NotionPageResponse], None]:
+        """
+        Central pagination logic for Notion Database queries.
+        
+        Args:
+            page_size: Number of pages per request (max 100)
+            filter_conditions: Optional filter conditions for the query
+            
+        Yields:
+            Batches of NotionPageResponse objects
+        """
+        start_cursor: Optional[str] = None
+        has_more = True
+        
+        while has_more:
+            query_data: Dict[str, Any] = {"page_size": page_size}
+            
+            if start_cursor:
+                query_data["start_cursor"] = start_cursor
+            if filter_conditions:
+                query_data["filter"] = filter_conditions
+            
+            result: NotionQueryDatabaseResponse = await self.client.query_database(
+                database_id=self.id, 
+                query_data=query_data
+            )
+            
+            if not result or not result.results:
+                return
+            
+            yield result.results
+            
+            has_more = result.has_more
+            start_cursor = result.next_cursor if has_more else None

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Dict, Optional, TYPE_CHECKING
 from notionary.database.client import NotionDatabaseClient
-from notionary.database.database_exceptions import DatabaseNotFoundException
+from notionary.database.exceptions import DatabaseNotFoundException
 from notionary.models.notion_database_response import NotionDatabaseResponse
 from notionary.util import LoggingMixin, FuzzyMatcher, format_uuid
 from notionary.util.singleton_metaclass import SingletonMetaClass

@@ -7,13 +7,13 @@ from dataclasses import dataclass, field
 
 @dataclass
 class FilterConfig:
-    """Einfache Konfiguration für Notion Database Filter."""
+    """Simple configuration for Notion Database filters."""
 
     conditions: List[Dict[str, Any]] = field(default_factory=list)
     page_size: int = 100
 
     def to_filter_dict(self) -> Dict[str, Any]:
-        """Konvertiert zu einem Notion-Filter-Dictionary."""
+        """Convert to a Notion filter dictionary."""
         if len(self.conditions) == 0:
             return {}
         if len(self.conditions) == 1:
@@ -22,7 +22,7 @@ class FilterConfig:
         return {"and": self.conditions}
 
 
-class FilterBuilder:
+class DatabaseFilterBuilder:
     """
     Builder class for creating complex Notion filters with comprehensive property type support.
     """
@@ -30,32 +30,32 @@ class FilterBuilder:
     def __init__(self, config: FilterConfig = None):
         self.config = config or FilterConfig()
 
-    def with_page_object_filter(self) -> FilterBuilder:
-        """Filter: Nur Datenbank-Objekte (Notion API search)."""
+    def with_page_object_filter(self):
+        """Filter: Only page objects (Notion API search)."""
         self.config.conditions.append({"value": "page", "property": "object"})
         return self
 
-    def with_database_object_filter(self) -> FilterBuilder:
-        """Filter: Nur Datenbank-Objekte (Notion API search)."""
+    def with_database_object_filter(self):
+        """Filter: Only database objects (Notion API search)."""
         self.config.conditions.append({"value": "database", "property": "object"})
         return self
 
     # TIMESTAMP FILTERS (Created/Updated)
-    def with_created_after(self, date: datetime) -> FilterBuilder:
+    def with_created_after(self, date: datetime):
         """Add condition: created after specific date."""
         self.config.conditions.append(
             {"timestamp": "created_time", "created_time": {"after": date.isoformat()}}
         )
         return self
 
-    def with_created_before(self, date: datetime) -> FilterBuilder:
+    def with_created_before(self, date: datetime):
         """Add condition: created before specific date."""
         self.config.conditions.append(
             {"timestamp": "created_time", "created_time": {"before": date.isoformat()}}
         )
         return self
 
-    def with_updated_after(self, date: datetime) -> FilterBuilder:
+    def with_updated_after(self, date: datetime):
         """Add condition: updated after specific date."""
         self.config.conditions.append(
             {
@@ -65,25 +65,25 @@ class FilterBuilder:
         )
         return self
 
-    def with_created_last_n_days(self, days: int) -> FilterBuilder:
-        """In den letzten N Tagen erstellt."""
+    def with_created_last_n_days(self, days: int):
+        """Created in the last N days."""
         cutoff = datetime.now() - timedelta(days=days)
         return self.with_created_after(cutoff)
 
-    def with_updated_last_n_hours(self, hours: int) -> FilterBuilder:
-        """In den letzten N Stunden bearbeitet."""
+    def with_updated_last_n_hours(self, hours: int):
+        """Updated in the last N hours."""
         cutoff = datetime.now() - timedelta(hours=hours)
         return self.with_updated_after(cutoff)
 
     # RICH TEXT FILTERS
-    def with_text_contains(self, property_name: str, value: str) -> FilterBuilder:
+    def with_text_contains(self, property_name: str, value: str):
         """Rich text contains value."""
         self.config.conditions.append(
             {"property": property_name, "rich_text": {"contains": value}}
         )
         return self
 
-    def with_text_equals(self, property_name: str, value: str) -> FilterBuilder:
+    def with_text_equals(self, property_name: str, value: str):
         """Rich text equals value."""
         self.config.conditions.append(
             {"property": property_name, "rich_text": {"equals": value}}
@@ -91,55 +91,53 @@ class FilterBuilder:
         return self
 
     # TITLE FILTERS
-    def with_title_contains(self, value: str) -> FilterBuilder:
+    def with_title_contains(self, value: str):
         """Title contains value."""
         self.config.conditions.append(
             {"property": "title", "title": {"contains": value}}
         )
         return self
 
-    def with_title_equals(self, value: str) -> FilterBuilder:
+    def with_title_equals(self, value: str):
         """Title equals value."""
         self.config.conditions.append({"property": "title", "title": {"equals": value}})
         return self
 
     # SELECT FILTERS (Single Select)
-    def with_select_equals(self, property_name: str, value: str) -> FilterBuilder:
+    def with_select_equals(self, property_name: str, value: str):
         """Select equals value."""
         self.config.conditions.append(
             {"property": property_name, "select": {"equals": value}}
         )
         return self
 
-    def with_select_is_empty(self, property_name: str) -> FilterBuilder:
+    def with_select_is_empty(self, property_name: str):
         """Select is empty."""
         self.config.conditions.append(
             {"property": property_name, "select": {"is_empty": True}}
         )
         return self
 
-    def with_multi_select_contains(
-        self, property_name: str, value: str
-    ) -> FilterBuilder:
+    def with_multi_select_contains(self, property_name: str, value: str):
         """Multi-select contains value."""
         self.config.conditions.append(
             {"property": property_name, "multi_select": {"contains": value}}
         )
         return self
 
-    def with_status_equals(self, property_name: str, value: str) -> FilterBuilder:
+    def with_status_equals(self, property_name: str, value: str):
         """Status equals value."""
         self.config.conditions.append(
             {"property": property_name, "status": {"equals": value}}
         )
         return self
 
-    def with_page_size(self, size: int) -> FilterBuilder:
+    def with_page_size(self, size: int):
         """Set page size for pagination."""
         self.config.page_size = size
         return self
 
-    def with_or_condition(self, *builders: FilterBuilder) -> FilterBuilder:
+    def with_or_condition(self, *builders):
         """Add OR condition with multiple sub-conditions."""
         or_conditions = []
         for builder in builders:
@@ -162,14 +160,14 @@ class FilterBuilder:
         """Get the underlying FilterConfig."""
         return self.config
 
-    def copy(self) -> FilterBuilder:
+    def copy(self):
         """Create a copy of the builder."""
         new_config = FilterConfig(
             conditions=self.config.conditions.copy(), page_size=self.config.page_size
         )
-        return FilterBuilder(new_config)
+        return DatabaseFilterBuilder(new_config)
 
-    def reset(self) -> FilterBuilder:
+    def reset(self):
         """Reset all conditions."""
         self.config = FilterConfig()
         return self
