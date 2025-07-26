@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from notionary.blocks import DividerElement, BlockRegistry
+from notionary.blocks import BlockRegistry
 
 from notionary.page.client import NotionPageClient
 from notionary.page.formatting.markdown_to_notion_converter import (

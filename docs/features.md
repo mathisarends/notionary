@@ -240,7 +240,7 @@ Generate system prompts for AI agents to create Notion content.
 from notionary import BlockRegistryBuilder
 
 # Create a registry with all elements
-registry = BlockRegistryBuilder.create_full_registry()
+registry = BlockRegistryBuilder.create_registry()
 
 # Generate LLM system prompt
 llm_prompt = registry.get_notion_markdown_syntax_prompt()

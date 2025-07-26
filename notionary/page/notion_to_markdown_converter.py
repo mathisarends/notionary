@@ -14,7 +14,7 @@ class NotionToMarkdownConverter:
         Initialize the NotionToMarkdownConverter.
         """
         self._block_registry = (
-            block_registry or BlockRegistryBuilder().create_full_registry()
+            block_registry or BlockRegistryBuilder().create_registry()
         )
 
     def convert(self, blocks: List[Dict[str, Any]]) -> str:

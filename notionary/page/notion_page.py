@@ -51,7 +51,7 @@ class NotionPage(LoggingMixin):
         self._client = NotionPageClient(token=token)
         self._page_data = None
 
-        self._block_element_registry = BlockRegistryBuilder.create_full_registry()
+        self._block_element_registry = BlockRegistryBuilder.create_registry()
 
         self._page_content_writer = PageContentWriter(
             page_id=self._page_id,

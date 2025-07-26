@@ -23,7 +23,7 @@ class NotionFileUpload(LoggingMixin):
 
     def __init__(self, token: Optional[str] = None):
         """Initialize the file upload service."""
-        from notionary import NotionFileUploadClient
+        from notionary.file_upload import NotionFileUploadClient
 
         self.client = NotionFileUploadClient(token=token)
 

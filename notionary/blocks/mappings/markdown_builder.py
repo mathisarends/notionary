@@ -6,9 +6,8 @@ Enhanced builder with support for all available MarkdownNode classes.
 """
 
 from __future__ import annotations
-from typing import Optional, Self, List, Union
-from notionary.blocks.mappings import (
-    MarkdownNode,
+from typing import Optional, Self, Union
+from notionary.blocks.mappings.elements import (
     HeadingMarkdownBlock,
     ImageMarkdownBlock,
     ParagraphMarkdownBlock,
@@ -29,6 +28,7 @@ from notionary.blocks.mappings import (
     ToggleableHeadingMarkdownBlock,
     VideoMarkdownBlock,
 )
+from notionary.blocks.mappings.markdown_node import MarkdownNode
 
 
 class MarkdownBuilder:
@@ -38,7 +38,7 @@ class MarkdownBuilder:
     """
 
     def __init__(self) -> None:
-        self.children: List[MarkdownNode] = []
+        self.children: list[MarkdownNode] = []
 
     # ========== BASIC CONTENT ==========
 
@@ -52,7 +52,7 @@ class MarkdownBuilder:
         self.children.append(ParagraphMarkdownBlock(text=text))
         return self
 
-    def quote(self, text: Union[str, List[str]]) -> Self:
+    def quote(self, text: Union[str, list[str]]) -> Self:
         """Add a quote block."""
         self.children.append(QuoteMarkdownBlock(text=text))
         return self
@@ -134,13 +134,13 @@ class MarkdownBuilder:
 
     # ========== ADVANCED ==========
 
-    def toggle(self, title: str, content: Optional[List[str]] = None) -> Self:
+    def toggle(self, title: str, content: Optional[list[str]] = None) -> Self:
         """Add a toggle block."""
         self.children.append(ToggleMarkdownBlock(title=title, content=content))
         return self
 
     def toggleable_heading(
-        self, text: str, level: int = 1, content: Optional[List[str]] = None
+        self, text: str, level: int = 1, content: Optional[list[str]] = None
     ) -> Self:
         """Add a toggleable heading block."""
         self.children.append(
@@ -148,12 +148,12 @@ class MarkdownBuilder:
         )
         return self
 
-    def columns(self, columns: List[List[str]]) -> Self:
+    def columns(self, columns: list[list[str]]) -> Self:
         """Add a columns layout."""
         self.children.append(ColumnsMarkdownBlock(columns=columns))
         return self
 
-    def table(self, headers: List[str], rows: List[List[str]]) -> Self:
+    def table(self, headers: list[str], rows: list[list[str]]) -> Self:
         """Add a table block."""
         self.children.append(TableMarkdownBlock(headers=headers, rows=rows))
         return self

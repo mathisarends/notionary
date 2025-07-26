@@ -19,21 +19,12 @@ from notionary.telemetry import (
 class BlockRegistry:
     """Registry of elements that can convert between Markdown and Notion."""
 
-    def __init__(self, elements=None):
+    def __init__(self):
         """
         Initialize a new registry instance.
-
-        Args:
-            elements: Initial elements to register
-            builder: The builder that created this registry (optional)
         """
         self._elements: List[NotionBlockElement] = []
         self._element_types: Set[Type[NotionBlockElement]] = set()
-
-        if elements:
-            for element in elements:
-                self.register(element)
-
         self.telemetry = ProductTelemetry()
 
     def register(self, element_class: Type[NotionBlockElement]) -> bool:

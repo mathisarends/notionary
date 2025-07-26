@@ -4,25 +4,26 @@ from notionary.blocks.mappings.markdown_node import MarkdownNode
 
 
 class NumberedListMarkdownBlockParams(BaseModel):
-    text: str
-    number: int = 1
+    texts: list[str]
 
 
 class NumberedListMarkdownBlock(MarkdownNode):
     """
     Programmatic interface for creating Markdown numbered list items.
-    Example: 1. First step
+    Example:
+    1. First step
+    2. Second step
+    3. Third step
     """
 
-    def __init__(self, text: str, number: int = 1):
-        self.text = text
-        self.number = number
+    def __init__(self, texts: list[str]):
+        self.texts = texts
 
     @classmethod
     def from_params(
         cls, params: NumberedListMarkdownBlockParams
     ) -> NumberedListMarkdownBlock:
-        return cls(text=params.text, number=params.number)
+        return cls(texts=params.texts)
 
     def to_markdown(self) -> str:
-        return f"{self.number}. {self.text}"
+        return "\n".join(f"{i + 1}. {text}" for i, text in enumerate(self.texts))

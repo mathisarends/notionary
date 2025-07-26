@@ -11,7 +11,7 @@ class MarkdownToNotionConverter:
     def __init__(self, block_registry: Optional[BlockRegistry] = None):
         """Initialize the converter with an optional custom block registry."""
         self._block_registry = (
-            block_registry or BlockRegistryBuilder().create_full_registry()
+            block_registry or BlockRegistryBuilder().create_registry()
         )
 
         # Spacer-Engine mit konfigurierbaren Regeln

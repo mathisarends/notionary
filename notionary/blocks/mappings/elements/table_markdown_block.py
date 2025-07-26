@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from typing import List
 from pydantic import BaseModel
 from notionary.blocks.mappings.markdown_node import MarkdownNode
 
 
 class TableMarkdownBlockParams(BaseModel):
-    headers: List[str]
-    rows: List[List[str]]
+    headers: list[str]
+    rows: list[list[str]]
 
 
 class TableMarkdownBlock(MarkdownNode):
