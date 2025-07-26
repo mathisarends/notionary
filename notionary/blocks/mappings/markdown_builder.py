@@ -15,7 +15,6 @@ from notionary.blocks.mappings.elements import (
     BookmarkMarkdownBlock,
     CalloutMarkdownBlock,
     CodeMarkdownBlock,
-    ColumnsMarkdownBlock,
     DividerMarkdownBlock,
     DocumentMarkdownBlock,
     EmbedMarkdownBlock,

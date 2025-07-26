@@ -55,7 +55,6 @@ class NotionPage(LoggingMixin):
 
         self._page_content_writer = PageContentWriter(
             page_id=self._page_id,
-            client=self._client,
             block_registry=self._block_element_registry,
         )
 

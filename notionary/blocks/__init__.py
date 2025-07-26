@@ -33,6 +33,7 @@ from .registry.block_registry import BlockRegistry
 from .registry.block_registry_builder import BlockRegistryBuilder
 from .elements.notion_block_client import NotionBlockClient
 
+from .block_client import NotionBlockClient
 
 __all__ = [
     "ElementPromptContent",
@@ -62,4 +63,5 @@ __all__ = [
     "BlockRegistryBuilder",
     "NotionBlockClient",
     "TextInlineFormatter",
+    "NotionBlockClient",
 ]
