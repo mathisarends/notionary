@@ -2,7 +2,6 @@ import re
 from typing import Dict, Any, Optional, List, Tuple, Callable
 
 from notionary.blocks import NotionBlockElement
-from notionary.page.formatting.spacer_rules import SPACER_MARKER
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
 
 
@@ -269,43 +268,8 @@ class ColumnElement(NotionBlockElement):
 
     @staticmethod
     def _preprocess_column_content(lines: List[str]) -> List[str]:
-        """
-        Preprocess column content to handle special cases like first headings.
-
-        This removes any spacer markers that might have been added before the first
-        heading in a column, as each column should have its own heading context.
-
-        Args:
-            lines: The lines of content for the column
-
-        Returns:
-            Processed lines ready for conversion
-        """
-        processed_lines = []
-        found_first_heading = False
-
-        i = 0
-        while i < len(lines):
-            line = lines[i]
-
-            # Check if this is a heading line
-            if re.match(r"^(#{1,6})\s+(.+)$", line.strip()):
-                # If it's the first heading, look ahead to check for spacer
-                if (
-                    not found_first_heading
-                    and i > 0
-                    and processed_lines
-                    and processed_lines[-1] == SPACER_MARKER
-                ):
-                    # Remove spacer before first heading in column
-                    processed_lines.pop()
-
-                found_first_heading = True
-
-            processed_lines.append(line)
-            i += 1
-
-        return processed_lines
+        """Remove all spacer markers from column content."""
+        return [line for line in lines if line.strip() != "---spacer---"]
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

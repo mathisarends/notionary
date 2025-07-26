@@ -17,16 +17,14 @@ logger = logging.getLogger(__name__)
 
 
 def fix_blocks_content_length(
-    blocks: list[Dict[str, Any]], 
-    max_text_length: int = 1900
+    blocks: list[Dict[str, Any]], max_text_length: int = 1900
 ) -> list[Dict[str, Any]]:
     """Check each block and ensure text content doesn't exceed Notion's limit."""
     return [_fix_single_block_content(block, max_text_length) for block in blocks]
 
 
 def _fix_single_block_content(
-    block: Dict[str, Any], 
-    max_text_length: int
+    block: Dict[str, Any], max_text_length: int
 ) -> Dict[str, Any]:
     """Fix content length in a single block and its children recursively."""
     block_copy = block.copy()
@@ -44,17 +42,18 @@ def _fix_single_block_content(
 
     if "children" in content and content["children"]:
         block_copy[block_type]["children"] = [
-            _fix_single_block_content(child, max_text_length) for child in content["children"]
+            _fix_single_block_content(child, max_text_length)
+            for child in content["children"]
         ]
 
     return block_copy
 
 
 def _fix_rich_text_content(
-    block_copy: Dict[str, Any], 
-    block_type: str, 
+    block_copy: Dict[str, Any],
+    block_type: str,
     content: Dict[str, Any],
-    max_text_length: int
+    max_text_length: int,
 ) -> None:
     """Fix rich text content that exceeds the length limit."""
     rich_text = content["rich_text"]
@@ -71,7 +70,9 @@ def _fix_rich_text_content(
             len(text_content),
             max_text_length,
         )
-        block_copy[block_type]["rich_text"][i]["text"]["content"] = text_content[:max_text_length]
+        block_copy[block_type]["rich_text"][i]["text"]["content"] = text_content[
+            :max_text_length
+        ]
 
 
 def split_to_paragraphs(markdown_text: str) -> list[str]:
