@@ -27,32 +27,6 @@ async def upload_small_file_example():
         print("File upload failed")
         return None
 
-
-async def upload_large_file_example():
-    """Example: Upload a large file (> 20MB) with multi-part upload"""
-
-    file_uploader = NotionFileUpload()
-
-    # Large file will automatically use multi-part upload
-    large_file = Path("./big_video.mp4")
-    upload_result = await file_uploader.upload_file(large_file)
-
-    if upload_result:
-        print("Large file uploaded successfully!")
-        print(f"File ID: {upload_result.id}")
-
-        # Wait for upload to complete (for multi-part uploads)
-        completed = await file_uploader.wait_for_upload_completion(
-            upload_result.id, timeout_seconds=600  # 10 minutes
-        )
-
-        if completed:
-            print("Upload processing completed!")
-            return completed.id
-
-    return None
-
-
 async def upload_from_bytes_example():
     """Example: Upload file content from bytes"""
 
@@ -156,21 +130,14 @@ async def main():
     print("=== Notion File Upload Examples ===\n")
 
     # Upload a small file
-    print("1. Uploading small file...")
+    """ print("1. Uploading small file...")
     await upload_small_file_example()
-    print()
+    print() """
 
-    """ # Upload from bytes
+    # Upload from bytes
     print("2. Uploading from bytes...")
     await upload_from_bytes_example()
     print()
 
-    # List recent uploads
-    print("3. Listing recent uploads...")
-    await list_recent_uploads_example()
-    print() """
-
-
 if __name__ == "__main__":
-    # Set your Notion token in environment variable NOTION_SECRET
     asyncio.run(main())

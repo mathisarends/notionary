@@ -3,6 +3,8 @@ from io import BytesIO
 from pathlib import Path
 import httpx
 
+import aiofiles
+
 from notionary.base_notion_client import BaseNotionClient
 from notionary.file_upload.models import (
     FileUploadResponse,
@@ -236,9 +238,9 @@ class NotionFileUploadClient(BaseNotionClient):
             True if successful, False otherwise
         """
         try:
-            # Read file content into memory first
-            with open(file_path, "rb") as f:
-                file_content = f.read()
+            # Read file content into memory first using aiofiles
+            async with aiofiles.open(file_path, "rb") as f:
+                file_content = await f.read()
 
             # Use BytesIO for the upload
             return await self.send_file_upload(

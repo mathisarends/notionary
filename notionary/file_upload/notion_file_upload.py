@@ -3,6 +3,8 @@ import mimetypes
 from typing import Optional
 from pathlib import Path
 from datetime import datetime, timedelta
+from io import BytesIO
+
 
 from notionary.file_upload.models import FileUploadResponse
 from notionary.util import LoggingMixin
@@ -21,9 +23,7 @@ class NotionFileUpload(LoggingMixin):
 
     def __init__(self, token: Optional[str] = None):
         """Initialize the file upload service."""
-        # Import here to avoid circular imports
-        from notionary.file_upload.client import NotionFileUploadClient
-
+        from notionary import NotionFileUploadClient
         self.client = NotionFileUploadClient(token=token)
 
     async def upload_file(
@@ -332,8 +332,6 @@ class NotionFileUpload(LoggingMixin):
                     if not chunk:
                         break
 
-                    from io import BytesIO
-
                     success = await self.client.send_file_upload(
                         file_upload_id=file_upload_id,
                         file_content=BytesIO(chunk),
@@ -368,8 +366,6 @@ class NotionFileUpload(LoggingMixin):
 
         for i in range(0, len(file_content), self.MULTI_PART_CHUNK_SIZE):
             chunk = file_content[i : i + self.MULTI_PART_CHUNK_SIZE]
-
-            from io import BytesIO
 
             success = await self.client.send_file_upload(
                 file_upload_id=file_upload_id,
