@@ -49,19 +49,17 @@ class NotionUserClient(BaseNotionClient):
             return None
 
     async def list_users(
-        self, 
-        page_size: int = 100, 
-        start_cursor: Optional[str] = None
+        self, page_size: int = 100, start_cursor: Optional[str] = None
     ) -> Optional[NotionUsersListResponse]:
         """
         List all users in the workspace (paginated).
-        
+
         Note: Guests are not included in the response.
         """
         params = {"page_size": min(page_size, 100)}  # API max is 100
         if start_cursor:
             params["start_cursor"] = start_cursor
-            
+
         response = await self.get("users", params=params)
         if response is None:
             self.logger.error("Failed to fetch users list - API returned None")
@@ -79,29 +77,28 @@ class NotionUserClient(BaseNotionClient):
         """
         all_users = []
         start_cursor = None
-        
+
         while True:
             try:
                 response = await self.list_users(
-                    page_size=100, 
-                    start_cursor=start_cursor
+                    page_size=100, start_cursor=start_cursor
                 )
-                
+
                 if not response or not response.results:
                     break
-                    
+
                 all_users.extend(response.results)
-                
+
                 # Check if there are more pages
                 if not response.has_more or not response.next_cursor:
                     break
-                    
+
                 start_cursor = response.next_cursor
-                
+
             except Exception as e:
                 self.logger.error("Error fetching all users: %s", str(e))
                 break
-        
+
         self.logger.info("Retrieved %d total users from workspace", len(all_users))
         return all_users
 

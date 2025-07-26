@@ -122,13 +122,13 @@ async def test_user_list_operations():
         # 1. Teste list_users (paginiert)
         print("1️⃣ Teste list_users (paginiert)...")
         users_response = await user_manager.list_users(page_size=10)
-        
+
         if users_response:
             print("✅ User-Liste erfolgreich abgerufen!")
             print(f"   Anzahl Users: {len(users_response.results)}")
             print(f"   Hat mehr Seiten: {users_response.has_more}")
             print(f"   Next Cursor: {users_response.next_cursor}")
-            
+
             # Zeige erste paar User
             for i, user in enumerate(users_response.results[:3]):
                 print(f"   User {i+1}: {user.name} ({user.type})")
@@ -138,17 +138,17 @@ async def test_user_list_operations():
         # 2. Teste get_all_users
         print("\n2️⃣ Teste get_all_users...")
         all_users = await user_manager.get_all_users()
-        
+
         if all_users:
             print("✅ Alle User erfolgreich abgerufen!")
             print(f"   Gesamtanzahl: {len(all_users)}")
-            
+
             # User-Typen zählen
             person_count = len([u for u in all_users if u.is_person])
             bot_count = len([u for u in all_users if u.is_bot])
             print(f"   Personen: {person_count}")
             print(f"   Bots: {bot_count}")
-            
+
             # Zeige erste paar User
             print("   Erste User:")
             for user in all_users[:5]:
@@ -161,21 +161,23 @@ async def test_user_list_operations():
         print("\n3️⃣ Teste get_users_by_type...")
         person_users = await user_manager.get_users_by_type("person")
         bot_users = await user_manager.get_users_by_type("bot")
-        
+
         print(f"✅ Personen gefunden: {len(person_users)}")
         print(f"✅ Bots gefunden: {len(bot_users)}")
 
         # 4. Teste find_users_by_name
         if all_users and len(all_users) > 0:
             print("\n4️⃣ Teste find_users_by_name...")
-            
+
             # Suche nach dem ersten User-Namen (teilweise)
             first_user_name = all_users[0].name
             if first_user_name and len(first_user_name) > 2:
                 search_term = first_user_name[:3]  # Erste 3 Zeichen
                 found_users = await user_manager.find_users_by_name(search_term)
-                
-                print(f"✅ Suche nach '{search_term}': {len(found_users)} User gefunden")
+
+                print(
+                    f"✅ Suche nach '{search_term}': {len(found_users)} User gefunden"
+                )
                 for user in found_users[:3]:
                     print(f"   📍 {user.name}")
             else:
@@ -184,16 +186,17 @@ async def test_user_list_operations():
         # 5. Teste erweiterte Workspace-Info
         print("\n5️⃣ Teste erweiterte Workspace-Info...")
         workspace_info = await user_manager.get_workspace_info()
-        
+
         if workspace_info:
             print("✅ Erweiterte Workspace-Info:")
             for key, value in workspace_info.items():
-                if key.startswith('total_') or key.endswith('_users'):
+                if key.startswith("total_") or key.endswith("_users"):
                     print(f"   📊 {key}: {value}")
 
     except Exception as e:
         print(f"❌ Fehler bei User-Listen Operationen: {e}")
         import traceback
+
         traceback.print_exc()
 
 
@@ -208,36 +211,36 @@ async def test_pagination_example():
         from notionary import NotionUserManager
 
         user_manager = NotionUserManager()
-        
+
         print("Durchlaufe alle Seiten manuell...")
         page = 1
         cursor = None
         total_users = 0
-        
+
         while True:
             print(f"   Seite {page}...")
             response = await user_manager.list_users(page_size=5, start_cursor=cursor)
-            
+
             if not response or not response.results:
                 break
-                
+
             total_users += len(response.results)
             print(f"   📄 Seite {page}: {len(response.results)} Users")
-            
+
             # Wenn keine weiteren Seiten
             if not response.has_more:
                 break
-                
+
             cursor = response.next_cursor
             page += 1
-            
+
             # Safety break
             if page > 10:
                 print("   ⚠️  Abbruch nach 10 Seiten (Safety)")
                 break
-        
+
         print(f"✅ Pagination abgeschlossen: {total_users} Users insgesamt")
-        
+
     except Exception as e:
         print(f"❌ Fehler bei Pagination: {e}")
 
@@ -251,10 +254,10 @@ if __name__ == "__main__":
 
     # Erweiterte Tests
     asyncio.run(test_individual_user_operations())
-    
+
     # Neue User-Listen Tests
     asyncio.run(test_user_list_operations())
-    
+
     # Pagination Beispiel
     asyncio.run(test_pagination_example())
 

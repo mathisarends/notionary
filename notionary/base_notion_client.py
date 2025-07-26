@@ -94,9 +94,7 @@ class BaseNotionClient(LoggingMixin, ABC):
         self.logger.debug("NotionClient closed")
 
     async def get(
-        self, 
-        endpoint: str, 
-        params: Optional[Dict[str, Any]] = None
+        self, endpoint: str, params: Optional[Dict[str, Any]] = None
     ) -> Optional[Dict[str, Any]]:
         """
         Sends a GET request to the specified Notion API endpoint.
@@ -168,11 +166,11 @@ class BaseNotionClient(LoggingMixin, ABC):
             self.logger.debug("Sending %s request to %s", method_str.upper(), url)
 
             request_kwargs = {}
-            
+
             # Add query parameters for GET requests
             if params:
                 request_kwargs["params"] = params
-                
+
             if (
                 method_str in [HttpMethod.POST.value, HttpMethod.PATCH.value]
                 and data is not None

@@ -90,11 +90,11 @@ class NotionUser(LoggingMixin):
     ) -> NotionUser:
         """
         Create a NotionUser from an existing API response.
-        
+
         Args:
             user_response: User response from Notion API
             token: Optional Notion API token
-            
+
         Returns:
             NotionUser: User manager instance
         """
