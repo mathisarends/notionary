@@ -1,45 +1,35 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Optional, List
+from notionary.user.base_notion_user import BaseNotionUser
 from notionary.user.client import NotionUserClient
 from notionary.user.models import (
     NotionUserResponse,
 )
-from notionary.util import LoggingMixin, factory_only
+from notionary.util import factory_only, FuzzyMatcher
 
 
-class NotionUser(LoggingMixin):
+class NotionUser(BaseNotionUser):
     """
-    Manager for individual Notion user operations and information.
-
-    Note: Due to Notion API limitations, bulk user operations are not supported.
-    Only individual user queries and bot user information are available.
+    Manager for Notion person users.
+    Handles person-specific operations and information.
     """
 
-    @factory_only("from_user_id", "current_bot_user", "from_notion_user_response")
+    NO_USERS_FOUND_MSG = "No users found in workspace"
+    NO_PERSON_USERS_FOUND_MSG = "No person users found in workspace"
+
+    @factory_only("from_user_id", "from_user_response", "from_name")
     def __init__(
         self,
         user_id: str,
         name: Optional[str] = None,
-        user_type: Optional[str] = None,
         avatar_url: Optional[str] = None,
         email: Optional[str] = None,
-        workspace_name: Optional[str] = None,
-        is_bot: bool = False,
         token: Optional[str] = None,
     ):
-        """
-        Initialize the user manager with user metadata.
-        """
-        self._user_id = user_id
-        self._name = name
-        self._user_type = user_type
-        self._avatar_url = avatar_url
+        """Initialize person user with person-specific properties."""
+        super().__init__(user_id, name, avatar_url, token)
         self._email = email
-        self._workspace_name = workspace_name
-        self._is_bot = is_bot
-
-        self.client = NotionUserClient(token=token)
 
     @classmethod
     async def from_user_id(
@@ -47,186 +37,218 @@ class NotionUser(LoggingMixin):
     ) -> Optional[NotionUser]:
         """
         Create a NotionUser from a user ID.
-
-        Args:
-            user_id: The ID of the Notion user
-            token: Optional Notion API token
-
-        Returns:
-            Optional[NotionUser]: User manager instance or None if failed
         """
-        async with NotionUserClient(token=token) as client:
-            user_response = await client.get_user(user_id)
-            if user_response is None:
-                cls.logger.error(
-                    "Failed to create NotionUser from user_id: %s", user_id
-                )
-                return None
-            return cls._create_from_response(user_response, token)
+        client = NotionUserClient(token=token)
+        user_response = await client.get_user(user_id)
+
+        if user_response is None:
+            cls.logger.error("Failed to load user data for ID: %s", user_id)
+            return None
+
+        # Ensure this is actually a person user
+        if user_response.type != "person":
+            cls.logger.error(
+                "User %s is not a person user (type: %s)", user_id, user_response.type
+            )
+            return None
+
+        return cls._create_from_response(user_response, token)
 
     @classmethod
-    async def current_bot_user(
-        cls, token: Optional[str] = None
+    async def from_name(
+        cls, name: str, token: Optional[str] = None, min_similarity: float = 0.6
     ) -> Optional[NotionUser]:
         """
-        Get the current bot user (from the API token).
-
-        Args:
-            token: Optional Notion API token
-
-        Returns:
-            Optional[NotionUser]: Bot user manager instance or None if failed
+        Create a NotionUser by finding a person user with fuzzy matching on the name.
         """
-        async with NotionUserClient(token=token) as client:
-            bot_response = await client.get_bot_user()
-            if bot_response is None:
-                cls.logger.error("Failed to get current bot user")
-                return None
-            return cls._create_from_response(bot_response, token)
+        client = NotionUserClient(token=token)
+
+        try:
+            # Get all users from workspace
+            all_users_response = await client.get_all_users()
+
+            if not all_users_response:
+                cls.logger.warning(cls.NO_USERS_FOUND_MSG)
+                raise ValueError(cls.NO_USERS_FOUND_MSG)
+
+            # Filter to only person users (not bots)
+            person_users = [
+                user
+                for user in all_users_response
+                if user.type == "person" and user.name
+            ]
+
+            if not person_users:
+                cls.logger.warning(cls.NO_PERSON_USERS_FOUND_MSG)
+                raise ValueError(cls.NO_PERSON_USERS_FOUND_MSG)
+
+            cls.logger.debug(
+                "Found %d person users for fuzzy matching: %s",
+                len(person_users),
+                [user.name for user in person_users[:5]],
+            )
+
+            # Use fuzzy matching to find best match
+            best_match = FuzzyMatcher.find_best_match(
+                query=name,
+                items=person_users,
+                text_extractor=lambda user: user.name or "",
+                min_similarity=min_similarity,
+            )
+
+            if not best_match:
+                available_names = [user.name for user in person_users[:5]]
+                cls.logger.warning(
+                    "No sufficiently similar person user found for '%s' (min: %.3f). Available: %s",
+                    name,
+                    min_similarity,
+                    available_names,
+                )
+                raise ValueError(
+                    f"No sufficiently similar person user found for '{name}'"
+                )
+
+            cls.logger.info(
+                "Found best match: '%s' with similarity %.3f for query '%s'",
+                best_match.matched_text,
+                best_match.similarity,
+                name,
+            )
+
+            # Create NotionUser from the matched user response
+            return cls._create_from_response(best_match.item, token)
+
+        except Exception as e:
+            cls.logger.error("Error finding user by name '%s': %s", name, str(e))
+            raise
 
     @classmethod
-    def from_notion_user_response(
+    def from_user_response(
         cls, user_response: NotionUserResponse, token: Optional[str] = None
     ) -> NotionUser:
         """
         Create a NotionUser from an existing API response.
-
-        Args:
-            user_response: User response from Notion API
-            token: Optional Notion API token
-
-        Returns:
-            NotionUser: User manager instance
         """
+        if user_response.type != "person":
+            raise ValueError(f"Cannot create NotionUser from {user_response.type} user")
+
         return cls._create_from_response(user_response, token)
 
-    # ... rest of your existing methods remain the same ...
+    @classmethod
+    async def search_users_by_name(
+        cls,
+        name: str,
+        token: Optional[str] = None,
+        min_similarity: float = 0.3,
+        limit: Optional[int] = 5,
+    ) -> List[NotionUser]:
+        """
+        Search for multiple person users by name using fuzzy matching.
 
-    @property
-    def id(self) -> str:
-        """Get the user ID (readonly)."""
-        return self._user_id
+        Args:
+            name: The name to search for
+            token: Optional Notion API token
+            min_similarity: Minimum similarity threshold (0.0 to 1.0), default 0.3
+            limit: Maximum number of results to return, default 5
 
-    @property
-    def name(self) -> Optional[str]:
-        """Get the user name (readonly)."""
-        return self._name
+        Returns:
+            List[NotionUser]: List of matching users sorted by similarity (best first)
+        """
+        client = NotionUserClient(token=token)
 
-    @property
-    def user_type(self) -> Optional[str]:
-        """Get the user type ('person' or 'bot') (readonly)."""
-        return self._user_type
+        try:
+            # Get all users from workspace
+            all_users_response = await client.get_all_users()
 
-    @property
-    def avatar_url(self) -> Optional[str]:
-        """Get the avatar URL (readonly)."""
-        return self._avatar_url
+            if not all_users_response:
+                cls.logger.warning(cls.NO_USERS_FOUND_MSG)
+                return []
+
+            # Filter to only person users (not bots)
+            person_users = [
+                user
+                for user in all_users_response
+                if user.type == "person" and user.name
+            ]
+
+            if not person_users:
+                cls.logger.warning(cls.NO_PERSON_USERS_FOUND_MSG)
+                return []
+
+            # Use fuzzy matching to find all matches
+            matches = FuzzyMatcher.find_best_matches(
+                query=name,
+                items=person_users,
+                text_extractor=lambda user: user.name or "",
+                min_similarity=min_similarity,
+                limit=limit,
+            )
+
+            cls.logger.info(
+                "Found %d matching users for query '%s'", len(matches), name
+            )
+
+            # Convert to NotionUser instances
+            result_users = []
+            for match in matches:
+                try:
+                    user = cls._create_from_response(match.item, token)
+                    result_users.append(user)
+                except Exception as e:
+                    cls.logger.warning(
+                        "Failed to create user from match '%s': %s",
+                        match.matched_text,
+                        str(e),
+                    )
+                    continue
+
+            return result_users
+
+        except Exception as e:
+            cls.logger.error("Error searching users by name '%s': %s", name, str(e))
+            return []
 
     @property
     def email(self) -> Optional[str]:
-        """Get the email (readonly, only for person users with proper capabilities)."""
+        """
+        Get the user email (requires proper integration capabilities).
+        """
         return self._email
 
     @property
-    def workspace_name(self) -> Optional[str]:
-        """Get the workspace name (readonly, only for bot users)."""
-        return self._workspace_name
-
-    @property
-    def is_bot(self) -> bool:
-        """Check if this is a bot user (readonly)."""
-        return self._is_bot
+    def user_type(self) -> str:
+        """Get the user type."""
+        return "person"
 
     @property
     def is_person(self) -> bool:
-        """Check if this is a person user (readonly)."""
-        return not self._is_bot
+        """Check if this is a person user."""
+        return True
 
-    async def get_workspace_limits(self) -> Optional[Dict[str, Any]]:
-        """
-        Get workspace limits if this is a bot user.
-
-        Returns:
-            Optional[Dict[str, Any]]: Workspace limits or None
-        """
-        if not self._is_bot:
-            self.logger.warning("Workspace limits only available for bot users")
-            return None
-
-        return await self.client.get_workspace_limits()
-
-    async def refresh_user_data(self) -> bool:
-        """
-        Refresh user data from the Notion API.
-
-        Returns:
-            bool: True if refresh was successful
-        """
-        try:
-            if self._is_bot:
-                user_response = await self.client.get_bot_user()
-            else:
-                user_response = await self.client.get_user(self._user_id)
-
-            if user_response is None:
-                self.logger.error("Failed to refresh user data - API returned None")
-                return False
-
-            updated_user = self._create_from_response(user_response, self.client.token)
-
-            # Update instance variables
-            self._name = updated_user._name
-            self._user_type = updated_user._user_type
-            self._avatar_url = updated_user._avatar_url
-            self._email = updated_user._email
-            self._workspace_name = updated_user._workspace_name
-
-            self.logger.info("Successfully refreshed user data for: %s", self._user_id)
-            return True
-
-        except Exception as e:
-            self.logger.error("Error refreshing user data: %s", str(e))
-            return False
+    @property
+    def is_bot(self) -> bool:
+        """Check if this is a bot user."""
+        return False
 
     @classmethod
     def _create_from_response(
         cls, user_response: NotionUserResponse, token: Optional[str]
     ) -> NotionUser:
-        """
-        Create NotionUser instance from API response.
-        """
-        name = user_response.name
-        user_type = user_response.type
-        avatar_url = user_response.avatar_url
-
-        # Extract email for person users
-        email = None
-        if user_response.person and user_response.person.email:
-            email = user_response.person.email
-
-        # Extract workspace info for bot users
-        workspace_name = None
-        is_bot = user_type == "bot"
-
-        if user_response.bot and user_response.bot.workspace_name:
-            workspace_name = user_response.bot.workspace_name
+        """Create NotionUser instance from API response."""
+        email = user_response.person.email if user_response.person else None
 
         instance = cls(
             user_id=user_response.id,
-            name=name,
-            user_type=user_type,
-            avatar_url=avatar_url,
+            name=user_response.name,
+            avatar_url=user_response.avatar_url,
             email=email,
-            workspace_name=workspace_name,
-            is_bot=is_bot,
             token=token,
         )
 
         cls.logger.info(
-            "Created user manager: '%s' (ID: %s, Type: %s)",
-            name or "Unknown",
+            "Created person user: '%s' (ID: %s)",
+            user_response.name or "Unknown",
             user_response.id,
-            user_type or "unknown",
         )
 
         return instance

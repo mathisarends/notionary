@@ -10,5 +10,5 @@ __all__ = [
     "NotionWorkspace",
     "NotionUser",
     "NotionUserManager",
-    "NotionIntegrationBot"
+    "NotionIntegrationBot",
 ]

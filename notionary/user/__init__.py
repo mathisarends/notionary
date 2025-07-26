@@ -7,5 +7,5 @@ __all__ = [
     "NotionUser",
     "NotionUserManager",
     "NotionUserClient",
-    "NotionIntegrationBot"
+    "NotionIntegrationBot",
 ]

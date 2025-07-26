@@ -6,6 +6,7 @@ from dataclasses import dataclass
 T = TypeVar("T")
 
 
+# TODO: Make this functional
 @dataclass
 class MatchResult:
     """Result of a fuzzy match operation."""
