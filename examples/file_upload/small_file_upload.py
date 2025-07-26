@@ -25,7 +25,7 @@ async def main():
         # Check workspace limits first
         print("🔍 Checking workspace upload limits...")
         bot_user = await NotionBotUser.from_current_integration()
-        
+
         if bot_user and bot_user.max_file_upload_size:
             max_size_mb = bot_user.max_file_upload_size / (1024 * 1024)
             print(f"✅ Max upload size: {max_size_mb:.1f} MB")
@@ -34,7 +34,7 @@ async def main():
 
         file_size = TEST_FILE_PATH.stat().st_size
         file_size_mb = file_size / (1024 * 1024)
-        
+
         print("\n📄 File Information:")
         print(f"├── Name: {TEST_FILE_PATH.name}")
         print(f"├── Size: {file_size_mb:.2f} MB ({file_size:,} bytes)")
@@ -52,10 +52,10 @@ async def main():
             print(f"├── Filename: {upload_result.filename}")
             print("├── Upload Mode: Single-part (< 20MB)")
             print(f"└── Expires: {upload_result.expiry_time}")
-            
+
             print("\n💡 To use this file in a page:")
             print(f"   ![My File](notion://file_upload/{upload_result.id})")
-            
+
         else:
             print("❌ File upload failed")
 

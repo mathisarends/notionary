@@ -9,7 +9,7 @@ from notionary.models.notion_database_response import (
     NotionPageResponse,
     NotionQueryDatabaseResponse,
 )
-from notionary.page.notion_page import NotionPage
+from notionary import NotionPage
 
 from notionary.database.database_provider import NotionDatabaseProvider
 

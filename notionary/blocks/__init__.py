@@ -26,6 +26,7 @@ from .divider_element import DividerElement
 from .heading_element import HeadingElement
 from .mention_element import MentionElement
 from .qoute_element import QuoteElement
+from .document_element import DocumentElement
 
 from .registry.block_registry import BlockRegistry
 from .registry.block_registry_builder import BlockRegistryBuilder
@@ -55,6 +56,7 @@ __all__ = [
     "BookmarkElement",
     "MentionElement",
     "QuoteElement",
+    "DocumentElement",
     "BlockRegistry",
     "BlockRegistryBuilder",
     "NotionBlockClient",
