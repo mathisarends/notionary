@@ -1,6 +1,4 @@
-from typing import Dict, Any, List, Optional
-
-from notionary.blocks import BlockRegistry, BlockRegistryBuilder
+from typing import Dict, Any
 
 
 class NotionToMarkdownConverter:
@@ -9,15 +7,13 @@ class NotionToMarkdownConverter:
     TOGGLE_ELEMENT_TYPES = ["toggle", "toggleable_heading"]
     LIST_ITEM_TYPES = ["numbered_list_item", "bulleted_list_item"]
 
-    def __init__(self, block_registry: Optional[BlockRegistry] = None):
+    def __init__(self, block_registry):
         """
         Initialize the NotionToMarkdownConverter.
         """
-        self._block_registry = (
-            block_registry or BlockRegistryBuilder().create_registry()
-        )
+        self._block_registry = block_registry
 
-    def convert(self, blocks: List[Dict[str, Any]]) -> str:
+    def convert(self, blocks: list[Dict[str, Any]]) -> str:
         """
         Convert Notion blocks to Markdown text, handling nested structures.
         """
@@ -102,7 +98,7 @@ class NotionToMarkdownConverter:
         indent = " " * spaces
         return "\n".join([f"{indent}{line}" for line in text.split("\n")])
 
-    def extract_toggle_content(self, blocks: List[Dict[str, Any]]) -> str:
+    def extract_toggle_content(self, blocks: list[Dict[str, Any]]) -> str:
         """
         Extract only the content of toggles from blocks.
         """
@@ -117,7 +113,7 @@ class NotionToMarkdownConverter:
         return "\n".join(toggle_contents)
 
     def _extract_toggle_content_recursive(
-        self, block: Dict[str, Any], result: List[str]
+        self, block: Dict[str, Any], result: list[str]
     ) -> None:
         """
         Recursively extract toggle content from a block and its children.
@@ -137,7 +133,7 @@ class NotionToMarkdownConverter:
         return block.get("type") in self.TOGGLE_ELEMENT_TYPES and "children" in block
 
     def _add_toggle_header_to_result(
-        self, block: Dict[str, Any], result: List[str]
+        self, block: Dict[str, Any], result: list[str]
     ) -> None:
         """
         Add toggle header text to result list.
@@ -156,7 +152,7 @@ class NotionToMarkdownConverter:
             result.append(f"### {toggle_text}")
 
     def _add_toggle_children_to_result(
-        self, block: Dict[str, Any], result: List[str]
+        self, block: Dict[str, Any], result: list[str]
     ) -> None:
         """
         Add formatted toggle children to result list.
@@ -173,7 +169,7 @@ class NotionToMarkdownConverter:
             if child_text:
                 result.append(f"- {child_text}")
 
-    def _extract_text_from_rich_text(self, rich_text: List[Dict[str, Any]]) -> str:
+    def _extract_text_from_rich_text(self, rich_text: list[Dict[str, Any]]) -> str:
         """
         Extract plain text from Notion's rich text array.
         """

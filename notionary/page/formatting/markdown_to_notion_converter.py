@@ -1,18 +1,16 @@
 import re
 from typing import Dict, Any, List, Optional, Tuple
 
-from notionary.blocks import ColumnElement, BlockRegistry, BlockRegistryBuilder
+from notionary.blocks import ColumnElement, BlockRegistry
 from notionary.page.formatting.spacer_rules import SpacerRule, SpacerRuleEngine
 
 
 class MarkdownToNotionConverter:
     """Refactored converter mit expliziten Spacer-Regeln"""
 
-    def __init__(self, block_registry: Optional[BlockRegistry] = None):
+    def __init__(self, block_registry: BlockRegistry):
         """Initialize the converter with an optional custom block registry."""
-        self._block_registry = (
-            block_registry or BlockRegistryBuilder().create_registry()
-        )
+        self._block_registry = block_registry
 
         # Spacer-Engine mit konfigurierbaren Regeln
         self._spacer_engine = SpacerRuleEngine()
