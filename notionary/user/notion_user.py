@@ -6,7 +6,8 @@ from notionary.user.client import NotionUserClient
 from notionary.user.models import (
     NotionUserResponse,
 )
-from notionary.util import factory_only, FuzzyMatcher
+from notionary.util import factory_only
+from notionary.util.fuzzy import find_best_matches
 
 
 class NotionUser(BaseNotionUser):
@@ -61,6 +62,8 @@ class NotionUser(BaseNotionUser):
         """
         Create a NotionUser by finding a person user with fuzzy matching on the name.
         """
+        from notionary.util import find_best_match
+
         client = NotionUserClient(token=token)
 
         try:
@@ -71,7 +74,6 @@ class NotionUser(BaseNotionUser):
                 cls.logger.warning(cls.NO_USERS_FOUND_MSG)
                 raise ValueError(cls.NO_USERS_FOUND_MSG)
 
-            # Filter to only person users (not bots)
             person_users = [
                 user
                 for user in all_users_response
@@ -89,7 +91,7 @@ class NotionUser(BaseNotionUser):
             )
 
             # Use fuzzy matching to find best match
-            best_match = FuzzyMatcher.find_best_match(
+            best_match = find_best_match(
                 query=name,
                 items=person_users,
                 text_extractor=lambda user: user.name or "",
@@ -176,7 +178,7 @@ class NotionUser(BaseNotionUser):
                 return []
 
             # Use fuzzy matching to find all matches
-            matches = FuzzyMatcher.find_best_matches(
+            matches = find_best_matches(
                 query=name,
                 items=person_users,
                 text_extractor=lambda user: user.name or "",

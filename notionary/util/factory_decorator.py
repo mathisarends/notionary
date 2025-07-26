@@ -1,10 +1,11 @@
 import functools
 import inspect
+import warnings
 
 
 def factory_only(*allowed_factories):
     """
-    Decorator that ensures __init__ is only called from allowed factory methods.
+    Decorator that warns when __init__ is not called from allowed factory methods.
 
     Args:
         *allowed_factories: Names of allowed factory methods (e.g. 'from_database_id')
@@ -21,10 +22,13 @@ def factory_only(*allowed_factories):
                 caller_name = caller_frame.f_code.co_name
                 if caller_name in allowed_factories or caller_name.startswith("_"):
                     return init_method(self, *args, **kwargs)
-                else:
-                    raise RuntimeError(
-                        f"Direct instantiation not allowed! Use one of: {', '.join(allowed_factories)}"
-                    )
+
+                warnings.warn(
+                    f"Direct instantiation not recommended! Consider using one of: {', '.join(allowed_factories)}",
+                    UserWarning,
+                    stacklevel=3,
+                )
+                return init_method(self, *args, **kwargs)
             finally:
                 del frame
 

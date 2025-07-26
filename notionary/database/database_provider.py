@@ -4,8 +4,8 @@ from typing import Dict, Optional, TYPE_CHECKING
 from notionary.database.client import NotionDatabaseClient
 from notionary.database.exceptions import DatabaseNotFoundException
 from notionary.models.notion_database_response import NotionDatabaseResponse
-from notionary.util import LoggingMixin, FuzzyMatcher, format_uuid
-from notionary.util.singleton_metaclass import SingletonMetaClass
+from notionary.util import LoggingMixin, format_uuid, SingletonMetaClass
+from notionary.util.fuzzy import find_best_match
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
@@ -125,7 +125,7 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
                 self.logger.warning("No databases found for name: %s", database_name)
                 raise DatabaseNotFoundException(database_name)
 
-            best_match = FuzzyMatcher.find_best_match(
+            best_match = find_best_match(
                 query=database_name,
                 items=search_result.results,
                 text_extractor=lambda db: self._extract_title(db),

@@ -6,7 +6,8 @@ from notionary.user.models import (
     NotionBotUserResponse,
     WorkspaceLimits,
 )
-from notionary.util import factory_only, FuzzyMatcher
+from notionary.util import factory_only
+from notionary.util.fuzzy import find_best_match
 
 
 class NotionBotUser(BaseNotionUser):
@@ -18,7 +19,7 @@ class NotionBotUser(BaseNotionUser):
     NO_USERS_FOUND_MSG = "No users found in workspace"
     NO_BOT_USERS_FOUND_MSG = "No bot users found in workspace"
 
-    @factory_only("from_current_bot", "from_bot_response", "from_name")
+    @factory_only("from_current_integration", "from_bot_response", "from_name")
     def __init__(
         self,
         user_id: str,
@@ -91,7 +92,7 @@ class NotionBotUser(BaseNotionUser):
             )
 
             # Use fuzzy matching to find best match
-            best_match = FuzzyMatcher.find_best_match(
+            best_match = find_best_match(
                 query=name,
                 items=bot_users,
                 text_extractor=lambda user: user.name or "",

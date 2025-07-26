@@ -3,7 +3,7 @@ Minimal example for using NotionUser.from_name()
 """
 
 import asyncio
-from notionary.user.notion_user import NotionUser
+from notionary import NotionUser
 
 SEARCH_NAME = "YOUR_NOTION_USER_NAME"  # Replace with your own user name
 

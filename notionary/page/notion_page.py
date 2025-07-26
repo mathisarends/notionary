@@ -14,7 +14,8 @@ from notionary.page.content.page_content_writer import PageContentWriter
 from notionary.page.property_formatter import NotionPropertyFormatter
 from notionary.page.utils import extract_property_value
 
-from notionary.util import LoggingMixin, format_uuid, FuzzyMatcher, factory_only
+from notionary.util import LoggingMixin, format_uuid, factory_only
+from notionary.util.fuzzy import find_best_match
 
 
 if TYPE_CHECKING:
@@ -101,7 +102,7 @@ class NotionPage(LoggingMixin):
                 cls.logger.warning("No pages found for name: %s", page_name)
                 raise ValueError(f"No pages found for name: {page_name}")
 
-            best_match = FuzzyMatcher.find_best_match(
+            best_match = find_best_match(
                 query=page_name,
                 items=search_results,
                 text_extractor=lambda page: page.title,
