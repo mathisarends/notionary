@@ -41,7 +41,7 @@ class MarkdownBuilder:
         self.children: List[MarkdownNode] = []
 
     # ========== BASIC CONTENT ==========
-    
+
     def heading(self, text: str, level: int = 2) -> Self:
         """Add a heading block (H1-H3)."""
         self.children.append(HeadingMarkdownBlock(text=text, level=level))
@@ -71,7 +71,9 @@ class MarkdownBuilder:
 
     def todo(self, text: str, checked: bool = False, marker: str = "-") -> Self:
         """Add a todo block."""
-        self.children.append(TodoMarkdownBlock(text=text, checked=checked, marker=marker))
+        self.children.append(
+            TodoMarkdownBlock(text=text, checked=checked, marker=marker)
+        )
         return self
 
     # ========== MEDIA ==========
@@ -81,7 +83,9 @@ class MarkdownBuilder:
         self.children.append(AudioMarkdownBlock(url=url, caption=caption))
         return self
 
-    def image(self, url: str, caption: Optional[str] = None, alt: Optional[str] = None) -> Self:
+    def image(
+        self, url: str, caption: Optional[str] = None, alt: Optional[str] = None
+    ) -> Self:
         """Add an image block."""
         self.children.append(ImageMarkdownBlock(url=url, caption=caption, alt=alt))
         return self
@@ -98,9 +102,13 @@ class MarkdownBuilder:
 
     # ========== INTERACTIVE ==========
 
-    def bookmark(self, url: str, title: Optional[str] = None, description: Optional[str] = None) -> Self:
+    def bookmark(
+        self, url: str, title: Optional[str] = None, description: Optional[str] = None
+    ) -> Self:
         """Add a bookmark block."""
-        self.children.append(BookmarkMarkdownBlock(url=url, title=title, description=description))
+        self.children.append(
+            BookmarkMarkdownBlock(url=url, title=title, description=description)
+        )
         return self
 
     def embed(self, url: str, caption: Optional[str] = None) -> Self:
@@ -115,9 +123,13 @@ class MarkdownBuilder:
 
     # ========== CODE ==========
 
-    def code(self, code: str, language: Optional[str] = None, caption: Optional[str] = None) -> Self:
+    def code(
+        self, code: str, language: Optional[str] = None, caption: Optional[str] = None
+    ) -> Self:
         """Add a code block."""
-        self.children.append(CodeMarkdownBlock(code=code, language=language, caption=caption))
+        self.children.append(
+            CodeMarkdownBlock(code=code, language=language, caption=caption)
+        )
         return self
 
     # ========== ADVANCED ==========
@@ -127,9 +139,13 @@ class MarkdownBuilder:
         self.children.append(ToggleMarkdownBlock(title=title, content=content))
         return self
 
-    def toggleable_heading(self, text: str, level: int = 1, content: Optional[List[str]] = None) -> Self:
+    def toggleable_heading(
+        self, text: str, level: int = 1, content: Optional[List[str]] = None
+    ) -> Self:
         """Add a toggleable heading block."""
-        self.children.append(ToggleableHeadingMarkdownBlock(text=text, level=level, content=content))
+        self.children.append(
+            ToggleableHeadingMarkdownBlock(text=text, level=level, content=content)
+        )
         return self
 
     def columns(self, columns: List[List[str]]) -> Self:
@@ -199,95 +215,3 @@ class MarkdownBuilder:
         """Get a preview of the generated markdown."""
         content = self.build()
         return content[:max_length] + "..." if len(content) > max_length else content
-
-
-def demo_comprehensive_builder():
-    """Demonstrate all builder capabilities."""
-    
-    content = (
-        MarkdownBuilder()
-        
-        # Basic content
-        .heading("🚀 Complete Builder Demo", level=1)
-        .paragraph("This demonstrates **all** available MarkdownNode types in one fluent interface.")
-        .callout("This builder supports every type of Notion block!", "✨")
-        
-        # Lists and tasks
-        .heading("📋 Lists & Tasks", level=2)
-        .numbered_list_item("First numbered item", 1)
-        .numbered_list_item("Second numbered item", 2)
-        .todo("Complete documentation", checked=True)
-        .todo("Add more examples", checked=False)
-        
-        # Media content
-        .heading("🎬 Media Content", level=2)
-        .audio("https://example.com/audio.mp3", "Sample Audio File")
-        .image("https://example.com/image.jpg", "Sample Image", "Alt text")
-        .video("https://youtube.com/watch?v=xyz", "Demo Video")
-        .document("https://example.com/doc.pdf", "Important Document")
-        
-        # Interactive elements
-        .heading("🔗 Interactive Elements", level=2)
-        .bookmark("https://notion.so", "Notion", "The connected workspace")
-        .embed("https://codepen.io/example", "CodePen Example")
-        
-        # Code and technical
-        .heading("💻 Code Examples", level=2)
-        .code("print('Hello, World!')", "python", "Basic Python example")
-        .code("SELECT * FROM users;", "sql")
-        
-        # Advanced layouts
-        .heading("🏗️ Advanced Layouts", level=2)
-        .columns([
-            ["## Left Column", "Content for left side"],
-            ["## Right Column", "Content for right side"]
-        ])
-        .table(
-            headers=["Name", "Type", "Description"],
-            rows=[
-                ["Audio", "Media", "Audio content block"],
-                ["Video", "Media", "Video content block"],
-                ["Table", "Layout", "Structured data display"]
-            ]
-        )
-        
-        # Collapsible content
-        .heading("📁 Collapsible Content", level=2)
-        .toggle("Click to expand", ["Hidden content here", "More details..."])
-        .toggleable_heading("Collapsible Section", 3, ["Nested content", "Additional info"])
-        
-        # Mentions and references
-        .divider()
-        .quote("The fluent interface pattern makes complex content creation simple and readable.")
-        .paragraph("References: @date[2024-01-15] and @[page-id] mentions are supported.")
-        
-        .build()
-    )
-    
-    print("Generated comprehensive content:")
-    print("=" * 50)
-    print(content[:500] + "..." if len(content) > 500 else content)
-    print("=" * 50)
-    print(f"Total content length: {len(content)} characters")
-
-
-def demo_quick_content():
-    """Quick content creation example."""
-    
-    quick_content = (
-        MarkdownBuilder()
-        .heading("Quick Demo")
-        .paragraph("Just a quick example with **bold** text.")
-        .audio("https://example.com/quick.mp3", "Quick Audio")
-        .todo("Review this content")
-        .callout("Done in just a few lines!", "🎉")
-        .build()
-    )
-    
-    print("\nQuick content example:")
-    print(quick_content)
-
-
-if __name__ == "__main__":
-    demo_comprehensive_builder()
-    demo_quick_content()

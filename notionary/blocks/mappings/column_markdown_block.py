@@ -1,4 +1,11 @@
+from __future__ import annotations
+
+from pydantic import BaseModel
 from notionary.blocks.mappings.markdown_node import MarkdownNode
+
+
+class ColumnsMarkdownBlockParams(BaseModel):
+    columns: list[list[str]]
 
 
 class ColumnsMarkdownBlock(MarkdownNode):
@@ -19,6 +26,10 @@ class ColumnsMarkdownBlock(MarkdownNode):
         """
         self.columns = columns
 
+    @classmethod
+    def from_params(cls, params: ColumnsMarkdownBlockParams) -> ColumnsMarkdownBlock:
+        return cls(columns=params.columns)
+
     def to_markdown(self) -> str:
         """
         Converts the column layout to Notion-style Markdown.
@@ -29,7 +40,6 @@ class ColumnsMarkdownBlock(MarkdownNode):
         lines = ["::: columns"]
         for column_content in self.columns:
             lines.append("::: column")
-            # Add each line of the column (joined by \n)
             lines.extend(column_content)
             lines.append(":::")
         lines.append(":::")

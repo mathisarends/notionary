@@ -1,5 +1,13 @@
+from __future__ import annotations
+
 from typing import Optional
+from pydantic import BaseModel
 from notionary.blocks.mappings.markdown_node import MarkdownNode
+
+
+class CalloutMarkdownBlockParams(BaseModel):
+    text: str
+    emoji: Optional[str] = None
 
 
 class CalloutMarkdownBlock(MarkdownNode):
@@ -12,10 +20,12 @@ class CalloutMarkdownBlock(MarkdownNode):
         self.text = text
         self.emoji = emoji or "💡"  # Default emoji
 
+    @classmethod
+    def from_params(cls, params: CalloutMarkdownBlockParams) -> CalloutMarkdownBlock:
+        return cls(text=params.text, emoji=params.emoji)
+
     def to_markdown(self) -> str:
-        # Wenn Emoji nicht gesetzt oder Standard: Ohne Emoji explizit
         if self.emoji and self.emoji != "💡":
             return f"!> [{self.emoji}] {self.text}"
         else:
-            # Standard-Callout, Emoji kann weggelassen oder gesetzt werden
             return f"!> [💡] {self.text}"

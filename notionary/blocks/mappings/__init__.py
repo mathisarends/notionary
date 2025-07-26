@@ -41,5 +41,5 @@ __all__ = [
     "ToggleableHeadingMarkdownBlock",
     "VideoMarkdownBlock",
     "CodeMarkdownBlock",
-    "MarkdownBuilder"
+    "MarkdownBuilder",
 ]

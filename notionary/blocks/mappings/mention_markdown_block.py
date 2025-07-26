@@ -1,4 +1,12 @@
+from __future__ import annotations
+from typing import Literal
+from pydantic import BaseModel
 from notionary.blocks.mappings.markdown_node import MarkdownNode
+
+
+class MentionMarkdownBlockParams(BaseModel):
+    mention_type: Literal["page", "database", "date"]
+    value: str
 
 
 class MentionMarkdownBlock(MarkdownNode):
@@ -14,6 +22,10 @@ class MentionMarkdownBlock(MarkdownNode):
             raise ValueError(f"mention_type must be one of {allowed}")
         self.mention_type = mention_type
         self.value = value
+
+    @classmethod
+    def from_params(cls, params: MentionMarkdownBlockParams) -> MentionMarkdownBlock:
+        return cls(mention_type=params.mention_type, value=params.value)
 
     def to_markdown(self) -> str:
         if self.mention_type == "page":

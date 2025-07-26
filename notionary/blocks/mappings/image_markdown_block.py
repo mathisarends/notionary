@@ -1,5 +1,12 @@
 from typing import Optional
+from pydantic import BaseModel
 from notionary.blocks.mappings.markdown_node import MarkdownNode
+
+
+class ImageMarkdownBlockParams(BaseModel):
+    url: str
+    caption: Optional[str] = None
+    alt: Optional[str] = None
 
 
 class ImageMarkdownBlock(MarkdownNode):
@@ -15,6 +22,10 @@ class ImageMarkdownBlock(MarkdownNode):
         self.url = url
         self.caption = caption or ""
         self.alt = alt
+
+    @classmethod
+    def from_params(cls, params: ImageMarkdownBlockParams) -> "ImageMarkdownBlock":
+        return cls(url=params.url, caption=params.caption, alt=params.alt)
 
     def to_markdown(self) -> str:
         if self.alt:

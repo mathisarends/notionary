@@ -1,5 +1,14 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import Optional, List
+from pydantic import BaseModel
 from notionary.blocks.mappings.markdown_node import MarkdownNode
+
+
+class ToggleableHeadingMarkdownBlockParams(BaseModel):
+    text: str
+    level: int = 1
+    content: Optional[List[str]] = None
 
 
 class ToggleableHeadingMarkdownBlock(MarkdownNode):
@@ -19,6 +28,12 @@ class ToggleableHeadingMarkdownBlock(MarkdownNode):
         self.text = text
         self.level = level
         self.content = content or []
+
+    @classmethod
+    def from_params(
+        cls, params: ToggleableHeadingMarkdownBlockParams
+    ) -> ToggleableHeadingMarkdownBlock:
+        return cls(text=params.text, level=params.level, content=params.content)
 
     def to_markdown(self) -> str:
         prefix = "+" + ("#" * self.level)

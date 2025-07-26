@@ -1,4 +1,13 @@
+from __future__ import annotations
+
+from typing import List
+from pydantic import BaseModel
 from notionary.blocks.mappings.markdown_node import MarkdownNode
+
+
+class TableMarkdownBlockParams(BaseModel):
+    headers: List[str]
+    rows: List[List[str]]
 
 
 class TableMarkdownBlock(MarkdownNode):
@@ -16,6 +25,10 @@ class TableMarkdownBlock(MarkdownNode):
             raise ValueError("headers must be a list and rows must be a list of lists")
         self.headers = headers
         self.rows = rows
+
+    @classmethod
+    def from_params(cls, params: TableMarkdownBlockParams) -> TableMarkdownBlock:
+        return cls(headers=params.headers, rows=params.rows)
 
     def to_markdown(self) -> str:
         col_count = len(self.headers)

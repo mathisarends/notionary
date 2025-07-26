@@ -1,6 +1,14 @@
+from __future__ import annotations
 from typing import Optional
+from pydantic import BaseModel
 
 from notionary.blocks.mappings.markdown_node import MarkdownNode
+
+
+class BookmarkMarkdownBlockParams(BaseModel):
+    url: str
+    title: Optional[str] = None
+    description: Optional[str] = None
 
 
 class BookmarkMarkdownBlock(MarkdownNode):
@@ -14,6 +22,10 @@ class BookmarkMarkdownBlock(MarkdownNode):
         self.url = url
         self.title = title
         self.description = description
+
+    @classmethod
+    def from_params(cls, params: BookmarkMarkdownBlockParams) -> BookmarkMarkdownBlock:
+        return cls(url=params.url, title=params.title, description=params.description)
 
     def to_markdown(self) -> str:
         """

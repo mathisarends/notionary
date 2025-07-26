@@ -1,5 +1,12 @@
-from typing import Union
+from __future__ import annotations
+
+from typing import Union, List
+from pydantic import BaseModel
 from notionary.blocks.mappings.markdown_node import MarkdownNode
+
+
+class QuoteMarkdownBlockParams(BaseModel):
+    text: Union[str, List[str]]
 
 
 class QuoteMarkdownBlock(MarkdownNode):
@@ -18,6 +25,10 @@ class QuoteMarkdownBlock(MarkdownNode):
             self.lines = str(text).splitlines()  # Support für \n
         # Entferne führende/trailing spaces in jeder Zeile
         self.lines = [line.strip() for line in self.lines]
+
+    @classmethod
+    def from_params(cls, params: QuoteMarkdownBlockParams) -> QuoteMarkdownBlock:
+        return cls(text=params.text)
 
     def to_markdown(self) -> str:
         return "\n".join([f"> {line}" if line else ">" for line in self.lines])
