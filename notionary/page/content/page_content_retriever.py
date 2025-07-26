@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from notionary.blocks.registry.block_registry import BlockRegistry
 
@@ -27,7 +27,7 @@ class PageContentRetriever(LoggingMixin):
 
     async def _get_page_blocks_with_children(
         self, parent_id: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[Dict[str, Any]]:
         blocks = (
             await self.client.get_page_blocks(page_id=self.page_id)
             if parent_id is None

@@ -21,6 +21,7 @@ from notionary.blocks.mappings.elements import (
     EmbedMarkdownBlock,
     MentionMarkdownBlock,
     NumberedListMarkdownBlock,
+    BulletedListMarkdownBlock,
     QuoteMarkdownBlock,
     TableMarkdownBlock,
     TodoMarkdownBlock,
@@ -64,9 +65,24 @@ class MarkdownBuilder:
 
     # ========== LISTS ==========
 
-    def numbered_list_item(self, text: str, number: int = 1) -> Self:
-        """Add a numbered list item."""
-        self.children.append(NumberedListMarkdownBlock(text=text, number=number))
+    def numbered_list(self, items: list[str]) -> Self:
+        """Add a numbered list with multiple items."""
+        self.children.append(NumberedListMarkdownBlock(texts=items))
+        return self
+
+    def numbered_list_item(self, text: str) -> Self:
+        """Add a single numbered list item (creates a list with one item)."""
+        self.children.append(NumberedListMarkdownBlock(texts=[text]))
+        return self
+
+    def bulleted_list(self, items: list[str]) -> Self:
+        """Add a bulleted list with multiple items."""
+        self.children.append(BulletedListMarkdownBlock(texts=items))
+        return self
+
+    def bulleted_list_item(self, text: str) -> Self:
+        """Add a single bulleted list item (creates a list with one item)."""
+        self.children.append(BulletedListMarkdownBlock(texts=[text]))
         return self
 
     def todo(self, text: str, checked: bool = False, marker: str = "-") -> Self:
@@ -215,3 +231,15 @@ class MarkdownBuilder:
         """Get a preview of the generated markdown."""
         content = self.build()
         return content[:max_length] + "..." if len(content) > max_length else content
+
+    def add_numbered_items(self, *items: str) -> Self:
+        """Add multiple numbered list items as separate single-item lists."""
+        for item in items:
+            self.numbered_list_item(item)
+        return self
+
+    def add_bulleted_items(self, *items: str) -> Self:
+        """Add multiple bulleted list items as separate single-item lists."""
+        for item in items:
+            self.bulleted_list_item(item)
+        return self

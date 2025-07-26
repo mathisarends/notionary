@@ -1,9 +1,9 @@
 from __future__ import annotations
 import asyncio
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, Optional, TYPE_CHECKING
 import random
 
-from notionary.blocks import BlockRegistry, BlockRegistryBuilder
+from notionary.blocks import BlockRegistry
 from notionary.models.notion_database_response import NotionPageResponse
 from notionary.models.notion_page_response import DatabaseParent
 from notionary.page.client import NotionPageClient
@@ -51,7 +51,7 @@ class NotionPage(LoggingMixin):
         self._client = NotionPageClient(token=token)
         self._page_data = None
 
-        self._block_element_registry = BlockRegistryBuilder.create_registry()
+        self._block_element_registry = BlockRegistry.create_registry()
 
         self._page_content_writer = PageContentWriter(
             page_id=self._page_id,
@@ -94,8 +94,8 @@ class NotionPage(LoggingMixin):
         workspace = NotionWorkspace()
 
         try:
-            search_results: List[NotionPage] = await workspace.search_pages(
-                page_name, limit=10
+            search_results: list[NotionPage] = await workspace.search_pages(
+                page_name, limit=5
             )
 
             if not search_results:
@@ -352,7 +352,7 @@ class NotionPage(LoggingMixin):
 
     async def _get_relation_property_values_by_name(
         self, property_name: str
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Retrieve the titles of all related pages for a relation property.
         """
@@ -365,7 +365,7 @@ class NotionPage(LoggingMixin):
         ]
         return [page.title for page in notion_pages if page]
 
-    async def get_options_for_property_by_name(self, property_name: str) -> List[str]:
+    async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
         """
         Get the available options for a property (select, multi_select, status, relation).
         """
@@ -425,8 +425,8 @@ class NotionPage(LoggingMixin):
             return None
 
     async def set_relation_property_values_by_name(
-        self, property_name: str, page_titles: List[str]
-    ) -> List[str]:
+        self, property_name: str, page_titles: list[str]
+    ) -> list[str]:
         """
         Add one or more relations to a relation property.
         """

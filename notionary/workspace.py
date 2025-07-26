@@ -28,7 +28,6 @@ class NotionWorkspace(LoggingMixin):
         Search for pages globally across Notion workspace.
         """
         response = await self.page_client.search_pages(query, limit=limit)
-        # Parallelisiere die Erzeugung der NotionPage-Instanzen
         return await asyncio.gather(
             *(NotionPage.from_page_id(page.id) for page in response.results)
         )

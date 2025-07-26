@@ -35,6 +35,21 @@ class BlockRegistry:
 
         self.telemetry = ProductTelemetry()
 
+    @classmethod
+    def create_registry(cls) -> BlockRegistry:
+        """
+        Create a registry with all standard elements in recommended order.
+
+        This uses the BlockRegistryBuilder internally to construct a complete
+        registry with all available block types.
+
+        Returns:
+            BlockRegistry: A fully configured registry with all standard elements
+        """
+        from notionary.blocks import BlockRegistryBuilder
+
+        return BlockRegistryBuilder.create_registry()
+
     def register(self, element_class: Type[NotionBlockElement]) -> bool:
         """
         Register an element class.
