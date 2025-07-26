@@ -205,7 +205,6 @@ class NotionPage(LoggingMixin):
 
         except Exception as e:
             self.logger.error("Error setting page title: %s", str(e))
-            return None
 
     async def append_markdown(self, markdown: str, append_divider=False) -> bool:
         """

@@ -3,7 +3,7 @@ from typing import Dict, Any, Optional
 from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
 
-from notionary.blocks.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.elements.text_inline_formatter import TextInlineFormatter
 
 
 class BulletedListElement(NotionBlockElement):

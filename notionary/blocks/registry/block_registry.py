@@ -1,11 +1,11 @@
 from __future__ import annotations
 from typing import Dict, Any, Optional, List, Set, Type
 
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks import NotionBlockElement
 from notionary.page.markdown_syntax_prompt_generator import (
     MarkdownSyntaxPromptGenerator,
 )
-from notionary.blocks.text_inline_formatter import TextInlineFormatter
+from notionary.blocks import TextInlineFormatter
 
 from notionary.blocks import NotionBlockElement
 from notionary.telemetry import (

@@ -17,6 +17,8 @@ from .todo_markdown_block import TodoMarkdownBlock
 from .toggle_markdown_block import ToggleMarkdownBlock
 from .toggleable_heading_markdown_block import ToggleableHeadingMarkdownBlock
 from .video_markdown_block import VideoMarkdownBlock
+from .code_markdown_block import CodeMarkdownBlock
+from .markdown_builder import MarkdownBuilder
 
 __all__ = [
     "AudioMarkdownBlock",
@@ -38,4 +40,6 @@ __all__ = [
     "ToggleMarkdownBlock",
     "ToggleableHeadingMarkdownBlock",
     "VideoMarkdownBlock",
+    "CodeMarkdownBlock",
+    "MarkdownBuilder"
 ]

@@ -37,13 +37,6 @@ class PageContentWriter(LoggingMixin):
         """
         Append markdown text to a Notion page, automatically handling content length limits.
         """
-        if append_divider and not self.block_registry.contains(DividerElement):
-            self.logger.warning(
-                "DividerElement not registered. Appending divider skipped."
-            )
-            append_divider = False
-
-        # Append divider in markdown format as it will be converted to a Notion divider block
         if append_divider:
             markdown_text = markdown_text + "---\n"
 

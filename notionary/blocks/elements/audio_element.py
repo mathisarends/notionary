@@ -2,8 +2,8 @@ from __future__ import annotations
 from typing import Dict, Any, Optional, List
 import re
 
-from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks import (
+    NotionBlockElement,
     ElementPromptBuilder,
     ElementPromptContent,
 )

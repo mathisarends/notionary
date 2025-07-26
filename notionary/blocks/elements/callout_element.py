@@ -1,9 +1,12 @@
 import re
 from typing import Dict, Any, Optional
 
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.text_inline_formatter import TextInlineFormatter
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.elements.text_inline_formatter import TextInlineFormatter
+from notionary.blocks import (
+    NotionBlockElement,
+    ElementPromptContent,
+    ElementPromptBuilder,
+)
 
 
 class CalloutElement(NotionBlockElement):
