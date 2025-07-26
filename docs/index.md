@@ -21,7 +21,7 @@ await page.replace_content("""
 - **Object-Oriented Design** - Clean, intuitive classes for Pages, Databases, and Workspaces
 - **Rich Markdown Support** - Transform extended Markdown (callouts, toggles, columns) into Notion blocks
 - **Smart Discovery** - Find pages and databases by name with fuzzy matching
-- **Async-First Architecture** - Built for modern Python with full async/await support
+- **Async-First Architecture** - Built for modern Python with full async/await supportw
 - **AI-Ready Integration** - Generate LLM system prompts for AI content creation
 
 <div align="center">
