@@ -17,11 +17,13 @@ class AudioMarkdownNode(MarkdownNode):
 
     def __init__(self, url: str, caption: Optional[str] = None):
         self.url = url
-        self.caption = caption or ""
+        self.caption = caption
 
     @classmethod
     def from_params(cls, params: AudioMarkdownBlockParams) -> AudioMarkdownNode:
         return cls(url=params.url, caption=params.caption)
 
     def to_markdown(self) -> str:
-        return f"$[{self.caption}]({self.url})"
+        if self.caption:
+            return f'[audio]({self.url} "{self.caption}")'
+        return f"[audio]({self.url})"

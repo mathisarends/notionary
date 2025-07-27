@@ -2,7 +2,6 @@ from notionary.blocks import ColumnElement, BlockRegistry
 from notionary.page.formatting.line_processor import LineProcessor
 
 
-# Add Spacer Rules to blocks directly
 class MarkdownToNotionConverter:
     """Clean converter focused on block identification and conversion"""
 
@@ -24,7 +23,14 @@ class MarkdownToNotionConverter:
         blocks_with_positions = self._identify_all_blocks(markdown_text)
         blocks_with_positions.sort(key=lambda x: x[0])  # Sort by position
 
-        return [block for _, _, block in blocks_with_positions]
+        # Flatten blocks (some elements return lists of blocks)
+        result = []
+        for _, _, block in blocks_with_positions:
+            if isinstance(block, list):
+                result.extend(block)
+            else:
+                result.append(block)
+        return result
 
     def _identify_all_blocks(
         self, markdown_text: str
@@ -81,14 +87,14 @@ class MarkdownToNotionConverter:
 
             for start_pos, end_pos, block in matches:
                 if not self._overlaps_with_ranges(start_pos, end_pos, excluded_ranges):
-                    # Füge das multiline-Element hinzu
-                    blocks.append((start_pos, end_pos, block))
+                    # Handle multiple blocks from single element
+                    element_blocks = self._normalize_to_list(block)
 
-                    # Füge leeren Paragraph direkt nach dem multiline-Element hinzu
-                    empty_paragraph = self._create_empty_paragraph()
-                    # Position direkt nach dem multiline-Block
-                    spacer_pos = end_pos + 1
-                    blocks.append((spacer_pos, spacer_pos, empty_paragraph))
+                    current_pos = start_pos
+                    for i, single_block in enumerate(element_blocks):
+                        blocks.append((current_pos, end_pos, single_block))
+                        # Increment position for subsequent blocks
+                        current_pos = end_pos + i + 1
 
         return blocks
 
@@ -140,6 +146,8 @@ class MarkdownToNotionConverter:
         return any(pos in excluded_ranges for pos in range(start_pos, end_pos + 1))
 
     @staticmethod
-    def _create_empty_paragraph() -> dict[str, any]:
-        """Create an empty paragraph block"""
-        return {"type": "paragraph", "paragraph": {"rich_text": []}}
+    def _normalize_to_list(result) -> list[dict[str, any]]:
+        """Normalize Union[list[dict], dict] to list[dict]"""
+        if result is None:
+            return []
+        return result if isinstance(result, list) else [result]

@@ -1,34 +1,30 @@
 from __future__ import annotations
 
-from typing import Union, List
+from typing import Optional
 from pydantic import BaseModel
 from notionary.blocks.markdown_node import MarkdownNode
 
 
 class QuoteMarkdownBlockParams(BaseModel):
-    text: Union[str, List[str]]
+    text: str
+    author: Optional[str] = None
 
 
 class QuoteMarkdownNode(MarkdownNode):
     """
-    Programmatic interface for creating Markdown blockquotes.
-    Example:
-        > This is a blockquote
-        > that can span multiple lines
+    Programmatic interface for creating Notion-style quote blocks.
+    Example: [quote](This is a quote "Author Name")
     """
 
-    def __init__(self, text: Union[str, list[str]]):
-        # Unterstützt String oder Liste von Strings (für mehrzeilige Quotes)
-        if isinstance(text, list):
-            self.lines = text
-        else:
-            self.lines = str(text).splitlines()  # Support für \n
-        # Entferne führende/trailing spaces in jeder Zeile
-        self.lines = [line.strip() for line in self.lines]
+    def __init__(self, text: str, author: Optional[str] = None):
+        self.text = text
+        self.author = author
 
     @classmethod
     def from_params(cls, params: QuoteMarkdownBlockParams) -> QuoteMarkdownNode:
-        return cls(text=params.text)
+        return cls(text=params.text, author=params.author)
 
     def to_markdown(self) -> str:
-        return "\n".join([f"> {line}" if line else ">" for line in self.lines])
+        if self.author:
+            return f'[quote]({self.text} "{self.author}")'
+        return f"[quote]({self.text})"

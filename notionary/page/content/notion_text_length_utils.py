@@ -11,21 +11,21 @@ should be ≤ 2000, instead was 2162."
 
 import re
 import logging
-from typing import Any, Dict
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 def fix_blocks_content_length(
-    blocks: list[Dict[str, Any]], max_text_length: int = 1900
-) -> list[Dict[str, Any]]:
+    blocks: list[dict[str, Any]], max_text_length: int = 1900
+) -> list[dict[str, Any]]:
     """Check each block and ensure text content doesn't exceed Notion's limit."""
     return [_fix_single_block_content(block, max_text_length) for block in blocks]
 
 
 def _fix_single_block_content(
-    block: Dict[str, Any], max_text_length: int
-) -> Dict[str, Any]:
+    block: dict[str, Any], max_text_length: int
+) -> dict[str, Any]:
     """Fix content length in a single block and its children recursively."""
     block_copy = block.copy()
 
@@ -50,9 +50,9 @@ def _fix_single_block_content(
 
 
 def _fix_rich_text_content(
-    block_copy: Dict[str, Any],
+    block_copy: dict[str, Any],
     block_type: str,
-    content: Dict[str, Any],
+    content: dict[str, Any],
     max_text_length: int,
 ) -> None:
     """Fix rich text content that exceeds the length limit."""

@@ -13,12 +13,12 @@ class CalloutMarkdownBlockParams(BaseModel):
 class CalloutMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating Notion-style callout Markdown blocks.
-    Example: !> [💡] This is a callout
+    Example: [callout](This is important "⚠️")
     """
 
     def __init__(self, text: str, emoji: Optional[str] = None):
         self.text = text
-        self.emoji = emoji or "💡"  # Default emoji
+        self.emoji = emoji
 
     @classmethod
     def from_params(cls, params: CalloutMarkdownBlockParams) -> CalloutMarkdownNode:
@@ -26,6 +26,6 @@ class CalloutMarkdownNode(MarkdownNode):
 
     def to_markdown(self) -> str:
         if self.emoji and self.emoji != "💡":
-            return f"!> [{self.emoji}] {self.text}"
+            return f'[callout]({self.text} "{self.emoji}")'
         else:
-            return f"!> [💡] {self.text}"
+            return f"[callout]({self.text})"

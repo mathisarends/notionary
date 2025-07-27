@@ -31,23 +31,22 @@ async def main():
 
         embed_content = """
         ## 🌐 YouTube Gallery
-        ::: columns
-        ::: column
-        <embed:Never gonna give you up>(https://www.youtube.com/watch?v=dQw4w9WgXcQ)
-        
+
+        [embed](https://www.youtube.com/watch?v=dQw4w9WgXcQ "Never gonna give you up")
+
         *Rick Astley's classic 'Rickroll' meme. If you click, you know what happens!*
-        :::
-        ::: column
-        <embed:Double Rainbow>(https://www.youtube.com/watch?v=OQSNhk5ICTI)
-        
+
+        ---
+
+        [embed](https://www.youtube.com/watch?v=OQSNhk5ICTI "Double Rainbow")
+
         *A viral video of pure joy and wonder at seeing a double rainbow. "What does it mean?"*
-        :::
-        ::: column
-        <embed:Python in 100 seconds>(https://www.youtube.com/watch?v=x7X9w_GIm1s&ab_channel=Fireship)
-        
-        *A lightning-fast Python tutorial by Fireship. Learn the basics, syntax, and core concepts of Python in just 100 seconds!* 
-        :::
-        :::
+
+        ---
+
+        [embed](https://www.youtube.com/watch?v=x7X9w_GIm1s&ab_channel=Fireship "Python in 100 seconds")
+
+        *A lightning-fast Python tutorial by Fireship. Learn the basics, syntax, and core concepts of Python in just 100 seconds!*
         """
 
         # Add the markdown content to the page

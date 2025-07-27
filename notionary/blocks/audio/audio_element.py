@@ -15,8 +15,8 @@ class AudioElement(NotionBlockElement):
     Handles conversion between Markdown audio embeds and Notion audio blocks.
 
     Markdown audio syntax:
-    - ![audio](https://example.com/audio.mp3) - Simple audio embed
-    - ![audio](https://example.com/audio.mp3 "Caption text") - Audio with caption
+    - [audio](https://example.com/audio.mp3) - Simple audio embed
+    - [audio](https://example.com/audio.mp3 "Caption text") - Audio with caption
 
     Where:
     - URL is the required audio file URL
@@ -27,7 +27,7 @@ class AudioElement(NotionBlockElement):
     URL_PATTERN = r"(https?://[^\s\"]+)"
     CAPTION_PATTERN = r'(?:\s+"([^"]+)")?'
 
-    PATTERN = re.compile(r"^!\[audio\]\(" + URL_PATTERN + CAPTION_PATTERN + r"\)$")
+    PATTERN = re.compile(r"^\[audio\]\(" + URL_PATTERN + CAPTION_PATTERN + r"\)$")
 
     # Supported audio extensions
     SUPPORTED_EXTENSIONS = {".mp3", ".wav", ".ogg", ".oga", ".m4a"}
@@ -35,7 +35,7 @@ class AudioElement(NotionBlockElement):
     @classmethod
     def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown audio embed."""
-        return text.strip().startswith("![audio]") and bool(
+        return text.strip().startswith("[audio]") and bool(
             cls.PATTERN.match(text.strip())
         )
 

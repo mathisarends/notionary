@@ -32,12 +32,15 @@ from .quote import QuoteElement, QuoteMarkdownNode
 from .document import DocumentElement, DocumentMarkdownNode
 from .shared.text_inline_formatter import TextInlineFormatter
 
+from .markdown_node import MarkdownNode
+
 from .registry.block_registry import BlockRegistry
 from .registry.block_registry_builder import BlockRegistryBuilder
 
 from .shared.block_client import NotionBlockClient
 
 __all__ = [
+    "MarkdownNode",
     "ElementPromptContent",
     "ElementPromptBuilder",
     "NotionBlockElement",

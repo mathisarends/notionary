@@ -13,12 +13,12 @@ class EmbedMarkdownBlockParams(BaseModel):
 class EmbedMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating Notion-style Markdown embed blocks.
-    Example: <embed:Caption>(https://example.com)
+    Example: [embed](https://example.com "Optional caption")
     """
 
     def __init__(self, url: str, caption: Optional[str] = None):
         self.url = url
-        self.caption = caption or ""
+        self.caption = caption
 
     @classmethod
     def from_params(cls, params: EmbedMarkdownBlockParams) -> EmbedMarkdownNode:
@@ -26,5 +26,5 @@ class EmbedMarkdownNode(MarkdownNode):
 
     def to_markdown(self) -> str:
         if self.caption:
-            return f"<embed:{self.caption}>({self.url})"
-        return f"<embed>({self.url})"
+            return f'[embed]({self.url} "{self.caption}")'
+        return f"[embed]({self.url})"

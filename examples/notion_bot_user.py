@@ -13,15 +13,15 @@ async def example_from_current_integration():
     try:
         bot_user = await NotionBotUser.from_current_integration()
 
-        if bot_user:
-            print("✅ Found bot user:")
-            print(f"   Name: {bot_user.name}")
-            print(f"   ID: {bot_user.id}")
-            print(f"   Workspace: {bot_user.workspace_name}")
-            print(f"   Owner Type: {bot_user.owner_type}")
-            print(
-                f"   Max Upload: {bot_user.max_file_upload_size / (1024*1024):.2f} MB"
-            )
+        if not bot_user:
+            raise ValueError("No bot user found in the current integration")
+
+        print("✅ Found bot user:")
+        print(f"   Name: {bot_user.name}")
+        print(f"   ID: {bot_user.id}")
+        print(f"   Workspace: {bot_user.workspace_name}")
+        print(f"   Owner Type: {bot_user.owner_type}")
+        print(f"   Max Upload: {bot_user.max_file_upload_size / (1024*1024):.2f} MB")
 
     except ValueError as e:
         print(f"❌ No suitable bot user found: {e}")
