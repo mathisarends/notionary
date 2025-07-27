@@ -26,7 +26,7 @@ def test_match_markdown_invalid_formats():
 def test_match_notion():
     """Test recognition of Notion column_list blocks."""
     assert ColumnElement.match_notion({"type": "column_list"})
-    
+
     assert not ColumnElement.match_notion({"type": "paragraph"})
     assert not ColumnElement.match_notion({"type": "column"})
     assert not ColumnElement.match_notion({"type": "callout"})
@@ -36,7 +36,7 @@ def test_markdown_to_notion_valid():
     """Test creation of column_list block from valid Markdown."""
     result = ColumnElement.markdown_to_notion("::: columns")
     expected = [{"type": "column_list", "column_list": {"children": []}}]
-    
+
     assert result == expected
 
 
@@ -58,7 +58,7 @@ def test_notion_to_markdown():
             ]
         },
     }
-    
+
     result = ColumnElement.notion_to_markdown(notion_block)
     expected = (
         "::: columns\n"
@@ -70,17 +70,14 @@ def test_notion_to_markdown():
         ":::\n"
         ":::"
     )
-    
+
     assert result == expected
 
 
 def test_notion_to_markdown_empty_columns():
     """Test conversion of empty column_list."""
-    notion_block = {
-        "type": "column_list",
-        "column_list": {"children": []}
-    }
-    
+    notion_block = {"type": "column_list", "column_list": {"children": []}}
+
     result = ColumnElement.notion_to_markdown(notion_block)
     assert "::: columns" in result
     assert ":::" in result
@@ -100,10 +97,10 @@ def test_is_multiline():
 @pytest.fixture
 def mock_converter():
     """Fixture to mock the MarkdownToNotionConverter."""
-    with patch("notionary.blocks.column.column_element.ColumnElement._converter_callback") as mock:
-        mock.return_value = [
-            {"type": "paragraph", "paragraph": {"rich_text": []}}
-        ]
+    with patch(
+        "notionary.blocks.column.column_element.ColumnElement._converter_callback"
+    ) as mock:
+        mock.return_value = [{"type": "paragraph", "paragraph": {"rich_text": []}}]
         yield mock
 
 
@@ -119,20 +116,20 @@ def test_find_matches_basic(mock_converter):
         ":::\n"
         ":::"
     )
-    
+
     # Mock the converter callback
     def mock_convert(text):
         return [{"type": "paragraph", "paragraph": {"rich_text": []}}]
-    
+
     matches = ColumnElement.find_matches(markdown, converter_callback=mock_convert)
-    
+
     assert len(matches) == 1
     start_pos, end_pos, block = matches[0]
-    
+
     assert isinstance(start_pos, int)
     assert isinstance(end_pos, int)
     assert start_pos < end_pos
-    
+
     assert block["type"] == "column_list"
     assert "children" in block["column_list"]
     assert len(block["column_list"]["children"]) == 2
@@ -143,7 +140,7 @@ def test_find_matches_basic(mock_converter):
 def test_find_matches_no_columns():
     """Test find_matches with text containing no columns."""
     markdown = "This is just regular text with no columns."
-    
+
     matches = ColumnElement.find_matches(markdown)
     assert matches == []
 
@@ -163,14 +160,14 @@ def test_find_matches_multiple_column_blocks():
         ":::\n"
         ":::"
     )
-    
+
     def mock_convert(text):
         return [{"type": "paragraph", "paragraph": {"rich_text": []}}]
-    
+
     matches = ColumnElement.find_matches(markdown, converter_callback=mock_convert)
-    
+
     assert len(matches) == 2
-    
+
     # Check that both matches are column_list blocks
     for start_pos, end_pos, block in matches:
         assert block["type"] == "column_list"
@@ -178,28 +175,34 @@ def test_find_matches_multiple_column_blocks():
 
 
 # Parametrized tests for various input patterns
-@pytest.mark.parametrize("markdown,should_match", [
-    ("::: columns", True),
-    ("  ::: columns  ", True),
-    ("::: column", False),
-    ("::: something", False),
-    (":::", False),
-    ("columns", False),
-    ("", False),
-])
+@pytest.mark.parametrize(
+    "markdown,should_match",
+    [
+        ("::: columns", True),
+        ("  ::: columns  ", True),
+        ("::: column", False),
+        ("::: something", False),
+        (":::", False),
+        ("columns", False),
+        ("", False),
+    ],
+)
 def test_markdown_patterns(markdown, should_match):
     """Test recognition of various Markdown patterns."""
     result = ColumnElement.match_markdown(markdown)
     assert result == should_match
 
 
-@pytest.mark.parametrize("block_type,should_match", [
-    ("column_list", True),
-    ("column", False),
-    ("paragraph", False),
-    ("callout", False),
-    ("heading_1", False),
-])
+@pytest.mark.parametrize(
+    "block_type,should_match",
+    [
+        ("column_list", True),
+        ("column", False),
+        ("paragraph", False),
+        ("callout", False),
+        ("heading_1", False),
+    ],
+)
 def test_notion_block_recognition(block_type, should_match):
     """Test recognition of different Notion block types."""
     block = {"type": block_type}
@@ -236,15 +239,18 @@ def complex_column_list():
                             {"type": "paragraph", "paragraph": {"rich_text": []}},
                             {"type": "heading_1", "heading_1": {"rich_text": []}},
                         ]
-                    }
+                    },
                 },
                 {
-                    "type": "column", 
+                    "type": "column",
                     "column": {
                         "children": [
-                            {"type": "bulleted_list_item", "bulleted_list_item": {"rich_text": []}},
+                            {
+                                "type": "bulleted_list_item",
+                                "bulleted_list_item": {"rich_text": []},
+                            },
                         ]
-                    }
+                    },
                 },
             ]
         },
@@ -258,7 +264,7 @@ def test_with_fixtures(simple_column_list, complex_column_list):
     assert "::: columns" in result1
     assert "::: column" in result1
     assert ":::" in result1
-    
+
     # Test complex column list
     result2 = ColumnElement.notion_to_markdown(complex_column_list)
     assert "::: columns" in result2
@@ -270,31 +276,27 @@ def test_extract_nested_content():
     """Test extraction of nested content from column blocks."""
     lines = [
         "::: columns",
-        "::: column", 
+        "::: column",
         "Content line 1",
         "Content line 2",
         ":::",
         "::: column",
         "Other content",
         ":::",
-        ":::"
+        ":::",
     ]
-    
+
     # Test the nested content extraction method
     nested_content, next_index = ColumnElement.extract_nested_content(lines, 1)
-    
+
     assert len(nested_content) > 0
     assert next_index > 1
 
 
 def test_is_next_line_pipe_content():
     """Test detection of pipe-prefixed content lines."""
-    lines = [
-        "regular line",
-        "| pipe content",
-        "another regular line"
-    ]
-    
+    lines = ["regular line", "| pipe content", "another regular line"]
+
     # This method checks for pipe content (used in other elements like toggles)
     # For columns, this might not be directly applicable, but testing the pattern
     result = ColumnElement.is_next_line_pipe_content(lines, 0)
@@ -309,11 +311,11 @@ def test_preprocess_column_content():
         "---spacer---",
         "More content",
         "---spacer---",
-        "Final content"
+        "Final content",
     ]
-    
+
     processed = ColumnElement._preprocess_column_content(lines)
-    
+
     assert "---spacer---" not in processed
     assert "Regular content" in processed
     assert "More content" in processed
@@ -322,12 +324,13 @@ def test_preprocess_column_content():
 
 def test_converter_callback_setting():
     """Test setting and using converter callback."""
+
     def dummy_converter(text):
         return [{"type": "test", "content": text}]
-    
+
     # Set the converter callback
     ColumnElement.set_converter_callback(dummy_converter)
-    
+
     # Test that it was set (this depends on the actual implementation)
     # The callback should be stored and used during conversion
     assert ColumnElement._converter_callback is not None
@@ -337,18 +340,12 @@ def test_column_markdown_structure():
     """Test the expected Markdown structure for columns."""
     expected_patterns = [
         "::: columns",  # Start marker
-        "::: column",   # Column marker
-        ":::",          # End marker
+        "::: column",  # Column marker
+        ":::",  # End marker
     ]
-    
-    markdown = (
-        "::: columns\n"
-        "::: column\n"
-        "Sample content\n"
-        ":::\n"
-        ":::"
-    )
-    
+
+    markdown = "::: columns\n" "::: column\n" "Sample content\n" ":::\n" ":::"
+
     for pattern in expected_patterns:
         assert pattern in markdown
 
@@ -367,14 +364,16 @@ def test_column_nesting_detection():
         ":::\n"
         ":::"
     )
-    
+
     # Should handle nested structures properly
     assert ColumnElement.match_markdown("::: columns")
-    
+
     # The find_matches should handle nested structures
     # (actual behavior depends on implementation)
     def mock_convert(text):
         return [{"type": "paragraph", "paragraph": {"rich_text": []}}]
-    
-    matches = ColumnElement.find_matches(nested_markdown, converter_callback=mock_convert)
+
+    matches = ColumnElement.find_matches(
+        nested_markdown, converter_callback=mock_convert
+    )
     assert len(matches) >= 1  # Should find at least the outer columns

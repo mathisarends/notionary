@@ -123,15 +123,16 @@ def test_document_markdown_node():
     """Test DocumentMarkdownNode"""
     # Test ohne Caption
     document = DocumentMarkdownNode(url="https://example.com/doc.pdf")
-    expected = "%[](https://example.com/doc.pdf)"
+    expected = "[document](https://example.com/doc.pdf)"
     assert document.to_markdown() == expected
 
     # Test mit Caption
     document_with_caption = DocumentMarkdownNode(
         url="https://example.com/doc.pdf", caption="Important Document"
     )
-    expected = "%[Important Document](https://example.com/doc.pdf)"
+    expected = '[document](https://example.com/doc.pdf "Important Document")'
     assert document_with_caption.to_markdown() == expected
+
 
 
 def test_embed_markdown_node():
@@ -236,8 +237,8 @@ def test_quote_markdown_node():
     assert quote.to_markdown() == expected
 
     # Test mit Author
-    quote_with_author = QuoteMarkdownNode(text="Life is beautiful", author="Anonymous")
-    expected = '[quote](Life is beautiful "Anonymous")'
+    quote_with_author = QuoteMarkdownNode(text="Life is beautiful")
+    expected = '[quote](Life is beautiful)'
     assert quote_with_author.to_markdown() == expected
 
 

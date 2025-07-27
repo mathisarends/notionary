@@ -37,7 +37,7 @@ def test_match_notion():
 def test_markdown_to_notion_simple():
     """Test einfaches Bookmark ohne Titel/Beschreibung."""
     result = BookmarkElement.markdown_to_notion("[bookmark](https://example.com)")
-    
+
     assert result[0]["type"] == "bookmark"
     assert result[0]["bookmark"]["url"] == "https://example.com"
     assert result[0]["bookmark"]["caption"] == []
@@ -48,7 +48,7 @@ def test_markdown_to_notion_with_title():
     result = BookmarkElement.markdown_to_notion(
         '[bookmark](https://example.com "Beispiel-Titel")'
     )
-    
+
     assert result[0]["type"] == "bookmark"
     assert result[0]["bookmark"]["url"] == "https://example.com"
     assert result[0]["bookmark"]["caption"][0]["text"]["content"] == "Beispiel-Titel"
@@ -59,10 +59,10 @@ def test_markdown_to_notion_with_title_and_description():
     result = BookmarkElement.markdown_to_notion(
         '[bookmark](https://example.com "Beispiel-Titel" "Eine Beschreibung")'
     )
-    
+
     assert result[0]["type"] == "bookmark"
     assert result[0]["bookmark"]["url"] == "https://example.com"
-    
+
     # Caption sollte "Beispiel-Titel - Eine Beschreibung" enthalten
     caption_text = result[0]["bookmark"]["caption"][0]["text"]["content"]
     assert caption_text == "Beispiel-Titel - Eine Beschreibung"
@@ -77,7 +77,7 @@ def test_markdown_to_notion_invalid():
 def test_notion_to_markdown_simple():
     """Test Konvertierung von einfachem Notion-Bookmark."""
     block = {"type": "bookmark", "bookmark": {"url": "https://example.com"}}
-    
+
     result = BookmarkElement.notion_to_markdown(block)
     assert result == "[bookmark](https://example.com)"
 
@@ -91,7 +91,7 @@ def test_notion_to_markdown_with_title():
             "caption": [{"type": "text", "text": {"content": "Beispiel-Titel"}}],
         },
     }
-    
+
     result = BookmarkElement.notion_to_markdown(block)
     assert result == '[bookmark](https://example.com "Beispiel-Titel")'
 
@@ -109,9 +109,11 @@ def test_notion_to_markdown_with_title_and_description():
             ],
         },
     }
-    
+
     result = BookmarkElement.notion_to_markdown(block)
-    assert result == '[bookmark](https://example.com "Beispiel-Titel" "Eine Beschreibung")'
+    assert (
+        result == '[bookmark](https://example.com "Beispiel-Titel" "Eine Beschreibung")'
+    )
 
 
 def test_notion_to_markdown_invalid():
@@ -126,14 +128,20 @@ def test_is_multiline():
 
 
 # Parametrisierte Tests für verschiedene URL-Formate
-@pytest.mark.parametrize("url,expected", [
-    ("https://example.com", True),
-    ("http://example.com", True),
-    ("https://subdomain.example.com/path", True),
-    ("ftp://example.com", False),  # Sollte false sein, da regex nur http/https akzeptiert
-    ("nicht-url", False),
-    ("", False),
-])
+@pytest.mark.parametrize(
+    "url,expected",
+    [
+        ("https://example.com", True),
+        ("http://example.com", True),
+        ("https://subdomain.example.com/path", True),
+        (
+            "ftp://example.com",
+            False,
+        ),  # Sollte false sein, da regex nur http/https akzeptiert
+        ("nicht-url", False),
+        ("", False),
+    ],
+)
 def test_url_validation(url, expected):
     """Test URL-Validierung in verschiedenen Formaten."""
     markdown = f"[bookmark]({url})"
@@ -165,7 +173,7 @@ def test_with_fixtures(simple_bookmark_block, titled_bookmark_block):
     # Test einfacher Block
     result1 = BookmarkElement.notion_to_markdown(simple_bookmark_block)
     assert result1 == "[bookmark](https://example.com)"
-    
+
     # Test Block mit Titel
     result2 = BookmarkElement.notion_to_markdown(titled_bookmark_block)
     assert result2 == '[bookmark](https://example.com "Test Title")'

@@ -200,8 +200,7 @@ class MentionObject(BaseModel):
     # Add other mention types as needed
 
 
-@dataclass
-class TextAnnotations:
+class TextAnnotations(BaseModel):
     """Text formatting annotations"""
 
     bold: bool = False
@@ -212,8 +211,7 @@ class TextAnnotations:
     color: str = "default"
 
 
-@dataclass
-class TextContent:
+class TextContent(BaseModel):
     """Text content with optional link"""
 
     content: str

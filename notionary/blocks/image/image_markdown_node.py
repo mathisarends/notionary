@@ -16,7 +16,9 @@ class ImageMarkdownNode(MarkdownNode):
     Example: [image](https://example.com/image.jpg "Optional caption")
     """
 
-    def __init__(self, url: str, caption: Optional[str] = None, alt: Optional[str] = None):
+    def __init__(
+        self, url: str, caption: Optional[str] = None, alt: Optional[str] = None
+    ):
         self.url = url
         self.caption = caption
         # Note: 'alt' is kept for API compatibility but not used in Notion syntax

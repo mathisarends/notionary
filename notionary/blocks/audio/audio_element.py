@@ -34,10 +34,11 @@ class AudioElement(NotionBlockElement):
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
-        """Check if text is a markdown audio embed."""
-        return text.strip().startswith("[audio]") and bool(
-            cls.PATTERN.match(text.strip())
-        )
+        m = cls.PATTERN.match(text.strip())
+        if not m:
+            return False
+        url = m.group(1)
+        return cls._is_likely_audio_url(url)
 
     @classmethod
     def match_notion(cls, block: dict[str, Any]) -> bool:
@@ -95,9 +96,9 @@ class AudioElement(NotionBlockElement):
         caption = audio_data.get("caption", [])
         if caption:
             caption_text = cls._extract_text_content(caption)
-            return f'![audio]({url} "{caption_text}")'
+            return f'[audio]({url} "{caption_text}")'
 
-        return f"![audio]({url})"
+        return f"[audio]({url})"
 
     @classmethod
     def is_multiline(cls) -> bool:
@@ -137,10 +138,10 @@ class AudioElement(NotionBlockElement):
             .with_syntax('![audio](https://example.com/audio.mp3 "Optional caption")')
             .with_examples(
                 [
-                    "![audio](https://example.com/song.mp3)",
-                    '![audio](https://example.com/podcast.mp3 "Episode 1: Introduction")',
-                    '![audio](https://example.com/sound.wav "Sound effect for presentation")',
-                    '![audio](https://example.com/recording.m4a "Voice memo from meeting")',
+                    "[audio](https://example.com/song.mp3)",
+                    '[audio](https://example.com/podcast.mp3 "Episode 1: Introduction")',
+                    '[audio](https://example.com/sound.wav "Sound effect for presentation")',
+                    '[audio](https://example.com/recording.m4a "Voice memo from meeting")',
                 ]
             )
             .with_avoidance_guidelines(

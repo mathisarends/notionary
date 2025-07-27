@@ -13,12 +13,17 @@ from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 class HeadingElement(NotionBlockElement):
     """Handles conversion between Markdown headings and Notion heading blocks."""
 
-    PATTERN = re.compile(r"^(#{1,3})\s(.+)$")
+    # Pattern: #, ## oder ###, dann mind. 1 Leerzeichen/Tab, dann mind. 1 sichtbares Zeichen (kein Whitespace-only)
+    PATTERN = re.compile(r"^(#{1,3})[ \t]+(.+)$")
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
-        """Check if text is a markdown heading."""
-        return bool(HeadingElement.PATTERN.match(text))
+        """Check if text is a markdown heading with non-empty content."""
+        match = cls.PATTERN.match(text)
+        if not match:
+            return False
+        content = match.group(2)
+        return bool(content.strip())  # Reject headings with only whitespace
 
     @classmethod
     def match_notion(cls, block: Dict[str, Any]) -> bool:
@@ -29,15 +34,17 @@ class HeadingElement(NotionBlockElement):
     @classmethod
     def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown heading to Notion heading block with preceding empty paragraph."""
-        header_match = HeadingElement.PATTERN.match(text)
-        if not header_match:
+        match = cls.PATTERN.match(text)
+        if not match:
             return None
 
-        level = len(header_match.group(1))
+        level = len(match.group(1))
         if not 1 <= level <= 3:
             return None
 
-        content = header_match.group(2)
+        content = match.group(2).lstrip()  # Entferne führende Leerzeichen im Content
+        if not content.strip():
+            return None  # Leerer Inhalt nach Entfernen der Whitespaces
 
         header_block = {
             "type": f"heading_{level}",
@@ -45,7 +52,6 @@ class HeadingElement(NotionBlockElement):
                 "rich_text": TextInlineFormatter.parse_inline_formatting(content)
             },
         }
-
         return [header_block]
 
     @classmethod
@@ -58,7 +64,6 @@ class HeadingElement(NotionBlockElement):
 
         try:
             level = int(block_type[-1])
-            # Only allow levels 1-3
             if not 1 <= level <= 3:
                 return None
         except ValueError:
@@ -69,7 +74,7 @@ class HeadingElement(NotionBlockElement):
 
         text = TextInlineFormatter.extract_text_with_formatting(rich_text)
         prefix = "#" * level
-        return f"{prefix} {text or ''}"
+        return f"{prefix} {text}" if text else None
 
     @classmethod
     def is_multiline(cls) -> bool:
@@ -77,9 +82,6 @@ class HeadingElement(NotionBlockElement):
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """
-        Returns structured LLM prompt metadata for the heading element.
-        """
         return (
             ElementPromptBuilder()
             .with_description(

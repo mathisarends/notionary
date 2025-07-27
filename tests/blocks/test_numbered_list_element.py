@@ -77,9 +77,16 @@ def test_notion_to_markdown_invalid():
     # Invalid: wrong type
     assert NumberedListElement.notion_to_markdown({"type": "heading_1"}) is None
     # Missing numbered_list_item
-    assert NumberedListElement.notion_to_markdown({"type": "numbered_list_item"}) is None
+    assert (
+        NumberedListElement.notion_to_markdown({"type": "numbered_list_item"}) is None
+    )
     # Wrong structure
-    assert NumberedListElement.notion_to_markdown({"type": "numbered_list_item", "numbered_list_item": {}}) == "1. "
+    assert (
+        NumberedListElement.notion_to_markdown(
+            {"type": "numbered_list_item", "numbered_list_item": {}}
+        )
+        == "1. "
+    )
 
 
 def test_is_multiline():
@@ -100,7 +107,7 @@ def test_roundtrip():
         back = NumberedListElement.notion_to_markdown(notion)
         # Always normalizes to "1. content"
         assert back.startswith("1. ")
-        assert back[3:] == md[md.find('.') + 1:].strip()
+        assert back[3:] == md[md.find(".") + 1 :].strip()
 
 
 @pytest.mark.parametrize(
@@ -110,7 +117,7 @@ def test_roundtrip():
         "42. 中文内容",
         "1. Emoji 🙂👍",
         "77. Special !?&/()[]",
-    ]
+    ],
 )
 def test_unicode_content(text):
     block = NumberedListElement.markdown_to_notion(text)
@@ -122,4 +129,3 @@ def test_unicode_content(text):
     # Always normalizes to "1. ..."
     assert back.startswith("1. ")
     assert rich[0]["text"]["content"] in back
-

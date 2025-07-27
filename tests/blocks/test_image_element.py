@@ -9,39 +9,51 @@ from notionary.blocks import ImageElement
 
 def test_match_markdown_valid_images():
     """Test recognition of valid Markdown image formats."""
-    assert ImageElement.match_markdown('[image](https://example.com/img.jpg)')
-    assert ImageElement.match_markdown('[image](https://example.com/img.jpg "A caption")')
+    assert ImageElement.match_markdown("[image](https://example.com/img.jpg)")
+    assert ImageElement.match_markdown(
+        '[image](https://example.com/img.jpg "A caption")'
+    )
     assert ImageElement.match_markdown('[image](https://cdn.net/pic.png "Logo")')
-    assert ImageElement.match_markdown('[image](https://a.de/b.jpg)')
+    assert ImageElement.match_markdown("[image](https://a.de/b.jpg)")
     # Whitespace is trimmed
-    assert ImageElement.match_markdown('   [image](https://example.com/img.jpg)   ')
+    assert ImageElement.match_markdown("   [image](https://example.com/img.jpg)   ")
 
 
-@pytest.mark.parametrize("text", [
-    "[image](https://example.com/img.jpg)",
-    '[image](https://example.com/img.jpg "My caption")',
-    '[image](https://cdn.com/photo.png "Logo 123")',
-    "   [image](https://xx.com/a.png \"Hello\")  ",
-])
+@pytest.mark.parametrize(
+    "text",
+    [
+        "[image](https://example.com/img.jpg)",
+        '[image](https://example.com/img.jpg "My caption")',
+        '[image](https://cdn.com/photo.png "Logo 123")',
+        '   [image](https://xx.com/a.png "Hello")  ',
+    ],
+)
 def test_match_markdown_param_valid(text):
     assert ImageElement.match_markdown(text)
 
 
-@pytest.mark.parametrize("text", [
-    "[img](https://example.com/img.jpg)",       # Wrong prefix
-    "[image](not-a-url)",                       # Invalid URL
-    "[image](ftp://site.com/img.jpg)",          # Wrong scheme
-    "[image]()",
-    "[image]( )",
-    "![image](https://example.com/img.jpg)",    # Markdown classic
-    "[image]https://example.com/img.jpg",       # Missing parens
-    "[image](https://example.com/img.jpg)",     # Valid, for control
-    "[image](https://example.com/img.jpg 'caption')",  # Wrong quotes
-    "no image here",
-])
+@pytest.mark.parametrize(
+    "text",
+    [
+        "[img](https://example.com/img.jpg)",  # Wrong prefix
+        "[image](not-a-url)",  # Invalid URL
+        "[image](ftp://site.com/img.jpg)",  # Wrong scheme
+        "[image]()",
+        "[image]( )",
+        "![image](https://example.com/img.jpg)",  # Markdown classic
+        "[image]https://example.com/img.jpg",  # Missing parens
+        "[image](https://example.com/img.jpg)",  # Valid, for control
+        "[image](https://example.com/img.jpg 'caption')",  # Wrong quotes
+        "no image here",
+    ],
+)
 def test_match_markdown_param_invalid(text):
     # Should be false except for the valid control
-    expected = text.strip().startswith("[image](") and text.count('"') in (0, 2) and text.startswith("[image](")
+    expected = (
+        text.strip().startswith("[image](")
+        and text.count('"') in (0, 2)
+        and text.startswith("[image](")
+    )
     result = ImageElement.match_markdown(text)
     if text == "[image](https://example.com/img.jpg)":
         assert result
@@ -73,10 +85,10 @@ def test_match_notion_block():
                     },
                 },
                 {"type": "paragraph", "paragraph": {"rich_text": []}},
-            ]
+            ],
         ),
         (
-            '[image](https://example.com/only-url.jpg)',
+            "[image](https://example.com/only-url.jpg)",
             [
                 {
                     "type": "image",
@@ -87,9 +99,9 @@ def test_match_notion_block():
                     },
                 },
                 {"type": "paragraph", "paragraph": {"rich_text": []}},
-            ]
+            ],
         ),
-    ]
+    ],
 )
 def test_markdown_to_notion(markdown, expected):
     result = ImageElement.markdown_to_notion(markdown)
@@ -113,8 +125,8 @@ def test_notion_to_markdown_external_with_caption():
         "image": {
             "type": "external",
             "external": {"url": "https://cdn.net/cat.png"},
-            "caption": [{"type": "text", "text": {"content": "The Cat"}}]
-        }
+            "caption": [{"type": "text", "text": {"content": "The Cat"}}],
+        },
     }
     result = ImageElement.notion_to_markdown(notion_block)
     assert result == '[image](https://cdn.net/cat.png "The Cat")'
@@ -126,8 +138,8 @@ def test_notion_to_markdown_external_without_caption():
         "image": {
             "type": "external",
             "external": {"url": "https://cdn.net/no-caption.png"},
-            "caption": []
-        }
+            "caption": [],
+        },
     }
     result = ImageElement.notion_to_markdown(notion_block)
     assert result == "[image](https://cdn.net/no-caption.png)"
@@ -139,8 +151,8 @@ def test_notion_to_markdown_file_type():
         "image": {
             "type": "file",
             "file": {"url": "https://notion.com/uploads/dog.jpg"},
-            "caption": []
-        }
+            "caption": [],
+        },
     }
     result = ImageElement.notion_to_markdown(notion_block)
     assert result == "[image](https://notion.com/uploads/dog.jpg)"
@@ -182,9 +194,9 @@ def test_is_multiline():
     "markdown",
     [
         '[image](https://example.com/roundtrip.jpg "Roundtrip Caption")',
-        '[image](https://example.com/x.jpg)',
+        "[image](https://example.com/x.jpg)",
         '[image](https://a.b/c.png "🙂 Emoji")',
-    ]
+    ],
 )
 def test_roundtrip_conversion(markdown):
     # Markdown -> Notion -> Markdown roundtrip
@@ -204,7 +216,7 @@ def test_roundtrip_conversion(markdown):
         "Special chars !?&/()[]",
         "中文测试",
         "",
-    ]
+    ],
 )
 def test_unicode_and_special_caption(caption):
     url = "https://host.de/x.png"
@@ -221,7 +233,7 @@ def test_multiple_images_independent():
     """Ensure each image is parsed independently."""
     images = [
         '[image](https://a.de/1.jpg "One")',
-        '[image](https://a.de/2.jpg)',
+        "[image](https://a.de/2.jpg)",
         '[image](https://a.de/3.jpg "Three")',
     ]
     for md in images:
@@ -230,7 +242,9 @@ def test_multiple_images_independent():
         block = result[0]
         assert block["type"] == "image"
         assert "image" in block
-        url = block["image"].get("external", {}).get("url", "") or block["image"].get("file", {}).get("url", "")
+        url = block["image"].get("external", {}).get("url", "") or block["image"].get(
+            "file", {}
+        ).get("url", "")
         assert url.startswith("https://a.de/")
         back = ImageElement.notion_to_markdown(block)
         assert back == md
@@ -256,7 +270,7 @@ def test_integration_with_other_elements():
         "[link](https://example.com)",
         "![](https://example.com/img.jpg)",
         "",
-        "   "
+        "   ",
     ]
     for text in not_images:
         assert not ImageElement.match_markdown(text)
@@ -271,7 +285,7 @@ def external_image_block():
             "type": "external",
             "external": {"url": "https://cdn.net/test.png"},
             "caption": [{"type": "text", "text": {"content": "Hello"}}],
-        }
+        },
     }
 
 
@@ -283,7 +297,7 @@ def file_image_block():
             "type": "file",
             "file": {"url": "https://notion.com/file.jpg"},
             "caption": [],
-        }
+        },
     }
 
 
@@ -295,4 +309,3 @@ def test_fixtures_external(external_image_block):
 def test_fixtures_file(file_image_block):
     result = ImageElement.notion_to_markdown(file_image_block)
     assert result == "[image](https://notion.com/file.jpg)"
-

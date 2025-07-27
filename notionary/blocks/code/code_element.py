@@ -1,6 +1,6 @@
 import re
 
-from typing import Optional
+from typing import Optional, Any
 from notionary.blocks import NotionBlockElement
 from notionary.blocks import (
     ElementPromptContent,
@@ -76,32 +76,45 @@ class CodeElement(NotionBlockElement):
         return [block, empty_paragraph]
 
     @classmethod
-    def notion_to_markdown(cls, block: dict[str, any]) -> Optional[str]:
-        """Convert Notion code block to markdown code block."""
+    def notion_to_markdown(cls, block: dict[str, Any]) -> Optional[str]:
+        """Convert Notion code block to Markdown."""
         if block.get("type") != "code":
             return None
 
         code_data = block.get("code", {})
-        rich_text = code_data.get("rich_text", [])
-
-        # Extract the code content
-        content = ""
-        for text_block in rich_text:
-            content += text_block.get("plain_text", "")
-
         language = code_data.get("language", "")
+        rich_text = code_data.get("rich_text", [])
+        caption = code_data.get("caption", [])
 
-        # Extract caption if present
-        caption_text = ""
-        caption_data = code_data.get("caption", [])
-        for caption_block in caption_data:
-            caption_text += caption_block.get("plain_text", "")
+        def extract_content(rich_text_list):
+            """Extract code content from rich_text array."""
+            return "".join(
+                text.get("text", {}).get("content", "")
+                if text.get("type") == "text"
+                else text.get("plain_text", "")
+                for text in rich_text_list
+            )
 
-        # Format as a markdown code block
-        result = f"```{language}\n{content}\n```"
+        def extract_caption(caption_list):
+            """Extract caption text from caption array."""
+            return "".join(
+                c.get("text", {}).get("content", "")
+                for c in caption_list
+                if c.get("type") == "text"
+            )
+
+        code_content = extract_content(rich_text)
+        caption_text = extract_caption(caption)
+
+        # Handle language - convert "plain text" back to empty string for markdown
+        if language == "plain text":
+            language = ""
+
+        # Build markdown code block
+        result = f"```{language}\n{code_content}\n```" if language else f"```\n{code_content}\n```"
 
         # Add caption if present
-        if caption_text.strip():
+        if caption_text:
             result += f"\nCaption: {caption_text}"
 
         return result
@@ -199,4 +212,23 @@ class CodeElement(NotionBlockElement):
                 "no empty lines between the code block and the caption."
             )
             .build()
+        )
+
+    @staticmethod
+    def extract_content(rich_text_list: list[dict[str, Any]]) -> str:
+        """Extract code content from rich_text array."""
+        return "".join(
+            text.get("text", {}).get("content", "")
+            if text.get("type") == "text"
+            else text.get("plain_text", "")
+            for text in rich_text_list
+        )
+
+    @staticmethod
+    def extract_caption(caption_list: list[dict[str, Any]]) -> str:
+        """Extract caption text from caption array."""
+        return "".join(
+            c.get("text", {}).get("content", "")
+            for c in caption_list
+            if c.get("type") == "text"
         )

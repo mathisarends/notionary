@@ -28,17 +28,20 @@ class TableElement(NotionBlockElement):
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
-        """Check if text contains a markdown table."""
+        """
+        Check if text contains a markdown table.
+        Accepts tables with only header + separator, as well as header + separator + data rows.
+        """
         lines = text.split("\n")
 
-        if len(lines) < 3:
+        if len(lines) < 2:
             return False
 
-        for i, line in enumerate(lines[:-2]):
+        # Akzeptiere Header + Separator auch ohne Datenzeile
+        for i, line in enumerate(lines[:-1]):
             if (
-                TableElement.ROW_PATTERN.match(line)
-                and TableElement.SEPARATOR_PATTERN.match(lines[i + 1])
-                and TableElement.ROW_PATTERN.match(lines[i + 2])
+                cls.ROW_PATTERN.match(line)
+                and cls.SEPARATOR_PATTERN.match(lines[i + 1])
             ):
                 return True
 

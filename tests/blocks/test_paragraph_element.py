@@ -15,7 +15,7 @@ from notionary.blocks import ParagraphElement
         "    ",
         "*italic* and **bold**",
         "Paragraph with äöüß and 中文字符 and 🙂",
-    ]
+    ],
 )
 def test_match_markdown_always_true(text):
     """Paragraph is fallback element, always returns True."""
@@ -30,7 +30,7 @@ def test_match_markdown_always_true(text):
         ({"type": "quote"}, False),
         ({"notype": "paragraph"}, False),
         ({}, False),
-    ]
+    ],
 )
 def test_match_notion(block, expected):
     assert ParagraphElement.match_notion(block) is expected
@@ -43,7 +43,13 @@ def test_markdown_to_notion_basic():
     assert "rich_text" in block["paragraph"]
     assert len(block["paragraph"]["rich_text"]) > 0
     # The content must be included somewhere
-    all_content = "".join([seg["text"]["content"] for seg in block["paragraph"]["rich_text"] if "text" in seg])
+    all_content = "".join(
+        [
+            seg["text"]["content"]
+            for seg in block["paragraph"]["rich_text"]
+            if "text" in seg
+        ]
+    )
     assert "paragraph" in all_content
 
 
@@ -102,13 +108,16 @@ def test_roundtrip():
         assert part in md
 
 
-@pytest.mark.parametrize("content", [
-    "Just plain text.",
-    "Numbers 123456",
-    "Mixed CAPS and lower",
-    "Punctuation!?,.;:",
-    "With\nnewlines\ninside",
-])
+@pytest.mark.parametrize(
+    "content",
+    [
+        "Just plain text.",
+        "Numbers 123456",
+        "Mixed CAPS and lower",
+        "Punctuation!?,.;:",
+        "With\nnewlines\ninside",
+    ],
+)
 def test_various_content(content):
     # Should convert and recover content, ignoring markdown formatting
     block = ParagraphElement.markdown_to_notion(content)
@@ -116,4 +125,3 @@ def test_various_content(content):
     # Content may be merged or newlines removed, but base string should appear
     for word in content.replace("\n", " ").split():
         assert word.strip(".!?;,:") in md
-
