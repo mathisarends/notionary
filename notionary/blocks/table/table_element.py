@@ -7,7 +7,7 @@ from notionary.blocks import (
     ElementPromptContent,
     ElementPromptBuilder,
 )
-from notionary.blocks.elements.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
 class TableElement(NotionBlockElement):

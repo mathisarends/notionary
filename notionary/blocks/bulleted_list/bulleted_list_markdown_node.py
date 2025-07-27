@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
-from typing import List
-from notionary.blocks.toggle.markdown_node import MarkdownNode
+from notionary.blocks.markdown_node import MarkdownNode
 
 
 class BulletedListMarkdownBlockParams(BaseModel):
-    texts: List[str]
+    texts: list[str]
 
 
 class BulletedListMarkdownNode(MarkdownNode):
@@ -18,7 +17,7 @@ class BulletedListMarkdownNode(MarkdownNode):
     - Third item
     """
 
-    def __init__(self, texts: List[str]):
+    def __init__(self, texts: list[str]):
         self.texts = texts
 
     @classmethod

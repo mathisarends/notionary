@@ -7,7 +7,7 @@ from notionary.blocks import (
     AudioElement,
     BulletedListElement,
     CalloutElement,
-    CodeBlockElement,
+    CodeElement,
     ColumnElement,
     DividerElement,
     EmbedElement,
@@ -97,7 +97,7 @@ class BlockRegistryBuilder:
 
     def with_code(self) -> Self:
         """Add support for code blocks."""
-        return self._add_element(CodeBlockElement)
+        return self._add_element(CodeElement)
 
     def with_dividers(self) -> Self:
         """Add support for divider elements."""

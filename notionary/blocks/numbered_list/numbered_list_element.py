@@ -1,12 +1,12 @@
 import re
-from typing import Dict, Any, Optional
+from typing import Any, Optional
 from notionary.blocks import NotionBlockElement
 from notionary.blocks import (
     ElementPromptContent,
     ElementPromptBuilder,
     NotionBlockResult,
 )
-from notionary.blocks.elements.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
 class NumberedListElement(NotionBlockElement):
@@ -31,7 +31,7 @@ class NumberedListElement(NotionBlockElement):
         }
 
     @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
+    def notion_to_markdown(cls, block: dict[str, Any]) -> Optional[str]:
         """Convert Notion numbered list item block to markdown."""
         if block.get("type") != "numbered_list_item":
             return None
@@ -48,7 +48,7 @@ class NumberedListElement(NotionBlockElement):
         return bool(pattern.match(text))
 
     @classmethod
-    def match_notion(cls, block: Dict[str, Any]) -> bool:
+    def match_notion(cls, block: dict[str, Any]) -> bool:
         """Check if this element can handle the given Notion block."""
         return block.get("type") == "numbered_list_item"
 

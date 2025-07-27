@@ -1,7 +1,7 @@
-from .code_block_element import CodeBlockElement
-from .code_markdown_block import CodeBlockMarkdownNode
+from .code_element import CodeElement
+from .code_markdown_node import CodeMarkdownNode
 
 __all__ = [
-    "CodeBlockElement",
-    "CodeBlockMarkdownNode",
+    "CodeElement",
+    "CodeMarkdownNode",
 ]

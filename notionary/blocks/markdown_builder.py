@@ -6,29 +6,29 @@ Enhanced builder with support for all available MarkdownNode classes.
 """
 
 from __future__ import annotations
-from typing import Optional, Self, Union
-from notionary.blocks.mappings.elements import (
-    HeadingMarkdownBlock,
-    ImageMarkdownBlock,
-    ParagraphMarkdownBlock,
-    AudioMarkdownBlock,
-    BookmarkMarkdownBlock,
-    CalloutMarkdownBlock,
-    CodeMarkdownBlock,
-    DividerMarkdownBlock,
-    DocumentMarkdownBlock,
-    EmbedMarkdownBlock,
-    MentionMarkdownBlock,
-    NumberedListMarkdownBlock,
-    BulletedListMarkdownBlock,
-    QuoteMarkdownBlock,
-    TableMarkdownBlock,
-    TodoMarkdownBlock,
-    ToggleMarkdownBlock,
-    ToggleableHeadingMarkdownBlock,
-    VideoMarkdownBlock,
+from typing import Optional, Self
+from notionary.blocks import (
+    HeadingMarkdownNode,
+    ImageMarkdownNode,
+    ParagraphMarkdownNode,
+    AudioMarkdownNode,
+    BookmarkMarkdownNode,
+    CalloutMarkdownNode,
+    CodeMarkdownNode,
+    DividerMarkdownNode,
+    DocumentMarkdownNode,
+    EmbedMarkdownNode,
+    MentionMarkdownNode,
+    NumberedListMarkdownNode,
+    BulletedListMarkdownNode,
+    QuoteMarkdownNode,
+    TableMarkdownNode,
+    TodoMarkdownNode,
+    ToggleMarkdownNode,
+    ToggleableHeadingMarkdownNode,
+    VideoMarkdownNode,
 )
-from notionary.blocks.mappings.markdown_node import MarkdownNode
+from notionary.blocks.markdown_node import MarkdownNode
 
 
 class MarkdownBuilder:
@@ -44,50 +44,50 @@ class MarkdownBuilder:
 
     def heading(self, text: str, level: int = 2) -> Self:
         """Add a heading block (H1-H3)."""
-        self.children.append(HeadingMarkdownBlock(text=text, level=level))
+        self.children.append(HeadingMarkdownNode(text=text, level=level))
         return self
 
     def paragraph(self, text: str) -> Self:
         """Add a paragraph block."""
-        self.children.append(ParagraphMarkdownBlock(text=text))
+        self.children.append(ParagraphMarkdownNode(text=text))
         return self
 
-    def quote(self, text: Union[str, list[str]]) -> Self:
+    def quote(self, text: str, author: Optional[str] = None) -> Self:
         """Add a quote block."""
-        self.children.append(QuoteMarkdownBlock(text=text))
+        self.children.append(QuoteMarkdownNode(text=text, author=author))
         return self
 
     def divider(self) -> Self:
         """Add a divider block."""
-        self.children.append(DividerMarkdownBlock())
+        self.children.append(DividerMarkdownNode())
         return self
 
     # ========== LISTS ==========
 
     def numbered_list(self, items: list[str]) -> Self:
         """Add a numbered list with multiple items."""
-        self.children.append(NumberedListMarkdownBlock(texts=items))
+        self.children.append(NumberedListMarkdownNode(texts=items))
         return self
 
     def numbered_list_item(self, text: str) -> Self:
         """Add a single numbered list item (creates a list with one item)."""
-        self.children.append(NumberedListMarkdownBlock(texts=[text]))
+        self.children.append(NumberedListMarkdownNode(texts=[text]))
         return self
 
     def bulleted_list(self, items: list[str]) -> Self:
         """Add a bulleted list with multiple items."""
-        self.children.append(BulletedListMarkdownBlock(texts=items))
+        self.children.append(BulletedListMarkdownNode(texts=items))
         return self
 
     def bulleted_list_item(self, text: str) -> Self:
         """Add a single bulleted list item (creates a list with one item)."""
-        self.children.append(BulletedListMarkdownBlock(texts=[text]))
+        self.children.append(BulletedListMarkdownNode(texts=[text]))
         return self
 
     def todo(self, text: str, checked: bool = False, marker: str = "-") -> Self:
         """Add a todo block."""
         self.children.append(
-            TodoMarkdownBlock(text=text, checked=checked, marker=marker)
+            TodoMarkdownNode(text=text, checked=checked, marker=marker)
         )
         return self
 
@@ -95,24 +95,22 @@ class MarkdownBuilder:
 
     def audio(self, url: str, caption: Optional[str] = None) -> Self:
         """Add an audio block."""
-        self.children.append(AudioMarkdownBlock(url=url, caption=caption))
+        self.children.append(AudioMarkdownNode(url=url, caption=caption))
         return self
 
-    def image(
-        self, url: str, caption: Optional[str] = None, alt: Optional[str] = None
-    ) -> Self:
+    def image(self, url: str, caption: Optional[str] = None) -> Self:
         """Add an image block."""
-        self.children.append(ImageMarkdownBlock(url=url, caption=caption, alt=alt))
+        self.children.append(ImageMarkdownNode(url=url, caption=caption))
         return self
 
     def video(self, url: str, caption: Optional[str] = None) -> Self:
         """Add a video block."""
-        self.children.append(VideoMarkdownBlock(url=url, caption=caption))
+        self.children.append(VideoMarkdownNode(url=url, caption=caption))
         return self
 
     def document(self, url: str, caption: Optional[str] = None) -> Self:
         """Add a document block."""
-        self.children.append(DocumentMarkdownBlock(url=url, caption=caption))
+        self.children.append(DocumentMarkdownNode(url=url, caption=caption))
         return self
 
     # ========== INTERACTIVE ==========
@@ -122,18 +120,18 @@ class MarkdownBuilder:
     ) -> Self:
         """Add a bookmark block."""
         self.children.append(
-            BookmarkMarkdownBlock(url=url, title=title, description=description)
+            BookmarkMarkdownNode(url=url, title=title, description=description)
         )
         return self
 
     def embed(self, url: str, caption: Optional[str] = None) -> Self:
         """Add an embed block."""
-        self.children.append(EmbedMarkdownBlock(url=url, caption=caption))
+        self.children.append(EmbedMarkdownNode(url=url, caption=caption))
         return self
 
     def callout(self, text: str, emoji: Optional[str] = None) -> Self:
         """Add a callout block."""
-        self.children.append(CalloutMarkdownBlock(text=text, emoji=emoji))
+        self.children.append(CalloutMarkdownNode(text=text, emoji=emoji))
         return self
 
     # ========== CODE ==========
@@ -143,7 +141,7 @@ class MarkdownBuilder:
     ) -> Self:
         """Add a code block."""
         self.children.append(
-            CodeMarkdownBlock(code=code, language=language, caption=caption)
+            CodeMarkdownNode(code=code, language=language, caption=caption)
         )
         return self
 
@@ -151,7 +149,7 @@ class MarkdownBuilder:
 
     def toggle(self, title: str, content: Optional[list[str]] = None) -> Self:
         """Add a toggle block."""
-        self.children.append(ToggleMarkdownBlock(title=title, content=content))
+        self.children.append(ToggleMarkdownNode(title=title, content=content))
         return self
 
     def toggleable_heading(
@@ -159,35 +157,30 @@ class MarkdownBuilder:
     ) -> Self:
         """Add a toggleable heading block."""
         self.children.append(
-            ToggleableHeadingMarkdownBlock(text=text, level=level, content=content)
+            ToggleableHeadingMarkdownNode(text=text, level=level, content=content)
         )
-        return self
-
-    def columns(self, columns: list[list[str]]) -> Self:
-        """Add a columns layout."""
-        self.children.append(ColumnsMarkdownBlock(columns=columns))
         return self
 
     def table(self, headers: list[str], rows: list[list[str]]) -> Self:
         """Add a table block."""
-        self.children.append(TableMarkdownBlock(headers=headers, rows=rows))
+        self.children.append(TableMarkdownNode(headers=headers, rows=rows))
         return self
 
     # ========== MENTIONS ==========
 
     def mention_page(self, page_id: str) -> Self:
         """Add a page mention."""
-        self.children.append(MentionMarkdownBlock("page", page_id))
+        self.children.append(MentionMarkdownNode("page", page_id))
         return self
 
     def mention_database(self, database_id: str) -> Self:
         """Add a database mention."""
-        self.children.append(MentionMarkdownBlock("database", database_id))
+        self.children.append(MentionMarkdownNode("database", database_id))
         return self
 
     def mention_date(self, date: str) -> Self:
         """Add a date mention (YYYY-MM-DD format)."""
-        self.children.append(MentionMarkdownBlock("date", date))
+        self.children.append(MentionMarkdownNode("date", date))
         return self
 
     # ========== UTILITY ==========

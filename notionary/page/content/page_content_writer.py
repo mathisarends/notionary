@@ -1,7 +1,7 @@
 from typing import Optional
 
 from notionary.blocks import BlockRegistry
-from notionary.blocks.block_client import NotionBlockClient
+from notionary.blocks.shared.block_client import NotionBlockClient
 from notionary.models.notion_block_response import Block
 from notionary.page.content.markdown_whitespace_processor import (
     MarkdownWhitespaceProcessor,

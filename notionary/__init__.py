@@ -3,7 +3,7 @@ from .page.notion_page import NotionPage
 from .workspace import NotionWorkspace
 from .user import NotionUser, NotionUserManager, NotionBotUser
 from .file_upload import NotionFileUpload
-from .blocks.mappings import MarkdownBuilder
+from .blocks.markdown_builder import MarkdownBuilder
 
 __all__ = [
     "NotionDatabase",

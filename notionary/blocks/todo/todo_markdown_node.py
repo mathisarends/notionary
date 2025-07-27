@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
-from notionary.blocks.mappings.markdown_node import MarkdownNode
+from notionary.blocks.markdown_node import MarkdownNode
 
 
 class TodoMarkdownBlockParams(BaseModel):
@@ -10,7 +10,7 @@ class TodoMarkdownBlockParams(BaseModel):
     marker: str = "-"
 
 
-class TodoMarkdownBlock(MarkdownNode):
+class TodoMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating Markdown todo items (checkboxes).
     Supports checked and unchecked states.
@@ -23,7 +23,7 @@ class TodoMarkdownBlock(MarkdownNode):
         self.marker = marker if marker in {"-", "*", "+"} else "-"
 
     @classmethod
-    def from_params(cls, params: TodoMarkdownBlockParams) -> TodoMarkdownBlock:
+    def from_params(cls, params: TodoMarkdownBlockParams) -> TodoMarkdownNode:
         return cls(text=params.text, checked=params.checked, marker=params.marker)
 
     def to_markdown(self) -> str:

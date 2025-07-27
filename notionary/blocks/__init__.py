@@ -2,65 +2,84 @@
 from .prompts.element_prompt_content import ElementPromptContent
 from .prompts.element_prompt_builder import ElementPromptBuilder
 
-from .elements.notion_block_element import (
+from .shared.notion_block_element import (
     NotionBlockElement,
     NotionBlockResult,
     NotionBlock,
 )
 
-from .elements.audio_element import AudioElement
-from .elements.bulleted_list_element import BulletedListElement
-from .elements.callout_element import CalloutElement
-from .elements.code_block_element import CodeBlockElement
-from .elements.column_element import ColumnElement
-from .elements.divider_element import DividerElement
-from .elements.embed_element import EmbedElement
-from .elements.heading_element import HeadingElement
-from .elements.image_element import ImageElement
-from .elements.numbered_list_element import NumberedListElement
-from .elements.paragraph_element import ParagraphElement
-from .elements.table_element import TableElement
-from .elements.toggle_element import ToggleElement
-from .elements.todo_element import TodoElement
-from .elements.video_element import VideoElement
-from .elements.toggleable_heading_element import ToggleableHeadingElement
-from .elements.bookmark_element import BookmarkElement
-from .elements.divider_element import DividerElement
-from .elements.heading_element import HeadingElement
-from .elements.mention_element import MentionElement
-from .elements.qoute_element import QuoteElement
-from .elements.document_element import DocumentElement
-from .elements.text_inline_formatter import TextInlineFormatter
+from .audio import AudioElement, AudioMarkdownNode
+from .bulleted_list import BulletedListElement, BulletedListMarkdownNode
+from .callout import CalloutElement, CalloutMarkdownNode
+from .code import CodeElement, CodeMarkdownNode
+from .column.column_element import ColumnElement
+from .divider import DividerElement, DividerMarkdownNode
+from .embed import EmbedElement, EmbedMarkdownNode
+from .heading import HeadingElement, HeadingMarkdownNode
+from .image import ImageElement, ImageMarkdownNode
+from .numbered_list import NumberedListElement, NumberedListMarkdownNode
+from .paragraph import ParagraphElement, ParagraphMarkdownNode
+from .table import TableElement, TableMarkdownNode
+from .toggle import ToggleElement, ToggleMarkdownNode
+from .todo import TodoElement, TodoMarkdownNode
+from .video import VideoElement, VideoMarkdownNode
+from .toggleable_heading import ToggleableHeadingElement, ToggleableHeadingMarkdownNode
+from .bookmark import BookmarkElement, BookmarkMarkdownNode
+from .divider import DividerElement, DividerMarkdownNode
+from .heading import HeadingElement, HeadingMarkdownNode
+from .mention import MentionElement, MentionMarkdownNode
+from .quote import QuoteElement, QuoteMarkdownNode
+from .document import DocumentElement, DocumentMarkdownNode
+from .shared.text_inline_formatter import TextInlineFormatter
 
 from .registry.block_registry import BlockRegistry
 from .registry.block_registry_builder import BlockRegistryBuilder
 
-from .block_client import NotionBlockClient
+from .shared.block_client import NotionBlockClient
 
 __all__ = [
     "ElementPromptContent",
     "ElementPromptBuilder",
     "NotionBlockElement",
     "AudioElement",
+    "AudioMarkdownNode",
     "BulletedListElement",
+    "BulletedListMarkdownNode",
     "CalloutElement",
-    "CodeBlockElement",
+    "CalloutMarkdownNode",
+    "CodeElement",
+    "CodeMarkdownNode",
     "ColumnElement",
     "DividerElement",
+    "DividerMarkdownNode",
     "EmbedElement",
+    "EmbedMarkdownNode",
     "HeadingElement",
+    "HeadingMarkdownNode",
     "ImageElement",
+    "ImageMarkdownNode",
     "NumberedListElement",
+    "NumberedListMarkdownNode",
     "ParagraphElement",
+    "ParagraphMarkdownNode",
     "TableElement",
+    "TableMarkdownNode",
     "ToggleElement",
+    "ToggleMarkdownNode",
     "TodoElement",
+    "TodoMarkdownNode",
     "VideoElement",
+    "VideoMarkdownNode",
     "ToggleableHeadingElement",
+    "ToggleableHeadingMarkdownNode",
     "BookmarkElement",
+    "BookmarkMarkdownNode",
     "MentionElement",
+    "MentionMarkdownNode",
     "QuoteElement",
+    "QuoteMarkdownNode",
     "DocumentElement",
+    "DocumentMarkdownNode",
     "BlockRegistry",
     "BlockRegistryBuilder",
     "TextInlineFormatter",

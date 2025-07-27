@@ -1,5 +1,5 @@
 import re
-from notionary.blocks.elements.notion_block_element import NotionBlock
+from notionary.blocks.shared.notion_block_element import NotionBlock
 from notionary.blocks.registry.block_registry import BlockRegistry
 
 

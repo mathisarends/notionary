@@ -7,7 +7,7 @@ from notionary.blocks import (
     NotionBlockElement,
     NotionBlockResult,
 )
-from notionary.blocks.elements.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
 class ToggleableHeadingElement(NotionBlockElement):

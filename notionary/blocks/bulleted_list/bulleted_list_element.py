@@ -7,7 +7,7 @@ from notionary.blocks import (
     NotionBlockResult,
 )
 
-from notionary.blocks.elements.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
 class BulletedListElement(NotionBlockElement):

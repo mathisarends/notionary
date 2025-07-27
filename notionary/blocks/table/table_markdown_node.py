@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
-from notionary.blocks.mappings.markdown_node import MarkdownNode
+from notionary.blocks.markdown_node import MarkdownNode
 
 
 class TableMarkdownBlockParams(BaseModel):
@@ -9,7 +9,7 @@ class TableMarkdownBlockParams(BaseModel):
     rows: list[list[str]]
 
 
-class TableMarkdownBlock(MarkdownNode):
+class TableMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating Markdown tables.
     Example:
@@ -26,7 +26,7 @@ class TableMarkdownBlock(MarkdownNode):
         self.rows = rows
 
     @classmethod
-    def from_params(cls, params: TableMarkdownBlockParams) -> TableMarkdownBlock:
+    def from_params(cls, params: TableMarkdownBlockParams) -> TableMarkdownNode:
         return cls(headers=params.headers, rows=params.rows)
 
     def to_markdown(self) -> str:

@@ -73,7 +73,7 @@ class NotionBlockClient(BaseNotionClient):
         )
         return all_blocks
 
-    async def wappend_block_children(
+    async def append_block_children(
         self, block_id: str, children: list[Dict[str, Any]], after: Optional[str] = None
     ) -> Optional[BlockChildrenResponse]:
         """

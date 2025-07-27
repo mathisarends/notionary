@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Literal
 from pydantic import BaseModel
-from notionary.blocks.toggle.markdown_node import MarkdownNode
+from notionary.blocks.markdown_node import MarkdownNode
 
 
 class MentionMarkdownBlockParams(BaseModel):

@@ -10,7 +10,7 @@ from notionary.blocks import (
 from notionary.blocks.shared.models import RichTextObject
 
 
-class CodeBlockElement(NotionBlockElement):
+class CodeElement(NotionBlockElement):
     """
     Handles conversion between Markdown code blocks and Notion code blocks.
 
@@ -33,7 +33,7 @@ class CodeBlockElement(NotionBlockElement):
     @classmethod
     def match_markdown(cls, text: str) -> bool:
         """Check if text contains a markdown code block."""
-        return bool(CodeBlockElement.PATTERN.search(text))
+        return bool(cls.PATTERN.search(text))
 
     @classmethod
     def match_notion(cls, block: dict[str, any]) -> bool:
@@ -43,7 +43,7 @@ class CodeBlockElement(NotionBlockElement):
     @classmethod
     def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown code block to Notion code block."""
-        match = CodeBlockElement.PATTERN.search(text)
+        match = cls.PATTERN.search(text)
         if not match:
             return None
 
@@ -118,7 +118,7 @@ class CodeBlockElement(NotionBlockElement):
             List of tuples with (start_pos, end_pos, block)
         """
         matches = []
-        for match in CodeBlockElement.PATTERN.finditer(text):
+        for match in CodeElement.PATTERN.finditer(text):
             language = match.group(1) or "plain text"
             content = match.group(2)
             caption = match.group(3)

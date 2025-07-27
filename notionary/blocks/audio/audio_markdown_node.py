@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Optional
 from pydantic import BaseModel
 
-from notionary.blocks.mappings.markdown_node import MarkdownNode
+from notionary.blocks.markdown_node import MarkdownNode
 
 
 class AudioMarkdownBlockParams(BaseModel):
@@ -10,7 +10,7 @@ class AudioMarkdownBlockParams(BaseModel):
     caption: Optional[str] = None
 
 
-class AudioMarkdownBlock(MarkdownNode):
+class AudioMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating Notion-style audio blocks.
     """
@@ -20,7 +20,7 @@ class AudioMarkdownBlock(MarkdownNode):
         self.caption = caption or ""
 
     @classmethod
-    def from_params(cls, params: AudioMarkdownBlockParams) -> AudioMarkdownBlock:
+    def from_params(cls, params: AudioMarkdownBlockParams) -> AudioMarkdownNode:
         return cls(url=params.url, caption=params.caption)
 
     def to_markdown(self) -> str:

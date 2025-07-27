@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 from pydantic import BaseModel
-from notionary.blocks.mappings.markdown_node import MarkdownNode
+from notionary.blocks.markdown_node import MarkdownNode
 
 
 class VideoMarkdownBlockParams(BaseModel):
@@ -10,7 +10,7 @@ class VideoMarkdownBlockParams(BaseModel):
     caption: Optional[str] = None
 
 
-class VideoMarkdownBlock(MarkdownNode):
+class VideoMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating Markdown video embeds.
     Example: @[Caption](https://example.com/video.mp4)
@@ -21,7 +21,7 @@ class VideoMarkdownBlock(MarkdownNode):
         self.caption = caption or ""
 
     @classmethod
-    def from_params(cls, params: VideoMarkdownBlockParams) -> VideoMarkdownBlock:
+    def from_params(cls, params: VideoMarkdownBlockParams) -> VideoMarkdownNode:
         return cls(url=params.url, caption=params.caption)
 
     def to_markdown(self) -> str:
