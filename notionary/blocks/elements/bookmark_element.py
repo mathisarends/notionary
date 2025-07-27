@@ -7,6 +7,7 @@ from notionary.blocks import (
     ElementPromptBuilder,
     NotionBlockResult,
 )
+from notionary.blocks.models import RichTextObject
 
 
 class BookmarkElement(NotionBlockElement):
@@ -58,71 +59,21 @@ class BookmarkElement(NotionBlockElement):
 
         bookmark_data = {"url": url}
 
-        # Add caption if title or description is provided
-        if title or description:
-            caption = []
+        # Build caption string
+        caption_parts = []
+        if title:
+            caption_parts.append(title)
+        if description:
+            caption_parts.append(description)
 
-            if title:
-                caption.append(
-                    {
-                        "type": "text",
-                        "text": {"content": title, "link": None},
-                        "annotations": {
-                            "bold": False,
-                            "italic": False,
-                            "strikethrough": False,
-                            "underline": False,
-                            "code": False,
-                            "color": "default",
-                        },
-                        "plain_text": title,
-                        "href": None,
-                    }
-                )
-
-                # Add a separator if both title and description are provided
-                if description:
-                    caption.append(
-                        {
-                            "type": "text",
-                            "text": {"content": " - ", "link": None},
-                            "annotations": {
-                                "bold": False,
-                                "italic": False,
-                                "strikethrough": False,
-                                "underline": False,
-                                "code": False,
-                                "color": "default",
-                            },
-                            "plain_text": " - ",
-                            "href": None,
-                        }
-                    )
-
-            if description:
-                caption.append(
-                    {
-                        "type": "text",
-                        "text": {"content": description, "link": None},
-                        "annotations": {
-                            "bold": False,
-                            "italic": False,
-                            "strikethrough": False,
-                            "underline": False,
-                            "code": False,
-                            "color": "default",
-                        },
-                        "plain_text": description,
-                        "href": None,
-                    }
-                )
-
-            bookmark_data["caption"] = caption
+        if caption_parts:
+            caption_text = " - ".join(caption_parts)
+            caption_rich_text = RichTextObject.from_plain_text(caption_text)
+            bookmark_data["caption"] = [caption_rich_text.model_dump()]
         else:
-            # Empty caption list to match Notion's format for bookmarks without titles
             bookmark_data["caption"] = []
 
-        return {"type": "bookmark", "bookmark": bookmark_data}
+        return [{"type": "bookmark", "bookmark": bookmark_data}]
 
     @classmethod
     def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:

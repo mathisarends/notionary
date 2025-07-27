@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Tuple
+from typing import dict, Any, Tuple
 import re
 
 from notionary.blocks import ElementPromptBuilder, ElementPromptContent
@@ -30,7 +30,7 @@ class TextInlineFormatter:
     ]
 
     @classmethod
-    def parse_inline_formatting(cls, text: str) -> List[Dict[str, Any]]:
+    def parse_inline_formatting(cls, text: str) -> list[dict[str, Any]]:
         """
         Parse inline text formatting into Notion rich_text format.
 
@@ -38,7 +38,7 @@ class TextInlineFormatter:
             text: Markdown text with inline formatting
 
         Returns:
-            List of Notion rich_text objects
+            list of Notion rich_text objects
         """
         if not text:
             return []
@@ -47,17 +47,17 @@ class TextInlineFormatter:
 
     @classmethod
     def _split_text_into_segments(
-        cls, text: str, format_patterns: List[Tuple]
-    ) -> List[Dict[str, Any]]:
+        cls, text: str, format_patterns: list[Tuple]
+    ) -> list[dict[str, Any]]:
         """
         Split text into segments by formatting markers and convert to Notion rich_text format.
 
         Args:
             text: Text to split
-            format_patterns: List of (regex pattern, formatting dict) tuples
+            format_patterns: list of (regex pattern, formatting dict) tuples
 
         Returns:
-            List of Notion rich_text objects
+            list of Notion rich_text objects
         """
         segments = []
         remaining_text = text
@@ -107,8 +107,8 @@ class TextInlineFormatter:
 
     @classmethod
     def _create_text_element(
-        cls, text: str, formatting: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        cls, text: str, formatting: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Create a Notion text element with formatting.
 
@@ -136,7 +136,7 @@ class TextInlineFormatter:
         }
 
     @classmethod
-    def _create_link_element(cls, text: str, url: str) -> Dict[str, Any]:
+    def _create_link_element(cls, text: str, url: str) -> dict[str, Any]:
         """
         Create a Notion link element.
 
@@ -155,7 +155,7 @@ class TextInlineFormatter:
         }
 
     @classmethod
-    def _create_mention_element(cls, id: str) -> Dict[str, Any]:
+    def _create_mention_element(cls, id: str) -> dict[str, Any]:
         """
         Create a Notion mention element.
 
@@ -172,12 +172,12 @@ class TextInlineFormatter:
         }
 
     @classmethod
-    def extract_text_with_formatting(cls, rich_text: List[Dict[str, Any]]) -> str:
+    def extract_text_with_formatting(cls, rich_text: list[dict[str, Any]]) -> str:
         """
         Convert Notion rich_text elements back to Markdown formatted text.
 
         Args:
-            rich_text: List of Notion rich_text elements
+            rich_text: list of Notion rich_text elements
 
         Returns:
             Markdown formatted text
@@ -214,7 +214,7 @@ class TextInlineFormatter:
         return "".join(formatted_parts)
 
     @classmethod
-    def _default_annotations(cls) -> Dict[str, bool]:
+    def _default_annotations(cls) -> dict[str, bool]:
         """
         Create default annotations object.
 

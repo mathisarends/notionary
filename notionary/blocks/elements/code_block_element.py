@@ -7,6 +7,7 @@ from notionary.blocks import (
     ElementPromptBuilder,
     NotionBlockResult,
 )
+from notionary.blocks.models import RichTextObject
 
 
 class CodeBlockElement(NotionBlockElement):
@@ -53,31 +54,26 @@ class CodeBlockElement(NotionBlockElement):
         if content.endswith("\n"):
             content = content[:-1]
 
+        # Create code block with rich text
+        content_rich_text = RichTextObject.from_plain_text(content)
+
         block = {
             "type": "code",
             "code": {
-                "rich_text": [
-                    {
-                        "type": "text",
-                        "text": {"content": content},
-                        "plain_text": content,
-                    }
-                ],
+                "rich_text": [content_rich_text.model_dump()],
                 "language": language,
             },
         }
 
         # Add caption if provided
         if caption and caption.strip():
-            block["code"]["caption"] = [
-                {
-                    "type": "text",
-                    "text": {"content": caption.strip()},
-                    "plain_text": caption.strip(),
-                }
-            ]
+            caption_rich_text = RichTextObject.from_plain_text(caption.strip())
+            block["code"]["caption"] = [caption_rich_text.model_dump()]
 
-        return block
+        # Leerer Paragraph nach dem Code-Block
+        empty_paragraph = {"type": "paragraph", "paragraph": {"rich_text": []}}
+
+        return [block, empty_paragraph]
 
     @classmethod
     def notion_to_markdown(cls, block: dict[str, any]) -> Optional[str]:

@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
 from typing import Literal, Optional, Union, Any, Dict
 from pydantic import BaseModel
 
@@ -197,27 +200,56 @@ class MentionObject(BaseModel):
     # Add other mention types as needed
 
 
-class MentionRichText(BaseModel):
-    type: Literal["mention"]
-    mention: MentionObject
-    annotations: TextAnnotations = TextAnnotations()
+@dataclass
+class TextAnnotations:
+    """Text formatting annotations"""
+
+    bold: bool = False
+    italic: bool = False
+    strikethrough: bool = False
+    underline: bool = False
+    code: bool = False
+    color: str = "default"
+
+
+@dataclass
+class TextContent:
+    """Text content with optional link"""
+
+    content: str
+    link: Optional[str] = None
+
+
+class TextAnnotations(BaseModel):
+    bold: bool = False
+    italic: bool = False
+    strikethrough: bool = False
+    underline: bool = False
+    code: bool = False
+    color: str = "default"
+
+
+class TextContent(BaseModel):
+    content: str
+    link: Optional[str] = None
+
+
+class RichTextObject(BaseModel):
+    type: str = "text"
+    text: TextContent
+    annotations: TextAnnotations
     plain_text: str
     href: Optional[str] = None
 
+    @classmethod
+    def from_plain_text(cls, content: str, **kwargs) -> RichTextObject:
+        """Create rich text object from plain text with optional formatting."""
+        annotations = TextAnnotations(**kwargs)
+        text_content = TextContent(content=content, link=None)
 
-class EquationExpression(BaseModel):
-    expression: str
-
-
-class EquationRichText(BaseModel):
-    type: Literal["equation"]
-    equation: EquationExpression
-    annotations: TextAnnotations = TextAnnotations()
-    plain_text: str
-    href: Optional[str] = None
-
-
-RichTextObject = Union[TextObject, MentionRichText, EquationRichText]
+        return cls(
+            text=text_content, annotations=annotations, plain_text=content, href=None
+        )
 
 
 # ============================================================================
