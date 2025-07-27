@@ -32,12 +32,9 @@ class PageContentWriter(LoggingMixin):
         markdown_text = self._process_markdown_whitespace(markdown_text)
 
         try:
-            self.logger.debug("Converting markdown to Notion blocks...")
             blocks = self._markdown_to_notion_converter.convert(markdown_text)
-            self.logger.debug("Blocks after conversion: %r", blocks)
 
             fixed_blocks = fix_blocks_content_length(blocks)
-            self.logger.debug("Blocks after content length fix: %r", fixed_blocks)
 
             result = await self._block_client.append_block_children(
                 block_id=self.page_id, children=fixed_blocks

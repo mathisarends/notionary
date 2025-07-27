@@ -1,5 +1,4 @@
 import re
-from typing import Optional
 from notionary.blocks.elements.notion_block_element import NotionBlock
 from notionary.blocks.registry.block_registry import BlockRegistry
 
@@ -10,7 +9,6 @@ class LineProcessingState:
     def __init__(self):
         self.paragraph_lines: list[str] = []
         self.paragraph_start: int = 0
-        self.in_todo_sequence: bool = False
 
     def add_to_paragraph(self, line: str, current_pos: int):
         """Add line to current paragraph"""
@@ -97,24 +95,13 @@ class LineProcessor:
         state: LineProcessingState,
     ):
         """Process a single line of text"""
-        # Handle todo items
-        todo_blocks = self._extract_todo_item(line)
-        if todo_blocks:
-            self._handle_todo_lines(
-                todo_blocks, current_pos, line_end, line_blocks, state
-            )
-            return
-
-        # Reset todo sequence if we were in one
-        state.in_todo_sequence = False
-
         # Handle empty lines
         if not line.strip():
             self._finalize_paragraph(state, current_pos, line_blocks)
             state.reset_paragraph()
             return
 
-        # Handle special blocks (headings, etc.)
+        # Handle special blocks (headings, todos, dividers, etc.)
         special_blocks = self._extract_special_block(line)
         if special_blocks:
             self._finalize_paragraph(state, current_pos, line_blocks)
@@ -127,60 +114,26 @@ class LineProcessor:
         # Add to current paragraph
         state.add_to_paragraph(line, current_pos)
 
-    def _extract_todo_item(self, line: str) -> list[NotionBlock]:
-        """Extract todo item from line if present"""
-        todo_elements = [
-            element
-            for element in self._block_registry.get_elements()
-            if not element.is_multiline() and element.__name__ == "TodoElement"
-        ]
-
-        for element in todo_elements:
-            if element.match_markdown(line):
-                result = element.markdown_to_notion(line)
-                return self._normalize_to_list(result)
-        return []
-
     def _extract_special_block(self, line: str) -> list[NotionBlock]:
         """Extract special block (non-paragraph) from line"""
-        non_multiline_elements = [
+        for element in (
             element
             for element in self._block_registry.get_elements()
             if not element.is_multiline()
-        ]
+        ):
+            if not element.match_markdown(line):
+                continue
 
-        for element in non_multiline_elements:
-            if element.match_markdown(line):
-                result = element.markdown_to_notion(line)
-                blocks = self._normalize_to_list(result)
-                if blocks:
-                    # Filtere nur Nicht-Paragraph Blöcke
-                    special_blocks = [
-                        block for block in blocks if block.get("type") != "paragraph"
-                    ]
-                    if special_blocks:
-                        return blocks  # Ganze Liste zurückgeben
+            result = element.markdown_to_notion(line)
+            blocks = self._normalize_to_list(result)
+            if not blocks:
+                continue
+
+            # Gibt nur zurück, wenn mindestens ein Nicht-Paragraph-Block dabei ist
+            if any(block.get("type") != "paragraph" for block in blocks):
+                return blocks
+
         return []
-
-    def _handle_todo_lines(
-        self,
-        todo_blocks: list[dict[str, any]],
-        current_pos: int,
-        line_end: int,
-        line_blocks: list[tuple[int, int, dict[str, any]]],
-        state: LineProcessingState,
-    ):
-        """Handle lines containing todo items"""
-        # Finish current paragraph if starting new todo sequence
-        if not state.in_todo_sequence and state.has_paragraph():
-            self._finalize_paragraph(state, current_pos, line_blocks)
-
-        # Mehrere Todo-Blöcke hinzufügen
-        for todo_block in todo_blocks:
-            line_blocks.append((current_pos, line_end, todo_block))
-
-        state.reset_paragraph()
-        state.in_todo_sequence = True
 
     def _finalize_paragraph(
         self,

@@ -2,7 +2,11 @@ import re
 
 from typing import Optional
 from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder, NotionBlockResult
+from notionary.blocks import (
+    ElementPromptContent,
+    ElementPromptBuilder,
+    NotionBlockResult,
+)
 
 
 class CodeBlockElement(NotionBlockElement):

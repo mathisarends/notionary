@@ -1,6 +1,7 @@
 from notionary.blocks import ColumnElement, BlockRegistry
 from notionary.page.formatting.line_processor import LineProcessor
 
+
 # Add Spacer Rules to blocks directly
 class MarkdownToNotionConverter:
     """Clean converter focused on block identification and conversion"""
@@ -82,7 +83,7 @@ class MarkdownToNotionConverter:
                 if not self._overlaps_with_ranges(start_pos, end_pos, excluded_ranges):
                     # Füge das multiline-Element hinzu
                     blocks.append((start_pos, end_pos, block))
-                    
+
                     # Füge leeren Paragraph direkt nach dem multiline-Element hinzu
                     empty_paragraph = self._create_empty_paragraph()
                     # Position direkt nach dem multiline-Block
@@ -90,7 +91,7 @@ class MarkdownToNotionConverter:
                     blocks.append((spacer_pos, spacer_pos, empty_paragraph))
 
         return blocks
-    
+
     def _process_remaining_lines(
         self, text: str, exclude_blocks: list[tuple[int, int, dict[str, any]]]
     ) -> list[tuple[int, int, dict[str, any]]]:
