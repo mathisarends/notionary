@@ -8,28 +8,24 @@ from notionary.blocks.markdown_node import MarkdownNode
 class ImageMarkdownBlockParams(BaseModel):
     url: str
     caption: Optional[str] = None
-    alt: Optional[str] = None
 
 
 class ImageMarkdownNode(MarkdownNode):
     """
-    Programmatic interface for creating Markdown image blocks.
-    Supports optional caption and alt text.
-    Example: ![Caption](https://example.com/image.jpg "alt text")
+    Programmatic interface for creating Notion-style image blocks.
+    Example: [image](https://example.com/image.jpg "Optional caption")
     """
 
-    def __init__(
-        self, url: str, caption: Optional[str] = None, alt: Optional[str] = None
-    ):
+    def __init__(self, url: str, caption: Optional[str] = None, alt: Optional[str] = None):
         self.url = url
-        self.caption = caption or ""
-        self.alt = alt
+        self.caption = caption
+        # Note: 'alt' is kept for API compatibility but not used in Notion syntax
 
     @classmethod
     def from_params(cls, params: ImageMarkdownBlockParams) -> ImageMarkdownNode:
-        return cls(url=params.url, caption=params.caption, alt=params.alt)
+        return cls(url=params.url, caption=params.caption)
 
     def to_markdown(self) -> str:
-        if self.alt:
-            return f'![{self.caption}]({self.url} "{self.alt}")'
-        return f"![{self.caption}]({self.url})"
+        if self.caption:
+            return f'[image]({self.url} "{self.caption}")'
+        return f"[image]({self.url})"

@@ -83,11 +83,7 @@ async def main():
         print("Searching for page by name...")
         page = await NotionPage.from_page_name(YOUR_PAGE_NAME)
 
-        icon, title, url = await asyncio.gather(
-            page.get_icon(), page.get_title(), page.get_url()
-        )
-
-        print(f'✅ Found: "{title}" {icon} → {url}')
+        print(f'✅ Found: "{page.title}" {page.emoji_icon} → {page.url}')
 
         # Generate a large number of blocks
         num_blocks = 250  # This should trigger at least 3 batches (100, 100, 50)
