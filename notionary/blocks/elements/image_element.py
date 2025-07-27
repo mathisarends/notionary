@@ -2,7 +2,11 @@ import re
 
 from typing import Dict, Any, Optional, List
 from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks import (
+    ElementPromptContent,
+    ElementPromptBuilder,
+    NotionBlockResult,
+)
 
 
 class ImageElement(NotionBlockElement):
@@ -36,7 +40,7 @@ class ImageElement(NotionBlockElement):
         return block.get("type") == "image"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown image to Notion image block."""
         image_match = ImageElement.PATTERN.match(text.strip())
         if not image_match:
@@ -60,7 +64,10 @@ class ImageElement(NotionBlockElement):
                 {"type": "text", "text": {"content": caption}}
             ]
 
-        return image_block
+        # Leerer Paragraph nach dem Bild
+        empty_paragraph = {"type": "paragraph", "paragraph": {"rich_text": []}}
+
+        return [image_block, empty_paragraph]
 
     @classmethod
     def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:

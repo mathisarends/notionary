@@ -1,9 +1,13 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple
 
-from notionary.blocks import NotionBlockElement
+from notionary.blocks import (
+    NotionBlockElement,
+    NotionBlockResult,
+    ElementPromptContent,
+    ElementPromptBuilder,
+)
 from notionary.blocks.elements.text_inline_formatter import TextInlineFormatter
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
 
 
 class TableElement(NotionBlockElement):
@@ -46,7 +50,7 @@ class TableElement(NotionBlockElement):
         return block.get("type") == "table"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown table to Notion table block."""
         if not TableElement.match_markdown(text):
             return None
@@ -67,7 +71,7 @@ class TableElement(NotionBlockElement):
         column_count = len(rows[0])
         TableElement._normalize_row_lengths(rows, column_count)
 
-        return {
+        table_block = {
             "type": "table",
             "table": {
                 "table_width": column_count,
@@ -76,6 +80,11 @@ class TableElement(NotionBlockElement):
                 "children": TableElement._create_table_rows(rows),
             },
         }
+
+        # Leerer Paragraph nach der Tabelle
+        empty_paragraph = {"type": "paragraph", "paragraph": {"rich_text": []}}
+
+        return [table_block, empty_paragraph]
 
     @classmethod
     def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:

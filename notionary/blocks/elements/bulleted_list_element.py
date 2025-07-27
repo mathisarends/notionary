@@ -1,7 +1,11 @@
 import re
 from typing import Dict, Any, Optional
 from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks import (
+    ElementPromptContent,
+    ElementPromptBuilder,
+    NotionBlockResult,
+)
 
 from notionary.blocks.elements.text_inline_formatter import TextInlineFormatter
 
@@ -10,7 +14,7 @@ class BulletedListElement(NotionBlockElement):
     """Class for converting between Markdown bullet lists and Notion bulleted list items."""
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown bulleted list item to Notion block."""
         pattern = re.compile(
             r"^(\s*)[*\-+]\s+(?!\[[ x]\])(.+)$"

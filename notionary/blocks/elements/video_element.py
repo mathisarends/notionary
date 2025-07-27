@@ -1,8 +1,12 @@
 import re
 from typing import Dict, Any, Optional, List
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks import (
+    ElementPromptContent,
+    ElementPromptBuilder,
+    NotionBlockResult,
+    NotionBlockElement,
+)
 
 
 class VideoElement(NotionBlockElement):
@@ -61,7 +65,7 @@ class VideoElement(NotionBlockElement):
         return None
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown video embed to Notion video block."""
         video_match = VideoElement.PATTERN.match(text.strip())
         if not video_match:
@@ -87,7 +91,10 @@ class VideoElement(NotionBlockElement):
                 {"type": "text", "text": {"content": caption}}
             ]
 
-        return video_block
+        # Leerer Paragraph nach dem Video
+        empty_paragraph = {"type": "paragraph", "paragraph": {"rich_text": []}}
+
+        return [video_block, empty_paragraph]
 
     @classmethod
     def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:

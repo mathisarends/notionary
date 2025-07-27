@@ -2,7 +2,11 @@ import re
 from typing import Dict, Any, Optional, List, Tuple
 
 from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks import (
+    ElementPromptContent,
+    ElementPromptBuilder,
+    NotionBlockResult,
+)
 
 
 class BookmarkElement(NotionBlockElement):
@@ -42,7 +46,7 @@ class BookmarkElement(NotionBlockElement):
         return block.get("type") in ["bookmark", "external-bookmark"]
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown bookmark to Notion bookmark block."""
         bookmark_match = BookmarkElement.PATTERN.match(text.strip())
         if not bookmark_match:

@@ -2,8 +2,11 @@
 from .prompts.element_prompt_content import ElementPromptContent
 from .prompts.element_prompt_builder import ElementPromptBuilder
 
-from .elements.notion_block_element import NotionBlockElement
-
+from .elements.notion_block_element import (
+    NotionBlockElement,
+    NotionBlockResult,
+    NotionBlock,
+)
 
 from .elements.audio_element import AudioElement
 from .elements.bulleted_list_element import BulletedListElement
@@ -31,7 +34,6 @@ from .elements.text_inline_formatter import TextInlineFormatter
 
 from .registry.block_registry import BlockRegistry
 from .registry.block_registry_builder import BlockRegistryBuilder
-from .elements.notion_block_client import NotionBlockClient
 
 from .block_client import NotionBlockClient
 
@@ -61,7 +63,8 @@ __all__ = [
     "DocumentElement",
     "BlockRegistry",
     "BlockRegistryBuilder",
-    "NotionBlockClient",
     "TextInlineFormatter",
+    "NotionBlockResult",
+    "NotionBlock",
     "NotionBlockClient",
 ]

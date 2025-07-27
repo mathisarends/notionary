@@ -1,8 +1,8 @@
 import re
 
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Optional
 from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks import ElementPromptContent, ElementPromptBuilder, NotionBlockResult
 
 
 class CodeBlockElement(NotionBlockElement):
@@ -31,12 +31,12 @@ class CodeBlockElement(NotionBlockElement):
         return bool(CodeBlockElement.PATTERN.search(text))
 
     @classmethod
-    def match_notion(cls, block: Dict[str, Any]) -> bool:
+    def match_notion(cls, block: dict[str, any]) -> bool:
         """Check if block is a Notion code block."""
         return block.get("type") == "code"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown code block to Notion code block."""
         match = CodeBlockElement.PATTERN.search(text)
         if not match:
@@ -76,7 +76,7 @@ class CodeBlockElement(NotionBlockElement):
         return block
 
     @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
+    def notion_to_markdown(cls, block: dict[str, any]) -> Optional[str]:
         """Convert Notion code block to markdown code block."""
         if block.get("type") != "code":
             return None
@@ -107,7 +107,7 @@ class CodeBlockElement(NotionBlockElement):
         return result
 
     @classmethod
-    def find_matches(cls, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
+    def find_matches(cls, text: str) -> list[tuple[int, int, dict[str, any]]]:
         """
         Find all code block matches in the text and return their positions.
 
@@ -187,7 +187,7 @@ class CodeBlockElement(NotionBlockElement):
                     "```python\nprint('Hello, world!')\n```\nCaption: Basic Python greeting example",
                     '```json\n{"name": "Alice", "age": 30}\n```\nCaption: User data structure',
                     "```mermaid\nflowchart TD\n  A --> B\n```\nCaption: Simple flow diagram",
-                    '```bash\ngit commit -m "Initial commit"\n```',  # Without caption
+                    '```bash\ngit commit -m "Initial commit"\n```',
                 ]
             )
             .with_avoidance_guidelines(

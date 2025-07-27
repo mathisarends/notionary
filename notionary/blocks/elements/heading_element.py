@@ -2,7 +2,11 @@ import re
 from typing import Dict, Any, Optional
 
 from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks import (
+    ElementPromptContent,
+    ElementPromptBuilder,
+    NotionBlockResult,
+)
 from notionary.blocks.elements.text_inline_formatter import TextInlineFormatter
 
 
@@ -23,8 +27,8 @@ class HeadingElement(NotionBlockElement):
         return block_type.startswith("heading_") and block_type[-1] in "123"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
-        """Convert markdown heading to Notion heading block."""
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
+        """Convert markdown heading to Notion heading block with preceding empty paragraph."""
         header_match = HeadingElement.PATTERN.match(text)
         if not header_match:
             return None
@@ -35,12 +39,14 @@ class HeadingElement(NotionBlockElement):
 
         content = header_match.group(2)
 
-        return {
+        header_block = {
             "type": f"heading_{level}",
             f"heading_{level}": {
                 "rich_text": TextInlineFormatter.parse_inline_formatting(content)
             },
         }
+
+        return [header_block]
 
     @classmethod
     def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:

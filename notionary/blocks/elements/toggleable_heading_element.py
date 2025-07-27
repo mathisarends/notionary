@@ -1,8 +1,12 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple, Callable
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks import (
+    ElementPromptContent,
+    ElementPromptBuilder,
+    NotionBlockElement,
+    NotionBlockResult,
+)
 from notionary.blocks.elements.text_inline_formatter import TextInlineFormatter
 
 
@@ -29,7 +33,7 @@ class ToggleableHeadingElement(NotionBlockElement):
         return heading_data.get("is_toggleable", False) is True
 
     @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(text: str) -> NotionBlockResult:
         """Convert markdown collapsible heading to Notion toggleable heading block."""
         header_match = ToggleableHeadingElement.PATTERN.match(text)
         if not header_match:

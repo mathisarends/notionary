@@ -2,7 +2,11 @@ import re
 from typing import Dict, Any, Optional, List
 
 from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks import (
+    ElementPromptContent,
+    ElementPromptBuilder,
+    NotionBlockResult,
+)
 
 
 class DocumentElement(NotionBlockElement):
@@ -82,7 +86,7 @@ class DocumentElement(NotionBlockElement):
         return any(service in url_lower for service in document_services)
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown document embed to Notion file block."""
         doc_match = cls.PATTERN.match(text.strip())
         if not doc_match:

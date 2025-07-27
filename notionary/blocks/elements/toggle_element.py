@@ -1,8 +1,12 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple, Callable
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks import (
+    NotionBlockElement,
+    NotionBlockResult,
+    ElementPromptContent,
+    ElementPromptBuilder,
+)
 
 
 class ToggleElement(NotionBlockElement):
@@ -26,7 +30,7 @@ class ToggleElement(NotionBlockElement):
         return block.get("type") == "toggle"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown toggle line to Notion toggle block."""
         toggle_match = ToggleElement.TOGGLE_PATTERN.match(text.strip())
         if not toggle_match:

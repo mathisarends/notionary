@@ -1,11 +1,12 @@
 import re
-from typing import Dict, Any, Optional
+from typing import Any, Optional
 
 from notionary.blocks.elements.text_inline_formatter import TextInlineFormatter
 from notionary.blocks import (
     NotionBlockElement,
     ElementPromptContent,
     ElementPromptBuilder,
+    NotionBlockResult,
 )
 
 
@@ -38,12 +39,12 @@ class CalloutElement(NotionBlockElement):
         )
 
     @classmethod
-    def match_notion(cls, block: Dict[str, Any]) -> bool:
+    def match_notion(cls, block: dict[str, Any]) -> bool:
         """Check if block is a Notion callout."""
         return block.get("type") == "callout"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown callout to Notion callout block."""
         callout_match = CalloutElement.PATTERN.match(text)
         if not callout_match:
@@ -65,7 +66,7 @@ class CalloutElement(NotionBlockElement):
         }
 
     @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
+    def notion_to_markdown(cls, block: dict[str, Any]) -> Optional[str]:
         """Convert Notion callout block to markdown callout."""
         if block.get("type") != "callout":
             return None

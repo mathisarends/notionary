@@ -1,7 +1,7 @@
 import re
 from typing import Dict, Any, Optional, List, Tuple
 
-from notionary.blocks import NotionBlockElement
+from notionary.blocks import NotionBlockElement, NotionBlockResult
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
 
 
@@ -64,7 +64,7 @@ class QuoteElement(NotionBlockElement):
         return False
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown blockquote to Notion block."""
         if not text:
             return None

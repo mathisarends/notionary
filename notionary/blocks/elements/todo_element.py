@@ -1,8 +1,12 @@
 import re
 from typing import Dict, Any, Optional
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks import (
+    ElementPromptContent,
+    ElementPromptBuilder,
+    NotionBlockResult,
+    NotionBlockElement,
+)
 from notionary.blocks.elements.text_inline_formatter import TextInlineFormatter
 
 
@@ -34,7 +38,7 @@ class TodoElement(NotionBlockElement):
         return block.get("type") == "to_do"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown todo item to Notion to_do block."""
         done_match = TodoElement.DONE_PATTERN.match(text)
         if done_match:

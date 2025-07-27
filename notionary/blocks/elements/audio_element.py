@@ -1,11 +1,12 @@
 from __future__ import annotations
-from typing import Dict, Any, Optional, List
+from typing import Optional
 import re
 
 from notionary.blocks import (
     NotionBlockElement,
     ElementPromptBuilder,
     ElementPromptContent,
+    NotionBlockResult,
 )
 
 
@@ -32,7 +33,7 @@ class AudioElement(NotionBlockElement):
         return text.startswith("$[") and bool(cls.PATTERN.match(text))
 
     @classmethod
-    def match_notion(cls, block: Dict[str, Any]) -> bool:
+    def match_notion(cls, block: dict[str, any]) -> bool:
         """Check if block is a Notion audio."""
         return block.get("type") == "audio"
 
@@ -46,7 +47,7 @@ class AudioElement(NotionBlockElement):
         )
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown audio embed to Notion audio block."""
         audio_match = cls.PATTERN.match(text.strip())
         if not audio_match:
@@ -78,7 +79,7 @@ class AudioElement(NotionBlockElement):
         return audio_block
 
     @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
+    def notion_to_markdown(cls, block: dict[str, any]) -> Optional[str]:
         """Convert Notion audio block to markdown audio embed."""
         if block.get("type") != "audio":
             return None
@@ -110,7 +111,7 @@ class AudioElement(NotionBlockElement):
         return False
 
     @classmethod
-    def _extract_text_content(cls, rich_text: List[Dict[str, Any]]) -> str:
+    def _extract_text_content(cls, rich_text: List[dict[str, any]]) -> str:
         """Extract plain text content from Notion rich_text elements."""
         result = ""
         for text_obj in rich_text:

@@ -1,8 +1,12 @@
 import re
-from typing import Dict, Any, Optional, List, Tuple, Callable
+from typing import Optional, Callable
 
 from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks import (
+    ElementPromptContent,
+    ElementPromptBuilder,
+    NotionBlockResult,
+)
 
 
 class ColumnElement(NotionBlockElement):
@@ -30,7 +34,7 @@ class ColumnElement(NotionBlockElement):
 
     @classmethod
     def set_converter_callback(
-        cls, callback: Callable[[str], List[Dict[str, Any]]]
+        cls, callback: Callable[[str], list[dict[str, any]]]
     ) -> None:
         """
         Setze die Callback-Funktion, die zum Konvertieren von Markdown zu Notion-Blöcken verwendet wird.
@@ -46,12 +50,12 @@ class ColumnElement(NotionBlockElement):
         return bool(ColumnElement.COLUMNS_START.match(text.strip()))
 
     @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    def match_notion(block: dict[str, any]) -> bool:
         """Check if block is a Notion column_list."""
         return block.get("type") == "column_list"
 
     @staticmethod
-    def markdown_to_notion(text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(text: str) -> NotionBlockResult:
         """
         Convert markdown column syntax to Notion column blocks.
 
@@ -63,10 +67,10 @@ class ColumnElement(NotionBlockElement):
 
         # Create an empty column_list block
         # Child columns will be added by the column processor
-        return {"type": "column_list", "column_list": {"children": []}}
+        return [{"type": "column_list", "column_list": {"children": []}}]
 
     @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    def notion_to_markdown(block: dict[str, any]) -> Optional[str]:
         """Convert Notion column_list block to markdown column syntax."""
         if block.get("type") != "column_list":
             return None
@@ -99,7 +103,7 @@ class ColumnElement(NotionBlockElement):
     @classmethod
     def find_matches(
         cls, text: str, converter_callback: Optional[Callable] = None
-    ) -> List[Tuple[int, int, Dict[str, Any]]]:
+    ) -> list[tuple[int, int, dict[str, any]]]:
         """
         Find all column block matches in the text and return their positions and blocks.
 
@@ -140,8 +144,8 @@ class ColumnElement(NotionBlockElement):
 
     @classmethod
     def _process_column_block(
-        cls, lines: List[str], start_index: int, converter_callback: Callable
-    ) -> Tuple[int, int, Dict[str, Any], int]:
+        cls, lines: list[str], start_index: int, converter_callback: Callable
+    ) -> tuple[int, int, dict[str, any], int]:
         """
         Process a complete column block structure from the given starting line.
 
@@ -154,7 +158,8 @@ class ColumnElement(NotionBlockElement):
             Tuple of (start_pos, end_pos, block, next_line_index)
         """
         columns_start = start_index
-        columns_block = cls.markdown_to_notion(lines[start_index].strip())
+        columns_blocks = cls.markdown_to_notion(lines[start_index].strip())
+        columns_block = columns_blocks[0] if columns_blocks else None
         columns_children = []
 
         next_index = cls._collect_columns(
@@ -162,7 +167,7 @@ class ColumnElement(NotionBlockElement):
         )
 
         # Add columns to the main block
-        if columns_children:
+        if columns_children and columns_block:
             columns_block["column_list"]["children"] = columns_children
 
         # Calculate positions
@@ -174,9 +179,9 @@ class ColumnElement(NotionBlockElement):
     @classmethod
     def _collect_columns(
         cls,
-        lines: List[str],
+        lines: list[str],
         start_index: int,
-        columns_children: List[Dict[str, Any]],
+        columns_children: list[dict[str, any]],
         converter_callback: Callable,
     ) -> int:
         """
@@ -236,8 +241,8 @@ class ColumnElement(NotionBlockElement):
 
     @staticmethod
     def _finalize_column(
-        column_content: List[str],
-        columns_children: List[Dict[str, Any]],
+        column_content: list[str],
+        columns_children: list[dict[str, any]],
         in_column: bool,
         converter_callback: Callable,
     ) -> None:
@@ -267,7 +272,7 @@ class ColumnElement(NotionBlockElement):
         return True
 
     @staticmethod
-    def _preprocess_column_content(lines: List[str]) -> List[str]:
+    def _preprocess_column_content(lines: list[str]) -> list[str]:
         """Remove all spacer markers from column content."""
         return [line for line in lines if line.strip() != "---spacer---"]
 

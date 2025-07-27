@@ -2,7 +2,11 @@ import re
 
 from typing import Dict, Any, Optional, List
 from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks import (
+    ElementPromptContent,
+    ElementPromptBuilder,
+    NotionBlockResult,
+)
 
 
 class EmbedElement(NotionBlockElement):
@@ -33,7 +37,7 @@ class EmbedElement(NotionBlockElement):
         return block.get("type") == "embed"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown embed to Notion embed block."""
         embed_match = EmbedElement.PATTERN.match(text.strip())
         if not embed_match:
@@ -57,7 +61,10 @@ class EmbedElement(NotionBlockElement):
                 {"type": "text", "text": {"content": caption}}
             ]
 
-        return embed_block
+        # Leerer Paragraph nach dem Embed
+        empty_paragraph = {"type": "paragraph", "paragraph": {"rich_text": []}}
+
+        return [embed_block, empty_paragraph]
 
     @classmethod
     def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:

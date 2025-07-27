@@ -1,10 +1,7 @@
-from __future__ import annotations
-
 from notionary.blocks import ColumnElement, BlockRegistry
-from notionary.blocks.elements.notion_block_element import NotionBlockElement
 from notionary.page.formatting.line_processor import LineProcessor
 
-
+# Add Spacer Rules to blocks directly
 class MarkdownToNotionConverter:
     """Clean converter focused on block identification and conversion"""
 
@@ -25,9 +22,8 @@ class MarkdownToNotionConverter:
         # Main conversion pipeline
         blocks_with_positions = self._identify_all_blocks(markdown_text)
         blocks_with_positions.sort(key=lambda x: x[0])  # Sort by position
-        blocks = [block for _, _, block in blocks_with_positions]
 
-        return self._add_block_spacing(blocks)
+        return [block for _, _, block in blocks_with_positions]
 
     def _identify_all_blocks(
         self, markdown_text: str
@@ -84,10 +80,17 @@ class MarkdownToNotionConverter:
 
             for start_pos, end_pos, block in matches:
                 if not self._overlaps_with_ranges(start_pos, end_pos, excluded_ranges):
+                    # Füge das multiline-Element hinzu
                     blocks.append((start_pos, end_pos, block))
+                    
+                    # Füge leeren Paragraph direkt nach dem multiline-Element hinzu
+                    empty_paragraph = self._create_empty_paragraph()
+                    # Position direkt nach dem multiline-Block
+                    spacer_pos = end_pos + 1
+                    blocks.append((spacer_pos, spacer_pos, empty_paragraph))
 
         return blocks
-
+    
     def _process_remaining_lines(
         self, text: str, exclude_blocks: list[tuple[int, int, dict[str, any]]]
     ) -> list[tuple[int, int, dict[str, any]]]:
@@ -135,55 +138,7 @@ class MarkdownToNotionConverter:
         """Check if a range overlaps with excluded positions"""
         return any(pos in excluded_ranges for pos in range(start_pos, end_pos + 1))
 
-    def _add_block_spacing(self, blocks: list[dict[str, any]]) -> list[dict[str, any]]:
-        """Add appropriate spacing between blocks"""
-        if not blocks:
-            return blocks
-
-        final_blocks = []
-        for i, block in enumerate(blocks):
-            final_blocks.append(block)
-
-            # Add spacing after multiline blocks if needed
-            if self._is_multiline_block(block) and self._needs_spacing_after(blocks, i):
-                final_blocks.append(self._create_empty_paragraph())
-
-        return final_blocks
-
-    def _is_multiline_block(self, block: dict[str, any]) -> bool:
-        """Check if block type corresponds to multiline element"""
-        block_type = block.get("type")
-        if not block_type:
-            return False
-
-        for element in self._block_registry.get_multiline_elements():
-            if block_type in element.__name__.lower() or (
-                hasattr(element, "match_notion") and element.match_notion(block)
-            ):
-                return True
-
-        return False
-
-    def _needs_spacing_after(
-        self, blocks: list[dict[str, any]], block_index: int
-    ) -> bool:
-        """Check if spacing is needed after current block"""
-        # No spacing after last block
-        if block_index + 1 >= len(blocks):
-            return False
-
-        # No spacing if next block is already empty
-        next_block = blocks[block_index + 1]
-        return not self._is_empty_paragraph(next_block)
-
-    def _create_empty_paragraph(self) -> dict[str, any]:
-        """Create empty paragraph block"""
+    @staticmethod
+    def _create_empty_paragraph() -> dict[str, any]:
+        """Create an empty paragraph block"""
         return {"type": "paragraph", "paragraph": {"rich_text": []}}
-
-    def _is_empty_paragraph(self, block: dict[str, any]) -> bool:
-        """Check if block is empty paragraph"""
-        if block.get("type") != "paragraph":
-            return False
-
-        rich_text = block.get("paragraph", {}).get("rich_text", [])
-        return len(rich_text) == 0

@@ -2,7 +2,11 @@ import re
 from typing import Dict, Any, Optional, List
 
 from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks import (
+    ElementPromptContent,
+    ElementPromptBuilder,
+    NotionBlockResult,
+)
 
 
 class MentionElement(NotionBlockElement):
@@ -74,7 +78,7 @@ class MentionElement(NotionBlockElement):
         return any(text_item.get("type") == "mention" for text_item in rich_text)
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown text with mentions to a Notion paragraph block."""
         if not MentionElement.match_markdown(text):
             return None

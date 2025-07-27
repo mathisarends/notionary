@@ -2,7 +2,11 @@ import re
 from typing import Dict, Any, Optional
 
 from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks import (
+    ElementPromptContent,
+    ElementPromptBuilder,
+    NotionBlockResult,
+)
 
 
 class DividerElement(NotionBlockElement):
@@ -26,12 +30,16 @@ class DividerElement(NotionBlockElement):
         return block.get("type") == "divider"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown divider to Notion divider block."""
         if not DividerElement.match_markdown(text):
             return None
 
-        return {"type": "divider", "divider": {}}
+        empty_paragraph = {"type": "paragraph", "paragraph": {"rich_text": []}}
+
+        divider_block = {"type": "divider", "divider": {}}
+
+        return [empty_paragraph, divider_block]
 
     @classmethod
     def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
