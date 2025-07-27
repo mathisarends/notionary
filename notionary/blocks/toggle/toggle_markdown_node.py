@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, List
 from pydantic import BaseModel
-from notionary.blocks.mappings.markdown_node import MarkdownNode
+from notionary.blocks.markdown_node import MarkdownNode
 
 
 class ToggleMarkdownBlockParams(BaseModel):
@@ -10,7 +10,7 @@ class ToggleMarkdownBlockParams(BaseModel):
     content: Optional[List[str]] = None
 
 
-class ToggleMarkdownBlock(MarkdownNode):
+class ToggleMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating Notion-style Markdown toggle blocks
     with pipe-prefixed nested content.
@@ -25,7 +25,7 @@ class ToggleMarkdownBlock(MarkdownNode):
         self.content = content or []
 
     @classmethod
-    def from_params(cls, params: ToggleMarkdownBlockParams) -> ToggleMarkdownBlock:
+    def from_params(cls, params: ToggleMarkdownBlockParams) -> ToggleMarkdownNode:
         return cls(title=params.title, content=params.content)
 
     def to_markdown(self) -> str:

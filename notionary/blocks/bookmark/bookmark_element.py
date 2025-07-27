@@ -7,7 +7,7 @@ from notionary.blocks import (
     ElementPromptBuilder,
     NotionBlockResult,
 )
-from notionary.blocks.models import RichTextObject
+from notionary.blocks.shared.models import RichTextObject
 
 
 class BookmarkElement(NotionBlockElement):
@@ -38,7 +38,7 @@ class BookmarkElement(NotionBlockElement):
     def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown bookmark."""
         return text.strip().startswith("[bookmark]") and bool(
-            BookmarkElement.PATTERN.match(text.strip())
+            cls.PATTERN.match(text.strip())
         )
 
     @classmethod

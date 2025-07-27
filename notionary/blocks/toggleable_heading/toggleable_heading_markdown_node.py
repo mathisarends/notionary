@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, List
 from pydantic import BaseModel
-from notionary.blocks.mappings.markdown_node import MarkdownNode
+from notionary.blocks.markdown_node import MarkdownNode
 
 
 class ToggleableHeadingMarkdownBlockParams(BaseModel):
@@ -11,7 +11,7 @@ class ToggleableHeadingMarkdownBlockParams(BaseModel):
     content: Optional[List[str]] = None
 
 
-class ToggleableHeadingMarkdownBlock(MarkdownNode):
+class ToggleableHeadingMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating collapsible Markdown headings (toggleable headings).
     Pipe-prefixed lines are used for the collapsible content.
@@ -32,7 +32,7 @@ class ToggleableHeadingMarkdownBlock(MarkdownNode):
     @classmethod
     def from_params(
         cls, params: ToggleableHeadingMarkdownBlockParams
-    ) -> ToggleableHeadingMarkdownBlock:
+    ) -> ToggleableHeadingMarkdownNode:
         return cls(text=params.text, level=params.level, content=params.content)
 
     def to_markdown(self) -> str:

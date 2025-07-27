@@ -1,7 +1,7 @@
 from typing import Optional, Dict, Any
 from notionary.base_notion_client import BaseNotionClient
 from notionary.util import singleton
-from notionary.blocks.models import Block, BlockChildrenResponse
+from notionary.blocks.shared.models import Block, BlockChildrenResponse
 
 
 @singleton

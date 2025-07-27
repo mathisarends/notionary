@@ -7,7 +7,7 @@ from notionary.blocks import (
     ElementPromptBuilder,
     NotionBlockResult,
 )
-from notionary.blocks.models import RichTextObject
+from notionary.blocks.shared.models import RichTextObject
 
 
 class CodeBlockElement(NotionBlockElement):

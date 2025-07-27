@@ -18,9 +18,7 @@ class ParagraphMarkdownNode(MarkdownNode):
         self.text = text
 
     @classmethod
-    def from_params(
-        cls, params: ParagraphMarkdownBlockParams
-    ) -> ParagraphMarkdownNode:
+    def from_params(cls, params: ParagraphMarkdownBlockParams) -> ParagraphMarkdownNode:
         return cls(text=params.text)
 
     def to_markdown(self) -> str:

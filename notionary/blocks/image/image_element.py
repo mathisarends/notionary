@@ -1,6 +1,6 @@
 import re
-
 from typing import Dict, Any, Optional, List
+
 from notionary.blocks import NotionBlockElement
 from notionary.blocks import (
     ElementPromptContent,
@@ -14,23 +14,26 @@ class ImageElement(NotionBlockElement):
     Handles conversion between Markdown images and Notion image blocks.
 
     Markdown image syntax:
-    - ![Caption](https://example.com/image.jpg) - Basic image with caption
-    - ![](https://example.com/image.jpg) - Image without caption
-    - ![Caption](https://example.com/image.jpg "alt text") - Image with caption and alt text
+    - [image](https://example.com/image.jpg) - Simple image with URL only
+    - [image](https://example.com/image.jpg "Caption") - Image with URL and caption
+
+    Where:
+    - URL is the required image URL
+    - Caption is an optional descriptive text (enclosed in quotes)
     """
 
-    # Regex pattern for image syntax with optional alt text
+    # Regex pattern for image syntax with optional caption
     PATTERN = re.compile(
-        r"^\!\[(.*?)\]"  # ![Caption] part
-        + r'\((https?://[^\s"]+)'  # (URL part
-        + r'(?:\s+"([^"]+)")?'  # Optional alt text in quotes
+        r"^\[image\]\("  # [image]( prefix
+        + r'(https?://[^\s"]+)'  # URL (required)
+        + r'(?:\s+"([^"]+)")?'  # Optional caption in quotes
         + r"\)$"  # closing parenthesis
     )
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown image."""
-        return text.strip().startswith("![") and bool(
+        return text.strip().startswith("[image]") and bool(
             ImageElement.PATTERN.match(text.strip())
         )
 
@@ -46,25 +49,24 @@ class ImageElement(NotionBlockElement):
         if not image_match:
             return None
 
-        caption = image_match.group(1)
-        url = image_match.group(2)
+        url = image_match.group(1)
+        caption = image_match.group(2)
 
         if not url:
             return None
 
-        # Prepare the image block
-        image_block = {
-            "type": "image",
-            "image": {"type": "external", "external": {"url": url}},
-        }
+        image_data = {"type": "external", "external": {"url": url}}
 
         # Add caption if provided
         if caption:
-            image_block["image"]["caption"] = [
-                {"type": "text", "text": {"content": caption}}
-            ]
+            image_data["caption"] = [{"type": "text", "text": {"content": caption}}]
+        else:
+            image_data["caption"] = []
 
-        # Leerer Paragraph nach dem Bild
+        # Prepare the image block
+        image_block = {"type": "image", "image": image_data}
+
+        # Add empty paragraph after image
         empty_paragraph = {"type": "paragraph", "paragraph": {"rich_text": []}}
 
         return [image_block, empty_paragraph]
@@ -78,23 +80,37 @@ class ImageElement(NotionBlockElement):
         image_data = block.get("image", {})
 
         # Handle both external and file (uploaded) images
-        if image_data.get("type") == "external":
-            url = image_data.get("external", {}).get("url", "")
-        elif image_data.get("type") == "file":
-            url = image_data.get("file", {}).get("url", "")
-        else:
-            return None
-
+        url = ImageElement._extract_image_url(image_data)
         if not url:
             return None
 
-        # Extract caption if available
-        caption = ""
         caption_rich_text = image_data.get("caption", [])
-        if caption_rich_text:
-            caption = ImageElement._extract_text_content(caption_rich_text)
 
-        return f"![{caption}]({url})"
+        if not caption_rich_text:
+            # Simple image with URL only
+            return f"[image]({url})"
+
+        # Extract caption text
+        caption = ImageElement._extract_text_content(caption_rich_text)
+
+        if caption:
+            return f'[image]({url} "{caption}")'
+
+        return f"[image]({url})"
+
+    @classmethod
+    def is_multiline(cls) -> bool:
+        """Images are single-line elements."""
+        return False
+
+    @classmethod
+    def _extract_image_url(cls, image_data: Dict[str, Any]) -> str:
+        """Extract URL from image data, handling both external and uploaded images."""
+        if image_data.get("type") == "external":
+            return image_data.get("external", {}).get("url", "")
+        elif image_data.get("type") == "file":
+            return image_data.get("file", {}).get("url", "")
+        return ""
 
     @classmethod
     def _extract_text_content(cls, rich_text: List[Dict[str, Any]]) -> str:
@@ -106,10 +122,6 @@ class ImageElement(NotionBlockElement):
             elif "plain_text" in text_obj:
                 result += text_obj.get("plain_text", "")
         return result
-
-    @classmethod
-    def is_multiline(cls) -> bool:
-        return False
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
@@ -126,12 +138,13 @@ class ImageElement(NotionBlockElement):
                 "that enhance your document. Images can make complex information easier to understand, create visual interest, "
                 "or provide evidence for your points."
             )
-            .with_syntax("![Caption](https://example.com/image.jpg)")
+            .with_syntax('[image](https://example.com/image.jpg "Optional caption")')
             .with_examples(
                 [
-                    "![Data visualization showing monthly trends](https://example.com/chart.png)",
-                    "![](https://example.com/screenshot.jpg)",
-                    '![Company logo](https://company.com/logo.png "Company Inc. logo")',
+                    "[image](https://example.com/chart.png)",
+                    '[image](https://example.com/screenshot.jpg "Data visualization showing monthly trends")',
+                    '[image](https://company.com/logo.png "Company Inc. logo")',
+                    '[image](https://example.com/diagram.jpg "System architecture overview")',
                 ]
             )
             .build()

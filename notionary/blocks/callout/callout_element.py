@@ -1,7 +1,7 @@
 import re
-from typing import Any, Optional
+from typing import Dict, Any, Optional, List
 
-from notionary.blocks.elements.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 from notionary.blocks import (
     NotionBlockElement,
     ElementPromptContent,
@@ -15,58 +15,65 @@ class CalloutElement(NotionBlockElement):
     Handles conversion between Markdown callouts and Notion callout blocks.
 
     Markdown callout syntax:
-    - !> [emoji] Text - Callout with custom emoji
-    - !> Text - Simple callout with default emoji
+    - [callout](Text) - Simple callout with default emoji
+    - [callout](Text "emoji") - Callout with custom emoji
 
     Where:
-    - [emoji] is any emoji character
-    - Text is the callout content with optional inline formatting
+    - Text is the required callout content
+    - emoji is an optional emoji character (enclosed in quotes)
     """
 
-    EMOJI_PATTERN = r"(?:\[([^\]]+)\])?\s*"
-    TEXT_PATTERN = r"(.+)"
+    # Regex pattern for callout syntax with optional emoji
+    PATTERN = re.compile(
+        r"^\[callout\]\("  # [callout]( prefix
+        + r'([^"]+?)'  # Text content (required)
+        + r'(?:\s+"([^"]+)")?'  # Optional emoji in quotes
+        + r"\)$"  # closing parenthesis
+    )
 
-    PATTERN = re.compile(r"^!>\s+" + EMOJI_PATTERN + TEXT_PATTERN + r"$")
-
+    # Default values
     DEFAULT_EMOJI = "💡"
     DEFAULT_COLOR = "gray_background"
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown callout."""
-        return text.strip().startswith("!>") and bool(
-            CalloutElement.PATTERN.match(text)
+        return text.strip().startswith("[callout]") and bool(
+            CalloutElement.PATTERN.match(text.strip())
         )
 
     @classmethod
-    def match_notion(cls, block: dict[str, Any]) -> bool:
+    def match_notion(cls, block: Dict[str, Any]) -> bool:
         """Check if block is a Notion callout."""
         return block.get("type") == "callout"
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> NotionBlockResult:
         """Convert markdown callout to Notion callout block."""
-        callout_match = CalloutElement.PATTERN.match(text)
+        callout_match = CalloutElement.PATTERN.match(text.strip())
         if not callout_match:
             return None
 
-        emoji = callout_match.group(1)
-        content = callout_match.group(2)
+        content = callout_match.group(1)
+        emoji = callout_match.group(2)
 
+        if not content:
+            return None
+
+        # Use default emoji if none provided
         if not emoji:
             emoji = CalloutElement.DEFAULT_EMOJI
 
-        return {
-            "type": "callout",
-            "callout": {
-                "rich_text": TextInlineFormatter.parse_inline_formatting(content),
-                "icon": {"type": "emoji", "emoji": emoji},
-                "color": CalloutElement.DEFAULT_COLOR,
-            },
+        callout_data = {
+            "rich_text": TextInlineFormatter.parse_inline_formatting(content.strip()),
+            "icon": {"type": "emoji", "emoji": emoji},
+            "color": CalloutElement.DEFAULT_COLOR,
         }
 
+        return {"type": "callout", "callout": callout_data}
+
     @classmethod
-    def notion_to_markdown(cls, block: dict[str, Any]) -> Optional[str]:
+    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
         """Convert Notion callout block to markdown callout."""
         if block.get("type") != "callout":
             return None
@@ -75,29 +82,33 @@ class CalloutElement(NotionBlockElement):
         rich_text = callout_data.get("rich_text", [])
         icon = callout_data.get("icon", {})
 
-        text = TextInlineFormatter.extract_text_with_formatting(rich_text)
-        if not text:
+        content = TextInlineFormatter.extract_text_with_formatting(rich_text)
+        if not content:
             return None
 
-        emoji = ""
-        if icon and icon.get("type") == "emoji":
-            emoji = icon.get("emoji", "")
+        emoji = CalloutElement._extract_emoji(icon)
 
-        emoji_str = ""
         if emoji and emoji != CalloutElement.DEFAULT_EMOJI:
-            emoji_str = f"[{emoji}] "
+            return f'[callout]({content} "{emoji}")'
 
-        return f"!> {emoji_str}{text}"
+        return f"[callout]({content})"
 
     @classmethod
     def is_multiline(cls) -> bool:
+        """Callouts are single-line elements."""
         return False
+
+    @classmethod
+    def _extract_emoji(cls, icon: Dict[str, Any]) -> str:
+        """Extract emoji from Notion icon object."""
+        if icon and icon.get("type") == "emoji":
+            return icon.get("emoji", "")
+        return ""
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
         Returns structured LLM prompt metadata for the callout element.
-        Includes description, usage guidance, syntax options, and examples.
         """
         return (
             ElementPromptBuilder()
@@ -106,21 +117,16 @@ class CalloutElement(NotionBlockElement):
             )
             .with_usage_guidelines(
                 "Use callouts when you want to draw attention to important information, "
-                "tips, warnings, or notes that stand out from the main content. "
-                "The emoji MUST be enclosed in square brackets to properly display."
+                "tips, warnings, or notes that stand out from the main content."
             )
-            .with_syntax("!> [emoji] Text")
+            .with_syntax('[callout](Text content "Optional emoji")')
             .with_examples(
                 [
-                    "!> [💡] This is a default callout with the light bulb emoji",
-                    "!> [🔔] This is a callout with a bell emoji",
-                    "!> [⚠️] Warning: This is an important note to pay attention to",
-                    "!> [💡] Tip: Add emoji that matches your content's purpose",
+                    "[callout](This is a default callout with the light bulb emoji)",
+                    '[callout](This is a callout with a bell emoji "🔔")',
+                    '[callout](Warning: This is an important note "⚠️")',
+                    '[callout](Tip: Add emoji that matches your content\'s purpose "💡")',
                 ]
-            )
-            .with_avoidance_guidelines(
-                "NEVER omit the square brackets around the emoji. The format MUST be !> [emoji] and not !> emoji. "
-                "Without the square brackets, Notion will not properly render the callout with the specified emoji."
             )
             .build()
         )

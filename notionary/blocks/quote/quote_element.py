@@ -6,20 +6,33 @@ from notionary.blocks import ElementPromptContent, ElementPromptBuilder
 
 
 class QuoteElement(NotionBlockElement):
-    """Class for converting between Markdown blockquotes and Notion quote blocks."""
+    """
+    Handles conversion between Markdown quotes and Notion quote blocks.
 
-    # Regular expression pattern to match Markdown blockquote lines
-    # Matches lines that start with optional whitespace, followed by '>',
-    # then optional whitespace, and captures any text after that
-    quote_pattern = re.compile(r"^\s*>\s?(.*)", re.MULTILINE)
+    Markdown quote syntax:
+    - [quote](Simple quote text) - Simple quote with text only
+    - [quote](Multi-line quote text "Author") - Quote with text and author
+
+    Where:
+    - Text is the required quote content
+    - Author is an optional attribution (enclosed in quotes)
+    """
+
+    # Regex pattern for quote syntax with optional author
+    PATTERN = re.compile(
+        r"^\[quote\]\("  # [quote]( prefix
+        + r'([^"]+?)'  # Quote text (required)
+        + r'(?:\s+"([^"]+)")?'  # Optional author in quotes
+        + r"\)$"  # closing parenthesis
+    )
 
     @classmethod
     def find_matches(cls, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
         """
-        Find all blockquote matches in the text and return their positions and blocks.
+        Find all quote matches in the text and return their positions and blocks.
         """
         matches = []
-        quote_matches = list(QuoteElement.quote_pattern.finditer(text))
+        quote_matches = list(cls.PATTERN.finditer(text))
 
         if not quote_matches:
             return []
@@ -30,9 +43,7 @@ class QuoteElement(NotionBlockElement):
             start_pos = start_match.start()
 
             next_match_index = current_match_index + 1
-            while next_match_index < len(
-                quote_matches
-            ) and QuoteElement.is_consecutive_quote(
+            while next_match_index < len(quote_matches) and cls.is_consecutive_quote(
                 text, quote_matches, next_match_index
             ):
                 next_match_index += 1
@@ -40,7 +51,7 @@ class QuoteElement(NotionBlockElement):
             end_pos = quote_matches[next_match_index - 1].end()
             quote_text = text[start_pos:end_pos]
 
-            block = QuoteElement.markdown_to_notion(quote_text)
+            block = cls.markdown_to_notion(quote_text)
             if block:
                 matches.append((start_pos, end_pos, block))
 
@@ -65,32 +76,25 @@ class QuoteElement(NotionBlockElement):
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        """Convert markdown blockquote to Notion block."""
+        """Convert markdown quote to Notion block."""
         if not text:
             return None
 
-        # Check if it's a blockquote
-        if not QuoteElement.quote_pattern.search(text):
+        # Check if it's a quote
+        quote_match = cls.PATTERN.match(text.strip())
+        if not quote_match:
             return None
 
-        # Extract quote content
-        lines = text.split("\n")
-        quote_lines = []
+        content = quote_match.group(1)
+        author = quote_match.group(2)
 
-        # Extract content from each line
-        for line in lines:
-            quote_match = QuoteElement.quote_pattern.match(line)
-            if quote_match:
-                content = quote_match.group(1)
-                quote_lines.append(content)
-            elif not line.strip() and quote_lines:
-                # Allow empty lines within the quote
-                quote_lines.append("")
-
-        if not quote_lines:
+        if not content:
             return None
 
-        quote_content = "\n".join(quote_lines).strip()
+        # Build quote text with author if provided
+        quote_content = content.strip()
+        if author:
+            quote_content += f"\n— {author}"
 
         rich_text = [{"type": "text", "text": {"content": quote_content}}]
 
@@ -105,22 +109,22 @@ class QuoteElement(NotionBlockElement):
         rich_text = block.get("quote", {}).get("rich_text", [])
 
         # Extract the text content
-        content = QuoteElement._extract_text_content(rich_text)
+        content = cls._extract_text_content(rich_text)
 
-        # Format as markdown blockquote
-        lines = content.split("\n")
-        formatted_lines = []
+        # Parse content and author
+        content_text, author = cls._parse_quote_content(content)
 
-        # Add each line with blockquote prefix
-        for line in lines:
-            formatted_lines.append(f"> {line}")
+        if author:
+            return f'[quote]({content_text} "{author}")'
 
-        return "\n".join(formatted_lines)
+        return f"[quote]({content_text})"
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
         """Check if this element can handle the given markdown text."""
-        return bool(QuoteElement.quote_pattern.search(text))
+        return text.strip().startswith("[quote]") and bool(
+            cls.PATTERN.match(text.strip())
+        )
 
     @classmethod
     def match_notion(cls, block: Dict[str, Any]) -> bool:
@@ -129,8 +133,8 @@ class QuoteElement(NotionBlockElement):
 
     @classmethod
     def is_multiline(cls) -> bool:
-        """Blockquotes can span multiple lines."""
-        return True
+        """Quotes are single-line elements."""
+        return False
 
     @classmethod
     def _extract_text_content(cls, rich_text: List[Dict[str, Any]]) -> str:
@@ -144,6 +148,14 @@ class QuoteElement(NotionBlockElement):
         return result
 
     @classmethod
+    def _parse_quote_content(cls, content: str) -> tuple[str, str]:
+        """Parse quote content to extract text and author."""
+        if "\n— " in content:
+            parts = content.split("\n— ", 1)
+            return parts[0].strip(), parts[1].strip()
+        return content.strip(), ""
+
+    @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         """
         Returns structured LLM prompt metadata for the quote element.
@@ -154,15 +166,16 @@ class QuoteElement(NotionBlockElement):
                 "Creates blockquotes that visually distinguish quoted text."
             )
             .with_usage_guidelines(
-                "Use blockquotes for quoting external sources, highlighting important statements, "
+                "Use quotes for quoting external sources, highlighting important statements, "
                 "or creating visual emphasis for key information."
             )
-            .with_syntax("> Quoted text")
+            .with_syntax('[quote](Quote text "Optional author")')
             .with_examples(
                 [
-                    "> This is a simple blockquote",
-                    "> This is a multi-line quote\n> that continues on the next line",
-                    "> Important note:\n> This quote spans\n> multiple lines.",
+                    "[quote](This is a simple blockquote)",
+                    '[quote](The only way to do great work is to love what you do "Steve Jobs")',
+                    "[quote](Knowledge is power)",
+                    '[quote](Innovation distinguishes between a leader and a follower "Steve Jobs")',
                 ]
             )
             .build()

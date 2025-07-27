@@ -1,6 +1,6 @@
 import re
-
 from typing import Dict, Any, Optional, List
+
 from notionary.blocks import NotionBlockElement
 from notionary.blocks import (
     ElementPromptContent,
@@ -13,23 +13,32 @@ class EmbedElement(NotionBlockElement):
     """
     Handles conversion between Markdown embeds and Notion embed blocks.
 
-    Markdown embed syntax (custom format):
-    - <embed:Caption>(https://example.com) - Basic embed with caption
-    - <embed>(https://example.com) - Embed without caption
+    Markdown embed syntax:
+    - [embed](https://example.com) - Simple embed with URL only
+    - [embed](https://example.com "Caption") - Embed with URL and caption
+
+    Where:
+    - URL is the required embed URL
+    - Caption is an optional descriptive text (enclosed in quotes)
 
     Supports various URL types including websites, PDFs, Google Maps, Google Drive,
     Twitter/X posts, and other sources that Notion can embed.
     """
 
+    # Regex pattern for embed syntax with optional caption
     PATTERN = re.compile(
-        r"^<embed(?:\:(.*?))?>(?:\s*)" + r'\((https?://[^\s"]+)' + r"\)$"
+        r"^\[embed\]\("  # [embed]( prefix
+        + r'(https?://[^\s"]+)'  # URL (required)
+        + r'(?:\s+"([^"]+)")?'  # Optional caption in quotes
+        + r"\)$"  # closing parenthesis
     )
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
         """Check if text is a markdown embed."""
-        text = text.strip()
-        return text.startswith("<embed") and bool(EmbedElement.PATTERN.match(text))
+        return text.strip().startswith("[embed]") and bool(
+            EmbedElement.PATTERN.match(text.strip())
+        )
 
     @classmethod
     def match_notion(cls, block: Dict[str, Any]) -> bool:
@@ -43,25 +52,24 @@ class EmbedElement(NotionBlockElement):
         if not embed_match:
             return None
 
-        caption = embed_match.group(1) or ""
-        url = embed_match.group(2)
+        url = embed_match.group(1)
+        caption = embed_match.group(2)
 
         if not url:
             return None
 
-        # Prepare the embed block
-        embed_block = {
-            "type": "embed",
-            "embed": {"url": url},
-        }
+        embed_data = {"url": url}
 
         # Add caption if provided
         if caption:
-            embed_block["embed"]["caption"] = [
-                {"type": "text", "text": {"content": caption}}
-            ]
+            embed_data["caption"] = [{"type": "text", "text": {"content": caption}}]
+        else:
+            embed_data["caption"] = []
 
-        # Leerer Paragraph nach dem Embed
+        # Prepare the embed block
+        embed_block = {"type": "embed", "embed": embed_data}
+
+        # Add empty paragraph after embed
         empty_paragraph = {"type": "paragraph", "paragraph": {"rich_text": []}}
 
         return [embed_block, empty_paragraph]
@@ -78,16 +86,19 @@ class EmbedElement(NotionBlockElement):
         if not url:
             return None
 
-        # Extract caption if available
-        caption = ""
         caption_rich_text = embed_data.get("caption", [])
-        if caption_rich_text:
-            caption = EmbedElement._extract_text_content(caption_rich_text)
+
+        if not caption_rich_text:
+            # Simple embed with URL only
+            return f"[embed]({url})"
+
+        # Extract caption text
+        caption = EmbedElement._extract_text_content(caption_rich_text)
 
         if caption:
-            return f"<embed:{caption}>({url})"
+            return f'[embed]({url} "{caption}")'
 
-        return f"<embed>({url})"
+        return f"[embed]({url})"
 
     @classmethod
     def is_multiline(cls) -> bool:
@@ -119,14 +130,14 @@ class EmbedElement(NotionBlockElement):
                 "Use embeds when you want to include external content that isn't just a video or image. "
                 "Embeds are great for interactive content, reference materials, or live data sources."
             )
-            .with_syntax("<embed:Caption>(https://example.com)")
+            .with_syntax('[embed](https://example.com "Optional caption")')
             .with_examples(
                 [
-                    "<embed:Course materials>(https://drive.google.com/file/d/123456/view)",
-                    "<embed:Our office location>(https://www.google.com/maps?q=San+Francisco)",
-                    "<embed:Latest announcement>(https://twitter.com/NotionHQ/status/1234567890)",
-                    "<embed:Project documentation>(https://github.com/username/repo)",
-                    "<embed>(https://example.com/important-reference.pdf)",
+                    "[embed](https://drive.google.com/file/d/123456/view)",
+                    '[embed](https://www.google.com/maps?q=San+Francisco "Our office location")',
+                    '[embed](https://twitter.com/NotionHQ/status/1234567890 "Latest announcement")',
+                    '[embed](https://github.com/username/repo "Project documentation")',
+                    '[embed](https://example.com/important-reference.pdf "Course materials")',
                 ]
             )
             .build()

@@ -2,7 +2,7 @@ from typing import Optional
 import re
 
 # TODO: Use this inline formatting here
-from notionary.blocks.models import (
+from notionary.blocks.shared.models import (
     MentionRichText,
     RichTextObject,
     TextAnnotations,

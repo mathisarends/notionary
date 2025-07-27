@@ -368,6 +368,21 @@ class PartialUser(BaseModel):
 # ============================================================================
 
 
+class ExternalUrl(BaseModel):
+    url: str
+
+
+class AudioContent(BaseModel):
+    type: Literal["external"]
+    external: ExternalUrl
+    caption: Optional[list[RichTextObject]] = None
+
+
+class AudioBlockCreate(BaseModel):
+    type: Literal["audio"]
+    audio: AudioContent
+
+
 class AudioBlock(BaseModel):
     type: Literal["external", "file", "file_upload"]
     external: Optional[ExternalFile] = None
