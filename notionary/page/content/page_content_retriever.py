@@ -1,8 +1,10 @@
+import json
 from typing import Any, Dict, Optional
 
 from notionary.blocks.registry.block_registry import BlockRegistry
 
 from notionary.blocks import NotionBlockClient
+from notionary.blocks.shared.models import Block
 from notionary.page.notion_to_markdown_converter import (
     NotionToMarkdownConverter,
 )
@@ -23,30 +25,36 @@ class PageContentRetriever(LoggingMixin):
 
     async def get_page_content(self) -> str:
         blocks = await self._get_page_blocks_with_children()
-        return self._notion_to_markdown_converter.convert(blocks)
+
+        # TODO: Fix this quick fix🧯 Quick-Fix: Konvertiere rekursive Block-Objekte in plain dicts
+        blocks_as_dicts = [block.model_dump(mode="python", exclude_unset=True) for block in blocks]
+
+        return self._notion_to_markdown_converter.convert(blocks_as_dicts)
 
     async def _get_page_blocks_with_children(
         self, parent_id: Optional[str] = None
-    ) -> list[Dict[str, Any]]:
-        blocks = (
-            await self.client.get_page_blocks(page_id=self.page_id)
+    ) -> list[Block]:
+        response = (
+            await self.client.get_block_children(block_id=self.page_id)
             if parent_id is None
             else await self.client.get_block_children(parent_id)
         )
 
-        if not blocks:
+        if not response or not response.results:
             return []
 
+        blocks = response.results
+
         for block in blocks:
-            if not block.get("has_children"):
+            if not block.has_children:
                 continue
 
-            block_id = block.get("id")
+            block_id = block.id
             if not block_id:
                 continue
 
             children = await self._get_page_blocks_with_children(block_id)
             if children:
-                block["children"] = children
+                block.children = children
 
         return blocks

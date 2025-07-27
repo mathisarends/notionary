@@ -29,6 +29,7 @@ BlockColor = Literal[
     "purple_background",
     "red",
     "red_background",
+    "default_background"
 ]
 
 BlockType = Literal[
@@ -577,6 +578,8 @@ class Block(BaseModel):
     archived: bool = False
     in_trash: bool = False
     has_children: bool = False
+    
+    children: Optional[list[Block]] = None # for recursive structure
 
     # Block type-specific content (only one will be populated based on type)
     audio: Optional[AudioBlock] = None

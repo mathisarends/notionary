@@ -31,6 +31,10 @@ async def main():
         print(f"├── Title: {page.title}")
         print(f"├── ID: {page.id}")
         print(f"└── Visit at: {page.url}")
+        
+        
+        text_content = await page.get_text_content()
+        print("text_content", text_content  )
 
         # Display truncated text content
         print("\n📄 Markdown Text Content (Preview):")

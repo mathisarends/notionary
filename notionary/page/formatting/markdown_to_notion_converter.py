@@ -1,7 +1,7 @@
 from notionary.blocks import ColumnElement, BlockRegistry
 from notionary.page.formatting.line_processor import LineProcessor
 
-
+# TODO: Hier rekursiven Baum Parser verwenden!
 class MarkdownToNotionConverter:
     """Clean converter focused on block identification and conversion"""
 
