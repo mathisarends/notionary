@@ -7,7 +7,7 @@ Maps 1:1 to the available blocks with clear, expressive method names.
 """
 
 from __future__ import annotations
-from typing import Optional, Self, Union
+from typing import Optional, Self
 
 from notionary.blocks import (
     HeadingMarkdownNode,
@@ -20,7 +20,6 @@ from notionary.blocks import (
     DividerMarkdownNode,
     DocumentMarkdownNode,
     EmbedMarkdownNode,
-    MentionMarkdownNode,
     NumberedListMarkdownNode,
     BulletedListMarkdownNode,
     QuoteMarkdownNode,
@@ -303,36 +302,6 @@ class MarkdownBuilder:
             rows: List of rows, where each row is a list of cell texts
         """
         self.children.append(TableMarkdownNode(headers=headers, rows=rows))
-        return self
-
-    def mention_page(self, page_id: str) -> Self:
-        """
-        Add a page mention.
-
-        Args:
-            page_id: The ID of the page to mention
-        """
-        self.children.append(MentionMarkdownNode("page", page_id))
-        return self
-
-    def mention_database(self, database_id: str) -> Self:
-        """
-        Add a database mention.
-
-        Args:
-            database_id: The ID of the database to mention
-        """
-        self.children.append(MentionMarkdownNode("database", database_id))
-        return self
-
-    def mention_date(self, date: str) -> Self:
-        """
-        Add a date mention.
-
-        Args:
-            date: Date in YYYY-MM-DD format
-        """
-        self.children.append(MentionMarkdownNode("date", date))
         return self
 
     def add_custom(self, node: MarkdownNode) -> Self:

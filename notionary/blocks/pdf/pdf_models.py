@@ -1,6 +1,11 @@
 from typing import Literal, Optional
 from pydantic import BaseModel, Field
-from notionary.blocks.shared.models import ExternalFile, FileUploadFile, NotionHostedFile, RichTextObject
+from notionary.blocks.block_models import (
+    ExternalFile,
+    FileUploadFile,
+    NotionHostedFile,
+    RichTextObject,
+)
 
 
 class PdfBlock(BaseModel):
@@ -9,8 +14,8 @@ class PdfBlock(BaseModel):
     external: Optional[ExternalFile] = None
     file: Optional[NotionHostedFile] = None
     file_upload: Optional[FileUploadFile] = None
-    
-    
+
+
 class CreatePdfBlock(BaseModel):
     type: Literal["pdf"] = "pdf"
     pdf: PdfBlock

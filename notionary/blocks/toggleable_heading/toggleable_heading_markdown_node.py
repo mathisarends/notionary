@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, List
 from pydantic import BaseModel
-from notionary.blocks.markdown_node import MarkdownNode
+from notionary.markdown.markdown_node import MarkdownNode
 
 
 class ToggleableHeadingMarkdownBlockParams(BaseModel):

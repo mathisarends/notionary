@@ -2,7 +2,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-from notionary.blocks.shared.models import (
+from notionary.blocks.block_models import (
     ExternalFile,
     FileUploadFile,
     NotionHostedFile,

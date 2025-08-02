@@ -5,7 +5,7 @@ Tests conversion between Markdown todos and Notion to_do blocks.
 
 import pytest
 from notionary.blocks import TodoElement
-from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
 @pytest.mark.parametrize(

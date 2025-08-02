@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pydantic import BaseModel
-from notionary.blocks.markdown_node import MarkdownNode
+from notionary.markdown.markdown_node import MarkdownNode
 
 
 class NumberedListMarkdownBlockParams(BaseModel):

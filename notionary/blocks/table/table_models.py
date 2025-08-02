@@ -1,7 +1,7 @@
 from typing import Literal
 from pydantic import BaseModel
 
-from notionary.blocks.shared.models import BlockColor, RichTextObject
+from notionary.blocks.block_models import BlockColor, RichTextObject
 
 
 class TableBlock(BaseModel):

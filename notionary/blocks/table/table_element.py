@@ -6,7 +6,7 @@ from notionary.blocks import (
     ElementPromptContent,
     ElementPromptBuilder,
 )
-from notionary.blocks.shared.models import (
+from notionary.blocks.block_models import (
     Block,
     CreateParagraphBlock,
     CreateTableBlock,
@@ -16,8 +16,8 @@ from notionary.blocks.shared.models import (
     TableBlock,
     TableRowBlock,
 )
-from notionary.blocks.shared.notion_block_element import BlockCreateResult
-from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.notion_block_element import BlockCreateResult
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
 class TableElement(NotionBlockElement):

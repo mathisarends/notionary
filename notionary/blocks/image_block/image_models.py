@@ -2,7 +2,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-from notionary.blocks.shared.models import (
+from notionary.blocks.block_models import (
     ExternalFile,
     FileUploadFile,
     NotionHostedFile,
@@ -10,15 +10,14 @@ from notionary.blocks.shared.models import (
 )
 
 
-class FileBlock(BaseModel):
-    caption: list[RichTextObject] = Field(default_factory=list)
+class ImageBlock(BaseModel):
     type: Literal["external", "file", "file_upload"]
     external: Optional[ExternalFile] = None
     file: Optional[NotionHostedFile] = None
     file_upload: Optional[FileUploadFile] = None
-    name: Optional[str] = None
+    caption: list[RichTextObject] = Field(default_factory=list)
 
 
-class CreateFileBlock(BaseModel):
-    type: Literal["file"] = "file"
-    file: FileBlock
+class CreateImageBlock(BaseModel):
+    type: Literal["image"] = "image"
+    image: ImageBlock

@@ -1,5 +1,5 @@
-from typing import Optional, List, Self
-from notionary.blocks.prompts.element_prompt_content import ElementPromptContent
+from typing import Optional, Self
+from notionary.prompts.element_prompt_content import ElementPromptContent
 
 
 class ElementPromptBuilder:
@@ -11,7 +11,7 @@ class ElementPromptBuilder:
     def __init__(self) -> None:
         self._description: Optional[str] = None
         self._syntax: Optional[str] = None
-        self._examples: List[str] = []
+        self._examples: list[str] = []
         self._when_to_use: Optional[str] = None
         self._avoid: Optional[str] = None
         self._is_standard_markdown = False
@@ -31,7 +31,7 @@ class ElementPromptBuilder:
         self._examples.append(example)
         return self
 
-    def with_examples(self, examples: List[str]) -> Self:
+    def with_examples(self, examples: list[str]) -> Self:
         """Set the list of usage examples for the element."""
         self._examples = examples.copy()
         return self

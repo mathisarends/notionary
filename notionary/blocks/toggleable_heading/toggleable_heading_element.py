@@ -6,15 +6,15 @@ from notionary.blocks import (
     ElementPromptBuilder,
     NotionBlockElement,
 )
-from notionary.blocks.shared.models import (
+from notionary.blocks.block_models import (
     Block,
     CreateHeading1Block,
     CreateHeading2Block,
     CreateHeading3Block,
     HeadingBlock,
 )
-from notionary.blocks.shared.notion_block_element import BlockCreateResult
-from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.notion_block_element import BlockCreateResult
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
 class ToggleableHeadingElement(NotionBlockElement):

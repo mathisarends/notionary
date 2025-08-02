@@ -1,6 +1,6 @@
-from typing import Optional, Dict, Any
+from typing import Optional, Any
 from notionary.base_notion_client import BaseNotionClient
-from notionary.blocks.shared.models import (
+from notionary.blocks.block_models import (
     Block,
     BlockChildrenResponse,
     BlockCreateRequest,
@@ -132,7 +132,7 @@ class NotionBlockClient(BaseNotionClient):
         return await self._append_multiple_batches(block_id, children_dicts, after)
 
     async def _append_single_batch(
-        self, block_id: str, children: list[Dict[str, Any]], after: Optional[str] = None
+        self, block_id: str, children: list[dict[str, Any]], after: Optional[str] = None
     ) -> Optional[BlockChildrenResponse]:
         """
         Appends a single batch of blocks (≤100).
@@ -151,7 +151,7 @@ class NotionBlockClient(BaseNotionClient):
         return None
 
     async def _append_multiple_batches(
-        self, block_id: str, children: list[Dict[str, Any]], after: Optional[str] = None
+        self, block_id: str, children: list[dict[str, Any]], after: Optional[str] = None
     ) -> Optional[BlockChildrenResponse]:
         """
         Appends multiple batches of blocks, handling pagination.

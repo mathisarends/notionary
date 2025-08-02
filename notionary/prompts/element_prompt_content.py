@@ -1,5 +1,5 @@
 from dataclasses import field, dataclass
-from typing import Optional, List
+from typing import Optional
 
 
 @dataclass
@@ -18,8 +18,8 @@ class ElementPromptContent:
     when_to_use: str
     """Guidelines explaining the appropriate scenarios for using this element."""
 
-    examples: List[str] = field(default_factory=list)
-    """List of practical usage examples showing the element in context."""
+    examples: list[str] = field(default_factory=list)
+    """list of practical usage examples showing the element in context."""
 
     avoid: Optional[str] = None
     """Optional field listing scenarios when this element should be avoided."""

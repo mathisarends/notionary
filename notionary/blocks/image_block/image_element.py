@@ -3,18 +3,15 @@ from typing import Optional
 
 from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import (
+from notionary.blocks.block_models import (
     Block,
     CreateImageBlock,
     CreateParagraphBlock,
-    ExternalFile,
     ImageBlock,
     ParagraphBlock,
-    RichTextObject,
-    FileObject,
 )
-from notionary.blocks.shared.notion_block_element import BlockCreateResult
-from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.notion_block_element import BlockCreateResult
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
 class ImageElement(NotionBlockElement):

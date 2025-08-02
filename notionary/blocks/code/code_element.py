@@ -6,7 +6,7 @@ from notionary.blocks import (
     ElementPromptContent,
     ElementPromptBuilder,
 )
-from notionary.blocks.shared.models import (
+from notionary.blocks.block_models import (
     CodeBlock,
     CreateCodeBlock,
     CreateParagraphBlock,
@@ -14,7 +14,7 @@ from notionary.blocks.shared.models import (
     Block,
     CodeLanguage,
 )
-from notionary.blocks.shared.notion_block_element import BlockCreateResult
+from notionary.blocks.notion_block_element import BlockCreateResult
 from notionary.models.notion_block_response import ParagraphBlock
 
 

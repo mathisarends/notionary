@@ -1,8 +1,8 @@
 from typing import Optional, Union
 from abc import ABC
 
-from notionary.blocks.prompts.element_prompt_content import ElementPromptContent
-from notionary.blocks.shared.models import Block, BlockCreateRequest
+from notionary.prompts.element_prompt_content import ElementPromptContent
+from notionary.blocks.block_models import Block, BlockCreateRequest
 
 BlockCreateResult = Optional[
     Union[
@@ -40,6 +40,7 @@ class NotionBlockElement(ABC):
         """Check if this element can handle the given Notion block."""
         return bool(cls.notion_to_markdown(block))  # Now calls the class's version
 
+    # TODO: Das hier können wir durch das vorhandensein von children wegrationalisieren?
     @classmethod
     def is_multiline(cls) -> bool:
         return False

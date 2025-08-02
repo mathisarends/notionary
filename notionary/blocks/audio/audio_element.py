@@ -1,16 +1,12 @@
 import re
 from typing import Any, Optional, List
 
-from notionary.blocks import (
-    NotionBlockElement,
-    ElementPromptContent,
-    ElementPromptBuilder,
-)
-from notionary.blocks.shared.models import CreateAudioBlock, RichTextObject
-from notionary.blocks.shared.models import Block
-from notionary.blocks.shared.notion_block_element import BlockCreateResult
-from notionary.models.notion_block_response import AudioBlock
+from notionary.blocks.audio.audio_models import AudioBlock, CreateAudioBlock
+from notionary.blocks.block_models import Block
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.models.notion_page_response import ExternalFile
+from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 
 class AudioElement(NotionBlockElement):

@@ -1,7 +1,7 @@
 from typing_extensions import Literal
 from pydantic import BaseModel, Field
 
-from notionary.blocks.shared.models import Block, BlockColor, RichTextObject
+from notionary.blocks.block_models import Block, BlockColor, RichTextObject
 
 
 class ToggleBlock(BaseModel):

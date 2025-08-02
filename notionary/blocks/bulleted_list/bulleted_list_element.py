@@ -1,12 +1,11 @@
 import re
 from typing import Optional
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import Block, CreateBulletedListItemBlock
-from notionary.blocks.shared.notion_block_element import BlockCreateResult
-from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
-from notionary.models.notion_block_response import BulletedListItemBlock
+from notionary.blocks.bulleted_list.bulleted_list_models import BulletedListItemBlock, CreateBulletedListItemBlock
+from notionary.blocks.block_models import Block
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 
 class BulletedListElement(NotionBlockElement):

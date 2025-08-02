@@ -1,7 +1,7 @@
 import re
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.blocks.shared.models import BlockCreateRequest
-from notionary.blocks.shared.notion_block_element import BlockCreateResult
+from notionary.blocks.block_models import BlockCreateRequest
+from notionary.blocks.notion_block_element import BlockCreateResult
 
 
 class LineProcessingState:

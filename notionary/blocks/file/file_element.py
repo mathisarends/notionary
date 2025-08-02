@@ -3,32 +3,28 @@ from typing import Optional
 
 from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import (
+from notionary.blocks.file.file_element_models import CreateFileBlock, ExternalFile, FileBlock, FileObject
+from notionary.blocks.paragraph.paragraph_models import CreateParagraphBlock, ParagraphBlock
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.block_models import (
     Block,
-    CreateFileBlock,
-    CreateParagraphBlock,
-    ExternalFile,
-    FileBlock,
-    FileObject,
-    ParagraphBlock,
-    RichTextObject,
 )
-from notionary.blocks.shared.notion_block_element import BlockCreateResult
+from notionary.blocks.notion_block_element import BlockCreateResult
 
 
-class DocumentElement(NotionBlockElement):
+class FileElement(NotionBlockElement):
     """
-    Handles conversion between Markdown document embeds and Notion file blocks.
+    Handles conversion between Markdown file embeds and Notion file blocks.
 
-    Markdown document syntax:
-    - [document](https://example.com/document.pdf "Caption")
-    - [document](https://example.com/document.pdf)
+    Markdown file syntax:
+    - [file](https://example.com/document.pdf "Caption")
+    - [file](https://example.com/document.pdf)
 
     Supports external file URLs with optional captions.
     """
 
     PATTERN = re.compile(
-        r"^\[document\]\("  # prefix
+        r"^\[file\]\("  # prefix
         r'(https?://[^\s\)"]+)'  # URL
         r'(?:\s+"([^"]*)")?'  # optional caption
         r"\)$"
@@ -37,11 +33,11 @@ class DocumentElement(NotionBlockElement):
     @classmethod
     def match_markdown(cls, text: str) -> bool:
         txt = text.strip()
-        return txt.startswith("[document]") and bool(cls.PATTERN.match(txt))
+        return txt.startswith("[file]") and bool(cls.PATTERN.match(txt))
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        # Notion file block covers documents
+        # Notion file block covers files
         return block.type == "file" and block.file is not None
 
     @classmethod
@@ -51,15 +47,14 @@ class DocumentElement(NotionBlockElement):
         if not m:
             return None
 
-        caption_text, url, title = m.group(1), m.group(2), m.group(3)
-        caption = title or caption_text or ""
+        url, caption_text = m.group(1), m.group(2) or ""
 
         # Build FileBlock
         file_block = FileBlock(
             type="external", external=ExternalFile(url=url), caption=[]
         )
-        if caption:
-            rt = RichTextObject.from_plain_text(caption)
+        if caption_text.strip():
+            rt = RichTextObject.from_plain_text(caption_text.strip())
             file_block.caption = [rt]
 
         empty_para = ParagraphBlock(rich_text=[])
@@ -83,12 +78,12 @@ class DocumentElement(NotionBlockElement):
             return None
         captions = fo.caption or []
         if not captions:
-            return f"[document]({url})"
+            return f"[file]({url})"
         text = "".join(
             rt.plain_text if hasattr(rt, "plain_text") else rt.text.content
             for rt in captions
         )
-        return f'[document]({url} "{text}")'
+        return f'[file]({url} "{text}")'
 
     @classmethod
     def is_multiline(cls) -> bool:
@@ -99,11 +94,11 @@ class DocumentElement(NotionBlockElement):
         return (
             ElementPromptBuilder()
             .with_description(
-                "Embeds external document files (PDFs, Word/Excel docs) via Notion file blocks."
+                "Embeds external files (PDFs, Word/Excel docs, etc.) via Notion file blocks."
             )
             .with_usage_guidelines(
-                "Use document embeds to share reports, manuals, or any cloud-hosted files with optional captions."
+                "Use file embeds to share reports, manuals, or any cloud-hosted files with optional captions."
             )
-            .with_syntax('[document](https://example.com/doc.pdf "Caption")')
+            .with_syntax('[file](https://example.com/doc.pdf "Caption")')
             .build()
         )

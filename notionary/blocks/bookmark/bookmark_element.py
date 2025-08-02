@@ -1,11 +1,11 @@
 import re
 from typing import Optional
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import CreateBookmarkBlock, RichTextObject, Block
-from notionary.blocks.shared.notion_block_element import BlockCreateResult
-from notionary.models.notion_block_response import BookmarkBlock
+from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
+from notionary.blocks.block_models import Block
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 
 class BookmarkElement(NotionBlockElement):

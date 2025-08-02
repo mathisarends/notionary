@@ -6,8 +6,8 @@ from notionary.blocks import (
     ElementPromptContent,
     ElementPromptBuilder,
 )
-from notionary.blocks.shared.models import Block, ColumnListBlock, CreateColumnListBlock
-from notionary.blocks.shared.notion_block_element import BlockCreateResult
+from notionary.blocks.block_models import Block, ColumnListBlock, CreateColumnListBlock
+from notionary.blocks.notion_block_element import BlockCreateResult
 
 
 class ColumnElement(NotionBlockElement):

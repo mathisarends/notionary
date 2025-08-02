@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Optional, Set, Type
 
 from notionary.blocks import NotionBlockElement
-from notionary.blocks.shared.models import Block
+from notionary.blocks.block_models import Block
 from notionary.page.markdown_syntax_prompt_generator import (
     MarkdownSyntaxPromptGenerator,
 )

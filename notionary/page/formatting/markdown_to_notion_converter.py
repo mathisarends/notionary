@@ -1,7 +1,7 @@
 from typing import Any, Callable, Union
 from notionary.blocks import ColumnElement, BlockRegistry, NotionBlockElement
-from notionary.blocks.shared.models import BlockCreateRequest
-from notionary.blocks.shared.notion_block_element import BlockCreateResult
+from notionary.blocks.block_models import BlockCreateRequest
+from notionary.blocks.notion_block_element import BlockCreateResult
 from notionary.page.formatting.line_processor import LineProcessor
 
 # Type aliases for better readability

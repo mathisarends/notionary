@@ -3,14 +3,14 @@ from typing import Optional, List
 
 from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import (
+from notionary.blocks.block_models import (
     Block,
     CreateDividerBlock,
     CreateParagraphBlock,
     DividerBlock,
     ParagraphBlock,
 )
-from notionary.blocks.shared.notion_block_element import BlockCreateResult
+from notionary.blocks.notion_block_element import BlockCreateResult
 
 
 class DividerElement(NotionBlockElement):
