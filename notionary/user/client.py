@@ -5,10 +5,8 @@ from notionary.user.models import (
     NotionUserResponse,
     NotionUsersListResponse,
 )
-from notionary.util import singleton
 
 
-@singleton
 class NotionUserClient(BaseNotionClient):
     """
     Client for Notion user-specific operations.

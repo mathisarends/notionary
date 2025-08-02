@@ -213,7 +213,7 @@ class NotionPage(LoggingMixin):
             markdown_text=markdown, append_divider=append_divider
         )
 
-    async def clear_page_content(self) -> bool:
+    async def clear_page_content(self) -> str:
         """
         Clear all content from the page.
         """
@@ -232,7 +232,6 @@ class NotionPage(LoggingMixin):
         clear_result = await self._page_content_writer.clear_page_content()
         if not clear_result:
             self.logger.error("Failed to clear page content before replacement")
-            return False
 
         return await self._page_content_writer.append_markdown(
             markdown_text=markdown, append_divider=False

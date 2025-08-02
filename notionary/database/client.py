@@ -1,5 +1,4 @@
 from typing import Dict, Any, Optional
-from dotenv import load_dotenv
 from notionary.base_notion_client import BaseNotionClient
 
 from notionary.models.notion_database_response import (
@@ -8,12 +7,7 @@ from notionary.models.notion_database_response import (
     NotionPageResponse,
     NotionQueryDatabaseResponse,
 )
-from notionary.util import singleton
 
-load_dotenv()
-
-
-@singleton
 class NotionDatabaseClient(BaseNotionClient):
     """
     Specialized Notion client for database operations.

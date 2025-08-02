@@ -11,8 +11,11 @@ async def main():
 - [x] Completed todo
 - [ ] Another todo
 """
-    await page.append_markdown(todos)
-
+    cleared_content  = await page.clear_page_content()
+    print(f"Cleared content: {cleared_content}")
+    
+    appended_content = await page.append_markdown(todos, append_divider=True)
+    print(f"Appended content: {appended_content}")
 
 if __name__ == "__main__":
     import asyncio

@@ -38,6 +38,7 @@ class NumberedListElement(NotionBlockElement):
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type != "numbered_list_item" or block.numbered_list_item is None:
             return None
+        
         rich = block.numbered_list_item.rich_text
         content = TextInlineFormatter.extract_text_with_formatting(
             [rt.model_dump() for rt in rich]

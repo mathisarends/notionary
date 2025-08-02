@@ -12,10 +12,8 @@ from notionary.file_upload.models import (
     FileUploadCreateRequest,
     FileUploadCompleteRequest,
 )
-from notionary.util import singleton
 
 
-@singleton
 class NotionFileUploadClient(BaseNotionClient):
     """
     Client for Notion file upload operations.

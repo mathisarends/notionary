@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from notionary.blocks import BlockRegistry
 from notionary.blocks.shared.block_client import NotionBlockClient
@@ -10,6 +10,7 @@ from notionary.page.content.notion_text_length_utils import fix_blocks_content_l
 from notionary.page.formatting.markdown_to_notion_converter import (
     MarkdownToNotionConverter,
 )
+from notionary.page.content.page_content_retriever import PageContentRetriever
 
 from notionary.util import LoggingMixin
 
@@ -23,48 +24,73 @@ class PageContentWriter(LoggingMixin):
         self._markdown_to_notion_converter = MarkdownToNotionConverter(
             block_registry=block_registry
         )
+        
+        self._content_retriever = PageContentRetriever(
+            page_id=page_id,
+            block_registry=block_registry
+        )
 
-    async def append_markdown(self, markdown_text: str, append_divider=True) -> bool:
-        """Append markdown text to a Notion page, automatically handling content length limits."""
+    async def append_markdown(self, markdown_text: str, append_divider: bool = True) -> Optional[str]:
+        """
+        Append markdown text to a Notion page, automatically handling content length limits.
+        
+        Returns:
+            str: The processed markdown content that was appended (None if failed)
+        """
         if append_divider:
-            markdown_text = markdown_text + "---\n"
+            markdown_text = markdown_text + "\n\n---\n"
 
-        markdown_text = self._process_markdown_whitespace(markdown_text)
+        processed_markdown = self._process_markdown_whitespace(markdown_text)
 
         try:
-            blocks = self._markdown_to_notion_converter.convert(markdown_text)
-
+            blocks = self._markdown_to_notion_converter.convert(processed_markdown)
             fixed_blocks = fix_blocks_content_length(blocks)
 
             result = await self._block_client.append_block_children(
                 block_id=self.page_id, children=fixed_blocks
             )
-            self.logger.debug("Append block children result: %r", result)
-            return bool(result)
+            
+            if result:
+                self.logger.debug("Successfully appended %d blocks", len(fixed_blocks))
+                return processed_markdown  # Return processed input since conversion back would fail
+            else:
+                self.logger.error("Failed to append blocks")
+                return None
+
         except Exception as e:
             self.logger.error("Error appending markdown: %s", str(e), exc_info=True)
-            return False
+            return None
 
-    async def clear_page_content(self) -> bool:
-        """Clear all content of the page."""
+    async def clear_page_content(self) -> Optional[str]:
+        """Clear all content of the page and return deleted content as markdown."""
         try:
             children_response = await self._block_client.get_block_children(
                 block_id=self.page_id
             )
 
             if not children_response or not children_response.results:
-                return True
+                return None
 
+            # Use PageContentRetriever for sophisticated markdown conversion
+            deleted_content = self._content_retriever._convert_blocks_to_markdown(
+                children_response.results, indent_level=0
+            )
+
+            # Delete blocks
             success = True
             for block in children_response.results:
                 block_success = await self._delete_block_with_children(block)
                 if not block_success:
                     success = False
 
-            return success
+            if not success:
+                self.logger.warning("Some blocks could not be deleted")
+
+            return deleted_content if deleted_content else None
+            
         except Exception as e:
             self.logger.error("Error clearing page content: %s", str(e))
-            return False
+            return None
 
     async def _delete_block_with_children(self, block: Block) -> bool:
         """Delete a block and all its children recursively."""
