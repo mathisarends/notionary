@@ -3,7 +3,7 @@ import asyncio
 from typing import Any, Dict, Optional, TYPE_CHECKING
 import random
 
-from notionary.blocks import BlockRegistry
+from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.models.notion_database_response import NotionPageResponse
 from notionary.models.notion_page_response import DatabaseParent
 from notionary.page.client import NotionPageClient

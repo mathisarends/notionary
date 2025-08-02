@@ -1,7 +1,10 @@
 import re
 from typing import Optional
 
-from notionary.blocks.bulleted_list.bulleted_list_models import BulletedListItemBlock, CreateBulletedListItemBlock
+from notionary.blocks.bulleted_list.bulleted_list_models import (
+    BulletedListItemBlock,
+    CreateBulletedListItemBlock,
+)
 from notionary.blocks.block_models import Block
 from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter

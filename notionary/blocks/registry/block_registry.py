@@ -1,14 +1,12 @@
 from __future__ import annotations
 from typing import Optional, Set, Type
 
-from notionary.blocks import NotionBlockElement
 from notionary.blocks.block_models import Block
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
 from notionary.page.markdown_syntax_prompt_generator import (
     MarkdownSyntaxPromptGenerator,
 )
-from notionary.blocks import TextInlineFormatter
 
-from notionary.blocks import NotionBlockElement
 from notionary.telemetry import (
     ProductTelemetry,
     NotionMarkdownSyntaxPromptEvent,
@@ -40,9 +38,10 @@ class BlockRegistry:
     def create_registry(cls) -> BlockRegistry:
         """
         Create a registry with all standard elements in recommended order.
-
         """
-        from notionary.blocks import BlockRegistryBuilder
+        from notionary.blocks.registry.block_registry_builder import (
+            BlockRegistryBuilder,
+        )
 
         return BlockRegistryBuilder.create_registry()
 
@@ -80,7 +79,7 @@ class BlockRegistry:
                 return element
         return None
 
-    def markdown_to_notion(self, text: str) -> BlockContentResult:
+    def markdown_to_notion(self, text: str) -> BlockCreateResult:
         """Convert markdown to Notion block using registered elements."""
         handler = self.find_markdown_handler(text)
 

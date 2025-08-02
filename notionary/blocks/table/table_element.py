@@ -1,24 +1,15 @@
 import re
 from typing import Optional, Any, Tuple
 
-from notionary.blocks import (
-    NotionBlockElement,
-    ElementPromptContent,
-    ElementPromptBuilder,
-)
 from notionary.blocks.block_models import (
     Block,
-    CreateParagraphBlock,
-    CreateTableBlock,
-    CreateTableRowBlock,
-    ParagraphBlock,
-    RichTextObject,
-    TableBlock,
-    TableRowBlock,
 )
-from notionary.blocks.notion_block_element import BlockCreateResult
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.paragraph.paragraph_models import CreateParagraphBlock, ParagraphBlock
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-
+from notionary.blocks.table.table_models import CreateTableBlock, CreateTableRowBlock, TableBlock, TableRowBlock
+from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 class TableElement(NotionBlockElement):
     """

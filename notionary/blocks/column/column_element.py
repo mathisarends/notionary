@@ -1,13 +1,10 @@
 import re
 from typing import Optional, Callable, Any
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import (
-    ElementPromptContent,
-    ElementPromptBuilder,
-)
-from notionary.blocks.block_models import Block, ColumnListBlock, CreateColumnListBlock
-from notionary.blocks.notion_block_element import BlockCreateResult
+from notionary.blocks.block_models import Block
+from notionary.blocks.column.column_models import ColumnListBlock, CreateColumnListBlock
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 
 class ColumnElement(NotionBlockElement):

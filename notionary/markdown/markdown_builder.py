@@ -9,27 +9,31 @@ Maps 1:1 to the available blocks with clear, expressive method names.
 from __future__ import annotations
 from typing import Optional, Self
 
-from notionary.blocks import (
-    HeadingMarkdownNode,
-    ImageMarkdownNode,
-    ParagraphMarkdownNode,
-    AudioMarkdownNode,
-    BookmarkMarkdownNode,
-    CalloutMarkdownNode,
-    CodeMarkdownNode,
-    DividerMarkdownNode,
-    DocumentMarkdownNode,
-    EmbedMarkdownNode,
-    NumberedListMarkdownNode,
+from notionary.blocks.audio.audio_markdown_node import AudioMarkdownNode
+from notionary.blocks.bookmark.bookmark_markdown_node import BookmarkMarkdownNode
+from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
     BulletedListMarkdownNode,
-    QuoteMarkdownNode,
-    TableMarkdownNode,
-    TodoMarkdownNode,
-    ToggleMarkdownNode,
-    ToggleableHeadingMarkdownNode,
-    VideoMarkdownNode,
-    MarkdownNode,
 )
+from notionary.blocks.callout.callout_markdown_node import CalloutMarkdownNode
+from notionary.blocks.code.code_markdown_node import CodeMarkdownNode
+from notionary.blocks.divider.divider_markdown_node import DividerMarkdownNode
+from notionary.blocks.embed.embed_markdown_node import EmbedMarkdownNode
+from notionary.blocks.file.file_element_markdown_node import FileMarkdownNode
+from notionary.blocks.heading.heading_markdown_node import HeadingMarkdownNode
+from notionary.blocks.image_block.image_markdown_node import ImageMarkdownNode
+from notionary.blocks.numbered_list.numbered_list_markdown_node import (
+    NumberedListMarkdownNode,
+)
+from notionary.blocks.paragraph.paragraph_markdown_node import ParagraphMarkdownNode
+from notionary.blocks.quote.quote_markdown_node import QuoteMarkdownNode
+from notionary.blocks.table.table_markdown_node import TableMarkdownNode
+from notionary.blocks.todo.todo_markdown_node import TodoMarkdownNode
+from notionary.blocks.toggle.toggle_markdown_node import ToggleMarkdownNode
+from notionary.blocks.toggleable_heading.toggleable_heading_markdown_node import (
+    ToggleableHeadingMarkdownNode,
+)
+from notionary.blocks.video.video_markdown_node import VideoMarkdownNode
+from notionary.markdown.markdown_node import MarkdownNode
 
 
 class MarkdownBuilder:
@@ -239,15 +243,15 @@ class MarkdownBuilder:
         self.children.append(AudioMarkdownNode(url=url, caption=caption))
         return self
 
-    def document(self, url: str, caption: Optional[str] = None) -> Self:
+    def file(self, url: str, caption: Optional[str] = None) -> Self:
         """
-        Add a document file.
+        Add a file.
 
         Args:
-            url: Document file URL or path
-            caption: Optional document caption text
+            url: File URL or path
+            caption: Optional file caption text
         """
-        self.children.append(DocumentMarkdownNode(url=url, caption=caption))
+        self.children.append(FileMarkdownNode(url=url, caption=caption))
         return self
 
     def bookmark(

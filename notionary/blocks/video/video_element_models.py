@@ -2,12 +2,9 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-from notionary.blocks.block_models import (
-    ExternalFile,
-    FileUploadFile,
-    NotionHostedFile,
-    RichTextObject,
-)
+from notionary.blocks.file.file_element_models import ExternalFile, FileUploadFile, NotionHostedFile
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
+
 
 
 class VideoBlock(BaseModel):

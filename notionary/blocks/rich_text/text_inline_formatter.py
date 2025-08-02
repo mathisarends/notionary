@@ -1,7 +1,7 @@
 from typing import Any
 import re
 
-from notionary.blocks import ElementPromptBuilder, ElementPromptContent
+from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 
 class TextInlineFormatter:

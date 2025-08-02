@@ -1,16 +1,16 @@
 import re
-from typing import Optional, List
+from typing import Optional
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
 from notionary.blocks.block_models import (
     Block,
-    CreateDividerBlock,
+)
+from notionary.blocks.divider.divider_models import CreateDividerBlock, DividerBlock
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
-    DividerBlock,
     ParagraphBlock,
 )
-from notionary.blocks.notion_block_element import BlockCreateResult
+from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 
 class DividerElement(NotionBlockElement):

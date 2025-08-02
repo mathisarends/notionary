@@ -2,31 +2,28 @@ from __future__ import annotations
 from typing import Type, TYPE_CHECKING, Self
 from collections import OrderedDict
 
-from notionary.blocks import (
-    ParagraphElement,
-    AudioElement,
-    BulletedListElement,
-    CalloutElement,
-    CodeElement,
-    ColumnElement,
-    DividerElement,
-    EmbedElement,
-    HeadingElement,
-    ImageElement,
-    MentionElement,
-    NumberedListElement,
-    TableElement,
-    TodoElement,
-    ToggleElement,
-    ToggleableHeadingElement,
-    VideoElement,
-    BookmarkElement,
-    QuoteElement,
-    NotionBlockElement,
-)
+from notionary.blocks.audio.audio_element import AudioElement
+from notionary.blocks.bookmark.bookmark_element import BookmarkElement
+from notionary.blocks.bulleted_list.bulleted_list_element import BulletedListElement
+from notionary.blocks.callout.callout_element import CalloutElement
+from notionary.blocks.code.code_element import CodeElement
+from notionary.blocks.column.column_element import ColumnElement
+from notionary.blocks.divider.divider_element import DividerElement
+from notionary.blocks.embed.embed_element import EmbedElement
+from notionary.blocks.heading.heading_element import HeadingElement
+from notionary.blocks.image_block.image_element import ImageElement
+from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.numbered_list.numbered_list_element import NumberedListElement
+from notionary.blocks.paragraph.paragraph_element import ParagraphElement
+from notionary.blocks.quote.quote_element import QuoteElement
+from notionary.blocks.table.table_element import TableElement
+from notionary.blocks.todo.todo_element import TodoElement
+from notionary.blocks.toggle.toggle_element import ToggleElement
+from notionary.blocks.toggleable_heading.toggleable_heading_element import ToggleableHeadingElement
+from notionary.blocks.video.video_element import VideoElement
 
 if TYPE_CHECKING:
-    from notionary.blocks import BlockRegistry
+    from notionary.blocks.registry.block_registry import BlockRegistry
 
 
 class BlockRegistryBuilder:
@@ -64,7 +61,6 @@ class BlockRegistryBuilder:
             .with_embeds()
             .with_audio()
             .with_columns()
-            .with_mention()
             .with_paragraphs()
             .with_toggleable_heading_element()
         ).build()
@@ -147,9 +143,6 @@ class BlockRegistryBuilder:
         """Add support for audio elements."""
         return self._add_element(AudioElement)
 
-    def with_mention(self) -> Self:
-        """Add support for mention elements."""
-        return self._add_element(MentionElement)
 
     def with_toggleable_heading_element(self) -> Self:
         """Add support for toggleable heading elements."""
@@ -169,7 +162,7 @@ class BlockRegistryBuilder:
         Returns:
             A configured BlockRegistry instance
         """
-        from notionary.blocks import BlockRegistry
+        from notionary.blocks.registry.block_registry import BlockRegistry
 
         # Ensure ParagraphElement is always present and at the end
         self._ensure_paragraph_at_end()

@@ -1,9 +1,12 @@
 from typing import Optional
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.block_models import Block, CreateParagraphBlock, ParagraphBlock
-from notionary.blocks.notion_block_element import BlockCreateResult
+from notionary.blocks.block_models import Block
+from notionary.blocks.paragraph.paragraph_models import (
+    CreateParagraphBlock,
+    ParagraphBlock,
+)
+from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 

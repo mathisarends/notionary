@@ -1,48 +1,54 @@
 from __future__ import annotations
 
-from typing import Literal, Optional, Union, Any
+from typing import Literal, Optional, Union, Any, TYPE_CHECKING
 from pydantic import BaseModel
 
-from notionary.blocks.bookmark import BookmarkBlock, CreateBookmarkBlock
-from notionary.blocks.breadcrumbs import BreadcrumbBlock, CreateBreadcrumbBlock
-from notionary.blocks.bulleted_list import (
-    BulletedListItemBlock,
-    CreateBulletedListItemBlock,
-)
-from notionary.blocks.callout import CalloutBlock, CreateCalloutBlock
-from notionary.blocks.child_database import ChildDatabaseBlock, CreateChildDatabaseBlock
-from notionary.blocks.child_page import ChildPageBlock, CreateChildPageBlock
-from notionary.blocks.code import CodeBlock, CreateCodeBlock
-from notionary.blocks.column import (
-    ColumnBlock,
-    CreateColumnBlock,
-    CreateColumnListBlock,
-    ColumnListBlock,
-)
-from notionary.blocks.divider import CreateDividerBlock, DividerBlock
-from notionary.blocks.embed import CreateEmbedBlock, EmbedBlock
-from notionary.blocks.equation import CreateEquationBlock, EquationBlock
-from notionary.blocks.file import CreateFileBlock, FileBlock
-from notionary.blocks.heading import (
-    CreateHeading1Block,
-    CreateHeading2Block,
-    CreateHeading3Block,
-    Heading1Block,
-    Heading2Block,
-    Heading3Block,
-)
-from notionary.blocks.image_block import CreateImageBlock, ImageBlock
-from notionary.blocks.numbered_list import (
-    CreateNumberedListItemBlock,
-    NumberedListItemBlock,
-)
-from notionary.blocks.paragraph import CreateParagraphBlock, ParagraphBlock
-from notionary.blocks.pdf.pdf_models import CreatePdfBlock, PdfBlock
-from notionary.blocks.quote import CreateQuoteBlock, QuoteBlock
-from notionary.blocks.table import CreateTableOfContentsBlock, TableBlock, TableRowBlock
-from notionary.blocks.todo import CreateToDoBlock, ToDoBlock
-from notionary.blocks.toggle import CreateToggleBlock, ToggleBlock
-from notionary.blocks.video import CreateVideoBlock, VideoBlock
+if TYPE_CHECKING:
+    from notionary.blocks.bookmark import BookmarkBlock, CreateBookmarkBlock
+    from notionary.blocks.breadcrumbs import BreadcrumbBlock, CreateBreadcrumbBlock
+    from notionary.blocks.bulleted_list import (
+        BulletedListItemBlock,
+        CreateBulletedListItemBlock,
+    )
+    from notionary.blocks.callout import CalloutBlock, CreateCalloutBlock
+    from notionary.blocks.child_database import (
+        ChildDatabaseBlock,
+        CreateChildDatabaseBlock,
+    )
+    from notionary.blocks.child_page import ChildPageBlock, CreateChildPageBlock
+    from notionary.blocks.code import CodeBlock, CreateCodeBlock
+    from notionary.blocks.column import (
+        ColumnBlock,
+        CreateColumnBlock,
+        CreateColumnListBlock,
+        ColumnListBlock,
+    )
+    from notionary.blocks.divider import CreateDividerBlock, DividerBlock
+    from notionary.blocks.embed import CreateEmbedBlock, EmbedBlock
+    from notionary.blocks.equation import CreateEquationBlock, EquationBlock
+    from notionary.blocks.file import CreateFileBlock, FileBlock
+    from notionary.blocks.heading import (
+        CreateHeading1Block,
+        CreateHeading2Block,
+        CreateHeading3Block,
+        HeadingBlock
+    )
+    from notionary.blocks.image_block import CreateImageBlock, ImageBlock
+    from notionary.blocks.numbered_list import (
+        CreateNumberedListItemBlock,
+        NumberedListItemBlock,
+    )
+    from notionary.blocks.paragraph import CreateParagraphBlock, ParagraphBlock
+    from notionary.blocks.pdf.pdf_models import CreatePdfBlock, PdfBlock
+    from notionary.blocks.quote import CreateQuoteBlock, QuoteBlock
+    from notionary.blocks.table import (
+        CreateTableOfContentsBlock,
+        TableBlock,
+        TableRowBlock,
+    )
+    from notionary.blocks.todo import CreateToDoBlock, ToDoBlock
+    from notionary.blocks.toggle import CreateToggleBlock, ToggleBlock
+    from notionary.blocks.video import CreateVideoBlock, VideoBlock
 
 
 BlockColor = Literal[
@@ -104,32 +110,32 @@ BlockType = Literal[
 ]
 
 BlockCreateRequest = Union[
-    CreateBookmarkBlock,
-    CreateBreadcrumbBlock,
-    CreateBulletedListItemBlock,
-    CreateCalloutBlock,
-    CreateChildDatabaseBlock,
-    CreateChildPageBlock,
-    CreateCodeBlock,
-    CreateColumnListBlock,
-    CreateColumnBlock,
-    CreateDividerBlock,
-    CreateEmbedBlock,
-    CreateEquationBlock,
-    CreateFileBlock,
-    CreateHeading1Block,
-    CreateHeading2Block,
-    CreateHeading3Block,
-    CreateImageBlock,
-    CreateNumberedListItemBlock,
-    CreateParagraphBlock,
-    CreatePdfBlock,
-    CreateQuoteBlock,
-    CreateFileBlock,
-    CreateTableOfContentsBlock,
-    CreateToDoBlock,
-    CreateToggleBlock,
-    CreateVideoBlock,
+    "CreateBookmarkBlock",
+    "CreateBreadcrumbBlock",
+    "CreateBulletedListItemBlock",
+    "CreateCalloutBlock",
+    "CreateChildDatabaseBlock",
+    "CreateChildPageBlock",
+    "CreateCodeBlock",
+    "CreateColumnListBlock",
+    "CreateColumnBlock",
+    "CreateDividerBlock",
+    "CreateEmbedBlock",
+    "CreateEquationBlock",
+    "CreateFileBlock",
+    "CreateHeading1Block",
+    "CreateHeading2Block",
+    "CreateHeading3Block",
+    "CreateImageBlock",
+    "CreateNumberedListItemBlock",
+    "CreateParagraphBlock",
+    "CreatePdfBlock",
+    "CreateQuoteBlock",
+    "CreateFileBlock",
+    "CreateTableOfContentsBlock",
+    "CreateToDoBlock",
+    "CreateToggleBlock",
+    "CreateVideoBlock",
 ]
 
 
@@ -200,13 +206,12 @@ class Block(BaseModel):
     embed: Optional[EmbedBlock] = None
     equation: Optional[EquationBlock] = None
     file: Optional[FileBlock] = None
-    heading_1: Optional[Heading1Block] = None
-    heading_2: Optional[Heading2Block] = None
-    heading_3: Optional[Heading3Block] = None
+    heading_1: Optional[HeadingBlock] = None
+    heading_2: Optional[HeadingBlock] = None
+    heading_3: Optional[HeadingBlock] = None
     image: Optional[ImageBlock] = None
     numbered_list_item: Optional[NumberedListItemBlock] = None
     paragraph: Optional[ParagraphBlock] = None
-    pdf: Optional[PdfBlock] = None
     quote: Optional[QuoteBlock] = None
     table: Optional[TableBlock] = None
     table_row: Optional[TableRowBlock] = None
@@ -217,3 +222,29 @@ class Block(BaseModel):
     def get_block_content(self) -> Optional[Any]:
         """Get the content object for this block based on its type."""
         return getattr(self, self.type, None)
+    
+from notionary.blocks.bookmark import BookmarkBlock
+from notionary.blocks.breadcrumbs import BreadcrumbBlock
+from notionary.blocks.bulleted_list import BulletedListItemBlock
+from notionary.blocks.callout import CalloutBlock
+from notionary.blocks.child_database import ChildDatabaseBlock
+from notionary.blocks.child_page import ChildPageBlock
+from notionary.blocks.code import CodeBlock
+from notionary.blocks.column import ColumnBlock, ColumnListBlock
+from notionary.blocks.divider import DividerBlock
+from notionary.blocks.embed import EmbedBlock
+from notionary.blocks.equation import EquationBlock
+from notionary.blocks.file import FileBlock
+from notionary.blocks.heading import HeadingBlock
+from notionary.blocks.image_block import ImageBlock
+from notionary.blocks.numbered_list import NumberedListItemBlock
+from notionary.blocks.paragraph import ParagraphBlock
+from notionary.blocks.quote import QuoteBlock
+from notionary.blocks.table import TableBlock, TableRowBlock
+from notionary.blocks.todo import ToDoBlock
+from notionary.blocks.toggle import ToggleBlock
+from notionary.blocks.video import VideoBlock
+
+# --- Trigger Pydantic field rebuild for recursive models ---
+Block.model_rebuild()
+BlockChildrenResponse.model_rebuild()

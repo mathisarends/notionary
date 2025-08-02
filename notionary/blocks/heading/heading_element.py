@@ -1,8 +1,6 @@
 import re
 from typing import Optional
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
 from notionary.blocks.heading.heading_models import (
     CreateHeading1Block,
     CreateHeading2Block,
@@ -12,8 +10,9 @@ from notionary.blocks.heading.heading_models import (
 from notionary.blocks.block_models import (
     Block,
 )
-from notionary.blocks.notion_block_element import BlockCreateResult
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 
 class HeadingElement(NotionBlockElement):

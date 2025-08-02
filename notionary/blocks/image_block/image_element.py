@@ -1,17 +1,16 @@
 import re
 from typing import Optional
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
 from notionary.blocks.block_models import (
     Block,
-    CreateImageBlock,
-    CreateParagraphBlock,
-    ImageBlock,
-    ParagraphBlock,
 )
-from notionary.blocks.notion_block_element import BlockCreateResult
+from notionary.blocks.file.file_element_models import ExternalFile, FileObject
+from notionary.blocks.image_block.image_models import CreateImageBlock, ImageBlock
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.paragraph.paragraph_models import CreateParagraphBlock, ParagraphBlock
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 
 class ImageElement(NotionBlockElement):

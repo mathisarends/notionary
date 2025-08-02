@@ -1,18 +1,16 @@
 import re
 from typing import Optional, Tuple, Callable, Any
 
-from notionary.blocks import (
-    NotionBlockElement,
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
+from notionary.prompts import (
     ElementPromptContent,
     ElementPromptBuilder,
 )
 from notionary.blocks.block_models import (
     Block,
-    CreateToggleBlock,
-    RichTextObject,
-    ToggleBlock,
 )
-from notionary.blocks.notion_block_element import BlockCreateResult
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 

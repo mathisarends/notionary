@@ -1,7 +1,8 @@
 from typing import Literal
 from pydantic import BaseModel, Field
 
-from notionary.blocks.block_models import Block, BlockColor, RichTextObject
+from notionary.blocks.block_models import Block, BlockColor
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 
 class ToDoBlock(BaseModel):

@@ -1,15 +1,13 @@
 import re
-from typing import Any, Optional
+from typing import Optional
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import ElementPromptContent, ElementPromptBuilder
 from notionary.blocks.block_models import (
     Block,
-    CreateNumberedListItemBlock,
-    NumberedListItemBlock,
 )
-from notionary.blocks.notion_block_element import BlockCreateResult
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.numbered_list.numbered_list_models import CreateNumberedListItemBlock, NumberedListItemBlock
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 
 class NumberedListElement(NotionBlockElement):

@@ -1,19 +1,14 @@
 import re
 from typing import Optional, Tuple, Callable, Any
 
-from notionary.blocks import (
-    ElementPromptContent,
-    ElementPromptBuilder,
-    NotionBlockElement,
+from notionary.blocks.heading.heading_models import HeadingBlock
+from notionary.prompts import (
+    ElementPromptBuilder, ElementPromptContent
 )
 from notionary.blocks.block_models import (
     Block,
-    CreateHeading1Block,
-    CreateHeading2Block,
-    CreateHeading3Block,
-    HeadingBlock,
 )
-from notionary.blocks.notion_block_element import BlockCreateResult
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
@@ -61,7 +56,7 @@ class ToggleableHeadingElement(NotionBlockElement):
 
         rich_text = TextInlineFormatter.parse_inline_formatting(content)
 
-        heading_content = HeadingBlock(
+        heading_content = Heading1Block(
             rich_text=rich_text, color="default", is_toggleable=True, children=[]
         )
 

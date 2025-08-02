@@ -1,21 +1,17 @@
 import re
+from typing import Optional
 
-from typing import Optional, Any
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import (
-    ElementPromptContent,
-    ElementPromptBuilder,
-)
 from notionary.blocks.block_models import (
-    CodeBlock,
-    CreateCodeBlock,
-    CreateParagraphBlock,
-    RichTextObject,
     Block,
-    CodeLanguage,
 )
-from notionary.blocks.notion_block_element import BlockCreateResult
-from notionary.models.notion_block_response import ParagraphBlock
+from notionary.blocks.code.code_models import CodeBlock, CodeLanguage, CreateCodeBlock
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.paragraph.paragraph_models import (
+    CreateParagraphBlock,
+    ParagraphBlock,
+)
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.prompts import ElementPromptContent, ElementPromptBuilder
 
 
 class CodeElement(NotionBlockElement):

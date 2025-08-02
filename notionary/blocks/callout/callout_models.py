@@ -1,7 +1,9 @@
 from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
-from notionary.blocks.block_models import Block, BlockColor, IconObject, RichTextObject
+from notionary.blocks.block_models import Block, BlockColor
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.models.icon_types import IconObject
 
 
 class CalloutBlock(BaseModel):
