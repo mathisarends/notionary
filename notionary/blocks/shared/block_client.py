@@ -1,10 +1,8 @@
 from typing import Optional, Dict, Any
 from notionary.base_notion_client import BaseNotionClient
-from notionary.util import singleton
 from notionary.blocks.shared.models import Block, BlockChildrenResponse
 
 
-@singleton
 class NotionBlockClient(BaseNotionClient):
     """
     Client for Notion Block API operations.
@@ -24,6 +22,36 @@ class NotionBlockClient(BaseNotionClient):
                 self.logger.error("Failed to parse block response: %s", str(e))
                 return None
         return None
+
+    async def get_blocks_by_page_id_recursively(
+        self, page_id: str, parent_id: Optional[str] = None
+    ) -> list[Block]:
+        response = (
+            await self.get_block_children(block_id=page_id)
+            if parent_id is None
+            else await self.get_block_children(block_id=parent_id)
+        )
+
+        if not response or not response.results:
+            return []
+
+        blocks = response.results
+
+        for block in blocks:
+            if not block.has_children:
+                continue
+
+            block_id = block.id
+            if not block_id:
+                continue
+
+            children = await self.get_blocks_by_page_id_recursively(
+                page_id=page_id, parent_id=block_id
+            )
+            if children:
+                block.children = children
+
+        return blocks
 
     async def get_block_children(
         self, block_id: str, start_cursor: Optional[str] = None, page_size: int = 100
@@ -206,27 +234,6 @@ class NotionBlockClient(BaseNotionClient):
             request_id=responses[-1].request_id,  # Use last request ID
         )
 
-    async def update_block(
-        self, block_id: str, block_data: Dict[str, Any], archived: Optional[bool] = None
-    ) -> Optional[Block]:
-        """
-        Updates an existing block.
-        """
-        self.logger.debug("Updating block: %s", block_id)
-
-        data = block_data.copy()
-        if archived is not None:
-            data["archived"] = archived
-
-        response = await self.patch(f"blocks/{block_id}", data)
-        if response:
-            try:
-                return Block.model_validate(response)
-            except Exception as e:
-                self.logger.error("Failed to parse update response: %s", str(e))
-                return None
-        return None
-
     async def delete_block(self, block_id: str) -> Optional[Block]:
         """
         Deletes (archives) a block.
@@ -238,19 +245,3 @@ class NotionBlockClient(BaseNotionClient):
             # After deletion, retrieve the block to return the updated state
             return await self.get_block(block_id)
         return None
-
-    async def archive_block(self, block_id: str) -> Optional[Block]:
-        """
-        Archives a block by setting archived=True.
-        """
-        self.logger.debug("Archiving block: %s", block_id)
-
-        return await self.update_block(block_id=block_id, block_data={}, archived=True)
-
-    async def unarchive_block(self, block_id: str) -> Optional[Block]:
-        """
-        Unarchives a block by setting archived=False.
-        """
-        self.logger.debug("Unarchiving block: %s", block_id)
-
-        return await self.update_block(block_id=block_id, block_data={}, archived=False)

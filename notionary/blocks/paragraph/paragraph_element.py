@@ -13,7 +13,6 @@ class ParagraphElement(NotionBlockElement):
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
-        # Paragraph is fallback for any non-empty text
         return bool(text and text.strip())
 
     @classmethod

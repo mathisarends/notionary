@@ -42,13 +42,7 @@ class PageContentWriter(LoggingMixin):
             self.logger.debug("Append block children result: %r", result)
             return bool(result)
         except Exception as e:
-            import traceback
-
-            self.logger.error(
-                "Error appending markdown: %s\nTraceback:\n%s",
-                str(e),
-                traceback.format_exc(),
-            )
+            self.logger.error("Error appending markdown: %s", str(e), exc_info=True)
             return False
 
     async def clear_page_content(self) -> bool:
