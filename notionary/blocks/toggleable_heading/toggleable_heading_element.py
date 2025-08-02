@@ -2,9 +2,7 @@ import re
 from typing import Optional, Tuple, Callable, Any
 
 from notionary.blocks.heading.heading_models import HeadingBlock
-from notionary.prompts import (
-    ElementPromptBuilder, ElementPromptContent
-)
+from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 from notionary.blocks.block_models import (
     Block,
 )

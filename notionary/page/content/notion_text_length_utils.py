@@ -28,74 +28,84 @@ def _fix_single_block_content(
     block: BlockCreateRequest, max_text_length: int
 ) -> BlockCreateRequest:
     """Fix content length in a single block and its children recursively."""
-    # Create a copy by converting to dict and back to model
-    block_dict = block.model_dump()
+    # Create a deep copy to avoid mutating the original
+    block_copy = block.model_copy(deep=True)
 
-    # Fix rich_text content if present
-    _fix_rich_text_in_block_dict(block_dict, max_text_length)
+    # Work directly on the Pydantic object
+    _fix_block_rich_text_direct(block_copy, max_text_length)
 
-    # Recreate the model from the fixed dict
-    return block.__class__.model_validate(block_dict)
+    return block_copy
 
 
-def _fix_rich_text_in_block_dict(
-    block_dict: dict[str, Any], max_text_length: int
+def _fix_block_rich_text_direct(
+    block: BlockCreateRequest, max_text_length: int
 ) -> None:
-    """Fix rich text content in a block dictionary recursively."""
+    """Fix rich text content directly on the Pydantic object."""
 
-    # Handle rich_text at the top level
-    if "rich_text" in block_dict:
-        _fix_rich_text_list(block_dict["rich_text"], max_text_length)
-
-    # Handle rich_text in nested content and children
-    for key, value in block_dict.items():
-        if not isinstance(value, dict):
-            continue
-
-        _fix_nested_rich_text(value, max_text_length)
-        _fix_nested_children(value, max_text_length)
-
-
-def _fix_nested_rich_text(value: dict[str, Any], max_text_length: int) -> None:
-    """Fix rich_text in nested content (e.g., paragraph.rich_text)."""
-    if "rich_text" in value:
-        _fix_rich_text_list(value["rich_text"], max_text_length)
-
-
-def _fix_nested_children(value: dict[str, Any], max_text_length: int) -> None:
-    """Handle children recursively."""
-    children = value.get("children")
-    if not isinstance(children, list):
+    # Get the block content based on its type
+    block_content = _get_block_content(block)
+    if not block_content:
         return
 
-    for child_dict in children:
-        if isinstance(child_dict, dict):
-            _fix_rich_text_in_block_dict(child_dict, max_text_length)
+    # Fix rich_text if it exists
+    if hasattr(block_content, "rich_text") and block_content.rich_text:
+        _fix_rich_text_objects_direct(block_content.rich_text, max_text_length)
+
+    # Handle children recursively
+    if hasattr(block_content, "children") and block_content.children:
+        for child in block_content.children:
+            _fix_block_rich_text_direct(child, max_text_length)
 
 
-def _fix_rich_text_list(
-    rich_text_list: list[dict[str, Any]], max_text_length: int
-) -> None:
-    """Fix a list of rich text objects."""
+def _get_block_content(block: BlockCreateRequest):
+    """Get the actual content object from a create block dynamically."""
+    # Get all attributes that don't start with underscore and aren't methods
+    for attr_name in dir(block):
+        if attr_name.startswith("_") or attr_name in [
+            "model_copy",
+            "model_dump",
+            "model_validate",
+        ]:
+            continue
+
+        attr_value = getattr(block, attr_name, None)
+
+        # Skip None values, strings (like 'type'), and callable methods
+        if attr_value is None or isinstance(attr_value, str) or callable(attr_value):
+            continue
+
+        # If it's an object with rich_text or children, it's likely our content
+        if hasattr(attr_value, "rich_text") or hasattr(attr_value, "children"):
+            return attr_value
+
+    return None
+
+
+def _fix_rich_text_objects_direct(rich_text_list: list, max_text_length: int) -> None:
+    """Fix rich text objects directly without dict conversion."""
+    if not rich_text_list:
+        return
+
     for rich_text_item in rich_text_list:
-        if not isinstance(rich_text_item, dict):
+        if not rich_text_item:
             continue
 
-        text_obj = rich_text_item.get("text")
-        if not text_obj or not isinstance(text_obj, dict):
-            continue
+        # Check if this is a text type rich text object
+        if (
+            hasattr(rich_text_item, "text")
+            and rich_text_item.text
+            and hasattr(rich_text_item.text, "content")
+        ):
 
-        content = text_obj.get("content")
-        if not content or not isinstance(content, str):
-            continue
-
-        if len(content) > max_text_length:
-            logger.warning(
-                "Truncating text content from %d to %d chars",
-                len(content),
-                max_text_length,
-            )
-            text_obj["content"] = content[:max_text_length]
+            content = rich_text_item.text.content
+            if content and len(content) > max_text_length:
+                logger.warning(
+                    "Truncating text content from %d to %d chars",
+                    len(content),
+                    max_text_length,
+                )
+                # Direct assignment - no parsing needed!
+                rich_text_item.text.content = content[:max_text_length]
 
 
 def split_to_paragraphs(markdown_text: str) -> list[str]:

@@ -5,11 +5,20 @@ from notionary.blocks.block_models import (
     Block,
 )
 from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
-from notionary.blocks.paragraph.paragraph_models import CreateParagraphBlock, ParagraphBlock
+from notionary.blocks.paragraph.paragraph_models import (
+    CreateParagraphBlock,
+    ParagraphBlock,
+)
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.blocks.table.table_models import CreateTableBlock, CreateTableRowBlock, TableBlock, TableRowBlock
+from notionary.blocks.table.table_models import (
+    CreateTableBlock,
+    CreateTableRowBlock,
+    TableBlock,
+    TableRowBlock,
+)
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 
 class TableElement(NotionBlockElement):
     """
@@ -54,18 +63,17 @@ class TableElement(NotionBlockElement):
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
-        """Convert markdown table to Notion TableBlock with rows, followed by an empty paragraph."""
+        """Convert markdown table to Notion TableBlock with rows as children, followed by an empty paragraph."""
         # Only process if it's a markdown table
-        if not cls.PATTERN.match(text.strip()):
+        if not cls.match_markdown(text.strip()):
             return None
+        
+        print("its a table yearj", text)
 
         lines = text.split("\n")
-        # Find header separator (e.g., | --- | --- |)
         try:
             sep_index = next(
-                i
-                for i, line in enumerate(lines)
-                if re.match(r"^\|?(?:\s*-+\s*\|)+$", line)
+                i for i, line in enumerate(lines) if cls.SEPARATOR_PATTERN.match(line)
             )
         except StopIteration:
             return None
@@ -84,14 +92,10 @@ class TableElement(NotionBlockElement):
         if not rows_data:
             return None
 
-        # Build TableBlock
-        col_count = len(headers)
-        table_block = TableBlock(
-            table_width=col_count, has_column_header=True, has_row_header=False
-        )
-
         # Build table rows
+        col_count = len(headers)
         table_rows = []
+
         # First header row
         header_row = TableRowBlock(
             cells=[[RichTextObject.from_plain_text(h)] for h in headers]
@@ -108,12 +112,20 @@ class TableElement(NotionBlockElement):
                 CreateTableRowBlock(table_row=TableRowBlock(cells=row_cells))
             )
 
+        # Build TableBlock with children INSIDE the table object
+        table_block = TableBlock(
+            table_width=col_count,
+            has_column_header=True,
+            has_row_header=False,
+            children=table_rows  # ← Hier gehören die children hin!
+        )
+
         # Empty paragraph after table
         empty_para = ParagraphBlock(rich_text=[])
 
+        # Return only the table block (children sind jetzt im table_block) and empty paragraph
         return [
-            CreateTableBlock(table=table_block),
-            *table_rows,
+            CreateTableBlock(table=table_block),  # ← Keine children hier!
             CreateParagraphBlock(paragraph=empty_para),
         ]
 

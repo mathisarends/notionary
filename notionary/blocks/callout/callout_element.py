@@ -7,8 +7,7 @@ from notionary.blocks.block_models import (
 from notionary.blocks.callout.callout_models import CalloutBlock, CreateCalloutBlock
 from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.models.icon_types import IconObject
-from notionary.models.notion_page_response import EmojiIcon
+from notionary.models.icon_types import EmojiIcon, IconObject
 from notionary.prompts import ElementPromptContent, ElementPromptBuilder
 
 

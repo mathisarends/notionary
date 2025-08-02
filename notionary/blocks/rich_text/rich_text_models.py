@@ -13,9 +13,13 @@ class TextAnnotations(BaseModel):
     color: str = "default"
 
 
+class LinkObject(BaseModel):
+    url: str
+
+
 class TextContent(BaseModel):
     content: str
-    link: Optional[str] = None
+    link: Optional[LinkObject] = None
 
 
 class RichTextObject(BaseModel):

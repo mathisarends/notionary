@@ -279,7 +279,7 @@ class ToggleElement(NotionBlockElement):
         cls,
         nested_content: list[str],
         process_function: Optional[Callable],
-        toggle_block: dict[str, Any],
+        toggle_block: Any,
     ) -> None:
         """Processes nested content using the provided function if applicable."""
         if not (nested_content and process_function):
@@ -289,7 +289,17 @@ class ToggleElement(NotionBlockElement):
         nested_blocks = process_function(nested_text)
 
         if nested_blocks:
-            toggle_block["toggle"]["children"] = nested_blocks
+            # Handle both Pydantic objects and dictionaries
+            if hasattr(toggle_block, "toggle"):
+                # Pydantic object (CreateToggleBlock)
+                toggle_block.toggle.children = nested_blocks
+            elif isinstance(toggle_block, dict) and "toggle" in toggle_block:
+                # Dictionary format (legacy)
+                toggle_block["toggle"]["children"] = nested_blocks
+            else:
+                # Unknown format - try to handle gracefully
+                if hasattr(toggle_block, "children"):
+                    toggle_block.children = nested_blocks
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

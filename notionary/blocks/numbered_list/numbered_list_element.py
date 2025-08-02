@@ -5,7 +5,10 @@ from notionary.blocks.block_models import (
     Block,
 )
 from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
-from notionary.blocks.numbered_list.numbered_list_models import CreateNumberedListItemBlock, NumberedListItemBlock
+from notionary.blocks.numbered_list.numbered_list_models import (
+    CreateNumberedListItemBlock,
+    NumberedListItemBlock,
+)
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 

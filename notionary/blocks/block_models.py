@@ -31,7 +31,7 @@ if TYPE_CHECKING:
         CreateHeading1Block,
         CreateHeading2Block,
         CreateHeading3Block,
-        HeadingBlock
+        HeadingBlock,
     )
     from notionary.blocks.image_block import CreateImageBlock, ImageBlock
     from notionary.blocks.numbered_list import (
@@ -39,7 +39,6 @@ if TYPE_CHECKING:
         NumberedListItemBlock,
     )
     from notionary.blocks.paragraph import CreateParagraphBlock, ParagraphBlock
-    from notionary.blocks.pdf.pdf_models import CreatePdfBlock, PdfBlock
     from notionary.blocks.quote import CreateQuoteBlock, QuoteBlock
     from notionary.blocks.table import (
         CreateTableOfContentsBlock,
@@ -129,7 +128,6 @@ BlockCreateRequest = Union[
     "CreateImageBlock",
     "CreateNumberedListItemBlock",
     "CreateParagraphBlock",
-    "CreatePdfBlock",
     "CreateQuoteBlock",
     "CreateFileBlock",
     "CreateTableOfContentsBlock",
@@ -222,7 +220,8 @@ class Block(BaseModel):
     def get_block_content(self) -> Optional[Any]:
         """Get the content object for this block based on its type."""
         return getattr(self, self.type, None)
-    
+
+
 # --- Runtime imports & Pydantic rebuild for forward references ---
 # These imports ensure that at runtime all Block subclasses are loaded,
 # allowing Pydantic v2 to correctly resolve forward references and recursive

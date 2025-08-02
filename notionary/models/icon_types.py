@@ -1,6 +1,5 @@
-from typing import Union
+from typing import Union, Literal
 from pydantic import BaseModel
-from typing_extensions import Literal
 
 from notionary.blocks.file.file_element_models import FileObject
 

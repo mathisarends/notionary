@@ -2,8 +2,13 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-from notionary.blocks.file.file_element_models import ExternalFile, FileUploadFile, NotionHostedFile
+from notionary.blocks.file.file_element_models import (
+    ExternalFile,
+    FileUploadFile,
+    NotionHostedFile,
+)
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
+
 
 class ImageBlock(BaseModel):
     type: Literal["external", "file", "file_upload"]

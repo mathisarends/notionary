@@ -4,8 +4,7 @@ from .table_markdown_node import TableMarkdownNode
 from .table_models import (
     TableBlock,
     TableRowBlock,
-    TableOfContentsBlock,
-    CreateTableOfContentsBlock,
+
 )
 
 __all__ = [
@@ -13,6 +12,4 @@ __all__ = [
     "TableMarkdownNode",
     "TableBlock",
     "TableRowBlock",
-    "TableOfContentsBlock",
-    "CreateTableOfContentsBlock",
 ]

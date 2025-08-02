@@ -19,7 +19,9 @@ from notionary.blocks.quote.quote_element import QuoteElement
 from notionary.blocks.table.table_element import TableElement
 from notionary.blocks.todo.todo_element import TodoElement
 from notionary.blocks.toggle.toggle_element import ToggleElement
-from notionary.blocks.toggleable_heading.toggleable_heading_element import ToggleableHeadingElement
+from notionary.blocks.toggleable_heading.toggleable_heading_element import (
+    ToggleableHeadingElement,
+)
 from notionary.blocks.video.video_element import VideoElement
 
 if TYPE_CHECKING:
@@ -142,7 +144,6 @@ class BlockRegistryBuilder:
     def with_audio(self) -> Self:
         """Add support for audio elements."""
         return self._add_element(AudioElement)
-
 
     def with_toggleable_heading_element(self) -> Self:
         """Add support for toggleable heading elements."""

@@ -59,7 +59,7 @@ class PageContentWriter(LoggingMixin):
                 return None
 
         except Exception as e:
-            self.logger.error("Error appending markdown: %s", str(e))
+            self.logger.error("Error appending markdown: %s", str(e), exc_info=True)
             return None
 
     async def clear_page_content(self) -> Optional[str]:
