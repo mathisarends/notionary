@@ -223,6 +223,11 @@ class Block(BaseModel):
         """Get the content object for this block based on its type."""
         return getattr(self, self.type, None)
     
+# --- Runtime imports & Pydantic rebuild for forward references ---
+# These imports ensure that at runtime all Block subclasses are loaded,
+# allowing Pydantic v2 to correctly resolve forward references and recursive
+# fields (e.g., children: list[Block]). Without these runtime imports,
+# Pydantic would raise "model not fully defined" errors during the rebuild.
 from notionary.blocks.bookmark import BookmarkBlock
 from notionary.blocks.breadcrumbs import BreadcrumbBlock
 from notionary.blocks.bulleted_list import BulletedListItemBlock
