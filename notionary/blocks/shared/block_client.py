@@ -1,6 +1,10 @@
 from typing import Optional, Dict, Any
 from notionary.base_notion_client import BaseNotionClient
-from notionary.blocks.shared.models import Block, BlockChildrenResponse, BlockCreateRequest
+from notionary.blocks.shared.models import (
+    Block,
+    BlockChildrenResponse,
+    BlockCreateRequest,
+)
 
 
 class NotionBlockClient(BaseNotionClient):
@@ -102,7 +106,10 @@ class NotionBlockClient(BaseNotionClient):
         return all_blocks
 
     async def append_block_children(
-        self, block_id: str, children: list[BlockCreateRequest], after: Optional[str] = None
+        self,
+        block_id: str,
+        children: list[BlockCreateRequest],
+        after: Optional[str] = None,
     ) -> Optional[BlockChildrenResponse]:
         """
         Appends new child blocks to a parent block.

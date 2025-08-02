@@ -1,24 +1,16 @@
 from typing import Literal, Optional
-
 from pydantic import BaseModel, Field
-
-from notionary.blocks.shared.models import (
-    ExternalFile,
-    FileUploadFile,
-    NotionHostedFile,
-    RichTextObject,
-)
+from notionary.blocks.shared.models import ExternalFile, FileUploadFile, NotionHostedFile, RichTextObject
 
 
-class FileBlock(BaseModel):
+class PdfBlock(BaseModel):
     caption: list[RichTextObject] = Field(default_factory=list)
     type: Literal["external", "file", "file_upload"]
     external: Optional[ExternalFile] = None
     file: Optional[NotionHostedFile] = None
     file_upload: Optional[FileUploadFile] = None
-    name: Optional[str] = None
-
-
-class CreateFileBlock(BaseModel):
-    type: Literal["file"] = "file"
-    file: FileBlock
+    
+    
+class CreatePdfBlock(BaseModel):
+    type: Literal["pdf"] = "pdf"
+    pdf: PdfBlock

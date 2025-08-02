@@ -25,7 +25,6 @@ from .toggleable_heading import ToggleableHeadingElement, ToggleableHeadingMarkd
 from .bookmark import BookmarkElement, BookmarkMarkdownNode
 from .divider import DividerElement, DividerMarkdownNode
 from .heading import HeadingElement, HeadingMarkdownNode
-from .mention import MentionElement, MentionMarkdownNode
 from .quote import QuoteElement, QuoteMarkdownNode
 from .document import DocumentElement, DocumentMarkdownNode
 from .shared.text_inline_formatter import TextInlineFormatter

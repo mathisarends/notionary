@@ -1,4 +1,4 @@
-from typing import Optional, TypeAlias, Union
+from typing import Optional, Union
 from abc import ABC
 
 from notionary.blocks.prompts.element_prompt_content import ElementPromptContent
