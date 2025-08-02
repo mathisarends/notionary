@@ -1,65 +1,61 @@
 import re
-from typing import Dict, Any, Optional
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import (
-    ElementPromptContent,
-    ElementPromptBuilder,
-    NotionBlockResult,
-)
+from typing import Any, Optional, List
 
+from notionary.blocks import NotionBlockElement, NotionBlockResult
+from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks.shared.models import Block, RichTextObject
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
 class BulletedListElement(NotionBlockElement):
     """Class for converting between Markdown bullet lists and Notion bulleted list items."""
 
+    # Regex for markdown bullets (excluding todo items [ ] or [x])
+    PATTERN = re.compile(r"^(\s*)[*\-+]\s+(?!\[[ x]\])(.+)$")
+
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
+        return bool(cls.PATTERN.match(text.rstrip()))
+
+    @classmethod
+    def match_notion(cls, block: Block) -> bool:
+        """Check if this element can handle the given Notion block."""
+        return (
+            block.type == "bulleted_list_item" and block.bulleted_list_item is not None
+        )
+
     @classmethod
     def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        """Convert markdown bulleted list item to Notion block."""
-        pattern = re.compile(
-            r"^(\s*)[*\-+]\s+(?!\[[ x]\])(.+)$"
-        )  # Avoid matching todo items
-        list_match = pattern.match(text)
-        if not list_match:
+        m = cls.PATTERN.match(text)
+        if not m:
             return None
-
-        content = list_match.group(2)
-
-        # Use parse_inline_formatting to handle rich text
+        content = m.group(2)
+        # parse inline formatting into rich_text objects
         rich_text = TextInlineFormatter.parse_inline_formatting(content)
-
         return {
             "type": "bulleted_list_item",
             "bulleted_list_item": {"rich_text": rich_text, "color": "default"},
         }
 
     @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
+    def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion bulleted list item block to markdown."""
-        if block.get("type") != "bulleted_list_item":
+        if block.type != "bulleted_list_item" or block.bulleted_list_item is None:
             return None
-
-        rich_text = block.get("bulleted_list_item", {}).get("rich_text", [])
-        content = TextInlineFormatter.extract_text_with_formatting(rich_text)
-
-        return f"- {content}"
-
-    @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        """Check if this element can handle the given markdown text."""
-        pattern = re.compile(r"^(\s*)[*\-+]\s+(?!\[[ x]\])(.+)$")
-        return bool(pattern.match(text))
+        # extract rich_text list of RichTextObject
+        rich_list = block.bulleted_list_item.rich_text
+        # convert to markdown with inline formatting
+        text = TextInlineFormatter.extract_text_with_formatting(
+            [rt.model_dump() for rt in rich_list]
+        )
+        return f"- {text}"
 
     @classmethod
-    def match_notion(cls, block: Dict[str, Any]) -> bool:
-        """Check if this element can handle the given Notion block."""
-        return block.get("type") == "bulleted_list_item"
+    def is_multiline(cls) -> bool:
+        return False
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """
-        Returns structured LLM prompt metadata for the bulleted list element.
-        """
         return (
             ElementPromptBuilder()
             .with_description("Creates bulleted list items for unordered lists.")

@@ -354,8 +354,8 @@ def test_level_validation():
     for level in invalid_levels:
         if level > 0:  # Skip level 0 as it would be empty string
             markdown = "#" * level + " Test"
-            assert not HeadingElement.match_markdown(
-                markdown
+            assert (
+                not HeadingElement.match_markdown()
             ), f"Level {level} should be invalid"
 
 

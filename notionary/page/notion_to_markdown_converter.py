@@ -1,4 +1,5 @@
-from typing import Dict, Any
+from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.shared.models import Block, RichTextObject
 
 
 class NotionToMarkdownConverter:
@@ -7,13 +8,13 @@ class NotionToMarkdownConverter:
     TOGGLE_ELEMENT_TYPES = ["toggle", "toggleable_heading"]
     LIST_ITEM_TYPES = ["numbered_list_item", "bulleted_list_item"]
 
-    def __init__(self, block_registry):
+    def __init__(self, block_registry: BlockRegistry):
         """
         Initialize the NotionToMarkdownConverter.
         """
         self._block_registry = block_registry
 
-    def convert(self, blocks: list[Dict[str, Any]]) -> str:
+    def convert(self, blocks: list[Block]) -> str:
         """
         Convert Notion blocks to Markdown text, handling nested structures.
         """
@@ -29,23 +30,24 @@ class NotionToMarkdownConverter:
 
         return "\n\n".join(filter(None, markdown_parts))
 
-    def _convert_single_block_with_children(self, block: Dict[str, Any]) -> str:
+    def _convert_single_block_with_children(self, block: Block) -> str:
         """
         Process a single block, including any children.
         """
         if not block:
             return ""
 
+        # Use Block object directly with the block registry
         block_markdown = self._block_registry.notion_to_markdown(block)
 
         if not self._has_children(block):
             return block_markdown
 
-        children_markdown = self.convert(block["children"])
+        children_markdown = self.convert(block.children)
         if not children_markdown:
             return block_markdown
 
-        block_type = block.get("type", "")
+        block_type = block.type
 
         if block_type in self.TOGGLE_ELEMENT_TYPES:
             return self._format_toggle_with_children(block_markdown, children_markdown)
@@ -59,11 +61,11 @@ class NotionToMarkdownConverter:
             block_markdown, children_markdown
         )
 
-    def _has_children(self, block: Dict[str, Any]) -> bool:
+    def _has_children(self, block: Block) -> bool:
         """
         Check if block has children that need processing.
         """
-        return block.get("has_children", False) and "children" in block
+        return block.has_children and block.children is not None
 
     def _format_toggle_with_children(
         self, toggle_markdown: str, children_markdown: str
@@ -98,7 +100,7 @@ class NotionToMarkdownConverter:
         indent = " " * spaces
         return "\n".join([f"{indent}{line}" for line in text.split("\n")])
 
-    def extract_toggle_content(self, blocks: list[Dict[str, Any]]) -> str:
+    def extract_toggle_content(self, blocks: list[Block]) -> str:
         """
         Extract only the content of toggles from blocks.
         """
@@ -113,7 +115,7 @@ class NotionToMarkdownConverter:
         return "\n".join(toggle_contents)
 
     def _extract_toggle_content_recursive(
-        self, block: Dict[str, Any], result: list[str]
+        self, block: Block, result: list[str]
     ) -> None:
         """
         Recursively extract toggle content from a block and its children.
@@ -123,57 +125,60 @@ class NotionToMarkdownConverter:
             self._add_toggle_children_to_result(block, result)
 
         if self._has_children(block):
-            for child in block["children"]:
+            for child in block.children:
                 self._extract_toggle_content_recursive(child, result)
 
-    def _is_toggle_or_heading_with_children(self, block: Dict[str, Any]) -> bool:
+    def _is_toggle_or_heading_with_children(self, block: Block) -> bool:
         """
         Check if block is a toggle or toggleable_heading with children.
         """
-        return block.get("type") in self.TOGGLE_ELEMENT_TYPES and "children" in block
+        return block.type in self.TOGGLE_ELEMENT_TYPES and block.children is not None
 
-    def _add_toggle_header_to_result(
-        self, block: Dict[str, Any], result: list[str]
-    ) -> None:
+    def _add_toggle_header_to_result(self, block: Block, result: list[str]) -> None:
         """
         Add toggle header text to result list.
         """
-        block_type = block.get("type")
         rich_text = None
 
-        if block_type == "toggle":
-            rich_text = block.get("toggle", {}).get("rich_text", [])
-        elif block_type == "toggleable_heading":
-            rich_text = block.get("toggleable_heading", {}).get("rich_text", [])
+        if block.type == "toggle" and block.toggle:
+            rich_text = block.toggle.rich_text
+        elif block.type == "toggleable_heading":
+            # Handle toggleable heading - might need adjustment based on your exact model
+            if hasattr(block, "toggleable_heading") and block.toggleable_heading:
+                rich_text = block.toggleable_heading.rich_text
 
         toggle_text = self._extract_text_from_rich_text(rich_text or [])
 
         if toggle_text:
             result.append(f"### {toggle_text}")
 
-    def _add_toggle_children_to_result(
-        self, block: Dict[str, Any], result: list[str]
-    ) -> None:
+    def _add_toggle_children_to_result(self, block: Block, result: list[str]) -> None:
         """
         Add formatted toggle children to result list.
         """
-        for child in block.get("children", []):
-            child_type = child.get("type")
-            if not (child_type and child_type in child):
+        if not block.children:
+            return
+
+        for child in block.children:
+            child_content = child.get_block_content()
+            if not child_content:
                 continue
 
-            child_text = self._extract_text_from_rich_text(
-                child.get(child_type, {}).get("rich_text", [])
-            )
+            # Extract rich_text from the child content
+            rich_text = getattr(child_content, "rich_text", None)
+            if not rich_text:
+                continue
+
+            child_text = self._extract_text_from_rich_text(rich_text)
 
             if child_text:
                 result.append(f"- {child_text}")
 
-    def _extract_text_from_rich_text(self, rich_text: list[Dict[str, Any]]) -> str:
+    def _extract_text_from_rich_text(self, rich_text: list[RichTextObject]) -> str:
         """
         Extract plain text from Notion's rich text array.
         """
         if not rich_text:
             return ""
 
-        return "".join([rt.get("plain_text", "") for rt in rich_text])
+        return "".join([rt.plain_text for rt in rich_text])

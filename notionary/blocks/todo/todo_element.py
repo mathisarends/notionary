@@ -1,12 +1,9 @@
 import re
-from typing import Dict, Any, Optional
+from typing import Any, Optional
 
-from notionary.blocks import (
-    ElementPromptContent,
-    ElementPromptBuilder,
-    NotionBlockResult,
-    NotionBlockElement,
-)
+from notionary.blocks import NotionBlockElement, NotionBlockResult
+from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks.shared.models import Block, RichTextObject
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -21,74 +18,55 @@ class TodoElement(NotionBlockElement):
     + [ ] Also works with plus sign
     """
 
-    # Patterns for detecting Markdown todo items
-    TODO_PATTERN = re.compile(r"^\s*[-*+]\s+\[\s?\]\s+(.+)$")
-    DONE_PATTERN = re.compile(r"^\s*[-*+]\s+\[x\]\s+(.+)$")
+    PATTERN = re.compile(r"^\s*[-*+]\s+\[ \]\s+(.+)$")
+    DONE_PATTERN = re.compile(r"^\s*[-*+]\s+\[x\]\s+(.+)$", re.IGNORECASE)
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
-        """Check if text is a markdown todo item."""
-        return bool(
-            TodoElement.TODO_PATTERN.match(text) or TodoElement.DONE_PATTERN.match(text)
-        )
+        return bool(cls.PATTERN.match(text) or cls.DONE_PATTERN.match(text))
 
     @classmethod
-    def match_notion(cls, block: Dict[str, Any]) -> bool:
-        """Check if block is a Notion to_do block."""
-        return block.get("type") == "to_do"
+    def match_notion(cls, block: Block) -> bool:
+        return block.type == "to_do" and block.to_do is not None
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        """Convert markdown todo item to Notion to_do block."""
-        done_match = TodoElement.DONE_PATTERN.match(text)
-        if done_match:
-            content = done_match.group(1)
-            return TodoElement._create_todo_block(content, True)
+        """Convert markdown todo or done item to Notion to_do block."""
+        m_done = cls.DONE_PATTERN.match(text)
+        m_todo = None if m_done else cls.PATTERN.match(text)
 
-        todo_match = TodoElement.TODO_PATTERN.match(text)
-        if todo_match:
-            content = todo_match.group(1)
-            return TodoElement._create_todo_block(content, False)
-
-        return None
-
-    @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
-        """Convert Notion to_do block to markdown todo item."""
-        if block.get("type") != "to_do":
+        if m_done:
+            content = m_done.group(1)
+            checked = True
+        elif m_todo:
+            content = m_todo.group(1)
+            checked = False
+        else:
             return None
 
-        todo_data = block.get("to_do", {})
-        checked = todo_data.get("checked", False)
-
-        # Extract text content
-        rich_text = todo_data.get("rich_text", [])
-        content = TextInlineFormatter.extract_text_with_formatting(rich_text)
-
-        # Format as markdown todo item
-        checkbox = "[x]" if checked else "[ ]"
-        return f"- {checkbox} {content}"
+        # build rich text
+        rich = TextInlineFormatter.parse_inline_formatting(content)
+        block_data: dict[str, Any] = {
+            "rich_text": rich,
+            "checked": checked,
+            "color": "default",
+        }
+        return {"type": "to_do", "to_do": block_data}
 
     @classmethod
-    def _create_todo_block(cls, content: str, checked: bool) -> Dict[str, Any]:
-        """
-        Create a Notion to_do block.
-
-        Args:
-            content: The text content of the todo item
-            checked: Whether the todo item is checked
-
-        Returns:
-            Notion to_do block dictionary
-        """
-        return {
-            "type": "to_do",
-            "to_do": {
-                "rich_text": TextInlineFormatter.parse_inline_formatting(content),
-                "checked": checked,
-                "color": "default",
-            },
-        }
+    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+        """Convert Notion to_do block to markdown todo item."""
+        if block.type != "to_do" or block.to_do is None:
+            return None
+        td = block.to_do
+        checked = td.checked
+        # extract formatted content
+        rich_list = td.rich_text
+        content = TextInlineFormatter.extract_text_with_formatting(
+            [rt.model_dump() for rt in rich_list]
+        )
+        checkbox = "[x]" if checked else "[ ]"
+        return f"- {checkbox} {content}"
 
     @classmethod
     def is_multiline(cls) -> bool:
@@ -96,17 +74,13 @@ class TodoElement(NotionBlockElement):
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """
-        Returns structured LLM prompt metadata for the todo element.
-        """
         return (
             ElementPromptBuilder()
             .with_description(
-                "Creates interactive to-do items with checkboxes that can be marked as complete."
+                "Creates interactive to-do items with checkboxes that can be marked complete."
             )
             .with_usage_guidelines(
-                "Use to-do items for task lists, checklists, or tracking progress on items that need to be completed. "
-                "Todo items are interactive in Notion and can be checked/unchecked directly."
+                "Use to-do items for task lists, checklists, or tracking progress on items."
             )
             .with_syntax("- [ ] Task to complete")
             .with_examples(

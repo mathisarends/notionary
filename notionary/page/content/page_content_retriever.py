@@ -1,5 +1,4 @@
-import json
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from notionary.blocks.registry.block_registry import BlockRegistry
 
@@ -26,10 +25,7 @@ class PageContentRetriever(LoggingMixin):
     async def get_page_content(self) -> str:
         blocks = await self._get_page_blocks_with_children()
 
-        # TODO: Fix this quick fix🧯 Quick-Fix: Konvertiere rekursive Block-Objekte in plain dicts
-        blocks_as_dicts = [block.model_dump(mode="python", exclude_unset=True) for block in blocks]
-
-        return self._notion_to_markdown_converter.convert(blocks_as_dicts)
+        return self._notion_to_markdown_converter.convert(blocks)
 
     async def _get_page_blocks_with_children(
         self, parent_id: Optional[str] = None

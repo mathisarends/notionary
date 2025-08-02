@@ -1,56 +1,48 @@
 import re
-from typing import Any, Optional
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import (
-    ElementPromptContent,
-    ElementPromptBuilder,
-    NotionBlockResult,
-)
+from typing import Any, Optional, List
+
+from notionary.blocks import NotionBlockElement, NotionBlockResult
+from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks.shared.models import Block
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
 class NumberedListElement(NotionBlockElement):
-    """Class for converting between Markdown numbered lists and Notion numbered list items."""
+    """Converts between Markdown numbered lists and Notion numbered list items."""
 
-    @classmethod
-    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        """Convert markdown numbered list item to Notion block."""
-        pattern = re.compile(r"^\s*(\d+)\.\s+(.+)$")
-        numbered_match = pattern.match(text)
-        if not numbered_match:
-            return None
-
-        content = numbered_match.group(2)
-
-        # Use parse_inline_formatting to handle rich text
-        rich_text = TextInlineFormatter.parse_inline_formatting(content)
-
-        return {
-            "type": "numbered_list_item",
-            "numbered_list_item": {"rich_text": rich_text, "color": "default"},
-        }
-
-    @classmethod
-    def notion_to_markdown(cls, block: dict[str, Any]) -> Optional[str]:
-        """Convert Notion numbered list item block to markdown."""
-        if block.get("type") != "numbered_list_item":
-            return None
-
-        rich_text = block.get("numbered_list_item", {}).get("rich_text", [])
-        content = TextInlineFormatter.extract_text_with_formatting(rich_text)
-
-        return f"1. {content}"
+    PATTERN = re.compile(r"^\s*(\d+)\.\s+(.+)$")
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
-        """Check if this element can handle the given markdown text."""
-        pattern = re.compile(r"^\s*\d+\.\s+(.+)$")
-        return bool(pattern.match(text))
+        return bool(cls.PATTERN.match(text))
 
     @classmethod
-    def match_notion(cls, block: dict[str, Any]) -> bool:
-        """Check if this element can handle the given Notion block."""
-        return block.get("type") == "numbered_list_item"
+    def match_notion(cls, block: Block) -> bool:
+        return (
+            block.type == "numbered_list_item" and block.numbered_list_item is not None
+        )
+
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
+        m = cls.PATTERN.match(text)
+        if not m:
+            return None
+        content = m.group(2)
+        rich = TextInlineFormatter.parse_inline_formatting(content)
+        return {
+            "type": "numbered_list_item",
+            "numbered_list_item": {"rich_text": rich, "color": "default"},
+        }
+
+    @classmethod
+    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+        if block.type != "numbered_list_item" or block.numbered_list_item is None:
+            return None
+        rich = block.numbered_list_item.rich_text
+        content = TextInlineFormatter.extract_text_with_formatting(
+            [rt.model_dump() for rt in rich]
+        )
+        return f"1. {content}"
 
     @classmethod
     def is_multiline(cls) -> bool:
@@ -58,9 +50,6 @@ class NumberedListElement(NotionBlockElement):
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """
-        Returns structured LLM prompt metadata for the numbered list element.
-        """
         return (
             ElementPromptBuilder()
             .with_description("Creates numbered list items for ordered sequences.")

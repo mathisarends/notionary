@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Any, Optional, List, Tuple, Callable
+from typing import Optional, Tuple, Callable, Any
 
 from notionary.blocks import (
     NotionBlockElement,
@@ -7,6 +7,7 @@ from notionary.blocks import (
     ElementPromptContent,
     ElementPromptBuilder,
 )
+from notionary.blocks.shared.models import Block, RichTextObject
 
 
 class ToggleElement(NotionBlockElement):
@@ -25,9 +26,9 @@ class ToggleElement(NotionBlockElement):
         return bool(ToggleElement.TOGGLE_PATTERN.match(text.strip()))
 
     @classmethod
-    def match_notion(cls, block: Dict[str, Any]) -> bool:
+    def match_notion(cls, block: Block) -> bool:
         """Check if the block is a Notion toggle block."""
-        return block.get("type") == "toggle"
+        return block.type == "toggle"
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> NotionBlockResult:
@@ -50,8 +51,8 @@ class ToggleElement(NotionBlockElement):
 
     @classmethod
     def extract_nested_content(
-        cls, lines: List[str], start_index: int
-    ) -> Tuple[List[str], int]:
+        cls, lines: list[str], start_index: int
+    ) -> Tuple[list[str], int]:
         """
         Extracts the nested content lines of a toggle block using pipe syntax.
 
@@ -91,7 +92,7 @@ class ToggleElement(NotionBlockElement):
         return nested_content, current_index
 
     @classmethod
-    def is_next_line_pipe_content(cls, lines: List[str], current_index: int) -> bool:
+    def is_next_line_pipe_content(cls, lines: list[str], current_index: int) -> bool:
         """Checks if the next line starts with a pipe prefix."""
         next_index = current_index + 1
         return (
@@ -113,23 +114,26 @@ class ToggleElement(NotionBlockElement):
         return None
 
     @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
+    def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """
         Converts a Notion toggle block into markdown using pipe-prefixed lines.
         """
-        if block.get("type") != "toggle":
+        if block.type != "toggle":
             return None
 
-        toggle_data = block.get("toggle", {})
+        if not block.toggle:
+            return None
+
+        toggle_data = block.toggle
 
         # Extract title from rich_text
-        title = ToggleElement._extract_text_content(toggle_data.get("rich_text", []))
+        title = ToggleElement._extract_text_content(toggle_data.rich_text or [])
 
         # Create toggle line
         toggle_line = f"+++ {title}"
 
         # Process children if available
-        children = toggle_data.get("children", [])
+        children = toggle_data.children or []
         if not children:
             return toggle_line
 
@@ -144,14 +148,24 @@ class ToggleElement(NotionBlockElement):
         return True
 
     @classmethod
-    def _extract_text_content(cls, rich_text: List[Dict[str, Any]]) -> str:
+    def _extract_text_content(cls, rich_text: list[RichTextObject]) -> str:
         """Extracts plain text content from Notion rich_text blocks."""
         result = ""
         for text_obj in rich_text:
-            if text_obj.get("type") == "text":
-                result += text_obj.get("text", {}).get("content", "")
-            elif "plain_text" in text_obj:
-                result += text_obj.get("plain_text", "")
+            if hasattr(text_obj, "plain_text"):
+                result += text_obj.plain_text or ""
+            elif (
+                hasattr(text_obj, "type")
+                and text_obj.type == "text"
+                and hasattr(text_obj, "text")
+            ):
+                result += text_obj.text.content or ""
+            # Fallback for dict-style access (backward compatibility)
+            elif isinstance(text_obj, dict):
+                if text_obj.get("type") == "text":
+                    result += text_obj.get("text", {}).get("content", "")
+                elif "plain_text" in text_obj:
+                    result += text_obj.get("plain_text", "")
         return result
 
     @classmethod
@@ -160,7 +174,7 @@ class ToggleElement(NotionBlockElement):
         text: str,
         process_nested_content: Callable = None,
         context_aware: bool = True,
-    ) -> List[Tuple[int, int, Dict[str, Any]]]:
+    ) -> list[Tuple[int, int, dict[str, Any]]]:
         """
         Finds all toggle elements in markdown using pipe syntax for nested content.
 
@@ -228,7 +242,7 @@ class ToggleElement(NotionBlockElement):
 
     @classmethod
     def _should_skip_transcript_toggle(
-        cls, line: str, lines: List[str], current_index: int, context_aware: bool
+        cls, line: str, lines: list[str], current_index: int, context_aware: bool
     ) -> bool:
         """Determines if a transcript toggle should be skipped based on the surrounding context."""
         is_transcript_toggle = cls.TRANSCRIPT_TOGGLE_PATTERN.match(line.strip())
@@ -243,7 +257,7 @@ class ToggleElement(NotionBlockElement):
         return not has_list_item_before
 
     @classmethod
-    def _calculate_start_position(cls, lines: List[str], current_index: int) -> int:
+    def _calculate_start_position(cls, lines: list[str], current_index: int) -> int:
         """Calculates the character start position of a line within the full text."""
         start_pos = 0
         for index in range(current_index):
@@ -252,7 +266,7 @@ class ToggleElement(NotionBlockElement):
 
     @classmethod
     def _calculate_end_position(
-        cls, start_pos: int, current_line: str, nested_content: List[str]
+        cls, start_pos: int, current_line: str, nested_content: list[str]
     ) -> int:
         """Calculates the end position of a toggle block including nested lines."""
         line_length = len(current_line)
@@ -264,9 +278,9 @@ class ToggleElement(NotionBlockElement):
     @classmethod
     def _process_nested_content_if_needed(
         cls,
-        nested_content: List[str],
+        nested_content: list[str],
         process_function: Optional[Callable],
-        toggle_block: Dict[str, Any],
+        toggle_block: dict[str, Any],
     ) -> None:
         """Processes nested content using the provided function if applicable."""
         if not (nested_content and process_function):

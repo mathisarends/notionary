@@ -3,8 +3,10 @@ from __future__ import annotations
 from pydantic import BaseModel
 from notionary.blocks.markdown_node import MarkdownNode
 
+
 class QuoteMarkdownBlockParams(BaseModel):
     text: str
+
 
 class QuoteMarkdownNode(MarkdownNode):
     """

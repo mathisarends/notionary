@@ -1,13 +1,9 @@
 import re
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Optional, List
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import (
-    ElementPromptContent,
-    ElementPromptBuilder,
-    NotionBlockResult,
-)
-from notionary.blocks.shared.models import RichTextObject
+from notionary.blocks import NotionBlockElement, NotionBlockResult
+from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks.shared.models import RichTextObject, Block  # Import Block model
 
 
 class BookmarkElement(NotionBlockElement):
@@ -15,158 +11,102 @@ class BookmarkElement(NotionBlockElement):
     Handles conversion between Markdown bookmarks and Notion bookmark blocks.
 
     Markdown bookmark syntax:
-    - [bookmark](https://example.com) - Simple bookmark with URL only
-    - [bookmark](https://example.com "Title") - Bookmark with URL and title
-    - [bookmark](https://example.com "Title" "Description") - Bookmark with URL, title, and description
-
-    Where:
-    - URL is the required bookmark URL
-    - Title is an optional title (enclosed in quotes)
-    - Description is an optional description (enclosed in quotes)
+    - [bookmark](https://example.com) - URL only
+    - [bookmark](https://example.com "Title") - URL + title
+    - [bookmark](https://example.com "Title" "Description") - URL + title + description
     """
 
-    # Regex pattern for bookmark syntax with optional title and description
     PATTERN = re.compile(
-        r"^\[bookmark\]\("  # [bookmark]( prefix
-        + r'(https?://[^\s"]+)'  # URL (required)
-        + r'(?:\s+"([^"]+)")?'  # Optional title in quotes
-        + r'(?:\s+"([^"]+)")?'  # Optional description in quotes
-        + r"\)$"  # closing parenthesis
+        r"^\[bookmark\]\("  # prefix
+        r"(https?://[^\s\"]+)"  # URL
+        r"(?:\s+\"([^\"]+)\")?"  # optional Title
+        r"(?:\s+\"([^\"]+)\")?"  # optional Description
+        r"\)$"
     )
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
-        """Check if text is a markdown bookmark."""
-        return text.strip().startswith("[bookmark]") and bool(
-            cls.PATTERN.match(text.strip())
-        )
+        text = text.strip()
+        return text.startswith("[bookmark]") and bool(cls.PATTERN.match(text))
 
     @classmethod
-    def match_notion(cls, block: Dict[str, Any]) -> bool:
-        """Check if block is a Notion bookmark."""
-        return block.get("type") in ["bookmark", "external-bookmark"]
+    def match_notion(cls, block: Block) -> bool:
+        return block.type == "bookmark" and block.bookmark is not None
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        """Convert markdown bookmark to Notion bookmark block."""
-        bookmark_match = BookmarkElement.PATTERN.match(text.strip())
-        if not bookmark_match:
+        m = cls.PATTERN.match(text.strip())
+        if not m:
             return None
 
-        url = bookmark_match.group(1)
-        title = bookmark_match.group(2)
-        description = bookmark_match.group(3)
+        url, title, description = m.group(1), m.group(2), m.group(3)
+        data = {"url": url}
 
-        bookmark_data = {"url": url}
-
-        # Build caption string
-        caption_parts = []
+        # build caption
+        parts: List[str] = []
         if title:
-            caption_parts.append(title)
+            parts.append(title)
         if description:
-            caption_parts.append(description)
-
-        if caption_parts:
-            caption_text = " - ".join(caption_parts)
-            caption_rich_text = RichTextObject.from_plain_text(caption_text)
-            bookmark_data["caption"] = [caption_rich_text.model_dump()]
+            parts.append(description)
+        if parts:
+            caption = RichTextObject.from_plain_text(" - ".join(parts))
+            data["caption"] = [caption.model_dump()]
         else:
-            bookmark_data["caption"] = []
+            data["caption"] = []
 
-        return [{"type": "bookmark", "bookmark": bookmark_data}]
+        return [{"type": "bookmark", "bookmark": data}]
 
     @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
-        """Convert Notion bookmark block to markdown bookmark."""
-        block_type = block.get("type", "")
-
-        if block_type == "bookmark":
-            bookmark_data = block.get("bookmark", {})
-        elif block_type == "external-bookmark":
-            url = block.get("url", "")
-            if not url:
-                return None
-
-            return f"[bookmark]({url})"
-        else:
+    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+        if block.type != "bookmark" or block.bookmark is None:
             return None
 
-        url = bookmark_data.get("url", "")
-
+        bm = block.bookmark
+        url = bm.url
         if not url:
             return None
 
-        caption = bookmark_data.get("caption", [])
-
-        if not caption:
-            # Simple bookmark with URL only
+        captions = bm.caption or []
+        if not captions:
             return f"[bookmark]({url})"
 
-        # Extract title and description from caption
-        title, description = BookmarkElement._parse_caption(caption)
+        # join caption texts
+        text = cls._extract_text([rt.model_dump() for rt in captions])
+        # split title/description
+        if " - " in text:
+            title, desc = map(str.strip, text.split(" - ", 1))
+            return f'[bookmark]({url} "{title}" "{desc}")'
 
-        if title and description:
-            return f'[bookmark]({url} "{title}" "{description}")'
-
-        if title:
-            return f'[bookmark]({url} "{title}")'
-
-        return f"[bookmark]({url})"
+        return f'[bookmark]({url} "{text}")'
 
     @classmethod
     def is_multiline(cls) -> bool:
-        """Bookmarks are single-line elements."""
         return False
 
     @classmethod
-    def _extract_text_content(cls, rich_text: List[Dict[str, Any]]) -> str:
-        """Extract plain text content from Notion rich_text elements."""
+    def _extract_text(cls, rich: List[dict]) -> str:
         result = ""
-        for text_obj in rich_text:
-            if text_obj.get("type") == "text":
-                result += text_obj.get("text", {}).get("content", "")
-            elif "plain_text" in text_obj:
-                result += text_obj.get("plain_text", "")
+        for obj in rich:
+            if obj.get("type") == "text":
+                result += obj.get("text", {}).get("content", "")
+            else:
+                result += obj.get("plain_text", "")
         return result
 
     @classmethod
-    def _parse_caption(cls, caption: List[Dict[str, Any]]) -> Tuple[str, str]:
-        """
-        Parse Notion caption into title and description components.
-        Returns a tuple of (title, description).
-        """
-        if not caption:
-            return "", ""
-
-        full_text = BookmarkElement._extract_text_content(caption)
-
-        if " - " in full_text:
-            parts = full_text.split(" - ", 1)
-            return parts[0].strip(), parts[1].strip()
-
-        return full_text.strip(), ""
-
-    @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """
-        Returns structured LLM prompt metadata for the bookmark element.
-        """
         return (
             ElementPromptBuilder()
-            .with_description("Creates a bookmark that links to an external website.")
+            .with_description("Creates a bookmark block linking to an external URL.")
             .with_usage_guidelines(
-                "Use bookmarks when you want to reference external content while keeping the page clean and organized. "
-                "Bookmarks display a preview card for the linked content."
+                "Use bookmarks to embed link previews with optional title and description."
             )
-            .with_syntax(
-                '[bookmark](https://example.com "Optional Title" "Optional Description")'
-            )
+            .with_syntax('[bookmark](https://example.com "Title" "Description")')
             .with_examples(
                 [
                     "[bookmark](https://example.com)",
-                    '[bookmark](https://example.com "Example Title")',
-                    '[bookmark](https://example.com "Example Title" "Example description of the site")',
-                    '[bookmark](https://github.com "GitHub" "Where the world builds software")',
+                    '[bookmark](https://example.com "Title")',
+                    '[bookmark](https://example.com "Title" "Desc")',
                 ]
             )
             .build()

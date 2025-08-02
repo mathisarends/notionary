@@ -134,7 +134,6 @@ def test_document_markdown_node():
     assert document_with_caption.to_markdown() == expected
 
 
-
 def test_embed_markdown_node():
     """Test EmbedMarkdownNode"""
     # Test ohne Caption
@@ -238,7 +237,7 @@ def test_quote_markdown_node():
 
     # Test mit Author
     quote_with_author = QuoteMarkdownNode(text="Life is beautiful")
-    expected = '[quote](Life is beautiful)'
+    expected = "[quote](Life is beautiful)"
     assert quote_with_author.to_markdown() == expected
 
 

@@ -29,7 +29,7 @@ BlockColor = Literal[
     "purple_background",
     "red",
     "red_background",
-    "default_background"
+    "default_background",
 ]
 
 BlockType = Literal[
@@ -387,6 +387,7 @@ class AudioBlock(BaseModel):
     external: Optional[ExternalFile] = None
     file: Optional[NotionHostedFile] = None
     file_upload: Optional[FileUploadFile] = None
+    caption: list[RichTextObject] = []
 
 
 class BookmarkBlock(BaseModel):
@@ -439,6 +440,7 @@ class DividerBlock(BaseModel):
 
 class EmbedBlock(BaseModel):
     url: str
+    caption: Optional[list[RichTextObject]] = None
 
 
 class EquationBlock(BaseModel):
@@ -578,8 +580,8 @@ class Block(BaseModel):
     archived: bool = False
     in_trash: bool = False
     has_children: bool = False
-    
-    children: Optional[list[Block]] = None # for recursive structure
+
+    children: Optional[list[Block]] = None  # for recursive structure
 
     # Block type-specific content (only one will be populated based on type)
     audio: Optional[AudioBlock] = None

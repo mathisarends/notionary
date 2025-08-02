@@ -1,8 +1,10 @@
 import re
-from typing import Dict, Any, Optional, List
+from typing import Any, Optional, List
 
 from notionary.blocks import NotionBlockElement, NotionBlockResult
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks.shared.models import Block, FileObject, RichTextObject
+
 
 class DocumentElement(NotionBlockElement):
     """
@@ -11,68 +13,65 @@ class DocumentElement(NotionBlockElement):
     Markdown document syntax:
     - [document](https://example.com/document.pdf "Caption")
     - [document](https://example.com/document.pdf)
+
+    Supports external file URLs with optional captions.
     """
-    # Nur noch die neue Syntax!
+
     PATTERN = re.compile(
-        r'^\[document\]\('
-        r'(https?://[^\s")]+)'           # URL
-        r'(?:\s+"([^"]*)")?'             # Optional caption
-        r'\)$'
+        r"^\[document\]\("  # prefix
+        r'(https?://[^\s\)"]+)'  # URL
+        r'(?:\s+"([^"]*)")?'  # optional caption
+        r"\)$"
     )
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
-        text = text.strip()
-        return text.startswith("[document]") and bool(cls.PATTERN.match(text))
+        txt = text.strip()
+        return txt.startswith("[document]") and bool(cls.PATTERN.match(txt))
 
     @classmethod
-    def match_notion(cls, block: Dict[str, Any]) -> bool:
-        return block.get("type") == "file"
+    def match_notion(cls, block: Block) -> bool:
+        # Notion file block covers documents
+        return block.type == "file" and block.file is not None
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[List[Dict[str, Any]]]:
-        match = cls.PATTERN.match(text.strip())
-        if not match:
+    def markdown_to_notion(cls, text: str) -> Optional[List[Any]]:
+        m = cls.PATTERN.match(text.strip())
+        if not m:
             return None
-        url = match.group(1)
-        caption = match.group(2) or ""
-        file_block = {
-            "type": "file",
-            "file": {
-                "type": "external",
-                "external": {"url": url},
-                "caption": [{"type": "text", "text": {"content": caption}}] if caption else [],
-            }
-        }
-        # Für Konsistenz mit anderen Blöcken geben wir ein Array zurück
-        empty_paragraph = {"type": "paragraph", "paragraph": {"rich_text": []}}
-        return [file_block, empty_paragraph]
+        url, caption = m.group(1), m.group(2) or ""
+
+        file_data: dict[str, Any] = {"type": "external", "external": {"url": url}}
+        if caption:
+            rt = RichTextObject.from_plain_text(caption)
+            file_data["caption"] = [rt.model_dump()]
+        else:
+            file_data["caption"] = []
+
+        file_block = {"type": "file", "file": file_data}
+        empty_para = {"type": "paragraph", "paragraph": {"rich_text": []}}
+        return [file_block, empty_para]
 
     @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
-        if block.get("type") != "file":
+    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+        if block.type != "file" or block.file is None:
             return None
-        file_data = block.get("file", {})
+        fo: FileObject = block.file
         url = ""
-        if file_data.get("type") == "external":
-            url = file_data.get("external", {}).get("url", "")
-        elif file_data.get("type") == "file":
-            url = file_data.get("file", {}).get("url", "")
+        if fo.type == "external" and fo.external:
+            url = fo.external.url
+        elif fo.type == "file" and fo.file:
+            url = fo.file.url
         if not url:
             return None
-        caption_list = file_data.get("caption", [])
-        caption = cls._extract_text_content(caption_list)
-        if caption:
-            return f'[document]({url} "{caption}")'
-        return f'[document]({url})'
-
-    @classmethod
-    def _extract_text_content(cls, rich_text: List[Dict[str, Any]]) -> str:
-        return "".join(
-            t.get("text", {}).get("content", "")
-            for t in rich_text
-            if t.get("type") == "text"
-        ) or "".join(t.get("plain_text", "") for t in rich_text if "plain_text" in t)
+        captions = fo.caption or []
+        if not captions:
+            return f"[document]({url})"
+        text = "".join(
+            rt.plain_text if hasattr(rt, "plain_text") else rt.text.content
+            for rt in captions
+        )
+        return f'[document]({url} "{text}")'
 
     @classmethod
     def is_multiline(cls) -> bool:
@@ -83,20 +82,11 @@ class DocumentElement(NotionBlockElement):
         return (
             ElementPromptBuilder()
             .with_description(
-                "Embeds document files from external sources like PDFs, Word docs, Excel files, or cloud storage services."
+                "Embeds external document files (PDFs, Word/Excel docs) via Notion file blocks."
             )
             .with_usage_guidelines(
-                "Use document embeds for sharing contracts, reports, manuals, or any important files."
+                "Use document embeds to share reports, manuals, or any cloud-hosted files with optional captions."
             )
-            .with_syntax('[document](https://example.com/document.pdf "Caption")')
-            .with_examples(
-                [
-                    '[document](https://drive.google.com/file/d/1a2b3c4d5e/view "Project Proposal")',
-                    '[document](https://company.sharepoint.com/reports/q4-2024.xlsx "Q4 Financial Report")',
-                    '[document](https://cdn.company.com/docs/manual-v2.1.pdf "User Manual")',
-                    '[document](https://docs.google.com/document/d/1x2y3z4/edit "Meeting Minutes")',
-                    '[document](https://example.com/contract.pdf)',
-                ]
-            )
+            .with_syntax('[document](https://example.com/doc.pdf "Caption")')
             .build()
         )

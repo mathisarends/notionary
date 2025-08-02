@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Optional, Any, Tuple
 
 from notionary.blocks import (
     NotionBlockElement,
@@ -7,6 +7,7 @@ from notionary.blocks import (
     ElementPromptContent,
     ElementPromptBuilder,
 )
+from notionary.blocks.shared.models import Block
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -39,18 +40,17 @@ class TableElement(NotionBlockElement):
 
         # Akzeptiere Header + Separator auch ohne Datenzeile
         for i, line in enumerate(lines[:-1]):
-            if (
-                cls.ROW_PATTERN.match(line)
-                and cls.SEPARATOR_PATTERN.match(lines[i + 1])
+            if cls.ROW_PATTERN.match(line) and cls.SEPARATOR_PATTERN.match(
+                lines[i + 1]
             ):
                 return True
 
         return False
 
     @classmethod
-    def match_notion(cls, block: Dict[str, Any]) -> bool:
+    def match_notion(cls, block: Block) -> bool:
         """Check if block is a Notion table."""
-        return block.get("type") == "table"
+        return block.type == "table"
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> NotionBlockResult:
@@ -90,16 +90,19 @@ class TableElement(NotionBlockElement):
         return [table_block, empty_paragraph]
 
     @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
+    def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion table block to markdown table."""
-        if block.get("type") != "table":
+        if block.type != "table":
             return None
 
-        table_data = block.get("table", {})
-        children = block.get("children", [])
+        if not block.table:
+            return None
+
+        table_data = block.table
+        children = block.children or []
 
         if not children:
-            table_width = table_data.get("table_width", 3)
+            table_width = table_data.table_width or 3
 
             header = (
                 "| " + " | ".join([f"Column {i+1}" for i in range(table_width)]) + " |"
@@ -118,11 +121,14 @@ class TableElement(NotionBlockElement):
         header_processed = False
 
         for child in children:
-            if child.get("type") != "table_row":
+            if child.type != "table_row":
                 continue
 
-            row_data = child.get("table_row", {})
-            cells = row_data.get("cells", [])
+            if not child.table_row:
+                continue
+
+            row_data = child.table_row
+            cells = row_data.cells or []
 
             row_cells = []
             for cell in cells:
@@ -132,7 +138,7 @@ class TableElement(NotionBlockElement):
             row = "| " + " | ".join(row_cells) + " |"
             table_rows.append(row)
 
-            if not header_processed and table_data.get("has_column_header", True):
+            if not header_processed and table_data.has_column_header:
                 header_processed = True
                 separator = (
                     "| " + " | ".join(["--------" for _ in range(len(cells))]) + " |"
@@ -142,12 +148,13 @@ class TableElement(NotionBlockElement):
         if not table_rows:
             return None
 
-        if len(table_rows) == 1 and table_data.get("has_column_header", True):
-            cells_count = len(children[0].get("table_row", {}).get("cells", []))
-            separator = (
-                "| " + " | ".join(["--------" for _ in range(cells_count)]) + " |"
-            )
-            table_rows.insert(1, separator)
+        if len(table_rows) == 1 and table_data.has_column_header:
+            if children and children[0].table_row:
+                cells_count = len(children[0].table_row.cells or [])
+                separator = (
+                    "| " + " | ".join(["--------" for _ in range(cells_count)]) + " |"
+                )
+                table_rows.insert(1, separator)
 
         return "\n".join(table_rows)
 
@@ -157,7 +164,7 @@ class TableElement(NotionBlockElement):
         return True
 
     @classmethod
-    def _find_table_start(cls, lines: List[str]) -> Optional[int]:
+    def _find_table_start(cls, lines: list[str]) -> Optional[int]:
         """Find the start index of a table in the lines."""
         for i in range(len(lines) - 2):
             if (
@@ -169,7 +176,7 @@ class TableElement(NotionBlockElement):
         return None
 
     @classmethod
-    def _find_table_end(cls, lines: List[str], start_idx: int) -> int:
+    def _find_table_end(cls, lines: list[str], start_idx: int) -> int:
         """Find the end index of a table, starting from start_idx."""
         end_idx = start_idx + 3  # Minimum: Header, Separator, one data row
         while end_idx < len(lines) and TableElement.ROW_PATTERN.match(lines[end_idx]):
@@ -177,7 +184,7 @@ class TableElement(NotionBlockElement):
         return end_idx
 
     @classmethod
-    def _extract_table_rows(cls, table_lines: List[str]) -> List[List[str]]:
+    def _extract_table_rows(cls, table_lines: list[str]) -> list[list[str]]:
         """Extract row contents from table lines, excluding separator line."""
         rows = []
         for i, line in enumerate(table_lines):
@@ -188,7 +195,7 @@ class TableElement(NotionBlockElement):
         return rows
 
     @classmethod
-    def _normalize_row_lengths(cls, rows: List[List[str]], column_count: int) -> None:
+    def _normalize_row_lengths(cls, rows: list[list[str]], column_count: int) -> None:
         """Normalize row lengths to the specified column count."""
         for row in rows:
             if len(row) < column_count:
@@ -197,7 +204,7 @@ class TableElement(NotionBlockElement):
                 del row[column_count:]
 
     @classmethod
-    def _parse_table_row(cls, row_text: str) -> List[str]:
+    def _parse_table_row(cls, row_text: str) -> list[str]:
         """Convert table row text to cell contents."""
         row_content = row_text.strip()
 
@@ -209,7 +216,7 @@ class TableElement(NotionBlockElement):
         return [cell.strip() for cell in row_content.split("|")]
 
     @classmethod
-    def _create_table_rows(cls, rows: List[List[str]]) -> List[Dict[str, Any]]:
+    def _create_table_rows(cls, rows: list[list[str]]) -> list[dict[str, Any]]:
         """Create Notion table rows from cell contents."""
         table_rows = []
 
@@ -244,7 +251,7 @@ class TableElement(NotionBlockElement):
         return table_rows
 
     @classmethod
-    def find_matches(cls, text: str) -> List[Tuple[int, int, Dict[str, Any]]]:
+    def find_matches(cls, text: str) -> list[Tuple[int, int, dict[str, Any]]]:
         """
         Find all tables in the text and return their positions.
 
@@ -286,7 +293,7 @@ class TableElement(NotionBlockElement):
         return matches
 
     @classmethod
-    def _calculate_position(cls, lines: List[str], start: int, end: int) -> int:
+    def _calculate_position(cls, lines: list[str], start: int, end: int) -> int:
         """Calculate the text position in characters from line start to end."""
         position = 0
         for i in range(start, end):

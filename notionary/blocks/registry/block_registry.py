@@ -1,7 +1,8 @@
 from __future__ import annotations
-from typing import Dict, Any, Optional, List, Set, Type
+from typing import Any, Optional, Set, Type
 
 from notionary.blocks import NotionBlockElement
+from notionary.blocks.shared.models import Block
 from notionary.page.markdown_syntax_prompt_generator import (
     MarkdownSyntaxPromptGenerator,
 )
@@ -26,7 +27,7 @@ class BlockRegistry:
         Args:
             elements: Initial elements to register
         """
-        self._elements: List[NotionBlockElement] = []
+        self._elements: list[NotionBlockElement] = []
         self._element_types: Set[Type[NotionBlockElement]] = set()
 
         if elements:
@@ -40,11 +41,6 @@ class BlockRegistry:
         """
         Create a registry with all standard elements in recommended order.
 
-        This uses the BlockRegistryBuilder internally to construct a complete
-        registry with all available block types.
-
-        Returns:
-            BlockRegistry: A fully configured registry with all standard elements
         """
         from notionary.blocks import BlockRegistryBuilder
 
@@ -53,12 +49,6 @@ class BlockRegistry:
     def register(self, element_class: Type[NotionBlockElement]) -> bool:
         """
         Register an element class.
-
-        Args:
-            element_class: The element class to register
-
-        Returns:
-            bool: True if element was added, False if it already existed
         """
         if element_class in self._element_types:
             return False
@@ -80,12 +70,6 @@ class BlockRegistry:
     def contains(self, element_class: Type[NotionBlockElement]) -> bool:
         """
         Checks if a specific element is contained in the registry.
-
-        Args:
-            element_class: The element class to check.
-
-        Returns:
-            bool: True if the element is contained, otherwise False.
         """
         return element_class in self._elements
 
@@ -96,7 +80,7 @@ class BlockRegistry:
                 return element
         return None
 
-    def markdown_to_notion(self, text: str) -> Optional[Dict[str, Any]]:
+    def markdown_to_notion(self, text: str) -> Optional[dict[str, Any]]:
         """Convert markdown to Notion block using registered elements."""
         handler = self.find_markdown_handler(text)
 
@@ -110,25 +94,26 @@ class BlockRegistry:
             return handler.markdown_to_notion(text)
         return None
 
-    def notion_to_markdown(self, block: Dict[str, Any]) -> Optional[str]:
+    def notion_to_markdown(self, block: Block) -> Optional[str]:
         """Convert Notion block to markdown using registered elements."""
         handler = self._find_notion_handler(block)
 
-        if handler:
-            self.telemetry.capture(
-                NotionToMarkdownConversionEvent(
-                    handler_element_name=handler.__name__,
-                )
+        if not handler:
+            return None
+
+        self.telemetry.capture(
+            NotionToMarkdownConversionEvent(
+                handler_element_name=handler.__name__,
             )
+        )
 
-            return handler.notion_to_markdown(block)
-        return None
+        return handler.notion_to_markdown(block)
 
-    def get_multiline_elements(self) -> List[Type[NotionBlockElement]]:
+    def get_multiline_elements(self) -> list[Type[NotionBlockElement]]:
         """Get all registered multiline elements."""
         return [element for element in self._elements if element.is_multiline()]
 
-    def get_elements(self) -> List[Type[NotionBlockElement]]:
+    def get_elements(self) -> list[Type[NotionBlockElement]]:
         """Get all registered elements."""
         return self._elements.copy()
 
@@ -146,9 +131,7 @@ class BlockRegistry:
 
         return MarkdownSyntaxPromptGenerator.generate_system_prompt(element_classes)
 
-    def _find_notion_handler(
-        self, block: Dict[str, Any]
-    ) -> Optional[Type[NotionBlockElement]]:
+    def _find_notion_handler(self, block: Block) -> Optional[Type[NotionBlockElement]]:
         """Find an element that can handle the given Notion block."""
         for element in self._elements:
             if element.match_notion(block):

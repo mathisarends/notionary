@@ -1,55 +1,41 @@
-from typing import Dict, Any, Optional
+from typing import Optional
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import (
-    ElementPromptContent,
-    ElementPromptBuilder,
-    NotionBlockResult,
-)
+from notionary.blocks import NotionBlockElement, NotionBlockResult
+from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks.shared.models import Block
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
 class ParagraphElement(NotionBlockElement):
-    """Handles conversion between Markdown paragraphs and Notion paragraph blocks."""
+    """
+    Handles conversion between Markdown paragraphs and Notion paragraph blocks.
+    """
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
-        """
-        Check if text is a markdown paragraph.
-        Paragraphs are essentially any text that isn't matched by other block elements.
-        Since paragraphs are the fallback element, this always returns True.
-        """
-        return True
+        # Paragraph is fallback for any non-empty text
+        return bool(text and text.strip())
 
     @classmethod
-    def match_notion(cls, block: Dict[str, Any]) -> bool:
-        """Check if block is a Notion paragraph."""
-        return block.get("type") == "paragraph"
+    def match_notion(cls, block: Block) -> bool:
+        return block.type == "paragraph" and block.paragraph is not None
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        """Convert markdown paragraph to Notion paragraph block."""
         if not text.strip():
             return None
-
-        return {
-            "type": "paragraph",
-            "paragraph": {
-                "rich_text": TextInlineFormatter.parse_inline_formatting(text)
-            },
-        }
+        rich = TextInlineFormatter.parse_inline_formatting(text)
+        return {"type": "paragraph", "paragraph": {"rich_text": rich}}
 
     @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
-        """Convert Notion paragraph block to markdown paragraph."""
-        if block.get("type") != "paragraph":
+    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+        if block.type != "paragraph" or block.paragraph is None:
             return None
-
-        paragraph_data = block.get("paragraph", {})
-        rich_text = paragraph_data.get("rich_text", [])
-
-        text = TextInlineFormatter.extract_text_with_formatting(rich_text)
-        return text if text else None
+        rich_list = block.paragraph.rich_text
+        markdown = TextInlineFormatter.extract_text_with_formatting(
+            [rt.model_dump() for rt in rich_list]
+        )
+        return markdown or None
 
     @classmethod
     def is_multiline(cls) -> bool:
@@ -57,27 +43,19 @@ class ParagraphElement(NotionBlockElement):
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """
-        Returns structured LLM prompt metadata for the paragraph element,
-        including information about supported inline formatting.
-        """
         return (
             ElementPromptBuilder()
             .with_description(
-                "Creates standard paragraph blocks for regular text content with support for inline formatting: "
-                "**bold**, *italic*, `code`, ~~strikethrough~~, __underline__, and [links](url)."
+                "Creates standard paragraph blocks for text with support for inline formatting."
             )
             .with_usage_guidelines(
-                "Use for normal text content. Paragraphs are the default block type when no specific formatting is applied. "
-                "Apply inline formatting to highlight key points or provide links to resources."
+                "Use for normal text. Applies **bold**, *italic*, `code`, ~~strikethrough~~, __underline__, and links."
             )
-            .with_syntax("Just write text normally without any special prefix")
+            .with_syntax("Just write text normally without prefix")
             .with_examples(
                 [
-                    "This is a simple paragraph with plain text.",
-                    "This paragraph has **bold** and *italic* formatting.",
-                    "You can include [links](https://example.com) or `inline code`.",
-                    "Advanced formatting: ~~strikethrough~~ and __underlined text__.",
+                    "This is a simple paragraph.",
+                    "Paragraph with **bold** and [link](https://example.com).",
                 ]
             )
             .build()

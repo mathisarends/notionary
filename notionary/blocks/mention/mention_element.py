@@ -7,6 +7,7 @@ from notionary.blocks import (
     ElementPromptBuilder,
     NotionBlockResult,
 )
+from notionary.blocks.shared.models import Block, RichTextObject
 
 
 class MentionElement(NotionBlockElement):
@@ -58,7 +59,7 @@ class MentionElement(NotionBlockElement):
         return False
 
     @classmethod
-    def match_notion(cls, block: Dict[str, Any]) -> bool:
+    def match_notion(cls, block: Block) -> bool:
         """Check if block contains a mention."""
         supported_block_types = [
             "paragraph",
@@ -69,13 +70,25 @@ class MentionElement(NotionBlockElement):
             "numbered_list_item",
         ]
 
-        if block.get("type") not in supported_block_types:
+        if block.type not in supported_block_types:
             return False
 
-        block_content = block.get(block.get("type"), {})
-        rich_text = block_content.get("rich_text", [])
+        # Get the block content based on block type
+        block_content = block.get_block_content()
+        if not block_content:
+            return False
 
-        return any(text_item.get("type") == "mention" for text_item in rich_text)
+        rich_text = getattr(block_content, "rich_text", [])
+        if not rich_text:
+            return False
+
+        for text_item in rich_text:
+            if getattr(text_item, "type", None) == "mention" or (
+                isinstance(text_item, dict) and text_item.get("type") == "mention"
+            ):
+                return True
+
+        return False
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> NotionBlockResult:
@@ -163,14 +176,18 @@ class MentionElement(NotionBlockElement):
         }
 
     @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
+    def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Extract mentions from Notion block and convert to markdown format."""
-        block_type = block.get("type")
-        if not block_type or block_type not in block:
+        if not block.type:
             return None
 
-        block_content = block.get(block_type, {})
-        rich_text = block_content.get("rich_text", [])
+        block_content = block.get_block_content()
+        if not block_content:
+            return None
+
+        rich_text = getattr(block_content, "rich_text", [])
+        if not rich_text:
+            return None
 
         processed_text = MentionElement._process_rich_text_with_mentions(rich_text)
 
@@ -180,8 +197,39 @@ class MentionElement(NotionBlockElement):
         return None
 
     @classmethod
-    def _process_rich_text_with_mentions(cls, rich_text: List[Dict[str, Any]]) -> str:
+    def _process_rich_text_with_mentions(cls, rich_text: List[RichTextObject]) -> str:
         """Convert rich text with mentions to markdown string."""
+        result = []
+
+        for item in rich_text:
+            # Handle RichTextObject (Pydantic model)
+            if hasattr(item, "type") and item.type == "mention":
+                # For mention objects, we need to access the mention data
+                if hasattr(item, "mention"):
+                    mention = item.mention
+                    mention_type = getattr(mention, "type", None)
+
+                    if mention_type == "page" and hasattr(mention, "page"):
+                        result.append(f"@[{mention.page.id}]")
+                    elif mention_type == "date" and hasattr(mention, "date"):
+                        result.append(f"@date[{mention.date.start}]")
+                    elif mention_type == "database" and hasattr(mention, "database"):
+                        result.append(f"@db[{mention.database.id}]")
+                    else:
+                        result.append(item.plain_text or "@[unknown]")
+                else:
+                    result.append(item.plain_text or "@[unknown]")
+            else:
+                # Handle regular text items
+                result.append(item.plain_text or "")
+
+        return "".join(result)
+
+    @classmethod
+    def _process_rich_text_with_mentions_fallback(
+        cls, rich_text: List[Dict[str, Any]]
+    ) -> str:
+        """Fallback method for dict-based rich text (backward compatibility)."""
         result = []
 
         for item in rich_text:

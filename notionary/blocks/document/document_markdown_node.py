@@ -4,9 +4,11 @@ from typing import Optional
 from pydantic import BaseModel
 from notionary.blocks.markdown_node import MarkdownNode
 
+
 class DocumentMarkdownNodeParams(BaseModel):
     url: str
     caption: Optional[str] = None
+
 
 class DocumentMarkdownNode(MarkdownNode):
     """
@@ -28,4 +30,4 @@ class DocumentMarkdownNode(MarkdownNode):
         """
         if self.caption:
             return f'[document]({self.url} "{self.caption}")'
-        return f'[document]({self.url})'
+        return f"[document]({self.url})"

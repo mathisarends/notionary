@@ -1,12 +1,9 @@
 import re
-from typing import Dict, Any, Optional
+from typing import Optional, List
 
-from notionary.blocks import NotionBlockElement
-from notionary.blocks import (
-    ElementPromptContent,
-    ElementPromptBuilder,
-    NotionBlockResult,
-)
+from notionary.blocks import NotionBlockElement, NotionBlockResult
+from notionary.blocks import ElementPromptContent, ElementPromptBuilder
+from notionary.blocks.shared.models import Block
 
 
 class DividerElement(NotionBlockElement):
@@ -21,32 +18,26 @@ class DividerElement(NotionBlockElement):
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
-        """Check if text is a markdown divider."""
-        return bool(DividerElement.PATTERN.match(text))
+        return bool(cls.PATTERN.match(text))
 
     @classmethod
-    def match_notion(cls, block: Dict[str, Any]) -> bool:
-        """Check if block is a Notion divider."""
-        return block.get("type") == "divider"
+    def match_notion(cls, block: Block) -> bool:
+        """Check if this element can handle the given Notion block."""
+        return block.type == "divider" and block.divider is not None
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        """Convert markdown divider to Notion divider block."""
-        if not DividerElement.match_markdown(text):
+        if not cls.match_markdown(text):
             return None
-
-        empty_paragraph = {"type": "paragraph", "paragraph": {"rich_text": []}}
-
+        # produce an empty paragraph before the divider for separation
+        empty_para = {"type": "paragraph", "paragraph": {"rich_text": []}}
         divider_block = {"type": "divider", "divider": {}}
-
-        return [empty_paragraph, divider_block]
+        return [empty_para, divider_block]
 
     @classmethod
-    def notion_to_markdown(cls, block: Dict[str, Any]) -> Optional[str]:
-        """Convert Notion divider block to markdown divider."""
-        if block.get("type") != "divider":
+    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+        if block.type != "divider" or block.divider is None:
             return None
-
         return "---"
 
     @classmethod
@@ -55,14 +46,13 @@ class DividerElement(NotionBlockElement):
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """Returns structured LLM prompt metadata for the divider element."""
         return (
             ElementPromptBuilder()
             .with_description(
-                "Creates a horizontal divider line to visually separate sections of content."
+                "Creates a horizontal divider to separate content sections visually."
             )
             .with_usage_guidelines(
-                "Use dividers only sparingly and only when the user explicitly asks for them. Dividers create strong visual breaks between content sections, so they should not be used unless specifically requested by the user."
+                "Use dividers sparingly to break up sections; only when explicitly requested."
             )
             .with_syntax("---")
             .with_examples(

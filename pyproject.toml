@@ -1,6 +1,6 @@
 [project]
 name = "notionary"
-version = "0.2.18"
+version = "0.2.19"
 description = "Python library for programmatic Notion workspace management - databases, pages, and content with advanced Markdown support"
 readme = "README.md"
 requires-python = ">=3.9"

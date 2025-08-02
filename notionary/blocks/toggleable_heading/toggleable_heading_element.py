@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Any, Optional, List, Tuple, Callable
+from typing import Optional, Tuple, Callable, Any
 
 from notionary.blocks import (
     ElementPromptContent,
@@ -7,6 +7,7 @@ from notionary.blocks import (
     NotionBlockElement,
     NotionBlockResult,
 )
+from notionary.blocks.shared.models import Block
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -22,15 +23,19 @@ class ToggleableHeadingElement(NotionBlockElement):
         return bool(ToggleableHeadingElement.PATTERN.match(text))
 
     @staticmethod
-    def match_notion(block: Dict[str, Any]) -> bool:
+    def match_notion(block: Block) -> bool:
         """Check if block is a Notion toggleable heading."""
-        block_type: str = block.get("type", "")
+        block_type: str = block.type
         if not block_type.startswith("heading_") or block_type[-1] not in "123":
             return False
 
+        # Get the heading content based on block type
+        heading_content = block.get_block_content()
+        if not heading_content:
+            return False
+
         # Check if it has the is_toggleable property set to true
-        heading_data = block.get(block_type, {})
-        return heading_data.get("is_toggleable", False) is True
+        return getattr(heading_content, "is_toggleable", False) is True
 
     @staticmethod
     def markdown_to_notion(text: str) -> NotionBlockResult:
@@ -53,9 +58,9 @@ class ToggleableHeadingElement(NotionBlockElement):
         }
 
     @staticmethod
-    def notion_to_markdown(block: Dict[str, Any]) -> Optional[str]:
+    def notion_to_markdown(block: Block) -> Optional[str]:
         """Convert Notion toggleable heading block to markdown collapsible heading with pipe syntax."""
-        block_type = block.get("type", "")
+        block_type = block.type
 
         if not block_type.startswith("heading_"):
             return None
@@ -67,13 +72,15 @@ class ToggleableHeadingElement(NotionBlockElement):
         except ValueError:
             return None
 
-        heading_data = block.get(block_type, {})
-
-        # Check if it's toggleable
-        if not heading_data.get("is_toggleable", False):
+        heading_content = block.get_block_content()
+        if not heading_content:
             return None
 
-        rich_text = heading_data.get("rich_text", [])
+        # Check if it's toggleable
+        if not getattr(heading_content, "is_toggleable", False):
+            return None
+
+        rich_text = getattr(heading_content, "rich_text", [])
         text = TextInlineFormatter.extract_text_with_formatting(rich_text)
         prefix = "#" * level
         return f"+{prefix} {text or ''}"
@@ -89,7 +96,7 @@ class ToggleableHeadingElement(NotionBlockElement):
         text: str,
         process_nested_content: Callable = None,
         context_aware: bool = True,
-    ) -> List[Tuple[int, int, Dict[str, Any]]]:
+    ) -> list[Tuple[int, int, dict[str, Any]]]:
         """
         Find all collapsible heading matches in the text with pipe syntax for nested content.
         Improved version with reduced cognitive complexity.
@@ -149,7 +156,7 @@ class ToggleableHeadingElement(NotionBlockElement):
         return bool(cls.PATTERN.match(line))
 
     @staticmethod
-    def _calculate_line_position(lines: List[str], current_index: int) -> int:
+    def _calculate_line_position(lines: list[str], current_index: int) -> int:
         """Calculate the character position of a line in the text."""
         position = 0
         for i in range(current_index):
@@ -158,8 +165,8 @@ class ToggleableHeadingElement(NotionBlockElement):
 
     @classmethod
     def _extract_nested_content(
-        cls, lines: List[str], start_index: int
-    ) -> Tuple[List[str], int]:
+        cls, lines: list[str], start_index: int
+    ) -> Tuple[list[str], int]:
         """
         Extract nested content with pipe syntax from lines following a collapsible heading.
 
@@ -200,7 +207,7 @@ class ToggleableHeadingElement(NotionBlockElement):
         return nested_content, current_index
 
     @classmethod
-    def _is_next_line_pipe_content(cls, lines: List[str], current_index: int) -> bool:
+    def _is_next_line_pipe_content(cls, lines: list[str], current_index: int) -> bool:
         """Check if the next line uses pipe syntax for nested content."""
         next_index = current_index + 1
         if next_index >= len(lines):
@@ -217,7 +224,7 @@ class ToggleableHeadingElement(NotionBlockElement):
 
     @staticmethod
     def _calculate_block_end_position(
-        start_position: int, heading_line: str, nested_content: List[str]
+        start_position: int, heading_line: str, nested_content: list[str]
     ) -> int:
         """Calculate the end position of a collapsible heading block including nested content."""
         block_length = len(heading_line)
@@ -230,8 +237,8 @@ class ToggleableHeadingElement(NotionBlockElement):
     @classmethod
     def _process_nested_content(
         cls,
-        heading_block: Dict[str, Any],
-        nested_content: List[str],
+        heading_block: dict[str, Any],
+        nested_content: list[str],
         processor: Optional[Callable],
     ) -> None:
         """Process nested content with the provided callback function if available."""

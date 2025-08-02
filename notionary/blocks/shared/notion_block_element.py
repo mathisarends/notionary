@@ -2,6 +2,7 @@ from typing import Optional, Any, TypeAlias, Union
 from abc import ABC
 
 from notionary.blocks.prompts.element_prompt_content import ElementPromptContent
+from notionary.blocks.shared.models import Block
 
 NotionBlock: TypeAlias = dict[str, Any]
 NotionBlockResult: TypeAlias = Optional[Union[list[dict[str, Any]], dict[str, Any]]]
@@ -15,7 +16,7 @@ class NotionBlockElement(ABC):
         """Convert markdown to Notion blocks (can return multiple blocks or single block)."""
 
     @classmethod
-    def notion_to_markdown(cls, block: dict[str, any]) -> Optional[str]:
+    def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion block to markdown."""
 
     @classmethod
@@ -24,7 +25,7 @@ class NotionBlockElement(ABC):
         return bool(cls.markdown_to_notion(text))  # Now calls the class's version
 
     @classmethod
-    def match_notion(cls, block: dict[str, any]) -> bool:
+    def match_notion(cls, block: Block) -> bool:
         """Check if this element can handle the given Notion block."""
         return bool(cls.notion_to_markdown(block))  # Now calls the class's version
 

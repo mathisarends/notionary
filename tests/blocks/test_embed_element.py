@@ -1,6 +1,7 @@
 import pytest
 from notionary.blocks import EmbedElement
 
+
 @pytest.mark.parametrize(
     "text,expected",
     [
@@ -15,10 +16,11 @@ from notionary.blocks import EmbedElement
         ("![embed](https://example.com)", False),
         ("Just text", False),
         ("", False),
-    ]
+    ],
 )
 def test_match_markdown(text, expected):
     assert EmbedElement.match_markdown(text) == expected
+
 
 @pytest.mark.parametrize(
     "block,expected",
@@ -27,19 +29,24 @@ def test_match_markdown(text, expected):
         ({"type": "image"}, False),
         ({"type": "paragraph"}, False),
         ({}, False),
-    ]
+    ],
 )
 def test_match_notion(block, expected):
     assert EmbedElement.match_notion(block) == expected
+
 
 @pytest.mark.parametrize(
     "md,url,caption",
     [
         ("[embed](https://example.com)", "https://example.com", ""),
         ('[embed](https://github.com "Repo")', "https://github.com", "Repo"),
-        ('[embed](https://twitter.com/NotionHQ/status/123 "Tweet")', "https://twitter.com/NotionHQ/status/123", "Tweet"),
+        (
+            '[embed](https://twitter.com/NotionHQ/status/123 "Tweet")',
+            "https://twitter.com/NotionHQ/status/123",
+            "Tweet",
+        ),
         ('[embed](https://maps.google.com "Map")', "https://maps.google.com", "Map"),
-    ]
+    ],
 )
 def test_markdown_to_notion(md, url, caption):
     block_list = EmbedElement.markdown_to_notion(md)
@@ -52,15 +59,20 @@ def test_markdown_to_notion(md, url, caption):
     else:
         assert block["embed"]["caption"] == []
 
-@pytest.mark.parametrize("md", [
-    "[embed]()",
-    "[embed](not-a-url)",
-    "[embed](   )",
-    "not an embed",
-    "",
-])
+
+@pytest.mark.parametrize(
+    "md",
+    [
+        "[embed]()",
+        "[embed](not-a-url)",
+        "[embed](   )",
+        "not an embed",
+        "",
+    ],
+)
 def test_markdown_to_notion_invalid(md):
     assert EmbedElement.markdown_to_notion(md) is None
+
 
 @pytest.mark.parametrize(
     "block,expected_md",
@@ -73,7 +85,7 @@ def test_markdown_to_notion_invalid(md):
                     "caption": [{"type": "text", "text": {"content": "My Caption"}}],
                 },
             },
-            '[embed](https://example.com "My Caption")'
+            '[embed](https://example.com "My Caption")',
         ),
         (
             {
@@ -83,20 +95,19 @@ def test_markdown_to_notion_invalid(md):
                     "caption": [],
                 },
             },
-            '[embed](https://github.com)'
+            "[embed](https://github.com)",
         ),
-    ]
+    ],
 )
 def test_notion_to_markdown(block, expected_md):
     assert EmbedElement.notion_to_markdown(block) == expected_md
 
+
 def test_notion_to_markdown_invalid():
     assert EmbedElement.notion_to_markdown({"type": "paragraph"}) is None
-    block = {
-        "type": "embed",
-        "embed": {"url": ""}
-    }
+    block = {"type": "embed", "embed": {"url": ""}}
     assert EmbedElement.notion_to_markdown(block) is None
+
 
 def test_extract_text_content():
     rt = [
@@ -107,8 +118,10 @@ def test_extract_text_content():
     pt = [{"plain_text": "Backup"}]
     assert EmbedElement._extract_text_content(pt) == "Backup"
 
+
 def test_is_multiline():
     assert not EmbedElement.is_multiline()
+
 
 @pytest.mark.parametrize(
     "md",
@@ -116,7 +129,7 @@ def test_is_multiline():
         '[embed](https://example.com "Käse kaufen äöüß")',
         '[embed](https://twitter.com/NotionHQ/status/123 "Mit Emoji 🙂")',
         '[embed](https://vimeo.com/123456 "中文说明")',
-    ]
+    ],
 )
 def test_unicode_and_special_caption(md):
     blocks = EmbedElement.markdown_to_notion(md)
@@ -127,6 +140,7 @@ def test_unicode_and_special_caption(md):
         text = EmbedElement._extract_text_content(caption_list)
         for word in md.split('"')[-2].split():
             assert word in text
+
 
 def test_roundtrip():
     cases = [
