@@ -3,7 +3,13 @@ from typing import Optional, List
 
 from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import Block, IconObject
+from notionary.blocks.shared.models import (
+    Block,
+    CreateCalloutBlock,
+    EmojiIcon,
+    IconObject,
+)
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 from notionary.models.notion_block_response import CalloutBlock
 
@@ -40,7 +46,7 @@ class CalloutElement(NotionBlockElement):
         return block.type == "callout" and block.callout is not None
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> CalloutBlock:
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert a markdown callout into a Notion CalloutBlock."""
         m = cls.PATTERN.match(text.strip())
         if not m:
@@ -54,11 +60,13 @@ class CalloutElement(NotionBlockElement):
             emoji = cls.DEFAULT_EMOJI
 
         rich_text = TextInlineFormatter.parse_inline_formatting(content.strip())
-        return CalloutBlock(
+
+        callout_content = CalloutBlock(
             rich_text=rich_text,
-            icon={"type": "emoji", "emoji": emoji},
+            icon=EmojiIcon(emoji=emoji),
             color=cls.DEFAULT_COLOR,
         )
+        return CreateCalloutBlock(callout=callout_content)
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

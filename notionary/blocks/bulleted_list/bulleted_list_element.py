@@ -3,7 +3,8 @@ from typing import Optional
 
 from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import Block
+from notionary.blocks.shared.models import Block, CreateBulletedListItemBlock
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 from notionary.models.notion_block_response import BulletedListItemBlock
 
@@ -26,7 +27,7 @@ class BulletedListElement(NotionBlockElement):
         )
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BulletedListItemBlock:
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """
         Convert a markdown bulleted list item into a Notion BulletedListItemBlock.
         """
@@ -41,7 +42,10 @@ class BulletedListElement(NotionBlockElement):
         rich_text = TextInlineFormatter.parse_inline_formatting(content)
 
         # Return a properly typed Notion block
-        return BulletedListItemBlock(rich_text=rich_text, color="default")
+        bulleted_list_content = BulletedListItemBlock(
+            rich_text=rich_text, color="default"
+        )
+        return CreateBulletedListItemBlock(bulleted_list_item=bulleted_list_content)
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

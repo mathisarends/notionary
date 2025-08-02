@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import Literal, Optional, Union, Any, Dict
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 # ============================================================================
@@ -373,7 +373,7 @@ class ExternalUrl(BaseModel):
 class AudioContent(BaseModel):
     type: Literal["external"]
     external: ExternalUrl
-    caption: Optional[list[RichTextObject]] = None
+    caption: list[RichTextObject] = Field(default_factory=list)
 
 
 class AudioBlockCreate(BaseModel):
@@ -386,11 +386,11 @@ class AudioBlock(BaseModel):
     external: Optional[ExternalFile] = None
     file: Optional[NotionHostedFile] = None
     file_upload: Optional[FileUploadFile] = None
-    caption: list[RichTextObject] = []
+    caption: list[RichTextObject] = Field(default_factory=list)
 
 
 class BookmarkBlock(BaseModel):
-    caption: list[RichTextObject] = []
+    caption: list[RichTextObject] = Field(default_factory=list)
     url: str
 
 
@@ -401,14 +401,14 @@ class BreadcrumbBlock(BaseModel):
 class BulletedListItemBlock(BaseModel):
     rich_text: list[RichTextObject]
     color: BlockColor = "default"
-    children: Optional[list["Block"]] = None
+    children: list["Block"] = Field(default_factory=list)
 
 
 class CalloutBlock(BaseModel):
     rich_text: list[RichTextObject]
     icon: Optional[IconObject] = None
     color: BlockColor = "default"
-    children: Optional[list["Block"]] = None
+    children: list["Block"] = Field(default_factory=list)
 
 
 class ChildDatabaseBlock(BaseModel):
@@ -420,10 +420,9 @@ class ChildPageBlock(BaseModel):
 
 
 class CodeBlock(BaseModel):
-    caption: list[RichTextObject] = []
+    caption: list[RichTextObject] = Field(default_factory=list)
     rich_text: list[RichTextObject]
     language: CodeLanguage = "plain text"
-    caption: Optional[list[RichTextObject]] = None
 
 
 class ColumnListBlock(BaseModel):
@@ -440,7 +439,7 @@ class DividerBlock(BaseModel):
 
 class EmbedBlock(BaseModel):
     url: str
-    caption: Optional[list[RichTextObject]] = None
+    caption: list[RichTextObject] = Field(default_factory=list)
 
 
 class EquationBlock(BaseModel):
@@ -448,7 +447,7 @@ class EquationBlock(BaseModel):
 
 
 class FileBlock(BaseModel):
-    caption: list[RichTextObject] = []
+    caption: list[RichTextObject] = Field(default_factory=list)
     type: Literal["external", "file", "file_upload"]
     external: Optional[ExternalFile] = None
     file: Optional[NotionHostedFile] = None
@@ -460,7 +459,7 @@ class HeadingBlock(BaseModel):
     rich_text: list[RichTextObject]
     color: BlockColor = "default"
     is_toggleable: bool = False
-    children: Optional[list["Block"]] = None
+    children: list["Block"] = Field(default_factory=list)
 
 
 class ImageBlock(BaseModel):
@@ -468,7 +467,7 @@ class ImageBlock(BaseModel):
     external: Optional[ExternalFile] = None
     file: Optional[NotionHostedFile] = None
     file_upload: Optional[FileUploadFile] = None
-    caption: Optional[list[RichTextObject]] = None
+    caption: list[RichTextObject] = Field(default_factory=list)
 
 
 class LinkPreviewBlock(BaseModel):
@@ -484,17 +483,16 @@ class LinkToPageBlock(BaseModel):
 class NumberedListItemBlock(BaseModel):
     rich_text: list[RichTextObject]
     color: BlockColor = "default"
-    children: Optional[list["Block"]] = None
+    children: list["Block"] = Field(default_factory=list)
 
 
 class ParagraphBlock(BaseModel):
     rich_text: list[RichTextObject]
     color: BlockColor = "default"
-    children: Optional[list["Block"]] = None
 
 
 class PdfBlock(BaseModel):
-    caption: list[RichTextObject] = []
+    caption: list[RichTextObject] = Field(default_factory=list)
     type: Literal["external", "file", "file_upload"]
     external: Optional[ExternalFile] = None
     file: Optional[NotionHostedFile] = None
@@ -504,7 +502,7 @@ class PdfBlock(BaseModel):
 class QuoteBlock(BaseModel):
     rich_text: list[RichTextObject]
     color: BlockColor = "default"
-    children: Optional[list["Block"]] = None
+    children: list["Block"] = Field(default_factory=list)
 
 
 class SyncedFromObject(BaseModel):
@@ -513,10 +511,8 @@ class SyncedFromObject(BaseModel):
 
 
 class SyncedBlock(BaseModel):
-    synced_from: Optional[SyncedFromObject] = (
-        None  # None for original, object for duplicate
-    )
-    children: Optional[list["Block"]] = None
+    synced_from: Optional[SyncedFromObject] = None  # None for original, object for duplicate
+    children: list["Block"] = Field(default_factory=list)
 
 
 class TableBlock(BaseModel):
@@ -535,20 +531,20 @@ class TableOfContentsBlock(BaseModel):
 
 class TemplateBlock(BaseModel):
     rich_text: list[RichTextObject]
-    children: Optional[list["Block"]] = None
+    children: list["Block"] = Field(default_factory=list)
 
 
 class ToDoBlock(BaseModel):
     rich_text: list[RichTextObject]
     checked: bool = False
     color: BlockColor = "default"
-    children: Optional[list["Block"]] = None
+    children: list["Block"] = Field(default_factory=list)
 
 
 class ToggleBlock(BaseModel):
     rich_text: list[RichTextObject]
     color: BlockColor = "default"
-    children: Optional[list["Block"]] = None
+    children: list["Block"] = Field(default_factory=list)
 
 
 class VideoBlock(BaseModel):
@@ -556,7 +552,7 @@ class VideoBlock(BaseModel):
     external: Optional[ExternalFile] = None
     file: Optional[NotionHostedFile] = None
     file_upload: Optional[FileUploadFile] = None
-    caption: Optional[list[RichTextObject]] = None
+    caption: list[RichTextObject] = Field(default_factory=list)
 
 
 class UnsupportedBlock(BaseModel):
@@ -567,38 +563,210 @@ class UnsupportedBlock(BaseModel):
 # MAIN BLOCK MODEL
 # ============================================================================
 
-BlockContent = Union[
-    AudioBlock,
-    BookmarkBlock,
-    BreadcrumbBlock,
-    BulletedListItemBlock,
-    CalloutBlock,
-    ChildDatabaseBlock,
-    ChildPageBlock,
-    CodeBlock,
-    ColumnListBlock,
-    ColumnBlock,
-    DividerBlock,
-    EmbedBlock,
-    EquationBlock,
-    FileBlock,
-    HeadingBlock,
-    ImageBlock,
-    LinkPreviewBlock,
-    LinkToPageBlock,
-    NumberedListItemBlock,
-    ParagraphBlock,
-    PdfBlock,
-    QuoteBlock,
-    SyncedBlock,
-    TableBlock,
-    TableRowBlock,
-    TableOfContentsBlock,
-    TemplateBlock,
-    ToDoBlock,
-    ToggleBlock,
-    VideoBlock,
-    UnsupportedBlock,
+
+class CreateAudioBlock(BaseModel):
+    type: Literal["audio"] = "audio"
+    audio: AudioBlock
+
+
+class CreateBookmarkBlock(BaseModel):
+    type: Literal["bookmark"] = "bookmark"
+    bookmark: BookmarkBlock
+
+
+class CreateBreadcrumbBlock(BaseModel):
+    type: Literal["breadcrumb"] = "breadcrumb"
+    breadcrumb: BreadcrumbBlock
+
+
+class CreateBulletedListItemBlock(BaseModel):
+    type: Literal["bulleted_list_item"] = "bulleted_list_item"
+    bulleted_list_item: BulletedListItemBlock
+
+
+class CreateCalloutBlock(BaseModel):
+    type: Literal["callout"] = "callout"
+    callout: CalloutBlock
+
+
+class CreateChildDatabaseBlock(BaseModel):
+    type: Literal["child_database"] = "child_database"
+    child_database: ChildDatabaseBlock
+
+
+class CreateChildPageBlock(BaseModel):
+    type: Literal["child_page"] = "child_page"
+    child_page: ChildPageBlock
+
+
+class CreateCodeBlock(BaseModel):
+    type: Literal["code"] = "code"
+    code: CodeBlock
+
+
+class CreateColumnListBlock(BaseModel):
+    type: Literal["column_list"] = "column_list"
+    column_list: ColumnListBlock
+
+
+class CreateColumnBlock(BaseModel):
+    type: Literal["column"] = "column"
+    column: ColumnBlock
+
+
+class CreateDividerBlock(BaseModel):
+    type: Literal["divider"] = "divider"
+    divider: DividerBlock
+
+
+class CreateEmbedBlock(BaseModel):
+    type: Literal["embed"] = "embed"
+    embed: EmbedBlock
+
+
+class CreateEquationBlock(BaseModel):
+    type: Literal["equation"] = "equation"
+    equation: EquationBlock
+
+
+class CreateFileBlock(BaseModel):
+    type: Literal["file"] = "file"
+    file: FileBlock
+
+
+class CreateHeading1Block(BaseModel):
+    type: Literal["heading_1"] = "heading_1"
+    heading_1: HeadingBlock
+
+
+class CreateHeading2Block(BaseModel):
+    type: Literal["heading_2"] = "heading_2"
+    heading_2: HeadingBlock
+
+
+class CreateHeading3Block(BaseModel):
+    type: Literal["heading_3"] = "heading_3"
+    heading_3: HeadingBlock
+
+
+class CreateImageBlock(BaseModel):
+    type: Literal["image"] = "image"
+    image: ImageBlock
+
+
+class CreateLinkPreviewBlock(BaseModel):
+    type: Literal["link_preview"] = "link_preview"
+    link_preview: LinkPreviewBlock
+
+
+class CreateLinkToPageBlock(BaseModel):
+    type: Literal["link_to_page"] = "link_to_page"
+    link_to_page: LinkToPageBlock
+
+
+class CreateNumberedListItemBlock(BaseModel):
+    type: Literal["numbered_list_item"] = "numbered_list_item"
+    numbered_list_item: NumberedListItemBlock
+
+
+class CreateParagraphBlock(BaseModel):
+    type: Literal["paragraph"] = "paragraph"
+    paragraph: ParagraphBlock
+
+
+class CreatePdfBlock(BaseModel):
+    type: Literal["pdf"] = "pdf"
+    pdf: PdfBlock
+
+
+class CreateQuoteBlock(BaseModel):
+    type: Literal["quote"] = "quote"
+    quote: QuoteBlock
+
+
+class CreateSyncedBlock(BaseModel):
+    type: Literal["synced_block"] = "synced_block"
+    synced_block: SyncedBlock
+
+
+class CreateTableBlock(BaseModel):
+    type: Literal["table"] = "table"
+    table: TableBlock
+
+
+class CreateTableRowBlock(BaseModel):
+    type: Literal["table_row"] = "table_row"
+    table_row: TableRowBlock
+
+
+class CreateTableOfContentsBlock(BaseModel):
+    type: Literal["table_of_contents"] = "table_of_contents"
+    table_of_contents: TableOfContentsBlock
+
+
+class CreateTemplateBlock(BaseModel):
+    type: Literal["template"] = "template"
+    template: TemplateBlock
+
+
+class CreateToDoBlock(BaseModel):
+    type: Literal["to_do"] = "to_do"
+    to_do: ToDoBlock
+
+
+class CreateToggleBlock(BaseModel):
+    type: Literal["toggle"] = "toggle"
+    toggle: ToggleBlock
+
+
+class CreateVideoBlock(BaseModel):
+    type: Literal["video"] = "video"
+    video: VideoBlock
+
+
+class CreateUnsupportedBlock(BaseModel):
+    type: Literal["unsupported"] = "unsupported"
+    unsupported: UnsupportedBlock
+
+
+# ============================================================================
+# CREATE BLOCK UNION TYPE
+# ============================================================================
+
+BlockCreateRequest = Union[
+    CreateAudioBlock,
+    CreateBookmarkBlock,
+    CreateBreadcrumbBlock,
+    CreateBulletedListItemBlock,
+    CreateCalloutBlock,
+    CreateChildDatabaseBlock,
+    CreateChildPageBlock,
+    CreateCodeBlock,
+    CreateColumnListBlock,
+    CreateColumnBlock,
+    CreateDividerBlock,
+    CreateEmbedBlock,
+    CreateEquationBlock,
+    CreateFileBlock,
+    CreateHeading1Block,
+    CreateHeading2Block,
+    CreateHeading3Block,
+    CreateImageBlock,
+    CreateLinkPreviewBlock,
+    CreateLinkToPageBlock,
+    CreateNumberedListItemBlock,
+    CreateParagraphBlock,
+    CreatePdfBlock,
+    CreateQuoteBlock,
+    CreateSyncedBlock,
+    CreateTableBlock,
+    CreateTableRowBlock,
+    CreateTableOfContentsBlock,
+    CreateTemplateBlock,
+    CreateToDoBlock,
+    CreateToggleBlock,
+    CreateVideoBlock,
+    CreateUnsupportedBlock,
 ]
 
 

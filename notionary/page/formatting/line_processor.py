@@ -1,6 +1,7 @@
 import re
-from notionary.blocks.shared.notion_block_element import NotionBlock
 from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.shared.models import BlockCreateRequest
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 
 
 class LineProcessingState:
@@ -40,13 +41,13 @@ class LineProcessor:
         self._pipe_pattern = pipe_pattern
 
     @staticmethod
-    def _normalize_to_list(result) -> list[dict[str, any]]:
-        """Normalize Union[list[dict], dict] to list[dict]"""
+    def _normalize_to_list(result: BlockCreateResult) -> list[BlockCreateRequest]:
+        """Normalize BlockCreateResult to list[BlockCreateRequest]"""
         if result is None:
             return []
         return result if isinstance(result, list) else [result]
 
-    def process_lines(self, text: str) -> list[tuple[int, int, dict[str, any]]]:
+    def process_lines(self, text: str) -> list[tuple[int, int, BlockCreateRequest]]:
         """Process all lines and return blocks with positions"""
         lines = text.split("\n")
         line_blocks = []
@@ -91,7 +92,7 @@ class LineProcessor:
         line: str,
         current_pos: int,
         line_end: int,
-        line_blocks: list[tuple[int, int, dict[str, any]]],
+        line_blocks: list[tuple[int, int, BlockCreateRequest]],
         state: LineProcessingState,
     ):
         """Process a single line of text"""
@@ -105,7 +106,7 @@ class LineProcessor:
         special_blocks = self._extract_special_block(line)
         if special_blocks:
             self._finalize_paragraph(state, current_pos, line_blocks)
-            # Mehrere Blöcke hinzufügen
+            # Add multiple blocks
             for block in special_blocks:
                 line_blocks.append((current_pos, line_end, block))
             state.reset_paragraph()
@@ -114,7 +115,7 @@ class LineProcessor:
         # Add to current paragraph
         state.add_to_paragraph(line, current_pos)
 
-    def _extract_special_block(self, line: str) -> list[NotionBlock]:
+    def _extract_special_block(self, line: str) -> list[BlockCreateRequest]:
         """Extract special block (non-paragraph) from line"""
         for element in (
             element
@@ -129,17 +130,29 @@ class LineProcessor:
             if not blocks:
                 continue
 
-            # Gibt nur zurück, wenn mindestens ein Nicht-Paragraph-Block dabei ist
-            if any(block.get("type") != "paragraph" for block in blocks):
+            # Only return if at least one non-paragraph block is present
+            if any(self._is_non_paragraph_block(block) for block in blocks):
                 return blocks
 
         return []
+
+    def _is_non_paragraph_block(self, block: BlockCreateRequest) -> bool:
+        """Check if block is not a paragraph block"""
+        # Check the type field of the create block
+        if hasattr(block, "type"):
+            return getattr(block, "type", None) != "paragraph"
+
+        # Fallback: check class name
+        if hasattr(block, "__class__"):
+            return block.__class__.__name__ != "CreateParagraphBlock"
+
+        return True  # Conservative default
 
     def _finalize_paragraph(
         self,
         state: LineProcessingState,
         end_pos: int,
-        line_blocks: list[tuple[int, int, dict[str, any]]],
+        line_blocks: list[tuple[int, int, BlockCreateRequest]],
     ):
         """Convert current paragraph lines to paragraph block"""
         if not state.has_paragraph():

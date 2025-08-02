@@ -6,7 +6,13 @@ from notionary.blocks import (
     ElementPromptContent,
     ElementPromptBuilder,
 )
-from notionary.blocks.shared.models import Block, RichTextObject, ToggleBlock
+from notionary.blocks.shared.models import (
+    Block,
+    CreateToggleBlock,
+    RichTextObject,
+    ToggleBlock,
+)
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -31,7 +37,7 @@ class ToggleElement(NotionBlockElement):
         return block.type == "toggle"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> ToggleBlock | None:
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown toggle line to Notion ToggleBlock or None if no match."""
         m = cls.TOGGLE_PATTERN.match(text.strip())
         if not m:
@@ -41,7 +47,8 @@ class ToggleElement(NotionBlockElement):
 
         rich_text = TextInlineFormatter.parse_inline_formatting(title)
 
-        return ToggleBlock(rich_text=rich_text, color="default", children=[])
+        toggle_content = ToggleBlock(rich_text=rich_text, color="default", children=[])
+        return CreateToggleBlock(toggle=toggle_content)
 
     @classmethod
     def extract_nested_content(

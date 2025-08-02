@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Any
 from notionary.base_notion_client import BaseNotionClient
-from notionary.blocks.shared.models import Block, BlockChildrenResponse
+from notionary.blocks.shared.models import Block, BlockChildrenResponse, BlockCreateRequest
 
 
 class NotionBlockClient(BaseNotionClient):
@@ -102,7 +102,7 @@ class NotionBlockClient(BaseNotionClient):
         return all_blocks
 
     async def append_block_children(
-        self, block_id: str, children: list[Dict[str, Any]], after: Optional[str] = None
+        self, block_id: str, children: list[BlockCreateRequest], after: Optional[str] = None
     ) -> Optional[BlockChildrenResponse]:
         """
         Appends new child blocks to a parent block.
@@ -114,12 +114,15 @@ class NotionBlockClient(BaseNotionClient):
 
         self.logger.debug("Appending %d children to block: %s", len(children), block_id)
 
+        # Convert Pydantic models to dictionaries for API
+        children_dicts = [block.model_dump(exclude_none=True) for block in children]
+
         # If 100 or fewer blocks, use single request
-        if len(children) <= 100:
-            return await self._append_single_batch(block_id, children, after)
+        if len(children_dicts) <= 100:
+            return await self._append_single_batch(block_id, children_dicts, after)
 
         # For more than 100 blocks, use batch processing
-        return await self._append_multiple_batches(block_id, children, after)
+        return await self._append_multiple_batches(block_id, children_dicts, after)
 
     async def _append_single_batch(
         self, block_id: str, children: list[Dict[str, Any]], after: Optional[str] = None

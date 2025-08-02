@@ -5,14 +5,16 @@ from notionary.blocks import NotionBlockElement
 from notionary.blocks import (
     ElementPromptContent,
     ElementPromptBuilder,
-    NotionBlockResult,
 )
 from notionary.blocks.shared.models import (
     CodeBlock,
+    CreateCodeBlock,
+    CreateParagraphBlock,
     RichTextObject,
     Block,
     CodeLanguage,
 )
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 from notionary.models.notion_block_response import ParagraphBlock
 
 
@@ -49,10 +51,10 @@ class CodeElement(NotionBlockElement):
         return block.type == "code"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> list[CodeBlock]:
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         m = cls.PATTERN.search(text)
         if not m:
-            return []
+            return None
 
         # Extract language, fallback to default
         language = (m.group(1) or cls.DEFAULT_LANGUAGE).lower()
@@ -73,8 +75,12 @@ class CodeElement(NotionBlockElement):
             code_block.caption = [cap_rich]
 
         # Append empty paragraph after code
-        empty_para = ParagraphBlock(rich_text=[])
-        return [code_block, empty_para]
+        empty_paragraph = ParagraphBlock(rich_text=[])
+
+        return [
+            CreateCodeBlock(code=code_block),
+            CreateParagraphBlock(paragraph=empty_paragraph),
+        ]
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

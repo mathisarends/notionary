@@ -6,7 +6,13 @@ from notionary.blocks import (
     ElementPromptContent,
     ElementPromptBuilder,
 )
-from notionary.blocks.shared.models import Block, ParagraphBlock, RichTextObject
+from notionary.blocks.shared.models import (
+    Block,
+    CreateParagraphBlock,
+    ParagraphBlock,
+    RichTextObject,
+)
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 
 
 class MentionElement(NotionBlockElement):
@@ -90,7 +96,7 @@ class MentionElement(NotionBlockElement):
         return False
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown text with mentions to a Notion ParagraphBlock."""
         # Only convert if this element matches the markdown
         if not cls.match_markdown(text):
@@ -100,7 +106,8 @@ class MentionElement(NotionBlockElement):
         rich_text = cls._process_markdown_with_mentions(text)
 
         # Return a typed ParagraphBlock
-        return ParagraphBlock(rich_text=rich_text, color="default")
+        paragraph_content = ParagraphBlock(rich_text=rich_text, color="default")
+        return CreateParagraphBlock(paragraph=paragraph_content)
 
     @classmethod
     def _process_markdown_with_mentions(cls, text: str) -> list[dict[str, Any]]:

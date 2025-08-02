@@ -4,8 +4,6 @@ from .prompts.element_prompt_builder import ElementPromptBuilder
 
 from .shared.notion_block_element import (
     NotionBlockElement,
-    NotionBlockResult,
-    NotionBlock,
 )
 
 from .audio import AudioElement, AudioMarkdownNode

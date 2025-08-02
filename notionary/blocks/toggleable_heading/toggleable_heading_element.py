@@ -5,9 +5,15 @@ from notionary.blocks import (
     ElementPromptContent,
     ElementPromptBuilder,
     NotionBlockElement,
-    NotionBlockResult,
 )
-from notionary.blocks.shared.models import Block, HeadingBlock
+from notionary.blocks.shared.models import (
+    Block,
+    CreateHeading1Block,
+    CreateHeading2Block,
+    CreateHeading3Block,
+    HeadingBlock,
+)
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -37,8 +43,8 @@ class ToggleableHeadingElement(NotionBlockElement):
         # Check if it has the is_toggleable property set to true
         return getattr(heading_content, "is_toggleable", False) is True
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> HeadingBlock | None:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown collapsible heading to a toggleable Notion HeadingBlock."""
         m = ToggleableHeadingElement.PATTERN.match(text.strip())
         if not m:
@@ -55,9 +61,17 @@ class ToggleableHeadingElement(NotionBlockElement):
 
         rich_text = TextInlineFormatter.parse_inline_formatting(content)
 
-        return HeadingBlock(
+        heading_content = HeadingBlock(
             rich_text=rich_text, color="default", is_toggleable=True, children=[]
         )
+
+        # Map markdown heading levels to Notion HeadingBlock types
+        if level == 1:
+            return CreateHeading1Block(heading_1=heading_content)
+        elif level == 2:
+            return CreateHeading2Block(heading_2=heading_content)
+        else:
+            return CreateHeading3Block(heading_3=heading_content)
 
     @staticmethod
     def notion_to_markdown(block: Block) -> Optional[str]:

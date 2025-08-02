@@ -1,17 +1,19 @@
 import re
-from typing import Any, Optional, list
+from typing import Optional
 
 from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
 from notionary.blocks.shared.models import (
     Block,
+    CreateImageBlock,
+    CreateParagraphBlock,
     ExternalFile,
     ImageBlock,
     ParagraphBlock,
     RichTextObject,
     FileObject,
 )
-from notionary.blocks.shared.notion_block_element import BlockContentResult
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -40,7 +42,7 @@ class ImageElement(NotionBlockElement):
         return block.type == "image" and block.image is not None
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockContentResult:
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown image syntax to Notion ImageBlock followed by an empty paragraph."""
         m = cls.PATTERN.match(text.strip())
         if not m:
@@ -56,7 +58,11 @@ class ImageElement(NotionBlockElement):
             image_block.caption = [rt]
 
         empty_para = ParagraphBlock(rich_text=[])
-        return [image_block, empty_para]
+
+        return [
+            CreateImageBlock(image=image_block),
+            CreateParagraphBlock(paragraph=empty_para),
+        ]
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

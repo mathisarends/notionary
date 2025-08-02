@@ -2,16 +2,21 @@ from typing import Optional, TypeAlias, Union
 from abc import ABC
 
 from notionary.blocks.prompts.element_prompt_content import ElementPromptContent
-from notionary.blocks.shared.models import Block, BlockContent
+from notionary.blocks.shared.models import Block, BlockCreateRequest
 
-BlockContentResult: TypeAlias = Optional[Union[list[BlockContent], BlockContent]]
+BlockCreateResult = Optional[
+    Union[
+        list[BlockCreateRequest],
+        BlockCreateRequest,
+    ]
+]
 
 
 class NotionBlockElement(ABC):
     """Base class for elements that can be converted between Markdown and Notion."""
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockContentResult:
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """
         Convert markdown to Notion block content.
 

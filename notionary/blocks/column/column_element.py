@@ -5,9 +5,9 @@ from notionary.blocks import NotionBlockElement
 from notionary.blocks import (
     ElementPromptContent,
     ElementPromptBuilder,
-    NotionBlockResult,
 )
-from notionary.blocks.shared.models import Block, ColumnListBlock
+from notionary.blocks.shared.models import Block, ColumnListBlock, CreateColumnListBlock
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 
 
 class ColumnElement(NotionBlockElement):
@@ -56,7 +56,7 @@ class ColumnElement(NotionBlockElement):
         return block.type == "column_list"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> ColumnListBlock:
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """
         Convert markdown column syntax to Notion ColumnListBlock.
 
@@ -67,7 +67,8 @@ class ColumnElement(NotionBlockElement):
             return None
 
         # Return a ColumnListBlock with no children; processor will fill them
-        return ColumnListBlock(children=[])
+        column_list_content = ColumnListBlock()
+        return CreateColumnListBlock(column_list=column_list_content)
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

@@ -3,7 +3,8 @@ from typing import Optional
 
 from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import RichTextObject, Block
+from notionary.blocks.shared.models import CreateBookmarkBlock, RichTextObject, Block
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 from notionary.models.notion_block_response import BookmarkBlock
 
 
@@ -35,7 +36,7 @@ class BookmarkElement(NotionBlockElement):
         return block.type == "bookmark" and block.bookmark is not None
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BookmarkBlock:
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """
         Convert a markdown bookmark into a Notion BookmarkBlock.
         """
@@ -58,7 +59,8 @@ class BookmarkElement(NotionBlockElement):
             caption_obj = RichTextObject.from_plain_text(joined)
             caption = [caption_obj]
 
-        return BookmarkBlock(url=url, caption=caption)
+        bookmark_data = BookmarkBlock(url=url, caption=caption)
+        return CreateBookmarkBlock(bookmark=bookmark_data)
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

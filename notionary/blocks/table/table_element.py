@@ -3,17 +3,20 @@ from typing import Optional, Any, Tuple
 
 from notionary.blocks import (
     NotionBlockElement,
-    NotionBlockResult,
     ElementPromptContent,
     ElementPromptBuilder,
 )
 from notionary.blocks.shared.models import (
     Block,
+    CreateParagraphBlock,
+    CreateTableBlock,
+    CreateTableRowBlock,
     ParagraphBlock,
     RichTextObject,
     TableBlock,
     TableRowBlock,
 )
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -59,7 +62,7 @@ class TableElement(NotionBlockElement):
         return block.type == "table"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown table to Notion TableBlock with rows, followed by an empty paragraph."""
         # Only process if it's a markdown table
         if not cls.PATTERN.match(text.strip()):
@@ -95,24 +98,33 @@ class TableElement(NotionBlockElement):
         table_block = TableBlock(
             table_width=col_count, has_column_header=True, has_row_header=False
         )
-        # Create row children
-        table_block.children = []
+
+        # Build table rows
+        table_rows = []
         # First header row
         header_row = TableRowBlock(
             cells=[[RichTextObject.from_plain_text(h)] for h in headers]
         )
-        table_block.children.append(header_row)
+        table_rows.append(CreateTableRowBlock(table_row=header_row))
+
         # Body rows
         for row in rows_data:
             # normalize row length
             if len(row) < col_count:
                 row += [""] * (col_count - len(row))
             row_cells = [[RichTextObject.from_plain_text(cell)] for cell in row]
-            table_block.children.append(TableRowBlock(cells=row_cells))
+            table_rows.append(
+                CreateTableRowBlock(table_row=TableRowBlock(cells=row_cells))
+            )
 
         # Empty paragraph after table
         empty_para = ParagraphBlock(rich_text=[])
-        return [table_block, empty_para]
+
+        return [
+            CreateTableBlock(table=table_block),
+            *table_rows,
+            CreateParagraphBlock(paragraph=empty_para),
+        ]
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

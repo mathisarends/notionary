@@ -1,9 +1,8 @@
 from __future__ import annotations
-from typing import Any, Optional, Set, Type
+from typing import Optional, Set, Type
 
 from notionary.blocks import NotionBlockElement
 from notionary.blocks.shared.models import Block
-from notionary.blocks.shared.notion_block_element import BlockContentResult
 from notionary.page.markdown_syntax_prompt_generator import (
     MarkdownSyntaxPromptGenerator,
 )

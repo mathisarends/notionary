@@ -53,13 +53,13 @@ class PageContentWriter(LoggingMixin):
 
             if result:
                 self.logger.debug("Successfully appended %d blocks", len(fixed_blocks))
-                return processed_markdown  # Return processed input since conversion back would fail
+                return processed_markdown
             else:
                 self.logger.error("Failed to append blocks")
                 return None
 
         except Exception as e:
-            self.logger.error("Error appending markdown: %s", str(e), exc_info=True)
+            self.logger.error("Error appending markdown: %s", str(e))
             return None
 
     async def clear_page_content(self) -> Optional[str]:

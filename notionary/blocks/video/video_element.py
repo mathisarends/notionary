@@ -1,16 +1,19 @@
 import re
-from typing import Any, Optional, List
+from typing import Optional
 
-from notionary.blocks import NotionBlockElement, NotionBlockResult
+from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
 from notionary.blocks.shared.models import (
     Block,
+    CreateParagraphBlock,
+    CreateVideoBlock,
     ExternalFile,
     FileObject,
     ParagraphBlock,
     RichTextObject,
     VideoBlock,
 )
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -46,7 +49,7 @@ class VideoElement(NotionBlockElement):
         return block.type == "video" and block.video is not None
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> list[VideoBlock | ParagraphBlock] | None:
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown video syntax to a Notion VideoBlock plus an empty paragraph."""
         m = cls.PATTERN.match(text.strip())
         if not m:
@@ -58,7 +61,6 @@ class VideoElement(NotionBlockElement):
         if vid_id:
             url = f"https://www.youtube.com/watch?v={vid_id}"
 
-        # Build VideoBlock
         video_block = VideoBlock(
             type="external", external=ExternalFile(url=url), caption=[]
         )
@@ -66,9 +68,12 @@ class VideoElement(NotionBlockElement):
             rt = RichTextObject.from_plain_text(caption_text.strip())
             video_block.caption = [rt]
 
-        # Append an empty paragraph for spacing
         empty_para = ParagraphBlock(rich_text=[])
-        return [video_block, empty_para]
+
+        return [
+            CreateVideoBlock(video=video_block),
+            CreateParagraphBlock(paragraph=empty_para),
+        ]
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
@@ -86,7 +91,7 @@ class VideoElement(NotionBlockElement):
         captions = fo.caption or []
         if not captions:
             return f"[video]({url})"
-        parts: List[str] = []
+        parts: list[str] = []
         for rt in captions:
             parts.append(
                 rt.plain_text

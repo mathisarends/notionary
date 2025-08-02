@@ -5,10 +5,10 @@ from notionary.blocks import (
     NotionBlockElement,
     ElementPromptContent,
     ElementPromptBuilder,
-    NotionBlockResult,
 )
-from notionary.blocks.shared.models import RichTextObject
+from notionary.blocks.shared.models import CreateAudioBlock, RichTextObject
 from notionary.blocks.shared.models import Block
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 from notionary.models.notion_block_response import AudioBlock
 from notionary.models.notion_page_response import ExternalFile
 
@@ -49,7 +49,7 @@ class AudioElement(NotionBlockElement):
         return block.type == "audio"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> AudioBlock:
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown audio embed to Notion audio block."""
         m = cls.PATTERN.match(text.strip())
         if not m:
@@ -67,9 +67,11 @@ class AudioElement(NotionBlockElement):
             caption_objects = [caption_rt]
 
         # Create AudioBlock content object
-        return AudioBlock(
+        audio_content = AudioBlock(
             type="external", external=ExternalFile(url=url), caption=caption_objects
         )
+
+        return CreateAudioBlock(audio=audio_content)
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

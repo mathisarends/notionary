@@ -1,12 +1,12 @@
 from typing import Any, Callable, Union
 from notionary.blocks import ColumnElement, BlockRegistry, NotionBlockElement
+from notionary.blocks.shared.models import BlockCreateRequest
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 from notionary.page.formatting.line_processor import LineProcessor
 
 # Type aliases for better readability
-NotionBlockDict = dict[str, Any]
-BlockPosition = tuple[int, int, NotionBlockDict]  # (start_pos, end_pos, block)
+BlockPosition = tuple[int, int, BlockCreateRequest]  # (start_pos, end_pos, block)
 BlockPositionList = list[BlockPosition]
-ConversionResult = Union[NotionBlockDict, list[NotionBlockDict], None]
 
 
 class MarkdownToNotionConverter:
@@ -27,7 +27,7 @@ class MarkdownToNotionConverter:
         if self._block_registry.contains(ColumnElement):
             ColumnElement.set_converter_callback(self.convert)
 
-    def convert(self, markdown_text: str) -> list[NotionBlockDict]:
+    def convert(self, markdown_text: str) -> list[BlockCreateRequest]:
         """
         Convert markdown text to Notion API block format.
         """
@@ -40,7 +40,7 @@ class MarkdownToNotionConverter:
         # Step 2: Sort blocks by position to maintain document order
         blocks_with_positions.sort(key=lambda block_info: block_info[0])
 
-        # Step 3: Flatten and return block dictionaries
+        # Step 3: Flatten and return block objects
         return self._flatten_blocks(blocks_with_positions)
 
     def _identify_all_blocks(self, markdown_text: str) -> BlockPositionList:
@@ -197,11 +197,11 @@ class MarkdownToNotionConverter:
 
     def _flatten_blocks(
         self, blocks_with_positions: BlockPositionList
-    ) -> list[NotionBlockDict]:
+    ) -> list[BlockCreateRequest]:
         """
-        Extract and flatten block dictionaries from position information.
+        Extract and flatten block objects from position information.
         """
-        result: list[NotionBlockDict] = []
+        result: list[BlockCreateRequest] = []
 
         for _, _, block in blocks_with_positions:
             if isinstance(block, list):
@@ -212,9 +212,9 @@ class MarkdownToNotionConverter:
         return result
 
     @staticmethod
-    def _normalize_to_list(result: ConversionResult) -> list[NotionBlockDict]:
+    def _normalize_to_list(result: BlockCreateResult) -> list[BlockCreateRequest]:
         """
-        Normalize conversion result to a list of block dictionaries.
+        Normalize conversion result to a list of block content objects.
         """
         if result is None:
             return []

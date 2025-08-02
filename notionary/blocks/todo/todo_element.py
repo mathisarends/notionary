@@ -1,9 +1,10 @@
 import re
-from typing import Any, Optional
+from typing import Optional
 
 from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import Block, ToDoBlock
+from notionary.blocks.shared.models import Block, CreateToDoBlock, ToDoBlock
+from notionary.blocks.shared.notion_block_element import BlockCreateResult
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -30,11 +31,10 @@ class TodoElement(NotionBlockElement):
         return block.type == "to_do" and block.to_do is not None
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> ToDoBlock | None:
-        """Convert markdown todo or done item to a Notion ToDoBlock, or None if no match."""
-        # Determine if it's done or todo
-        m_done = cls.DONE_PATTERN.match(text.strip())
-        m_todo = None if m_done else cls.PATTERN.match(text.strip())
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+        """Convert markdown todo or done item to Notion to_do block."""
+        m_done = cls.DONE_PATTERN.match(text)
+        m_todo = None if m_done else cls.PATTERN.match(text)
 
         if m_done:
             content = m_done.group(1)
@@ -45,9 +45,15 @@ class TodoElement(NotionBlockElement):
         else:
             return None
 
+        # build rich text
         rich = TextInlineFormatter.parse_inline_formatting(content)
 
-        return ToDoBlock(rich_text=rich, checked=checked, color="default")
+        todo_content = ToDoBlock(
+            rich_text=rich,
+            checked=checked,
+            color="default",
+        )
+        return CreateToDoBlock(to_do=todo_content)
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
