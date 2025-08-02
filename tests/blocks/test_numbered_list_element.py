@@ -4,7 +4,7 @@ Tests conversion between Markdown numbered lists and Notion numbered_list_item b
 """
 
 import pytest
-from notionary.blocks import NumberedListElement
+from notionary.blocks.numbered_list import NumberedListElement
 
 
 @pytest.mark.parametrize(

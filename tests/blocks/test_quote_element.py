@@ -4,7 +4,7 @@ Tests conversion between Markdown quotes ([quote](text)) and Notion quote blocks
 """
 
 import pytest
-from notionary.blocks import QuoteElement
+from notionary.blocks.quote import QuoteElement
 
 
 @pytest.mark.parametrize(

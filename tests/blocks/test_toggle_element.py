@@ -4,7 +4,7 @@ Tests conversion between Markdown toggles and Notion toggle blocks.
 """
 
 import pytest
-from notionary.blocks import ToggleElement
+from notionary.blocks.toggle import ToggleElement
 
 
 @pytest.mark.parametrize(

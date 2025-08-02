@@ -4,7 +4,7 @@ Tests conversion between Markdown paragraphs and Notion paragraph blocks.
 """
 
 import pytest
-from notionary.blocks import ParagraphElement
+from notionary.blocks.paragraph import ParagraphElement
 
 
 @pytest.mark.parametrize(

@@ -1,36 +1,33 @@
-#!/usr/bin/env python3
 """
 Tests für alle MarkdownNode-Implementierungen mit pytest.
 Testet ob die to_markdown() Methode den erwarteten String zurückgibt.
 """
 
-import sys
-import os
-
-# Füge das notionary package zum Python path hinzu
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-from notionary.blocks import (
-    AudioMarkdownNode,
-    BookmarkMarkdownNode,
+from notionary.blocks.audio.audio_markdown_node import AudioMarkdownNode
+from notionary.blocks.bookmark.bookmark_markdown_node import BookmarkMarkdownNode
+from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
     BulletedListMarkdownNode,
-    CalloutMarkdownNode,
-    CodeMarkdownNode,
-    DividerMarkdownNode,
-    DocumentMarkdownNode,
-    EmbedMarkdownNode,
-    HeadingMarkdownNode,
-    ImageMarkdownNode,
-    MentionMarkdownNode,
-    NumberedListMarkdownNode,
-    ParagraphMarkdownNode,
-    QuoteMarkdownNode,
-    TableMarkdownNode,
-    TodoMarkdownNode,
-    ToggleMarkdownNode,
-    ToggleableHeadingMarkdownNode,
-    VideoMarkdownNode,
 )
+from notionary.blocks.callout.callout_markdown_node import CalloutMarkdownNode
+from notionary.blocks.code.code_markdown_node import CodeMarkdownNode
+from notionary.blocks.divider.divider_markdown_node import DividerMarkdownNode
+from notionary.blocks.embed.embed_markdown_node import EmbedMarkdownNode
+from notionary.blocks.file.file_element_markdown_node import FileMarkdownNode
+from notionary.blocks.heading.heading_markdown_node import HeadingMarkdownNode
+from notionary.blocks.image_block.image_markdown_node import ImageMarkdownNode
+from notionary.blocks.numbered_list.numbered_list_markdown_node import (
+    NumberedListMarkdownNode,
+)
+from notionary.blocks.paragraph.paragraph_markdown_node import ParagraphMarkdownNode
+from notionary.blocks.quote.quote_markdown_node import QuoteMarkdownNode
+from notionary.blocks.table.table_markdown_node import TableMarkdownNode
+from notionary.blocks.todo.todo_markdown_node import TodoMarkdownNode
+from notionary.blocks.toggle.toggle_markdown_node import ToggleMarkdownNode
+from notionary.blocks.toggleable_heading.toggleable_heading_markdown_node import (
+    ToggleableHeadingMarkdownNode,
+)
+from notionary.blocks.video.video_markdown_node import VideoMarkdownNode
+from notionary.markdown.markdown_node import MarkdownNode
 
 import pytest
 
@@ -119,19 +116,19 @@ def test_divider_markdown_node():
     assert divider.to_markdown() == expected
 
 
-def test_document_markdown_node():
-    """Test DocumentMarkdownNode"""
+def test_file_markdown_node():
+    """Test FileMarkdownNode"""
     # Test ohne Caption
-    document = DocumentMarkdownNode(url="https://example.com/doc.pdf")
-    expected = "[document](https://example.com/doc.pdf)"
-    assert document.to_markdown() == expected
+    file = FileMarkdownNode(url="https://example.com/doc.pdf")
+    expected = "[file](https://example.com/doc.pdf)"
+    assert file.to_markdown() == expected
 
     # Test mit Caption
-    document_with_caption = DocumentMarkdownNode(
+    file_with_caption = FileMarkdownNode(
         url="https://example.com/doc.pdf", caption="Important Document"
     )
-    expected = '[document](https://example.com/doc.pdf "Important Document")'
-    assert document_with_caption.to_markdown() == expected
+    expected = '[file](https://example.com/doc.pdf "Important Document")'
+    assert file_with_caption.to_markdown() == expected
 
 
 def test_embed_markdown_node():
@@ -194,24 +191,6 @@ def test_image_markdown_node():
     image_empty = ImageMarkdownNode(url="https://example.com/image.jpg", caption="")
     expected = "[image](https://example.com/image.jpg)"
     assert image_empty.to_markdown() == expected
-
-
-def test_mention_markdown_node():
-    """Test MentionMarkdownNode"""
-    # Test Page Mention
-    page_mention = MentionMarkdownNode(mention_type="page", value="123-456-789")
-    expected = "@[123-456-789]"
-    assert page_mention.to_markdown() == expected
-
-    # Test Database Mention
-    db_mention = MentionMarkdownNode(mention_type="database", value="db-123")
-    expected = "@db[db-123]"
-    assert db_mention.to_markdown() == expected
-
-    # Test Date Mention
-    date_mention = MentionMarkdownNode(mention_type="date", value="2024-01-01")
-    expected = "@date[2024-01-01]"
-    assert date_mention.to_markdown() == expected
 
 
 def test_numbered_list_markdown_node():

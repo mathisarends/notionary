@@ -4,7 +4,7 @@ Tests conversion between Markdown headings and Notion heading blocks.
 """
 
 import pytest
-from notionary.blocks import HeadingElement
+from notionary.blocks.heading import HeadingElement
 
 
 def test_match_markdown_valid_headings():

@@ -4,7 +4,7 @@ Tests conversion between Markdown images and Notion image blocks.
 """
 
 import pytest
-from notionary.blocks import ImageElement
+from notionary.blocks.image_block import ImageElement
 
 
 def test_match_markdown_valid_images():

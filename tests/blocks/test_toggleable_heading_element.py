@@ -1,5 +1,5 @@
 import pytest
-from notionary.blocks import ToggleableHeadingElement
+from notionary.blocks.toggleable_heading import ToggleableHeadingElement
 
 
 def test_match_markdown_heading_variants():

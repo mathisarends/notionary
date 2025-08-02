@@ -4,7 +4,7 @@ Tests conversion between Markdown tables and Notion table blocks.
 """
 
 import pytest
-from notionary.blocks import TableElement
+from notionary.blocks.table import TableElement
 
 
 @pytest.fixture
