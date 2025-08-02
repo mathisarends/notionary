@@ -7,7 +7,13 @@ from notionary.blocks import (
     ElementPromptBuilder,
     NotionBlockResult,
 )
-from notionary.blocks.shared.models import RichTextObject, Block, CodeLanguage
+from notionary.blocks.shared.models import (
+    CodeBlock,
+    RichTextObject,
+    Block,
+    CodeLanguage,
+)
+from notionary.models.notion_block_response import ParagraphBlock
 
 
 class CodeElement(NotionBlockElement):
@@ -43,46 +49,32 @@ class CodeElement(NotionBlockElement):
         return block.type == "code"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        """Convert markdown code block to Notion code block."""
-        match = cls.PATTERN.search(text)
-        if not match:
-            return None
+    def markdown_to_notion(cls, text: str) -> list[CodeBlock]:
+        m = cls.PATTERN.search(text)
+        if not m:
+            return []
 
-        language = match.group(1) or cls.plain_text
-        # Self-healing: convert to lowercase for consistency
-        language = language.lower()
-
-        # Validate language against allowed values
+        # Extract language, fallback to default
+        language = (m.group(1) or cls.DEFAULT_LANGUAGE).lower()
+        # Validate language
         if language not in [lang.lower() for lang in CodeLanguage.__args__]:
-            language = cls.plain_text
+            language = cls.DEFAULT_LANGUAGE
 
-        content = match.group(2)
-        caption = match.group(3)
+        # Extract content and optional caption
+        content = m.group(2).rstrip("\n")
+        caption_text = m.group(3)
 
-        if content.endswith("\n"):
-            content = content[:-1]
+        code_rich = RichTextObject.from_plain_text(content)
+        code_block = CodeBlock(rich_text=[code_rich], language=language)
 
-        # Create code block with rich text
-        content_rich_text = RichTextObject.from_plain_text(content)
+        # Add caption if present
+        if caption_text and caption_text.strip():
+            cap_rich = RichTextObject.from_plain_text(caption_text.strip())
+            code_block.caption = [cap_rich]
 
-        block = {
-            "type": "code",
-            "code": {
-                "rich_text": [content_rich_text.model_dump()],
-                "language": language,
-            },
-        }
-
-        # Add caption if provided
-        if caption and caption.strip():
-            caption_rich_text = RichTextObject.from_plain_text(caption.strip())
-            block["code"]["caption"] = [caption_rich_text.model_dump()]
-
-        # Leerer Paragraph nach dem Code-Block
-        empty_paragraph = {"type": "paragraph", "paragraph": {"rich_text": []}}
-
-        return [block, empty_paragraph]
+        # Append empty paragraph after code
+        empty_para = ParagraphBlock(rich_text=[])
+        return [code_block, empty_para]
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

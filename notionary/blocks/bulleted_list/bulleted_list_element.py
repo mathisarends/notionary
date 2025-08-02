@@ -1,10 +1,11 @@
 import re
-from typing import Any, Optional, List
+from typing import Optional
 
-from notionary.blocks import NotionBlockElement, NotionBlockResult
+from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import Block, RichTextObject
+from notionary.blocks.shared.models import Block
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
+from notionary.models.notion_block_response import BulletedListItemBlock
 
 
 class BulletedListElement(NotionBlockElement):
@@ -25,17 +26,22 @@ class BulletedListElement(NotionBlockElement):
         )
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        m = cls.PATTERN.match(text)
+    def markdown_to_notion(cls, text: str) -> BulletedListItemBlock:
+        """
+        Convert a markdown bulleted list item into a Notion BulletedListItemBlock.
+        """
+        m = cls.PATTERN.match(text.strip())
         if not m:
             return None
+
+        # Extract the content part (second capture group)
         content = m.group(2)
-        # parse inline formatting into rich_text objects
+
+        # Parse inline markdown formatting into RichTextObject list
         rich_text = TextInlineFormatter.parse_inline_formatting(content)
-        return {
-            "type": "bulleted_list_item",
-            "bulleted_list_item": {"rich_text": rich_text, "color": "default"},
-        }
+
+        # Return a properly typed Notion block
+        return BulletedListItemBlock(rich_text=rich_text, color="default")
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

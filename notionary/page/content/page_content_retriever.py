@@ -24,7 +24,7 @@ class PageContentRetriever(LoggingMixin):
         blocks = await self.client.get_blocks_by_page_id_recursively(
             page_id=self.page_id
         )
-        
+
         return self._convert_blocks_to_markdown(blocks, indent_level=0)
 
     def _convert_blocks_to_markdown(

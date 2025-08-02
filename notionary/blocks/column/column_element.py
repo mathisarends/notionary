@@ -7,7 +7,7 @@ from notionary.blocks import (
     ElementPromptBuilder,
     NotionBlockResult,
 )
-from notionary.blocks.shared.models import Block
+from notionary.blocks.shared.models import Block, ColumnListBlock
 
 
 class ColumnElement(NotionBlockElement):
@@ -45,33 +45,32 @@ class ColumnElement(NotionBlockElement):
         """
         cls._converter_callback = callback
 
-    @staticmethod
-    def match_markdown(text: str) -> bool:
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
         """Check if text starts a columns block."""
-        return bool(ColumnElement.COLUMNS_START.match(text.strip()))
+        return bool(cls.COLUMNS_START.match(text.strip()))
 
-    @staticmethod
-    def match_notion(block: Block) -> bool:
+    @classmethod
+    def match_notion(cls, block: Block) -> bool:
         """Check if block is a Notion column_list."""
         return block.type == "column_list"
 
-    @staticmethod
-    def markdown_to_notion(text: str) -> NotionBlockResult:
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> ColumnListBlock:
         """
-        Convert markdown column syntax to Notion column blocks.
+        Convert markdown column syntax to Notion ColumnListBlock.
 
-        Note: This only processes the first line (columns start).
-        The full column content needs to be processed separately.
+        Note: Only detects the start of a column list. Child columns
+        will be populated by the column processor later.
         """
-        if not ColumnElement.COLUMNS_START.match(text.strip()):
+        if not cls.COLUMNS_START.match(text.strip()):
             return None
 
-        # Create an empty column_list block
-        # Child columns will be added by the column processor
-        return [{"type": "column_list", "column_list": {"children": []}}]
+        # Return a ColumnListBlock with no children; processor will fill them
+        return ColumnListBlock(children=[])
 
-    @staticmethod
-    def notion_to_markdown(block: Block) -> Optional[str]:
+    @classmethod
+    def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion column_list block to markdown column syntax."""
         if block.type != "column_list":
             return None
@@ -101,8 +100,8 @@ class ColumnElement(NotionBlockElement):
 
         return "\n".join(result)
 
-    @staticmethod
-    def is_multiline() -> bool:
+    @classmethod
+    def is_multiline(cls) -> bool:
         """Column blocks span multiple lines."""
         return True
 

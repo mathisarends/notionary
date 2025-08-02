@@ -8,6 +8,7 @@ from notionary.models.notion_database_response import (
     NotionQueryDatabaseResponse,
 )
 
+
 class NotionDatabaseClient(BaseNotionClient):
     """
     Specialized Notion client for database operations.

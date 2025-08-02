@@ -3,11 +3,11 @@ from typing import Optional, Tuple, Callable, Any
 
 from notionary.blocks import (
     NotionBlockElement,
-    NotionBlockResult,
     ElementPromptContent,
     ElementPromptBuilder,
 )
-from notionary.blocks.shared.models import Block, RichTextObject
+from notionary.blocks.shared.models import Block, RichTextObject, ToggleBlock
+from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
 class ToggleElement(NotionBlockElement):
@@ -31,23 +31,17 @@ class ToggleElement(NotionBlockElement):
         return block.type == "toggle"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        """Convert markdown toggle line to Notion toggle block."""
-        toggle_match = ToggleElement.TOGGLE_PATTERN.match(text.strip())
-        if not toggle_match:
+    def markdown_to_notion(cls, text: str) -> ToggleBlock | None:
+        """Convert markdown toggle line to Notion ToggleBlock or None if no match."""
+        m = cls.TOGGLE_PATTERN.match(text.strip())
+        if not m:
             return None
 
-        # Extract toggle title
-        title = toggle_match.group(1)
+        title = m.group(1).strip()
 
-        return {
-            "type": "toggle",
-            "toggle": {
-                "rich_text": [{"type": "text", "text": {"content": title}}],
-                "color": "default",
-                "children": [],
-            },
-        }
+        rich_text = TextInlineFormatter.parse_inline_formatting(title)
+
+        return ToggleBlock(rich_text=rich_text, color="default", children=[])
 
     @classmethod
     def extract_nested_content(

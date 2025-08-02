@@ -3,6 +3,7 @@ from typing import Any, Optional, Set, Type
 
 from notionary.blocks import NotionBlockElement
 from notionary.blocks.shared.models import Block
+from notionary.blocks.shared.notion_block_element import BlockContentResult
 from notionary.page.markdown_syntax_prompt_generator import (
     MarkdownSyntaxPromptGenerator,
 )
@@ -80,7 +81,7 @@ class BlockRegistry:
                 return element
         return None
 
-    def markdown_to_notion(self, text: str) -> Optional[dict[str, Any]]:
+    def markdown_to_notion(self, text: str) -> BlockContentResult:
         """Convert markdown to Notion block using registered elements."""
         handler = self.find_markdown_handler(text)
 

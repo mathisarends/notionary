@@ -1,9 +1,10 @@
 import re
 from typing import Optional, List
 
-from notionary.blocks import NotionBlockElement, NotionBlockResult
+from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import Block
+from notionary.blocks.shared.models import Block, DividerBlock, ParagraphBlock
+from notionary.blocks.shared.notion_block_element import BlockContentResult
 
 
 class DividerElement(NotionBlockElement):
@@ -26,13 +27,14 @@ class DividerElement(NotionBlockElement):
         return block.type == "divider" and block.divider is not None
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        if not cls.match_markdown(text):
-            return None
-        # produce an empty paragraph before the divider for separation
-        empty_para = {"type": "paragraph", "paragraph": {"rich_text": []}}
-        divider_block = {"type": "divider", "divider": {}}
-        return [empty_para, divider_block]
+    def markdown_to_notion(cls, text: str) -> list[BlockContentResult]:
+        """Convert markdown horizontal rule to Notion divider, with preceding empty paragraph."""
+        if not cls.PATTERN.match(text.strip()):
+            return []
+
+        empty_para = ParagraphBlock(rich_text=[])
+        divider = DividerBlock()
+        return [empty_para, divider]
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

@@ -7,7 +7,13 @@ from notionary.blocks import (
     ElementPromptContent,
     ElementPromptBuilder,
 )
-from notionary.blocks.shared.models import Block
+from notionary.blocks.shared.models import (
+    Block,
+    ParagraphBlock,
+    RichTextObject,
+    TableBlock,
+    TableRowBlock,
+)
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -54,40 +60,59 @@ class TableElement(NotionBlockElement):
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        """Convert markdown table to Notion table block."""
-        if not TableElement.match_markdown(text):
+        """Convert markdown table to Notion TableBlock with rows, followed by an empty paragraph."""
+        # Only process if it's a markdown table
+        if not cls.PATTERN.match(text.strip()):
             return None
 
         lines = text.split("\n")
-
-        table_start = TableElement._find_table_start(lines)
-        if table_start is None:
+        # Find header separator (e.g., | --- | --- |)
+        try:
+            sep_index = next(
+                i
+                for i, line in enumerate(lines)
+                if re.match(r"^\|?(?:\s*-+\s*\|)+$", line)
+            )
+        except StopIteration:
             return None
 
-        table_end = TableElement._find_table_end(lines, table_start)
-        table_lines = lines[table_start:table_end]
+        header_line = lines[0]
+        body_lines = lines[sep_index + 1 :]
 
-        rows = TableElement._extract_table_rows(table_lines)
-        if not rows:
+        headers = [cell.strip() for cell in header_line.strip("|").split("|")]
+        rows_data = []  # type: List[List[str]]
+        for line in body_lines:
+            if not line.strip().startswith("|"):
+                break
+            cells = [cell.strip() for cell in line.strip("|").split("|")]
+            rows_data.append(cells)
+
+        if not rows_data:
             return None
 
-        column_count = len(rows[0])
-        TableElement._normalize_row_lengths(rows, column_count)
+        # Build TableBlock
+        col_count = len(headers)
+        table_block = TableBlock(
+            table_width=col_count, has_column_header=True, has_row_header=False
+        )
+        # Create row children
+        table_block.children = []
+        # First header row
+        header_row = TableRowBlock(
+            cells=[[RichTextObject.from_plain_text(h)] for h in headers]
+        )
+        table_block.children.append(header_row)
+        # Body rows
+        for row in rows_data:
+            # normalize row length
+            if len(row) < col_count:
+                row += [""] * (col_count - len(row))
+            row_cells = [[RichTextObject.from_plain_text(cell)] for cell in row]
+            table_block.children.append(TableRowBlock(cells=row_cells))
 
-        table_block = {
-            "type": "table",
-            "table": {
-                "table_width": column_count,
-                "has_column_header": True,
-                "has_row_header": False,
-                "children": TableElement._create_table_rows(rows),
-            },
-        }
-
-        # Leerer Paragraph nach der Tabelle
-        empty_paragraph = {"type": "paragraph", "paragraph": {"rich_text": []}}
-
-        return [table_block, empty_paragraph]
+        # Empty paragraph after table
+        empty_para = ParagraphBlock(rich_text=[])
+        return [table_block, empty_para]
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

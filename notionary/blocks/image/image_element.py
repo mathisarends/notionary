@@ -1,9 +1,17 @@
 import re
-from typing import Any, Optional, List
+from typing import Any, Optional, list
 
-from notionary.blocks import NotionBlockElement, NotionBlockResult
+from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import Block, RichTextObject, FileObject
+from notionary.blocks.shared.models import (
+    Block,
+    ExternalFile,
+    ImageBlock,
+    ParagraphBlock,
+    RichTextObject,
+    FileObject,
+)
+from notionary.blocks.shared.notion_block_element import BlockContentResult
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -32,22 +40,23 @@ class ImageElement(NotionBlockElement):
         return block.type == "image" and block.image is not None
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
+    def markdown_to_notion(cls, text: str) -> BlockContentResult:
+        """Convert markdown image syntax to Notion ImageBlock followed by an empty paragraph."""
         m = cls.PATTERN.match(text.strip())
         if not m:
             return None
-        url, caption = m.group(1), m.group(2)
-        # build image object
-        img_data: dict[str, Any] = {"type": "external", "external": {"url": url}}
-        if caption:
-            rt = RichTextObject.from_plain_text(caption)
-            img_data["caption"] = [rt.model_dump()]
-        else:
-            img_data["caption"] = []
-        block_out = {"type": "image", "image": img_data}
-        # add empty paragraph for spacing
-        empty_para = {"type": "paragraph", "paragraph": {"rich_text": []}}
-        return [block_out, empty_para]
+
+        url, caption_text = m.group(1), m.group(2) or ""
+        # Build ImageBlock
+        image_block = ImageBlock(
+            type="external", external=ExternalFile(url=url), caption=[]
+        )
+        if caption_text.strip():
+            rt = RichTextObject.from_plain_text(caption_text.strip())
+            image_block.caption = [rt]
+
+        empty_para = ParagraphBlock(rich_text=[])
+        return [image_block, empty_para]
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
@@ -66,7 +75,7 @@ class ImageElement(NotionBlockElement):
         if not captions:
             return f"[image]({url})"
         # compile caption text
-        parts: List[str] = []
+        parts: list[str] = []
         for rt in captions:
             # use plain_text if available, otherwise formatted
             parts.append(

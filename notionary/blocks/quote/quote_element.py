@@ -3,7 +3,7 @@ from typing import Any, Optional, List
 
 from notionary.blocks import NotionBlockElement, NotionBlockResult
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import Block, RichTextObject
+from notionary.blocks.shared.models import Block, QuoteBlock, RichTextObject
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -29,16 +29,21 @@ class QuoteElement(NotionBlockElement):
         return block.type == "quote" and block.quote is not None
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
+    def markdown_to_notion(cls, text: str) -> QuoteBlock | None:
+        """Convert markdown quote to Notion QuoteBlock."""
         m = cls.PATTERN.match(text.strip())
         if not m:
             return None
+
         content = m.group(1).strip()
         if not content:
             return None
-        # parse inline formatting into RichTextObjects
-        rich_list = TextInlineFormatter.parse_inline_formatting(content)
-        return {"type": "quote", "quote": {"rich_text": rich_list, "color": "default"}}
+
+        # Parse inline formatting into rich text objects
+        rich_text = TextInlineFormatter.parse_inline_formatting(content)
+
+        # Return a typed QuoteBlock
+        return QuoteBlock(rich_text=rich_text, color="default")
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

@@ -222,12 +222,6 @@ class NotionPage(LoggingMixin):
     async def replace_content(self, markdown: str) -> bool:
         """
         Replace the entire page content with new markdown content.
-
-        Args:
-            markdown: The new markdown content.
-
-        Returns:
-            str: Status or confirmation message.
         """
         clear_result = await self._page_content_writer.clear_page_content()
         if not clear_result:

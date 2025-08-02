@@ -7,7 +7,7 @@ from notionary.blocks import (
     NotionBlockElement,
     NotionBlockResult,
 )
-from notionary.blocks.shared.models import Block
+from notionary.blocks.shared.models import Block, HeadingBlock
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -38,24 +38,26 @@ class ToggleableHeadingElement(NotionBlockElement):
         return getattr(heading_content, "is_toggleable", False) is True
 
     @staticmethod
-    def markdown_to_notion(text: str) -> NotionBlockResult:
-        """Convert markdown collapsible heading to Notion toggleable heading block."""
-        header_match = ToggleableHeadingElement.PATTERN.match(text)
-        if not header_match:
+    def markdown_to_notion(text: str) -> HeadingBlock | None:
+        """Convert markdown collapsible heading to a toggleable Notion HeadingBlock."""
+        m = ToggleableHeadingElement.PATTERN.match(text.strip())
+        if not m:
             return None
 
-        level = len(header_match.group(1))
-        content = header_match.group(2)
+        level = len(m.group(1))
 
-        return {
-            "type": f"heading_{level}",
-            f"heading_{level}": {
-                "rich_text": TextInlineFormatter.parse_inline_formatting(content),
-                "is_toggleable": True,
-                "color": "default",
-                "children": [],  # Will be populated with nested content if needed
-            },
-        }
+        if level < 1 or level > 3:
+            return None
+
+        content = m.group(2).strip()
+        if not content:
+            return None
+
+        rich_text = TextInlineFormatter.parse_inline_formatting(content)
+
+        return HeadingBlock(
+            rich_text=rich_text, color="default", is_toggleable=True, children=[]
+        )
 
     @staticmethod
     def notion_to_markdown(block: Block) -> Optional[str]:

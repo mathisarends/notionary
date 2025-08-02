@@ -5,6 +5,7 @@ from notionary.blocks import NotionBlockElement, NotionBlockResult
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
 from notionary.blocks.shared.models import (
     Block,
+    EmbedBlock,
     RichTextObject,
     ExternalFile,
     NotionHostedFile,
@@ -39,18 +40,21 @@ class EmbedElement(NotionBlockElement):
         return block.type == "embed" and block.embed is not None
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
+    def markdown_to_notion(cls, text: str) -> EmbedBlock | None:
+        """Convert markdown embed syntax to Notion EmbedBlock."""
         m = cls.PATTERN.match(text.strip())
         if not m:
             return None
-        url, caption = m.group(1), m.group(2)
-        data: dict[str, Any] = {"url": url}
-        if caption:
-            rt = RichTextObject.from_plain_text(caption)
-            data["caption"] = [rt.model_dump()]
-        else:
-            data["caption"] = []
-        return {"type": "embed", "embed": data}
+
+        url, caption_text = m.group(1), m.group(2) or ""
+
+        # Build EmbedBlock
+        embed_block = EmbedBlock(url=url, caption=[])
+        if caption_text.strip():
+            rt = RichTextObject.from_plain_text(caption_text.strip())
+            embed_block.caption = [rt]
+
+        return embed_block
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

@@ -3,7 +3,7 @@ from typing import Optional
 
 from notionary.blocks import NotionBlockElement, NotionBlockResult
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import Block
+from notionary.blocks.shared.models import Block, HeadingBlock
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -26,25 +26,23 @@ class HeadingElement(NotionBlockElement):
         )
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        m = cls.PATTERN.match(text)
+    def markdown_to_notion(cls, text: str) -> HeadingBlock | None:
+        """Convert markdown headings (#, ##, ###) to Notion HeadingBlock."""
+        m = cls.PATTERN.match(text.strip())
         if not m:
             return None
 
         level = len(m.group(1))
+        if level < 1 or level > 3:
+            return None
+
         content = m.group(2).strip()
         if not content:
             return None
 
-        field = f"heading_{level}"
-        return [
-            {
-                "type": field,
-                field: {
-                    "rich_text": TextInlineFormatter.parse_inline_formatting(content)
-                },
-            }
-        ]
+        rich_text = TextInlineFormatter.parse_inline_formatting(content)
+        # Map markdown heading levels to Notion HeadingBlock
+        return HeadingBlock(rich_text=rich_text, color="default", is_toggleable=False)
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

@@ -3,7 +3,7 @@ from typing import Any, Optional, List
 
 from notionary.blocks import NotionBlockElement, NotionBlockResult
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import Block
+from notionary.blocks.shared.models import Block, NumberedListItemBlock
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -23,22 +23,22 @@ class NumberedListElement(NotionBlockElement):
         )
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        m = cls.PATTERN.match(text)
+    def markdown_to_notion(cls, text: str) -> NumberedListItemBlock | None:
+        """Convert markdown numbered list item to Notion NumberedListItemBlock."""
+        m = cls.PATTERN.match(text.strip())
         if not m:
             return None
+
         content = m.group(2)
-        rich = TextInlineFormatter.parse_inline_formatting(content)
-        return {
-            "type": "numbered_list_item",
-            "numbered_list_item": {"rich_text": rich, "color": "default"},
-        }
+        rich_text = TextInlineFormatter.parse_inline_formatting(content)
+
+        return NumberedListItemBlock(rich_text=rich_text, color="default")
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type != "numbered_list_item" or block.numbered_list_item is None:
             return None
-        
+
         rich = block.numbered_list_item.rich_text
         content = TextInlineFormatter.extract_text_with_formatting(
             [rt.model_dump() for rt in rich]

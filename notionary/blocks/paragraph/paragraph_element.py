@@ -1,8 +1,8 @@
 from typing import Optional
 
-from notionary.blocks import NotionBlockElement, NotionBlockResult
+from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import Block
+from notionary.blocks.shared.models import Block, ParagraphBlock
 from notionary.blocks.shared.text_inline_formatter import TextInlineFormatter
 
 
@@ -20,11 +20,15 @@ class ParagraphElement(NotionBlockElement):
         return block.type == "paragraph" and block.paragraph is not None
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
+    def markdown_to_notion(cls, text: str) -> ParagraphBlock | None:
+        """Convert markdown text to a Notion ParagraphBlock."""
+        # Skip empty text
         if not text.strip():
             return None
+
         rich = TextInlineFormatter.parse_inline_formatting(text)
-        return {"type": "paragraph", "paragraph": {"rich_text": rich}}
+
+        return ParagraphBlock(rich_text=rich, color="default")
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

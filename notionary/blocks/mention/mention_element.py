@@ -5,9 +5,8 @@ from notionary.blocks import NotionBlockElement
 from notionary.blocks import (
     ElementPromptContent,
     ElementPromptBuilder,
-    NotionBlockResult,
 )
-from notionary.blocks.shared.models import Block, RichTextObject
+from notionary.blocks.shared.models import Block, ParagraphBlock, RichTextObject
 
 
 class MentionElement(NotionBlockElement):
@@ -92,19 +91,19 @@ class MentionElement(NotionBlockElement):
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> NotionBlockResult:
-        """Convert markdown text with mentions to a Notion paragraph block."""
-        if not MentionElement.match_markdown(text):
+        """Convert markdown text with mentions to a Notion ParagraphBlock."""
+        # Only convert if this element matches the markdown
+        if not cls.match_markdown(text):
             return None
 
-        rich_text = MentionElement._process_markdown_with_mentions(text)
+        # Process the markdown to produce rich_text items including mentions
+        rich_text = cls._process_markdown_with_mentions(text)
 
-        return {
-            "type": "paragraph",
-            "paragraph": {"rich_text": rich_text, "color": "default"},
-        }
+        # Return a typed ParagraphBlock
+        return ParagraphBlock(rich_text=rich_text, color="default")
 
     @classmethod
-    def _process_markdown_with_mentions(cls, text: str) -> List[Dict[str, Any]]:
+    def _process_markdown_with_mentions(cls, text: str) -> list[dict[str, Any]]:
         """Convert markdown mentions to Notion rich_text format."""
         mentions = []
 

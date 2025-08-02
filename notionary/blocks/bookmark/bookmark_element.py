@@ -1,9 +1,10 @@
 import re
-from typing import Optional, List
+from typing import Optional
 
-from notionary.blocks import NotionBlockElement, NotionBlockResult
+from notionary.blocks import NotionBlockElement
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import RichTextObject, Block  # Import Block model
+from notionary.blocks.shared.models import RichTextObject, Block
+from notionary.models.notion_block_response import BookmarkBlock
 
 
 class BookmarkElement(NotionBlockElement):
@@ -34,27 +35,30 @@ class BookmarkElement(NotionBlockElement):
         return block.type == "bookmark" and block.bookmark is not None
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> NotionBlockResult:
+    def markdown_to_notion(cls, text: str) -> BookmarkBlock:
+        """
+        Convert a markdown bookmark into a Notion BookmarkBlock.
+        """
         m = cls.PATTERN.match(text.strip())
         if not m:
             return None
 
         url, title, description = m.group(1), m.group(2), m.group(3)
-        data = {"url": url}
 
-        # build caption
-        parts: List[str] = []
+        # Build caption texts
+        parts: list[str] = []
         if title:
             parts.append(title)
         if description:
             parts.append(description)
-        if parts:
-            caption = RichTextObject.from_plain_text(" - ".join(parts))
-            data["caption"] = [caption.model_dump()]
-        else:
-            data["caption"] = []
 
-        return [{"type": "bookmark", "bookmark": data}]
+        caption: list[RichTextObject] = []
+        if parts:
+            joined = " – ".join(parts)
+            caption_obj = RichTextObject.from_plain_text(joined)
+            caption = [caption_obj]
+
+        return BookmarkBlock(url=url, caption=caption)
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
@@ -84,7 +88,7 @@ class BookmarkElement(NotionBlockElement):
         return False
 
     @classmethod
-    def _extract_text(cls, rich: List[dict]) -> str:
+    def _extract_text(cls, rich: list[dict]) -> str:
         result = ""
         for obj in rich:
             if obj.get("type") == "text":

@@ -3,7 +3,15 @@ from typing import Any, Optional, List
 
 from notionary.blocks import NotionBlockElement, NotionBlockResult
 from notionary.blocks import ElementPromptContent, ElementPromptBuilder
-from notionary.blocks.shared.models import Block, FileObject, RichTextObject
+from notionary.blocks.shared.models import (
+    Block,
+    ExternalFile,
+    FileBlock,
+    FileObject,
+    ParagraphBlock,
+    RichTextObject,
+)
+from notionary.blocks.shared.notion_block_element import BlockContentResult
 
 
 class DocumentElement(NotionBlockElement):
@@ -35,21 +43,24 @@ class DocumentElement(NotionBlockElement):
         return block.type == "file" and block.file is not None
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> Optional[List[Any]]:
+    def markdown_to_notion(cls, text: str) -> list[BlockContentResult] | None:
+        """Convert markdown file link to Notion FileBlock followed by an empty paragraph."""
         m = cls.PATTERN.match(text.strip())
         if not m:
             return None
-        url, caption = m.group(1), m.group(2) or ""
 
-        file_data: dict[str, Any] = {"type": "external", "external": {"url": url}}
+        caption_text, url, title = m.group(1), m.group(2), m.group(3)
+        caption = title or caption_text or ""
+
+        # Build FileBlock
+        file_block = FileBlock(
+            type="external", external=ExternalFile(url=url), caption=[]
+        )
         if caption:
             rt = RichTextObject.from_plain_text(caption)
-            file_data["caption"] = [rt.model_dump()]
-        else:
-            file_data["caption"] = []
+            file_block.caption = [rt]
 
-        file_block = {"type": "file", "file": file_data}
-        empty_para = {"type": "paragraph", "paragraph": {"rich_text": []}}
+        empty_para = ParagraphBlock(rich_text=[])
         return [file_block, empty_para]
 
     @classmethod

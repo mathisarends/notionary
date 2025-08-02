@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Literal, Optional, Union, Any, Dict
 from pydantic import BaseModel
 
@@ -424,6 +423,7 @@ class CodeBlock(BaseModel):
     caption: list[RichTextObject] = []
     rich_text: list[RichTextObject]
     language: CodeLanguage = "plain text"
+    caption: Optional[list[RichTextObject]] = None
 
 
 class ColumnListBlock(BaseModel):
@@ -566,6 +566,40 @@ class UnsupportedBlock(BaseModel):
 # ============================================================================
 # MAIN BLOCK MODEL
 # ============================================================================
+
+BlockContent = Union[
+    AudioBlock,
+    BookmarkBlock,
+    BreadcrumbBlock,
+    BulletedListItemBlock,
+    CalloutBlock,
+    ChildDatabaseBlock,
+    ChildPageBlock,
+    CodeBlock,
+    ColumnListBlock,
+    ColumnBlock,
+    DividerBlock,
+    EmbedBlock,
+    EquationBlock,
+    FileBlock,
+    HeadingBlock,
+    ImageBlock,
+    LinkPreviewBlock,
+    LinkToPageBlock,
+    NumberedListItemBlock,
+    ParagraphBlock,
+    PdfBlock,
+    QuoteBlock,
+    SyncedBlock,
+    TableBlock,
+    TableRowBlock,
+    TableOfContentsBlock,
+    TemplateBlock,
+    ToDoBlock,
+    ToggleBlock,
+    VideoBlock,
+    UnsupportedBlock,
+]
 
 
 class Block(BaseModel):

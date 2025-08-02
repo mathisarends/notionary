@@ -24,16 +24,17 @@ class PageContentWriter(LoggingMixin):
         self._markdown_to_notion_converter = MarkdownToNotionConverter(
             block_registry=block_registry
         )
-        
+
         self._content_retriever = PageContentRetriever(
-            page_id=page_id,
-            block_registry=block_registry
+            page_id=page_id, block_registry=block_registry
         )
 
-    async def append_markdown(self, markdown_text: str, append_divider: bool = True) -> Optional[str]:
+    async def append_markdown(
+        self, markdown_text: str, append_divider: bool = True
+    ) -> Optional[str]:
         """
         Append markdown text to a Notion page, automatically handling content length limits.
-        
+
         Returns:
             str: The processed markdown content that was appended (None if failed)
         """
@@ -49,7 +50,7 @@ class PageContentWriter(LoggingMixin):
             result = await self._block_client.append_block_children(
                 block_id=self.page_id, children=fixed_blocks
             )
-            
+
             if result:
                 self.logger.debug("Successfully appended %d blocks", len(fixed_blocks))
                 return processed_markdown  # Return processed input since conversion back would fail
@@ -87,7 +88,7 @@ class PageContentWriter(LoggingMixin):
                 self.logger.warning("Some blocks could not be deleted")
 
             return deleted_content if deleted_content else None
-            
+
         except Exception as e:
             self.logger.error("Error clearing page content: %s", str(e))
             return None
