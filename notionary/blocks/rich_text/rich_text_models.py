@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TextAnnotations(BaseModel):
@@ -25,16 +25,25 @@ class TextContent(BaseModel):
 class RichTextObject(BaseModel):
     type: str = "text"
     text: TextContent
-    annotations: TextAnnotations
+    annotations: Optional[TextAnnotations] = None
     plain_text: str
     href: Optional[str] = None
 
     @classmethod
     def from_plain_text(cls, content: str, **kwargs) -> RichTextObject:
-        """Create rich text object from plain text with optional formatting."""
-        annotations = TextAnnotations(**kwargs)
+        annotations = TextAnnotations(**kwargs) if kwargs else None
         text_content = TextContent(content=content, link=None)
-
         return cls(
-            text=text_content, annotations=annotations, plain_text=content, href=None
+            text=text_content, 
+            annotations=annotations, 
+            plain_text=content, 
+            href=None
+        )
+
+    @classmethod
+    def for_code_block(cls, content: str) -> RichTextObject:
+        return cls(
+            text=TextContent(content=content),
+            plain_text=content, 
+            href=None
         )
