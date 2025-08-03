@@ -1,8 +1,10 @@
 from __future__ import annotations
 from typing import Optional, Set, Type, TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import Block, BlockCreateResult
 
-from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.page.markdown_syntax_prompt_generator import (
     MarkdownSyntaxPromptGenerator,
 )
@@ -14,9 +16,6 @@ from notionary.telemetry import (
     MarkdownToNotionConversionEvent,
     NotionToMarkdownConversionEvent,
 )
-
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block
 
 
 class BlockRegistry:
@@ -39,7 +38,7 @@ class BlockRegistry:
         self.telemetry = ProductTelemetry()
 
     @classmethod
-    def create_registry(cls) -> BlockRegistry:
+    def create_registry(cls) -> "BlockRegistry":
         """
         Create a registry with all standard elements in recommended order.
         """
@@ -83,7 +82,7 @@ class BlockRegistry:
                 return element
         return None
 
-    def markdown_to_notion(self, text: str) -> BlockCreateResult:
+    def markdown_to_notion(self, text: str) -> "BlockCreateResult":
         """Convert markdown to Notion block using registered elements."""
         handler = self.find_markdown_handler(text)
 
@@ -97,7 +96,7 @@ class BlockRegistry:
             return handler.markdown_to_notion(text)
         return None
 
-    def notion_to_markdown(self, block: Block) -> Optional[str]:
+    def notion_to_markdown(self, block: "Block") -> Optional[str]:
         """Convert Notion block to markdown using registered elements."""
         handler = self._find_notion_handler(block)
 
@@ -134,7 +133,9 @@ class BlockRegistry:
 
         return MarkdownSyntaxPromptGenerator.generate_system_prompt(element_classes)
 
-    def _find_notion_handler(self, block: Block) -> Optional[Type[NotionBlockElement]]:
+    def _find_notion_handler(
+        self, block: "Block"
+    ) -> Optional[Type[NotionBlockElement]]:
         """Find an element that can handle the given Notion block."""
         for element in self._elements:
             if element.match_notion(block):

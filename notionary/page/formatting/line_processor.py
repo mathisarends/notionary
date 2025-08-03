@@ -1,11 +1,16 @@
-from dataclasses import dataclass, field
+from __future__ import annotations
 import re
-from typing import Optional
-from notionary.blocks.block_models import BlockCreateRequest
+from typing import Optional, TYPE_CHECKING
+from dataclasses import dataclass, field
+
+
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.column.column_models import CreateColumnBlock, ColumnBlock
 from notionary.page.formatting.block_position import PositionedBlockList
+
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import BlockCreateRequest, BlockCreateResult
 
 
 @dataclass

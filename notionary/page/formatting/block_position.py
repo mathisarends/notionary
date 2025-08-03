@@ -5,6 +5,7 @@ from dataclasses import dataclass
 if TYPE_CHECKING:
     from notionary.blocks.block_models import BlockCreateRequest
 
+
 @dataclass
 class PositionedBlock:
     """A block with its position in the text."""

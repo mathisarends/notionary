@@ -1,12 +1,17 @@
+from __future__ import annotations
 import re
-from typing import Any, Optional, List
+from typing import Any, Optional, TYPE_CHECKING
+
 
 from notionary.blocks.audio.audio_models import AudioBlock, CreateAudioBlock
 from notionary.blocks.block_models import Block
-from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.models.notion_page_response import ExternalFile
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import Block, BlockCreateResult
 
 
 class AudioElement(NotionBlockElement):
@@ -87,7 +92,7 @@ class AudioElement(NotionBlockElement):
         # Extract caption
         captions = audio.caption or []
         if captions:
-            # captions is list of RichTextObject
+            # captionsof RichTextObject
             caption_text = cls._extract_text_content(
                 [rt.model_dump() for rt in captions]
             )
@@ -100,7 +105,7 @@ class AudioElement(NotionBlockElement):
         return any(url.lower().endswith(ext) for ext in cls.SUPPORTED_EXTENSIONS)
 
     @classmethod
-    def _extract_text_content(cls, rich: List[dict[str, Any]]) -> str:
+    def _extract_text_content(cls, rich: dict[str, Any]) -> str:
         text = ""
         for obj in rich:
             if obj.get("type") == "text":

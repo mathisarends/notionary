@@ -1,5 +1,9 @@
+from __future__ import annotations
 import re
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import Block, BlockCreateResult
 
 from notionary.blocks.heading.heading_models import (
     HeadingBlock,
@@ -9,7 +13,7 @@ from notionary.blocks.heading.heading_models import (
 )
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 from notionary.blocks.block_models import Block
-from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 

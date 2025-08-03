@@ -1,12 +1,16 @@
+from __future__ import annotations
 import re
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import Block, BlockCreateResult
 
 from notionary.blocks.block_models import (
     Block,
 )
 from notionary.blocks.file.file_element_models import ExternalFile, FileObject
 from notionary.blocks.image_block.image_models import CreateImageBlock, ImageBlock
-from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
     ParagraphBlock,

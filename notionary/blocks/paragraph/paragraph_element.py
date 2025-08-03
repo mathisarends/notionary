@@ -1,12 +1,15 @@
-from typing import Optional
+from __future__ import annotations
+from typing import Optional, TYPE_CHECKING
 
-from notionary.blocks.block_models import Block
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import Block, BlockCreateResult
+
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
     ParagraphBlock,
 )
+from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
-from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 

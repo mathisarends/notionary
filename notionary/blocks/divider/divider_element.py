@@ -1,11 +1,13 @@
-import re
-from typing import Optional
+from __future__ import annotations
 
-from notionary.blocks.block_models import (
-    Block,
-)
+import re
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import Block, BlockCreateResult
+
 from notionary.blocks.divider.divider_models import CreateDividerBlock, DividerBlock
-from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
     ParagraphBlock,

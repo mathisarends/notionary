@@ -1,5 +1,7 @@
 from __future__ import annotations
-from typing import Literal, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
+
+from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 if TYPE_CHECKING:
@@ -13,9 +15,7 @@ class ColumnBlock(BaseModel):
 class CreateColumnBlock(BaseModel):
     type: Literal["column"] = "column"
     column: ColumnBlock
-    children: list["BlockCreateRequest"] = Field(
-        default_factory=list
-    )  # STRING QUOTE HIER!
+    children: list[BlockCreateRequest] = Field(default_factory=list)
 
 
 class ColumnListBlock(BaseModel):

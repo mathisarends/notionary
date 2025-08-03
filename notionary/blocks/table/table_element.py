@@ -1,10 +1,11 @@
+from __future__ import annotations
 import re
-from typing import Optional, Any
+from typing import Optional, TYPE_CHECKING
 
-from notionary.blocks.block_models import (
-    Block,
-)
-from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import Block, BlockCreateResult
+
+from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
     ParagraphBlock,

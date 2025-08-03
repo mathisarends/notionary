@@ -1,9 +1,13 @@
-from notionary.blocks.block_models import BlockCreateRequest
-from notionary.blocks.notion_block_element import BlockCreateResult
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.formatting.block_position import PositionedBlockList
 from notionary.page.formatting.line_processor import LineProcessor
 from notionary.page.content.notion_text_length_utils import fix_blocks_content_length
+
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import BlockCreateRequest, BlockCreateResult
 
 
 class MarkdownToNotionConverter:

@@ -1,9 +1,12 @@
+from __future__ import annotations
 import re
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import Block, BlockCreateResult
 
 from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
-from notionary.blocks.block_models import Block
-from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 

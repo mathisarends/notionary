@@ -1,14 +1,17 @@
-from typing import Optional, Union
+from typing import Optional, Union, TYPE_CHECKING
 from abc import ABC
 
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import Block, BlockCreateResult
+
 from notionary.prompts.element_prompt_content import ElementPromptContent
-from notionary.blocks.block_models import Block
+
 
 class NotionBlockElement(ABC):
     """Base class for elements that can be converted between Markdown and Notion."""
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    def markdown_to_notion(cls, text: str) -> "BlockCreateResult":
         """
         Convert markdown to Notion block content.
 
@@ -19,7 +22,7 @@ class NotionBlockElement(ABC):
         """
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    def notion_to_markdown(cls, block: "Block") -> Optional[str]:
         """Convert Notion block to markdown."""
 
     @classmethod
@@ -28,11 +31,10 @@ class NotionBlockElement(ABC):
         return bool(cls.markdown_to_notion(text))  # Now calls the class's version
 
     @classmethod
-    def match_notion(cls, block: Block) -> bool:
+    def match_notion(cls, block: "Block") -> bool:
         """Check if this element can handle the given Notion block."""
         return bool(cls.notion_to_markdown(block))  # Now calls the class's version
 
-    # TODO: Das hier können wir durch das vorhandensein von children wegrationalisieren?
     @classmethod
     def is_multiline(cls) -> bool:
         return False
