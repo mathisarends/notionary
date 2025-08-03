@@ -9,7 +9,6 @@ from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.table.table_models import CreateTableRowBlock, TableRowBlock
 from notionary.page.formatting.block_position import PositionedBlockList
 from notionary.page.content.notion_text_length_utils import fix_blocks_content_length
-from notionary.page.formatting.caption_handler import CaptionHandler
 from notionary.page.formatting.child_content_handler import ChildContentHandler
 from notionary.page.formatting.code_block_handler import CodeBlockHandler
 from notionary.page.formatting.line_handler import (
@@ -34,15 +33,14 @@ class MarkdownToNotionConverter:
         """Setup the chain of responsibility for line processing."""
         # Create handlers
         code_handler = CodeBlockHandler()
-        caption_handler = CaptionHandler()
         table_handler = TableHandler()
         child_handler = ChildContentHandler()
         regular_handler = RegularLineHandler()
 
         # Chain them together
-        code_handler.set_next(caption_handler).set_next(table_handler).set_next(
-            child_handler
-        ).set_next(regular_handler)
+        code_handler.set_next(table_handler).set_next(child_handler).set_next(
+            regular_handler
+        )
 
         self._handler_chain = code_handler
 

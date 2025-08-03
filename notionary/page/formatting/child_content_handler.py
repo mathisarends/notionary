@@ -15,14 +15,18 @@ class ChildContentHandler(LineHandler):
         child_prefix = current_parent.child_prefix
 
         # Standard | prefix logic for most elements
-        if child_prefix == "|":
-            child_pattern = re.compile(rf"^{re.escape(child_prefix)}\s?(.*?)$")
-            match = child_pattern.match(context.line)
-            if match:
-                child_content = match.group(1)
-                current_parent.add_child_line(child_content)
-                context.was_processed = True
-                context.should_continue = True
+        if child_prefix != "|":
+            return
+
+        child_pattern = re.compile(rf"^{re.escape(child_prefix)}\s?(.*?)$")
+        match = child_pattern.match(context.line)
+        if not match:
+            return
+
+        child_content = match.group(1)
+        current_parent.add_child_line(child_content)
+        context.was_processed = True
+        context.should_continue = True
 
     def _matches_child_pattern(self, context: LineProcessingContext) -> bool:
         """Check if line matches the child pattern for current parent."""

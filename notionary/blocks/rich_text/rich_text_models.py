@@ -34,16 +34,9 @@ class RichTextObject(BaseModel):
         annotations = TextAnnotations(**kwargs) if kwargs else None
         text_content = TextContent(content=content, link=None)
         return cls(
-            text=text_content, 
-            annotations=annotations, 
-            plain_text=content, 
-            href=None
+            text=text_content, annotations=annotations, plain_text=content, href=None
         )
 
     @classmethod
     def for_code_block(cls, content: str) -> RichTextObject:
-        return cls(
-            text=TextContent(content=content),
-            plain_text=content, 
-            href=None
-        )
+        return cls(text=TextContent(content=content), plain_text=content, href=None)

@@ -23,8 +23,6 @@ async def main():
     | | ## Left Column  
     | | This is content in the left column.
     | | 
-    | | ### Mitarbeiter Tabelle
-    | | 
     | | | Name   | Alter | Stadt   | Abteilung    |
     | | |--------|-------|---------|--------------|
     | | | Alice  | 30    | Berlin  | Engineering  |
@@ -44,6 +42,7 @@ async def main():
     | |     print("Hello from the right column!")
     | |     return "Success"
     | | ```
+    | | Caption: Schleife in Python
     | |
     | | > This is a quote block in the right column.
     | | > It can span multiple lines.
