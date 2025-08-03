@@ -8,6 +8,7 @@ from notionary.blocks.bulleted_list.bulleted_list_element import BulletedListEle
 from notionary.blocks.callout.callout_element import CalloutElement
 from notionary.blocks.code.code_element import CodeElement
 from notionary.blocks.column.column_element import ColumnElement
+from notionary.blocks.column.column_list_element import ColumnListElement
 from notionary.blocks.divider.divider_element import DividerElement
 from notionary.blocks.embed.embed_element import EmbedElement
 from notionary.blocks.heading.heading_element import HeadingElement
@@ -150,9 +151,11 @@ class BlockRegistryBuilder:
         return self._add_element(ToggleableHeadingElement)
 
     def with_columns(self) -> Self:
-        """Add support for column elements."""
-        return self._add_element(ColumnElement)
-
+        """Add support for column and column list elements (must be registered together)."""
+        self._add_element(ColumnListElement)
+        self._add_element(ColumnElement)
+        return self
+    
     def build(self) -> BlockRegistry:
         """
         Build and return the configured BlockRegistry instance.

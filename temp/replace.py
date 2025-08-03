@@ -19,31 +19,35 @@ async def main():
     | Noch mehr Details
 
     ::: columns
-    ::: column
-    ## Left Column
-    This is content in the left column.
-    - First point
-    - Second point
-
-    ```python
-    def hello():
-        print('Hello from inside a column!')
-    ```
-
-    | Name   | Age | City     |
-    | ------ | --- | -------- |
-    | Alice  | 30  | Berlin   |
-    | Bob    | 25  | Hamburg  |
-    | Carol  | 28  | Munich   |
-
-    :::
-    ::: column
-    ## Right Column
-    This is content in the right column.
-    - Another point
-    - Final point
-    :::
-    :::
+    | ::: column
+    | | ## Left Column  
+    | | This is content in the left column.
+    | | - First point
+    | | - Second point
+    | |
+    | | ### Employee Data
+    | | | Name   | Age | City     | Department |
+    | | | ------ | --- | -------- | ---------- |
+    | | | Alice  | 30  | Berlin   | Engineering|
+    | | | Bob    | 25  | Hamburg  | Marketing  |
+    | | | Carol  | 28  | Munich   | Design     |
+    | | | David  | 32  | Cologne  | Sales      |
+    | |
+    | | Some text after the table.
+    | ::: column
+    | | ## Right Column
+    | | This is content in the right column.
+    | | - Another point
+    | | - Final point
+    | |
+    | | ```python
+    | | def hello_world():
+    | |     print("Hello from the right column!")
+    | |     return "Success"
+    | | ```
+    | |
+    | | > This is a quote block in the right column.
+    | | > It can span multiple lines.
 
     Regular paragraph after everything.
     """

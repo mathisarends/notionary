@@ -7,7 +7,7 @@ from notionary.page.formatting.line_processor import LineProcessor
 from notionary.page.content.notion_text_length_utils import fix_blocks_content_length
 
 if TYPE_CHECKING:
-    from notionary.blocks.block_models import BlockCreateRequest, BlockCreateResult
+    from notionary.blocks.block_models import BlockCreateRequest
 
 
 class MarkdownToNotionConverter:
@@ -47,10 +47,3 @@ class MarkdownToNotionConverter:
             all_positioned_blocks.extend(element_blocks)
 
         return all_positioned_blocks
-
-    @staticmethod
-    def _normalize_to_list(result: BlockCreateResult) -> list[BlockCreateRequest]:
-        """Normalisiert Ergebnis zu Liste."""
-        if result is None:
-            return []
-        return result if isinstance(result, list) else [result]

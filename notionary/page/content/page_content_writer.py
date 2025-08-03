@@ -7,7 +7,6 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.content.markdown_whitespace_processor import (
     MarkdownWhitespaceProcessor,
 )
-from notionary.page.content.notion_text_length_utils import fix_blocks_content_length
 from notionary.page.formatting.markdown_to_notion_converter import (
     MarkdownToNotionConverter,
 )
@@ -46,6 +45,9 @@ class PageContentWriter(LoggingMixin):
 
         try:
             blocks = self._markdown_to_notion_converter.convert(processed_markdown)
+            # Dump the blocks as JSON for debugging
+            print("Blocks to append:")
+            print(json.dumps([block.model_dump() for block in blocks], indent=2, ensure_ascii=False))
 
             result = await self._block_client.append_block_children(
                 block_id=self.page_id, children=blocks

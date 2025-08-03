@@ -119,15 +119,13 @@ class TableElement(NotionBlockElement):
             table_width=col_count,
             has_column_header=True,
             has_row_header=False,
-            children=table_rows,  # ← Hier gehören die children hin!
+            children=table_rows,
         )
 
-        # Empty paragraph after table
         empty_para = ParagraphBlock(rich_text=[])
 
-        # Return only the table block (children sind jetzt im table_block) and empty paragraph
         return [
-            CreateTableBlock(table=table_block),  # ← Keine children hier!
+            CreateTableBlock(table=table_block),
             CreateParagraphBlock(paragraph=empty_para),
         ]
 
