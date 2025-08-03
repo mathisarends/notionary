@@ -1,166 +1,252 @@
+from dataclasses import dataclass
 import re
+
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.block_models import BlockCreateRequest
-from notionary.blocks.notion_block_element import BlockCreateResult
+from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
 
-
-class LineProcessingState:
-    """Tracks state during line-by-line processing"""
-
-    def __init__(self):
-        self.paragraph_lines: list[str] = []
-        self.paragraph_start: int = 0
-
-    def add_to_paragraph(self, line: str, current_pos: int):
-        """Add line to current paragraph"""
-        if not self.paragraph_lines:
-            self.paragraph_start = current_pos
-        self.paragraph_lines.append(line)
-
-    def reset_paragraph(self):
-        """Reset paragraph state"""
-        self.paragraph_lines = []
-        self.paragraph_start = 0
-
-    def has_paragraph(self) -> bool:
-        """Check if there are paragraph lines to process"""
-        return len(self.paragraph_lines) > 0
+@dataclass
+class ParentBlockContext:
+    """Context for a block that expects children."""
+    block: BlockCreateRequest
+    element_type: type
+    child_prefix: str
+    child_lines: list[str]
+    start_position: int
+    
+    def add_child_line(self, content: str):
+        """Adds a child line."""
+        self.child_lines.append(content)
+    
+    def has_children(self) -> bool:
+        """Checks if children have been collected."""
+        return len(self.child_lines) > 0
 
 
 class LineProcessor:
-    """Handles line-by-line processing of markdown text"""
+    """Handles line-by-line processing of markdown text."""
 
-    def __init__(
-        self,
-        block_registry: BlockRegistry,
-        excluded_ranges: set[int],
-        pipe_pattern: str,
-    ):
+    def __init__(self, block_registry: BlockRegistry, excluded_ranges: set[int]):
         self._block_registry = block_registry
         self._excluded_ranges = excluded_ranges
-        self._pipe_pattern = pipe_pattern
+        self._parent_stack: list[ParentBlockContext] = []
+        
+        self._child_prefixes = {
+            'ToggleElement': '|',
+            'ToggleableHeadingElement': '|', 
+        }
+    
+    def process_lines(self, text: str) -> list[tuple[int, int, BlockCreateRequest]]:
+        """Processes lines with automatic child support."""
+        lines = text.split("\n")
+        result_blocks = []
+        current_pos = 0
+        
+        for line in lines:
+            line_length = len(line) + 1  # +1 für newline
+            line_end = current_pos + line_length - 1
+            
+            # Skip excluded ranges
+            if self._overlaps_with_excluded(current_pos, line_end):
+                current_pos += line_length
+                continue
+            
+            # Versuche Child-Content zu verarbeiten
+            if self._try_process_as_child(line):
+                current_pos += line_length
+                continue
+            
+            # Finalisiere alle offenen Parent-Blöcke bei neuer nicht-Child-Zeile
+            self._finalize_open_parents(result_blocks, current_pos)
+            
+            # Verarbeite normale Zeile
+            if line.strip():  # Nicht-leere Zeile
+                block_created = self._process_regular_line(line, current_pos, line_end, result_blocks)
+                if not block_created:
+                    # Falls kein spezieller Block, als Paragraph behandeln
+                    self._process_as_paragraph(line, current_pos, line_end, result_blocks)
+            
+            current_pos += line_length
+        
+        # Finalisiere alle noch offenen Parents
+        self._finalize_open_parents(result_blocks, current_pos)
+        
+        return result_blocks
+    
+    def _try_process_as_child(self, line: str) -> bool:
+        """Tries to process a line as child content."""
+        if not self._parent_stack:
+            return False
+        
+        current_parent = self._parent_stack[-1]
+        child_prefix = current_parent.child_prefix
+        
+        # Prüfe ob Zeile mit Child-Prefix beginnt
+        child_pattern = re.compile(rf"^{re.escape(child_prefix)}\s?(.*?)$")
+        match = child_pattern.match(line)
+        
+        if match:
+            child_content = match.group(1)
+            current_parent.add_child_line(child_content)
+            return True
+        
+        # Leere Zeile kann Teil der Children sein, wenn nächste Zeile auch Child ist
+        if not line.strip():
+            # Für Einfachheit: leere Zeilen beenden erstmal den Child-Bereich
+            return False
+        
+        return False
+    
+    def _process_regular_line(self, line: str, current_pos: int, line_end: int, 
+                            result_blocks: list[tuple[int, int, BlockCreateRequest]]) -> bool:
+        """Processes a regular line and checks for parent blocks."""
+        
+        # Suche passende Element-Klasse
+        for element in self._block_registry.get_elements():
+            if not element.match_markdown(line):
+                continue
+            
+            # Erstelle Block
+            result = element.markdown_to_notion(line)
+            blocks = self._normalize_to_list(result)
+            
+            if not blocks:
+                continue
+            
+            # Verarbeite jeden erstellten Block
+            for block in blocks:
+                if not self._can_have_children(block, element):
+                    # Block kann keine Children haben - direkt verarbeiten
+                    self._process_as_paragraph(line, current_pos, line_end, result_blocks)
+                    continue
 
+                child_prefix = self._get_child_prefix(element)
+                context = ParentBlockContext(
+                    block=block,
+                    element_type=type(element),
+                    child_prefix=child_prefix,
+                    child_lines=[],
+                    start_position=current_pos
+                )
+                self._parent_stack.append(context)
+
+            
+            return True
+        
+        return False
+    
+    def _process_as_paragraph(self, line: str, current_pos: int, line_end: int,
+                            result_blocks: list[tuple[int, int, BlockCreateRequest]]):
+        """Processes a line as a paragraph."""
+        result = self._block_registry.markdown_to_notion(line)
+        blocks = self._normalize_to_list(result)
+        
+        for block in blocks:
+            result_blocks.append((current_pos, line_end, block))
+    
+    def _can_have_children(self, block: BlockCreateRequest, element: NotionBlockElement) -> bool:
+        """Checks if a block can have children."""
+        
+        # 1. Prüfe ob Element-Typ bekanntermaßen Children haben kann
+        element_name = element.__name__
+        print("====")
+        print("element_name", element_name)
+        if element_name in self._child_prefixes:
+            return True
+        
+        # 2. Prüfe Block-Struktur auf children-Eigenschaft
+        if hasattr(block, 'toggle') and hasattr(block.toggle, 'children'):
+            return True
+        
+        if hasattr(block, 'callout') and hasattr(block.callout, 'children'):
+            return True
+        
+        if hasattr(block, 'quote') and hasattr(block.quote, 'children'):
+            return True
+        
+        # 3. Generische Prüfung auf children-Attribut
+        if hasattr(block, 'children'):
+            return True
+        
+        # 4. Dict-basierte Prüfung
+        if isinstance(block, dict):
+            for key, value in block.items():
+                if isinstance(value, dict) and 'children' in value:
+                    return True
+        
+        return False
+    
+    def _get_child_prefix(self, element: NotionBlockElement) -> str:
+        """Determines the child prefix for the element type."""
+        element_name = element.__class__.__name__
+        return self._child_prefixes.get(element_name, '|')  # Default: "|"
+    
+    def _finalize_open_parents(self, result_blocks: list[tuple[int, int, BlockCreateRequest]], 
+                             current_pos: int):
+        """Finalizes all open parent blocks."""
+        while self._parent_stack:
+            context = self._parent_stack.pop()
+            
+            if context.has_children():
+                # Verarbeite Children-Text rekursiv
+                children_text = '\n'.join(context.child_lines)
+                children_blocks = self._convert_children_text(children_text)
+                
+                # Weise Children dem Parent-Block zu
+                self._assign_children(context.block, children_blocks)
+            
+            # Füge finalisierten Parent-Block hinzu
+            result_blocks.append((context.start_position, current_pos, context.block))
+    
+    def _convert_children_text(self, text: str) -> list[BlockCreateRequest]:
+        """Recursively converts children text."""
+        if not text.strip():
+            return []
+        
+        # Rekursive Konvertierung - neue Instanz ohne excluded_ranges
+        child_processor = LineProcessor(self._block_registry, set())
+        child_results = child_processor.process_lines(text)
+        
+        # Extrahiere nur die Blocks
+        return [block for _, _, block in child_results]
+    
+    def _assign_children(self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]):
+        """Assigns children to a parent block."""
+        
+        # Toggle-Block
+        if hasattr(parent_block, 'toggle') and hasattr(parent_block.toggle, 'children'):
+            parent_block.toggle.children = children
+            return
+        
+        # Callout-Block  
+        if hasattr(parent_block, 'callout') and hasattr(parent_block.callout, 'children'):
+            parent_block.callout.children = children
+            return
+        
+        # Quote-Block
+        if hasattr(parent_block, 'quote') and hasattr(parent_block.quote, 'children'):
+            parent_block.quote.children = children
+            return
+        
+        # Generisches children-Attribut
+        if hasattr(parent_block, 'children'):
+            parent_block.children = children
+            return
+        
+        # Dict-basierte Zuweisung
+        if isinstance(parent_block, dict):
+            for key, value in parent_block.items():
+                if isinstance(value, dict) and 'children' in value:
+                    value['children'] = children
+                    return
+    
+    def _overlaps_with_excluded(self, start_pos: int, end_pos: int) -> bool:
+        """Checks for overlap with excluded ranges."""
+        return any(pos in self._excluded_ranges for pos in range(start_pos, end_pos + 1))
+    
     @staticmethod
     def _normalize_to_list(result: BlockCreateResult) -> list[BlockCreateRequest]:
-        """Normalize BlockCreateResult to list[BlockCreateRequest]"""
+        """Normalizes the result to a list."""
         if result is None:
             return []
         return result if isinstance(result, list) else [result]
-
-    def process_lines(self, text: str) -> list[tuple[int, int, BlockCreateRequest]]:
-        """Process all lines and return blocks with positions"""
-        lines = text.split("\n")
-        line_blocks = []
-
-        state = LineProcessingState()
-        current_pos = 0
-
-        for line in lines:
-            line_length = len(line) + 1  # +1 for newline
-            line_end = current_pos + line_length - 1
-
-            if self._should_skip_line(line, current_pos, line_end):
-                current_pos += line_length
-                continue
-
-            self._process_single_line(line, current_pos, line_end, line_blocks, state)
-            current_pos += line_length
-
-        # Process any remaining paragraph
-        self._finalize_paragraph(state, current_pos, line_blocks)
-
-        return line_blocks
-
-    def _should_skip_line(self, line: str, current_pos: int, line_end: int) -> bool:
-        """Check if line should be skipped (excluded or pipe syntax)"""
-        return self._overlaps_with_excluded(
-            current_pos, line_end
-        ) or self._is_pipe_syntax_line(line)
-
-    def _overlaps_with_excluded(self, start_pos: int, end_pos: int) -> bool:
-        """Check if position range overlaps with excluded ranges"""
-        return any(
-            pos in self._excluded_ranges for pos in range(start_pos, end_pos + 1)
-        )
-
-    def _is_pipe_syntax_line(self, line: str) -> bool:
-        """Check if line uses pipe syntax for nested content"""
-        return bool(re.match(self._pipe_pattern, line))
-
-    def _process_single_line(
-        self,
-        line: str,
-        current_pos: int,
-        line_end: int,
-        line_blocks: list[tuple[int, int, BlockCreateRequest]],
-        state: LineProcessingState,
-    ):
-        """Process a single line of text"""
-        # Handle empty lines
-        if not line.strip():
-            self._finalize_paragraph(state, current_pos, line_blocks)
-            state.reset_paragraph()
-            return
-
-        # Handle special blocks (headings, todos, dividers, etc.)
-        special_blocks = self._extract_special_block(line)
-        if special_blocks:
-            self._finalize_paragraph(state, current_pos, line_blocks)
-            # Add multiple blocks
-            for block in special_blocks:
-                line_blocks.append((current_pos, line_end, block))
-            state.reset_paragraph()
-            return
-
-        # Add to current paragraph
-        state.add_to_paragraph(line, current_pos)
-
-    def _extract_special_block(self, line: str) -> list[BlockCreateRequest]:
-        """Extract special block (non-paragraph) from line"""
-        for element in (
-            element
-            for element in self._block_registry.get_elements()
-            if not element.is_multiline()
-        ):
-            if not element.match_markdown(line):
-                continue
-
-            result = element.markdown_to_notion(line)
-            blocks = self._normalize_to_list(result)
-            if not blocks:
-                continue
-
-            # Only return if at least one non-paragraph block is present
-            if any(self._is_non_paragraph_block(block) for block in blocks):
-                return blocks
-
-        return []
-
-    def _is_non_paragraph_block(self, block: BlockCreateRequest) -> bool:
-        """Check if block is not a paragraph block"""
-        # Check the type field of the create block
-        if hasattr(block, "type"):
-            return getattr(block, "type", None) != "paragraph"
-
-        # Fallback: check class name
-        if hasattr(block, "__class__"):
-            return block.__class__.__name__ != "CreateParagraphBlock"
-
-        return True  # Conservative default
-
-    def _finalize_paragraph(
-        self,
-        state: LineProcessingState,
-        end_pos: int,
-        line_blocks: list[tuple[int, int, BlockCreateRequest]],
-    ):
-        """Convert current paragraph lines to paragraph block"""
-        if not state.has_paragraph():
-            return
-
-        paragraph_text = "\n".join(state.paragraph_lines)
-        result = self._block_registry.markdown_to_notion(paragraph_text)
-        blocks = self._normalize_to_list(result)
-
-        for block in blocks:
-            line_blocks.append((state.paragraph_start, end_pos, block))

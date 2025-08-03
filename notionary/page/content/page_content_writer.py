@@ -45,7 +45,8 @@ class PageContentWriter(LoggingMixin):
 
         try:
             blocks = self._markdown_to_notion_converter.convert(processed_markdown)
-            fixed_blocks = fix_blocks_content_length(blocks)
+            
+            fixed_blocks = fix_blocks_content_length(blocks) # das hier sehe ich auch schon vorher 
 
             result = await self._block_client.append_block_children(
                 block_id=self.page_id, children=fixed_blocks

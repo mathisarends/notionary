@@ -40,7 +40,6 @@ class NotionBlockElement(ABC):
         """Check if this element can handle the given Notion block."""
         return bool(cls.notion_to_markdown(block))  # Now calls the class's version
 
-    # TODO: Das hier können wir durch das vorhandensein von children wegrationalisieren?
     @classmethod
     def is_multiline(cls) -> bool:
         return False

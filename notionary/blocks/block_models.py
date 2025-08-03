@@ -41,7 +41,6 @@ if TYPE_CHECKING:
     from notionary.blocks.paragraph import CreateParagraphBlock, ParagraphBlock
     from notionary.blocks.quote import CreateQuoteBlock, QuoteBlock
     from notionary.blocks.table import (
-        CreateTableOfContentsBlock,
         TableBlock,
         TableRowBlock,
     )
@@ -130,7 +129,6 @@ BlockCreateRequest = Union[
     "CreateParagraphBlock",
     "CreateQuoteBlock",
     "CreateFileBlock",
-    "CreateTableOfContentsBlock",
     "CreateToDoBlock",
     "CreateToggleBlock",
     "CreateVideoBlock",
