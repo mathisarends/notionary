@@ -5,6 +5,9 @@ from dataclasses import dataclass
 
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.table.table_models import CreateTableRowBlock, TableRowBlock
 from notionary.page.formatting.block_position import PositionedBlockList
 
 if TYPE_CHECKING:
@@ -31,24 +34,32 @@ class ParentBlockContext:
 
 
 class LineProcessor:
-    """Stack-based LineProcessor with unified | prefix logic - SIMPLE!"""
+    """Stack-based LineProcessor with unified | prefix logic + Code block + Table support."""
 
     def __init__(self, block_registry: BlockRegistry, excluded_ranges: set[int]):
         self._block_registry = block_registry
         self._excluded_ranges = excluded_ranges
         self._parent_stack: list[ParentBlockContext] = []
 
-        # ALLE Elemente die Children haben können, verwenden NUR das "|" Präfix
-        # Keine spezielle Behandlung mehr für :::
+        # ALLE Elemente die Children haben können, verwenden das "|" Präfix
         self._child_prefixes = {
             "ToggleElement": "|",
             "ToggleableHeadingElement": "|",
             "ColumnListElement": "|",  
-            "ColumnElement": "|",     
+            "ColumnElement": "|",
+            "CodeElement": "RAW",       # Code-Blöcke nehmen rohe Zeilen ohne Prefix
+            "TableElement": "TABLE_ROW", # Tables sammeln Table-Row-Zeilen     
         }
 
+        # Pattern für Code-Block Ende
+        self._code_end_pattern = re.compile(r"^```\s*$")
+        # Pattern für Caption nach Code-Block
+        self._caption_pattern = re.compile(r"^(?:Caption|caption):\s*(.+)$")
+        # Pattern für Table-Zeilen (aus TableElement importiert)
+        self._table_row_pattern = re.compile(r"^\s*\|(.+)\|\s*$")
+
     def process_lines(self, text: str) -> PositionedBlockList:
-        """Processes lines with unified | child support - NO SPECIAL ::: HANDLING!"""
+        """Processes lines with unified | child support + Code block + Table support."""
         lines = text.split("\n")
         result_blocks = PositionedBlockList()
         current_pos = 0
@@ -61,7 +72,23 @@ class LineProcessor:
                 current_pos += line_length
                 continue
 
-            # Prüfe auf Child-Content (mit | Präfix) - GENAU WIE BEI TOGGLES
+            # Prüfe auf Code-Block Ende
+            if self._try_process_code_end(line, result_blocks, current_pos):
+                current_pos += line_length
+                continue
+
+            # Prüfe auf Caption nach Code-Block
+            if self._try_process_caption(line):
+                current_pos += line_length
+                continue
+
+            # Prüfe ob wir aus einem Table "herausfallen" (Table-Ende)
+            if self._try_process_table_end(line, result_blocks, current_pos):
+                # Table wurde beendet, aber die aktuelle Zeile muss noch verarbeitet werden
+                # Daher NICHT continue hier
+                pass
+
+            # Prüfe auf Child-Content (mit | Präfix, RAW für Code, TABLE_ROW für Tables)
             if self._try_process_as_child(line):
                 current_pos += line_length
                 continue
@@ -83,15 +110,136 @@ class LineProcessor:
         self._finalize_open_parents(result_blocks, current_pos)
         return result_blocks
 
+    def _try_process_table_end(self, line: str, result_blocks: PositionedBlockList, current_pos: int) -> bool:
+        """Check if we need to end a table (line doesn't match table pattern)."""
+        if not self._parent_stack:
+            return False
+            
+        current_parent = self._parent_stack[-1]
+        if current_parent.element_type.__name__ != "TableElement":
+            return False
+            
+        # Wenn die Zeile NICHT dem Table-Pattern entspricht, beende den Table
+        if not self._table_row_pattern.match(line.strip()) and line.strip():
+            self._finalize_table(result_blocks, current_pos)
+            return True
+            
+        return False
+
+    def _finalize_table(self, result_blocks: PositionedBlockList, current_pos: int):
+        """Finalize a table and convert child lines to table rows."""
+        if not self._parent_stack:
+            return
+            
+        context = self._parent_stack.pop()
+        
+        if context.has_children() and context.element_type.__name__ == "TableElement":
+            # Konvertiere Child-Lines zu Table-Rows
+            table_rows = []
+            separator_found = False
+            
+            for line in context.child_lines:
+                line = line.strip()
+                if not line:
+                    continue
+                    
+                # Prüfe auf Separator-Zeile (| ---- | ---- |)
+                if re.match(r"^\s*\|([\s\-:|]+)\|\s*$", line):
+                    separator_found = True
+                    continue
+                    
+                # Parse Table-Row
+                if self._table_row_pattern.match(line):
+                    cells = self._parse_table_row(line)
+                    # Konvertiere zu RichTextObject-Arrays
+                    rich_text_cells = []
+                    for cell in cells:
+                        # Verwende TextInlineFormatter für Rich-Text-Unterstützung
+                        rich_text = TextInlineFormatter.parse_inline_formatting(cell)
+                        if not rich_text:
+                            rich_text = [RichTextObject.from_plain_text(cell)]
+                        rich_text_cells.append(rich_text)
+                    
+                    table_row = TableRowBlock(cells=rich_text_cells)
+                    table_rows.append(CreateTableRowBlock(table_row=table_row))
+            
+            # Setze Table-Rows als Children
+            context.block.table.children = table_rows
+            
+            # Stelle sicher, dass has_column_header korrekt gesetzt ist
+            if table_rows and separator_found:
+                context.block.table.has_column_header = True
+        
+        result_blocks.add(context.start_position, current_pos, context.block)
+
+    def _parse_table_row(self, row_text: str) -> list[str]:
+        """Convert table row text to cell contents."""
+        row_content = row_text.strip()
+
+        if row_content.startswith("|"):
+            row_content = row_content[1:]
+        if row_content.endswith("|"):
+            row_content = row_content[:-1]
+
+        return [cell.strip() for cell in row_content.split("|")]
+
+    def _try_process_code_end(self, line: str, result_blocks: PositionedBlockList, current_pos: int) -> bool:
+        """Check if line ends a code block (```)."""
+        if not self._code_end_pattern.match(line.strip()):
+            return False
+            
+        if not self._parent_stack:
+            return False
+            
+        current_parent = self._parent_stack[-1]
+        if current_parent.element_type.__name__ != "CodeElement":
+            return False
+            
+        # Finalisiere den Code-Block
+        context = self._parent_stack.pop()
+        
+        if context.has_children():
+            # Code-Content zusammenfügen
+            code_content = "\n".join(context.child_lines)
+            code_rich = [RichTextObject.from_plain_text(code_content)] if code_content else []
+            context.block.code.rich_text = code_rich
+        
+        result_blocks.add(context.start_position, current_pos, context.block)
+        return True
+
+    def _try_process_caption(self, line: str) -> bool:
+        """Check if line is a caption for the last code block."""
+        # Diese Methode ist für zukünftige Caption-Unterstützung
+        # Derzeit einfach überspringen
+        match = self._caption_pattern.match(line.strip())
+        if match:
+            # TODO: Caption zur letzten Code-Block hinzufügen
+            return True
+        return False
+
     def _try_process_as_child(self, line: str) -> bool:
-        """Process as child content - EXACTLY like toggles."""
+        """Process as child content - EXACTLY like toggles + RAW for code + TABLE_ROW for tables."""
         if not self._parent_stack:
             return False
 
         current_parent = self._parent_stack[-1]
         child_prefix = current_parent.child_prefix
 
-        # Das bewährte Toggle-System - einfach und funktioniert!
+        # Spezialbehandlung für Code-Blöcke: RAW content (keine Prefix-Verarbeitung)
+        if child_prefix == "RAW":
+            current_parent.add_child_line(line)
+            return True
+
+        # Spezialbehandlung für Tables: TABLE_ROW content
+        if child_prefix == "TABLE_ROW":
+            # Prüfe ob die Zeile dem Table-Pattern entspricht
+            if self._table_row_pattern.match(line.strip()):
+                current_parent.add_child_line(line)
+                return True
+            # Wenn nicht, beende den Table (wird in process_lines gehandhabt)
+            return False
+
+        # Das bewährte Toggle-System für andere Elemente
         child_pattern = re.compile(rf"^{re.escape(child_prefix)}\s?(.*?)$")
         match = child_pattern.match(line)
 
@@ -143,21 +291,65 @@ class LineProcessor:
     def _finalize_open_parents(
         self, result_blocks: PositionedBlockList, current_pos: int
     ):
-        """Finalize all open parent blocks - EXACTLY like toggles."""
+        """Finalize all open parent blocks - including code blocks and tables."""
         while self._parent_stack:
             context = self._parent_stack.pop()
 
             if context.has_children():
-                children_text = "\n".join(context.child_lines)
-                children_blocks = self._convert_children_text(children_text)
-                
-                if context.element_type.__name__ == "ColumnListElement":
-                    # Filter Column-Blöcke für ColumnList
+                if context.element_type.__name__ == "CodeElement":
+                    # Code-Content direkt zuweisen
+                    code_content = "\n".join(context.child_lines)
+                    if code_content:
+                        code_rich = [RichTextObject.from_plain_text(code_content)]
+                        context.block.code.rich_text = code_rich
+                elif context.element_type.__name__ == "TableElement":
+                    # Table-Rows verarbeiten
+                    table_rows = []
+                    separator_found = False
+                    
+                    for line in context.child_lines:
+                        line = line.strip()
+                        if not line:
+                            continue
+                            
+                        # Prüfe auf Separator-Zeile (| ---- | ---- |)
+                        if re.match(r"^\s*\|([\s\-:|]+)\|\s*$", line):
+                            separator_found = True
+                            continue
+                            
+                        # Parse Table-Row
+                        if self._table_row_pattern.match(line):
+                            cells = self._parse_table_row(line)
+                            # Konvertiere zu RichTextObject-Arrays
+                            rich_text_cells = []
+                            for cell in cells:
+                                # Verwende TextInlineFormatter für Rich-Text-Unterstützung
+                                rich_text = TextInlineFormatter.parse_inline_formatting(cell)
+                                if not rich_text:
+                                    rich_text = [RichTextObject.from_plain_text(cell)]
+                                rich_text_cells.append(rich_text)
+                            
+                            table_row = TableRowBlock(cells=rich_text_cells)
+                            table_rows.append(CreateTableRowBlock(table_row=table_row))
+                    
+                    # Setze Table-Rows als Children
+                    context.block.table.children = table_rows
+                    
+                    # Stelle sicher, dass has_column_header korrekt gesetzt ist
+                    if table_rows and separator_found:
+                        context.block.table.has_column_header = True
+                elif context.element_type.__name__ == "ColumnListElement":
+                    # Column-Verarbeitung
+                    children_text = "\n".join(context.child_lines)
+                    children_blocks = self._convert_children_text(children_text)
                     column_children = [block for block in children_blocks 
                                      if (hasattr(block, 'column') and 
                                          getattr(block, 'type', None) == 'column')]
                     context.block.column_list.children = column_children
                 else:
+                    # Standard-Verarbeitung für andere Elemente
+                    children_text = "\n".join(context.child_lines)
+                    children_blocks = self._convert_children_text(children_text)
                     self._assign_children(context.block, children_blocks)
 
             result_blocks.add(context.start_position, current_pos, context.block)
@@ -189,6 +381,10 @@ class LineProcessor:
             return True
         if hasattr(block, "column") and hasattr(block.column, "children"):
             return True
+        if hasattr(block, "code") and hasattr(block.code, "rich_text"):
+            return True  # Code-Blöcke können Content haben
+        if hasattr(block, "table") and hasattr(block.table, "children"):
+            return True  # Tables können Rows haben
         if hasattr(block, "heading_1") and hasattr(block.heading_1, "children"):
             return True
         if hasattr(block, "heading_2") and hasattr(block.heading_2, "children"):

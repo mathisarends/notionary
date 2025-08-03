@@ -15,30 +15,31 @@ class PositionedBlock:
     block: BlockCreateRequest
 
 
+
 class PositionedBlockList:
-    """Liste von PositionedBlocks mit minimalen Operationen."""
+    """List of PositionedBlocks with minimal operations."""
 
     def __init__(self):
         self._blocks: list[PositionedBlock] = []
 
     def add(self, start_pos: int, end_pos: int, block: BlockCreateRequest) -> None:
-        """Fügt einen Block hinzu."""
+        """Add a block to the list."""
         self._blocks.append(PositionedBlock(start_pos, end_pos, block))
 
-    def extend(self, other: "PositionedBlockList") -> None:
-        """Erweitert diese Liste um eine andere."""
+    def extend(self, other: PositionedBlockList) -> None:
+        """Extend this list with another PositionedBlockList."""
         self._blocks.extend(other._blocks)
 
     def sort_by_position(self) -> None:
-        """Sortiert nach Start-Position."""
+        """Sort the blocks by their start position."""
         self._blocks.sort(key=lambda b: b.start_pos)
 
     def extract_blocks(self) -> list[BlockCreateRequest]:
-        """Extrahiert nur die Blöcke."""
+        """Extract only the blocks from the list."""
         return [pb.block for pb in self._blocks]
 
     def get_excluded_ranges(self) -> set[int]:
-        """Erstellt excluded ranges Set."""
+        """Create a set of excluded ranges (character positions) covered by the blocks."""
         excluded = set()
         for block in self._blocks:
             excluded.update(range(block.start_pos, block.end_pos + 1))

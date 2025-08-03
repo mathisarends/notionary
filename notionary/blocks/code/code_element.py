@@ -1,6 +1,6 @@
 from __future__ import annotations
 import re
-from typing import Optional, Union, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from notionary.blocks.block_models import Block, BlockCreateResult
@@ -8,35 +8,28 @@ if TYPE_CHECKING:
 from notionary.blocks.block_models import Block
 from notionary.blocks.code.code_models import CodeBlock, CodeLanguage, CreateCodeBlock
 from notionary.blocks.notion_block_element import NotionBlockElement
-from notionary.blocks.paragraph.paragraph_models import (
-    CreateParagraphBlock,
-    ParagraphBlock,
-)
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.page.formatting.block_position import PositionedBlockList
 from notionary.prompts import ElementPromptContent, ElementPromptBuilder
 
 
 class CodeElement(NotionBlockElement):
     """
     Handles conversion between Markdown code blocks and Notion code blocks.
+    Now integrated into the LineProcessor stack system.
 
     Markdown code block syntax:
     ```language
-    code content
+    [code content as child lines]
     ```
     """
 
     DEFAULT_LANGUAGE = "plain text"
-
-    PATTERN = re.compile(
-        r"```(\w*)\n([\s\S]+?)```(?:\n(?:Caption|caption):\s*(.+))?", re.MULTILINE
-    )
+    CODE_START_PATTERN = re.compile(r"^```(\w*)\s*$")
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
-        """Check if text contains a markdown code block."""
-        return bool(cls.PATTERN.search(text))
+        """Check if text starts a code block."""
+        return bool(cls.CODE_START_PATTERN.match(text.strip()))
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -44,69 +37,18 @@ class CodeElement(NotionBlockElement):
         return block.type == "code"
 
     @classmethod
-    def _create_code_block_from_match(
-        cls, language: str, content: str, caption_text: Optional[str] = None
-    ) -> list[Union[CreateCodeBlock, CreateParagraphBlock]]:
-        """
-        Shared logic for creating code blocks from parsed data.
-        """
-        language = cls._normalize_language(language)
-
-        code_rich = RichTextObject.from_plain_text(content)
-        code_block = CodeBlock(rich_text=[code_rich], language=language)
-
-        if caption_text and caption_text.strip():
-            cap_rich = RichTextObject.from_plain_text(caption_text.strip())
-            code_block.caption = [cap_rich]
-
-        # Create code block
-        blocks = [CreateCodeBlock(code=code_block)]
-
-        # Append empty paragraph after code
-        empty_paragraph = ParagraphBlock(rich_text=[])
-        blocks.append(CreateParagraphBlock(paragraph=empty_paragraph))
-
-        return blocks
-
-    @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
-        """Convert markdown code block to Notion blocks."""
-        match = cls.PATTERN.search(text)
+        """Convert opening ```language to Notion code block."""
+        match = cls.CODE_START_PATTERN.match(text.strip())
         if not match:
             return None
 
-        # Extract components
         language = (match.group(1) or cls.DEFAULT_LANGUAGE).lower()
-        content = match.group(2).rstrip("\n")
-        caption_text = match.group(3)
+        language = cls._normalize_language(language)
 
-        # Use shared logic
-        return cls._create_code_block_from_match(language, content, caption_text)
-
-    @classmethod
-    def find_matches(cls, text: str) -> PositionedBlockList:
-        """
-        Find all code block matches in the text and return them as PositionedBlockList.
-
-        Args:
-            text: The text to search in
-
-        Returns:
-            PositionedBlockList with code blocks and their positions
-        """
-        positioned_blocks = PositionedBlockList()
-
-        for match in cls.PATTERN.finditer(text):
-            language = (match.group(1) or cls.DEFAULT_LANGUAGE).lower()
-            content = match.group(2).rstrip("\n")
-            caption_text = match.group(3)
-
-            blocks = cls._create_code_block_from_match(language, content, caption_text)
-
-            for block in blocks:
-                positioned_blocks.add(match.start(), match.end(), block)
-
-        return positioned_blocks
+        # Create empty CodeBlock - content will be added by stack processor
+        code_block = CodeBlock(rich_text=[], language=language, caption=[])
+        return CreateCodeBlock(code=code_block)
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
@@ -142,7 +84,8 @@ class CodeElement(NotionBlockElement):
 
     @classmethod
     def is_multiline(cls) -> bool:
-        return True
+        """Code blocks are no longer multiline - they use the stack system."""
+        return False
 
     @classmethod
     def _normalize_language(cls, language: str) -> str:
@@ -173,35 +116,22 @@ class CodeElement(NotionBlockElement):
             ElementPromptBuilder()
             .with_description(
                 "Use fenced code blocks to format content as code. Supports language annotations like "
-                "'python', 'json', or 'mermaid'. Useful for displaying code, configurations, command-line "
-                "examples, or diagram syntax. Also suitable for explaining or visualizing systems with diagram languages. "
-                "Code blocks can include optional captions for better documentation."
+                "'python', 'json', or 'mermaid'. Code blocks now work within columns and tables using the | prefix system."
             )
             .with_usage_guidelines(
                 "Use code blocks when you want to present technical content like code snippets, terminal commands, "
-                "JSON structures, or system diagrams. Especially helpful when structure and formatting are essential. "
-                "Add captions to provide context, explanations, or titles for your code blocks."
+                "JSON structures, or system diagrams. Can be embedded in columns, tables, and other parent elements."
             )
             .with_syntax(
-                "```language\ncode content\n```\nCaption: optional caption text\n\n"
-                "OR\n\n"
+                "```language\n| code line 1\n| code line 2\n```\nCaption: optional caption\n\n"
+                "OR for standalone:\n\n"
                 "```language\ncode content\n```"
             )
             .with_examples(
                 [
-                    "```python\nprint('Hello, world!')\n```\nCaption: Basic Python greeting example",
-                    '```json\n{"name": "Alice", "age": 30}\n```\nCaption: User data structure',
-                    "```mermaid\nflowchart TD\n  A --> B\n```\nCaption: Simple flow diagram",
-                    '```bash\ngit commit -m "Initial commit"\n```',
+                    "```python\n| print('Hello, world!')\n| return 42\n```",
+                    "```json\n| {\n|   \"name\": \"Alice\",\n|   \"age\": 30\n| }\n```"
                 ]
-            )
-            .with_avoidance_guidelines(
-                "NEVER EVER wrap markdown content with ```markdown. Markdown should be written directly without code block formatting. "
-                "NEVER use ```markdown under any circumstances. "
-                "For Mermaid diagrams, use ONLY the default styling without colors, backgrounds, or custom styling attributes. "
-                "Keep Mermaid diagrams simple and minimal without any styling or color modifications. "
-                "Captions must appear immediately after the closing ``` on a new line starting with 'Caption:' - "
-                "no empty lines between the code block and the caption."
             )
             .build()
         )

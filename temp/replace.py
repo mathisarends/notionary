@@ -13,7 +13,7 @@ async def main():
     | | Double nested content line 1
     | | Double nested content line 2
     | Nested content line 2
-    
+
     +## Wichtige Infos
     | Das ist ein Detail
     | Noch mehr Details
@@ -22,17 +22,16 @@ async def main():
     | ::: column
     | | ## Left Column  
     | | This is content in the left column.
-    | | - First point
-    | | - Second point
-    | |
-    | | ### Employee Data
-    | | | Name   | Age | City     | Department |
-    | | | ------ | --- | -------- | ---------- |
-    | | | Alice  | 30  | Berlin   | Engineering|
-    | | | Bob    | 25  | Hamburg  | Marketing  |
-    | | | Carol  | 28  | Munich   | Design     |
-    | | | David  | 32  | Cologne  | Sales      |
-    | |
+    | | 
+    | | ### Mitarbeiter Tabelle
+    | | 
+    | | | Name   | Alter | Stadt   | Abteilung    |
+    | | |--------|-------|---------|--------------|
+    | | | Alice  | 30    | Berlin  | Engineering  |
+    | | | Bob    | 25    | Hamburg | Marketing    |
+    | | | Carol  | 28    | Munich  | Design       |
+    | | | David  | 32    | Cologne | Sales        |
+    | | 
     | | Some text after the table.
     | ::: column
     | | ## Right Column
