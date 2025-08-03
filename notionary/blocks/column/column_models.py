@@ -10,13 +10,12 @@ if TYPE_CHECKING:
 
 class ColumnBlock(BaseModel):
     column_ratio: Optional[float] = None
+    children: list[BlockCreateRequest] = Field(default_factory=list)
 
 
 class CreateColumnBlock(BaseModel):
     type: Literal["column"] = "column"
     column: ColumnBlock
-    children: list[BlockCreateRequest] = Field(default_factory=list)
-
 
 class ColumnListBlock(BaseModel):
     children: list[CreateColumnBlock] = Field(default_factory=list)

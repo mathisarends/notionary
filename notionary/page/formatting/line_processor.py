@@ -153,15 +153,13 @@ class LineProcessor:
             current_parent.start_new_column()
             return True
 
-        # `:::` - Spalte oder Block beenden
+        # `:::` - end of a column or end of column_list
         if self._column_end_pattern.match(stripped_line):
+            # finalize current column if one is open
             if current_parent.current_column:
-                # Spalte beenden
                 current_parent.finalize_current_column()
-                return True
-            else:
-                # Column-Block beenden - wird von _finalize_open_parents behandelt
-                return False
+            # consume closing marker and do not emit paragraph
+            return True
 
         # Normale Zeile in aktueller Spalte
         if current_parent.current_column is not None:
@@ -251,30 +249,22 @@ class LineProcessor:
             result_blocks.add(context.start_position, current_pos, context.block)
 
     def _finalize_column_list(self, context: ParentBlockContext):
-        """🎯 FIXED: Finalisiert eine ColumnList mit korrekter Pydantic-Struktur."""
-        # Letzte Spalte finalisieren falls noch offen
+        """Finalizes a ColumnList with correct structure."""
         context.finalize_current_column()
 
-        # Alle Spalten zu CreateColumnBlock konvertieren
         column_blocks = []
         for column_context in context.completed_columns:
-            if column_context.has_content():
-                # Content der Spalte rekursiv verarbeiten
-                column_text = "\n".join(column_context.content_lines)
-                column_children = self._convert_children_text(column_text)
+            column_text = "\n".join(column_context.content_lines)
+            column_children = self._convert_children_text(column_text) if column_context.has_content() else []
+            
+            column_block = CreateColumnBlock(
+                column=ColumnBlock(column_ratio=None, children=column_children)
+            )
+            
+            column_blocks.append(column_block)
 
-                # 🎯 FIXED: CreateColumnBlock mit children DIREKT am Block (nicht im column-Objekt)
-                column_block = CreateColumnBlock(
-                    column=ColumnBlock(column_ratio=None),
-                    children=column_children,  # ← Direkt am CreateColumnBlock!
-                )
-                column_blocks.append(column_block)
+        context.block.column_list.children = column_blocks
 
-        # 🎯 FIXED: Spalten dem ColumnListBlock.children zuweisen
-        if hasattr(context.block, "column_list"):
-            context.block.column_list.children = column_blocks  # ← Richtig!
-
-    # Restliche Methoden bleiben gleich...
     def _process_as_paragraph(
         self,
         line: str,

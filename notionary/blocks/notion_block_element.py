@@ -1,4 +1,5 @@
-from typing import Optional, Union, TYPE_CHECKING
+from __future__ import annotations
+from typing import Optional, TYPE_CHECKING
 from abc import ABC
 
 if TYPE_CHECKING:
@@ -11,7 +12,7 @@ class NotionBlockElement(ABC):
     """Base class for elements that can be converted between Markdown and Notion."""
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> "BlockCreateResult":
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """
         Convert markdown to Notion block content.
 
@@ -22,7 +23,7 @@ class NotionBlockElement(ABC):
         """
 
     @classmethod
-    def notion_to_markdown(cls, block: "Block") -> Optional[str]:
+    def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion block to markdown."""
 
     @classmethod
@@ -31,7 +32,7 @@ class NotionBlockElement(ABC):
         return bool(cls.markdown_to_notion(text))  # Now calls the class's version
 
     @classmethod
-    def match_notion(cls, block: "Block") -> bool:
+    def match_notion(cls, block: Block) -> bool:
         """Check if this element can handle the given Notion block."""
         return bool(cls.notion_to_markdown(block))  # Now calls the class's version
 
