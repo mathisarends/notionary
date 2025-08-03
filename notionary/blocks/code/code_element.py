@@ -9,6 +9,7 @@ from notionary.blocks.paragraph.paragraph_models import (
     ParagraphBlock,
 )
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.page.formatting.block_position import PositionedBlockList
 from notionary.prompts import ElementPromptContent, ElementPromptBuilder
 
 
@@ -79,32 +80,29 @@ class CodeElement(NotionBlockElement):
         return cls._create_code_block_from_match(language, content, caption_text)
 
     @classmethod
-    def find_matches(
-        cls, text: str
-    ) -> list[int, int, list[Union[CreateCodeBlock, CreateParagraphBlock]]]:
+    def find_matches(cls, text: str) -> PositionedBlockList:
         """
-        Find all code block matches in the text and return their positions with Pydantic models.
+        Find all code block matches in the text and return them as PositionedBlockList.
 
         Args:
             text: The text to search in
 
         Returns:
-            list of tuples with (start_pos, end_pos, blocks_list)
+            PositionedBlockList with code blocks and their positions
         """
-        matches = []
+        positioned_blocks = PositionedBlockList()
 
         for match in cls.PATTERN.finditer(text):
-            # Extract components
             language = (match.group(1) or cls.DEFAULT_LANGUAGE).lower()
-            content = match.group(2).rstrip("\n")  # Remove trailing newline if present
+            content = match.group(2).rstrip("\n")
             caption_text = match.group(3)
 
-            # 🎯 FIXED: Verwende dieselbe Logik wie markdown_to_notion
             blocks = cls._create_code_block_from_match(language, content, caption_text)
 
-            matches.append((match.start(), match.end(), blocks))
+            for block in blocks:
+                positioned_blocks.add(match.start(), match.end(), block)
 
-        return matches
+        return positioned_blocks
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

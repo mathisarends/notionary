@@ -1,19 +1,13 @@
 from notionary.blocks.block_models import BlockCreateRequest
-from notionary.blocks.column.column_element import ColumnElement
 from notionary.blocks.notion_block_element import BlockCreateResult
 from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.page.formatting.block_position import PositionedBlockList
 from notionary.page.formatting.line_processor import LineProcessor
 from notionary.page.content.notion_text_length_utils import fix_blocks_content_length
 
-# Type aliases for better readability
-BlockPosition = tuple[int, int, BlockCreateRequest]  # (start_pos, end_pos, block)
-BlockPositionList = list[BlockPosition]
-
 
 class MarkdownToNotionConverter:
-    """
-    Converts Markdown text to Notion API block format.
-    """
+    """Converts Markdown text to Notion API block format."""
 
     def __init__(self, block_registry: BlockRegistry) -> None:
         self._block_registry = block_registry
@@ -25,43 +19,30 @@ class MarkdownToNotionConverter:
 
         multiline_blocks = self._find_multiline_blocks(markdown_text)
 
-        excluded_ranges = self._create_excluded_ranges(multiline_blocks)
-
+        excluded_ranges = multiline_blocks.get_excluded_ranges()
         processor = LineProcessor(self._block_registry, excluded_ranges)
         line_blocks = processor.process_lines(markdown_text)
 
-        all_blocks = multiline_blocks + line_blocks
-        all_blocks.sort(key=lambda x: x[0])
+        all_blocks = PositionedBlockList()
+        all_blocks.extend(multiline_blocks)
+        all_blocks.extend(line_blocks)
+        all_blocks.sort_by_position()
 
-        blocks = [block for _, _, block in all_blocks]
-
+        blocks = all_blocks.extract_blocks()
         return fix_blocks_content_length(blocks)
 
-    def _find_multiline_blocks(
-        self, text: str
-    ) -> list[tuple[int, int, BlockCreateRequest]]:
-        """Findet Multiline-Blöcke wie Tables, Code-Blocks, etc."""
-        blocks = []
+    def _find_multiline_blocks(self, text: str) -> PositionedBlockList:
+        """Findet Multiline-Blöcke direkt als PositionedBlockList."""
+        all_positioned_blocks = PositionedBlockList()
 
         multiline_elements = self._block_registry.get_multiline_elements()
 
         for element in multiline_elements:
-            matches = element.find_matches(text)
-            for start_pos, end_pos, block_result in matches:
-                element_blocks = self._normalize_to_list(block_result)
-                for block in element_blocks:
-                    blocks.append((start_pos, end_pos, block))
+            element_blocks = element.find_matches(text)
+            
+            all_positioned_blocks.extend(element_blocks)
 
-        return blocks
-
-    def _create_excluded_ranges(
-        self, blocks: list[tuple[int, int, BlockCreateRequest]]
-    ) -> set[int]:
-        """Erstellt Set ausgeschlossener Positionen."""
-        excluded = set()
-        for start_pos, end_pos, _ in blocks:
-            excluded.update(range(start_pos, end_pos + 1))
-        return excluded
+        return all_positioned_blocks
 
     @staticmethod
     def _normalize_to_list(result: BlockCreateResult) -> list[BlockCreateRequest]:

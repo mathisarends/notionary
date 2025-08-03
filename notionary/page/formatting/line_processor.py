@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 import re
-
-from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.block_models import BlockCreateRequest
+from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
+from notionary.page.formatting.block_position import PositionedBlockList
 
 
 @dataclass
@@ -38,10 +38,10 @@ class LineProcessor:
             "ToggleableHeadingElement": "|",
         }
 
-    def process_lines(self, text: str) -> list[tuple[int, int, BlockCreateRequest]]:
-        """Processes lines with automatic child support."""
+    def process_lines(self, text: str) -> PositionedBlockList:
+        """Processes lines with automatic child support - returns PositionedBlockList directly."""
         lines = text.split("\n")
-        result_blocks = []
+        result_blocks = PositionedBlockList()
         current_pos = 0
 
         for line in lines:
@@ -96,11 +96,6 @@ class LineProcessor:
             current_parent.add_child_line(child_content)
             return True
 
-        # Leere Zeile kann Teil der Children sein, wenn nächste Zeile auch Child ist
-        if not line.strip():
-            # Für Einfachheit: leere Zeilen beenden erstmal den Child-Bereich
-            return False
-
         return False
 
     def _process_regular_line(
@@ -108,7 +103,7 @@ class LineProcessor:
         line: str,
         current_pos: int,
         line_end: int,
-        result_blocks: list[tuple[int, int, BlockCreateRequest]],
+        result_blocks: PositionedBlockList,
     ) -> bool:
         """Processes a regular line and checks for parent blocks."""
 
@@ -127,21 +122,17 @@ class LineProcessor:
             # Verarbeite jeden erstellten Block
             for block in blocks:
                 if not self._can_have_children(block, element):
-                    # Block kann keine Children haben - direkt verarbeiten
-                    self._process_as_paragraph(
-                        line, current_pos, line_end, result_blocks
+                    result_blocks.add(current_pos, line_end, block)
+                else:
+                    child_prefix = self._get_child_prefix(element)
+                    context = ParentBlockContext(
+                        block=block,
+                        element_type=type(element),
+                        child_prefix=child_prefix,
+                        child_lines=[],
+                        start_position=current_pos,
                     )
-                    continue
-
-                child_prefix = self._get_child_prefix(element)
-                context = ParentBlockContext(
-                    block=block,
-                    element_type=type(element),
-                    child_prefix=child_prefix,
-                    child_lines=[],
-                    start_position=current_pos,
-                )
-                self._parent_stack.append(context)
+                    self._parent_stack.append(context)
 
             return True
 
@@ -152,20 +143,19 @@ class LineProcessor:
         line: str,
         current_pos: int,
         line_end: int,
-        result_blocks: list[tuple[int, int, BlockCreateRequest]],
+        result_blocks: PositionedBlockList,
     ):
         """Processes a line as a paragraph."""
         result = self._block_registry.markdown_to_notion(line)
         blocks = self._normalize_to_list(result)
 
         for block in blocks:
-            result_blocks.append((current_pos, line_end, block))
+            result_blocks.add(current_pos, line_end, block)
 
     def _can_have_children(
         self, block: BlockCreateRequest, element: NotionBlockElement
     ) -> bool:
         """Checks if a block can have children."""
-
         # 1. Prüfe ob Element-Typ bekanntermaßen Children haben kann
         element_name = element.__name__
         if element_name in self._child_prefixes:
@@ -173,9 +163,6 @@ class LineProcessor:
 
         # 2. Prüfe Block-Struktur auf children-Eigenschaft
         if hasattr(block, "toggle") and hasattr(block.toggle, "children"):
-            return True
-
-        if hasattr(block, "heading_1") and hasattr(block.heading_1, "children"):
             return True
 
         if hasattr(block, "heading_1") and hasattr(block.heading_1, "children"):
@@ -195,60 +182,50 @@ class LineProcessor:
         return self._child_prefixes.get(element_name, "|")  # Default: "|"
 
     def _finalize_open_parents(
-        self, result_blocks: list[tuple[int, int, BlockCreateRequest]], current_pos: int
+        self, result_blocks: PositionedBlockList, current_pos: int
     ):
         """Finalizes all open parent blocks."""
         while self._parent_stack:
             context = self._parent_stack.pop()
 
             if context.has_children():
-                # Verarbeite Children-Text rekursiv
                 children_text = "\n".join(context.child_lines)
                 children_blocks = self._convert_children_text(children_text)
 
-                # Weise Children dem Parent-Block zu
                 self._assign_children(context.block, children_blocks)
 
-            # Füge finalisierten Parent-Block hinzu
-            result_blocks.append((context.start_position, current_pos, context.block))
+            result_blocks.add(context.start_position, current_pos, context.block)
 
     def _convert_children_text(self, text: str) -> list[BlockCreateRequest]:
         """Recursively converts children text."""
         if not text.strip():
             return []
 
-        # Rekursive Konvertierung - neue Instanz ohne excluded_ranges
         child_processor = LineProcessor(self._block_registry, set())
         child_results = child_processor.process_lines(text)
 
-        # Extrahiere nur die Blocks
-        return [block for _, _, block in child_results]
+        return child_results.extract_blocks()
 
     def _assign_children(
         self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]
     ):
         """Assigns children to a parent block."""
-
-        # Toggle-Block
         if hasattr(parent_block, "toggle") and hasattr(parent_block.toggle, "children"):
             parent_block.toggle.children = children
             return
 
-        # Heading 1
         if hasattr(parent_block, "heading_1") and hasattr(
             parent_block.heading_1, "children"
         ):
             parent_block.heading_1.children = children
             return
 
-        # Heading 2
         if hasattr(parent_block, "heading_2") and hasattr(
             parent_block.heading_2, "children"
         ):
             parent_block.heading_2.children = children
             return
 
-        # Heading 3
         if hasattr(parent_block, "heading_3") and hasattr(
             parent_block.heading_3, "children"
         ):

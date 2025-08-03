@@ -62,7 +62,6 @@ class BlockRegistryBuilder:
             .with_videos()
             .with_embeds()
             .with_audio()
-            .with_columns()
             .with_paragraphs()
             .with_toggleable_heading_element()
         ).build()

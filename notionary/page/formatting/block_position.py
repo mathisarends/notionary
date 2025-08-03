@@ -4,7 +4,7 @@ from notionary.blocks.block_models import BlockCreateRequest
 
 @dataclass
 class PositionedBlock:
-    """Ein Block mit seiner Position im Text."""
+    """A block with its position in the text."""
 
     start_pos: int
     end_pos: int
@@ -12,7 +12,7 @@ class PositionedBlock:
 
 
 class PositionedBlockList:
-    """Liste von PositionedBlocks mit den minimal nötigen Operationen."""
+    """Liste von PositionedBlocks mit minimalen Operationen."""
 
     def __init__(self):
         self._blocks: list[PositionedBlock] = []
@@ -21,12 +21,9 @@ class PositionedBlockList:
         """Fügt einen Block hinzu."""
         self._blocks.append(PositionedBlock(start_pos, end_pos, block))
 
-    def extend_from_tuples(
-        self, tuples: list[tuple[int, int, BlockCreateRequest]]
-    ) -> None:
-        """Fügt Blöcke aus Tupel-Liste hinzu."""
-        for start_pos, end_pos, block in tuples:
-            self.add(start_pos, end_pos, block)
+    def extend(self, other: "PositionedBlockList") -> None:
+        """Erweitert diese Liste um eine andere."""
+        self._blocks.extend(other._blocks)
 
     def sort_by_position(self) -> None:
         """Sortiert nach Start-Position."""
@@ -42,3 +39,6 @@ class PositionedBlockList:
         for block in self._blocks:
             excluded.update(range(block.start_pos, block.end_pos + 1))
         return excluded
+
+    def __len__(self) -> int:
+        return len(self._blocks)

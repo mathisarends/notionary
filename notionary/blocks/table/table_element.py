@@ -17,7 +17,7 @@ from notionary.blocks.table.table_models import (
     TableBlock,
     TableRowBlock,
 )
-from notionary.page.formatting.markdown_to_notion_converter import BlockPositionList
+from notionary.page.formatting.block_position import PositionedBlockList
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 
@@ -292,46 +292,46 @@ class TableElement(NotionBlockElement):
         return table_rows
 
     @classmethod
-    def find_matches(cls, text: str) -> BlockPositionList:
+    def find_matches(cls, text: str) -> PositionedBlockList:
         """
-        Find all tables in the text and return their positions.
+        Find all tables in the text and return their positions as PositionedBlockList.
 
         Args:
             text: The text to search in
 
         Returns:
-            List of tuples with (start_pos, end_pos, block)
+            PositionedBlockList with table blocks and their positions
         """
-        matches = []
+        positioned_blocks = PositionedBlockList()
         lines = text.split("\n")
 
         i = 0
         while i < len(lines) - 2:
             if (
-                TableElement.ROW_PATTERN.match(lines[i])
-                and TableElement.SEPARATOR_PATTERN.match(lines[i + 1])
-                and TableElement.ROW_PATTERN.match(lines[i + 2])
+                cls.ROW_PATTERN.match(lines[i])
+                and cls.SEPARATOR_PATTERN.match(lines[i + 1])
+                and cls.ROW_PATTERN.match(lines[i + 2])
             ):
 
                 start_line = i
-                end_line = TableElement._find_table_end(lines, start_line)
+                end_line = cls._find_table_end(lines, start_line)
 
-                start_pos = TableElement._calculate_position(lines, 0, start_line)
-                end_pos = start_pos + TableElement._calculate_position(
+                start_pos = cls._calculate_position(lines, 0, start_line)
+                end_pos = start_pos + cls._calculate_position(
                     lines, start_line, end_line
                 )
 
                 table_text = "\n".join(lines[start_line:end_line])
-                table_block = TableElement.markdown_to_notion(table_text)
+                table_block = cls.markdown_to_notion(table_text)
 
                 if table_block:
-                    matches.append((start_pos, end_pos, table_block))
+                    positioned_blocks.add(start_pos, end_pos, table_block)
 
                 i = end_line
             else:
                 i += 1
 
-        return matches
+        return positioned_blocks
 
     @classmethod
     def _calculate_position(cls, lines: list[str], start: int, end: int) -> int:
