@@ -21,7 +21,7 @@ def fix_blocks_content_length(
 ) -> list[BlockCreateRequest]:
     """Check each block and ensure text content doesn't exceed Notion's limit."""
     fixed_blocks: list[BlockCreateRequest] = []
-    
+
     flattened_blocks = _flatten_blocks(blocks)
 
     for block in flattened_blocks:
@@ -103,6 +103,7 @@ def _fix_rich_text_objects_direct(rich_text_list: list, max_text_length: int) ->
                 )
                 # Direct assignment - no parsing needed!
                 rich_text_item.text.content = content[:max_text_length]
+
 
 def _flatten_blocks(blocks: list) -> list[BlockCreateRequest]:
     """Flatten nested block lists."""

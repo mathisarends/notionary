@@ -155,7 +155,7 @@ class BlockRegistryBuilder:
         self._add_element(ColumnListElement)
         self._add_element(ColumnElement)
         return self
-    
+
     def build(self) -> BlockRegistry:
         """
         Build and return the configured BlockRegistry instance.

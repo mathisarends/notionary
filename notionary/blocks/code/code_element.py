@@ -83,11 +83,6 @@ class CodeElement(NotionBlockElement):
         return result
 
     @classmethod
-    def is_multiline(cls) -> bool:
-        """Code blocks are no longer multiline - they use the stack system."""
-        return False
-
-    @classmethod
     def _normalize_language(cls, language: str) -> str:
         """
         Normalize the language string to a valid CodeLanguage value or default.
@@ -130,7 +125,7 @@ class CodeElement(NotionBlockElement):
             .with_examples(
                 [
                     "```python\n| print('Hello, world!')\n| return 42\n```",
-                    "```json\n| {\n|   \"name\": \"Alice\",\n|   \"age\": 30\n| }\n```"
+                    '```json\n| {\n|   "name": "Alice",\n|   "age": 30\n| }\n```',
                 ]
             )
             .build()

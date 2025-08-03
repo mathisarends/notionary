@@ -89,10 +89,6 @@ class BookmarkElement(NotionBlockElement):
         return f'[bookmark]({url} "{text}")'
 
     @classmethod
-    def is_multiline(cls) -> bool:
-        return False
-
-    @classmethod
     def _extract_text(cls, rich: list[dict]) -> str:
         result = ""
         for obj in rich:

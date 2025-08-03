@@ -17,6 +17,7 @@ class CreateColumnBlock(BaseModel):
     type: Literal["column"] = "column"
     column: ColumnBlock
 
+
 class ColumnListBlock(BaseModel):
     children: list[CreateColumnBlock] = Field(default_factory=list)
 

@@ -27,7 +27,7 @@ class TableElement(NotionBlockElement):
 
     # Pattern für Table-Zeilen (jede Zeile die mit | startet und endet)
     ROW_PATTERN = re.compile(r"^\s*\|(.+)\|\s*$")
-    # Pattern für Separator-Zeilen  
+    # Pattern für Separator-Zeilen
     SEPARATOR_PATTERN = re.compile(r"^\s*\|([\s\-:|]+)\|\s*$")
 
     @classmethod
@@ -55,9 +55,9 @@ class TableElement(NotionBlockElement):
             table_width=col_count,
             has_column_header=True,
             has_row_header=False,
-            children=[]  # Will be populated by stack processor
+            children=[],  # Will be populated by stack processor
         )
-        
+
         return CreateTableBlock(table=table_block)
 
     @classmethod
@@ -74,9 +74,15 @@ class TableElement(NotionBlockElement):
 
         if not children:
             table_width = table_data.table_width or 3
-            header = "| " + " | ".join([f"Column {i+1}" for i in range(table_width)]) + " |"
-            separator = "| " + " | ".join(["--------" for _ in range(table_width)]) + " |"
-            data_row = "| " + " | ".join(["        " for _ in range(table_width)]) + " |"
+            header = (
+                "| " + " | ".join([f"Column {i+1}" for i in range(table_width)]) + " |"
+            )
+            separator = (
+                "| " + " | ".join(["--------" for _ in range(table_width)]) + " |"
+            )
+            data_row = (
+                "| " + " | ".join(["        " for _ in range(table_width)]) + " |"
+            )
             table_rows = [header, separator, data_row]
             return "\n".join(table_rows)
 
@@ -103,15 +109,12 @@ class TableElement(NotionBlockElement):
 
             if not header_processed and table_data.has_column_header:
                 header_processed = True
-                separator = "| " + " | ".join(["--------" for _ in range(len(cells))]) + " |"
+                separator = (
+                    "| " + " | ".join(["--------" for _ in range(len(cells))]) + " |"
+                )
                 table_rows.append(separator)
 
         return "\n".join(table_rows)
-
-    @classmethod
-    def is_multiline(cls) -> bool:
-        """Tables are no longer multiline - they use the stack system."""
-        return False
 
     @classmethod
     def _parse_table_row(cls, row_text: str) -> list[str]:
@@ -149,7 +152,7 @@ class TableElement(NotionBlockElement):
             .with_examples(
                 [
                     "| Product | Price | Stock |\n| | ------- | ----- | ----- |\n| | Widget A | $10.99 | 42 |",
-                    "| Name | Role | Department |\n| | ---- | ---- | ---------- |\n| | John Smith | Manager | Marketing |"
+                    "| Name | Role | Department |\n| | ---- | ---- | ---------- |\n| | John Smith | Manager | Marketing |",
                 ]
             )
             .build()

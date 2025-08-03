@@ -111,10 +111,6 @@ class BlockRegistry:
 
         return handler.notion_to_markdown(block)
 
-    def get_multiline_elements(self) -> list[Type[NotionBlockElement]]:
-        """Get all registered multiline elements."""
-        return [element for element in self._elements if element.is_multiline()]
-
     def get_elements(self) -> list[Type[NotionBlockElement]]:
         """Get all registered elements."""
         return self._elements.copy()

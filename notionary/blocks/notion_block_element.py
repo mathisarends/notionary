@@ -37,9 +37,5 @@ class NotionBlockElement(ABC):
         return bool(cls.notion_to_markdown(block))  # Now calls the class's version
 
     @classmethod
-    def is_multiline(cls) -> bool:
-        return False
-
-    @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         """Returns a dictionary with information for LLM prompts about this element."""
