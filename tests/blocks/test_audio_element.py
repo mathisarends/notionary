@@ -56,19 +56,19 @@ def test_match_notion_block():
     audio_block.type = "audio"
     audio_block.audio = Mock()  # audio ist nicht None
     assert AudioElement.match_notion(audio_block)
-    
+
     # Invalid block types
     paragraph_block = Mock()
     paragraph_block.type = "paragraph"
     paragraph_block.audio = None
     assert not AudioElement.match_notion(paragraph_block)
-    
+
     # Audio block but audio is None
     empty_audio_block = Mock()
     empty_audio_block.type = "audio"
     empty_audio_block.audio = None
     assert not AudioElement.match_notion(empty_audio_block)
-    
+
     image_block = Mock()
     image_block.type = "image"
     image_block.audio = None
@@ -79,7 +79,7 @@ def test_markdown_to_notion_with_caption():
     """Test conversion from markdown to Notion with caption."""
     markdown = '[audio](https://abc.com/music.mp3 "Mein Song")'
     result = AudioElement.markdown_to_notion(markdown)
-    
+
     assert result is not None
     # Result sollte ein CreateAudioBlock Pydantic-Modell sein
     assert result.type == "audio"
@@ -93,7 +93,7 @@ def test_markdown_to_notion_without_caption():
     """Test conversion from markdown to Notion without caption."""
     markdown = "[audio](https://x.de/track.wav)"
     result = AudioElement.markdown_to_notion(markdown)
-    
+
     assert result is not None
     assert result.type == "audio"
     assert result.audio.type == "external"
@@ -117,16 +117,16 @@ def test_notion_to_markdown_with_caption():
     notion_block.audio.type = "external"
     notion_block.audio.external = Mock()
     notion_block.audio.external.url = "https://sound.com/track.ogg"
-    
+
     # Mock RichTextObject
     caption_rt = Mock()
     caption_rt.model_dump.return_value = {
         "type": "text",
         "text": {"content": "Der Sound"},
-        "plain_text": "Der Sound"
+        "plain_text": "Der Sound",
     }
     notion_block.audio.caption = [caption_rt]
-    
+
     result = AudioElement.notion_to_markdown(notion_block)
     assert result == '[audio](https://sound.com/track.ogg "Der Sound")'
 
@@ -140,7 +140,7 @@ def test_notion_to_markdown_without_caption():
     notion_block.audio.external = Mock()
     notion_block.audio.external.url = "https://sound.com/no-caption.mp3"
     notion_block.audio.caption = []
-    
+
     result = AudioElement.notion_to_markdown(notion_block)
     assert result == "[audio](https://sound.com/no-caption.mp3)"
 
@@ -152,13 +152,13 @@ def test_notion_to_markdown_invalid_cases():
     paragraph_block.type = "paragraph"
     paragraph_block.audio = None
     assert AudioElement.notion_to_markdown(paragraph_block) is None
-    
+
     # Audio is None
     audio_none_block = Mock()
     audio_none_block.type = "audio"
     audio_none_block.audio = None
     assert AudioElement.notion_to_markdown(audio_none_block) is None
-    
+
     # Not external type
     file_block = Mock()
     file_block.type = "audio"
@@ -166,7 +166,7 @@ def test_notion_to_markdown_invalid_cases():
     file_block.audio.type = "file"
     file_block.audio.external = None
     assert AudioElement.notion_to_markdown(file_block) is None
-    
+
     # Missing URL
     no_url_block = Mock()
     no_url_block.type = "audio"
@@ -185,19 +185,16 @@ def test_extract_text_content():
         {"type": "text", "text": {"content": "Audio"}},
     ]
     assert AudioElement._extract_text_content(rt) == "Test Audio"
-    
+
     # Plain text fallback
     rt2 = [{"plain_text": "BackupText"}]
     assert AudioElement._extract_text_content(rt2) == "BackupText"
-    
+
     # Empty list
     assert AudioElement._extract_text_content([]) == ""
-    
+
     # Mixed content
-    rt3 = [
-        {"type": "text", "text": {"content": "Hello "}},
-        {"plain_text": "World"}
-    ]
+    rt3 = [{"type": "text", "text": {"content": "Hello "}}, {"plain_text": "World"}]
     assert AudioElement._extract_text_content(rt3) == "Hello World"
 
 
@@ -213,8 +210,10 @@ def test_is_likely_audio_url():
     assert AudioElement._is_likely_audio_url("https://example.com/file.ogg")
     assert AudioElement._is_likely_audio_url("https://example.com/file.oga")
     assert AudioElement._is_likely_audio_url("https://example.com/file.m4a")
-    assert AudioElement._is_likely_audio_url("https://example.com/file.MP3")  # Case insensitive
-    
+    assert AudioElement._is_likely_audio_url(
+        "https://example.com/file.MP3"
+    )  # Case insensitive
+
     # Invalid URLs
     assert not AudioElement._is_likely_audio_url("https://example.com/file.jpg")
     assert not AudioElement._is_likely_audio_url("https://example.com/file.mp4")
@@ -273,10 +272,10 @@ def test_extra_whitespace_and_caption_spaces():
     md = '   [audio](https://aud.io/a.mp3 "  Caption mit Leerzeichen   ")   '
     block = AudioElement.markdown_to_notion(md)
     assert block is not None
-    
+
     # Caption spaces should be preserved
     assert block.audio.caption[0].plain_text == "  Caption mit Leerzeichen   "
-    
+
     back = AudioElement.notion_to_markdown(block)
     assert back == '[audio](https://aud.io/a.mp3 "  Caption mit Leerzeichen   ")'
 
@@ -308,7 +307,7 @@ def test_url_validation():
     ]
     for url in valid_urls:
         assert AudioElement.match_markdown(url)
-    
+
     # Invalid URLs
     invalid_urls = [
         "[audio](ftp://example.com/file.mp3)",  # Wrong protocol
@@ -329,7 +328,7 @@ def test_caption_with_quotes():
     result = AudioElement.match_markdown(markdown)
     # Depending on your regex, this might be False
     # Just document the current behavior
-    
+
     # Simple caption without internal quotes should definitely work
     simple_caption = '[audio](https://example.com/file.mp3 "Simple caption")'
     assert AudioElement.match_markdown(simple_caption)
@@ -343,14 +342,14 @@ def test_multiple_caption_rich_text_objects():
     notion_block.audio.type = "external"
     notion_block.audio.external = Mock()
     notion_block.audio.external.url = "https://example.com/audio.mp3"
-    
+
     # Multiple rich text objects
     rt1 = Mock()
     rt1.model_dump.return_value = {"type": "text", "text": {"content": "Part 1 "}}
     rt2 = Mock()
     rt2.model_dump.return_value = {"type": "text", "text": {"content": "Part 2"}}
     notion_block.audio.caption = [rt1, rt2]
-    
+
     result = AudioElement.notion_to_markdown(notion_block)
     assert result == '[audio](https://example.com/audio.mp3 "Part 1 Part 2")'
 
@@ -363,11 +362,11 @@ def test_notion_to_markdown_with_plain_text_fallback():
     notion_block.audio.type = "external"
     notion_block.audio.external = Mock()
     notion_block.audio.external.url = "https://example.com/audio.mp3"
-    
+
     # Rich text object without text content, should use plain_text
     rt = Mock()
     rt.model_dump.return_value = {"plain_text": "Fallback Text", "type": "mention"}
     notion_block.audio.caption = [rt]
-    
+
     result = AudioElement.notion_to_markdown(notion_block)
     assert result == '[audio](https://example.com/audio.mp3 "Fallback Text")'

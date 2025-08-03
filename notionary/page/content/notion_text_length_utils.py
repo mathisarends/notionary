@@ -21,17 +21,19 @@ def fix_blocks_content_length(
     blocks: list[BlockCreateRequest], max_text_length: int = 1900
 ) -> list[BlockCreateRequest]:
     """Check each block and ensure text content doesn't exceed Notion's limit."""
-    return [_fix_single_block_content(block, max_text_length) for block in blocks]
+    fixed_blocks: list[BlockCreateRequest] = []
+
+    for block in blocks:
+        fixed_block = _fix_single_block_content(block, max_text_length)
+        fixed_blocks.append(fixed_block)
+    return fixed_blocks
 
 
 def _fix_single_block_content(
     block: BlockCreateRequest, max_text_length: int
 ) -> BlockCreateRequest:
     """Fix content length in a single block and its children recursively."""
-    # Create a deep copy to avoid mutating the original
     block_copy = block.model_copy(deep=True)
-
-    # Work directly on the Pydantic object
     _fix_block_rich_text_direct(block_copy, max_text_length)
 
     return block_copy
@@ -41,17 +43,11 @@ def _fix_block_rich_text_direct(
     block: BlockCreateRequest, max_text_length: int
 ) -> None:
     """Fix rich text content directly on the Pydantic object."""
-
-    # Get the block content based on its type
     block_content = _get_block_content(block)
     if not block_content:
         return
-
-    # Fix rich_text if it exists
     if hasattr(block_content, "rich_text") and block_content.rich_text:
         _fix_rich_text_objects_direct(block_content.rich_text, max_text_length)
-
-    # Handle children recursively
     if hasattr(block_content, "children") and block_content.children:
         for child in block_content.children:
             _fix_block_rich_text_direct(child, max_text_length)

@@ -100,10 +100,6 @@ class VideoElement(NotionBlockElement):
         return f'[video]({url} "{caption}")'
 
     @classmethod
-    def is_multiline(cls) -> bool:
-        return False
-
-    @classmethod
     def _get_youtube_id(cls, url: str) -> Optional[str]:
         for pat in cls.YOUTUBE_PATTERNS:
             m = pat.match(url)

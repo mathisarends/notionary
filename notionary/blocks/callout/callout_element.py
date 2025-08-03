@@ -85,10 +85,6 @@ class CalloutElement(NotionBlockElement):
         return f"[callout]({content})"
 
     @classmethod
-    def is_multiline(cls) -> bool:
-        return False
-
-    @classmethod
     def _get_emoji(cls, icon: IconObject) -> str:
         if hasattr(icon, "emoji"):
             return icon.emoji or ""

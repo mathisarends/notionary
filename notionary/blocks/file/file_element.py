@@ -93,10 +93,6 @@ class FileElement(NotionBlockElement):
         return f'[file]({url} "{text}")'
 
     @classmethod
-    def is_multiline(cls) -> bool:
-        return False
-
-    @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         return (
             ElementPromptBuilder()

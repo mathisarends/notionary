@@ -7,7 +7,11 @@ import pytest
 from unittest.mock import patch
 
 from notionary.blocks.callout.callout_element import CalloutElement
-from notionary.blocks.rich_text.rich_text_models import RichTextObject, TextContent, TextAnnotations
+from notionary.blocks.rich_text.rich_text_models import (
+    RichTextObject,
+    TextContent,
+    TextAnnotations,
+)
 from notionary.models.notion_page_response import EmojiIcon
 
 
@@ -38,7 +42,7 @@ def create_rich_text_object(content: str) -> RichTextObject:
         type="text",
         text=TextContent(content=content),
         annotations=TextAnnotations(),
-        plain_text=content
+        plain_text=content,
     )
 
 
@@ -61,7 +65,7 @@ def test_match_notion():
     """Test recognition of Notion callout blocks."""
     from notionary.blocks.block_models import Block
     from notionary.blocks.callout.callout_models import CalloutBlock
-    
+
     # Create a mock block with callout
     block = Block(
         object="block",
@@ -72,11 +76,10 @@ def test_match_notion():
         created_by={"object": "user", "id": "user-id"},
         last_edited_by={"object": "user", "id": "user-id"},
         callout=CalloutBlock(
-            rich_text=[create_rich_text_object("Test")],
-            icon=EmojiIcon(emoji="💡")
-        )
+            rich_text=[create_rich_text_object("Test")], icon=EmojiIcon(emoji="💡")
+        ),
     )
-    
+
     assert CalloutElement.match_notion(block)
 
     # Test non-callout block
@@ -87,9 +90,9 @@ def test_match_notion():
         created_time="2023-01-01T00:00:00.000Z",
         last_edited_time="2023-01-01T00:00:00.000Z",
         created_by={"object": "user", "id": "user-id"},
-        last_edited_by={"object": "user", "id": "user-id"}
+        last_edited_by={"object": "user", "id": "user-id"},
     )
-    
+
     assert not CalloutElement.match_notion(block_paragraph)
 
 
@@ -126,7 +129,7 @@ def test_notion_to_markdown_simple(mock_extract_text):
     """Test conversion of simple Notion callout to Markdown."""
     from notionary.blocks.block_models import Block
     from notionary.blocks.callout.callout_models import CalloutBlock
-    
+
     block = Block(
         object="block",
         id="test-id",
@@ -138,8 +141,8 @@ def test_notion_to_markdown_simple(mock_extract_text):
         callout=CalloutBlock(
             rich_text=[create_rich_text_object("Simple callout")],
             icon=EmojiIcon(emoji="💡"),
-            color="gray_background"
-        )
+            color="gray_background",
+        ),
     )
 
     mock_extract_text.return_value = "Simple callout"
@@ -152,7 +155,7 @@ def test_notion_to_markdown_with_custom_emoji(mock_extract_text):
     """Test conversion of Notion callout with custom emoji."""
     from notionary.blocks.block_models import Block
     from notionary.blocks.callout.callout_models import CalloutBlock
-    
+
     block = Block(
         object="block",
         id="test-id",
@@ -164,8 +167,8 @@ def test_notion_to_markdown_with_custom_emoji(mock_extract_text):
         callout=CalloutBlock(
             rich_text=[create_rich_text_object("Warning message")],
             icon=EmojiIcon(emoji="⚠️"),
-            color="gray_background"
-        )
+            color="gray_background",
+        ),
     )
 
     mock_extract_text.return_value = "Warning message"
@@ -177,7 +180,7 @@ def test_notion_to_markdown_with_custom_emoji(mock_extract_text):
 def test_notion_to_markdown_invalid():
     """Test invalid Notion block returns None."""
     from notionary.blocks.block_models import Block
-    
+
     block = Block(
         object="block",
         id="test-id",
@@ -185,9 +188,9 @@ def test_notion_to_markdown_invalid():
         created_time="2023-01-01T00:00:00.000Z",
         last_edited_time="2023-01-01T00:00:00.000Z",
         created_by={"object": "user", "id": "user-id"},
-        last_edited_by={"object": "user", "id": "user-id"}
+        last_edited_by={"object": "user", "id": "user-id"},
     )
-    
+
     result = CalloutElement.notion_to_markdown(block)
     assert result is None
 
@@ -201,9 +204,21 @@ def test_roundtrip_conversion(mock_extract_text):
     """Test that Markdown -> Notion -> Markdown preserves content."""
     test_cases = [
         ("[callout](Simple callout)", "Simple callout", "[callout](Simple callout)"),
-        ('[callout](Warning message "⚠️")', "Warning message", '[callout](Warning message "⚠️")'),
-        ('[callout](Info message "🔔")', "Info message", '[callout](Info message "🔔")'),
-        ('[callout](Success message "✅")', "Success message", '[callout](Success message "✅")'),
+        (
+            '[callout](Warning message "⚠️")',
+            "Warning message",
+            '[callout](Warning message "⚠️")',
+        ),
+        (
+            '[callout](Info message "🔔")',
+            "Info message",
+            '[callout](Info message "🔔")',
+        ),
+        (
+            '[callout](Success message "✅")',
+            "Success message",
+            '[callout](Success message "✅")',
+        ),
     ]
 
     for original_markdown, expected_text, expected_result in test_cases:
@@ -215,7 +230,7 @@ def test_roundtrip_conversion(mock_extract_text):
 
         # Create a proper Block instance for notion_to_markdown
         from notionary.blocks.block_models import Block
-        
+
         block = Block(
             object="block",
             id="test-id",
@@ -224,7 +239,7 @@ def test_roundtrip_conversion(mock_extract_text):
             last_edited_time="2023-01-01T00:00:00.000Z",
             created_by={"object": "user", "id": "user-id"},
             last_edited_by={"object": "user", "id": "user-id"},
-            callout=notion_block.callout
+            callout=notion_block.callout,
         )
 
         # Mock the text extraction
@@ -235,7 +250,9 @@ def test_roundtrip_conversion(mock_extract_text):
         assert result_markdown is not None, "Failed to convert back to Markdown"
 
         # Check exact match
-        assert result_markdown == expected_result, f"Expected {expected_result}, got {result_markdown}"
+        assert (
+            result_markdown == expected_result
+        ), f"Expected {expected_result}, got {result_markdown}"
 
 
 # Parametrized tests for various input formats
@@ -271,7 +288,7 @@ def test_notion_block_recognition(block_type, should_match):
     """Test recognition of different Notion block types."""
     from notionary.blocks.block_models import Block
     from notionary.blocks.callout.callout_models import CalloutBlock
-    
+
     block_data = {
         "object": "block",
         "id": "test-id",
@@ -279,15 +296,14 @@ def test_notion_block_recognition(block_type, should_match):
         "created_time": "2023-01-01T00:00:00.000Z",
         "last_edited_time": "2023-01-01T00:00:00.000Z",
         "created_by": {"object": "user", "id": "user-id"},
-        "last_edited_by": {"object": "user", "id": "user-id"}
+        "last_edited_by": {"object": "user", "id": "user-id"},
     }
-    
+
     if block_type == "callout":
         block_data["callout"] = CalloutBlock(
-            rich_text=[create_rich_text_object("Test")],
-            icon=EmojiIcon(emoji="💡")
+            rich_text=[create_rich_text_object("Test")], icon=EmojiIcon(emoji="💡")
         )
-    
+
     block = Block(**block_data)
     result = CalloutElement.match_notion(block)
     assert result == should_match
@@ -299,7 +315,7 @@ def simple_callout_block():
     """Fixture for simple callout block."""
     from notionary.blocks.block_models import Block
     from notionary.blocks.callout.callout_models import CalloutBlock
-    
+
     return Block(
         object="block",
         id="test-id",
@@ -311,8 +327,8 @@ def simple_callout_block():
         callout=CalloutBlock(
             rich_text=[create_rich_text_object("Test callout")],
             icon=EmojiIcon(emoji="💡"),
-            color="gray_background"
-        )
+            color="gray_background",
+        ),
     )
 
 
@@ -321,7 +337,7 @@ def warning_callout_block():
     """Fixture for warning callout block with custom emoji."""
     from notionary.blocks.block_models import Block
     from notionary.blocks.callout.callout_models import CalloutBlock
-    
+
     return Block(
         object="block",
         id="test-id",
@@ -333,8 +349,8 @@ def warning_callout_block():
         callout=CalloutBlock(
             rich_text=[create_rich_text_object("Warning message")],
             icon=EmojiIcon(emoji="⚠️"),
-            color="gray_background"
-        )
+            color="gray_background",
+        ),
     )
 
 
@@ -442,7 +458,7 @@ def test_notion_to_markdown_empty_rich_text(mock_extract_text):
     """Test handling of empty rich_text."""
     from notionary.blocks.block_models import Block
     from notionary.blocks.callout.callout_models import CalloutBlock
-    
+
     block = Block(
         object="block",
         id="test-id",
@@ -452,10 +468,8 @@ def test_notion_to_markdown_empty_rich_text(mock_extract_text):
         created_by={"object": "user", "id": "user-id"},
         last_edited_by={"object": "user", "id": "user-id"},
         callout=CalloutBlock(
-            rich_text=[],
-            icon=EmojiIcon(emoji="💡"),
-            color="gray_background"
-        )
+            rich_text=[], icon=EmojiIcon(emoji="💡"), color="gray_background"
+        ),
     )
 
     mock_extract_text.return_value = ""

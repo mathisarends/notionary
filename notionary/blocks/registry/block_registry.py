@@ -6,6 +6,7 @@ from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlock
 from notionary.page.markdown_syntax_prompt_generator import (
     MarkdownSyntaxPromptGenerator,
 )
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 from notionary.telemetry import (
     ProductTelemetry,

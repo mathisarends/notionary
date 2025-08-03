@@ -4,7 +4,6 @@ from .table_markdown_node import TableMarkdownNode
 from .table_models import (
     TableBlock,
     TableRowBlock,
-
 )
 
 __all__ = [

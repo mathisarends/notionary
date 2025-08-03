@@ -83,10 +83,6 @@ class HeadingElement(NotionBlockElement):
         return f"{'#' * level} {text}"
 
     @classmethod
-    def is_multiline(cls) -> bool:
-        return False
-
-    @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         return (
             ElementPromptBuilder()

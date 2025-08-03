@@ -5,10 +5,21 @@ Tests conversion between Markdown file embeds and Notion file blocks.
 
 import pytest
 from notionary.blocks.file import FileElement
-from notionary.blocks.file.file_element_models import FileBlock, CreateFileBlock, ExternalFile
-from notionary.blocks.paragraph.paragraph_models import ParagraphBlock, CreateParagraphBlock
+from notionary.blocks.file.file_element_models import (
+    FileBlock,
+    CreateFileBlock,
+    ExternalFile,
+)
+from notionary.blocks.paragraph.paragraph_models import (
+    ParagraphBlock,
+    CreateParagraphBlock,
+)
 from notionary.blocks.block_models import Block
-from notionary.blocks.rich_text.rich_text_models import RichTextObject, TextContent, TextAnnotations
+from notionary.blocks.rich_text.rich_text_models import (
+    RichTextObject,
+    TextContent,
+    TextAnnotations,
+)
 
 
 def create_rich_text_object(content: str) -> RichTextObject:
@@ -17,7 +28,7 @@ def create_rich_text_object(content: str) -> RichTextObject:
         type="text",
         text=TextContent(content=content),
         annotations=TextAnnotations(),
-        plain_text=content
+        plain_text=content,
     )
 
 
@@ -29,7 +40,7 @@ def create_block_with_required_fields(**kwargs) -> Block:
         "created_time": "2023-01-01T00:00:00.000Z",
         "last_edited_time": "2023-01-01T00:00:00.000Z",
         "created_by": {"object": "user", "id": "user-id"},
-        "last_edited_by": {"object": "user", "id": "user-id"}
+        "last_edited_by": {"object": "user", "id": "user-id"},
     }
     defaults.update(kwargs)
     return Block(**defaults)
@@ -89,9 +100,8 @@ def test_match_notion_block():
     file_block = create_block_with_required_fields(
         type="file",
         file=FileBlock(
-            type="external",
-            external=ExternalFile(url="https://example.com/file.pdf")
-        )
+            type="external", external=ExternalFile(url="https://example.com/file.pdf")
+        ),
     )
     assert FileElement.match_notion(file_block)
 
@@ -132,7 +142,7 @@ def test_markdown_to_notion(markdown, url, caption):
     assert file_block.type == "file"
     assert file_block.file.type == "external"
     assert file_block.file.external.url == url
-    
+
     if caption:
         assert len(file_block.file.caption) > 0
         assert file_block.file.caption[0].plain_text == caption
@@ -159,8 +169,8 @@ def test_notion_to_markdown_with_caption():
         file=FileBlock(
             type="external",
             external=ExternalFile(url="https://files.com/cv.pdf"),
-            caption=[create_rich_text_object("Mein Lebenslauf")]
-        )
+            caption=[create_rich_text_object("Mein Lebenslauf")],
+        ),
     )
     result = FileElement.notion_to_markdown(notion_block)
     assert result == '[file](https://files.com/cv.pdf "Mein Lebenslauf")'
@@ -172,8 +182,8 @@ def test_notion_to_markdown_without_caption():
         file=FileBlock(
             type="external",
             external=ExternalFile(url="https://x.com/empty.pdf"),
-            caption=[]
-        )
+            caption=[],
+        ),
     )
     result = FileElement.notion_to_markdown(notion_block)
     assert result == "[file](https://x.com/empty.pdf)"
@@ -181,14 +191,16 @@ def test_notion_to_markdown_without_caption():
 
 def test_notion_to_markdown_file_type():
     from notionary.blocks.file.file_element_models import NotionHostedFile
-    
+
     notion_block = create_block_with_required_fields(
         type="file",
         file=FileBlock(
             type="file",
-            file=NotionHostedFile(url="https://notion.com/file.doc", expiry_time="2024-01-01T00:00:00Z"),
-            caption=[]
-        )
+            file=NotionHostedFile(
+                url="https://notion.com/file.doc", expiry_time="2024-01-01T00:00:00Z"
+            ),
+            caption=[],
+        ),
     )
     result = FileElement.notion_to_markdown(notion_block)
     assert result == "[file](https://notion.com/file.doc)"
@@ -203,8 +215,7 @@ def test_notion_to_markdown_invalid_cases():
 
     # File block without URL
     file_block_no_url = create_block_with_required_fields(
-        type="file",
-        file=FileBlock(type="external")
+        type="file", file=FileBlock(type="external")
     )
     assert FileElement.notion_to_markdown(file_block_no_url) is None
 
@@ -216,9 +227,9 @@ def test_extract_text_content():
         {"type": "text", "text": {"content": "Dokument"}},
     ]
     # Assuming _extract_text_content handles dict format
-    if hasattr(FileElement, '_extract_text_content'):
+    if hasattr(FileElement, "_extract_text_content"):
         assert FileElement._extract_text_content(rt) == "Test Dokument"
-        
+
         rt2 = [{"plain_text": "BackupText"}]
         assert FileElement._extract_text_content(rt2) == "BackupText"
         assert FileElement._extract_text_content([]) == ""
@@ -244,8 +255,7 @@ def test_roundtrip_conversion(markdown):
     # Create Block for notion_to_markdown
     file_create_block = notion_blocks[0]
     notion_block = create_block_with_required_fields(
-        type="file",
-        file=file_create_block.file
+        type="file", file=file_create_block.file
     )
 
     # Convert back to Markdown
@@ -268,14 +278,13 @@ def test_unicode_and_special_caption(caption):
     markdown = f'[file]({url} "{caption}")' if caption else f"[file]({url})"
     blocks = FileElement.markdown_to_notion(markdown)
     assert blocks is not None
-    
+
     # Create Block for roundtrip
     file_create_block = blocks[0]
     file_block = create_block_with_required_fields(
-        type="file",
-        file=file_create_block.file
+        type="file", file=file_create_block.file
     )
-    
+
     roundtrip = FileElement.notion_to_markdown(file_block)
     assert roundtrip == markdown
 
@@ -284,17 +293,14 @@ def test_extra_whitespace_and_newlines():
     md = '   [file](https://x.com/d.pdf "  Caption with spaces   ")   '
     blocks = FileElement.markdown_to_notion(md)
     assert blocks is not None
-    
+
     file_block = blocks[0]
     assert isinstance(file_block, CreateFileBlock)
     assert file_block.file.caption[0].plain_text == "  Caption with spaces   "
-    
+
     # Create Block for roundtrip
-    notion_block = create_block_with_required_fields(
-        type="file",
-        file=file_block.file
-    )
-    
+    notion_block = create_block_with_required_fields(type="file", file=file_block.file)
+
     back = FileElement.notion_to_markdown(notion_block)
     # The markdown conversion should normalize whitespace around the syntax
     assert back == '[file](https://x.com/d.pdf "  Caption with spaces   ")'
@@ -318,14 +324,25 @@ def test_integration_with_other_elements():
 def test_file_types_and_extensions():
     """Test various file types and extensions."""
     file_types = [
-        "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
-        "txt", "rtf", "odt", "ods", "odp", "csv"
+        "pdf",
+        "doc",
+        "docx",
+        "xls",
+        "xlsx",
+        "ppt",
+        "pptx",
+        "txt",
+        "rtf",
+        "odt",
+        "ods",
+        "odp",
+        "csv",
     ]
-    
+
     for ext in file_types:
         url = f"https://example.com/document.{ext}"
         markdown = f"[file]({url})"
-        
+
         result = FileElement.markdown_to_notion(markdown)
         assert result is not None
         assert result[0].file.external.url == url
@@ -339,7 +356,7 @@ def test_complex_urls():
         "https://dropbox.com/s/abc123/file.pdf?dl=0",
         "https://onedrive.live.com/edit.aspx?resid=ABC123&authkey=xyz",
     ]
-    
+
     for url in complex_urls:
         markdown = f"[file]({url})"
         result = FileElement.markdown_to_notion(markdown)
@@ -356,8 +373,8 @@ def simple_file_block():
         file=FileBlock(
             type="external",
             external=ExternalFile(url="https://example.com/document.pdf"),
-            caption=[]
-        )
+            caption=[],
+        ),
     )
 
 
@@ -369,8 +386,8 @@ def file_block_with_caption():
         file=FileBlock(
             type="external",
             external=ExternalFile(url="https://docs.example.com/report.pdf"),
-            caption=[create_rich_text_object("Annual Report 2024")]
-        )
+            caption=[create_rich_text_object("Annual Report 2024")],
+        ),
     )
 
 
@@ -391,22 +408,20 @@ def test_notion_block_validation():
     valid_block = create_block_with_required_fields(
         type="file",
         file=FileBlock(
-            type="external",
-            external=ExternalFile(url="https://example.com/file.pdf")
-        )
+            type="external", external=ExternalFile(url="https://example.com/file.pdf")
+        ),
     )
     assert FileElement.match_notion(valid_block)
-    
+
     # Block with wrong type
     wrong_type_block = create_block_with_required_fields(
         type="paragraph",
         file=FileBlock(
-            type="external",
-            external=ExternalFile(url="https://example.com/file.pdf")
-        )
+            type="external", external=ExternalFile(url="https://example.com/file.pdf")
+        ),
     )
     assert not FileElement.match_notion(wrong_type_block)
-    
+
     # Block with correct type but no file content
     no_content_block = create_block_with_required_fields(type="file")
     assert not FileElement.match_notion(no_content_block)
@@ -416,10 +431,10 @@ def test_file_block_structure():
     """Test the exact structure of converted file blocks."""
     markdown = '[file](https://example.com/test.pdf "Test Document")'
     result = FileElement.markdown_to_notion(markdown)
-    
+
     assert isinstance(result, list)
     assert len(result) == 2
-    
+
     # Check file block structure
     file_block = result[0]
     assert isinstance(file_block, CreateFileBlock)
@@ -430,7 +445,7 @@ def test_file_block_structure():
     assert file_block.file.external.url == "https://example.com/test.pdf"
     assert len(file_block.file.caption) == 1
     assert file_block.file.caption[0].plain_text == "Test Document"
-    
+
     # Check paragraph block structure
     paragraph_block = result[1]
     assert isinstance(paragraph_block, CreateParagraphBlock)

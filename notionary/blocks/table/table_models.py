@@ -9,7 +9,7 @@ class TableBlock(BaseModel):
     table_width: int
     has_column_header: bool = False
     has_row_header: bool = False
-    children: list[CreateTableRowBlock] = [] 
+    children: list[CreateTableRowBlock] = []
 
 
 class TableRowBlock(BaseModel):

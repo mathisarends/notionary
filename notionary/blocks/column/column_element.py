@@ -99,11 +99,6 @@ class ColumnElement(NotionBlockElement):
         return "\n".join(result)
 
     @classmethod
-    def is_multiline(cls) -> bool:
-        """Column blocks span multiple lines."""
-        return True
-
-    @classmethod
     def find_matches(
         cls, text: str, converter_callback: Optional[Callable] = None
     ) -> list[tuple[int, int, dict[str, Any]]]:
@@ -268,11 +263,6 @@ class ColumnElement(NotionBlockElement):
         # Create column block
         column_block = {"type": "column", "column": {"children": column_blocks}}
         columns_children.append(column_block)
-
-    @classmethod
-    def is_multiline(cls) -> bool:
-        """Column blocks span multiple lines."""
-        return True
 
     @staticmethod
     def _preprocess_column_content(lines: list[str]) -> list[str]:

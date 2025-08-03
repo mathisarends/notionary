@@ -7,7 +7,11 @@ import pytest
 from notionary.blocks.code import CodeElement
 from notionary.blocks.code.code_models import CodeBlock, CreateCodeBlock
 from notionary.blocks.block_models import Block
-from notionary.blocks.rich_text.rich_text_models import RichTextObject, TextContent, TextAnnotations
+from notionary.blocks.rich_text.rich_text_models import (
+    RichTextObject,
+    TextContent,
+    TextAnnotations,
+)
 
 
 def create_rich_text_object(content: str) -> RichTextObject:
@@ -16,7 +20,7 @@ def create_rich_text_object(content: str) -> RichTextObject:
         type="text",
         text=TextContent(content=content),
         annotations=TextAnnotations(),
-        plain_text=content
+        plain_text=content,
     )
 
 
@@ -28,7 +32,7 @@ def create_block_with_required_fields(**kwargs) -> Block:
         "created_time": "2023-01-01T00:00:00.000Z",
         "last_edited_time": "2023-01-01T00:00:00.000Z",
         "created_by": {"object": "user", "id": "user-id"},
-        "last_edited_by": {"object": "user", "id": "user-id"}
+        "last_edited_by": {"object": "user", "id": "user-id"},
     }
     defaults.update(kwargs)
     return Block(**defaults)
@@ -55,9 +59,8 @@ def test_match_notion():
     code_block = create_block_with_required_fields(
         type="code",
         code=CodeBlock(
-            rich_text=[create_rich_text_object("print('test')")],
-            language="python"
-        )
+            rich_text=[create_rich_text_object("print('test')")], language="python"
+        ),
     )
     assert CodeElement.match_notion(code_block)
 
@@ -113,9 +116,8 @@ def test_notion_to_markdown():
     block = create_block_with_required_fields(
         type="code",
         code=CodeBlock(
-            language="python",
-            rich_text=[create_rich_text_object("print('Hi')")]
-        )
+            language="python", rich_text=[create_rich_text_object("print('Hi')")]
+        ),
     )
 
     result = CodeElement.notion_to_markdown(block)
@@ -129,8 +131,8 @@ def test_notion_to_markdown_with_caption():
         code=CodeBlock(
             language="python",
             rich_text=[create_rich_text_object("print('test')")],
-            caption=[create_rich_text_object("Example")]
-        )
+            caption=[create_rich_text_object("Example")],
+        ),
     )
 
     result = CodeElement.notion_to_markdown(block)
@@ -241,9 +243,8 @@ def simple_code_block():
     return create_block_with_required_fields(
         type="code",
         code=CodeBlock(
-            language="python",
-            rich_text=[create_rich_text_object("print('test')")]
-        )
+            language="python", rich_text=[create_rich_text_object("print('test')")]
+        ),
     )
 
 
@@ -255,8 +256,8 @@ def code_block_with_caption():
         code=CodeBlock(
             language="javascript",
             rich_text=[create_rich_text_object("console.log('hello');")],
-            caption=[create_rich_text_object("Example JS code")]
-        )
+            caption=[create_rich_text_object("Example JS code")],
+        ),
     )
 
 
@@ -355,8 +356,7 @@ def test_roundtrip_conversion():
         # Create a Block for notion_to_markdown
         code_create_block = notion_result[0]  # First item is the code block
         block = create_block_with_required_fields(
-            type="code",
-            code=code_create_block.code
+            type="code", code=code_create_block.code
         )
 
         # Convert back to Markdown
@@ -368,8 +368,12 @@ def test_roundtrip_conversion():
         if "Caption:" in original_markdown:
             assert "Caption:" in result_markdown
             # Check that code content is preserved
-            original_code = original_markdown.split("```")[1].split("\n", 1)[1].rsplit("\n", 1)[0]
-            result_code = result_markdown.split("```")[1].split("\n", 1)[1].rsplit("\n", 1)[0]
+            original_code = (
+                original_markdown.split("```")[1].split("\n", 1)[1].rsplit("\n", 1)[0]
+            )
+            result_code = (
+                result_markdown.split("```")[1].split("\n", 1)[1].rsplit("\n", 1)[0]
+            )
             assert original_code == result_code
         else:
             assert result_markdown == original_markdown
@@ -399,7 +403,7 @@ def test_extract_content_helper():
     """Test the static helper method for extracting content."""
     rich_text_list = [
         create_rich_text_object("line 1\n"),
-        create_rich_text_object("line 2")
+        create_rich_text_object("line 2"),
     ]
 
     result = CodeElement.extract_content(rich_text_list)
@@ -410,7 +414,7 @@ def test_extract_caption_helper():
     """Test the static helper method for extracting caption."""
     caption_list = [
         create_rich_text_object("Caption part 1 "),
-        create_rich_text_object("and part 2")
+        create_rich_text_object("and part 2"),
     ]
 
     result = CodeElement.extract_caption(caption_list)
@@ -428,9 +432,8 @@ def test_plain_text_language_handling():
     block = create_block_with_required_fields(
         type="code",
         code=CodeBlock(
-            language="plain text",
-            rich_text=[create_rich_text_object("some code")]
-        )
+            language="plain text", rich_text=[create_rich_text_object("some code")]
+        ),
     )
 
     markdown_result = CodeElement.notion_to_markdown(block)

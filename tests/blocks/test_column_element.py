@@ -7,10 +7,10 @@ import pytest
 from unittest.mock import patch
 from notionary.blocks.column import ColumnElement
 from notionary.blocks.column.column_models import (
-    ColumnBlock, 
-    CreateColumnBlock, 
-    ColumnListBlock, 
-    CreateColumnListBlock
+    ColumnBlock,
+    CreateColumnBlock,
+    ColumnListBlock,
+    CreateColumnListBlock,
 )
 from notionary.blocks.block_models import Block
 from notionary.blocks.paragraph.paragraph_models import ParagraphBlock
@@ -26,7 +26,7 @@ def create_block_with_required_fields(**kwargs) -> Block:
         "created_time": "2023-01-01T00:00:00.000Z",
         "last_edited_time": "2023-01-01T00:00:00.000Z",
         "created_by": {"object": "user", "id": "user-id"},
-        "last_edited_by": {"object": "user", "id": "user-id"}
+        "last_edited_by": {"object": "user", "id": "user-id"},
     }
     defaults.update(kwargs)
     return Block(**defaults)
@@ -37,8 +37,7 @@ def create_column_block_with_children(children=None):
     if children is None:
         children = []
     return create_block_with_required_fields(
-        type="column",
-        column=ColumnBlock(children=children)
+        type="column", column=ColumnBlock(children=children)
     )
 
 
@@ -47,8 +46,7 @@ def create_column_list_block_with_children(children=None):
     if children is None:
         children = []
     return create_block_with_required_fields(
-        type="column_list",
-        column_list=ColumnListBlock(children=children)
+        type="column_list", column_list=ColumnListBlock(children=children)
     )
 
 
@@ -70,8 +68,7 @@ def test_match_markdown_invalid_formats():
 def test_match_notion():
     """Test recognition of Notion column_list blocks."""
     column_list_block = create_block_with_required_fields(
-        type="column_list",
-        column_list=ColumnListBlock()
+        type="column_list", column_list=ColumnListBlock()
     )
     assert ColumnElement.match_notion(column_list_block)
 
@@ -88,7 +85,7 @@ def test_match_notion():
 def test_markdown_to_notion_valid():
     """Test creation of column_list block from valid Markdown."""
     result = ColumnElement.markdown_to_notion("::: columns")
-    
+
     assert isinstance(result, CreateColumnListBlock)
     assert result.type == "column_list"
     assert isinstance(result.column_list, ColumnListBlock)
@@ -104,13 +101,13 @@ def test_markdown_to_notion_invalid():
 def test_notion_to_markdown():
     """Test conversion from Notion column_list block to Markdown."""
     # Create child blocks for the columns
-    column1 = create_column_block_with_children([
-        create_block_with_required_fields(type="paragraph")
-    ])
-    column2 = create_column_block_with_children([
-        create_block_with_required_fields(type="paragraph")
-    ])
-    
+    column1 = create_column_block_with_children(
+        [create_block_with_required_fields(type="paragraph")]
+    )
+    column2 = create_column_block_with_children(
+        [create_block_with_required_fields(type="paragraph")]
+    )
+
     notion_block = create_column_list_block_with_children([column1, column2])
 
     result = ColumnElement.notion_to_markdown(notion_block)
@@ -141,7 +138,7 @@ def test_notion_to_markdown_invalid():
     """Test invalid Notion block returns None."""
     paragraph_block = create_block_with_required_fields(type="paragraph")
     assert ColumnElement.notion_to_markdown(paragraph_block) is None
-    
+
     empty_block = create_block_with_required_fields(type="column_list")
     # Block without column_list content
     assert ColumnElement.notion_to_markdown(empty_block) is None
@@ -265,12 +262,12 @@ def test_markdown_patterns(markdown, should_match):
 def test_notion_block_recognition(block_type, should_match):
     """Test recognition of different Notion block types."""
     block_data = {"type": block_type}
-    
+
     if block_type == "column_list":
         block_data["column_list"] = ColumnListBlock()
     elif block_type == "column":
         block_data["column"] = ColumnBlock()
-        
+
     block = create_block_with_required_fields(**block_data)
     result = ColumnElement.match_notion(block)
     assert result == should_match
@@ -290,23 +287,21 @@ def complex_column_list():
     """Fixture for column_list with content."""
     # Create child blocks for column 1
     paragraph_block = create_block_with_required_fields(
-        type="paragraph",
-        paragraph=ParagraphBlock(rich_text=[])
+        type="paragraph", paragraph=ParagraphBlock(rich_text=[])
     )
     heading_block = create_block_with_required_fields(
-        type="heading_1", 
-        heading_1=HeadingBlock(rich_text=[])
+        type="heading_1", heading_1=HeadingBlock(rich_text=[])
     )
-    
+
     # Create child blocks for column 2
     list_block = create_block_with_required_fields(
         type="bulleted_list_item",
-        bulleted_list_item=BulletedListItemBlock(rich_text=[])
+        bulleted_list_item=BulletedListItemBlock(rich_text=[]),
     )
-    
+
     column1 = create_column_block_with_children([paragraph_block, heading_block])
     column2 = create_column_block_with_children([list_block])
-    
+
     return create_column_list_block_with_children([column1, column2])
 
 
@@ -379,7 +374,7 @@ def test_converter_callback_setting():
 
     # Test that it was set
     assert ColumnElement._converter_callback is not None
-    
+
     # Test that the callback works
     result = ColumnElement._converter_callback("test text")
     assert result[0]["type"] == "test"
@@ -432,14 +427,14 @@ def test_finalize_column():
     """Test the _finalize_column static method."""
     column_content = ["Line 1", "Line 2", "Line 3"]
     columns_children = []
-    
+
     def mock_converter(text):
         return [{"type": "paragraph", "content": text}]
-    
+
     ColumnElement._finalize_column(
         column_content, columns_children, True, mock_converter
     )
-    
+
     assert len(columns_children) == 1
     assert columns_children[0]["type"] == "column"
     assert "children" in columns_children[0]["column"]
@@ -448,14 +443,14 @@ def test_finalize_column():
 def test_roundtrip_conversion():
     """Test that Markdown -> Notion -> Markdown preserves structure."""
     original_markdown = "::: columns"
-    
+
     # Convert to Notion
     notion_result = ColumnElement.markdown_to_notion(original_markdown)
     assert notion_result is not None
-    
+
     # Create a Block for notion_to_markdown (empty columns for simplicity)
     block = create_column_list_block_with_children([])
-    
+
     # Convert back to Markdown
     result_markdown = ColumnElement.notion_to_markdown(block)
     assert result_markdown is not None
@@ -465,23 +460,15 @@ def test_roundtrip_conversion():
 
 def test_process_column_block():
     """Test the _process_column_block method."""
-    lines = [
-        "::: columns",
-        "::: column",
-        "Content line 1",
-        ":::",
-        ":::"
-    ]
-    
+    lines = ["::: columns", "::: column", "Content line 1", ":::", ":::"]
+
     def mock_converter(text):
         return [{"type": "paragraph", "paragraph": {"rich_text": []}}]
-    
-    result = ColumnElement._process_column_block(
-        lines, 0, mock_converter
-    )
-    
+
+    result = ColumnElement._process_column_block(lines, 0, mock_converter)
+
     start_pos, end_pos, block, next_index = result
-    
+
     assert isinstance(start_pos, int)
     assert isinstance(end_pos, int)
     assert isinstance(next_index, int)
@@ -492,28 +479,20 @@ def test_process_column_block():
 
 def test_collect_columns():
     """Test the _collect_columns method."""
-    lines = [
-        "::: column",
-        "Content 1",
-        ":::",
-        "::: column", 
-        "Content 2",
-        ":::",
-        ":::"
-    ]
-    
+    lines = ["::: column", "Content 1", ":::", "::: column", "Content 2", ":::", ":::"]
+
     columns_children = []
-    
+
     def mock_converter(text):
         return [{"type": "paragraph", "paragraph": {"rich_text": []}}]
-    
+
     next_index = ColumnElement._collect_columns(
         lines, 0, columns_children, mock_converter
     )
-    
+
     assert len(columns_children) == 2  # Should have created 2 columns
     assert next_index > 0
-    
+
     for column in columns_children:
         assert column["type"] == "column"
         assert "children" in column["column"]
@@ -523,9 +502,9 @@ def test_empty_column_handling():
     """Test handling of empty columns."""
     empty_column = create_column_block_with_children([])
     column_list = create_column_list_block_with_children([empty_column])
-    
+
     result = ColumnElement.notion_to_markdown(column_list)
-    
+
     assert "::: columns" in result
     assert "::: column" in result
     assert ":::" in result

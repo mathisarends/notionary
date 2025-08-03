@@ -2,7 +2,11 @@ import pytest
 from notionary.blocks.embed import EmbedElement
 from notionary.blocks.embed.embed_models import EmbedBlock, CreateEmbedBlock
 from notionary.blocks.block_models import Block
-from notionary.blocks.rich_text.rich_text_models import RichTextObject, TextContent, TextAnnotations
+from notionary.blocks.rich_text.rich_text_models import (
+    RichTextObject,
+    TextContent,
+    TextAnnotations,
+)
 
 
 def create_rich_text_object(content: str) -> RichTextObject:
@@ -11,7 +15,7 @@ def create_rich_text_object(content: str) -> RichTextObject:
         type="text",
         text=TextContent(content=content),
         annotations=TextAnnotations(),
-        plain_text=content
+        plain_text=content,
     )
 
 
@@ -23,7 +27,7 @@ def create_block_with_required_fields(**kwargs) -> Block:
         "created_time": "2023-01-01T00:00:00.000Z",
         "last_edited_time": "2023-01-01T00:00:00.000Z",
         "created_by": {"object": "user", "id": "user-id"},
-        "last_edited_by": {"object": "user", "id": "user-id"}
+        "last_edited_by": {"object": "user", "id": "user-id"},
     }
     defaults.update(kwargs)
     return Block(**defaults)
@@ -62,7 +66,7 @@ def test_match_notion(block_type, has_embed, expected):
     block_data = {"type": block_type}
     if has_embed and block_type == "embed":
         block_data["embed"] = EmbedBlock(url="https://example.com")
-    
+
     block = create_block_with_required_fields(**block_data)
     assert EmbedElement.match_notion(block) == expected
 
@@ -86,7 +90,7 @@ def test_markdown_to_notion(md, url, caption):
     assert isinstance(result, CreateEmbedBlock)
     assert result.type == "embed"
     assert result.embed.url == url
-    
+
     if caption:
         assert len(result.embed.caption) > 0
         assert result.embed.caption[0].plain_text == caption
@@ -110,21 +114,28 @@ def test_markdown_to_notion_invalid(md):
 @pytest.mark.parametrize(
     "url,caption_text,expected_md",
     [
-        ("https://example.com", "My Caption", '[embed](https://example.com "My Caption")'),
+        (
+            "https://example.com",
+            "My Caption",
+            '[embed](https://example.com "My Caption")',
+        ),
         ("https://github.com", "", "[embed](https://github.com)"),
-        ("https://twitter.com/test", "Tweet", '[embed](https://twitter.com/test "Tweet")'),
+        (
+            "https://twitter.com/test",
+            "Tweet",
+            '[embed](https://twitter.com/test "Tweet")',
+        ),
     ],
 )
 def test_notion_to_markdown(url, caption_text, expected_md):
     caption_list = []
     if caption_text:
         caption_list = [create_rich_text_object(caption_text)]
-    
+
     block = create_block_with_required_fields(
-        type="embed",
-        embed=EmbedBlock(url=url, caption=caption_list)
+        type="embed", embed=EmbedBlock(url=url, caption=caption_list)
     )
-    
+
     assert EmbedElement.notion_to_markdown(block) == expected_md
 
 
@@ -132,11 +143,11 @@ def test_notion_to_markdown_invalid():
     # Wrong block type
     paragraph_block = create_block_with_required_fields(type="paragraph")
     assert EmbedElement.notion_to_markdown(paragraph_block) is None
-    
+
     # Block without embed content
     empty_embed_block = create_block_with_required_fields(type="embed")
     assert EmbedElement.notion_to_markdown(empty_embed_block) is None
-    
+
     # Block with empty URL (this case needs to be handled by the implementation)
     # Some implementations might allow empty URLs, others might not
 
@@ -148,11 +159,11 @@ def test_extract_text_content():
         {"type": "text", "text": {"content": "works"}},
     ]
     assert EmbedElement._extract_text_content(rt_dicts) == "This works"
-    
+
     # Test with plain_text fallback
     pt_dicts = [{"plain_text": "Backup"}]
     assert EmbedElement._extract_text_content(pt_dicts) == "Backup"
-    
+
     # Test with mixed formats
     mixed = [
         {"type": "text", "text": {"content": "Mixed "}},
@@ -177,7 +188,7 @@ def test_unicode_and_special_caption(md):
     result = EmbedElement.markdown_to_notion(md)
     assert result is not None
     assert isinstance(result, CreateEmbedBlock)
-    
+
     caption_list = result.embed.caption
     if caption_list:
         # Extract the expected caption from the markdown
@@ -193,27 +204,26 @@ def test_roundtrip():
         "[embed](https://github.com)",
         '[embed](https://twitter.com/NotionHQ/status/123 "Tweet")',
     ]
-    
+
     for md in cases:
         # Convert to Notion
         embed_create_block = EmbedElement.markdown_to_notion(md)
         assert embed_create_block is not None
-        
+
         # Create a Block for notion_to_markdown
         block = create_block_with_required_fields(
-            type="embed",
-            embed=embed_create_block.embed
+            type="embed", embed=embed_create_block.embed
         )
-        
+
         # Convert back to Markdown
         recovered = EmbedElement.notion_to_markdown(block)
         assert recovered is not None
         assert recovered.startswith("[embed](")
-        
+
         # Extract URL from original markdown
         url = md.split("(")[1].split()[0].rstrip(')"')
         assert url in recovered
-        
+
         # If original had a caption, recovered should too
         if '"' in md:
             assert '"' in recovered
@@ -229,7 +239,7 @@ def test_embed_with_complex_urls():
         "https://github.com/user/repo/pull/123#issuecomment-456789",
         "https://example.com/path?param1=value1&param2=value2",
     ]
-    
+
     for url in complex_urls:
         md = f"[embed]({url})"
         result = EmbedElement.markdown_to_notion(md)
@@ -240,13 +250,13 @@ def test_embed_with_complex_urls():
 def test_embed_caption_with_special_characters():
     """Test embed captions with special characters and formatting."""
     special_captions = [
-        "Caption with \"quotes\" inside",
+        'Caption with "quotes" inside',
         "Caption with (parentheses)",
         "Caption with [brackets]",
         "Caption with & symbols",
         "Caption with émojis 🎉",
     ]
-    
+
     for caption in special_captions:
         md = f'[embed](https://example.com "{caption}")'
         result = EmbedElement.markdown_to_notion(md)
@@ -262,11 +272,11 @@ def test_empty_and_whitespace_captions():
         ('[embed](https://example.com "   ")', "   "),  # Whitespace caption
         ('[embed](https://example.com " ")', " "),  # Single space
     ]
-    
+
     for md, expected_caption in test_cases:
         result = EmbedElement.markdown_to_notion(md)
         assert result is not None
-        
+
         if expected_caption.strip():  # Non-empty after stripping
             assert len(result.embed.caption) > 0
             assert result.embed.caption[0].plain_text == expected_caption
@@ -283,7 +293,7 @@ def test_malformed_embed_syntax():
         "[embed](https://example.com",  # Missing closing parenthesis
         "[embed]https://example.com)",  # Missing opening parenthesis
     ]
-    
+
     for malformed in malformed_cases:
         result = EmbedElement.markdown_to_notion(malformed)
         assert result is None
@@ -297,7 +307,7 @@ def test_caption_extraction_edge_cases():
         ([{"type": "unknown", "content": "test"}], ""),  # Unknown type
         ([], ""),  # Empty list
     ]
-    
+
     for rich_text_list, expected in edge_cases:
         result = EmbedElement._extract_text_content(rich_text_list)
         assert result == expected
@@ -308,8 +318,7 @@ def test_caption_extraction_edge_cases():
 def simple_embed_block():
     """Fixture for simple embed block."""
     return create_block_with_required_fields(
-        type="embed",
-        embed=EmbedBlock(url="https://example.com", caption=[])
+        type="embed", embed=EmbedBlock(url="https://example.com", caption=[])
     )
 
 
@@ -320,8 +329,8 @@ def embed_block_with_caption():
         type="embed",
         embed=EmbedBlock(
             url="https://github.com",
-            caption=[create_rich_text_object("GitHub Repository")]
-        )
+            caption=[create_rich_text_object("GitHub Repository")],
+        ),
     )
 
 
@@ -340,18 +349,17 @@ def test_notion_block_validation():
     """Test validation of Notion block structure."""
     # Valid block
     valid_block = create_block_with_required_fields(
-        type="embed",
-        embed=EmbedBlock(url="https://example.com")
+        type="embed", embed=EmbedBlock(url="https://example.com")
     )
     assert EmbedElement.match_notion(valid_block)
-    
+
     # Block with wrong type
     wrong_type_block = create_block_with_required_fields(
         type="paragraph",
-        embed=EmbedBlock(url="https://example.com")  # Has embed content but wrong type
+        embed=EmbedBlock(url="https://example.com"),  # Has embed content but wrong type
     )
     assert not EmbedElement.match_notion(wrong_type_block)
-    
+
     # Block with correct type but no embed content
     no_content_block = create_block_with_required_fields(type="embed")
     assert not EmbedElement.match_notion(no_content_block)

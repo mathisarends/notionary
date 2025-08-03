@@ -96,10 +96,6 @@ class AudioElement(NotionBlockElement):
         return f"[audio]({url})"
 
     @classmethod
-    def is_multiline(cls) -> bool:
-        return False
-
-    @classmethod
     def _is_likely_audio_url(cls, url: str) -> bool:
         return any(url.lower().endswith(ext) for ext in cls.SUPPORTED_EXTENSIONS)
 

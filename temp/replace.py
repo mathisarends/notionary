@@ -18,6 +18,11 @@ async def main():
     +## Wichtige Infos
     | Das ist ein Detail
     | Noch mehr Details
+
+    ```python
+    def hello():
+        print('Hello, Notion!')
+    ```
     """
 
     edge_result = await page.append_markdown(test_markdown, append_divider=True)

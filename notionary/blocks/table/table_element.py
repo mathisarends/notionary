@@ -17,6 +17,7 @@ from notionary.blocks.table.table_models import (
     TableBlock,
     TableRowBlock,
 )
+from notionary.page.formatting.markdown_to_notion_converter import BlockPositionList
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 
@@ -67,7 +68,7 @@ class TableElement(NotionBlockElement):
         # Only process if it's a markdown table
         if not cls.match_markdown(text.strip()):
             return None
-        
+
         print("its a table yearj", text)
 
         lines = text.split("\n")
@@ -117,7 +118,7 @@ class TableElement(NotionBlockElement):
             table_width=col_count,
             has_column_header=True,
             has_row_header=False,
-            children=table_rows  # ← Hier gehören die children hin!
+            children=table_rows,  # ← Hier gehören die children hin!
         )
 
         # Empty paragraph after table
@@ -291,7 +292,7 @@ class TableElement(NotionBlockElement):
         return table_rows
 
     @classmethod
-    def find_matches(cls, text: str) -> list[Tuple[int, int, dict[str, Any]]]:
+    def find_matches(cls, text: str) -> BlockPositionList:
         """
         Find all tables in the text and return their positions.
 

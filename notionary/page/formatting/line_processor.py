@@ -5,19 +5,21 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.block_models import BlockCreateRequest
 from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
 
+
 @dataclass
 class ParentBlockContext:
     """Context for a block that expects children."""
+
     block: BlockCreateRequest
     element_type: type
     child_prefix: str
     child_lines: list[str]
     start_position: int
-    
+
     def add_child_line(self, content: str):
         """Adds a child line."""
         self.child_lines.append(content)
-    
+
     def has_children(self) -> bool:
         """Checks if children have been collected."""
         return len(self.child_lines) > 0
@@ -30,94 +32,105 @@ class LineProcessor:
         self._block_registry = block_registry
         self._excluded_ranges = excluded_ranges
         self._parent_stack: list[ParentBlockContext] = []
-        
+
         self._child_prefixes = {
-            'ToggleElement': '|',
-            'ToggleableHeadingElement': '|', 
+            "ToggleElement": "|",
+            "ToggleableHeadingElement": "|",
         }
-    
+
     def process_lines(self, text: str) -> list[tuple[int, int, BlockCreateRequest]]:
         """Processes lines with automatic child support."""
         lines = text.split("\n")
         result_blocks = []
         current_pos = 0
-        
+
         for line in lines:
             line_length = len(line) + 1  # +1 für newline
             line_end = current_pos + line_length - 1
-            
+
             # Skip excluded ranges
             if self._overlaps_with_excluded(current_pos, line_end):
                 current_pos += line_length
                 continue
-            
+
             # Versuche Child-Content zu verarbeiten
             if self._try_process_as_child(line):
                 current_pos += line_length
                 continue
-            
+
             # Finalisiere alle offenen Parent-Blöcke bei neuer nicht-Child-Zeile
             self._finalize_open_parents(result_blocks, current_pos)
-            
+
             # Verarbeite normale Zeile
             if line.strip():  # Nicht-leere Zeile
-                block_created = self._process_regular_line(line, current_pos, line_end, result_blocks)
+                block_created = self._process_regular_line(
+                    line, current_pos, line_end, result_blocks
+                )
                 if not block_created:
                     # Falls kein spezieller Block, als Paragraph behandeln
-                    self._process_as_paragraph(line, current_pos, line_end, result_blocks)
-            
+                    self._process_as_paragraph(
+                        line, current_pos, line_end, result_blocks
+                    )
+
             current_pos += line_length
-        
+
         # Finalisiere alle noch offenen Parents
         self._finalize_open_parents(result_blocks, current_pos)
-        
+
         return result_blocks
-    
+
     def _try_process_as_child(self, line: str) -> bool:
         """Tries to process a line as child content."""
         if not self._parent_stack:
             return False
-        
+
         current_parent = self._parent_stack[-1]
         child_prefix = current_parent.child_prefix
-        
+
         # Prüfe ob Zeile mit Child-Prefix beginnt
         child_pattern = re.compile(rf"^{re.escape(child_prefix)}\s?(.*?)$")
         match = child_pattern.match(line)
-        
+
         if match:
             child_content = match.group(1)
             current_parent.add_child_line(child_content)
             return True
-        
+
         # Leere Zeile kann Teil der Children sein, wenn nächste Zeile auch Child ist
         if not line.strip():
             # Für Einfachheit: leere Zeilen beenden erstmal den Child-Bereich
             return False
-        
+
         return False
-    
-    def _process_regular_line(self, line: str, current_pos: int, line_end: int, 
-                            result_blocks: list[tuple[int, int, BlockCreateRequest]]) -> bool:
+
+    def _process_regular_line(
+        self,
+        line: str,
+        current_pos: int,
+        line_end: int,
+        result_blocks: list[tuple[int, int, BlockCreateRequest]],
+    ) -> bool:
         """Processes a regular line and checks for parent blocks."""
-        
+
         # Suche passende Element-Klasse
         for element in self._block_registry.get_elements():
             if not element.match_markdown(line):
                 continue
-            
+
             # Erstelle Block
             result = element.markdown_to_notion(line)
             blocks = self._normalize_to_list(result)
-            
+
             if not blocks:
                 continue
-            
+
             # Verarbeite jeden erstellten Block
             for block in blocks:
                 if not self._can_have_children(block, element):
                     # Block kann keine Children haben - direkt verarbeiten
-                    self._process_as_paragraph(line, current_pos, line_end, result_blocks)
+                    self._process_as_paragraph(
+                        line, current_pos, line_end, result_blocks
+                    )
                     continue
 
                 child_prefix = self._get_child_prefix(element)
@@ -126,124 +139,127 @@ class LineProcessor:
                     element_type=type(element),
                     child_prefix=child_prefix,
                     child_lines=[],
-                    start_position=current_pos
+                    start_position=current_pos,
                 )
                 self._parent_stack.append(context)
 
-            
             return True
-        
+
         return False
-    
-    def _process_as_paragraph(self, line: str, current_pos: int, line_end: int,
-                            result_blocks: list[tuple[int, int, BlockCreateRequest]]):
+
+    def _process_as_paragraph(
+        self,
+        line: str,
+        current_pos: int,
+        line_end: int,
+        result_blocks: list[tuple[int, int, BlockCreateRequest]],
+    ):
         """Processes a line as a paragraph."""
         result = self._block_registry.markdown_to_notion(line)
         blocks = self._normalize_to_list(result)
-        
+
         for block in blocks:
             result_blocks.append((current_pos, line_end, block))
-    
-    def _can_have_children(self, block: BlockCreateRequest, element: NotionBlockElement) -> bool:
+
+    def _can_have_children(
+        self, block: BlockCreateRequest, element: NotionBlockElement
+    ) -> bool:
         """Checks if a block can have children."""
-        
+
         # 1. Prüfe ob Element-Typ bekanntermaßen Children haben kann
         element_name = element.__name__
-        print("====")
-        print("element_name", element_name)
         if element_name in self._child_prefixes:
             return True
-        
+
         # 2. Prüfe Block-Struktur auf children-Eigenschaft
-        if hasattr(block, 'toggle') and hasattr(block.toggle, 'children'):
+        if hasattr(block, "toggle") and hasattr(block.toggle, "children"):
             return True
-        
-        if hasattr(block, 'callout') and hasattr(block.callout, 'children'):
+
+        if hasattr(block, "heading_1") and hasattr(block.heading_1, "children"):
             return True
-        
-        if hasattr(block, 'quote') and hasattr(block.quote, 'children'):
+
+        if hasattr(block, "heading_1") and hasattr(block.heading_1, "children"):
             return True
-        
-        # 3. Generische Prüfung auf children-Attribut
-        if hasattr(block, 'children'):
+
+        if hasattr(block, "heading_2") and hasattr(block.heading_2, "children"):
             return True
-        
-        # 4. Dict-basierte Prüfung
-        if isinstance(block, dict):
-            for key, value in block.items():
-                if isinstance(value, dict) and 'children' in value:
-                    return True
-        
+
+        if hasattr(block, "heading_3") and hasattr(block.heading_3, "children"):
+            return True
+
         return False
-    
+
     def _get_child_prefix(self, element: NotionBlockElement) -> str:
         """Determines the child prefix for the element type."""
         element_name = element.__class__.__name__
-        return self._child_prefixes.get(element_name, '|')  # Default: "|"
-    
-    def _finalize_open_parents(self, result_blocks: list[tuple[int, int, BlockCreateRequest]], 
-                             current_pos: int):
+        return self._child_prefixes.get(element_name, "|")  # Default: "|"
+
+    def _finalize_open_parents(
+        self, result_blocks: list[tuple[int, int, BlockCreateRequest]], current_pos: int
+    ):
         """Finalizes all open parent blocks."""
         while self._parent_stack:
             context = self._parent_stack.pop()
-            
+
             if context.has_children():
                 # Verarbeite Children-Text rekursiv
-                children_text = '\n'.join(context.child_lines)
+                children_text = "\n".join(context.child_lines)
                 children_blocks = self._convert_children_text(children_text)
-                
+
                 # Weise Children dem Parent-Block zu
                 self._assign_children(context.block, children_blocks)
-            
+
             # Füge finalisierten Parent-Block hinzu
             result_blocks.append((context.start_position, current_pos, context.block))
-    
+
     def _convert_children_text(self, text: str) -> list[BlockCreateRequest]:
         """Recursively converts children text."""
         if not text.strip():
             return []
-        
+
         # Rekursive Konvertierung - neue Instanz ohne excluded_ranges
         child_processor = LineProcessor(self._block_registry, set())
         child_results = child_processor.process_lines(text)
-        
+
         # Extrahiere nur die Blocks
         return [block for _, _, block in child_results]
-    
-    def _assign_children(self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]):
+
+    def _assign_children(
+        self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]
+    ):
         """Assigns children to a parent block."""
-        
+
         # Toggle-Block
-        if hasattr(parent_block, 'toggle') and hasattr(parent_block.toggle, 'children'):
+        if hasattr(parent_block, "toggle") and hasattr(parent_block.toggle, "children"):
             parent_block.toggle.children = children
             return
-        
-        # Callout-Block  
-        if hasattr(parent_block, 'callout') and hasattr(parent_block.callout, 'children'):
-            parent_block.callout.children = children
+
+        # Heading 1
+        if hasattr(parent_block, "heading_1") and hasattr(
+            parent_block.heading_1, "children"
+        ):
+            parent_block.heading_1.children = children
             return
-        
-        # Quote-Block
-        if hasattr(parent_block, 'quote') and hasattr(parent_block.quote, 'children'):
-            parent_block.quote.children = children
+
+        # Heading 2
+        if hasattr(parent_block, "heading_2") and hasattr(
+            parent_block.heading_2, "children"
+        ):
+            parent_block.heading_2.children = children
             return
-        
-        # Generisches children-Attribut
-        if hasattr(parent_block, 'children'):
-            parent_block.children = children
-            return
-        
-        # Dict-basierte Zuweisung
-        if isinstance(parent_block, dict):
-            for key, value in parent_block.items():
-                if isinstance(value, dict) and 'children' in value:
-                    value['children'] = children
-                    return
-    
+
+        # Heading 3
+        if hasattr(parent_block, "heading_3") and hasattr(
+            parent_block.heading_3, "children"
+        ):
+            parent_block.heading_3.children = children
+
     def _overlaps_with_excluded(self, start_pos: int, end_pos: int) -> bool:
         """Checks for overlap with excluded ranges."""
-        return any(pos in self._excluded_ranges for pos in range(start_pos, end_pos + 1))
-    
+        return any(
+            pos in self._excluded_ranges for pos in range(start_pos, end_pos + 1)
+        )
+
     @staticmethod
     def _normalize_to_list(result: BlockCreateResult) -> list[BlockCreateRequest]:
         """Normalizes the result to a list."""

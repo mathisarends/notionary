@@ -71,10 +71,6 @@ class TodoElement(NotionBlockElement):
         return f"- {checkbox} {content}"
 
     @classmethod
-    def is_multiline(cls) -> bool:
-        return False
-
-    @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         return (
             ElementPromptBuilder()

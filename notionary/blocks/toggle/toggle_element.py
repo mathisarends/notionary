@@ -48,7 +48,7 @@ class ToggleElement(NotionBlockElement):
 
         # Create toggle block with empty children - they will be populated automatically
         toggle_content = ToggleBlock(rich_text=rich_text, color="default", children=[])
-        
+
         return CreateToggleBlock(toggle=toggle_content)
 
     @classmethod

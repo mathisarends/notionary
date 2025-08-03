@@ -2,10 +2,10 @@ import re
 from typing import Optional
 
 from notionary.blocks.heading.heading_models import (
-    HeadingBlock, 
+    HeadingBlock,
     CreateHeading1Block,
-    CreateHeading2Block, 
-    CreateHeading3Block
+    CreateHeading2Block,
+    CreateHeading3Block,
 )
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 from notionary.blocks.block_models import Block
@@ -51,8 +51,8 @@ class ToggleableHeadingElement(NotionBlockElement):
         if not match:
             return None
 
-        level = len(match.group('level'))  # Count # characters
-        content = match.group('content').strip()
+        level = len(match.group("level"))  # Count # characters
+        content = match.group("content").strip()
 
         if level < 1 or level > 3 or not content:
             return None
@@ -60,10 +60,7 @@ class ToggleableHeadingElement(NotionBlockElement):
         rich_text = TextInlineFormatter.parse_inline_formatting(content)
 
         heading_content = HeadingBlock(
-            rich_text=rich_text,
-            color="default",
-            is_toggleable=True,
-            children=[]
+            rich_text=rich_text, color="default", is_toggleable=True, children=[]
         )
 
         if level == 1:
@@ -100,14 +97,6 @@ class ToggleableHeadingElement(NotionBlockElement):
         text = TextInlineFormatter.extract_text_with_formatting(rich_text)
         prefix = "#" * level
         return f"+{prefix} {text or ''}"
-
-    @classmethod
-    def is_multiline(cls) -> bool:
-        """
-        Returns False because children are now handled automatically by the converter.
-        The heading line itself is single-line.
-        """
-        return False
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

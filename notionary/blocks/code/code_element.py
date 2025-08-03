@@ -1,9 +1,7 @@
 import re
-from typing import Optional
+from typing import Optional, Union
 
-from notionary.blocks.block_models import (
-    Block,
-)
+from notionary.blocks.block_models import Block
 from notionary.blocks.code.code_models import CodeBlock, CodeLanguage, CreateCodeBlock
 from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
 from notionary.blocks.paragraph.paragraph_models import (
@@ -22,15 +20,9 @@ class CodeElement(NotionBlockElement):
     ```language
     code content
     ```
-    Caption: optional caption text
-
-    Where:
-    - language is optional and specifies the programming language
-    - code content is the code to be displayed
-    - Caption line is optional and must appear immediately after the closing ```
     """
 
-    plain_text = "plain text"
+    DEFAULT_LANGUAGE = "plain text"
 
     PATTERN = re.compile(
         r"```(\w*)\n([\s\S]+?)```(?:\n(?:Caption|caption):\s*(.+))?", re.MULTILINE
@@ -47,36 +39,72 @@ class CodeElement(NotionBlockElement):
         return block.type == "code"
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
-        m = cls.PATTERN.search(text)
-        if not m:
-            return None
-
-        # Extract language, fallback to default
-        language = (m.group(1) or cls.DEFAULT_LANGUAGE).lower()
-        # Validate language
-        if language not in [lang.lower() for lang in CodeLanguage.__args__]:
-            language = cls.DEFAULT_LANGUAGE
-
-        # Extract content and optional caption
-        content = m.group(2).rstrip("\n")
-        caption_text = m.group(3)
+    def _create_code_block_from_match(
+        cls, language: str, content: str, caption_text: Optional[str] = None
+    ) -> list[Union[CreateCodeBlock, CreateParagraphBlock]]:
+        """
+        Shared logic for creating code blocks from parsed data.
+        """
+        language = cls._normalize_language(language)
 
         code_rich = RichTextObject.from_plain_text(content)
         code_block = CodeBlock(rich_text=[code_rich], language=language)
 
-        # Add caption if present
         if caption_text and caption_text.strip():
             cap_rich = RichTextObject.from_plain_text(caption_text.strip())
             code_block.caption = [cap_rich]
 
+        # Create code block
+        blocks = [CreateCodeBlock(code=code_block)]
+
         # Append empty paragraph after code
         empty_paragraph = ParagraphBlock(rich_text=[])
+        blocks.append(CreateParagraphBlock(paragraph=empty_paragraph))
 
-        return [
-            CreateCodeBlock(code=code_block),
-            CreateParagraphBlock(paragraph=empty_paragraph),
-        ]
+        return blocks
+
+    @classmethod
+    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+        """Convert markdown code block to Notion blocks."""
+        match = cls.PATTERN.search(text)
+        if not match:
+            return None
+
+        # Extract components
+        language = (match.group(1) or cls.DEFAULT_LANGUAGE).lower()
+        content = match.group(2).rstrip("\n")
+        caption_text = match.group(3)
+
+        # Use shared logic
+        return cls._create_code_block_from_match(language, content, caption_text)
+
+    @classmethod
+    def find_matches(
+        cls, text: str
+    ) -> list[int, int, list[Union[CreateCodeBlock, CreateParagraphBlock]]]:
+        """
+        Find all code block matches in the text and return their positions with Pydantic models.
+
+        Args:
+            text: The text to search in
+
+        Returns:
+            list of tuples with (start_pos, end_pos, blocks_list)
+        """
+        matches = []
+
+        for match in cls.PATTERN.finditer(text):
+            # Extract components
+            language = (match.group(1) or cls.DEFAULT_LANGUAGE).lower()
+            content = match.group(2).rstrip("\n")  # Remove trailing newline if present
+            caption_text = match.group(3)
+
+            # 🎯 FIXED: Verwende dieselbe Logik wie markdown_to_notion
+            blocks = cls._create_code_block_from_match(language, content, caption_text)
+
+            matches.append((match.start(), match.end(), blocks))
+
+        return matches
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
@@ -91,27 +119,18 @@ class CodeElement(NotionBlockElement):
         rich_text = block.code.rich_text or []
         caption = block.code.caption or []
 
-        def extract_content(rich_text_list: list[RichTextObject]) -> str:
-            """Extract code content from rich_text array."""
-            return "".join(rt.plain_text for rt in rich_text_list if rt.plain_text)
-
-        def extract_caption(caption_list: list[RichTextObject]) -> str:
-            """Extract caption text from caption array."""
-            return "".join(rt.plain_text for rt in caption_list if rt.plain_text)
-
-        code_content = extract_content(rich_text)
-        caption_text = extract_caption(caption)
+        code_content = cls.extract_content(rich_text)
+        caption_text = cls.extract_caption(caption)
 
         # Handle language - convert "plain text" back to empty string for markdown
-        if language == cls.plain_text:
+        if language == cls.DEFAULT_LANGUAGE:
             language = ""
 
         # Build markdown code block
-        result = (
-            f"```{language}\n{code_content}\n```"
-            if language
-            else f"```\n{code_content}\n```"
-        )
+        if language:
+            result = f"```{language}\n{code_content}\n```"
+        else:
+            result = f"```\n{code_content}\n```"
 
         # Add caption if present
         if caption_text:
@@ -120,64 +139,28 @@ class CodeElement(NotionBlockElement):
         return result
 
     @classmethod
-    def find_matches(cls, text: str) -> list[tuple[int, int, dict[str, any]]]:
-        """
-        Find all code block matches in the text and return their positions.
-
-        Args:
-            text: The text to search in
-
-        Returns:
-            List of tuples with (start_pos, end_pos, block)
-        """
-        matches = []
-        for match in CodeElement.PATTERN.finditer(text):
-            language = match.group(1) or "plain text"
-            # Self-healing: convert to lowercase
-            language = language.lower()
-
-            # Validate language against allowed values
-            if language not in [lang.lower() for lang in CodeLanguage.__args__]:
-                language = "plain text"
-
-            content = match.group(2)
-            caption = match.group(3)
-
-            # Remove trailing newline if present
-            if content.endswith("\n"):
-                content = content[:-1]
-
-            block = {
-                "type": "code",
-                "code": {
-                    "rich_text": [
-                        {
-                            "type": "text",
-                            "text": {"content": content},
-                            "plain_text": content,
-                        }
-                    ],
-                    "language": language,
-                },
-            }
-
-            # Add caption if provided
-            if caption and caption.strip():
-                block["code"]["caption"] = [
-                    {
-                        "type": "text",
-                        "text": {"content": caption.strip()},
-                        "plain_text": caption.strip(),
-                    }
-                ]
-
-            matches.append((match.start(), match.end(), block))
-
-        return matches
-
-    @classmethod
     def is_multiline(cls) -> bool:
         return True
+
+    @classmethod
+    def _normalize_language(cls, language: str) -> str:
+        """
+        Normalize the language string to a valid CodeLanguage value or default.
+        """
+        valid_languages = [lang.value.lower() for lang in CodeLanguage]
+        if language not in valid_languages:
+            return cls.DEFAULT_LANGUAGE
+        return language
+
+    @staticmethod
+    def extract_content(rich_text_list: list[RichTextObject]) -> str:
+        """Extract code content from rich_text array."""
+        return "".join(rt.plain_text for rt in rich_text_list if rt.plain_text)
+
+    @staticmethod
+    def extract_caption(caption_list: list[RichTextObject]) -> str:
+        """Extract caption text from caption array."""
+        return "".join(rt.plain_text for rt in caption_list if rt.plain_text)
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
@@ -220,13 +203,3 @@ class CodeElement(NotionBlockElement):
             )
             .build()
         )
-
-    @staticmethod
-    def extract_content(rich_text_list: list[RichTextObject]) -> str:
-        """Extract code content from rich_text array."""
-        return "".join(rt.plain_text for rt in rich_text_list if rt.plain_text)
-
-    @staticmethod
-    def extract_caption(caption_list: list[RichTextObject]) -> str:
-        """Extract caption text from caption array."""
-        return "".join(rt.plain_text for rt in caption_list if rt.plain_text)

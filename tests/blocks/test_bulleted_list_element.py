@@ -69,7 +69,7 @@ def test_markdown_to_notion():
     assert len(result.bulleted_list_item.rich_text) >= 1
     # Check that content is in the rich text
     content_found = any(
-        rt.plain_text and "A bullet item" in rt.plain_text 
+        rt.plain_text and "A bullet item" in rt.plain_text
         for rt in result.bulleted_list_item.rich_text
     )
     assert content_found
@@ -87,12 +87,8 @@ def test_markdown_to_notion_with_formatting():
 
 def test_markdown_to_notion_different_markers():
     """Test verschiedene Bullet-Marker."""
-    test_cases = [
-        "- Dash bullet",
-        "* Asterisk bullet", 
-        "+ Plus bullet"
-    ]
-    
+    test_cases = ["- Dash bullet", "* Asterisk bullet", "+ Plus bullet"]
+
     for markdown in test_cases:
         result = BulletedListElement.markdown_to_notion(markdown)
         assert result is not None
@@ -118,57 +114,64 @@ def test_markdown_to_notion_invalid():
     assert result is None
 
 
-@patch('notionary.blocks.rich_text.text_inline_formatter.TextInlineFormatter.extract_text_with_formatting')
+@patch(
+    "notionary.blocks.rich_text.text_inline_formatter.TextInlineFormatter.extract_text_with_formatting"
+)
 def test_notion_to_markdown(mock_extract):
     """Test Konvertierung von Notion-Block zu Markdown."""
     mock_extract.return_value = "List entry"
-    
+
     # Mock Block object
     block = Mock()
     block.type = "bulleted_list_item"
     block.bulleted_list_item = Mock()
-    
+
     # Mock rich text
     rich_text_rt = Mock()
-    rich_text_rt.model_dump.return_value = {"type": "text", "text": {"content": "List entry"}}
+    rich_text_rt.model_dump.return_value = {
+        "type": "text",
+        "text": {"content": "List entry"},
+    }
     block.bulleted_list_item.rich_text = [rich_text_rt]
 
     result = BulletedListElement.notion_to_markdown(block)
     assert result == "- List entry"
-    
+
     # Verify the mock was called
     mock_extract.assert_called_once()
 
 
-@patch('notionary.blocks.rich_text.text_inline_formatter.TextInlineFormatter.extract_text_with_formatting')
+@patch(
+    "notionary.blocks.rich_text.text_inline_formatter.TextInlineFormatter.extract_text_with_formatting"
+)
 def test_notion_to_markdown_with_formatting(mock_extract):
     """Test Notion-Block mit Rich-Text-Formatierung."""
     mock_extract.return_value = "**Bold** and *italic*"
-    
+
     block = Mock()
     block.type = "bulleted_list_item"
     block.bulleted_list_item = Mock()
-    
+
     # Mock multiple rich text objects
     rt1 = Mock()
     rt1.model_dump.return_value = {
         "type": "text",
         "text": {"content": "Bold"},
-        "annotations": {"bold": True}
+        "annotations": {"bold": True},
     }
     rt2 = Mock()
     rt2.model_dump.return_value = {
-        "type": "text", 
+        "type": "text",
         "text": {"content": " and "},
-        "annotations": {"bold": False}
+        "annotations": {"bold": False},
     }
     rt3 = Mock()
     rt3.model_dump.return_value = {
         "type": "text",
         "text": {"content": "italic"},
-        "annotations": {"italic": True}
+        "annotations": {"italic": True},
     }
-    
+
     block.bulleted_list_item.rich_text = [rt1, rt2, rt3]
 
     result = BulletedListElement.notion_to_markdown(block)
@@ -252,33 +255,38 @@ def simple_bullet_block():
     block = Mock()
     block.type = "bulleted_list_item"
     block.bulleted_list_item = Mock()
-    
+
     rich_text_rt = Mock()
-    rich_text_rt.model_dump.return_value = {"type": "text", "text": {"content": "Test item"}}
+    rich_text_rt.model_dump.return_value = {
+        "type": "text",
+        "text": {"content": "Test item"},
+    }
     block.bulleted_list_item.rich_text = [rich_text_rt]
-    
+
     return block
 
 
-@pytest.fixture  
+@pytest.fixture
 def formatted_bullet_block():
     """Fixture für Bullet-Block mit Formatierung."""
     block = Mock()
     block.type = "bulleted_list_item"
     block.bulleted_list_item = Mock()
-    
+
     rich_text_rt = Mock()
     rich_text_rt.model_dump.return_value = {
         "type": "text",
         "text": {"content": "Bold text"},
-        "annotations": {"bold": True}
+        "annotations": {"bold": True},
     }
     block.bulleted_list_item.rich_text = [rich_text_rt]
-    
+
     return block
 
 
-@patch('notionary.blocks.rich_text.text_inline_formatter.TextInlineFormatter.extract_text_with_formatting')
+@patch(
+    "notionary.blocks.rich_text.text_inline_formatter.TextInlineFormatter.extract_text_with_formatting"
+)
 def test_with_fixtures(mock_extract, simple_bullet_block, formatted_bullet_block):
     """Test mit Fixtures zur Reduzierung von Duplikation."""
     # Test einfacher Block
@@ -286,7 +294,7 @@ def test_with_fixtures(mock_extract, simple_bullet_block, formatted_bullet_block
     result1 = BulletedListElement.notion_to_markdown(simple_bullet_block)
     assert result1 == "- Test item"
 
-    # Test formatierter Block  
+    # Test formatierter Block
     mock_extract.return_value = "**Bold text**"
     result2 = BulletedListElement.notion_to_markdown(formatted_bullet_block)
     assert result2 == "- **Bold text**"
@@ -299,7 +307,7 @@ def test_regex_pattern_details():
     assert match is not None
     assert match.group(1) == "  "  # Indentation
     assert match.group(2) == "Indented"  # Content
-    
+
     # Test dass Todo-Items ausgeschlossen werden
     assert BulletedListElement.PATTERN.match("- [ ] Todo") is None
     assert BulletedListElement.PATTERN.match("- [x] Done") is None
@@ -310,16 +318,16 @@ def test_roundtrip_conversion():
     """Test Roundtrip-Konvertierung."""
     original_texts = [
         "- Simple bullet",
-        "- **Bold** text", 
+        "- **Bold** text",
         "- Text with *italic*",
-        "- Mixed **bold** and *italic* formatting"
+        "- Mixed **bold** and *italic* formatting",
     ]
-    
+
     for original in original_texts:
         # Markdown -> Notion
         notion_result = BulletedListElement.markdown_to_notion(original)
         assert notion_result is not None
-        
+
         # Notion -> Markdown (würde echten TextInlineFormatter brauchen)
         # Hier können wir nur testen, dass die Struktur stimmt
         assert notion_result.type == "bulleted_list_item"
@@ -330,8 +338,10 @@ def test_empty_and_whitespace_content():
     """Test Behandlung von leerem und Whitespace-Content."""
     # Bullet mit nur Spaces nach dem Marker
     result = BulletedListElement.markdown_to_notion("-   ")
-    assert result is None or result is not None  # Behavior depends on TextInlineFormatter
-    
+    assert (
+        result is None or result is not None
+    )  # Behavior depends on TextInlineFormatter
+
     # Bullet mit Text der nur aus Spaces besteht
     result = BulletedListElement.markdown_to_notion("-    only spaces   ")
     if result is not None:
@@ -345,10 +355,10 @@ def test_special_characters_in_content():
         "- Text with ümlaut and émoji 🚀",
         "- Chinese text: 这是中文",
         "- Special chars: !@#$%^&*()",
-        "- URLs: https://example.com", 
-        "- Code: `inline code`"
+        "- URLs: https://example.com",
+        "- Code: `inline code`",
     ]
-    
+
     for text in special_texts:
         result = BulletedListElement.markdown_to_notion(text)
         assert result is not None
@@ -367,12 +377,12 @@ def test_indentation_levels():
     """Test verschiedene Indentation-Level."""
     indented_bullets = [
         "- Level 0",
-        "  - Level 1", 
+        "  - Level 1",
         "    - Level 2",
         "      - Level 3",
-        "\t- Tab indented"
+        "\t- Tab indented",
     ]
-    
+
     for bullet in indented_bullets:
         assert BulletedListElement.match_markdown(bullet)
         result = BulletedListElement.markdown_to_notion(bullet)

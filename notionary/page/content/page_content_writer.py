@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 
 from notionary.blocks.block_client import NotionBlockClient
@@ -45,15 +46,13 @@ class PageContentWriter(LoggingMixin):
 
         try:
             blocks = self._markdown_to_notion_converter.convert(processed_markdown)
-            
-            fixed_blocks = fix_blocks_content_length(blocks) # das hier sehe ich auch schon vorher 
 
             result = await self._block_client.append_block_children(
-                block_id=self.page_id, children=fixed_blocks
+                block_id=self.page_id, children=blocks
             )
 
             if result:
-                self.logger.debug("Successfully appended %d blocks", len(fixed_blocks))
+                self.logger.debug("Successfully appended %d blocks", len(blocks))
                 return processed_markdown
             else:
                 self.logger.error("Failed to append blocks")

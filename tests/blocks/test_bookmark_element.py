@@ -22,7 +22,9 @@ def test_match_markdown():
     assert not BookmarkElement.match_markdown("[link](https://example.com)")
     assert not BookmarkElement.match_markdown("Dies ist kein Bookmark")
     assert not BookmarkElement.match_markdown("[bookmark](nicht-url)")
-    assert not BookmarkElement.match_markdown("[bookmark](ftp://example.com)")  # Nur http/https
+    assert not BookmarkElement.match_markdown(
+        "[bookmark](ftp://example.com)"
+    )  # Nur http/https
 
 
 def test_match_notion():
@@ -88,10 +90,10 @@ def test_markdown_to_notion_invalid():
     """Test ungültiges Format."""
     result = BookmarkElement.markdown_to_notion("Dies ist kein Bookmark")
     assert result is None
-    
+
     result = BookmarkElement.markdown_to_notion("[bookmark]()")
     assert result is None
-    
+
     result = BookmarkElement.markdown_to_notion("[bookmark](not-a-url)")
     assert result is None
 
@@ -114,12 +116,12 @@ def test_notion_to_markdown_with_title():
     block.type = "bookmark"
     block.bookmark = Mock()
     block.bookmark.url = "https://example.com"
-    
+
     caption_rt = Mock()
     caption_rt.model_dump.return_value = {
-        "type": "text", 
+        "type": "text",
         "text": {"content": "Beispiel-Titel"},
-        "plain_text": "Beispiel-Titel"
+        "plain_text": "Beispiel-Titel",
     }
     block.bookmark.caption = [caption_rt]
 
@@ -133,18 +135,20 @@ def test_notion_to_markdown_with_title_and_description():
     block.type = "bookmark"
     block.bookmark = Mock()
     block.bookmark.url = "https://example.com"
-    
+
     # Simuliere das zusammengesetzte Caption (wie es von markdown_to_notion erstellt wird)
     caption_rt = Mock()
     caption_rt.model_dump.return_value = {
-        "type": "text", 
+        "type": "text",
         "text": {"content": "Beispiel-Titel - Eine Beschreibung"},  # hyphen für Test
-        "plain_text": "Beispiel-Titel - Eine Beschreibung"
+        "plain_text": "Beispiel-Titel - Eine Beschreibung",
     }
     block.bookmark.caption = [caption_rt]
 
     result = BookmarkElement.notion_to_markdown(block)
-    assert result == '[bookmark](https://example.com "Beispiel-Titel" "Eine Beschreibung")'
+    assert (
+        result == '[bookmark](https://example.com "Beispiel-Titel" "Eine Beschreibung")'
+    )
 
 
 def test_notion_to_markdown_invalid():
@@ -155,14 +159,14 @@ def test_notion_to_markdown_invalid():
     paragraph_block.bookmark = None
     result = BookmarkElement.notion_to_markdown(paragraph_block)
     assert result is None
-    
+
     # Bookmark is None
     bookmark_none_block = Mock()
     bookmark_none_block.type = "bookmark"
     bookmark_none_block.bookmark = None
     result = BookmarkElement.notion_to_markdown(bookmark_none_block)
     assert result is None
-    
+
     # Missing URL
     no_url_block = Mock()
     no_url_block.type = "bookmark"
@@ -209,21 +213,18 @@ def test_extract_text_helper():
     ]
     result = BookmarkElement._extract_text(rich_text)
     assert result == "Title - Description"
-    
+
     # Plain text fallback
     plain_text = [{"plain_text": "Fallback Text"}]
     result = BookmarkElement._extract_text(plain_text)
     assert result == "Fallback Text"
-    
+
     # Empty list
     result = BookmarkElement._extract_text([])
     assert result == ""
-    
+
     # Mixed content
-    mixed = [
-        {"type": "text", "text": {"content": "Hello "}},
-        {"plain_text": "World"}
-    ]
+    mixed = [{"type": "text", "text": {"content": "Hello "}}, {"plain_text": "World"}]
     result = BookmarkElement._extract_text(mixed)
     assert result == "Hello World"
 
@@ -247,12 +248,12 @@ def titled_bookmark_block():
     block.type = "bookmark"
     block.bookmark = Mock()
     block.bookmark.url = "https://example.com"
-    
+
     caption_rt = Mock()
     caption_rt.model_dump.return_value = {
-        "type": "text", 
+        "type": "text",
         "text": {"content": "Test Title"},
-        "plain_text": "Test Title"
+        "plain_text": "Test Title",
     }
     block.bookmark.caption = [caption_rt]
     return block
@@ -272,11 +273,11 @@ def test_with_fixtures(simple_bookmark_block, titled_bookmark_block):
 def test_roundtrip_conversion_simple():
     """Test Roundtrip für einfache Bookmarks."""
     original = "[bookmark](https://example.com)"
-    
+
     # Markdown -> Notion
     notion_result = BookmarkElement.markdown_to_notion(original)
     assert notion_result is not None
-    
+
     # Notion -> Markdown
     back = BookmarkElement.notion_to_markdown(notion_result)
     assert back == original
@@ -285,11 +286,11 @@ def test_roundtrip_conversion_simple():
 def test_roundtrip_conversion_with_title():
     """Test Roundtrip für Bookmarks mit Titel."""
     original = '[bookmark](https://example.com "My Title")'
-    
+
     # Markdown -> Notion
     notion_result = BookmarkElement.markdown_to_notion(original)
     assert notion_result is not None
-    
+
     # Notion -> Markdown
     back = BookmarkElement.notion_to_markdown(notion_result)
     assert back == original
@@ -299,16 +300,20 @@ def test_roundtrip_conversion_fails_with_title_and_description():
     """Test dass Roundtrip mit Titel und Beschreibung NICHT funktioniert (bekannter Bug)."""
     # Dies ist ein bekannter Bug in der Implementierung
     original = '[bookmark](https://example.com "Title" "Description")'
-    
+
     # Markdown -> Notion (erstellt mit em dash)
     notion_result = BookmarkElement.markdown_to_notion(original)
     assert notion_result is not None
-    assert notion_result.bookmark.caption[0].plain_text == "Title – Description"  # em dash
-    
+    assert (
+        notion_result.bookmark.caption[0].plain_text == "Title – Description"
+    )  # em dash
+
     # Notion -> Markdown (sucht nach hyphen)
     back = BookmarkElement.notion_to_markdown(notion_result)
     # Das wird nicht zum Original zurück konvertieren, da em dash vs hyphen
-    assert back == '[bookmark](https://example.com "Title – Description")'  # Single caption
+    assert (
+        back == '[bookmark](https://example.com "Title – Description")'
+    )  # Single caption
     assert back != original  # Roundtrip funktioniert nicht!
 
 
@@ -319,7 +324,7 @@ def test_unicode_in_captions():
         '[bookmark](https://example.com "Emoji 🚀 Test")',
         '[bookmark](https://example.com "中文标题")',
     ]
-    
+
     for original in test_cases:
         notion_result = BookmarkElement.markdown_to_notion(original)
         assert notion_result is not None
@@ -335,7 +340,7 @@ def test_empty_strings_and_whitespace():
         '[bookmark](https://example.com " ")',  # Nur Whitespace
         '[bookmark](https://example.com "Title" "")',  # Leere Beschreibung
     ]
-    
+
     for markdown in test_cases:
         result = BookmarkElement.markdown_to_notion(markdown)
         # Diese sollten funktionieren, aber das Verhalten hängt von der Implementierung ab
@@ -351,11 +356,11 @@ def test_special_characters_in_urls():
         "https://sub.domain.example.com/deep/path/file.html",
         "https://example.com:8080/path",
     ]
-    
+
     for url in special_urls:
         markdown = f"[bookmark]({url})"
         assert BookmarkElement.match_markdown(markdown)
-        
+
         result = BookmarkElement.markdown_to_notion(markdown)
         assert result is not None
         assert result.bookmark.url == url
@@ -366,14 +371,14 @@ def test_edge_cases():
     # Sehr lange URLs
     long_url = "https://example.com/" + "a" * 1000
     assert BookmarkElement.match_markdown(f"[bookmark]({long_url})")
-    
+
     # URLs mit vielen Pfad-Segmenten
     deep_url = "https://example.com/" + "/".join(["segment"] * 50)
     assert BookmarkElement.match_markdown(f"[bookmark]({deep_url})")
-    
+
     # Bookmark ohne schließende Klammer
     assert not BookmarkElement.match_markdown("[bookmark](https://example.com")
-    
+
     # Bookmark ohne URL
     assert not BookmarkElement.match_markdown("[bookmark]()")
 
@@ -382,18 +387,20 @@ def test_caption_separator_inconsistency():
     """Test dokumentiert die Inkonsistenz zwischen em dash und hyphen."""
     # Die Implementierung verwendet em dash (–) beim Erstellen,
     # aber sucht nach hyphen (-) beim Parsen
-    
+
     # Erstelle ein Bookmark mit Titel und Beschreibung
     result = BookmarkElement.markdown_to_notion(
         '[bookmark](https://example.com "Title" "Description")'
     )
-    
+
     # Das sollte em dash verwenden
     caption_text = result.bookmark.caption[0].plain_text
     assert caption_text == "Title – Description"  # em dash
     assert " - " not in caption_text  # kein hyphen
-    
+
     # notion_to_markdown sucht aber nach hyphen
     # Das bedeutet, es wird nicht als "Title" und "Description" erkannt
     back = BookmarkElement.notion_to_markdown(result)
-    assert back == '[bookmark](https://example.com "Title – Description")'  # Single caption
+    assert (
+        back == '[bookmark](https://example.com "Title – Description")'
+    )  # Single caption

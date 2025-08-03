@@ -63,10 +63,6 @@ class BulletedListElement(NotionBlockElement):
         return f"- {text}"
 
     @classmethod
-    def is_multiline(cls) -> bool:
-        return False
-
-    @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         return (
             ElementPromptBuilder()

@@ -6,7 +6,10 @@ Tests conversion between Markdown horizontal dividers and Notion divider blocks.
 import pytest
 from notionary.blocks.divider import DividerElement
 from notionary.blocks.divider.divider_models import DividerBlock, CreateDividerBlock
-from notionary.blocks.paragraph.paragraph_models import ParagraphBlock, CreateParagraphBlock
+from notionary.blocks.paragraph.paragraph_models import (
+    ParagraphBlock,
+    CreateParagraphBlock,
+)
 from notionary.blocks.block_models import Block
 
 
@@ -18,7 +21,7 @@ def create_block_with_required_fields(**kwargs) -> Block:
         "created_time": "2023-01-01T00:00:00.000Z",
         "last_edited_time": "2023-01-01T00:00:00.000Z",
         "created_by": {"object": "user", "id": "user-id"},
-        "last_edited_by": {"object": "user", "id": "user-id"}
+        "last_edited_by": {"object": "user", "id": "user-id"},
     }
     defaults.update(kwargs)
     return Block(**defaults)
@@ -48,8 +51,7 @@ def test_match_markdown_invalid_formats():
 def test_match_notion():
     """Test recognition of Notion divider blocks."""
     divider_block = create_block_with_required_fields(
-        type="divider",
-        divider=DividerBlock()
+        type="divider", divider=DividerBlock()
     )
     assert DividerElement.match_notion(divider_block)
 
@@ -66,16 +68,16 @@ def test_match_notion():
 def test_markdown_to_notion_valid():
     """Test conversion of valid Markdown dividers to Notion format."""
     result = DividerElement.markdown_to_notion("---")
-    
+
     assert isinstance(result, list)
     assert len(result) == 2
-    
+
     # First element: empty paragraph
     empty_paragraph = result[0]
     assert isinstance(empty_paragraph, CreateParagraphBlock)
     assert empty_paragraph.type == "paragraph"
     assert empty_paragraph.paragraph.rich_text == []
-    
+
     # Second element: divider
     divider = result[1]
     assert isinstance(divider, CreateDividerBlock)
@@ -104,17 +106,13 @@ def test_notion_to_markdown():
     """Test conversion from Notion divider block to Markdown."""
     # Valid divider block
     divider_block = create_block_with_required_fields(
-        type="divider",
-        divider=DividerBlock()
+        type="divider", divider=DividerBlock()
     )
     assert DividerElement.notion_to_markdown(divider_block) == "---"
 
     # Divider block with extra properties (should still work)
     divider_with_extra = create_block_with_required_fields(
-        type="divider",
-        divider=DividerBlock(),
-        archived=False,
-        has_children=False
+        type="divider", divider=DividerBlock(), archived=False, has_children=False
     )
     assert DividerElement.notion_to_markdown(divider_with_extra) == "---"
 
@@ -152,8 +150,7 @@ def test_roundtrip_conversion():
 
     # Create a Block for notion_to_markdown
     divider_block = create_block_with_required_fields(
-        type="divider",
-        divider=divider_create_block.divider
+        type="divider", divider=divider_create_block.divider
     )
 
     # Convert back to Markdown
@@ -202,10 +199,10 @@ def test_markdown_patterns(markdown, should_match):
 def test_notion_block_recognition(block_type, should_match):
     """Test recognition of different Notion block types."""
     block_data = {"type": block_type}
-    
+
     if block_type == "divider":
         block_data["divider"] = DividerBlock()
-    
+
     block = create_block_with_required_fields(**block_data)
     result = DividerElement.match_notion(block)
     assert result == should_match
@@ -215,18 +212,14 @@ def test_notion_block_recognition(block_type, should_match):
 @pytest.fixture
 def valid_divider_block():
     """Fixture for valid Notion divider block."""
-    return create_block_with_required_fields(
-        type="divider",
-        divider=DividerBlock()
-    )
+    return create_block_with_required_fields(type="divider", divider=DividerBlock())
 
 
 @pytest.fixture
 def invalid_divider_block():
     """Fixture for invalid Notion block."""
     return create_block_with_required_fields(
-        type="paragraph",
-        paragraph=ParagraphBlock(rich_text=[])
+        type="paragraph", paragraph=ParagraphBlock(rich_text=[])
     )
 
 
@@ -325,7 +318,7 @@ def test_notion_properties_ignored():
         divider=DividerBlock(),
         archived=False,
         has_children=False,
-        in_trash=False
+        in_trash=False,
     )
 
     # Should still convert properly despite extra properties
@@ -348,8 +341,7 @@ def test_consistency():
 
         # Create Block for notion_to_markdown
         divider_block = create_block_with_required_fields(
-            type="divider",
-            divider=divider_create_block.divider
+            type="divider", divider=divider_create_block.divider
         )
 
         # Convert back to Markdown
@@ -362,7 +354,7 @@ def test_consistency():
 def test_empty_paragraph_creation():
     """Test that empty paragraph is created correctly."""
     result = DividerElement.markdown_to_notion("---")
-    
+
     empty_paragraph = result[0]
     assert isinstance(empty_paragraph, CreateParagraphBlock)
     assert empty_paragraph.type == "paragraph"
@@ -374,7 +366,7 @@ def test_empty_paragraph_creation():
 def test_divider_block_creation():
     """Test that divider block is created correctly."""
     result = DividerElement.markdown_to_notion("---")
-    
+
     divider = result[1]
     assert isinstance(divider, CreateDividerBlock)
     assert divider.type == "divider"
@@ -385,16 +377,16 @@ def test_pattern_matching_edge_cases():
     """Test edge cases for pattern matching."""
     # Test with various whitespace combinations
     edge_cases = [
-        ("   ---", True),      # Leading spaces
-        ("---   ", True),      # Trailing spaces
-        ("\t---", True),       # Leading tab
-        ("---\t", True),       # Trailing tab
-        (" \t---\t ", True),   # Mixed whitespace
-        ("", False),           # Empty string
-        ("   ", False),        # Only whitespace
-        ("\t\t", False),       # Only tabs
+        ("   ---", True),  # Leading spaces
+        ("---   ", True),  # Trailing spaces
+        ("\t---", True),  # Leading tab
+        ("---\t", True),  # Trailing tab
+        (" \t---\t ", True),  # Mixed whitespace
+        ("", False),  # Empty string
+        ("   ", False),  # Only whitespace
+        ("\t\t", False),  # Only tabs
     ]
-    
+
     for markdown, should_match in edge_cases:
         result = DividerElement.match_markdown(markdown)
         assert result == should_match, f"Failed for '{repr(markdown)}'"
@@ -403,12 +395,12 @@ def test_pattern_matching_edge_cases():
 def test_multiple_consecutive_dividers():
     """Test handling of multiple consecutive dividers."""
     dividers = ["---", "----", "-----"]
-    
+
     for divider in dividers:
         result = DividerElement.markdown_to_notion(divider)
         assert result is not None
         assert len(result) == 2  # Always paragraph + divider
-        
+
         # All should produce the same structure
         assert isinstance(result[0], CreateParagraphBlock)
         assert isinstance(result[1], CreateDividerBlock)
@@ -418,18 +410,16 @@ def test_notion_block_validation():
     """Test validation of Notion block structure."""
     # Valid block
     valid_block = create_block_with_required_fields(
-        type="divider",
-        divider=DividerBlock()
+        type="divider", divider=DividerBlock()
     )
     assert DividerElement.match_notion(valid_block)
-    
+
     # Block with wrong type
     wrong_type_block = create_block_with_required_fields(
-        type="paragraph",
-        divider=DividerBlock()  # Has divider content but wrong type
+        type="paragraph", divider=DividerBlock()  # Has divider content but wrong type
     )
     assert not DividerElement.match_notion(wrong_type_block)
-    
+
     # Block with correct type but no divider content
     no_content_block = create_block_with_required_fields(type="divider")
     assert not DividerElement.match_notion(no_content_block)
