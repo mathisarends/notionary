@@ -11,7 +11,6 @@ should be ≤ 2000, instead was 2162."
 
 import re
 import logging
-from typing import Any
 from notionary.blocks.block_models import BlockCreateRequest
 
 logger = logging.getLogger(__name__)
@@ -20,10 +19,11 @@ logger = logging.getLogger(__name__)
 def fix_blocks_content_length(
     blocks: list[BlockCreateRequest], max_text_length: int = 1900
 ) -> list[BlockCreateRequest]:
-    """Check each block and ensure text content doesn't exceed Notion's limit."""
     fixed_blocks: list[BlockCreateRequest] = []
 
-    for block in blocks:
+    flattened_blocks = _flatten_blocks(blocks)
+    
+    for block in flattened_blocks:
         fixed_block = _fix_single_block_content(block, max_text_length)
         fixed_blocks.append(fixed_block)
     return fixed_blocks
@@ -102,6 +102,19 @@ def _fix_rich_text_objects_direct(rich_text_list: list, max_text_length: int) ->
                 )
                 # Direct assignment - no parsing needed!
                 rich_text_item.text.content = content[:max_text_length]
+                
+                
+def _flatten_blocks(blocks: list) -> list[BlockCreateRequest]:
+    """Flatten nested block lists."""
+    flattened = []
+    for item in blocks:
+        if isinstance(item, list):
+            # Rekursiv flatten für nested lists
+            flattened.extend(_flatten_blocks(item))
+        else:
+            # Normal block
+            flattened.append(item)
+    return flattened
 
 
 def split_to_paragraphs(markdown_text: str) -> list[str]:

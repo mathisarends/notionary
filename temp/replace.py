@@ -24,6 +24,18 @@ async def main():
     This is content in the left column.
     - First point
     - Second point
+
+    ```python
+    def hello():
+        print('Hello from inside a column!')
+    ```
+
+    | Name   | Age | City     |
+    | ------ | --- | -------- |
+    | Alice  | 30  | Berlin   |
+    | Bob    | 25  | Hamburg  |
+    | Carol  | 28  | Munich   |
+
     :::
     ::: column
     ## Right Column
@@ -32,11 +44,6 @@ async def main():
     - Final point
     :::
     :::
-
-    ```python
-    def hello():
-        print('Hello, Notion!')
-    ```
 
     Regular paragraph after everything.
     """

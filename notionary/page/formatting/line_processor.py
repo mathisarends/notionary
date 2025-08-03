@@ -84,7 +84,7 @@ class LineProcessor:
         self._child_prefixes = {
             "ToggleElement": "|",
             "ToggleableHeadingElement": "|",
-            "ColumnElement": ":::",  # 🎯 Column-Support hinzugefügt
+            "ColumnElement": ":::",
         }
 
         # 🎯 Column-spezifische Patterns
@@ -153,15 +153,11 @@ class LineProcessor:
             current_parent.start_new_column()
             return True
 
-        # `:::` - end of a column or end of column_list
         if self._column_end_pattern.match(stripped_line):
-            # finalize current column if one is open
             if current_parent.current_column:
                 current_parent.finalize_current_column()
-            # consume closing marker and do not emit paragraph
             return True
 
-        # Normale Zeile in aktueller Spalte
         if current_parent.current_column is not None:
             current_parent.add_to_current_column(line)
             return True
@@ -222,7 +218,7 @@ class LineProcessor:
                         child_prefix=child_prefix,
                         child_lines=[],
                         start_position=current_pos,
-                        is_column_list=is_column_element,  # 🎯 Column-Flag setzen
+                        is_column_list=is_column_element,
                     )
                     self._parent_stack.append(context)
 
@@ -238,10 +234,8 @@ class LineProcessor:
             context = self._parent_stack.pop()
 
             if context.is_column_list:
-                # 🎯 Column-spezifische Finalisierung
                 self._finalize_column_list(context)
             elif context.has_children():
-                # 🎯 Normale Child-Finalisierung (Toggle, Heading)
                 children_text = "\n".join(context.child_lines)
                 children_blocks = self._convert_children_text(children_text)
                 self._assign_children(context.block, children_blocks)
@@ -317,12 +311,10 @@ class LineProcessor:
     ):
         """Assigns children to a parent block."""
 
-        # Toggle-Block
         if hasattr(parent_block, "toggle") and hasattr(parent_block.toggle, "children"):
             parent_block.toggle.children = children
             return
 
-        # Column-List-Block
         if hasattr(parent_block, "column_list") and hasattr(
             parent_block.column_list, "children"
         ):
@@ -330,7 +322,6 @@ class LineProcessor:
             parent_block.column_list.children = children
             return
 
-        # Heading-Blöcke
         if hasattr(parent_block, "heading_1") and hasattr(
             parent_block.heading_1, "children"
         ):
