@@ -1,6 +1,9 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from dataclasses import dataclass
-from notionary.blocks.block_models import BlockCreateRequest
 
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import BlockCreateRequest
 
 @dataclass
 class PositionedBlock:

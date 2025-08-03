@@ -1,7 +1,7 @@
 from __future__ import annotations
-from typing import Optional, Set, Type
+from typing import Optional, Set, Type, TYPE_CHECKING
 
-from notionary.blocks.block_models import Block
+
 from notionary.blocks.notion_block_element import BlockCreateResult, NotionBlockElement
 from notionary.page.markdown_syntax_prompt_generator import (
     MarkdownSyntaxPromptGenerator,
@@ -14,6 +14,9 @@ from notionary.telemetry import (
     MarkdownToNotionConversionEvent,
     NotionToMarkdownConversionEvent,
 )
+
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import Block
 
 
 class BlockRegistry:

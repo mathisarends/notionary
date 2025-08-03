@@ -39,7 +39,7 @@ class MarkdownToNotionConverter:
 
         for element in multiline_elements:
             element_blocks = element.find_matches(text)
-            
+
             all_positioned_blocks.extend(element_blocks)
 
         return all_positioned_blocks

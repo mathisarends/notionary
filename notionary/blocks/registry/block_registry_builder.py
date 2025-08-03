@@ -64,6 +64,7 @@ class BlockRegistryBuilder:
             .with_audio()
             .with_paragraphs()
             .with_toggleable_heading_element()
+            .with_columns()
         ).build()
 
     def remove_element(self, element_class: Type[NotionBlockElement]) -> Self:

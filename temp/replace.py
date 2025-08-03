@@ -5,7 +5,6 @@ async def main():
     page = await NotionPage.from_page_name("Jarvis Clipboard")
     print(f"Page found: {page.title}")
 
-    # Test markdown with advanced capability-based features
     test_markdown = """## 🚀 Capability-based Parser Test
 
     +++ Toggle Title
@@ -19,17 +18,34 @@ async def main():
     | Das ist ein Detail
     | Noch mehr Details
 
+    ::: columns
+    ::: column
+    ## Left Column
+    This is content in the left column.
+    - First point
+    - Second point
+    :::
+    ::: column
+    ## Right Column
+    This is content in the right column.
+    - Another point
+    - Final point
+    :::
+    :::
+
     ```python
     def hello():
         print('Hello, Notion!')
     ```
+
+    Regular paragraph after everything.
     """
 
     edge_result = await page.append_markdown(test_markdown, append_divider=True)
     if edge_result:
-        print("✅ Edge case test completed successfully")
+        print("✅ Edge case test with columns completed successfully")
     else:
-        print("❌ Edge case test failed")
+        print("❌ Edge case test with columns failed")
 
 
 if __name__ == "__main__":

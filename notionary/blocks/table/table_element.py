@@ -1,5 +1,5 @@
 import re
-from typing import Optional, Any, Tuple
+from typing import Optional, Any
 
 from notionary.blocks.block_models import (
     Block,

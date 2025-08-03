@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     from notionary.blocks.paragraph import CreateParagraphBlock, ParagraphBlock
     from notionary.blocks.quote import CreateQuoteBlock, QuoteBlock
     from notionary.blocks.table import (
+        CreateTableOfContentsBlock,
         TableBlock,
         TableRowBlock,
     )
@@ -105,33 +106,6 @@ BlockType = Literal[
     "unsupported",
     "video",
     "audio",
-]
-
-BlockCreateRequest = Union[
-    "CreateBookmarkBlock",
-    "CreateBreadcrumbBlock",
-    "CreateBulletedListItemBlock",
-    "CreateCalloutBlock",
-    "CreateChildDatabaseBlock",
-    "CreateChildPageBlock",
-    "CreateCodeBlock",
-    "CreateColumnListBlock",
-    "CreateColumnBlock",
-    "CreateDividerBlock",
-    "CreateEmbedBlock",
-    "CreateEquationBlock",
-    "CreateFileBlock",
-    "CreateHeading1Block",
-    "CreateHeading2Block",
-    "CreateHeading3Block",
-    "CreateImageBlock",
-    "CreateNumberedListItemBlock",
-    "CreateParagraphBlock",
-    "CreateQuoteBlock",
-    "CreateFileBlock",
-    "CreateToDoBlock",
-    "CreateToggleBlock",
-    "CreateVideoBlock",
 ]
 
 
@@ -246,6 +220,40 @@ from notionary.blocks.table import TableBlock, TableRowBlock
 from notionary.blocks.todo import ToDoBlock
 from notionary.blocks.toggle import ToggleBlock
 from notionary.blocks.video import VideoBlock
+
+BlockCreateRequest = Union[
+    CreateBookmarkBlock,
+    CreateBreadcrumbBlock,
+    CreateBulletedListItemBlock,
+    CreateCalloutBlock,
+    CreateChildDatabaseBlock,
+    CreateChildPageBlock,
+    CreateCodeBlock,
+    CreateColumnListBlock,
+    CreateColumnBlock,
+    CreateDividerBlock,
+    CreateEmbedBlock,
+    CreateEquationBlock,
+    CreateFileBlock,
+    CreateHeading1Block,
+    CreateHeading2Block,
+    CreateHeading3Block,
+    CreateImageBlock,
+    CreateNumberedListItemBlock,
+    CreateParagraphBlock,
+    CreateQuoteBlock,
+    CreateFileBlock,
+    CreateToDoBlock,
+    CreateToggleBlock,
+    CreateVideoBlock,
+]
+
+BlockCreateResult = Optional[
+    Union[
+        list[BlockCreateRequest],
+        BlockCreateRequest,
+    ]
+]
 
 # --- Trigger Pydantic field rebuild for recursive models ---
 Block.model_rebuild()

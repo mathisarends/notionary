@@ -1,19 +1,25 @@
-from typing import Literal, Optional
+from __future__ import annotations
+from typing import Literal, Optional, TYPE_CHECKING
+from pydantic import BaseModel, Field
 
-from pydantic import BaseModel
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import BlockCreateRequest
 
 
 class ColumnBlock(BaseModel):
-    width_ratio: Optional[float] = None
+    column_ratio: Optional[float] = None
 
 
 class CreateColumnBlock(BaseModel):
     type: Literal["column"] = "column"
     column: ColumnBlock
+    children: list["BlockCreateRequest"] = Field(
+        default_factory=list
+    )  # STRING QUOTE HIER!
 
 
 class ColumnListBlock(BaseModel):
-    pass
+    children: list[CreateColumnBlock] = Field(default_factory=list)
 
 
 class CreateColumnListBlock(BaseModel):
