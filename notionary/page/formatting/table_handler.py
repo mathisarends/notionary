@@ -61,9 +61,7 @@ class TableHandler(LineHandler):
         table_context = context.parent_stack.pop()
 
         if not table_context.has_children():
-            context.result_blocks.add(
-                table_context.start_position, context.current_pos, table_context.block
-            )
+            context.result_blocks.append(table_context.block)
             return
 
         table_rows, separator_found = self._process_table_lines(
@@ -74,9 +72,7 @@ class TableHandler(LineHandler):
         if table_rows and separator_found:
             table_context.block.table.has_column_header = True
 
-        context.result_blocks.add(
-            table_context.start_position, context.current_pos, table_context.block
-        )
+        context.result_blocks.append(table_context.block)
 
     def _process_table_lines(
         self, child_lines: list[str]

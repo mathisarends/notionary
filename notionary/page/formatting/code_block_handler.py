@@ -68,11 +68,10 @@ class CodeBlockHandler(LineHandler):
 
     def _last_block_is_code_block(self, context: LineProcessingContext) -> bool:
         """Check if the last block in result_blocks is a code block."""
-        if not context.result_blocks.blocks:
+        if not context.result_blocks:
             return False
 
-        last_block_info = context.result_blocks.blocks[-1]
-        last_block = last_block_info.block
+        last_block = context.result_blocks[-1]
 
         return (hasattr(last_block, "type") and last_block.type == "code") or (
             hasattr(last_block, "code")
@@ -88,9 +87,7 @@ class CodeBlockHandler(LineHandler):
                 RichTextObject.for_code_block(code_content)
             ]
 
-        context.result_blocks.add(
-            code_context.start_position, context.current_pos, code_context.block
-        )
+        context.result_blocks.append(code_context.block)
 
     def _add_code_line(self, context: LineProcessingContext) -> None:
         """Add a line to the current code block."""
@@ -102,11 +99,10 @@ class CodeBlockHandler(LineHandler):
         if not caption_text:
             return
 
-        if not context.result_blocks.blocks:
+        if not context.result_blocks:
             return
 
-        last_block_info = context.result_blocks.blocks[-1]
-        last_block = last_block_info.block
+        last_block = context.result_blocks[-1]
 
         # Verify it's a code block and add caption
         if hasattr(last_block, "code"):

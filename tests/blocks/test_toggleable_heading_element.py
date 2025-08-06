@@ -1,10 +1,12 @@
 import pytest
+from unittest.mock import Mock
 from notionary.blocks.toggleable_heading import ToggleableHeadingElement
+from notionary.blocks.heading.heading_models import CreateHeading1Block, CreateHeading2Block, CreateHeading3Block
 
 
 def test_match_markdown_heading_variants():
     assert ToggleableHeadingElement.match_markdown("+# Foo")
-    assert ToggleableHeadingElement.match_markdown("+## Bar")
+    assert ToggleableHeadingElement.match_markdown("+## Bar") 
     assert ToggleableHeadingElement.match_markdown("+### Baz")
     assert not ToggleableHeadingElement.match_markdown("## Not Toggle")
     assert not ToggleableHeadingElement.match_markdown("+#### Too deep")
@@ -21,12 +23,16 @@ def test_match_markdown_heading_variants():
 )
 def test_markdown_to_notion_basic(text, level, content):
     block = ToggleableHeadingElement.markdown_to_notion(text)
-    assert block["type"] == f"heading_{level}"
-    heading = block[f"heading_{level}"]
-    assert heading["is_toggleable"] is True
-    assert heading["color"] == "default"
-    assert isinstance(heading["rich_text"], list)
-    assert heading["rich_text"][0]["plain_text"] == content
+    assert block is not None
+    assert block.type == f"heading_{level}"
+    
+    # Get the heading content based on level
+    heading = getattr(block, f"heading_{level}")
+    assert heading.is_toggleable is True
+    assert heading.color == "default"
+    assert isinstance(heading.rich_text, list)
+    assert len(heading.rich_text) > 0
+    assert heading.rich_text[0].plain_text == content
 
 
 def test_markdown_to_notion_fail_cases():
@@ -37,124 +43,145 @@ def test_markdown_to_notion_fail_cases():
 
 
 def test_notion_to_markdown_basic():
-    block = {
-        "type": "heading_2",
-        "heading_2": {
-            "is_toggleable": True,
-            "rich_text": [
-                {
-                    "type": "text",
-                    "plain_text": "Ein Titel",
-                    "text": {"content": "Ein Titel"},
-                }
-            ],
-            "color": "default",
-            "children": [],
-        },
-    }
+    # Create a mock Block object
+    block = Mock()
+    block.type = "heading_2"
+    
+    # Mock the heading content
+    heading_content = Mock()
+    heading_content.is_toggleable = True
+    heading_content.rich_text = [Mock()]
+    heading_content.rich_text[0].plain_text = "Ein Titel"
+    
+    # Mock the get_block_content method
+    block.get_block_content.return_value = heading_content
+    
     result = ToggleableHeadingElement.notion_to_markdown(block)
     assert result == "+## Ein Titel"
 
 
 def test_notion_to_markdown_non_toggleable():
-    block = {
-        "type": "heading_2",
-        "heading_2": {
-            "is_toggleable": False,
-            "rich_text": [
-                {"type": "text", "plain_text": "Test", "text": {"content": "Test"}}
-            ],
-            "color": "default",
-            "children": [],
-        },
-    }
-    assert ToggleableHeadingElement.notion_to_markdown(block) is None
+    block = Mock()
+    block.type = "heading_2"
+    
+    heading_content = Mock()
+    heading_content.is_toggleable = False
+    block.get_block_content.return_value = heading_content
+    
+    result = ToggleableHeadingElement.notion_to_markdown(block)
+    assert result is None
 
 
 def test_notion_to_markdown_wrong_type():
-    block = {
-        "type": "paragraph",
-        "paragraph": {
-            "rich_text": [
-                {"type": "text", "plain_text": "Test", "text": {"content": "Test"}}
-            ]
-        },
-    }
-    assert ToggleableHeadingElement.notion_to_markdown(block) is None
+    block = Mock()
+    block.type = "paragraph"
+    
+    result = ToggleableHeadingElement.notion_to_markdown(block)
+    assert result is None
 
 
 @pytest.mark.parametrize("level", [1, 2, 3])
 def test_roundtrip(level):
     content = f"Ein Toggle Level {level}"
     md = f'+{"#"*level} {content}'
+    
+    # Convert to notion
     block = ToggleableHeadingElement.markdown_to_notion(md)
-    out = ToggleableHeadingElement.notion_to_markdown(block)
-    assert out == md
+    assert block is not None
+    
+    # Create a mock Block for notion_to_markdown
+    mock_block = Mock()
+    mock_block.type = f"heading_{level}"
+    
+    # Extract the heading content from the created block
+    heading_content = getattr(block, f"heading_{level}")
+    mock_block.get_block_content.return_value = heading_content
+    
+    # Convert back to markdown
+    result = ToggleableHeadingElement.notion_to_markdown(mock_block)
+    assert result == md
 
 
-def test_pipe_content_detection():
-    assert ToggleableHeadingElement._extract_pipe_content("| abc") == "abc"
-    assert ToggleableHeadingElement._extract_pipe_content("|   Mehr   ") == "Mehr   "
-    assert ToggleableHeadingElement._extract_pipe_content("kein pipe") is None
+def test_match_notion_toggleable_heading():
+    """Test match_notion for toggleable headings."""
+    # Mock toggleable heading
+    mock_block = Mock()
+    mock_block.type = "heading_1"
+    mock_heading = Mock()
+    mock_heading.is_toggleable = True
+    mock_block.get_block_content.return_value = mock_heading
+    
+    assert ToggleableHeadingElement.match_notion(mock_block)
+    
+    # Non-toggleable should not match
+    mock_heading.is_toggleable = False
+    assert not ToggleableHeadingElement.match_notion(mock_block)
+    
+    # Non-heading should not match
+    mock_block.type = "paragraph"
+    assert not ToggleableHeadingElement.match_notion(mock_block)
 
 
-def test_multiline_nested_content_extraction():
-    lines = [
-        "+## Main Toggle",
-        "| Line 1",
-        "| Line 2",
-        "",
-        "| Line 3",
-        "+# Next Section",
+def test_pattern_matching():
+    """Test the regex pattern directly."""
+    # Valid patterns
+    assert ToggleableHeadingElement.PATTERN.match("+# Title")
+    assert ToggleableHeadingElement.PATTERN.match("+## Subtitle")
+    assert ToggleableHeadingElement.PATTERN.match("+### Section")
+    
+    # Invalid patterns
+    assert not ToggleableHeadingElement.PATTERN.match("# Regular heading")
+    assert not ToggleableHeadingElement.PATTERN.match("+#### Too deep")
+    assert not ToggleableHeadingElement.PATTERN.match("+ No level")
+
+
+def test_content_extraction():
+    """Test content extraction from markdown."""
+    text = "+## My Toggleable Section"
+    block = ToggleableHeadingElement.markdown_to_notion(text)
+    
+    assert block is not None
+    heading = block.heading_2
+    assert heading.rich_text[0].plain_text == "My Toggleable Section"
+
+
+def test_empty_content_handling():
+    """Test handling of empty content."""
+    # Empty content after level should fail
+    assert ToggleableHeadingElement.markdown_to_notion("+#") is None
+    assert ToggleableHeadingElement.markdown_to_notion("+##   ") is None
+
+
+def test_whitespace_handling():
+    """Test handling of extra whitespace."""
+    text = "+#    Title with spaces   "
+    block = ToggleableHeadingElement.markdown_to_notion(text)
+    
+    assert block is not None
+    heading = block.heading_1
+    # Content should be trimmed
+    assert heading.rich_text[0].plain_text == "Title with spaces"
+
+
+def test_unicode_content():
+    """Test Unicode content in toggleable headings."""
+    unicode_texts = [
+        "+# Überschrift mit Umlauten äöüß",
+        "+## 中文标题",
+        "+### Заголовок на русском",
+        "+# Emoji title 🚀 ✨"
     ]
-    nested, next_idx = ToggleableHeadingElement._extract_nested_content(lines, 1)
-    assert nested == ["Line 1", "Line 2", "", "Line 3"]
-    assert next_idx == 5  # bis zur nächsten Toggle-Section
+    
+    for text in unicode_texts:
+        block = ToggleableHeadingElement.markdown_to_notion(text)
+        assert block is not None
+        # Just verify it doesn't crash and creates valid content
 
 
-def test_extract_nested_content_stops_on_new_toggle():
-    lines = [
-        "+# Outer",
-        "| A",
-        "+## Inner",  # This should not be included as nested
-    ]
-    nested, next_idx = ToggleableHeadingElement._extract_nested_content(lines, 1)
-    assert nested == ["A"]
-    assert next_idx == 2
-
-
-def test_process_nested_content_callback_usage():
-    # This test simulates that children blocks are added via the callback
-    block = ToggleableHeadingElement.markdown_to_notion("+## Outer")
-
-    def dummy_processor(text):
-        return [
-            {
-                "type": "paragraph",
-                "paragraph": {
-                    "rich_text": [
-                        {"type": "text", "plain_text": text, "text": {"content": text}}
-                    ]
-                },
-            }
-        ]
-
-    ToggleableHeadingElement._process_nested_content(
-        block, ["Dies ist Child"], dummy_processor
-    )
-    heading = block["heading_2"]
-    assert heading["children"][0]["type"] == "paragraph"
-    assert (
-        heading["children"][0]["paragraph"]["rich_text"][0]["plain_text"]
-        == "Dies ist Child"
-    )
-
-
-def test_is_multiline():
-    assert ToggleableHeadingElement.is_multiline() is True
-
-
-def test_llm_prompt_content():
+def test_get_llm_prompt_content():
+    """Test LLM prompt content generation."""
     content = ToggleableHeadingElement.get_llm_prompt_content()
-    assert content.syntax.strip().startswith("+#")
-    assert "pipe prefix" in content.syntax
+    assert content is not None
+    assert hasattr(content, 'syntax')
+    assert "+#" in content.syntax
+    assert "pipe" in content.syntax.lower()

@@ -6,7 +6,6 @@ from typing import Optional, TYPE_CHECKING
 
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.page.formatting.block_position import PositionedBlockList
 
 if TYPE_CHECKING:
     from notionary.blocks.block_models import BlockCreateRequest
@@ -20,7 +19,6 @@ class ParentBlockContext:
     element_type: NotionBlockElement
     child_prefix: str
     child_lines: list[str]
-    start_position: int
 
     def add_child_line(self, content: str):
         """Adds a child line."""
@@ -36,10 +34,7 @@ class LineProcessingContext:
     """Context that gets passed through the handler chain."""
 
     line: str
-    current_pos: int
-    line_end: int
-    line_length: int
-    result_blocks: PositionedBlockList
+    result_blocks: list[BlockCreateRequest]
     parent_stack: list[ParentBlockContext]
     block_registry: BlockRegistry
 

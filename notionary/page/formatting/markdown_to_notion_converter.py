@@ -7,7 +7,6 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.table.table_models import CreateTableRowBlock, TableRowBlock
-from notionary.page.formatting.block_position import PositionedBlockList
 from notionary.page.content.notion_text_length_utils import fix_blocks_content_length
 from notionary.page.formatting.child_content_handler import ChildContentHandler
 from notionary.page.formatting.code_block_handler import CodeBlockHandler
@@ -21,7 +20,7 @@ from notionary.page.formatting.table_handler import TableHandler
 if TYPE_CHECKING:
     from notionary.blocks.block_models import BlockCreateRequest
 
-
+# TODO: Refactor finalizing logic: it does not really belong to the converter but to different handlers.
 class MarkdownToNotionConverter:
     """Converts Markdown text to Notion API block format with unified stack-based processing."""
 
@@ -50,26 +49,18 @@ class MarkdownToNotionConverter:
             return []
 
         all_blocks = self._process_lines(markdown_text)
-        blocks = all_blocks.extract_blocks()
-        return fix_blocks_content_length(blocks)
+        return fix_blocks_content_length(all_blocks)
 
-    def _process_lines(self, text: str) -> PositionedBlockList:
+    def _process_lines(self, text: str) -> list[BlockCreateRequest]:
         """Processes lines using the handler chain."""
         lines = text.split("\n")
-        result_blocks = PositionedBlockList()
+        result_blocks: list[BlockCreateRequest] = []
         parent_stack: list[ParentBlockContext] = []
-        current_pos = 0
 
         for line in lines:
-            line_length = len(line) + 1
-            line_end = current_pos + line_length - 1
-
             # Create context
             context = LineProcessingContext(
                 line=line,
-                current_pos=current_pos,
-                line_end=line_end,
-                line_length=line_length,
                 result_blocks=result_blocks,
                 parent_stack=parent_stack,
                 block_registry=self._block_registry,
@@ -78,20 +69,17 @@ class MarkdownToNotionConverter:
             # Process through handler chain
             self._handler_chain.handle(context)
 
-            current_pos += line_length
-
             if context.should_continue:
                 continue
 
         # Finalize any remaining open parents
-        self._finalize_remaining_parents(result_blocks, parent_stack, current_pos)
+        self._finalize_remaining_parents(result_blocks, parent_stack)
         return result_blocks
 
     def _finalize_remaining_parents(
         self,
-        result_blocks: PositionedBlockList,
+        result_blocks: list[BlockCreateRequest],
         parent_stack: list[ParentBlockContext],
-        current_pos: int,
     ) -> None:
         """Finalize any remaining open parent blocks."""
         while parent_stack:
@@ -126,7 +114,7 @@ class MarkdownToNotionConverter:
                     children_blocks = self._convert_children_text(children_text)
                     self._assign_children(context.block, children_blocks)
 
-            result_blocks.add(context.start_position, current_pos, context.block)
+            result_blocks.append(context.block)
 
     def _finalize_table_context(self, context: ParentBlockContext) -> None:
         """Finalize table context (extracted from TableHandler)."""
@@ -176,8 +164,7 @@ class MarkdownToNotionConverter:
         if not text.strip():
             return []
         child_converter = MarkdownToNotionConverter(self._block_registry)
-        child_results = child_converter._process_lines(text)
-        return child_results.extract_blocks()
+        return child_converter._process_lines(text)
 
     def _assign_children(
         self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]

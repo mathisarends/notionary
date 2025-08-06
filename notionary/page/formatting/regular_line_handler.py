@@ -42,9 +42,7 @@ class RegularLineHandler(LineHandler):
 
             for block in blocks:
                 if not self._can_have_children(block, element):
-                    context.result_blocks.add(
-                        context.current_pos, context.line_end, block
-                    )
+                    context.result_blocks.append(block)
                 else:
                     child_prefix = self._get_child_prefix(element)
 
@@ -53,7 +51,6 @@ class RegularLineHandler(LineHandler):
                         element_type=element,
                         child_prefix=child_prefix,
                         child_lines=[],
-                        start_position=context.current_pos,
                     )
                     context.parent_stack.append(parent_context)
 
@@ -66,7 +63,7 @@ class RegularLineHandler(LineHandler):
         result = context.block_registry.markdown_to_notion(context.line)
         blocks = self._normalize_to_list(result)
         for block in blocks:
-            context.result_blocks.add(context.current_pos, context.line_end, block)
+            context.result_blocks.append(block)
 
     def _can_have_children(
         self, block: BlockCreateRequest, element: NotionBlockElement
@@ -145,9 +142,7 @@ class RegularLineHandler(LineHandler):
                     )
                     self._assign_children(parent_context.block, children_blocks)
 
-            context.result_blocks.add(
-                parent_context.start_position, context.current_pos, parent_context.block
-            )
+            context.result_blocks.append(parent_context.block)
 
     def _convert_children_text(
         self, text: str, block_registry: BlockRegistry
@@ -162,8 +157,7 @@ class RegularLineHandler(LineHandler):
 
         # Create a new converter for children
         child_converter = MarkdownToNotionConverter(block_registry)
-        child_results = child_converter._process_lines(text)
-        return child_results.extract_blocks()
+        return child_converter._process_lines(text)
 
     def _assign_children(
         self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]
