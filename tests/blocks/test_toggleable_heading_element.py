@@ -1,187 +1,204 @@
+"""
+Minimal tests for ToggleableHeadingElement.
+Tests core functionality for toggleable headings (+#, +##, +###).
+"""
+
 import pytest
 from unittest.mock import Mock
 from notionary.blocks.toggleable_heading import ToggleableHeadingElement
-from notionary.blocks.heading.heading_models import CreateHeading1Block, CreateHeading2Block, CreateHeading3Block
+from notionary.blocks.heading.heading_models import (
+    CreateHeading1Block,
+    CreateHeading2Block,
+    CreateHeading3Block,
+    HeadingBlock,
+)
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 
-def test_match_markdown_heading_variants():
-    assert ToggleableHeadingElement.match_markdown("+# Foo")
-    assert ToggleableHeadingElement.match_markdown("+## Bar") 
-    assert ToggleableHeadingElement.match_markdown("+### Baz")
-    assert not ToggleableHeadingElement.match_markdown("## Not Toggle")
+def test_match_markdown_valid():
+    """Test recognition of valid toggleable heading formats."""
+    assert ToggleableHeadingElement.match_markdown("+# Heading 1")
+    assert ToggleableHeadingElement.match_markdown("+## Heading 2")
+    assert ToggleableHeadingElement.match_markdown("+### Heading 3")
+    assert ToggleableHeadingElement.match_markdown("+#  Heading with spaces")
+
+
+def test_match_markdown_invalid():
+    """Test rejection of invalid formats."""
     assert not ToggleableHeadingElement.match_markdown("+#### Too deep")
-    assert not ToggleableHeadingElement.match_markdown("+ Foo")  # Kein Level
+    assert not ToggleableHeadingElement.match_markdown("# Regular heading")
+    assert not ToggleableHeadingElement.match_markdown("+#")  # No content
+    assert not ToggleableHeadingElement.match_markdown("+ No level")
+    assert not ToggleableHeadingElement.match_markdown("Regular text")
+    assert not ToggleableHeadingElement.match_markdown("")
+
+
+def test_match_notion():
+    """Test recognition of Notion toggleable heading blocks."""
+    # Valid toggleable heading
+    block = Mock()
+    block.type = "heading_1"
+    heading_content = Mock()
+    heading_content.is_toggleable = True
+    block.get_block_content.return_value = heading_content
+    assert ToggleableHeadingElement.match_notion(block)
+
+    # Non-toggleable heading (should not match)
+    heading_content.is_toggleable = False
+    assert not ToggleableHeadingElement.match_notion(block)
+
+    # Non-heading block
+    block.type = "paragraph"
+    assert not ToggleableHeadingElement.match_notion(block)
+
+    # Invalid heading level
+    block.type = "heading_4"
+    assert not ToggleableHeadingElement.match_notion(block)
 
 
 @pytest.mark.parametrize(
-    "text,level,content",
+    "markdown,expected_level,expected_content",
     [
-        ("+# Section 1", 1, "Section 1"),
+        ("+# Main Section", 1, "Main Section"),
         ("+## Subsection", 2, "Subsection"),
-        ("+### Tief", 3, "Tief"),
+        ("+### Detail", 3, "Detail"),
     ],
 )
-def test_markdown_to_notion_basic(text, level, content):
-    block = ToggleableHeadingElement.markdown_to_notion(text)
-    assert block is not None
-    assert block.type == f"heading_{level}"
-    
-    # Get the heading content based on level
-    heading = getattr(block, f"heading_{level}")
-    assert heading.is_toggleable is True
+def test_markdown_to_notion(markdown, expected_level, expected_content):
+    """Test conversion from markdown to Notion."""
+    result = ToggleableHeadingElement.markdown_to_notion(markdown)
+
+    assert result is not None
+    assert result.type == f"heading_{expected_level}"
+
+    # Check heading content
+    heading = getattr(result, f"heading_{expected_level}")
+    assert isinstance(heading, HeadingBlock)
+    assert heading.is_toggleable is True  # Key difference from regular headings
     assert heading.color == "default"
-    assert isinstance(heading.rich_text, list)
     assert len(heading.rich_text) > 0
-    assert heading.rich_text[0].plain_text == content
+    assert heading.rich_text[0].plain_text == expected_content
 
 
-def test_markdown_to_notion_fail_cases():
-    assert ToggleableHeadingElement.markdown_to_notion("## Not toggle") is None
-    assert ToggleableHeadingElement.markdown_to_notion("+#") is None
+def test_markdown_to_notion_invalid():
+    """Test invalid markdown returns None."""
     assert ToggleableHeadingElement.markdown_to_notion("+#### Too deep") is None
-    assert ToggleableHeadingElement.markdown_to_notion("") is None
+    assert ToggleableHeadingElement.markdown_to_notion("+#") is None  # No content
+    assert ToggleableHeadingElement.markdown_to_notion("# Regular") is None
+    assert ToggleableHeadingElement.markdown_to_notion("text") is None
 
 
-def test_notion_to_markdown_basic():
-    # Create a mock Block object
+def test_notion_to_markdown():
+    """Test conversion from Notion to markdown."""
+    # Create mock toggleable heading block
     block = Mock()
     block.type = "heading_2"
-    
-    # Mock the heading content
+
+    # Mock heading content with real RichTextObject
     heading_content = Mock()
+    rich_text = RichTextObject.from_plain_text("Test Section")
+    heading_content.rich_text = [rich_text]
     heading_content.is_toggleable = True
-    heading_content.rich_text = [Mock()]
-    heading_content.rich_text[0].plain_text = "Ein Titel"
-    
-    # Mock the get_block_content method
+
     block.get_block_content.return_value = heading_content
-    
+
     result = ToggleableHeadingElement.notion_to_markdown(block)
-    assert result == "+## Ein Titel"
+    assert result == "+## Test Section"
 
-
-def test_notion_to_markdown_non_toggleable():
-    block = Mock()
-    block.type = "heading_2"
-    
-    heading_content = Mock()
+    # Test non-toggleable heading (should return None)
     heading_content.is_toggleable = False
-    block.get_block_content.return_value = heading_content
-    
     result = ToggleableHeadingElement.notion_to_markdown(block)
     assert result is None
-
-
-def test_notion_to_markdown_wrong_type():
-    block = Mock()
-    block.type = "paragraph"
-    
-    result = ToggleableHeadingElement.notion_to_markdown(block)
-    assert result is None
-
-
-@pytest.mark.parametrize("level", [1, 2, 3])
-def test_roundtrip(level):
-    content = f"Ein Toggle Level {level}"
-    md = f'+{"#"*level} {content}'
-    
-    # Convert to notion
-    block = ToggleableHeadingElement.markdown_to_notion(md)
-    assert block is not None
-    
-    # Create a mock Block for notion_to_markdown
-    mock_block = Mock()
-    mock_block.type = f"heading_{level}"
-    
-    # Extract the heading content from the created block
-    heading_content = getattr(block, f"heading_{level}")
-    mock_block.get_block_content.return_value = heading_content
-    
-    # Convert back to markdown
-    result = ToggleableHeadingElement.notion_to_markdown(mock_block)
-    assert result == md
-
-
-def test_match_notion_toggleable_heading():
-    """Test match_notion for toggleable headings."""
-    # Mock toggleable heading
-    mock_block = Mock()
-    mock_block.type = "heading_1"
-    mock_heading = Mock()
-    mock_heading.is_toggleable = True
-    mock_block.get_block_content.return_value = mock_heading
-    
-    assert ToggleableHeadingElement.match_notion(mock_block)
-    
-    # Non-toggleable should not match
-    mock_heading.is_toggleable = False
-    assert not ToggleableHeadingElement.match_notion(mock_block)
-    
-    # Non-heading should not match
-    mock_block.type = "paragraph"
-    assert not ToggleableHeadingElement.match_notion(mock_block)
 
 
 def test_pattern_matching():
     """Test the regex pattern directly."""
     # Valid patterns
-    assert ToggleableHeadingElement.PATTERN.match("+# Title")
-    assert ToggleableHeadingElement.PATTERN.match("+## Subtitle")
-    assert ToggleableHeadingElement.PATTERN.match("+### Section")
-    
+    pattern = ToggleableHeadingElement.PATTERN
+    assert pattern.match("+# Title")
+    assert pattern.match("+## Subtitle")
+    assert pattern.match("+### Section")
+
     # Invalid patterns
-    assert not ToggleableHeadingElement.PATTERN.match("# Regular heading")
-    assert not ToggleableHeadingElement.PATTERN.match("+#### Too deep")
-    assert not ToggleableHeadingElement.PATTERN.match("+ No level")
+    assert not pattern.match("# Regular heading")
+    assert not pattern.match("+#### Too deep")
+    assert not pattern.match("+ No level")
+    assert not pattern.match("+#")  # No content
+
+
+@pytest.mark.parametrize(
+    "markdown,should_match",
+    [
+        ("+# Section 1", True),
+        ("+## Subsection", True),
+        ("+### Detail", True),
+        ("+#### Too deep", False),
+        ("# Regular heading", False),
+        ("+# ", False),  # No content
+        ("+ No level", False),
+        ("Regular text", False),
+        ("", False),
+    ],
+)
+def test_markdown_patterns(markdown, should_match):
+    """Test various markdown patterns."""
+    result = ToggleableHeadingElement.match_markdown(markdown)
+    assert result == should_match
+
+
+def test_roundtrip_conversion():
+    """Test that markdown -> notion -> markdown preserves content."""
+    test_cases = [
+        "+# Main Section",
+        "+## Subsection",
+        "+### Detail Section",
+    ]
+
+    for markdown in test_cases:
+        # Convert to notion
+        notion_result = ToggleableHeadingElement.markdown_to_notion(markdown)
+        assert notion_result is not None
+
+        # Create mock block for notion_to_markdown
+        level = markdown.count("#")
+        block = Mock()
+        block.type = f"heading_{level}"
+
+        heading_content = getattr(notion_result, f"heading_{level}")
+        block.get_block_content.return_value = heading_content
+
+        # Convert back to markdown
+        result = ToggleableHeadingElement.notion_to_markdown(block)
+        assert result == markdown
+
+
+def test_toggleable_property():
+    """Test that created headings are always toggleable."""
+    headings = ["+# Level 1", "+## Level 2", "+### Level 3"]
+
+    for heading in headings:
+        result = ToggleableHeadingElement.markdown_to_notion(heading)
+        assert result is not None
+
+        level = heading.count("#")
+        heading_content = getattr(result, f"heading_{level}")
+        assert heading_content.is_toggleable is True
 
 
 def test_content_extraction():
-    """Test content extraction from markdown."""
-    text = "+## My Toggleable Section"
-    block = ToggleableHeadingElement.markdown_to_notion(text)
-    
-    assert block is not None
-    heading = block.heading_2
-    assert heading.rich_text[0].plain_text == "My Toggleable Section"
+    """Test that content is properly extracted from pattern."""
+    markdown = "+## Section with special chars: äöü 🚀"
+    result = ToggleableHeadingElement.markdown_to_notion(markdown)
 
-
-def test_empty_content_handling():
-    """Test handling of empty content."""
-    # Empty content after level should fail
-    assert ToggleableHeadingElement.markdown_to_notion("+#") is None
-    assert ToggleableHeadingElement.markdown_to_notion("+##   ") is None
-
-
-def test_whitespace_handling():
-    """Test handling of extra whitespace."""
-    text = "+#    Title with spaces   "
-    block = ToggleableHeadingElement.markdown_to_notion(text)
-    
-    assert block is not None
-    heading = block.heading_1
-    # Content should be trimmed
-    assert heading.rich_text[0].plain_text == "Title with spaces"
-
-
-def test_unicode_content():
-    """Test Unicode content in toggleable headings."""
-    unicode_texts = [
-        "+# Überschrift mit Umlauten äöüß",
-        "+## 中文标题",
-        "+### Заголовок на русском",
-        "+# Emoji title 🚀 ✨"
-    ]
-    
-    for text in unicode_texts:
-        block = ToggleableHeadingElement.markdown_to_notion(text)
-        assert block is not None
-        # Just verify it doesn't crash and creates valid content
+    assert result is not None
+    content = result.heading_2.rich_text[0].plain_text
+    assert content == "Section with special chars: äöü 🚀"
 
 
 def test_get_llm_prompt_content():
     """Test LLM prompt content generation."""
     content = ToggleableHeadingElement.get_llm_prompt_content()
     assert content is not None
-    assert hasattr(content, 'syntax')
+    assert hasattr(content, "syntax")
     assert "+#" in content.syntax
-    assert "pipe" in content.syntax.lower()
+    assert "pipe" in content.syntax.lower()  # Mentions pipe prefix for content

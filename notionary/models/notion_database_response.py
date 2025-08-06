@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Optional, List, Dict, Any, Literal, Union
 
 from notionary.models.notion_page_response import Cover, Icon
+from pydantic import BaseModel, ConfigDict
 
 
 # Reusing existing types from your codebase
@@ -142,8 +143,7 @@ class GenericDatabaseProperty(BaseModel):
     name: str
     type: str
 
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
 
 # Union of all database property types

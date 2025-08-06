@@ -170,7 +170,7 @@ def test_notion_to_markdown_invalid_cases():
 
 
 # REMOVED: test_extract_text_content - method doesn't exist anymore
-# REMOVED: test_is_multiline - method doesn't exist anymore  
+# REMOVED: test_is_multiline - method doesn't exist anymore
 # REMOVED: test_is_likely_audio_url - method doesn't exist anymore or is private
 
 
@@ -187,7 +187,7 @@ def test_roundtrip_conversion(markdown):
     # Create proper Block object for testing
     notion_result = AudioElement.markdown_to_notion(markdown)
     assert notion_result is not None
-    
+
     # For roundtrip, we need to create a proper Block mock
     notion_block = Mock()
     notion_block.type = "audio"
@@ -195,7 +195,7 @@ def test_roundtrip_conversion(markdown):
     notion_block.audio.type = notion_result.audio.type
     notion_block.audio.external = notion_result.audio.external
     notion_block.audio.caption = notion_result.audio.caption
-    
+
     back = AudioElement.notion_to_markdown(notion_block)
     assert back == markdown
 
@@ -204,7 +204,7 @@ def test_roundtrip_conversion(markdown):
     "caption",
     [
         "Mit Umlauten äöüß",
-        "Emoji 🙂😎", 
+        "Emoji 🙂😎",
         "Special chars !?&/()[]",
         "中文测试",
     ],
@@ -232,7 +232,7 @@ def test_extra_whitespace_and_caption_spaces():
     # Whitespace around the markdown should be stripped by match_markdown
     md = '   [audio](https://aud.io/a.mp3 "  Caption mit Leerzeichen   ")   '
     assert AudioElement.match_markdown(md)
-    
+
     block = AudioElement.markdown_to_notion(md)
     assert block is not None
     # Caption spaces should be preserved
@@ -243,7 +243,7 @@ def test_integration_with_other_elements():
     """Test that AudioElement doesn't match non-audio markdown."""
     not_audio = [
         "# Heading",
-        "Paragraph text", 
+        "Paragraph text",
         "[link](https://example.com)",
         "[image](https://img.com/b.jpg)",
         "[video](https://video.com/v.mp4)",
@@ -259,7 +259,7 @@ def test_url_validation_via_match_markdown():
     # Valid HTTP/HTTPS URLs with audio extensions
     valid_urls = [
         "[audio](http://example.com/file.mp3)",
-        "[audio](https://example.com/file.wav)", 
+        "[audio](https://example.com/file.wav)",
         "[audio](https://subdomain.example.com/path/to/file.ogg)",
         "[audio](https://example.com/file.m4a)",
         "[audio](https://example.com/file.oga)",
@@ -270,7 +270,7 @@ def test_url_validation_via_match_markdown():
     # Invalid URLs (no proper audio extension)
     invalid_urls = [
         "[audio](https://example.com/file)",  # No extension
-        "[audio](https://example.com/file.txt)",  # Wrong extension  
+        "[audio](https://example.com/file.txt)",  # Wrong extension
         "[audio](https://example.com/file.jpg)",  # Wrong extension
         "[audio](not-a-url)",  # Not a URL
     ]

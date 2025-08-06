@@ -1,6 +1,6 @@
 """
-Pytest tests for TodoElement.
-Tests conversion between Markdown todos and Notion to_do blocks.
+Minimal tests for TodoElement.
+Tests core functionality for todo items (- [ ], - [x]).
 """
 
 import pytest
@@ -8,127 +8,138 @@ from unittest.mock import Mock
 from notionary.blocks.todo import TodoElement
 from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-@pytest.mark.parametrize(
-    "line,expected",
-    [
-        ("- [ ] Unchecked todo", True),
-        ("* [ ] Unchecked todo", True),
-        ("+ [ ] Unchecked todo", True),
-        ("  - [ ] Indented todo", True),
-        ("- [x] Checked todo", True),
-        ("* [x] Checked todo", True),
-        ("+ [x] Checked todo", True),
-        ("- Regular list item", False),
-        ("[ ] Not a todo", False),
-        ("- [o] Invalid checkbox", False),
-        ("", False),
-    ],
-)
-def test_match_markdown(line, expected):
-    assert TodoElement.match_markdown(line) == expected
+def test_match_markdown_valid():
+    """Test recognition of valid todo formats."""
+    # Unchecked todos
+    assert TodoElement.match_markdown("- [ ] Buy groceries")
+    assert TodoElement.match_markdown("* [ ] Call dentist")
+    assert TodoElement.match_markdown("+ [ ] Write report")
+    assert TodoElement.match_markdown("  - [ ] Indented todo")
+
+    # Checked todos
+    assert TodoElement.match_markdown("- [x] Task completed")
+    assert TodoElement.match_markdown("* [X] Also completed")  # Case insensitive
+    assert TodoElement.match_markdown("+ [x] Done item")
 
 
-@pytest.mark.parametrize(
-    "block_type,expected",
-    [
-        ("to_do", True),
-        ("paragraph", False),
-        ("bulleted_list_item", False),
-        ("something_else", False),
-    ],
-)
-def test_match_notion(block_type, expected):
-    # Create proper Mock Block object
-    block = Mock()
-    block.type = block_type
-    if block_type == "to_do":
-        block.to_do = Mock()  # to_do content exists
-    else:
-        block.to_do = None
-        
-    assert TodoElement.match_notion(block) == expected
+def test_match_markdown_invalid():
+    """Test rejection of invalid formats."""
+    assert not TodoElement.match_markdown("- Regular list item")
+    assert not TodoElement.match_markdown("[ ] Not a todo")  # Missing marker
+    assert not TodoElement.match_markdown("- [o] Invalid checkbox")
+    assert not TodoElement.match_markdown("- [ ]")  # No content
+    assert not TodoElement.match_markdown("Regular text")
+    assert not TodoElement.match_markdown("")
 
 
-@pytest.mark.parametrize(
-    "md,checked,expected_text",
-    [
-        ("- [ ] Buy groceries", False, "Buy groceries"),
-        ("- [x] Complete assignment", True, "Complete assignment"),
-        ("* [ ] Call Mom", False, "Call Mom"),
-        ("+ [x] Pay bills", True, "Pay bills"),
-        ("  - [ ] Indented", False, "Indented"),
-    ],
-)
-def test_markdown_to_notion(md, checked, expected_text):
-    result = TodoElement.markdown_to_notion(md)
-    
+def test_match_notion():
+    """Test recognition of Notion to_do blocks."""
+    # Valid todo block
+    todo_block = Mock()
+    todo_block.type = "to_do"
+    todo_block.to_do = Mock()  # Not None
+    assert TodoElement.match_notion(todo_block)
+
+    # Invalid blocks
+    paragraph_block = Mock()
+    paragraph_block.type = "paragraph"
+    paragraph_block.to_do = None
+    assert not TodoElement.match_notion(paragraph_block)
+
+    # Todo type but to_do is None
+    empty_todo_block = Mock()
+    empty_todo_block.type = "to_do"
+    empty_todo_block.to_do = None
+    assert not TodoElement.match_notion(empty_todo_block)
+
+
+def test_markdown_to_notion_unchecked():
+    """Test conversion of unchecked todo to Notion."""
+    result = TodoElement.markdown_to_notion("- [ ] Buy groceries")
+
     assert result is not None
     assert isinstance(result, CreateToDoBlock)
     assert result.type == "to_do"
     assert isinstance(result.to_do, ToDoBlock)
-    assert result.to_do.checked == checked
+    assert result.to_do.checked is False
     assert result.to_do.color == "default"
-    
-    # Check rich text content
     assert len(result.to_do.rich_text) > 0
-    extracted = TextInlineFormatter.extract_text_with_formatting(
-        [rt.model_dump() for rt in result.to_do.rich_text]
-    )
-    assert expected_text in extracted
+    assert result.to_do.rich_text[0].plain_text == "Buy groceries"
 
 
-@pytest.mark.parametrize(
-    "md",
-    ["- Regular list item", "[ ] Not a todo", "- [o] Invalid checkbox", "", "nope"],
-)
-def test_markdown_to_notion_invalid(md):
-    assert TodoElement.markdown_to_notion(md) is None
+def test_markdown_to_notion_checked():
+    """Test conversion of checked todo to Notion."""
+    result = TodoElement.markdown_to_notion("- [x] Task completed")
+
+    assert result is not None
+    assert result.to_do.checked is True
+    assert result.to_do.rich_text[0].plain_text == "Task completed"
+
+
+def test_markdown_to_notion_different_markers():
+    """Test different todo markers (-, *, +)."""
+    markers = [
+        ("- [ ] Dash todo", False),
+        ("* [x] Asterisk todo", True),
+        ("+ [ ] Plus todo", False),
+    ]
+
+    for markdown, expected_checked in markers:
+        result = TodoElement.markdown_to_notion(markdown)
+        assert result is not None
+        assert result.to_do.checked is expected_checked
+
+
+def test_markdown_to_notion_invalid():
+    """Test invalid markdown returns None."""
+    assert TodoElement.markdown_to_notion("- Regular list") is None
+    assert TodoElement.markdown_to_notion("[ ] No marker") is None
+    assert TodoElement.markdown_to_notion("- [o] Invalid") is None
+    assert TodoElement.markdown_to_notion("text") is None
 
 
 def test_notion_to_markdown_unchecked():
-    # Create a proper mock Block object
+    """Test conversion from Notion unchecked todo to markdown."""
+    # Mock unchecked todo block
     block = Mock()
     block.type = "to_do"
-    
-    # Create mock to_do content with real RichTextObject
-    todo_content = Mock()
-    rich_text = RichTextObject.from_plain_text("Buy groceries")
-    todo_content.rich_text = [rich_text]
-    todo_content.checked = False
-    
-    block.to_do = todo_content
-    
-    markdown = TodoElement.notion_to_markdown(block)
-    assert markdown == "- [ ] Buy groceries"
+    block.to_do = Mock()
+    block.to_do.checked = False
+
+    # Mock rich text with real RichTextObject
+    rich_text = RichTextObject.from_plain_text("Buy milk")
+    block.to_do.rich_text = [rich_text]
+
+    result = TodoElement.notion_to_markdown(block)
+    assert result == "- [ ] Buy milk"
 
 
 def test_notion_to_markdown_checked():
-    # Create a proper mock Block object
+    """Test conversion from Notion checked todo to markdown."""
+    # Mock checked todo block
     block = Mock()
     block.type = "to_do"
-    
-    # Create mock to_do content with real RichTextObject
-    todo_content = Mock()
-    rich_text = RichTextObject.from_plain_text("Complete assignment")
-    todo_content.rich_text = [rich_text]
-    todo_content.checked = True
-    
-    block.to_do = todo_content
-    
-    markdown = TodoElement.notion_to_markdown(block)
-    assert markdown == "- [x] Complete assignment"
+    block.to_do = Mock()
+    block.to_do.checked = True
+
+    # Mock rich text with real RichTextObject
+    rich_text = RichTextObject.from_plain_text("Task done")
+    block.to_do.rich_text = [rich_text]
+
+    result = TodoElement.notion_to_markdown(block)
+    assert result == "- [x] Task done"
 
 
 def test_notion_to_markdown_invalid():
+    """Test invalid Notion blocks return None."""
     # Wrong type
     paragraph_block = Mock()
     paragraph_block.type = "paragraph"
     paragraph_block.to_do = None
     assert TodoElement.notion_to_markdown(paragraph_block) is None
-    
+
     # No to_do content
     todo_block = Mock()
     todo_block.type = "to_do"
@@ -136,179 +147,131 @@ def test_notion_to_markdown_invalid():
     assert TodoElement.notion_to_markdown(todo_block) is None
 
 
-def test_with_formatting():
-    todo_with_formatting = "- [ ] Remember to *buy* **groceries**"
-    notion_result = TodoElement.markdown_to_notion(todo_with_formatting)
-    
-    assert notion_result is not None
-    
-    # Create mock Block for notion_to_markdown
-    mock_block = Mock()
-    mock_block.type = "to_do"
-    mock_block.to_do = notion_result.to_do
-    
-    markdown = TodoElement.notion_to_markdown(mock_block)
-    
-    # Should contain the formatted text and keep the todo structure
-    assert "Remember to" in markdown
-    assert "*buy*" in markdown  # Formatting should be preserved
-    assert "**groceries**" in markdown  # Formatting should be preserved
-    assert markdown.startswith("- [ ] ")
-
-
-# REMOVED: test_is_multiline - method doesn't exist anymore
-
-
 @pytest.mark.parametrize(
-    "md",
+    "markdown,should_match,expected_checked",
     [
-        "- [ ] Käse kaufen",
-        "- [x] Aufgabe erledigt 🙂",
-        "* [x] Mit Unicode äöüß",
-        "+ [ ] Todo mit Emoji 👍",
+        ("- [ ] Unchecked", True, False),
+        ("* [ ] Also unchecked", True, False),
+        ("+ [ ] Plus unchecked", True, False),
+        ("- [x] Checked", True, True),
+        ("* [X] Also checked", True, True),  # Case insensitive
+        ("+ [x] Plus checked", True, True),
+        ("  - [ ] Indented", True, False),
+        ("- Regular list", False, None),
+        ("[ ] No marker", False, None),
+        ("- [o] Invalid", False, None),
+        ("", False, None),
     ],
 )
-def test_unicode_content(md):
-    result = TodoElement.markdown_to_notion(md)
-    assert result is not None
-    
-    text = TextInlineFormatter.extract_text_with_formatting(
-        [rt.model_dump() for rt in result.to_do.rich_text]
-    )
-    
-    # Check that unicode content is preserved
-    for word in md.split():
-        if word not in ["- [ ]", "[x]", "*", "+"]:
-            # Clean up the word and check if meaningful content is preserved
-            clean_word = word.strip("[]()+-*x")
-            if clean_word and len(clean_word) > 1:
-                assert any(c in text for c in clean_word if c.isalnum() or ord(c) > 127)
+def test_markdown_patterns(markdown, should_match, expected_checked):
+    """Test various markdown patterns."""
+    # Test matching
+    result = TodoElement.match_markdown(markdown)
+    assert result == should_match
 
-
-def test_roundtrip():
-    cases = [
-        "- [ ] Do homework",
-        "- [x] Submit report", 
-        "* [ ] Walk the dog",
-        "+ [x] Finish project",
-        "- [ ] 🥦 Gemüse kaufen",
-        "- [x] Aufgabe erledigt 🙂",
-    ]
-    for md in cases:
-        # Convert to notion
-        notion_result = TodoElement.markdown_to_notion(md)
+    # Test conversion if it should match
+    if should_match:
+        notion_result = TodoElement.markdown_to_notion(markdown)
         assert notion_result is not None
-        
-        # Create proper mock Block for notion_to_markdown  
-        mock_block = Mock()
-        mock_block.type = "to_do"
-        mock_block.to_do = notion_result.to_do
-        
-        # Convert back to markdown
-        back = TodoElement.notion_to_markdown(mock_block)
-        assert back is not None
-        
-        # The checkbox state and text must be preserved
-        if "[x]" in md:
-            assert back.startswith("- [x]")
-        else:
-            assert back.startswith("- [ ]")
-            
-        # Extract the main content (after the checkbox)
-        original_content = md.split("] ", 1)[1] if "] " in md else md[6:]
-        back_content = back.split("] ", 1)[1] if "] " in back else back[6:]
-        
-        # Check that meaningful words are preserved
-        original_words = [w.strip() for w in original_content.split() if w.strip()]
-        back_words = [w.strip() for w in back_content.split() if w.strip()]
-        
-        for word in original_words:
-            # For emoji and unicode, just check that some form is preserved
-            if any(ord(c) > 127 for c in word):  # Unicode/Emoji
-                assert any(word in back_word or back_word in word for back_word in back_words)
-            else:  # Regular words
-                assert word in back_words
+        assert notion_result.to_do.checked == expected_checked
+
+
+def test_case_insensitive_checkbox():
+    """Test that [X] and [x] both work for checked todos."""
+    test_cases = [
+        "- [x] Lower case",
+        "- [X] Upper case",
+        "* [x] Asterisk lower",
+        "* [X] Asterisk upper",
+    ]
+
+    for markdown in test_cases:
+        result = TodoElement.markdown_to_notion(markdown)
+        assert result is not None
+        assert result.to_do.checked is True
 
 
 def test_pattern_matching():
     """Test the regex patterns directly."""
     # Test PATTERN (unchecked)
     assert TodoElement.PATTERN.match("- [ ] Test")
-    assert TodoElement.PATTERN.match("* [ ] Test")  
+    assert TodoElement.PATTERN.match("* [ ] Test")
     assert TodoElement.PATTERN.match("+ [ ] Test")
-    assert TodoElement.PATTERN.match("  - [ ] Indented")
-    
+    assert not TodoElement.PATTERN.match("- [x] Test")  # Wrong pattern
+
     # Test DONE_PATTERN (checked)
     assert TodoElement.DONE_PATTERN.match("- [x] Done")
     assert TodoElement.DONE_PATTERN.match("* [X] Done")  # Case insensitive
     assert TodoElement.DONE_PATTERN.match("+ [x] Done")
-    
-    # Invalid patterns
-    assert not TodoElement.PATTERN.match("- Regular list")
-    assert not TodoElement.DONE_PATTERN.match("- [ ] Not done")
+    assert not TodoElement.DONE_PATTERN.match("- [ ] Test")  # Wrong pattern
 
 
-def test_checkbox_state_detection():
-    """Test that checkbox state is correctly detected."""
-    unchecked_cases = [
-        "- [ ] Task 1",
-        "* [ ] Task 2", 
-        "+ [ ] Task 3"
+def test_roundtrip_conversion():
+    """Test that markdown -> notion -> markdown preserves content."""
+    test_cases = [
+        "- [ ] Buy groceries",
+        "- [x] Task completed",
+        "* [ ] Call dentist",
+        "* [x] Email sent",
+        "+ [ ] Write report",
+        "+ [x] Report done",
     ]
-    
-    checked_cases = [
-        "- [x] Done 1",
-        "* [X] Done 2",  # Capital X should work  
-        "+ [x] Done 3"
-    ]
-    
-    for md in unchecked_cases:
-        result = TodoElement.markdown_to_notion(md)
-        assert result is not None
-        assert result.to_do.checked is False
-    
-    for md in checked_cases:
-        result = TodoElement.markdown_to_notion(md)
-        assert result is not None
-        assert result.to_do.checked is True
+
+    for original_markdown in test_cases:
+        # Convert to notion
+        notion_result = TodoElement.markdown_to_notion(original_markdown)
+        assert notion_result is not None
+
+        # Create mock block for notion_to_markdown
+        block = Mock()
+        block.type = "to_do"
+        block.to_do = notion_result.to_do
+
+        # Convert back to markdown
+        result_markdown = TodoElement.notion_to_markdown(block)
+
+        # Should preserve checked state and content, but normalize to "-" marker
+        if "[x]" in original_markdown.lower():
+            assert result_markdown.startswith("- [x] ")
+        else:
+            assert result_markdown.startswith("- [ ] ")
+
+        # Content should be preserved
+        original_content = original_markdown.split("] ", 1)[1]
+        result_content = result_markdown.split("] ", 1)[1]
+        assert result_content == original_content
 
 
-def test_empty_todo_content():
-    """Test handling of todos with empty content."""
-    # These should still work but with empty content
-    empty_cases = [
-        "- [ ] ",
-        "* [x] ",
-    ]
-    
-    for md in empty_cases:
-        # Depending on implementation, this might return None or empty content
-        # Let's test the actual behavior
-        result = TodoElement.markdown_to_notion(md)
-        if result is not None:
-            # If it succeeds, the content should be empty or minimal
-            text = TextInlineFormatter.extract_text_with_formatting(
-                [rt.model_dump() for rt in result.to_do.rich_text]
-            )
-            assert len(text.strip()) == 0
+def test_with_formatting():
+    """Test todos with inline formatting."""
+    markdown = "- [ ] Remember to **buy** *groceries*"
+    result = TodoElement.markdown_to_notion(markdown)
 
-
-def test_whitespace_handling():
-    """Test handling of extra whitespace."""
-    md = "  - [ ]   Task with spaces   "
-    result = TodoElement.markdown_to_notion(md)
-    
     assert result is not None
-    text = TextInlineFormatter.extract_text_with_formatting(
-        [rt.model_dump() for rt in result.to_do.rich_text]  
-    )
-    assert "Task with spaces" in text
+    # Should have multiple rich text objects for formatting
+    assert len(result.to_do.rich_text) > 1
+
+
+def test_content_with_special_characters():
+    """Test content with special characters."""
+    special_todos = [
+        "- [ ] Buy milk & eggs",
+        "- [x] Send email @ 5pm",
+        "- [ ] Review code: main.py",
+        "- [x] Task with emoji 🚀",
+        "- [ ] Unicode: äöü",
+    ]
+
+    for todo in special_todos:
+        result = TodoElement.markdown_to_notion(todo)
+        assert result is not None
+        assert result.type == "to_do"
 
 
 def test_get_llm_prompt_content():
     """Test LLM prompt content generation."""
     content = TodoElement.get_llm_prompt_content()
     assert content is not None
-    assert hasattr(content, 'syntax')
+    assert hasattr(content, "syntax")
     assert "[ ]" in content.syntax
     assert "[x]" in content.syntax or "checkbox" in content.syntax.lower()

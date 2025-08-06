@@ -1,6 +1,7 @@
 """
-Pytest tests for CodeElement.
+Updated pytest tests for CodeElement.
 Tests conversion between Markdown code blocks and Notion code blocks.
+Adapted for the new Stack/LineProcessor system.
 """
 
 import pytest
@@ -38,20 +39,20 @@ def create_block_with_required_fields(**kwargs) -> Block:
     return Block(**defaults)
 
 
-def test_match_markdown_valid_code_blocks():
-    """Test recognition of valid Markdown code block syntax."""
-    assert CodeElement.match_markdown("```python\nprint('Hello')\n```")
-    assert CodeElement.match_markdown("```js\nconsole.log('hi');\n```")
-    assert CodeElement.match_markdown("```\nsome code\n```")
-    assert CodeElement.match_markdown("```bash\necho 'test'\n```\nCaption: Example")
+def test_match_markdown_code_start():
+    """Test recognition of code block start syntax."""
+    assert CodeElement.match_markdown("```python")
+    assert CodeElement.match_markdown("```js")
+    assert CodeElement.match_markdown("```")
+    assert CodeElement.match_markdown("```bash")
 
 
-def test_match_markdown_invalid_formats():
-    """Test rejection of invalid formats."""
+def test_match_markdown_not_code_start():
+    """Test rejection of non-code-start formats."""
     assert not CodeElement.match_markdown("This is just text.")
     assert not CodeElement.match_markdown("`inline code`")
-    assert not CodeElement.match_markdown("```")  # Incomplete
-    assert not CodeElement.match_markdown("```python")  # No closing
+    assert not CodeElement.match_markdown("```python\ncode content")  # Not just start
+    assert not CodeElement.match_markdown("Some text ```python")  # Not at beginning
 
 
 def test_match_notion():
@@ -72,37 +73,24 @@ def test_match_notion():
 
 
 def test_markdown_to_notion_with_language():
-    """Test conversion of code block with language specification."""
-    result = CodeElement.markdown_to_notion("```python\nprint('Hello')\n```")
+    """Test conversion of code block start with language."""
+    result = CodeElement.markdown_to_notion("```python")
 
-    assert len(result) == 2  # Code block + empty paragraph
-    code_block = result[0]
-
-    assert isinstance(code_block, CreateCodeBlock)
-    assert code_block.type == "code"
-    assert code_block.code.language == "python"
-    assert code_block.code.rich_text[0].plain_text == "print('Hello')"
+    assert isinstance(result, CreateCodeBlock)
+    assert result.type == "code"
+    assert result.code.language == "python"
+    assert result.code.rich_text == []  # Empty initially - content added by processor
+    assert result.code.caption == []
 
 
 def test_markdown_to_notion_without_language():
-    """Test conversion of code block without language specification."""
-    result = CodeElement.markdown_to_notion("```\njust some code\n```")
+    """Test conversion of code block start without language."""
+    result = CodeElement.markdown_to_notion("```")
 
-    code_block = result[0]
-    assert code_block.code.language == "plain text"
-    assert code_block.code.rich_text[0].plain_text == "just some code"
-
-
-def test_markdown_to_notion_with_caption():
-    """Test conversion of code block with caption."""
-    markdown = "```python\nprint('test')\n```\nCaption: Example code"
-    result = CodeElement.markdown_to_notion(markdown)
-
-    code_block = result[0]
-    assert isinstance(code_block, CreateCodeBlock)
-    assert code_block.type == "code"
-    assert len(code_block.code.caption) > 0
-    assert code_block.code.caption[0].plain_text == "Example code"
+    assert isinstance(result, CreateCodeBlock)
+    assert result.code.language == "plain text"  # Default language
+    assert result.code.rich_text == []
+    assert result.code.caption == []
 
 
 def test_markdown_to_notion_invalid():
@@ -110,8 +98,11 @@ def test_markdown_to_notion_invalid():
     result = CodeElement.markdown_to_notion("This is just text.")
     assert result is None
 
+    result = CodeElement.markdown_to_notion("```python\ncode content")
+    assert result is None  # Not just a start marker
 
-def test_notion_to_markdown():
+
+def test_notion_to_markdown_simple():
     """Test conversion of Notion code block to Markdown."""
     block = create_block_with_required_fields(
         type="code",
@@ -122,6 +113,19 @@ def test_notion_to_markdown():
 
     result = CodeElement.notion_to_markdown(block)
     assert result == "```python\nprint('Hi')\n```"
+
+
+def test_notion_to_markdown_plain_text():
+    """Test conversion of plain text code block."""
+    block = create_block_with_required_fields(
+        type="code",
+        code=CodeBlock(
+            language="plain text", rich_text=[create_rich_text_object("some code")]
+        ),
+    )
+
+    result = CodeElement.notion_to_markdown(block)
+    assert result == "```\nsome code\n```"  # No language for plain text
 
 
 def test_notion_to_markdown_with_caption():
@@ -145,89 +149,96 @@ def test_notion_to_markdown_invalid():
     result = CodeElement.notion_to_markdown(paragraph_block)
     assert result is None
 
-
-def test_find_matches_multiple_blocks():
-    """Test extraction of multiple code blocks from text."""
-    text = (
-        "Intro\n\n"
-        "```python\n"
-        "print('Hello')\n"
-        "```\n\n"
-        "Some more text\n\n"
-        "```js\n"
-        "console.log('Hi');\n"
-        "```"
-    )
-
-    matches = CodeElement.find_matches(text)
-
-    assert len(matches) == 2
-
-    # Check first match
-    first_match = matches[0][2]  # (start, end, block)
-    assert first_match["type"] == "code"
-    assert first_match["code"]["language"] == "python"
-    assert "print('Hello')" in first_match["code"]["rich_text"][0]["text"]["content"]
-
-    # Check second match
-    second_match = matches[1][2]
-    assert second_match["type"] == "code"
-    assert second_match["code"]["language"] == "js"
-    assert (
-        "console.log('Hi');" in second_match["code"]["rich_text"][0]["text"]["content"]
-    )
+    # Test block without code property
+    code_block_no_code = create_block_with_required_fields(type="code")
+    result = CodeElement.notion_to_markdown(code_block_no_code)
+    assert result is None
 
 
-def test_find_matches_empty_text():
-    """Test find_matches with empty or no code blocks."""
-    # Empty text
-    assert CodeElement.find_matches("") == []
+def test_language_normalization():
+    """Test language normalization."""
+    # Valid languages should pass through
+    result = CodeElement.markdown_to_notion("```python")
+    assert result.code.language == "python"
 
-    # Text without code blocks
-    assert CodeElement.find_matches("Just regular text here.") == []
+    result = CodeElement.markdown_to_notion("```javascript")
+    assert result.code.language == "javascript"
+
+    # Unknown language should default to "plain text"
+    result = CodeElement.markdown_to_notion("```unknownlang")
+    assert result.code.language == "plain text"
 
 
-def test_is_multiline():
-    """Test that code blocks are recognized as multiline elements."""
-    assert CodeElement.is_multiline()
+def test_extract_content_helper():
+    """Test the static helper method for extracting content."""
+    rich_text_list = [
+        create_rich_text_object("line 1\n"),
+        create_rich_text_object("line 2"),
+    ]
+
+    result = CodeElement.extract_content(rich_text_list)
+    assert result == "line 1\nline 2"
+
+
+def test_extract_caption_helper():
+    """Test the static helper method for extracting caption."""
+    caption_list = [
+        create_rich_text_object("Caption part 1 "),
+        create_rich_text_object("and part 2"),
+    ]
+
+    result = CodeElement.extract_caption(caption_list)
+    assert result == "Caption part 1 and part 2"
+
+
+def test_extract_content_empty_list():
+    """Test extract_content with empty list."""
+    result = CodeElement.extract_content([])
+    assert result == ""
+
+
+def test_extract_caption_empty_list():
+    """Test extract_caption with empty list."""
+    result = CodeElement.extract_caption([])
+    assert result == ""
 
 
 # Parametrized tests for different programming languages
 @pytest.mark.parametrize(
-    "language,code,expected_lang",
+    "language,expected_lang",
     [
-        ("python", "print('hello')", "python"),
-        ("javascript", "console.log('test');", "javascript"),
-        ("bash", "echo 'hello'", "bash"),
-        ("json", '{"key": "value"}', "json"),
-        ("", "plain code", "plain text"),  # No language specified
+        ("python", "python"),
+        ("javascript", "javascript"),
+        ("bash", "bash"),
+        ("json", "json"),
+        ("", "plain text"),  # No language specified
+        ("unknownlang", "plain text"),  # Unknown language
     ],
 )
-def test_language_support(language, code, expected_lang):
+def test_language_support(language, expected_lang):
     """Test support for different programming languages."""
     if language:
-        markdown = f"```{language}\n{code}\n```"
+        markdown = f"```{language}"
     else:
-        markdown = f"```\n{code}\n```"
+        markdown = "```"
 
     result = CodeElement.markdown_to_notion(markdown)
 
     assert result is not None
-    code_block = result[0]
-    assert isinstance(code_block, CreateCodeBlock)
-    assert code_block.code.language == expected_lang
-    assert code_block.code.rich_text[0].plain_text == code
+    assert isinstance(result, CreateCodeBlock)
+    assert result.code.language == expected_lang
 
 
 @pytest.mark.parametrize(
     "markdown,should_match",
     [
-        ("```python\ncode\n```", True),
-        ("```\ncode\n```", True),
-        ("```js\ncode\n```\nCaption: test", True),
+        ("```python", True),
+        ("```", True),
+        ("```js", True),
         ("`inline code`", False),
         ("Regular text", False),
-        ("```incomplete", False),
+        ("```python\ncode content", False),  # Not just start
+        ("text ```python", False),  # Not at start
     ],
 )
 def test_markdown_patterns(markdown, should_match):
@@ -274,167 +285,58 @@ def test_with_fixtures(simple_code_block, code_block_with_caption):
     )
 
 
-def test_content_preservation():
-    """Test that code content is preserved exactly during conversion."""
-    test_cases = [
-        "print('hello world')",
-        "function test() {\n  return 42;\n}",
-        "# Comment\necho 'test'",
-        "SELECT * FROM users;",
-        '{"name": "test", "value": 123}',
-    ]
+def test_roundtrip_basic():
+    """Test basic roundtrip conversion compatibility."""
+    # Start with code block start
+    original_start = "```python"
 
-    for code_content in test_cases:
-        markdown = f"```\n{code_content}\n```"
+    # Convert to Notion
+    notion_result = CodeElement.markdown_to_notion(original_start)
+    assert notion_result is not None
 
-        # Convert to Notion
-        notion_result = CodeElement.markdown_to_notion(markdown)
-        assert notion_result is not None
+    # Simulate adding content (this would normally be done by the processor)
+    notion_result.code.rich_text = [create_rich_text_object("print('Hello')")]
 
-        # Check content is preserved
-        actual_content = notion_result[0].code.rich_text[0].plain_text
-        assert actual_content == code_content
+    # Create a Block for notion_to_markdown
+    block = create_block_with_required_fields(type="code", code=notion_result.code)
+
+    # Convert back to Markdown
+    result_markdown = CodeElement.notion_to_markdown(block)
+    assert result_markdown == "```python\nprint('Hello')\n```"
 
 
-def test_trailing_newline_handling():
-    """Test proper handling of trailing newlines in code content."""
-    # Code with trailing newline
-    markdown_with_newline = "```python\nprint('test')\n\n```"
-    result = CodeElement.markdown_to_notion(markdown_with_newline)
-
-    # Should strip trailing newline
-    content = result[0].code.rich_text[0].plain_text
-    assert content == "print('test')\n"  # One newline preserved, extra stripped
-
-
-def test_empty_code_block():
-    """Test handling of empty code blocks."""
-    result = CodeElement.markdown_to_notion("```\n\n```")
-
-    assert result is not None
-    content = result[0].code.rich_text[0].plain_text
-    assert content == ""  # Empty content should be handled gracefully
-
-
-def test_caption_parsing():
-    """Test various caption formats."""
-    test_cases = [
-        ("```python\ncode\n```\nCaption: Simple caption", "Simple caption"),
-        ("```js\ncode\n```\ncaption: Lowercase works too", "Lowercase works too"),
-        (
-            "```bash\ncode\n```\nCaption: Multi word caption here",
-            "Multi word caption here",
-        ),
-    ]
-
-    for markdown, expected_caption in test_cases:
-        result = CodeElement.markdown_to_notion(markdown)
-
-        assert result is not None
-        code_block = result[0]
-        assert isinstance(code_block, CreateCodeBlock)
-        assert len(code_block.code.caption) > 0
-
-        actual_caption = code_block.code.caption[0].plain_text
-        assert actual_caption == expected_caption
-
-
-def test_roundtrip_conversion():
-    """Test that Markdown -> Notion -> Markdown preserves content."""
-    test_cases = [
-        "```python\nprint('Hello')\n```",
-        "```js\nconsole.log('test');\n```",
-        "```\nplain code\n```",
-        "```python\nprint('test')\n```\nCaption: Example",
-    ]
-
-    for original_markdown in test_cases:
-        # Convert to Notion
-        notion_result = CodeElement.markdown_to_notion(original_markdown)
-        assert notion_result is not None
-
-        # Create a Block for notion_to_markdown
-        code_create_block = notion_result[0]  # First item is the code block
-        block = create_block_with_required_fields(
-            type="code", code=code_create_block.code
-        )
-
-        # Convert back to Markdown
-        result_markdown = CodeElement.notion_to_markdown(block)
-        assert result_markdown is not None
-
-        # For comparison, we need to normalize both strings
-        # (Caption format might be slightly different)
-        if "Caption:" in original_markdown:
-            assert "Caption:" in result_markdown
-            # Check that code content is preserved
-            original_code = (
-                original_markdown.split("```")[1].split("\n", 1)[1].rsplit("\n", 1)[0]
-            )
-            result_code = (
-                result_markdown.split("```")[1].split("\n", 1)[1].rsplit("\n", 1)[0]
-            )
-            assert original_code == result_code
-        else:
-            assert result_markdown == original_markdown
-
-
-def test_language_normalization():
-    """Test that languages are properly normalized."""
-    test_cases = [
-        ("Python", "python"),  # Uppercase -> lowercase
-        ("JavaScript", "javascript"),  # Mixed case -> lowercase
-        ("BASH", "bash"),  # All caps -> lowercase
-        ("unknown_lang", "plain text"),  # Unknown -> plain text
-    ]
-
-    for input_lang, expected_lang in test_cases:
-        markdown = f"```{input_lang}\ncode\n```"
-        result = CodeElement.markdown_to_notion(markdown)
-
-        if result:
-            assert result[0].code.language == expected_lang
-        else:
-            # If conversion failed, it should be because of invalid language
-            assert expected_lang == "plain text"
-
-
-def test_extract_content_helper():
-    """Test the static helper method for extracting content."""
+def test_multiline_content():
+    """Test handling of multiline content in notion_to_markdown."""
     rich_text_list = [
-        create_rich_text_object("line 1\n"),
-        create_rich_text_object("line 2"),
+        create_rich_text_object("def hello():\n"),
+        create_rich_text_object("    print('World')\n"),
+        create_rich_text_object("    return True"),
     ]
 
-    result = CodeElement.extract_content(rich_text_list)
-    assert result == "line 1\nline 2"
-
-
-def test_extract_caption_helper():
-    """Test the static helper method for extracting caption."""
-    caption_list = [
-        create_rich_text_object("Caption part 1 "),
-        create_rich_text_object("and part 2"),
-    ]
-
-    result = CodeElement.extract_caption(caption_list)
-    assert result == "Caption part 1 and part 2"
-
-
-def test_plain_text_language_handling():
-    """Test that 'plain text' language is handled correctly in conversion."""
-    # Test markdown -> notion with no language
-    markdown = "```\nsome code\n```"
-    notion_result = CodeElement.markdown_to_notion(markdown)
-    assert notion_result[0].code.language == "plain text"
-
-    # Test notion -> markdown with 'plain text' language
     block = create_block_with_required_fields(
         type="code",
-        code=CodeBlock(
-            language="plain text", rich_text=[create_rich_text_object("some code")]
-        ),
+        code=CodeBlock(language="python", rich_text=rich_text_list),
     )
 
-    markdown_result = CodeElement.notion_to_markdown(block)
-    assert markdown_result == "```\nsome code\n```"  # No language shown for plain text
+    result = CodeElement.notion_to_markdown(block)
+    expected = "```python\ndef hello():\n    print('World')\n    return True\n```"
+    assert result == expected
+
+
+def test_empty_content():
+    """Test handling of empty content."""
+    block = create_block_with_required_fields(
+        type="code",
+        code=CodeBlock(language="python", rich_text=[]),
+    )
+
+    result = CodeElement.notion_to_markdown(block)
+    assert result == "```python\n\n```"
+
+
+def test_get_llm_prompt_content():
+    """Test that LLM prompt content is properly structured."""
+    prompt_content = CodeElement.get_llm_prompt_content()
+
+    assert prompt_content is not None
+    assert "```" in prompt_content.syntax

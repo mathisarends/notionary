@@ -46,5 +46,5 @@ class ColumnElement(NotionBlockElement):
             ElementPromptBuilder()
             .with_description("Creates a single column within a column layout.")
             .with_syntax("::: column\n[content]\n:::")
-            .build()
+            .with_examples.build()
         )

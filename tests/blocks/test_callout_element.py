@@ -116,7 +116,7 @@ def test_notion_to_markdown_simple(mock_extract_text):
     block.type = "callout"
     block.callout = Mock()
     block.callout.rich_text = [create_rich_text_object("Simple callout")]
-    
+
     # Create proper EmojiIcon
     block.callout.icon = EmojiIcon(emoji="💡")
 
@@ -133,7 +133,7 @@ def test_notion_to_markdown_with_custom_emoji(mock_extract_text):
     block.type = "callout"
     block.callout = Mock()
     block.callout.rich_text = [create_rich_text_object("Warning message")]
-    
+
     # Create proper EmojiIcon
     block.callout.icon = EmojiIcon(emoji="⚠️")
 
@@ -187,7 +187,9 @@ def test_roundtrip_conversion(mock_extract_text):
     for original_markdown, expected_text, expected_result in test_cases:
         # Convert to Notion
         notion_result = CalloutElement.markdown_to_notion(original_markdown)
-        assert notion_result is not None, f"Failed to convert {original_markdown} to Notion"
+        assert (
+            notion_result is not None
+        ), f"Failed to convert {original_markdown} to Notion"
 
         # Create a mock Block object for notion_to_markdown
         block = Mock()
@@ -240,7 +242,7 @@ def test_notion_block_recognition(block_type, should_match):
     """Test recognition of different Notion block types."""
     block = Mock()
     block.type = block_type
-    
+
     if block_type == "callout":
         block.callout = Mock()  # callout content exists
     else:
@@ -359,10 +361,10 @@ def test_notion_to_markdown_empty_rich_text(mock_extract_text):
 
 def test_pattern_matching():
     """Test the regex pattern directly."""
-    assert CalloutElement.PATTERN.match('[callout](Simple text)')
+    assert CalloutElement.PATTERN.match("[callout](Simple text)")
     assert CalloutElement.PATTERN.match('[callout](Text "emoji")')
-    assert not CalloutElement.PATTERN.match('[call](Invalid)')
-    assert not CalloutElement.PATTERN.match('callout](Missing bracket)')
+    assert not CalloutElement.PATTERN.match("[call](Invalid)")
+    assert not CalloutElement.PATTERN.match("callout](Missing bracket)")
 
 
 def test_get_emoji_helper():
@@ -371,7 +373,7 @@ def test_get_emoji_helper():
     emoji_icon = EmojiIcon(emoji="🔥")
     result = CalloutElement._get_emoji(emoji_icon)
     assert result == "🔥"
-    
+
     # Test with mock icon that doesn't have emoji attribute
     mock_icon = Mock()
     mock_icon.emoji = "💡"
@@ -381,10 +383,10 @@ def test_get_emoji_helper():
 
 def test_default_emoji_constant():
     """Test that default emoji constant is accessible."""
-    assert hasattr(CalloutElement, 'DEFAULT_EMOJI')
+    assert hasattr(CalloutElement, "DEFAULT_EMOJI")
     assert CalloutElement.DEFAULT_EMOJI == "💡"
-    
-    assert hasattr(CalloutElement, 'DEFAULT_COLOR')
+
+    assert hasattr(CalloutElement, "DEFAULT_COLOR")
     assert CalloutElement.DEFAULT_COLOR == "gray_background"
 
 
@@ -392,6 +394,6 @@ def test_get_llm_prompt_content():
     """Test LLM prompt content generation."""
     content = CalloutElement.get_llm_prompt_content()
     assert content is not None
-    assert hasattr(content, 'syntax')
+    assert hasattr(content, "syntax")
     assert "[callout]" in content.syntax
     assert "emoji" in content.syntax.lower() or "icon" in content.syntax.lower()

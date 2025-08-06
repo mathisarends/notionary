@@ -176,11 +176,6 @@ def test_notion_to_markdown_invalid():
     assert result is None
 
 
-def test_is_multiline():
-    """Test, dass Bookmarks als einzeilige Elemente erkannt werden."""
-    assert not BookmarkElement.is_multiline()
-
-
 # Parametrisierte Tests für verschiedene URL-Formate
 @pytest.mark.parametrize(
     "url,expected",
