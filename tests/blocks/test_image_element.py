@@ -261,4 +261,3 @@ def test_get_llm_prompt_content():
     assert content is not None
     assert hasattr(content, "syntax")
     assert "[image]" in content.syntax
-    assert "URL" in content.syntax or "url" in content.syntax

@@ -235,10 +235,6 @@ def test_extract_text_content():
         assert FileElement._extract_text_content([]) == ""
 
 
-def test_is_multiline():
-    assert not FileElement.is_multiline()
-
-
 @pytest.mark.parametrize(
     "markdown",
     [

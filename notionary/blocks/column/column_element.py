@@ -46,5 +46,18 @@ class ColumnElement(NotionBlockElement):
             ElementPromptBuilder()
             .with_description("Creates a single column within a column layout.")
             .with_syntax("::: column\n[content]\n:::")
-            .with_examples.build()
+            .with_examples(
+                [
+                    "::: column\nThis is the left column.\n:::",
+                    "::: column\n## Features\n- Fast\n- Reliable\n:::",
+                    "::: column\n| Name | Age |\n|------|-----|\n| Alice | 30 |\n| Bob | 25 |\n\n```python\nprint('Hello from column!')\n```\n:::",
+                    "::: column\n> This is a quote block in a column.\n\nRegular paragraph below.\n:::",
+                ]
+            )
+            .with_usage_guidelines(
+                "Use this syntax to create a column layout in your document. "
+                "Columns are useful for presenting content side-by-side, such as tables, multiple code blocks, or images. "
+                "This helps to visually compare or organize related information in a structured way."
+            )
+            .build()
         )

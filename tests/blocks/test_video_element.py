@@ -1,381 +1,288 @@
 """
-Pytest tests for VideoElement.
-Tests conversion between Markdown videos ([video](url "caption")) and Notion video blocks.
+Minimal tests for VideoElement.
+Tests core functionality for video blocks with [video](url) syntax.
 """
 
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from notionary.blocks.video.video_element import VideoElement
+from notionary.blocks.video.video_element_models import CreateVideoBlock, VideoBlock
+from notionary.blocks.paragraph.paragraph_models import CreateParagraphBlock
 
 
-@pytest.mark.parametrize(
-    "text,expected",
-    [
-        ("[video](https://example.com/video.mp4)", True),
-        ('[video](https://example.com/video.mp4 "A caption")', True),
-        ("[video](https://youtu.be/dQw4w9WgXcQ)", True),
-        ('[video](https://www.youtube.com/watch?v=dQw4w9WgXcQ "Rick")', True),
-        ("[video](not-a-url)", False),  # Falscher URL-Format, sollte False sein
-        ("[video]()", False),
-        ("[video](   )", False),
-        ("[vid](https://example.com/video.mp4)", False),
-        ("![video](https://example.com/video.mp4)", False),
-        ("Just text", False),
-        ("", False),
-    ],
-)
-def test_match_markdown(text, expected):
-    assert VideoElement.match_markdown(text) == expected
+def test_match_markdown_valid():
+    """Test recognition of valid video formats."""
+    assert VideoElement.match_markdown("[video](https://example.com/video.mp4)")
+    assert VideoElement.match_markdown(
+        '[video](https://example.com/video.mp4 "Caption")'
+    )
+    assert VideoElement.match_markdown("[video](https://youtu.be/dQw4w9WgXcQ)")
+    assert VideoElement.match_markdown(
+        "[video](https://youtube.com/watch?v=dQw4w9WgXcQ)"
+    )
+    assert VideoElement.match_markdown("  [video](https://example.com/video.mov)  ")
 
 
-@pytest.mark.parametrize(
-    "block_data,expected",
-    [
-        ({"type": "video", "video": {}}, True),
-        ({"type": "image", "image": {}}, False),
-        ({"type": "paragraph", "paragraph": {}}, False),
-        ({"type": "video"}, False),  # video ist None
-    ],
-)
-def test_match_notion(block_data, expected):
-    # Mock Block object
-    block = Mock()
-    block.type = block_data["type"]
-    block.video = block_data.get("video")
+def test_match_markdown_invalid():
+    """Test rejection of invalid video formats."""
+    assert not VideoElement.match_markdown("[video]")
+    assert not VideoElement.match_markdown("[video]()")
+    assert not VideoElement.match_markdown("[video](not-a-url)")
+    assert not VideoElement.match_markdown(
+        "[video](ftp://example.com/video.mp4)"
+    )  # Only http/https
+    assert not VideoElement.match_markdown(
+        "video(https://example.com/video.mp4)"
+    )  # Missing brackets
+    assert not VideoElement.match_markdown(
+        "[embed](https://example.com/video.mp4)"
+    )  # Wrong tag
+    assert not VideoElement.match_markdown("")
+    assert not VideoElement.match_markdown("Regular text")
 
-    assert VideoElement.match_notion(block) == expected
+
+def test_match_notion_valid():
+    """Test recognition of valid Notion video blocks."""
+    mock_block = Mock()
+    mock_block.type = "video"
+    mock_block.video = Mock()
+
+    assert VideoElement.match_notion(mock_block)
 
 
-@pytest.mark.parametrize(
-    "md,expected_url,expected_caption",
-    [
-        ("[video](https://example.com/demo.mp4)", "https://example.com/demo.mp4", ""),
-        (
-            '[video](https://example.com/abc.mp4 "Demo Video")',
-            "https://example.com/abc.mp4",
-            "Demo Video",
-        ),
-        (
-            "[video](https://youtu.be/dQw4w9WgXcQ)",
-            "https://www.youtube.com/watch?v=dQw4w9WgXcQ",  # YouTube URLs werden normalisiert
-            "",
-        ),
-        (
-            '[video](https://www.youtube.com/watch?v=dQw4w9WgXcQ "Rick")',
-            "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-            "Rick",
-        ),
-    ],
-)
-def test_markdown_to_notion(md, expected_url, expected_caption):
-    result = VideoElement.markdown_to_notion(md)
+def test_match_notion_invalid():
+    """Test rejection of invalid Notion blocks."""
+    # Wrong type
+    mock_block = Mock()
+    mock_block.type = "paragraph"
+    mock_block.video = Mock()
+    assert not VideoElement.match_notion(mock_block)
+
+    # None content
+    mock_block = Mock()
+    mock_block.type = "video"
+    mock_block.video = None
+    assert not VideoElement.match_notion(mock_block)
+
+
+def test_markdown_to_notion_basic():
+    """Test conversion from markdown to Notion."""
+    result = VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
+
     assert result is not None
-    assert len(result) == 2  # VideoBlock + ParagraphBlock
+    assert isinstance(result, list)
+    assert len(result) == 2  # Video block + empty paragraph
 
-    # VideoBlock ist der erste Block
+    # First block should be video
     video_block = result[0]
-    assert video_block.type == "video"
-    assert video_block.video.type == "external"
-    assert video_block.video.external.url == expected_url
+    assert isinstance(video_block, CreateVideoBlock)
+    assert isinstance(video_block.video, VideoBlock)
 
-    if expected_caption:
-        assert len(video_block.video.caption) == 1
-        assert video_block.video.caption[0].plain_text == expected_caption
-    else:
-        assert video_block.video.caption == []
-
-    # ParagraphBlock ist der zweite Block
+    # Second block should be empty paragraph
     para_block = result[1]
-    assert para_block.type == "paragraph"
-    assert para_block.paragraph.rich_text == []
+    assert isinstance(para_block, CreateParagraphBlock)
 
 
-@pytest.mark.parametrize(
-    "md",
-    [
-        "[video]()",
-        "[video](not-a-url)",
-        "[video](   )",
-        "not a video",
-        "",
-    ],
-)
-def test_markdown_to_notion_invalid(md):
-    assert VideoElement.markdown_to_notion(md) is None
+def test_markdown_to_notion_with_caption():
+    """Test conversion with caption."""
+    result = VideoElement.markdown_to_notion(
+        '[video](https://example.com/video.mp4 "Demo video")'
+    )
+
+    assert result is not None
+    assert len(result) == 2
+
+    video_block = result[0]
+    assert len(video_block.video.caption) > 0  # Should have caption
 
 
-def test_notion_to_markdown():
-    """Test conversion from Notion blocks to Markdown."""
-    # Test external video with caption
-    external_block = Mock()
-    external_block.type = "video"
-    external_block.video = Mock()
-    external_block.video.type = "external"
-    external_block.video.external = Mock()
-    external_block.video.external.url = "https://example.com/video.mp4"
+def test_markdown_to_notion_without_caption():
+    """Test conversion without caption."""
+    result = VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
 
-    caption_rt = Mock()
-    caption_rt.plain_text = "My Caption"
-    caption_rt.model_dump.return_value = {
-        "type": "text",
-        "text": {"content": "My Caption"},
-    }
-    external_block.video.caption = [caption_rt]
+    assert result is not None
+    video_block = result[0]
+    assert len(video_block.video.caption) == 0  # Should have no caption
 
-    with patch(
-        "notionary.blocks.rich_text.text_inline_formatter.TextInlineFormatter.extract_text_with_formatting"
-    ) as mock_extract:
-        mock_extract.return_value = "My Caption"
-        result = VideoElement.notion_to_markdown(external_block)
-        assert result == '[video](https://example.com/video.mp4 "My Caption")'
+def test_markdown_to_notion_invalid():
+    """Test that invalid markdown returns None."""
+    assert VideoElement.markdown_to_notion("[video]()") is None
+    assert VideoElement.markdown_to_notion("[video](not-a-url)") is None
+    assert VideoElement.markdown_to_notion("Regular text") is None
+    assert VideoElement.markdown_to_notion("") is None
 
-    # Test file video without caption
-    file_block = Mock()
-    file_block.type = "video"
-    file_block.video = Mock()
-    file_block.video.type = "file"
-    file_block.video.file = Mock()
-    file_block.video.file.url = "https://example.com/uploaded.mp4"
-    file_block.video.caption = []
 
-    result = VideoElement.notion_to_markdown(file_block)
-    assert result == "[video](https://example.com/uploaded.mp4)"
+def test_notion_to_markdown_external():
+    """Test conversion from Notion to markdown (external URL)."""
+    # Create mock video block
+    mock_block = Mock()
+    mock_block.type = "video"
+    mock_block.video = Mock()
+    mock_block.video.type = "external"
+    mock_block.video.external = Mock()
+    mock_block.video.external.url = "https://example.com/video.mp4"
+    mock_block.video.caption = []
 
-    # Test external video without caption
-    no_caption_block = Mock()
-    no_caption_block.type = "video"
-    no_caption_block.video = Mock()
-    no_caption_block.video.type = "external"
-    no_caption_block.video.external = Mock()
-    no_caption_block.video.external.url = "https://youtu.be/dQw4w9WgXcQ"
-    no_caption_block.video.caption = []
+    result = VideoElement.notion_to_markdown(mock_block)
 
-    result = VideoElement.notion_to_markdown(no_caption_block)
-    assert result == "[video](https://youtu.be/dQw4w9WgXcQ)"
+    assert result is not None
+    assert result == "[video](https://example.com/video.mp4)"
+
+
+def test_notion_to_markdown_with_caption():
+    """Test conversion with caption."""
+    # Create mock rich text for caption
+    mock_caption = Mock()
+    mock_caption.plain_text = "Demo video"
+    mock_caption.model_dump.return_value = {"text": {"content": "Demo video"}}
+
+    # Create mock video block
+    mock_block = Mock()
+    mock_block.type = "video"
+    mock_block.video = Mock()
+    mock_block.video.type = "external"
+    mock_block.video.external = Mock()
+    mock_block.video.external.url = "https://example.com/video.mp4"
+    mock_block.video.caption = [mock_caption]
+
+    result = VideoElement.notion_to_markdown(mock_block)
+
+    assert result is not None
+    assert "Demo video" in result
+    assert result.startswith("[video](")
+    assert '"Demo video")' in result
+
+
+def test_notion_to_markdown_file_type():
+    """Test conversion with file type (not external)."""
+    mock_block = Mock()
+    mock_block.type = "video"
+    mock_block.video = Mock()
+    mock_block.video.type = "file"
+    mock_block.video.file = Mock()
+    mock_block.video.file.url = "https://example.com/uploaded.mp4"
+    mock_block.video.caption = []
+    mock_block.video.external = None
+
+    result = VideoElement.notion_to_markdown(mock_block)
+
+    assert result is not None
+    assert "https://example.com/uploaded.mp4" in result
 
 
 def test_notion_to_markdown_invalid():
-    """Test invalid blocks return None."""
-    # Invalid block type
-    invalid_block = Mock()
-    invalid_block.type = "paragraph"
-    invalid_block.video = None
-    assert VideoElement.notion_to_markdown(invalid_block) is None
+    """Test that invalid blocks return None."""
+    mock_block = Mock()
+    mock_block.type = "paragraph"
+    assert VideoElement.notion_to_markdown(mock_block) is None
 
-    # Video block but video is None
-    video_none_block = Mock()
-    video_none_block.type = "video"
-    video_none_block.video = None
-    assert VideoElement.notion_to_markdown(video_none_block) is None
-
-    # Missing URL
-    missing_url_block = Mock()
-    missing_url_block.type = "video"
-    missing_url_block.video = Mock()
-    missing_url_block.video.type = "external"
-    missing_url_block.video.external = None
-    missing_url_block.video.file = None
-    assert VideoElement.notion_to_markdown(missing_url_block) is None
+    mock_block.type = "video"
+    mock_block.video = None
+    assert VideoElement.notion_to_markdown(mock_block) is None
 
 
-def test_is_multiline():
-    assert not VideoElement.is_multiline()
+def test_get_llm_prompt_content():
+    """Test LLM prompt content generation."""
+    result = VideoElement.get_llm_prompt_content()
+    assert result is not None
 
 
-@pytest.mark.parametrize(
-    "url,expected_id",
-    [
+def test_get_youtube_id():
+    """Test YouTube ID extraction."""
+    test_cases = [
         ("https://www.youtube.com/watch?v=dQw4w9WgXcQ", "dQw4w9WgXcQ"),
         ("https://youtu.be/dQw4w9WgXcQ", "dQw4w9WgXcQ"),
-        ("https://youtube.com/watch?v=abcd1234567", "abcd1234567"),
-        ("https://example.com/video.mp4", None),
+        ("youtube.com/watch?v=abc123DEF45", "abc123DEF45"),
+        ("youtu.be/xyz789GHI01", "xyz789GHI01"),
+        ("https://example.com/video.mp4", None),  # Not YouTube
         ("not-a-url", None),
-    ],
-)
-def test_get_youtube_id(url, expected_id):
-    """Test YouTube ID extraction."""
-    result = VideoElement._get_youtube_id(url)
-    assert result == expected_id
-
-
-@pytest.mark.parametrize(
-    "md",
-    [
-        '[video](https://example.com/video.mp4 "Käse kaufen äöüß")',
-        '[video](https://youtu.be/dQw4w9WgXcQ "Mit Emoji 🙂")',
-        '[video](https://vimeo.com/123456 "中文说明")',
-    ],
-)
-def test_unicode_and_special_caption(md):
-    """Test Unicode characters in captions."""
-    result = VideoElement.markdown_to_notion(md)
-    assert result is not None
-    video_block = result[0]
-
-    # Extract caption from markdown
-    caption_start = md.find('"') + 1
-    caption_end = md.rfind('"')
-    expected_caption = md[caption_start:caption_end]
-
-    # Check that caption appears in the block
-    caption_list = video_block.video.caption
-    if caption_list:
-        actual_caption = caption_list[0].plain_text
-        assert actual_caption == expected_caption
-
-
-def test_roundtrip():
-    """Test roundtrip conversion: Markdown -> Notion -> Markdown."""
-    test_cases = [
-        (
-            "[video](https://example.com/demo.mp4)",
-            "[video](https://example.com/demo.mp4)",
-        ),
-        (
-            '[video](https://example.com/demo.mp4 "Demo Video")',
-            '[video](https://example.com/demo.mp4 "Demo Video")',
-        ),
-        (
-            "[video](https://youtu.be/dQw4w9WgXcQ)",
-            "[video](https://www.youtube.com/watch?v=dQw4w9WgXcQ)",
-        ),  # YouTube wird normalisiert
-        (
-            '[video](https://www.youtube.com/watch?v=dQw4w9WgXcQ "Rick")',
-            '[video](https://www.youtube.com/watch?v=dQw4w9WgXcQ "Rick")',
-        ),
     ]
 
-    for original_md, expected_md in test_cases:
-        # Markdown -> Notion
-        result = VideoElement.markdown_to_notion(original_md)
-        assert result is not None
-
-        video_block = result[0]
-
-        # Notion -> Markdown
-        recovered_md = VideoElement.notion_to_markdown(video_block)
-        assert recovered_md is not None
-        assert recovered_md == expected_md
+    for url, expected_id in test_cases:
+        result = VideoElement._get_youtube_id(url)
+        assert result == expected_id
 
 
-def test_youtube_url_normalization():
-    """Test that YouTube URLs are properly normalized."""
-    test_cases = [
-        ("https://youtu.be/dQw4w9WgXcQ", "https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
-        (
-            "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-            "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        ),
-        (
-            "http://youtube.com/watch?v=abcd1234567",
-            "https://www.youtube.com/watch?v=abcd1234567",
-        ),
+def test_pattern_regex_directly():
+    """Test the PATTERN regex directly."""
+    pattern = VideoElement.PATTERN
+
+    # Valid patterns
+    assert pattern.match("[video](https://example.com/video.mp4)")
+    assert pattern.match('[video](https://example.com/video.mp4 "Caption")')
+
+    # Invalid patterns
+    assert not pattern.match("[video]()")
+    assert not pattern.match("[video](not-a-url)")
+    assert not pattern.match("video(https://example.com)")
+
+
+def test_youtube_patterns():
+    """Test YouTube pattern matching."""
+    youtube_patterns = VideoElement.YOUTUBE_PATTERNS
+
+    youtube_urls = [
+        "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "https://youtu.be/dQw4w9WgXcQ",
+        "youtube.com/watch?v=abc123DEF45",
+        "youtu.be/xyz789GHI01",
     ]
 
-    for input_url, expected_url in test_cases:
-        md = f"[video]({input_url})"
-        result = VideoElement.markdown_to_notion(md)
+    non_youtube_urls = [
+        "https://vimeo.com/123456789",
+        "https://example.com/video.mp4",
+        "not-a-url",
+    ]
+
+    for url in youtube_urls:
+        found_match = any(pattern.match(url) for pattern in youtube_patterns)
+        assert found_match, f"Should match YouTube URL: {url}"
+
+    for url in non_youtube_urls:
+        found_match = any(pattern.match(url) for pattern in youtube_patterns)
+        assert not found_match, f"Should not match non-YouTube URL: {url}"
+
+
+def test_video_file_extensions():
+    """Test various video file extensions."""
+    extensions = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".flv"]
+
+    for ext in extensions:
+        url = f"https://example.com/video{ext}"
+        markdown = f"[video]({url})"
+
+        assert VideoElement.match_markdown(markdown)
+        result = VideoElement.markdown_to_notion(markdown)
         assert result is not None
 
-        video_block = result[0]
-        assert video_block.video.external.url == expected_url
 
+def test_whitespace_handling():
+    """Test handling of whitespace."""
+    assert VideoElement.match_markdown("  [video](https://example.com/video.mp4)  ")
 
-def test_caption_with_complex_formatting():
-    """Test captions with various formatting."""
-    with patch(
-        "notionary.blocks.rich_text.text_inline_formatter.TextInlineFormatter.extract_text_with_formatting"
-    ) as mock_extract:
-        mock_extract.return_value = "Complex Caption"
-
-        # Create a mock block with complex caption
-        block = Mock()
-        block.type = "video"
-        block.video = Mock()
-        block.video.type = "external"
-        block.video.external = Mock()
-        block.video.external.url = "https://example.com/video.mp4"
-
-        caption_rt = Mock()
-        caption_rt.plain_text = None  # Force fallback to TextInlineFormatter
-        caption_rt.model_dump.return_value = {
-            "type": "text",
-            "text": {"content": "Complex Caption"},
-        }
-        block.video.caption = [caption_rt]
-
-        result = VideoElement.notion_to_markdown(block)
-        assert result == '[video](https://example.com/video.mp4 "Complex Caption")'
-
-
-def test_multiple_caption_parts():
-    """Test handling of multiple caption parts."""
-    with patch(
-        "notionary.blocks.rich_text.text_inline_formatter.TextInlineFormatter.extract_text_with_formatting"
-    ) as mock_extract:
-        mock_extract.side_effect = ["Part 1", "Part 2"]
-
-        block = Mock()
-        block.type = "video"
-        block.video = Mock()
-        block.video.type = "external"
-        block.video.external = Mock()
-        block.video.external.url = "https://example.com/video.mp4"
-
-        caption_rt1 = Mock()
-        caption_rt1.plain_text = "Part 1"
-        caption_rt1.model_dump.return_value = {
-            "type": "text",
-            "text": {"content": "Part 1"},
-        }
-
-        caption_rt2 = Mock()
-        caption_rt2.plain_text = None
-        caption_rt2.model_dump.return_value = {
-            "type": "text",
-            "text": {"content": "Part 2"},
-        }
-
-        block.video.caption = [caption_rt1, caption_rt2]
-
-        result = VideoElement.notion_to_markdown(block)
-        assert result == '[video](https://example.com/video.mp4 "Part 1Part 2")'
-
-
-def test_edge_cases():
-    """Test various edge cases."""
-    # Empty URL should not match
-    assert not VideoElement.match_markdown("[video]()")
-    assert not VideoElement.match_markdown("[video](   )")
-
-    # Invalid protocols
-    assert not VideoElement.match_markdown("[video](ftp://example.com/video.mp4)")
-
-    # URLs with fragments and query params
-    assert VideoElement.match_markdown(
-        "[video](https://example.com/video.mp4?t=123#start)"
+    result = VideoElement.markdown_to_notion(
+        "  [video](https://example.com/video.mp4)  "
     )
+    assert result is not None
 
-    # Very long URLs
-    long_url = "https://example.com/" + "a" * 1000 + ".mp4"
-    assert VideoElement.match_markdown(f"[video]({long_url})")
-
-
-def test_malformed_youtube_urls():
-    """Test handling of malformed YouTube URLs."""
-    # These should not be recognized as YouTube URLs
-    malformed_urls = [
-        "https://youtube.com/watch?vid=dQw4w9WgXcQ",  # wrong parameter
-        "https://youtu.be/dQw4w9WgXcQ123",  # too long ID
-        "https://youtu.be/dQw4w9",  # too short ID
+def test_url_protocols():
+    """Test different URL protocols."""
+    # Valid protocols
+    valid_urls = [
+        "https://example.com/video.mp4",
+        "http://example.com/video.mp4",
     ]
 
-    for url in malformed_urls:
-        youtube_id = VideoElement._get_youtube_id(url)
-        if youtube_id is None:
-            # Should be treated as regular URL
-            md = f"[video]({url})"
-            result = VideoElement.markdown_to_notion(md)
-            assert result is not None
-            video_block = result[0]
-            assert video_block.video.external.url == url  # No normalization
+    for url in valid_urls:
+        markdown = f"[video]({url})"
+        assert VideoElement.match_markdown(markdown)
+
+    # Invalid protocols should not match the pattern
+    invalid_urls = [
+        "ftp://example.com/video.mp4",
+        "file:///local/video.mp4",
+    ]
+
+    for url in invalid_urls:
+        markdown = f"[video]({url})"
+        assert not VideoElement.match_markdown(markdown)

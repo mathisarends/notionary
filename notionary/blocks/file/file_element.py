@@ -2,8 +2,6 @@ from __future__ import annotations
 import re
 from typing import Optional, TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
 from notionary.blocks.file.file_element_models import (
     CreateFileBlock,
     ExternalFile,
@@ -20,6 +18,9 @@ from notionary.blocks.block_models import (
 )
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.prompts import ElementPromptContent, ElementPromptBuilder
+
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import Block, BlockCreateResult
 
 
 class FileElement(NotionBlockElement):
@@ -64,7 +65,7 @@ class FileElement(NotionBlockElement):
             type="external", external=ExternalFile(url=url), caption=[]
         )
         if caption_text.strip():
-            rt = RichTextObject.from_plain_text(caption_text.strip())
+            rt = RichTextObject.from_plain_text(caption_text)
             file_block.caption = [rt]
 
         empty_para = ParagraphBlock(rich_text=[])

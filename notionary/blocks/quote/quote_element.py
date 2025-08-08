@@ -1,6 +1,6 @@
 from __future__ import annotations
 import re
-from typing import Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from notionary.blocks.block_models import Block, BlockCreateResult
@@ -64,15 +64,6 @@ class QuoteElement(NotionBlockElement):
         if not text.strip():
             return None
         return f"[quote]({text.strip()})"
-
-    @classmethod
-    def find_matches(cls, text: str) -> list[tuple[int, int, Any]]:
-        matches: list[tuple[int, int, Any]] = []
-        for m in cls.PATTERN.finditer(text):
-            block = cls.markdown_to_notion(m.group(0))
-            if block:
-                matches.append((m.start(), m.end(), block))
-        return matches
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

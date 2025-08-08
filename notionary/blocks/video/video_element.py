@@ -2,9 +2,6 @@ from __future__ import annotations
 import re
 from typing import Optional, TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
-
 from notionary.blocks.file.file_element_models import ExternalFile, FileObject
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.paragraph.paragraph_models import (
@@ -16,6 +13,8 @@ from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.video.video_element_models import CreateVideoBlock, VideoBlock
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import Block, BlockCreateResult
 
 class VideoElement(NotionBlockElement):
     """
