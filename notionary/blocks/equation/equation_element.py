@@ -26,9 +26,7 @@ class EquationElement(NotionBlockElement):
     )
 
     # Unquoted: bis zur ersten ')', keine Newlines
-    _BRACKET_UNQUOTED = re.compile(
-        r'^\[equation\]\(\s*(?P<expr_u>[^)\r\n]+?)\s*\)$'
-    )
+    _BRACKET_UNQUOTED = re.compile(r"^\[equation\]\(\s*(?P<expr_u>[^)\r\n]+?)\s*\)$")
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
@@ -50,14 +48,22 @@ class EquationElement(NotionBlockElement):
             # Unescape \" and \\ for Notion
             expr = expr.encode("utf-8").decode("unicode_escape")
             expr = expr.replace('\\"', '"')  # falls unicode_escape nicht alles greift
-            return CreateEquationBlock(equation=EquationBlock(expression=expr.strip())) if expr.strip() else None
+            return (
+                CreateEquationBlock(equation=EquationBlock(expression=expr.strip()))
+                if expr.strip()
+                else None
+            )
 
         # [equation](...)
         m = cls._BRACKET_UNQUOTED.match(s)
         if m:
             expr = m.group("expr_u").strip()
             # Hard rule: unquoted darf kein ')' und keinen Newline enthalten (Regex stellt das sicher)
-            return CreateEquationBlock(equation=EquationBlock(expression=expr)) if expr else None
+            return (
+                CreateEquationBlock(equation=EquationBlock(expression=expr))
+                if expr
+                else None
+            )
 
         return None
 
@@ -72,7 +78,7 @@ class EquationElement(NotionBlockElement):
 
         # Wenn riskante Zeichen vorkommen, quoted-Form verwenden
         if ("\n" in expr) or (")" in expr) or ('"' in expr):
-            q = expr.replace("\\", "\\\\").replace('"', r'\"')
+            q = expr.replace("\\", "\\\\").replace('"', r"\"")
             return f'[equation]("{q}")'
         return f"[equation]({expr})"
 
@@ -83,9 +89,11 @@ class EquationElement(NotionBlockElement):
             .with_description("Renders LaTeX math as a Notion equation block.")
             .with_usage_guidelines(
                 "Use [equation](...) for inline formulas. "
-                "If your expression contains \")\" or a newline, use the quoted form: [equation](\"...\")."
+                'If your expression contains ")" or a newline, use the quoted form: [equation]("...").'
             )
-            .with_syntax('[equation](E = mc^2)  ·  [equation]("x = \\\\frac{-b\\\\pm\\\\sqrt{b^2-4ac}}{2a}")')
+            .with_syntax(
+                '[equation](E = mc^2)  ·  [equation]("x = \\\\frac{-b\\\\pm\\\\sqrt{b^2-4ac}}{2a}")'
+            )
             .with_examples(
                 [
                     "[equation](E = mc^2)",

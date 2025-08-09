@@ -7,13 +7,13 @@ async def main():
 
     # Table of contents, Standardfarbe
     toc_block = """
-[toc]
+[toc](blue_background)
+
+# Test 123
+Dies ist ein **fettgedrucktes** Wort, hier *kursiv*, und hier `Code`.
+Außerdem ein [Link](https://example.com) und ~~durchgestrichen~~.
     """
 
-    # Oder mit einer Farbe:
-    # toc_block = """
-    # [toc](blue_background)
-    # """
 
     # Block anhängen + Divider danach
     await page.append_markdown(toc_block, append_divider=True)
@@ -21,4 +21,5 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(main())

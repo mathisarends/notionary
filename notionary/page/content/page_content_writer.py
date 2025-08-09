@@ -30,7 +30,10 @@ class PageContentWriter(LoggingMixin):
         )
 
     async def append_markdown(
-        self, markdown_text: str, append_divider: bool = True
+        self,
+        markdown_text: str,
+        append_divider: bool = True,
+        prepend_table_of_contents=False,
     ) -> Optional[str]:
         """
         Append markdown text to a Notion page, automatically handling content length limits.
@@ -38,6 +41,9 @@ class PageContentWriter(LoggingMixin):
         Returns:
             str: The processed markdown content that was appended (None if failed)
         """
+        if prepend_table_of_contents:
+            markdown_text = "[toc]\n\n" + markdown_text
+
         if append_divider:
             markdown_text = markdown_text + "\n\n---\n"
 
@@ -45,15 +51,6 @@ class PageContentWriter(LoggingMixin):
 
         try:
             blocks = self._markdown_to_notion_converter.convert(processed_markdown)
-            # Dump the blocks as JSON for debugging
-            print("Blocks to append:")
-            print(
-                json.dumps(
-                    [block.model_dump() for block in blocks],
-                    indent=2,
-                    ensure_ascii=False,
-                )
-            )
 
             result = await self._block_client.append_block_children(
                 block_id=self.page_id, children=blocks

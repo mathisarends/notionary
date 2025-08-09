@@ -1,6 +1,7 @@
 from typing import Any
 import re
 
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 
@@ -15,9 +16,9 @@ class TextInlineFormatter:
     - Strikethrough: ~~text~~
     - Code: `text`
     - Links: [text](url)
+    - Mentions: @[<uuid>]
     """
 
-    # Format patterns for matching Markdown formatting
     FORMAT_PATTERNS = [
         (r"\*\*(.+?)\*\*", {"bold": True}),
         (r"\*(.+?)\*", {"italic": True}),
@@ -30,183 +31,109 @@ class TextInlineFormatter:
     ]
 
     @classmethod
-    def parse_inline_formatting(cls, text: str) -> list[dict[str, Any]]:
+    def parse_inline_formatting(cls, text: str) -> list[RichTextObject]:
         """
-        Parse inline text formatting into Notion rich_text format.
-
-        Args:
-            text: Markdown text with inline formatting
-
-        Returns:
-            list of Notion rich_text objects
+        Parse inline text formatting into a list of RichTextObjects.
         """
         if not text:
             return []
-
         return cls._split_text_into_segments(text, cls.FORMAT_PATTERNS)
 
     @classmethod
     def _split_text_into_segments(
-        cls, text: str, format_patterns: list[tuple]
-    ) -> list[dict[str, Any]]:
+        cls, text: str, format_patterns: list[tuple[str, dict[str, Any]]]
+    ) -> list[RichTextObject]:
         """
-        Split text into segments by formatting markers and convert to Notion rich_text format.
-
-        Args:
-            text: Text to split
-            format_patterns: list of (regex pattern, formatting dict) tuples
-
-        Returns:
-            list of Notion rich_text objects
+        Split text into segments by formatting markers and convert to RichTextObjects.
         """
-        segments = []
-        remaining_text = text
+        segments: list[RichTextObject] = []
+        remaining = text
 
-        while remaining_text:
-            earliest_match = None
-            earliest_format = None
-            earliest_pos = len(remaining_text)
-
-            # Find the earliest formatting marker
+        while remaining:
+            # Finde das erste vorkommende Format-Match
+            earliest_match, earliest_format, earliest_pos = None, None, len(remaining)
             for pattern, formatting in format_patterns:
-                match = re.search(pattern, remaining_text)
+                match = re.search(pattern, remaining)
                 if match and match.start() < earliest_pos:
-                    earliest_match = match
-                    earliest_format = formatting
+                    earliest_match, earliest_format = match, formatting
                     earliest_pos = match.start()
 
-            if earliest_match is None:
-                if remaining_text:
-                    segments.append(cls._create_text_element(remaining_text, {}))
+            # Kein weiteres Format gefunden → Rest als Plaintext
+            if not earliest_match:
+                segments.append(cls._create_text_element(remaining, {}))
                 break
 
+            # Text vor dem Match als Plaintext-Element hinzufügen
             if earliest_pos > 0:
+                segments.append(cls._create_text_element(remaining[:earliest_pos], {}))
+
+            # Das Match selbst verarbeiten
+            if "link" in earliest_format:
                 segments.append(
-                    cls._create_text_element(remaining_text[:earliest_pos], {})
+                    cls._create_link_element(
+                        earliest_match.group(1), earliest_match.group(2)
+                    )
+                )
+            elif "mention" in earliest_format:
+                segments.append(cls._create_mention_element(earliest_match.group(1)))
+            else:
+                segments.append(
+                    cls._create_text_element(
+                        earliest_match.group(1), earliest_format
+                    )
                 )
 
-            if "link" in earliest_format:
-                content = earliest_match.group(1)
-                url = earliest_match.group(2)
-                segments.append(cls._create_link_element(content, url))
-
-            elif "mention" in earliest_format:
-                id = earliest_match.group(1)
-                segments.append(cls._create_mention_element(id))
-
-            else:
-                content = earliest_match.group(1)
-                segments.append(cls._create_text_element(content, earliest_format))
-
-            # Move past the processed segment
-            remaining_text = remaining_text[
-                earliest_pos + len(earliest_match.group(0)) :
-            ]
+            # Reststring verkürzen
+            remaining = remaining[earliest_pos + len(earliest_match.group(0)) :]
 
         return segments
 
     @classmethod
     def _create_text_element(
         cls, text: str, formatting: dict[str, Any]
-    ) -> dict[str, Any]:
-        """
-        Create a Notion text element with formatting.
-
-        Args:
-            text: The text content
-            formatting: Dictionary of formatting options
-
-        Returns:
-            Notion rich_text element
-        """
-        annotations = cls._default_annotations()
-
-        # Apply formatting
-        for key, value in formatting.items():
-            if key == "color":
-                annotations["color"] = value
-            elif key in annotations:
-                annotations[key] = value
-
-        return {
-            "type": "text",
-            "text": {"content": text},
-            "annotations": annotations,
-            "plain_text": text,
-        }
+    ) -> RichTextObject:
+        """Create a plain text RichTextObject with optional formatting."""
+        return RichTextObject.from_plain_text(text, **formatting)
 
     @classmethod
-    def _create_link_element(cls, text: str, url: str) -> dict[str, Any]:
-        """
-        Create a Notion link element.
-
-        Args:
-            text: The link text
-            url: The URL
-
-        Returns:
-            Notion rich_text element with link
-        """
-        return {
-            "type": "text",
-            "text": {"content": text, "link": {"url": url}},
-            "annotations": cls._default_annotations(),
-            "plain_text": text,
-        }
+    def _create_link_element(cls, text: str, url: str) -> RichTextObject:
+        """Create a RichTextObject representing a hyperlink."""
+        return RichTextObject.from_plain_text(text, link={"url": url})
 
     @classmethod
-    def _create_mention_element(cls, id: str) -> dict[str, Any]:
-        """
-        Create a Notion mention element.
-
-        Args:
-            id: The page ID
-
-        Returns:
-            Notion rich_text element with mention
-        """
-        return {
-            "type": "mention",
-            "mention": {"type": "page", "page": {"id": id}},
-            "annotations": cls._default_annotations(),
-        }
+    def _create_mention_element(cls, id: str) -> RichTextObject:
+        """Create a RichTextObject representing a page mention."""
+        return RichTextObject(
+            type="mention",
+            mention={"type": "page", "page": {"id": id}},
+            annotations=None,
+            plain_text="",  # Notion setzt das selbst
+        )
 
     @classmethod
-    def extract_text_with_formatting(cls, rich_text: list[dict[str, Any]]) -> str:
+    def extract_text_with_formatting(cls, rich_text: list[RichTextObject]) -> str:
         """
-        Convert Notion rich_text elements back to Markdown formatted text.
-
-        Args:
-            rich_text: list of Notion rich_text elements
-
-        Returns:
-            Markdown formatted text
+        Convert a list of RichTextObjects back into Markdown.
         """
-        formatted_parts = []
+        formatted_parts: list[str] = []
 
-        for text_obj in rich_text:
-            # Fallback: If plain_text is missing, use text['content']
-            content = text_obj.get("plain_text")
-            if content is None:
-                content = text_obj.get("text", {}).get("content", "")
+        for obj in rich_text:
+            content = obj.plain_text or obj.text.content
 
-            annotations = text_obj.get("annotations", {})
-
-            if annotations.get("code", False):
+            ann = obj.annotations.model_dump() if obj.annotations else {}
+            if ann.get("code"):
                 content = f"`{content}`"
-            if annotations.get("strikethrough", False):
+            if ann.get("strikethrough"):
                 content = f"~~{content}~~"
-            if annotations.get("underline", False):
+            if ann.get("underline"):
                 content = f"__{content}__"
-            if annotations.get("italic", False):
+            if ann.get("italic"):
                 content = f"*{content}*"
-            if annotations.get("bold", False):
+            if ann.get("bold"):
                 content = f"**{content}**"
 
-            text_data = text_obj.get("text", {})
-            link_data = text_data.get("link")
-            if link_data:
-                url = link_data.get("url", "")
+            if getattr(obj.text, "link", None):
+                url = obj.text.link.url
                 content = f"[{content}]({url})"
 
             formatted_parts.append(content)
@@ -214,35 +141,14 @@ class TextInlineFormatter:
         return "".join(formatted_parts)
 
     @classmethod
-    def _default_annotations(cls) -> dict[str, bool]:
-        """
-        Create default annotations object.
-
-        Returns:
-            Default Notion text annotations
-        """
-        return {
-            "bold": False,
-            "italic": False,
-            "strikethrough": False,
-            "underline": False,
-            "code": False,
-            "color": "default",
-        }
-
-    @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """
-        Returns structured LLM prompt metadata for inline formatting.
-        """
         return (
             ElementPromptBuilder()
             .with_description(
                 "Inline formatting can be used within most block types to style your text. You can combine multiple formatting options."
             )
             .with_usage_guidelines(
-                "Use inline formatting to highlight important words, provide emphasis, show code or paths, or add hyperlinks. "
-                "This helps create visual hierarchy and improves readability."
+                "Use inline formatting to highlight important words, provide emphasis, show code or paths, or add hyperlinks."
             )
             .with_syntax(
                 "**bold**, *italic*, `code`, ~~strikethrough~~, __underline__, [text](url)"

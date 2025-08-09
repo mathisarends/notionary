@@ -12,10 +12,6 @@ if TYPE_CHECKING:
         CreateBulletedListItemBlock,
     )
     from notionary.blocks.callout import CalloutBlock, CreateCalloutBlock
-    from notionary.blocks.child_database import (
-        ChildDatabaseBlock,
-        CreateChildDatabaseBlock,
-    )
     from notionary.blocks.child_page import ChildPageBlock, CreateChildPageBlock
     from notionary.blocks.code import CodeBlock, CreateCodeBlock
     from notionary.blocks.column import (
@@ -48,8 +44,10 @@ if TYPE_CHECKING:
     from notionary.blocks.todo import CreateToDoBlock, ToDoBlock
     from notionary.blocks.toggle import CreateToggleBlock, ToggleBlock
     from notionary.blocks.video import CreateVideoBlock
-    
-    from notionary.blocks.table_of_contents.table_of_contents_models import TableOfContentsBlock
+
+    from notionary.blocks.table_of_contents.table_of_contents_models import (
+        TableOfContentsBlock,
+    )
 
 BlockColor = Literal[
     "blue",
@@ -168,7 +166,6 @@ class Block(BaseModel):
     breadcrumb: Optional[BreadcrumbBlock] = None
     bulleted_list_item: Optional[BulletedListItemBlock] = None
     callout: Optional[CalloutBlock] = None
-    child_database: Optional[ChildDatabaseBlock] = None
     child_page: Optional[ChildPageBlock] = None
     code: Optional[CodeBlock] = None
     column_list: Optional[ColumnListBlock] = None
@@ -208,7 +205,6 @@ from notionary.blocks.bulleted_list import (
     CreateBulletedListItemBlock,
 )
 from notionary.blocks.callout import CalloutBlock, CreateCalloutBlock
-from notionary.blocks.child_database import ChildDatabaseBlock, CreateChildDatabaseBlock
 from notionary.blocks.child_page import ChildPageBlock, CreateChildPageBlock
 from notionary.blocks.code import CodeBlock, CreateCodeBlock
 from notionary.blocks.column import (
@@ -240,7 +236,7 @@ from notionary.blocks.toggle import ToggleBlock, CreateToggleBlock
 from notionary.blocks.video import CreateVideoBlock
 from notionary.blocks.table_of_contents.table_of_contents_models import (
     TableOfContentsBlock,
-    CreateTableOfContentsBlock
+    CreateTableOfContentsBlock,
 )
 
 BlockCreateRequest = Union[
@@ -248,7 +244,6 @@ BlockCreateRequest = Union[
     CreateBreadcrumbBlock,
     CreateBulletedListItemBlock,
     CreateCalloutBlock,
-    CreateChildDatabaseBlock,
     CreateChildPageBlock,
     CreateCodeBlock,
     CreateColumnListBlock,
@@ -268,7 +263,7 @@ BlockCreateRequest = Union[
     CreateToDoBlock,
     CreateToggleBlock,
     CreateVideoBlock,
-    CreateTableOfContentsBlock
+    CreateTableOfContentsBlock,
 ]
 
 BlockCreateResult = Optional[
@@ -287,7 +282,6 @@ BookmarkBlock.model_rebuild()
 BreadcrumbBlock.model_rebuild()
 BulletedListItemBlock.model_rebuild()
 CalloutBlock.model_rebuild()
-ChildDatabaseBlock.model_rebuild()
 ChildPageBlock.model_rebuild()
 CodeBlock.model_rebuild()
 ColumnBlock.model_rebuild()
@@ -310,7 +304,6 @@ CreateBookmarkBlock.model_rebuild()
 CreateBreadcrumbBlock.model_rebuild()
 CreateBulletedListItemBlock.model_rebuild()
 CreateCalloutBlock.model_rebuild()
-CreateChildDatabaseBlock.model_rebuild()
 CreateChildPageBlock.model_rebuild()
 CreateCodeBlock.model_rebuild()
 CreateColumnListBlock.model_rebuild()

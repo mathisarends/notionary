@@ -20,6 +20,7 @@ from notionary.page.formatting.table_handler import TableHandler
 if TYPE_CHECKING:
     from notionary.blocks.block_models import BlockCreateRequest
 
+
 class MarkdownToNotionConverter:
     """Converts Markdown text to Notion API block format with unified stack-based processing."""
 

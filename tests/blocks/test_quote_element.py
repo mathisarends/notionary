@@ -146,6 +146,7 @@ def test_pattern_regex_directly():
     assert not pattern.match("> Standard quote")
     assert not pattern.match("[quote]Missing parens")
 
+
 def test_whitespace_handling():
     """Test handling of whitespace."""
     # Leading/trailing whitespace in quote content should be stripped

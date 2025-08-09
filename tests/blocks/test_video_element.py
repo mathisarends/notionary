@@ -104,6 +104,7 @@ def test_markdown_to_notion_without_caption():
     video_block = result[0]
     assert len(video_block.video.caption) == 0  # Should have no caption
 
+
 def test_markdown_to_notion_invalid():
     """Test that invalid markdown returns None."""
     assert VideoElement.markdown_to_notion("[video]()") is None
@@ -264,6 +265,7 @@ def test_whitespace_handling():
         "  [video](https://example.com/video.mp4)  "
     )
     assert result is not None
+
 
 def test_url_protocols():
     """Test different URL protocols."""

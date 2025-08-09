@@ -2,9 +2,6 @@ from __future__ import annotations
 import re
 from typing import Optional, TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
-
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
 from notionary.prompts import (
@@ -17,6 +14,8 @@ from notionary.blocks.block_models import (
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import Block, BlockCreateResult
 
 class ToggleElement(NotionBlockElement):
     """

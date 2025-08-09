@@ -19,7 +19,9 @@ from notionary.blocks.numbered_list.numbered_list_element import NumberedListEle
 from notionary.blocks.paragraph.paragraph_element import ParagraphElement
 from notionary.blocks.quote.quote_element import QuoteElement
 from notionary.blocks.table.table_element import TableElement
-from notionary.blocks.table_of_contents.table_of_contents_element import TableOfContentsElement
+from notionary.blocks.table_of_contents.table_of_contents_element import (
+    TableOfContentsElement,
+)
 from notionary.blocks.todo.todo_element import TodoElement
 from notionary.blocks.toggle.toggle_element import ToggleElement
 from notionary.blocks.toggleable_heading.toggleable_heading_element import (
@@ -144,7 +146,7 @@ class BlockRegistryBuilder:
 
     def with_equation(self) -> Self:
         return self._add_element(EquationElement)
-    
+
     def with_table_of_contents(self) -> Self:
         return self._add_element(TableOfContentsElement)
 

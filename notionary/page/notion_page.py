@@ -205,12 +205,16 @@ class NotionPage(LoggingMixin):
         except Exception as e:
             self.logger.error("Error setting page title: %s", str(e))
 
-    async def append_markdown(self, markdown: str, append_divider=False) -> bool:
+    async def append_markdown(
+        self, markdown: str, prepend_table_of_contents=False, append_divider=False
+    ) -> bool:
         """
         Append markdown content to the page.
         """
         return await self._page_content_writer.append_markdown(
-            markdown_text=markdown, append_divider=append_divider
+            markdown_text=markdown,
+            append_divider=append_divider,
+            prepend_table_of_contents=prepend_table_of_contents,
         )
 
     async def clear_page_content(self) -> str:

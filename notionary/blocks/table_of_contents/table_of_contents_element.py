@@ -23,9 +23,7 @@ class TableOfContentsElement(NotionBlockElement):
     - [toc](blue_background)       → custom background color
     """
 
-    PATTERN = re.compile(
-        r"^\[toc\](?:\((?P<color>[a-z_]+)\))?$", re.IGNORECASE
-    )
+    PATTERN = re.compile(r"^\[toc\](?:\((?P<color>[a-z_]+)\))?$", re.IGNORECASE)
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
@@ -33,7 +31,10 @@ class TableOfContentsElement(NotionBlockElement):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        return block.type == "table_of_contents" and getattr(block, "table_of_contents", None) is not None
+        return (
+            block.type == "table_of_contents"
+            and getattr(block, "table_of_contents", None) is not None
+        )
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -48,7 +49,10 @@ class TableOfContentsElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "table_of_contents" or getattr(block, "table_of_contents", None) is None:
+        if (
+            block.type != "table_of_contents"
+            or getattr(block, "table_of_contents", None) is None
+        ):
             return None
 
         color = getattr(block.table_of_contents, "color", "default")
@@ -60,7 +64,9 @@ class TableOfContentsElement(NotionBlockElement):
     def get_llm_prompt_content(cls) -> ElementPromptContent:
         return (
             ElementPromptBuilder()
-            .with_description("Inserts a dynamic table of contents based on the headings in the page.")
+            .with_description(
+                "Inserts a dynamic table of contents based on the headings in the page."
+            )
             .with_usage_guidelines(
                 "Use [toc] to insert a table of contents with default color, "
                 "or [toc](color) for a custom color (e.g., blue, blue_background)."

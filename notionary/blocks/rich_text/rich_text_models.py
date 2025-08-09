@@ -39,4 +39,10 @@ class RichTextObject(BaseModel):
 
     @classmethod
     def for_code_block(cls, content: str) -> RichTextObject:
+        """
+        Create a RichTextObject for code blocks.
+
+        Note:
+            Do not set any annotations here, as this will disable code highlighting in the Notion UI.
+        """
         return cls(text=TextContent(content=content), plain_text=content, href=None)

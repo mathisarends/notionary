@@ -3,8 +3,9 @@ import re
 from typing import Any, Optional, TYPE_CHECKING
 
 
-from notionary.blocks.audio.audio_models import AudioBlock, CreateAudioBlock
+from notionary.blocks.audio.audio_models import CreateAudioBlock
 from notionary.blocks.block_models import Block
+from notionary.blocks.file.file_element_models import FileObject
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.models.notion_page_response import ExternalFile
@@ -68,7 +69,7 @@ class AudioElement(NotionBlockElement):
             caption_objects = [caption_rt]
 
         # Create AudioBlock content object
-        audio_content = AudioBlock(
+        audio_content = FileObject(
             type="external", external=ExternalFile(url=url), caption=caption_objects
         )
 
