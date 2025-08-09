@@ -12,38 +12,28 @@ if TYPE_CHECKING:
 
 class EquationElement(NotionBlockElement):
     """
-    Supports two markdown styles for Notion equation blocks:
+    Only supports bracket style (analog zu [video]):
 
-    1) Bracket style (analog zu [video]):
-       - [equation](E = mc^2)
-       - [equation]("E = mc^2 + \\frac{a}{b}")  # quoted form erlaubt ')' & Newlines
+      - [equation](E = mc^2)                    # unquoted: keine ')' oder Newlines
+      - [equation]("E = mc^2 + \\frac{a}{b}")   # quoted: erlaubt ')' & Newlines & \"
 
-    2) LaTeX block style:
-       - $$E = mc^2$$                  (single line)
-       - $$\\n... multi-line ...\\n$$  (multi-line)
+    No $$...$$ parsing.
     """
 
-    # --- [equation](...) styles ---
     _BRACKET_QUOTED = re.compile(
-        r'^\[equation\]\(\s*"(?P<expr_q>[^"]+)"\s*\)$',
+        r'^\[equation\]\(\s*"(?P<expr_q>(?:[^"\\]|\\.)+)"\s*\)$',
         re.DOTALL,
     )
-    _BRACKET_UNQUOTED = re.compile(
-        r'^\[equation\]\(\s*(?P<expr_u>[^)]+?)\s*\)$'
-    )
 
-    _SINGLE_LINE = re.compile(r"^\$\$(?P<expr>[^$]+)\$\$$")
-    _MULTI_LINE = re.compile(r"^\$\$\s*\n(?P<expr>[\s\S]*?)\n\$\$$", re.MULTILINE)
+    # Unquoted: bis zur ersten ')', keine Newlines
+    _BRACKET_UNQUOTED = re.compile(
+        r'^\[equation\]\(\s*(?P<expr_u>[^)\r\n]+?)\s*\)$'
+    )
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
         s = text.strip()
-        return bool(
-            cls._BRACKET_QUOTED.match(s)
-            or cls._BRACKET_UNQUOTED.match(s)
-            or cls._SINGLE_LINE.match(s)
-            or cls._MULTI_LINE.match(s)
-        )
+        return bool(cls._BRACKET_QUOTED.match(s) or cls._BRACKET_UNQUOTED.match(s))
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -53,22 +43,20 @@ class EquationElement(NotionBlockElement):
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         s = text.strip()
 
-        # 1) [equation]("...")  — bevorzugt, da robust gegen ')', Newlines
+        # [equation]("...")  — robust (erlaubt ')', Newlines, \" usw.)
         m = cls._BRACKET_QUOTED.match(s)
         if m:
-            expr = m.group("expr_q").strip()
-            return CreateEquationBlock(equation=EquationBlock(expression=expr)) if expr else None
+            expr = m.group("expr_q")
+            # Unescape \" and \\ for Notion
+            expr = expr.encode("utf-8").decode("unicode_escape")
+            expr = expr.replace('\\"', '"')  # falls unicode_escape nicht alles greift
+            return CreateEquationBlock(equation=EquationBlock(expression=expr.strip())) if expr.strip() else None
 
-        # 2) [equation](...)
+        # [equation](...)
         m = cls._BRACKET_UNQUOTED.match(s)
         if m:
             expr = m.group("expr_u").strip()
-            return CreateEquationBlock(equation=EquationBlock(expression=expr)) if expr else None
-
-        # 3) $$ ... $$  (single line / multi-line)
-        m = cls._SINGLE_LINE.match(s) or cls._MULTI_LINE.match(s)
-        if m:
-            expr = m.group("expr").strip()
+            # Hard rule: unquoted darf kein ')' und keinen Newline enthalten (Regex stellt das sicher)
             return CreateEquationBlock(equation=EquationBlock(expression=expr)) if expr else None
 
         return None
@@ -82,10 +70,10 @@ class EquationElement(NotionBlockElement):
         if not expr:
             return None
 
-        # Use [equation](...) syntax as default.
-        # Quote if the expression contains risky characters (')') or newlines.
-        if ("\n" in expr) or (")" in expr):
-            return f'[equation]("{expr}")'
+        # Wenn riskante Zeichen vorkommen, quoted-Form verwenden
+        if ("\n" in expr) or (")" in expr) or ('"' in expr):
+            q = expr.replace("\\", "\\\\").replace('"', r'\"')
+            return f'[equation]("{q}")'
         return f"[equation]({expr})"
 
     @classmethod
@@ -94,15 +82,15 @@ class EquationElement(NotionBlockElement):
             ElementPromptBuilder()
             .with_description("Renders LaTeX math as a Notion equation block.")
             .with_usage_guidelines(
-                "Use [equation](...) for concise formulas; quote the expression if it contains ')' or newlines. "
-                "Also supports $$...$$ block syntax."
+                "Use [equation](...) for inline formulas. "
+                "If your expression contains \")\" or a newline, use the quoted form: [equation](\"...\")."
             )
-            .with_syntax('[equation](E = mc^2)  ·  [equation]("E = mc^2 + \\\\frac{a}{b}")  ·  $$E = mc^2$$')
+            .with_syntax('[equation](E = mc^2)  ·  [equation]("x = \\\\frac{-b\\\\pm\\\\sqrt{b^2-4ac}}{2a}")')
             .with_examples(
                 [
                     "[equation](E = mc^2)",
-                    '[equation]("x = \\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}")',
-                    "$$\n\\int_0^1 x^2 \\, dx = \\frac{1}{3}\n$$",
+                    '[equation]("f(x) = \\sin(x) + \\cos(x)")',
+                    '[equation]("P(A \\mid B) = \\frac{P(A \\cap B)}{P(B)}")',
                 ]
             )
             .build()

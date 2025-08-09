@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Literal, Optional, Union, Any, TYPE_CHECKING
 from pydantic import BaseModel
 
+
 if TYPE_CHECKING:
     from notionary.blocks.bookmark import BookmarkBlock, CreateBookmarkBlock
     from notionary.blocks.breadcrumbs import BreadcrumbBlock, CreateBreadcrumbBlock
@@ -47,7 +48,8 @@ if TYPE_CHECKING:
     from notionary.blocks.todo import CreateToDoBlock, ToDoBlock
     from notionary.blocks.toggle import CreateToggleBlock, ToggleBlock
     from notionary.blocks.video import CreateVideoBlock
-
+    
+    from notionary.blocks.table_of_contents.table_of_contents_models import TableOfContentsBlock
 
 BlockColor = Literal[
     "blue",
@@ -187,6 +189,7 @@ class Block(BaseModel):
     to_do: Optional[ToDoBlock] = None
     toggle: Optional[ToggleBlock] = None
     video: Optional[FileBlock] = None
+    table_of_contents: Optional[TableOfContentsBlock] = None
 
     def get_block_content(self) -> Optional[Any]:
         """Get the content object for this block based on its type."""
@@ -235,6 +238,10 @@ from notionary.blocks.table import TableBlock, TableRowBlock
 from notionary.blocks.todo import ToDoBlock, CreateToDoBlock
 from notionary.blocks.toggle import ToggleBlock, CreateToggleBlock
 from notionary.blocks.video import CreateVideoBlock
+from notionary.blocks.table_of_contents.table_of_contents_models import (
+    TableOfContentsBlock,
+    CreateTableOfContentsBlock
+)
 
 BlockCreateRequest = Union[
     CreateBookmarkBlock,
@@ -261,6 +268,7 @@ BlockCreateRequest = Union[
     CreateToDoBlock,
     CreateToggleBlock,
     CreateVideoBlock,
+    CreateTableOfContentsBlock
 ]
 
 BlockCreateResult = Optional[
@@ -296,6 +304,7 @@ TableBlock.model_rebuild()
 TableRowBlock.model_rebuild()
 ToDoBlock.model_rebuild()
 ToggleBlock.model_rebuild()
+TableOfContentsBlock.model_rebuild()
 
 CreateBookmarkBlock.model_rebuild()
 CreateBreadcrumbBlock.model_rebuild()

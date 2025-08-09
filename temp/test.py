@@ -2,14 +2,23 @@ from notionary import NotionPage
 
 
 async def main():
+    # Hole die Seite über ihren Namen
     page = await NotionPage.from_page_name("Jarvis Clipboard")
 
-    equation = """
-[equation](x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a})
+    # Table of contents, Standardfarbe
+    toc_block = """
+[toc]
     """
 
-    await page.append_markdown(equation, append_divider=True)
-    
+    # Oder mit einer Farbe:
+    # toc_block = """
+    # [toc](blue_background)
+    # """
+
+    # Block anhängen + Divider danach
+    await page.append_markdown(toc_block, append_divider=True)
+
+
 if __name__ == "__main__":
     import asyncio
     asyncio.run(main())

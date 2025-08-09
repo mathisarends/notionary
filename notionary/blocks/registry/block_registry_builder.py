@@ -19,6 +19,7 @@ from notionary.blocks.numbered_list.numbered_list_element import NumberedListEle
 from notionary.blocks.paragraph.paragraph_element import ParagraphElement
 from notionary.blocks.quote.quote_element import QuoteElement
 from notionary.blocks.table.table_element import TableElement
+from notionary.blocks.table_of_contents.table_of_contents_element import TableOfContentsElement
 from notionary.blocks.todo.todo_element import TodoElement
 from notionary.blocks.toggle.toggle_element import ToggleElement
 from notionary.blocks.toggleable_heading.toggleable_heading_element import (
@@ -68,6 +69,7 @@ class BlockRegistryBuilder:
             .with_toggleable_heading_element()
             .with_columns()
             .with_equation()
+            .with_table_of_contents()
         ).build()
 
     def remove_element(self, element_class: Type[NotionBlockElement]) -> Self:
@@ -85,82 +87,66 @@ class BlockRegistryBuilder:
 
     # WITH methods (existing)
     def with_paragraphs(self) -> Self:
-        """Add support for paragraph elements."""
         return self._add_element(ParagraphElement)
 
     def with_headings(self) -> Self:
-        """Add support for heading elements."""
         return self._add_element(HeadingElement)
 
     def with_callouts(self) -> Self:
-        """Add support for callout elements."""
         return self._add_element(CalloutElement)
 
     def with_code(self) -> Self:
-        """Add support for code blocks."""
         return self._add_element(CodeElement)
 
     def with_dividers(self) -> Self:
-        """Add support for divider elements."""
         return self._add_element(DividerElement)
 
     def with_tables(self) -> Self:
-        """Add support for tables."""
         return self._add_element(TableElement)
 
     def with_bulleted_list(self) -> Self:
-        """Add support for bulleted list elements (unordered lists)."""
         return self._add_element(BulletedListElement)
 
     def with_numbered_list(self) -> Self:
-        """Add support for numbered list elements (ordered lists)."""
         return self._add_element(NumberedListElement)
 
     def with_toggles(self) -> Self:
-        """Add support for toggle elements."""
         return self._add_element(ToggleElement)
 
     def with_quotes(self) -> Self:
-        """Add support for quote elements."""
         return self._add_element(QuoteElement)
 
     def with_todos(self) -> Self:
-        """Add support for todo elements."""
         return self._add_element(TodoElement)
 
     def with_bookmarks(self) -> Self:
-        """Add support for bookmark elements."""
         return self._add_element(BookmarkElement)
 
     def with_images(self) -> Self:
-        """Add support for image elements."""
         return self._add_element(ImageElement)
 
     def with_videos(self) -> Self:
-        """Add support for video elements."""
         return self._add_element(VideoElement)
 
     def with_embeds(self) -> Self:
-        """Add support for embed elements."""
         return self._add_element(EmbedElement)
 
     def with_audio(self) -> Self:
-        """Add support for audio elements."""
         return self._add_element(AudioElement)
 
     def with_toggleable_heading_element(self) -> Self:
-        """Add support for toggleable heading elements."""
         return self._add_element(ToggleableHeadingElement)
 
     def with_columns(self) -> Self:
-        """Add support for column and column list elements (must be registered together)."""
         self._add_element(ColumnListElement)
         self._add_element(ColumnElement)
         return self
 
     def with_equation(self) -> Self:
-        """Add support for equation elements."""
         return self._add_element(EquationElement)
+    
+    def with_table_of_contents(self) -> Self:
+        return self._add_element(TableOfContentsElement)
 
     def build(self) -> BlockRegistry:
         """
