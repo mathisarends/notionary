@@ -14,6 +14,7 @@ from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 from notionary.blocks.block_models import Block, BlockCreateResult
 
+
 class AudioElement(NotionBlockElement):
     """
     Handles conversion between Markdown audio embeds and Notion audio blocks.

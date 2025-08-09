@@ -1,11 +1,8 @@
 from __future__ import annotations
 import re
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
-
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.block_models import Block, BlockCreateResult
 
 from notionary.blocks.bulleted_list.bulleted_list_models import (
     BulletedListItemBlock,

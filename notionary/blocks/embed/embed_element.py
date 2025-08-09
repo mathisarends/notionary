@@ -1,6 +1,6 @@
 from __future__ import annotations
 import re
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
 from notionary.blocks.block_models import (
     Block,
@@ -17,8 +17,7 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.block_models import Block, BlockCreateResult
 
 
 class EmbedElement(NotionBlockElement):

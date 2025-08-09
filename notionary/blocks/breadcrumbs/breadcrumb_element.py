@@ -10,9 +10,7 @@ from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 from notionary.blocks.block_models import Block, BlockType
 
-
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import BlockCreateResult
+from notionary.blocks.block_models import BlockCreateResult
 
 
 class BreadcrumbElement(NotionBlockElement):

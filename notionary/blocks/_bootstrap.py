@@ -33,7 +33,6 @@ def bootstrap_blocks() -> None:
         video,
         toggleable_heading,
         table_of_contents,
-        
     )
     from notionary.blocks import block_models
 
@@ -108,7 +107,6 @@ def bootstrap_blocks() -> None:
         CreateTableOfContentsBlock,
     )
     from notionary.blocks.block_types import BlockType
-    
 
     # Define the Union types that are needed for model rebuilding
     BlockCreateRequest = Union[
@@ -140,56 +138,58 @@ def bootstrap_blocks() -> None:
     BlockCreateResult = Optional[Union[list[BlockCreateRequest], BlockCreateRequest]]
 
     # Add all block types to namespace
-    ns.update({
-        'BlockType': BlockType,
-        'BookmarkBlock': BookmarkBlock,
-        'CreateBookmarkBlock': CreateBookmarkBlock,
-        'BreadcrumbBlock': BreadcrumbBlock,
-        'CreateBreadcrumbBlock': CreateBreadcrumbBlock,
-        'BulletedListItemBlock': BulletedListItemBlock,
-        'CreateBulletedListItemBlock': CreateBulletedListItemBlock,
-        'CalloutBlock': CalloutBlock,
-        'CreateCalloutBlock': CreateCalloutBlock,
-        'ChildPageBlock': ChildPageBlock,
-        'CreateChildPageBlock': CreateChildPageBlock,
-        'CodeBlock': CodeBlock,
-        'CreateCodeBlock': CreateCodeBlock,
-        'ColumnBlock': ColumnBlock,
-        'ColumnListBlock': ColumnListBlock,
-        'CreateColumnBlock': CreateColumnBlock,
-        'CreateColumnListBlock': CreateColumnListBlock,
-        'DividerBlock': DividerBlock,
-        'CreateDividerBlock': CreateDividerBlock,
-        'EmbedBlock': EmbedBlock,
-        'CreateEmbedBlock': CreateEmbedBlock,
-        'EquationBlock': EquationBlock,
-        'CreateEquationBlock': CreateEquationBlock,
-        'FileBlock': FileBlock,
-        'CreateFileBlock': CreateFileBlock,
-        'HeadingBlock': HeadingBlock,
-        'CreateHeading1Block': CreateHeading1Block,
-        'CreateHeading2Block': CreateHeading2Block,
-        'CreateHeading3Block': CreateHeading3Block,
-        'CreateImageBlock': CreateImageBlock,
-        'NumberedListItemBlock': NumberedListItemBlock,
-        'CreateNumberedListItemBlock': CreateNumberedListItemBlock,
-        'ParagraphBlock': ParagraphBlock,
-        'CreateParagraphBlock': CreateParagraphBlock,
-        'QuoteBlock': QuoteBlock,
-        'CreateQuoteBlock': CreateQuoteBlock,
-        'TableBlock': TableBlock,
-        'TableRowBlock': TableRowBlock,
-        'ToDoBlock': ToDoBlock,
-        'CreateToDoBlock': CreateToDoBlock,
-        'ToggleBlock': ToggleBlock,
-        'CreateToggleBlock': CreateToggleBlock,
-        'CreateVideoBlock': CreateVideoBlock,
-        'TableOfContentsBlock': TableOfContentsBlock,
-        'CreateTableOfContentsBlock': CreateTableOfContentsBlock,
-        # Add the Union types
-        'BlockCreateRequest': BlockCreateRequest,
-        'BlockCreateResult': BlockCreateResult,
-    })
+    ns.update(
+        {
+            "BlockType": BlockType,
+            "BookmarkBlock": BookmarkBlock,
+            "CreateBookmarkBlock": CreateBookmarkBlock,
+            "BreadcrumbBlock": BreadcrumbBlock,
+            "CreateBreadcrumbBlock": CreateBreadcrumbBlock,
+            "BulletedListItemBlock": BulletedListItemBlock,
+            "CreateBulletedListItemBlock": CreateBulletedListItemBlock,
+            "CalloutBlock": CalloutBlock,
+            "CreateCalloutBlock": CreateCalloutBlock,
+            "ChildPageBlock": ChildPageBlock,
+            "CreateChildPageBlock": CreateChildPageBlock,
+            "CodeBlock": CodeBlock,
+            "CreateCodeBlock": CreateCodeBlock,
+            "ColumnBlock": ColumnBlock,
+            "ColumnListBlock": ColumnListBlock,
+            "CreateColumnBlock": CreateColumnBlock,
+            "CreateColumnListBlock": CreateColumnListBlock,
+            "DividerBlock": DividerBlock,
+            "CreateDividerBlock": CreateDividerBlock,
+            "EmbedBlock": EmbedBlock,
+            "CreateEmbedBlock": CreateEmbedBlock,
+            "EquationBlock": EquationBlock,
+            "CreateEquationBlock": CreateEquationBlock,
+            "FileBlock": FileBlock,
+            "CreateFileBlock": CreateFileBlock,
+            "HeadingBlock": HeadingBlock,
+            "CreateHeading1Block": CreateHeading1Block,
+            "CreateHeading2Block": CreateHeading2Block,
+            "CreateHeading3Block": CreateHeading3Block,
+            "CreateImageBlock": CreateImageBlock,
+            "NumberedListItemBlock": NumberedListItemBlock,
+            "CreateNumberedListItemBlock": CreateNumberedListItemBlock,
+            "ParagraphBlock": ParagraphBlock,
+            "CreateParagraphBlock": CreateParagraphBlock,
+            "QuoteBlock": QuoteBlock,
+            "CreateQuoteBlock": CreateQuoteBlock,
+            "TableBlock": TableBlock,
+            "TableRowBlock": TableRowBlock,
+            "ToDoBlock": ToDoBlock,
+            "CreateToDoBlock": CreateToDoBlock,
+            "ToggleBlock": ToggleBlock,
+            "CreateToggleBlock": CreateToggleBlock,
+            "CreateVideoBlock": CreateVideoBlock,
+            "TableOfContentsBlock": TableOfContentsBlock,
+            "CreateTableOfContentsBlock": CreateTableOfContentsBlock,
+            # Add the Union types
+            "BlockCreateRequest": BlockCreateRequest,
+            "BlockCreateResult": BlockCreateResult,
+        }
+    )
 
     # Now rebuild with complete namespace
     block_models.Block.model_rebuild(_types_namespace=ns)

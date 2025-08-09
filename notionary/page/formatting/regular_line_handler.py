@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.registry.block_registry import BlockRegistry
@@ -9,8 +8,7 @@ from notionary.page.formatting.line_handler import (
     ParentBlockContext,
 )
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import BlockCreateRequest, BlockCreateResult
+from notionary.blocks.block_models import BlockCreateRequest, BlockCreateResult
 
 
 class RegularLineHandler(LineHandler):

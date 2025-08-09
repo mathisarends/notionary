@@ -1,6 +1,6 @@
 from __future__ import annotations
 import re
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
 from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
 from notionary.blocks.block_models import Block, BlockType
@@ -9,6 +9,7 @@ from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 from notionary.blocks.block_models import BlockCreateResult
+
 
 # BookmarkElement implementation using BlockType enum and TextInlineFormatter
 class BookmarkElement(NotionBlockElement):

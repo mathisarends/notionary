@@ -5,6 +5,7 @@ from abc import ABC
 from notionary.blocks.block_models import Block, BlockCreateResult
 from notionary.prompts.element_prompt_content import ElementPromptContent
 
+
 class NotionBlockElement(ABC):
     """Base class for elements that can be converted between Markdown and Notion."""
 

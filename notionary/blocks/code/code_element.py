@@ -1,9 +1,8 @@
 from __future__ import annotations
 import re
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.block_models import Block, BlockCreateResult
 
 from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.code.code_models import CodeBlock, CodeLanguage, CreateCodeBlock

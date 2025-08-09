@@ -7,8 +7,7 @@ from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.block_models import Block, BlockCreateResult
 
 
 class EquationElement(NotionBlockElement):

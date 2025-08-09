@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional, Type, TYPE_CHECKING
+from typing import Optional, Type
 
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.page.markdown_syntax_prompt_generator import (
@@ -14,9 +14,9 @@ from notionary.telemetry import (
     NotionToMarkdownConversionEvent,
 )
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
-    from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
+from notionary.blocks.block_models import Block, BlockCreateResult
+
+from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
 
 
 class BlockRegistry:

@@ -2,8 +2,7 @@ from __future__ import annotations
 import re
 from typing import Optional, TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.block_models import Block, BlockCreateResult
 
 from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock

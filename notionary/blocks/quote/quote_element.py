@@ -1,9 +1,8 @@
 from __future__ import annotations
 import re
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Optional
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.block_models import Block, BlockCreateResult
 
 from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent

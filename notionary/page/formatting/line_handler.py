@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.registry.block_registry import BlockRegistry
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import BlockCreateRequest
+from notionary.blocks.block_models import BlockCreateRequest
 
 
 @dataclass

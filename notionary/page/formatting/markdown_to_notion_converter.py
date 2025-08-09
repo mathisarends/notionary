@@ -1,8 +1,6 @@
 from __future__ import annotations
 import re
 
-from typing import TYPE_CHECKING
-
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -17,8 +15,7 @@ from notionary.page.formatting.line_handler import (
 from notionary.page.formatting.regular_line_handler import RegularLineHandler
 from notionary.page.formatting.table_handler import TableHandler
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import BlockCreateRequest
+from notionary.blocks.block_models import BlockCreateRequest
 
 
 class MarkdownToNotionConverter:

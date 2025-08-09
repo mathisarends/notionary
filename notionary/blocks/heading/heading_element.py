@@ -1,6 +1,6 @@
 from __future__ import annotations
 import re
-from typing import Optional, TYPE_CHECKING, cast
+from typing import Optional, cast
 
 from notionary.blocks.heading.heading_models import (
     CreateHeading1Block,
@@ -16,8 +16,7 @@ from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.block_models import Block, BlockCreateResult
 
 
 class HeadingElement(NotionBlockElement):
