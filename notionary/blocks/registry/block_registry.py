@@ -38,7 +38,7 @@ class BlockRegistry:
         self.telemetry = ProductTelemetry()
 
     @classmethod
-    def create_registry(cls) -> "BlockRegistry":
+    def create_registry(cls) -> BlockRegistry:
         """
         Create a registry with all standard elements in recommended order.
         """

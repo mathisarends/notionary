@@ -1,6 +1,7 @@
 from __future__ import annotations
 import asyncio
-from typing import Any, Dict, Optional, TYPE_CHECKING
+
+from typing import Any, Optional, TYPE_CHECKING
 import random
 
 from notionary.blocks.registry.block_registry import BlockRegistry
@@ -14,7 +15,7 @@ from notionary.page.content.page_content_writer import PageContentWriter
 from notionary.page.property_formatter import NotionPropertyFormatter
 from notionary.page.utils import extract_property_value
 
-from notionary.util import LoggingMixin, format_uuid, factory_only
+from notionary.util import LoggingMixin, format_uuid, factory_only, extract_uuid
 from notionary.util.fuzzy import find_best_match
 
 
@@ -27,14 +28,16 @@ class NotionPage(LoggingMixin):
     Managing content and metadata of a Notion page.
     """
 
-    @factory_only("from_page_id", "from_page_name")
+    @factory_only("from_page_id", "from_page_name", "from_url")
     def __init__(
         self,
         page_id: str,
         title: str,
         url: str,
+        archived: bool,
+        in_trash: bool,
         emoji_icon: Optional[str] = None,
-        properties: Optional[Dict[str, Any]] = None,
+        properties: Optional[dict[str, Any]] = None,
         parent_database: Optional[NotionDatabase] = None,
         token: Optional[str] = None,
     ):
@@ -44,6 +47,8 @@ class NotionPage(LoggingMixin):
         self._page_id = page_id
         self._title = title
         self._url = url
+        self._is_archived = archived
+        self._is_in_trash = in_trash
         self._emoji_icon = emoji_icon
         self._properties = properties
         self._parent_database = parent_database
@@ -69,10 +74,6 @@ class NotionPage(LoggingMixin):
     ) -> NotionPage:
         """
         Create a NotionPage from a page ID.
-
-        Args:
-            page_id: The ID of the Notion page
-            token: Optional Notion API token (uses environment variable if not provided)
         """
         formatted_id = format_uuid(page_id) or page_id
 
@@ -130,6 +131,28 @@ class NotionPage(LoggingMixin):
         except Exception as e:
             cls.logger.error("Error finding page by name: %s", str(e))
             raise
+        
+    @classmethod
+    async def from_url(
+        cls, url: str, token: Optional[str] = None
+    ) -> NotionPage:
+        """
+        Create a NotionPage from a Notion page URL.
+        """
+        try:
+            page_id = extract_uuid(url)
+            if not page_id:
+                raise ValueError(f"Could not extract page ID from URL: {url}")
+            
+            formatted_id = format_uuid(page_id) or page_id
+
+            async with NotionPageClient(token=token) as client:
+                page_response = await client.get_page(formatted_id)
+                return await cls._create_from_response(page_response, token)
+                
+        except Exception as e:
+            cls.logger.error("Error creating page from URL '%s': %s", url, str(e))
+            raise
 
     @property
     def id(self) -> str:
@@ -161,11 +184,19 @@ class NotionPage(LoggingMixin):
         return self._emoji_icon
 
     @property
-    def properties(self) -> Optional[Dict[str, Any]]:
+    def properties(self) -> Optional[dict[str, Any]]:
         """
         Get the properties of the page.
         """
         return self._properties
+    
+    @property
+    def is_archived(self) -> bool:
+        return self._is_archived
+
+    @property
+    def is_in_trash(self) -> bool:
+        return self._is_in_trash
 
     @property
     def block_registry(self) -> BlockRegistry:
@@ -510,6 +541,8 @@ class NotionPage(LoggingMixin):
             title=title,
             url=page_response.url,
             emoji_icon=emoji,
+            archived=page_response.archived,
+            in_trash=page_response.in_trash,
             properties=page_response.properties,
             parent_database=parent_database,
             token=token,
