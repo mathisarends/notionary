@@ -5,7 +5,7 @@ from typing import Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from notionary.blocks.block_models import Block, BlockCreateResult
 
-from notionary.blocks.block_models import Block
+from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 from notionary.blocks.notion_block_element import NotionBlockElement
@@ -32,7 +32,7 @@ class TodoElement(NotionBlockElement):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        return block.type == "to_do" and block.to_do is not None
+        return block.type == BlockType.TO_DO and block.to_do
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -62,14 +62,13 @@ class TodoElement(NotionBlockElement):
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion to_do block to markdown todo item."""
-        if block.type != "to_do" or not block.to_do:
+        if block.type != BlockType.TO_DO or not block.to_do:
             return None
 
         td = block.to_do
         content = TextInlineFormatter.extract_text_with_formatting(td.rich_text)
         checkbox = "[x]" if td.checked else "[ ]"
         return f"- {checkbox} {content}"
-
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

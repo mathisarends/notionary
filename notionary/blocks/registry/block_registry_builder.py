@@ -22,6 +22,7 @@ from notionary.blocks.table.table_element import TableElement
 from notionary.blocks.table_of_contents.table_of_contents_element import (
     TableOfContentsElement,
 )
+from notionary.blocks.breadcrumbs.breadcrumb_element import BreadcrumbElement
 from notionary.blocks.todo.todo_element import TodoElement
 from notionary.blocks.toggle.toggle_element import ToggleElement
 from notionary.blocks.toggleable_heading.toggleable_heading_element import (
@@ -72,6 +73,7 @@ class BlockRegistryBuilder:
             .with_columns()
             .with_equation()
             .with_table_of_contents()
+            .with_breadcrumbs()
         ).build()
 
     def remove_element(self, element_class: Type[NotionBlockElement]) -> Self:
@@ -150,15 +152,12 @@ class BlockRegistryBuilder:
     def with_table_of_contents(self) -> Self:
         return self._add_element(TableOfContentsElement)
 
+    def with_breadcrumbs(self) -> Self:
+        return self._add_element(BreadcrumbElement)
+
     def build(self) -> BlockRegistry:
         """
         Build and return the configured BlockRegistry instance.
-
-        This automatically ensures that ParagraphElement is at the end
-        of the registry as a fallback element.
-
-        Returns:
-            A configured BlockRegistry instance
         """
         from notionary.blocks.registry.block_registry import BlockRegistry
 

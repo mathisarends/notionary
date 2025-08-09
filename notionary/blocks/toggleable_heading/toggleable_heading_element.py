@@ -12,7 +12,7 @@ from notionary.blocks.heading.heading_models import (
     CreateHeading3Block,
 )
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
-from notionary.blocks.block_models import Block
+from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
@@ -33,17 +33,20 @@ class ToggleableHeadingElement(NotionBlockElement):
     @staticmethod
     def match_notion(block: Block) -> bool:
         """Check if block is a Notion toggleable heading."""
-        block_type: str = block.type
-        if not block_type.startswith("heading_") or block_type[-1] not in "123":
+        # Use BlockType enum for matching heading blocks
+        if block.type not in (
+            BlockType.HEADING_1,
+            BlockType.HEADING_2,
+            BlockType.HEADING_3,
+        ):
             return False
-
-        # Get the heading content based on block type
-        heading_content = block.get_block_content()
-        if not heading_content:
-            return False
-
-        # Check if it has the is_toggleable property set to true
-        return getattr(heading_content, "is_toggleable", False) is True
+        
+        if block.heading_1 and block.heading_1.is_toggleable:
+            return True
+        if block.heading_2 and block.heading_2.is_toggleable:
+            return True
+        if block.heading_3 and block.heading_3.is_toggleable:
+            return True
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -77,25 +80,31 @@ class ToggleableHeadingElement(NotionBlockElement):
     @staticmethod
     def notion_to_markdown(block: Block) -> Optional[str]:
         """Convert Notion toggleable heading block to markdown collapsible heading."""
-        if not block.type.startswith("heading_"):
+        # Only handle heading blocks via BlockType enum
+        if block.type not in (
+            BlockType.HEADING_1,
+            BlockType.HEADING_2,
+            BlockType.HEADING_3,
+        ):
             return None
 
-        # heading_1 → 1, heading_2 → 2, heading_3 → 3
-        try:
-            level = int(block.type[-1])
-            if not 1 <= level <= 3:
-                return None
-        except ValueError:
-            return None
+        # Determine heading level from enum
+        if block.type == BlockType.HEADING_1:
+            level = 1
+        elif block.type == BlockType.HEADING_2:
+            level = 2
+        else:
+            level = 3
 
-        heading_content = block.get_block_content()
+        heading_content = getattr(block, block.type.value)
         if not isinstance(heading_content, HeadingBlock):
             return None
 
-        text = TextInlineFormatter.extract_text_with_formatting(heading_content.rich_text)
+        text = TextInlineFormatter.extract_text_with_formatting(
+            heading_content.rich_text
+        )
         prefix = "#" * level
         return f"+{prefix} {text or ''}"
-
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

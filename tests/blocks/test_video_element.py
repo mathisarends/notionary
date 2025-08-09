@@ -6,7 +6,8 @@ Tests core functionality for video blocks with [video](url) syntax.
 import pytest
 from unittest.mock import Mock
 from notionary.blocks.video.video_element import VideoElement
-from notionary.blocks.video.video_element_models import CreateVideoBlock, VideoBlock
+from notionary.blocks.video.video_element_models import CreateVideoBlock
+from notionary.blocks.file.file_element_models import FileBlock
 from notionary.blocks.paragraph.paragraph_models import CreateParagraphBlock
 
 
@@ -76,7 +77,7 @@ def test_markdown_to_notion_basic():
     # First block should be video
     video_block = result[0]
     assert isinstance(video_block, CreateVideoBlock)
-    assert isinstance(video_block.video, VideoBlock)
+    assert isinstance(video_block.video, FileBlock)
 
     # Second block should be empty paragraph
     para_block = result[1]

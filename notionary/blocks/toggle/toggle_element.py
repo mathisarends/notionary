@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import re
 from typing import Optional, TYPE_CHECKING
 
@@ -10,6 +11,7 @@ from notionary.prompts import (
 )
 from notionary.blocks.block_models import (
     Block,
+    BlockType,
 )
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -35,7 +37,7 @@ class ToggleElement(NotionBlockElement):
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if the block is a Notion toggle block."""
-        return block.type == "toggle"
+        return block.type == BlockType.TOGGLE
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -60,7 +62,7 @@ class ToggleElement(NotionBlockElement):
         """
         Converts a Notion toggle block into markdown using pipe-prefixed lines.
         """
-        if block.type != "toggle":
+        if block.type != BlockType.TOGGLE:
             return None
 
         if not block.toggle:

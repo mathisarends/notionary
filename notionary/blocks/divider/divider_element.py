@@ -6,6 +6,7 @@ from typing import Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from notionary.blocks.block_models import Block, BlockCreateResult
 
+from notionary.blocks.block_models import BlockType
 from notionary.blocks.divider.divider_models import CreateDividerBlock, DividerBlock
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.paragraph.paragraph_models import (
@@ -32,7 +33,7 @@ class DividerElement(NotionBlockElement):
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if this element can handle the given Notion block."""
-        return block.type == "divider" and block.divider is not None
+        return block.type == BlockType.DIVIDER and block.divider
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -50,7 +51,7 @@ class DividerElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "divider" or block.divider is None:
+        if block.type != BlockType.DIVIDER or not block.divider:
             return None
         return "---"
 

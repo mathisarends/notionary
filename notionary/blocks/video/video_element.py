@@ -2,10 +2,11 @@ from __future__ import annotations
 import re
 from typing import Optional, TYPE_CHECKING
 
+from notionary.blocks.block_models import BlockType
 from notionary.blocks.file.file_element_models import (
     ExternalFile,
     FileBlock,
-    FileObject,
+    FileType,
 )
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.paragraph.paragraph_models import (
@@ -50,7 +51,7 @@ class VideoElement(NotionBlockElement):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        return block.type == "video" and block.video is not None
+        return block.type == BlockType.VIDEO and block.video
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -66,7 +67,7 @@ class VideoElement(NotionBlockElement):
             url = f"https://www.youtube.com/watch?v={vid_id}"
 
         video_block = FileBlock(
-            type="external", external=ExternalFile(url=url), caption=[]
+            type=FileType.EXTERNAL, external=ExternalFile(url=url), caption=[]
         )
         if caption_text.strip():
             rt = RichTextObject.from_plain_text(caption_text.strip())
@@ -81,15 +82,15 @@ class VideoElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "video" or not block.video:
+        if block.type != BlockType.VIDEO or not block.video:
             return None
 
-        fo: FileObject = block.video
+        fo = block.video
 
         # URL ermitteln
-        if fo.type == "external" and fo.external:
+        if fo.type == FileType.EXTERNAL and fo.external:
             url = fo.external.url
-        elif fo.type == "file" and fo.file:
+        elif fo.type == FileType.FILE and fo.file:
             url = fo.file.url
         else:
             return None  # (file_upload o.ä. hier nicht supported)

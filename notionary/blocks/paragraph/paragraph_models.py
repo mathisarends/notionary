@@ -6,7 +6,7 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 class ParagraphBlock(BaseModel):
     rich_text: list[RichTextObject]
-    color: BlockColor = "default"
+    color: BlockColor = BlockColor.DEFAULT
 
 
 class CreateParagraphBlock(BaseModel):

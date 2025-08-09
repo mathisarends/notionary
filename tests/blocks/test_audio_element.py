@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import Mock
 
 from notionary.blocks.audio.audio_element import AudioElement
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 
 def test_match_markdown_valid_audio():
@@ -110,13 +111,8 @@ def test_notion_to_markdown_with_caption():
     notion_block.audio.external = Mock()
     notion_block.audio.external.url = "https://sound.com/track.ogg"
 
-    # Mock RichTextObject
-    caption_rt = Mock()
-    caption_rt.model_dump.return_value = {
-        "type": "text",
-        "text": {"content": "Der Sound"},
-        "plain_text": "Der Sound",
-    }
+    # Use real RichTextObject instead of mock
+    caption_rt = RichTextObject.from_plain_text("Der Sound")
     notion_block.audio.caption = [caption_rt]
 
     result = AudioElement.notion_to_markdown(notion_block)
@@ -294,11 +290,9 @@ def test_multiple_caption_rich_text_objects():
     notion_block.audio.external = Mock()
     notion_block.audio.external.url = "https://example.com/audio.mp3"
 
-    # Multiple rich text objects
-    rt1 = Mock()
-    rt1.model_dump.return_value = {"type": "text", "text": {"content": "Part 1 "}}
-    rt2 = Mock()
-    rt2.model_dump.return_value = {"type": "text", "text": {"content": "Part 2"}}
+    # Use real RichTextObjects instead of mocks
+    rt1 = RichTextObject.from_plain_text("Part 1 ")
+    rt2 = RichTextObject.from_plain_text("Part 2")
     notion_block.audio.caption = [rt1, rt2]
 
     result = AudioElement.notion_to_markdown(notion_block)
@@ -314,9 +308,8 @@ def test_notion_to_markdown_with_plain_text_fallback():
     notion_block.audio.external = Mock()
     notion_block.audio.external.url = "https://example.com/audio.mp3"
 
-    # Rich text object without text content, should use plain_text
-    rt = Mock()
-    rt.model_dump.return_value = {"plain_text": "Fallback Text", "type": "mention"}
+    # Use real RichTextObject instead of mock
+    rt = RichTextObject.from_plain_text("Fallback Text")
     notion_block.audio.caption = [rt]
 
     result = AudioElement.notion_to_markdown(notion_block)

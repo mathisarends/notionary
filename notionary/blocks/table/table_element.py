@@ -5,6 +5,7 @@ from typing import Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from notionary.blocks.block_models import Block, BlockCreateResult
 
+from notionary.blocks.block_models import BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -38,7 +39,7 @@ class TableElement(NotionBlockElement):
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if block is a Notion table."""
-        return block.type == "table"
+        return block.type == BlockType.TABLE and block.table
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -63,7 +64,7 @@ class TableElement(NotionBlockElement):
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion table block to markdown table."""
-        if block.type != "table":
+        if block.type != BlockType.TABLE:
             return None
 
         if not block.table:

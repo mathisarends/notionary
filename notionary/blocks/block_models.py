@@ -50,28 +50,28 @@ if TYPE_CHECKING:
         TableOfContentsBlock,
     )
 
-BlockColor = Literal[
-    "blue",
-    "blue_background",
-    "brown",
-    "brown_background",
-    "default",
-    "gray",
-    "gray_background",
-    "green",
-    "green_background",
-    "orange",
-    "orange_background",
-    "yellow",
-    "yellow_background",
-    "pink",
-    "pink_background",
-    "purple",
-    "purple_background",
-    "red",
-    "red_background",
-    "default_background",
-]
+class BlockColor(str, Enum):
+    BLUE = "blue"
+    BLUE_BACKGROUND = "blue_background"
+    BROWN = "brown"
+    BROWN_BACKGROUND = "brown_background"
+    DEFAULT = "default"
+    GRAY = "gray"
+    GRAY_BACKGROUND = "gray_background"
+    GREEN = "green"
+    GREEN_BACKGROUND = "green_background"
+    ORANGE = "orange"
+    ORANGE_BACKGROUND = "orange_background"
+    YELLOW = "yellow"
+    YELLOW_BACKGROUND = "yellow_background"
+    PINK = "pink"
+    PINK_BACKGROUND = "pink_background"
+    PURPLE = "purple"
+    PURPLE_BACKGROUND = "purple_background"
+    RED = "red"
+    RED_BACKGROUND = "red_background"
+    DEFAULT_BACKGROUND = "default_background"
+
 
 class BlockType(str, Enum):
     BOOKMARK = "bookmark"

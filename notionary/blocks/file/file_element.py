@@ -6,7 +6,7 @@ from notionary.blocks.file.file_element_models import (
     CreateFileBlock,
     ExternalFile,
     FileBlock,
-    FileObject,
+    FileType
 )
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
@@ -15,6 +15,7 @@ from notionary.blocks.paragraph.paragraph_models import (
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.block_models import (
     Block,
+    BlockType,
 )
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -50,7 +51,7 @@ class FileElement(NotionBlockElement):
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         # Notion file block covers files
-        return block.type == "file" and block.file is not None
+        return block.type == BlockType.FILE and block.file
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -61,9 +62,9 @@ class FileElement(NotionBlockElement):
 
         url, caption_text = m.group(1), m.group(2) or ""
 
-        # Build FileBlock
+        # Build FileBlock using FileType enum
         file_block = FileBlock(
-            type="external", external=ExternalFile(url=url), caption=[]
+            type=FileType.EXTERNAL, external=ExternalFile(url=url), caption=[]
         )
         if caption_text.strip():
             rt = RichTextObject.from_plain_text(caption_text)
@@ -78,18 +79,18 @@ class FileElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "file" or not block.file:
+        if block.type != BlockType.FILE or not block.file:
             return None
 
         fb: FileBlock = block.file
 
-        # URL ermitteln (nur external/file sinnvoll für Markdown)
-        if fb.type == "external" and fb.external:
+        # Determine URL (only external and file types are valid for Markdown)
+        if fb.type == FileType.EXTERNAL and fb.external:
             url = fb.external.url
-        elif fb.type == "file" and fb.file:
+        elif fb.type == FileType.FILE and fb.file:
             url = fb.file.url
-        elif fb.type == "file_upload":
-            # Hochgeladene, unveröffentlichte Datei → hat keine stabile URL
+        elif fb.type == FileType.FILE_UPLOAD:
+            # Uploaded file has no stable URL for Markdown
             return None
         else:
             return None

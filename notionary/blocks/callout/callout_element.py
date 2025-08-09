@@ -7,6 +7,7 @@ if TYPE_CHECKING:
 
 from notionary.blocks.block_models import (
     Block,
+    BlockType,
 )
 from notionary.blocks.callout.callout_models import CalloutBlock, CreateCalloutBlock
 from notionary.blocks.notion_block_element import NotionBlockElement
@@ -44,7 +45,7 @@ class CalloutElement(NotionBlockElement):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        return block.type == "callout" and block.callout is not None
+        return block.type == BlockType.CALLOUT and block.callout
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -71,7 +72,7 @@ class CalloutElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "callout" or not block.callout:
+        if block.type != BlockType.CALLOUT or not block.callout:
             return None
 
         data = block.callout
@@ -86,7 +87,6 @@ class CalloutElement(NotionBlockElement):
         if emoji_char and emoji_char != cls.DEFAULT_EMOJI:
             return f'[callout]({content} "{emoji_char}")'
         return f"[callout]({content})"
-
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

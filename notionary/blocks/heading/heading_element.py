@@ -10,6 +10,7 @@ from notionary.blocks.heading.heading_models import (
 )
 from notionary.blocks.block_models import (
     Block,
+    BlockType,
 )
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -22,7 +23,6 @@ if TYPE_CHECKING:
 class HeadingElement(NotionBlockElement):
     """Handles conversion between Markdown headings and Notion heading blocks."""
 
-    # Pattern: 1–3 „#“, dann mindestens ein Leerzeichen, dann Text
     PATTERN = re.compile(r"^(#{1,3})[ \t]+(.+)$")
 
     @classmethod
@@ -33,8 +33,12 @@ class HeadingElement(NotionBlockElement):
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         return (
-            block.type in ("heading_1", "heading_2", "heading_3")
-            and getattr(block, block.type) is not None
+            block.type in (
+                BlockType.HEADING_1,
+                BlockType.HEADING_2,
+                BlockType.HEADING_3,
+            )
+            and getattr(block, block.type.value) is not None
         )
 
     @classmethod
@@ -66,20 +70,27 @@ class HeadingElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if not block.type.startswith("heading_"):
+        # Only handle heading blocks via BlockType enum
+        if block.type not in (
+            BlockType.HEADING_1,
+            BlockType.HEADING_2,
+            BlockType.HEADING_3,
+        ):
             return None
 
-        try:
-            level = int(block.type.split("_", 1)[1])
-        except (ValueError, IndexError):
-            return None
+        # Determine heading level from enum
+        if block.type == BlockType.HEADING_1:
+            level = 1
+        elif block.type == BlockType.HEADING_2:
+            level = 2
+        else:
+            level = 3
 
-        heading_obj = getattr(block, block.type)
+        heading_obj = getattr(block, block.type.value)
         if not heading_obj:
             return None
 
         heading_data = cast(HeadingBlock, heading_obj)
-
         if not heading_data.rich_text:
             return None
 
@@ -87,7 +98,13 @@ class HeadingElement(NotionBlockElement):
         if not text:
             return None
 
-        return f"{'#' * level} {text}"
+        # Use dashed underline for level 2 headings
+        if level == 2:
+            underline = '-' * len(text)
+            return f"{text}\n{underline}"
+
+        # Fallback to hash-style for other levels
+        return f"{('#' * level)} {text}"
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

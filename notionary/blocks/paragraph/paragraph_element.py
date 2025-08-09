@@ -4,6 +4,7 @@ from typing import Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from notionary.blocks.block_models import Block, BlockCreateResult
 
+from notionary.blocks.block_models import BlockType
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
     ParagraphBlock,
@@ -24,7 +25,7 @@ class ParagraphElement(NotionBlockElement):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        return block.type == "paragraph" and block.paragraph is not None
+        return block.type == BlockType.PARAGRAPH and block.paragraph
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -40,7 +41,7 @@ class ParagraphElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "paragraph" or not block.paragraph:
+        if block.type != BlockType.PARAGRAPH or not block.paragraph:
             return None
 
         rich_list = block.paragraph.rich_text

@@ -5,7 +5,7 @@ from typing import Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from notionary.blocks.block_models import Block, BlockCreateResult
 
-from notionary.blocks.block_models import Block
+from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.code.code_models import CodeBlock, CodeLanguage, CreateCodeBlock
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
@@ -34,7 +34,7 @@ class CodeElement(NotionBlockElement):
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if block is a Notion code block."""
-        return block.type == "code"
+        return block.type == BlockType.CODE and block.code
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -53,7 +53,7 @@ class CodeElement(NotionBlockElement):
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion code block to Markdown."""
-        if block.type != "code":
+        if block.type != BlockType.CODE:
             return None
 
         if not block.code:

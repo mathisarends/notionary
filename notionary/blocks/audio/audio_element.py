@@ -1,15 +1,16 @@
 from __future__ import annotations
 import re
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
+from notionary.blocks.file.file_element_models import FileType, FileBlock
 
 from notionary.blocks.audio.audio_models import CreateAudioBlock
 from notionary.blocks.block_models import Block, BlockType
-from notionary.blocks.file.file_element_models import FileObject
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.models.notion_page_response import ExternalFile
+from notionary.blocks.file.file_element_models import ExternalFile
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 if TYPE_CHECKING:
     from notionary.blocks.block_models import Block, BlockCreateResult
@@ -48,7 +49,7 @@ class AudioElement(NotionBlockElement):
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if this element can handle the given Notion block."""
-        return block.type == "audio"
+        return block.type == BlockType.AUDIO
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -69,8 +70,10 @@ class AudioElement(NotionBlockElement):
             caption_objects = [caption_rt]
 
         # Create AudioBlock content object
-        audio_content = FileObject(
-            type="external", external=ExternalFile(url=url), caption=caption_objects
+        audio_content = FileBlock(
+            type=FileType.EXTERNAL,
+            external=ExternalFile(url=url),
+            caption=caption_objects,
         )
 
         return CreateAudioBlock(audio=audio_content)
@@ -84,7 +87,7 @@ class AudioElement(NotionBlockElement):
         audio = block.audio
 
         # Only handle external audio
-        if audio.type != "external" or audio.external is None:
+        if audio.type != FileType.EXTERNAL or audio.external is None:
             return None
         url = audio.external.url
         if not url:
@@ -93,10 +96,8 @@ class AudioElement(NotionBlockElement):
         # Extract caption
         captions = audio.caption or []
         if captions:
-            # captionsof RichTextObject
-            caption_text = cls._extract_text_content(
-                [rt.model_dump() for rt in captions]
-            )
+            # use TextInlineFormatter instead of manual extraction
+            caption_text = TextInlineFormatter.extract_text_with_formatting(captions)
             return f'[audio]({url} "{caption_text}")'
 
         return f"[audio]({url})"
@@ -104,16 +105,6 @@ class AudioElement(NotionBlockElement):
     @classmethod
     def _is_likely_audio_url(cls, url: str) -> bool:
         return any(url.lower().endswith(ext) for ext in cls.SUPPORTED_EXTENSIONS)
-
-    @classmethod
-    def _extract_text_content(cls, rich: dict[str, Any]) -> str:
-        text = ""
-        for obj in rich:
-            if obj.get("type") == "text":
-                text += obj.get("text", {}).get("content", "")
-            else:
-                text += obj.get("plain_text", "")
-        return text
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

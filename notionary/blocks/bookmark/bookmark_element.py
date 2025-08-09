@@ -2,15 +2,16 @@ from __future__ import annotations
 import re
 from typing import Optional, TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
-
 from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
+from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import BlockCreateResult
 
+# BookmarkElement implementation using BlockType enum and TextInlineFormatter
 class BookmarkElement(NotionBlockElement):
     """
     Handles conversion between Markdown bookmarks and Notion bookmark blocks.
@@ -36,7 +37,7 @@ class BookmarkElement(NotionBlockElement):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        return block.type == "bookmark" and block.bookmark is not None
+        return block.type == BlockType.BOOKMARK and block.bookmark
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -56,18 +57,17 @@ class BookmarkElement(NotionBlockElement):
         if description:
             parts.append(description)
 
-        caption: list[RichTextObject] = []
+        caption = []
         if parts:
             joined = " – ".join(parts)
-            caption_obj = RichTextObject.from_plain_text(joined)
-            caption = [caption_obj]
+            caption = TextInlineFormatter.parse_inline_formatting(joined)
 
         bookmark_data = BookmarkBlock(url=url, caption=caption)
         return CreateBookmarkBlock(bookmark=bookmark_data)
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "bookmark" or block.bookmark is None:
+        if block.type != BlockType.BOOKMARK or block.bookmark is None:
             return None
 
         bm = block.bookmark
@@ -79,24 +79,13 @@ class BookmarkElement(NotionBlockElement):
         if not captions:
             return f"[bookmark]({url})"
 
-        # join caption texts
-        text = cls._extract_text([rt.model_dump() for rt in captions])
-        # split title/description
+        text = TextInlineFormatter.extract_text_with_formatting(captions)
+        
         if " - " in text:
             title, desc = map(str.strip, text.split(" - ", 1))
             return f'[bookmark]({url} "{title}" "{desc}")'
 
         return f'[bookmark]({url} "{text}")'
-
-    @classmethod
-    def _extract_text(cls, rich: list[dict]) -> str:
-        result = ""
-        for obj in rich:
-            if obj.get("type") == "text":
-                result += obj.get("text", {}).get("content", "")
-            else:
-                result += obj.get("plain_text", "")
-        return result
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

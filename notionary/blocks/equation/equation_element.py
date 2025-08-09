@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 import re
 
+from notionary.blocks.block_models import BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
@@ -35,7 +36,7 @@ class EquationElement(NotionBlockElement):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        return block.type == "equation" and getattr(block, "equation", None) is not None
+        return block.type == BlockType.EQUATION and block.equation
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -69,7 +70,7 @@ class EquationElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "equation" or getattr(block, "equation", None) is None:
+        if block.type != BlockType.EQUATION or not block.equation:
             return None
 
         expr = (block.equation.expression or "").strip()

@@ -7,8 +7,9 @@ if TYPE_CHECKING:
 
 from notionary.blocks.block_models import (
     Block,
+    BlockType,
 )
-from notionary.blocks.file.file_element_models import ExternalFile, FileObject
+from notionary.blocks.file.file_element_models import ExternalFile, FileType
 from notionary.blocks.image_block.image_models import CreateImageBlock, FileBlock
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.paragraph.paragraph_models import (
@@ -42,7 +43,7 @@ class ImageElement(NotionBlockElement):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        return block.type == "image" and block.image is not None
+        return block.type == BlockType.IMAGE and block.image
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -69,14 +70,14 @@ class ImageElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "image" or not block.image:
+        if block.type != BlockType.IMAGE or not block.image:
             return None
 
-        fo: FileObject = block.image
+        fo = block.image
 
-        if fo.type == "external" and fo.external:
+        if fo.type == FileType.EXTERNAL and fo.external:
             url = fo.external.url
-        elif fo.type == "file" and fo.file:
+        elif fo.type == FileType.FILE and fo.file:
             url = fo.file.url
         else:
             return None

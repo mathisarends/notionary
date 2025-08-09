@@ -1,7 +1,7 @@
 from typing import Union, Literal
 from pydantic import BaseModel
 
-from notionary.blocks.file.file_element_models import FileObject
+from notionary.blocks.file.file_element_models import FileBlock
 
 
 class EmojiIcon(BaseModel):
@@ -11,7 +11,7 @@ class EmojiIcon(BaseModel):
 
 class FileIcon(BaseModel):
     type: Literal["file"] = "file"
-    file: FileObject
+    file: FileBlock
 
 
 IconObject = Union[EmojiIcon, FileIcon]

@@ -7,6 +7,7 @@ if TYPE_CHECKING:
 
 from notionary.blocks.block_models import (
     Block,
+    BlockType,
 )
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.numbered_list.numbered_list_models import (
@@ -29,7 +30,7 @@ class NumberedListElement(NotionBlockElement):
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         return (
-            block.type == "numbered_list_item" and block.numbered_list_item is not None
+            block.type == BlockType.NUMBERED_LIST_ITEM and block.numbered_list_item
         )
 
     @classmethod
@@ -50,7 +51,7 @@ class NumberedListElement(NotionBlockElement):
     # FIX: Roundtrip conversions will never work this way here
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "numbered_list_item" or not block.numbered_list_item:
+        if block.type != BlockType.NUMBERED_LIST_ITEM or not block.numbered_list_item:
             return None
 
         rich = block.numbered_list_item.rich_text

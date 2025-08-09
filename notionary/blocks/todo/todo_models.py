@@ -8,7 +8,7 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 class ToDoBlock(BaseModel):
     rich_text: list[RichTextObject]
     checked: bool = False
-    color: BlockColor = "default"
+    color: BlockColor = BlockColor.DEFAULT
     children: list[Block] = Field(default_factory=list)
 
 

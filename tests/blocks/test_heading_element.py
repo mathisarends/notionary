@@ -5,6 +5,7 @@ Tests core functionality for markdown headings (#, ##, ###).
 
 import pytest
 from unittest.mock import Mock
+from notionary.blocks.block_models import BlockType
 from notionary.blocks.heading import HeadingElement
 from notionary.blocks.heading.heading_models import (
     CreateHeading1Block,
@@ -34,16 +35,21 @@ def test_match_markdown_invalid():
 
 def test_match_notion():
     """Test recognition of Notion heading blocks."""
-    # Valid heading blocks
-    for level in [1, 2, 3]:
+    heading_types = [
+        (1, BlockType.HEADING_1, "heading_1"),
+        (2, BlockType.HEADING_2, "heading_2"), 
+        (3, BlockType.HEADING_3, "heading_3"),
+    ]
+    
+    for level, block_type, attr_name in heading_types:
         block = Mock()
-        block.type = f"heading_{level}"
-        setattr(block, f"heading_{level}", Mock())  # Not None
+        block.type = block_type  # BlockType enum statt String
+        setattr(block, attr_name, Mock())  # Not None
         assert HeadingElement.match_notion(block)
 
     # Invalid blocks
     paragraph_block = Mock()
-    paragraph_block.type = "paragraph"
+    paragraph_block.type = BlockType.PARAGRAPH  # BlockType enum statt String
     assert not HeadingElement.match_notion(paragraph_block)
 
 

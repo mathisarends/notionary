@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
-from notionary.blocks.block_models import Block
+from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
@@ -31,7 +31,7 @@ class QuoteElement(NotionBlockElement):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        return block.type == "quote" and block.quote is not None
+        return block.type == BlockType.QUOTE and block.quote
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -50,15 +50,15 @@ class QuoteElement(NotionBlockElement):
         # Return a typed QuoteBlock
         quote_content = QuoteBlock(rich_text=rich_text, color="default")
         return CreateQuoteBlock(quote=quote_content)
-    
+
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "quote" or not block.quote:
+        if block.type != BlockType.QUOTE or not block.quote:
             return None
 
         rich = block.quote.rich_text
         text = TextInlineFormatter.extract_text_with_formatting(rich)
-        
+
         if not text.strip():
             return None
 

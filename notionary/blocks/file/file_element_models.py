@@ -1,8 +1,16 @@
 from typing import Literal, Optional
+from enum import Enum
 
 from pydantic import BaseModel, Field
 
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from typing import Literal
+
+
+class FileType(str, Enum):
+    EXTERNAL = "external"
+    FILE = "file"
+    FILE_UPLOAD = "file_upload"
 
 
 class ExternalFile(BaseModel):
@@ -18,18 +26,9 @@ class FileUploadFile(BaseModel):
     id: str
 
 
-class FileObject(BaseModel):
-    type: Literal["external", "file", "file_upload"]
-    external: Optional[ExternalFile] = None
-    file: Optional[NotionHostedFile] = None
-    file_upload: Optional[FileUploadFile] = None
-    caption: Optional[list[RichTextObject]] = None
-    name: Optional[str] = None
-
-
 class FileBlock(BaseModel):
     caption: list[RichTextObject] = Field(default_factory=list)
-    type: Literal["external", "file", "file_upload"]
+    type: FileType
     external: Optional[ExternalFile] = None
     file: Optional[NotionHostedFile] = None
     file_upload: Optional[FileUploadFile] = None

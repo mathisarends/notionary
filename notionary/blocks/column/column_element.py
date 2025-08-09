@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from notionary.blocks.block_models import Block, BlockCreateResult
 
-from notionary.blocks.block_models import Block
+from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.column.column_models import ColumnBlock, CreateColumnBlock
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
@@ -27,7 +27,7 @@ class ColumnElement(NotionBlockElement):
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if block is a Notion column."""
-        return block.type == "column"
+        return block.type == BlockType.COLUMN and block.column
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:

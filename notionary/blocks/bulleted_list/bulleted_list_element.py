@@ -11,7 +11,7 @@ from notionary.blocks.bulleted_list.bulleted_list_models import (
     BulletedListItemBlock,
     CreateBulletedListItemBlock,
 )
-from notionary.blocks.block_models import Block
+from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
@@ -31,7 +31,7 @@ class BulletedListElement(NotionBlockElement):
     def match_notion(cls, block: Block) -> bool:
         """Check if this element can handle the given Notion block."""
         return (
-            block.type == "bulleted_list_item" and block.bulleted_list_item is not None
+            block.type == BlockType.BULLETED_LIST_ITEM and block.bulleted_list_item
         )
 
     @classmethod
@@ -58,7 +58,7 @@ class BulletedListElement(NotionBlockElement):
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion bulleted_list_item block to Markdown."""
-        if block.type != "bulleted_list_item" or not block.bulleted_list_item:
+        if block.type != BlockType.BULLETED_LIST_ITEM or not block.bulleted_list_item:
             return None
 
         rich_list = block.bulleted_list_item.rich_text

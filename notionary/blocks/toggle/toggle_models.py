@@ -7,7 +7,7 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 class ToggleBlock(BaseModel):
     rich_text: list[RichTextObject]
-    color: BlockColor = "default"
+    color: BlockColor = BlockColor.DEFAULT
     children: list[Block] = Field(default_factory=list)
 
 

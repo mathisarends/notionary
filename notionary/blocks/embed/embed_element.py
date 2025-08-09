@@ -4,11 +4,11 @@ from typing import Optional, TYPE_CHECKING
 
 from notionary.blocks.block_models import (
     Block,
+    BlockType,
 )
 from notionary.blocks.embed.embed_models import CreateEmbedBlock, EmbedBlock
 from notionary.blocks.file.file_element_models import (
     ExternalFile,
-    FileObject,
     FileUploadFile,
     NotionHostedFile,
 )
@@ -43,7 +43,7 @@ class EmbedElement(NotionBlockElement):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        return block.type == "embed" and block.embed is not None
+        return block.type == BlockType.EMBED and block.embed
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -64,10 +64,10 @@ class EmbedElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "embed" or not block.embed:
+        if block.type != BlockType.EMBED or not block.embed:
             return None
 
-        fo: FileObject = block.embed
+        fo = block.embed
 
         if isinstance(fo, (ExternalFile, NotionHostedFile)):
             url = fo.url
@@ -85,7 +85,6 @@ class EmbedElement(NotionBlockElement):
         )
 
         return f'[embed]({url} "{text}")'
-
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

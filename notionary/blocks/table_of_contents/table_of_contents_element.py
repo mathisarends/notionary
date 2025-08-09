@@ -2,6 +2,7 @@ from __future__ import annotations
 import re
 from typing import Optional, TYPE_CHECKING
 
+from notionary.blocks.block_models import BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.table_of_contents.table_of_contents_models import (
     CreateTableOfContentsBlock,
@@ -31,10 +32,7 @@ class TableOfContentsElement(NotionBlockElement):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        return (
-            block.type == "table_of_contents"
-            and getattr(block, "table_of_contents", None) is not None
-        )
+        return block.type == BlockType.TABLE_OF_CONTENTS and block.table_of_contents
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -49,13 +47,10 @@ class TableOfContentsElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if (
-            block.type != "table_of_contents"
-            or getattr(block, "table_of_contents", None) is None
-        ):
+        if block.type != BlockType.TABLE_OF_CONTENTS and not block.table_of_contents:
             return None
 
-        color = getattr(block.table_of_contents, "color", "default")
+        color = block.table_of_contents.color
         if color == "default":
             return "[toc]"
         return f"[toc]({color})"

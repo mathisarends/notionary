@@ -54,7 +54,7 @@ class TextInlineFormatter:
             remaining = remaining[pos + len(match.group(0)) :]
 
         return segs
-    
+
     @classmethod
     def extract_text_with_formatting(cls, rich_text: list[RichTextObject]) -> str:
         """
@@ -94,7 +94,11 @@ class TextInlineFormatter:
                     content = f"[{content}]({m.link_preview.url})"
                 elif m.type == "template_mention" and m.template_mention:
                     tm = m.template_mention.type
-                    parts.append("@template_user" if tm == "template_mention_user" else "@template_date")
+                    parts.append(
+                        "@template_user"
+                        if tm == "template_mention_user"
+                        else "@template_date"
+                    )
                     continue
 
             # Normale Links (text.link)
@@ -118,4 +122,3 @@ class TextInlineFormatter:
             parts.append(content)
 
         return "".join(parts)
-

@@ -6,7 +6,7 @@ from notionary.blocks.block_models import BlockColor
 class TableOfContentsBlock(BaseModel):
     """Inneres Payload-Objekt: { table_of_contents: { color: ... } }"""
 
-    color: BlockColor = "default"
+    color: BlockColor = BlockColor.DEFAULT
 
 
 class CreateTableOfContentsBlock(BaseModel):
