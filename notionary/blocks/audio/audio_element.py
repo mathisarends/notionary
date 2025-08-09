@@ -4,7 +4,7 @@ from typing import Any, Optional, TYPE_CHECKING
 
 
 from notionary.blocks.audio.audio_models import CreateAudioBlock
-from notionary.blocks.block_models import Block
+from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.file.file_element_models import FileObject
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
@@ -78,7 +78,7 @@ class AudioElement(NotionBlockElement):
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion audio block to markdown audio embed."""
-        if block.type != "audio" or block.audio is None:
+        if block.type != BlockType.AUDIO or block.audio is None:
             return None
 
         audio = block.audio

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Literal, Optional, Union, Any, TYPE_CHECKING
+from enum import Enum
 from pydantic import BaseModel
 
 
@@ -72,41 +73,39 @@ BlockColor = Literal[
     "default_background",
 ]
 
-# hier vllt. auch lieber ein enum draus machen würde ich hier wirklich nicht schlecht finden (für die developer experience )
-BlockType = Literal[
-    "bookmark",
-    "breadcrumb",
-    "bulleted_list_item",
-    "callout",
-    "child_database",
-    "child_page",
-    "column",
-    "column_list",
-    "code",
-    "divider",
-    "embed",
-    "equation",
-    "file",
-    "heading_1",
-    "heading_2",
-    "heading_3",
-    "image",
-    "link_preview",
-    "link_to_page",
-    "numbered_list_item",
-    "paragraph",
-    "pdf",
-    "quote",
-    "synced_block",
-    "table",
-    "table_of_contents",
-    "table_row",
-    "to_do",
-    "toggle",
-    "unsupported",
-    "video",
-    "audio",
-]
+class BlockType(str, Enum):
+    BOOKMARK = "bookmark"
+    BREADCRUMB = "breadcrumb"
+    BULLETED_LIST_ITEM = "bulleted_list_item"
+    CALLOUT = "callout"
+    CHILD_DATABASE = "child_database"
+    CHILD_PAGE = "child_page"
+    COLUMN = "column"
+    COLUMN_LIST = "column_list"
+    CODE = "code"
+    DIVIDER = "divider"
+    EMBED = "embed"
+    EQUATION = "equation"
+    FILE = "file"
+    HEADING_1 = "heading_1"
+    HEADING_2 = "heading_2"
+    HEADING_3 = "heading_3"
+    IMAGE = "image"
+    LINK_PREVIEW = "link_preview"
+    LINK_TO_PAGE = "link_to_page"
+    NUMBERED_LIST_ITEM = "numbered_list_item"
+    PARAGRAPH = "paragraph"
+    PDF = "pdf"
+    QUOTE = "quote"
+    SYNCED_BLOCK = "synced_block"
+    TABLE = "table"
+    TABLE_OF_CONTENTS = "table_of_contents"
+    TABLE_ROW = "table_row"
+    TO_DO = "to_do"
+    TOGGLE = "toggle"
+    UNSUPPORTED = "unsupported"
+    VIDEO = "video"
+    AUDIO = "audio"
 
 
 class BlockChildrenResponse(BaseModel):
@@ -163,6 +162,7 @@ class Block(BaseModel):
     children: Optional[list[Block]] = None
 
     # Block type-specific content (only one will be populated based on type)
+    audio: Optional[FileBlock] = None
     bookmark: Optional[BookmarkBlock] = None
     breadcrumb: Optional[BreadcrumbBlock] = None
     bulleted_list_item: Optional[BulletedListItemBlock] = None
