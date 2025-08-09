@@ -1,6 +1,6 @@
 from __future__ import annotations
 import re
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
 from notionary.blocks.file.file_element_models import FileType, FileBlock
 
