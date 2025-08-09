@@ -4,6 +4,8 @@ from notionary import NotionPage
 async def main():
     # Hole die Seite über ihren Namen
     page = await NotionPage.from_page_name("Jarvis Clipboard")
+
+    # TODO: vllt. eine einfachere Schnittstelle um das Ding hier zu definieren
     page.block_element_registry = (
         page.block_registry_builder.without_bulleted_list().build()
     )

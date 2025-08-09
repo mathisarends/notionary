@@ -7,10 +7,11 @@ Maps 1:1 to the available blocks with clear, expressive method names.
 """
 
 from __future__ import annotations
-from typing import Optional, Self
+from typing import Callable, Optional, Self
 
 from notionary.blocks.audio.audio_markdown_node import AudioMarkdownNode
 from notionary.blocks.bookmark.bookmark_markdown_node import BookmarkMarkdownNode
+from notionary.blocks.breadcrumbs.breadcrumb_markdown_node import BreadcrumbMarkdownNode
 from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
     BulletedListMarkdownNode,
 )
@@ -18,6 +19,9 @@ from notionary.blocks.callout.callout_markdown_node import CalloutMarkdownNode
 from notionary.blocks.code.code_markdown_node import CodeMarkdownNode
 from notionary.blocks.divider.divider_markdown_node import DividerMarkdownNode
 from notionary.blocks.embed.embed_markdown_node import EmbedMarkdownNode
+from notionary.blocks.equation.equation_element_markdown_node import (
+    EquationMarkdownNode,
+)
 from notionary.blocks.file.file_element_markdown_node import FileMarkdownNode
 from notionary.blocks.heading.heading_markdown_node import HeadingMarkdownNode
 from notionary.blocks.image_block.image_markdown_node import ImageMarkdownNode
@@ -27,6 +31,9 @@ from notionary.blocks.numbered_list.numbered_list_markdown_node import (
 from notionary.blocks.paragraph.paragraph_markdown_node import ParagraphMarkdownNode
 from notionary.blocks.quote.quote_markdown_node import QuoteMarkdownNode
 from notionary.blocks.table.table_markdown_node import TableMarkdownNode
+from notionary.blocks.table_of_contents.table_of_contents_markdown_node import (
+    TableOfContentsMarkdownNode,
+)
 from notionary.blocks.todo.todo_markdown_node import TodoMarkdownNode
 from notionary.blocks.toggle.toggle_markdown_node import ToggleMarkdownNode
 from notionary.blocks.toggleable_heading.toggleable_heading_markdown_node import (
@@ -318,12 +325,79 @@ class MarkdownBuilder:
         self.children.append(node)
         return self
 
-    def space(self) -> Self:
-        """Add vertical spacing."""
-        return self.paragraph("")
+    def breadcrumb(self) -> Self:
+        """Add a breadcrumb navigation block."""
+        self.children.append(BreadcrumbMarkdownNode())
+        return self
+
+    def equation(self, expression: str) -> Self:
+        """
+        Add a LaTeX equation block.
+
+        Args:
+            expression: LaTeX mathematical expression
+
+        Example:
+            builder.equation("E = mc^2")
+            builder.equation("f(x) = \\sin(x) + \\cos(x)")
+            builder.equation("x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}")
+        """
+        self.children.append(EquationMarkdownNode(expression=expression))
+        return self
+
+    def table_of_contents(self, color: Optional[str] = None) -> Self:
+        """
+        Add a table of contents.
+
+        Args:
+            color: Optional color for the table of contents (e.g., "blue", "blue_background")
+        """
+        self.children.append(TableOfContentsMarkdownNode(color=color))
+        return self
+
+    def columns(
+        self, *builder_funcs: Callable[[MarkdownBuilder], MarkdownBuilder]
+    ) -> Self:
+        """
+        Add multiple columns in a layout.
+
+        Args:
+            *builder_funcs: Multiple functions, each building one column
+
+        Example:
+            builder.columns(
+                lambda col: col.h2("Left").paragraph("Left content"),
+                lambda col: col.h2("Right").bulleted_list(["Item 1", "Item 2"])
+            )
+        """
+        for builder_func in builder_funcs:
+            self.column(builder_func)
+        return self
+
+    def column_with_nodes(self, *nodes: MarkdownNode) -> Self:
+        """
+        Add a column with pre-built MarkdownNode objects.
+
+        Args:
+            *nodes: MarkdownNode objects to include in the column
+
+        Example:
+            builder.column_with_nodes(
+                HeadingMarkdownNode(text="Title", level=2),
+                ParagraphMarkdownNode(text="Content")
+            )
+        """
+        from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
+
+        self.children.append(ColumnMarkdownNode(children=list(nodes)))
+        return self
 
     def build(self) -> str:
         """Build and return the final markdown string."""
         return "\n\n".join(
             child.to_markdown() for child in self.children if child is not None
         )
+
+    def space(self) -> Self:
+        """Add vertical spacing."""
+        return self.paragraph("")

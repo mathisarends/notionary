@@ -5,13 +5,18 @@ Testet ob die to_markdown() Methode den erwarteten String zurückgibt.
 
 from notionary.blocks.audio.audio_markdown_node import AudioMarkdownNode
 from notionary.blocks.bookmark.bookmark_markdown_node import BookmarkMarkdownNode
+from notionary.blocks.breadcrumbs.breadcrumb_markdown_node import BreadcrumbMarkdownNode
 from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
     BulletedListMarkdownNode,
 )
 from notionary.blocks.callout.callout_markdown_node import CalloutMarkdownNode
 from notionary.blocks.code.code_markdown_node import CodeMarkdownNode
+from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
 from notionary.blocks.divider.divider_markdown_node import DividerMarkdownNode
 from notionary.blocks.embed.embed_markdown_node import EmbedMarkdownNode
+from notionary.blocks.equation.equation_element_markdown_node import (
+    EquationMarkdownNode,
+)
 from notionary.blocks.file.file_element_markdown_node import FileMarkdownNode
 from notionary.blocks.heading.heading_markdown_node import HeadingMarkdownNode
 from notionary.blocks.image_block.image_markdown_node import ImageMarkdownNode
@@ -21,13 +26,15 @@ from notionary.blocks.numbered_list.numbered_list_markdown_node import (
 from notionary.blocks.paragraph.paragraph_markdown_node import ParagraphMarkdownNode
 from notionary.blocks.quote.quote_markdown_node import QuoteMarkdownNode
 from notionary.blocks.table.table_markdown_node import TableMarkdownNode
+from notionary.blocks.table_of_contents.table_of_contents_markdown_node import (
+    TableOfContentsMarkdownNode,
+)
 from notionary.blocks.todo.todo_markdown_node import TodoMarkdownNode
 from notionary.blocks.toggle.toggle_markdown_node import ToggleMarkdownNode
 from notionary.blocks.toggleable_heading.toggleable_heading_markdown_node import (
     ToggleableHeadingMarkdownNode,
 )
 from notionary.blocks.video.video_markdown_node import VideoMarkdownNode
-from notionary.markdown.markdown_node import MarkdownNode
 
 import pytest
 
@@ -295,3 +302,77 @@ def test_video_markdown_node():
     )
     expected = '[video](https://youtube.com/watch?v=123 "Tutorial Video")'
     assert video_with_caption.to_markdown() == expected
+
+
+def test_breadcrumb_markdown_node():
+    """Test BreadcrumbMarkdownNode"""
+    breadcrumb = BreadcrumbMarkdownNode()
+    expected = "[breadcrumb]"
+    assert breadcrumb.to_markdown() == expected
+
+
+def test_table_of_contents_markdown_node():
+    """Test TableOfContentsMarkdownNode"""
+    # Test ohne color (default)
+    toc = TableOfContentsMarkdownNode()
+    expected = "[toc]"
+    assert toc.to_markdown() == expected
+
+    # Test mit color="default"
+    toc_default = TableOfContentsMarkdownNode(color="default")
+    expected = "[toc]"
+    assert toc_default.to_markdown() == expected
+
+    # Test mit custom color
+    toc_blue = TableOfContentsMarkdownNode(color="blue")
+    expected = "[toc](blue)"
+    assert toc_blue.to_markdown() == expected
+
+    # Test mit background color
+    toc_bg = TableOfContentsMarkdownNode(color="blue_background")
+    expected = "[toc](blue_background)"
+    assert toc_bg.to_markdown() == expected
+
+    # Test mit None color
+    toc_none = TableOfContentsMarkdownNode(color=None)
+    expected = "[toc]"
+    assert toc_none.to_markdown() == expected
+
+
+def test_column_markdown_node():
+    """Test ColumnMarkdownNode"""
+    # Test ohne children
+    column_empty = ColumnMarkdownNode(children=[])
+    expected = "::: column\n:::"
+    assert column_empty.to_markdown() == expected
+
+    children = [
+        HeadingMarkdownNode(text="Column Title", level=2),
+        ParagraphMarkdownNode(text="Column content here"),
+    ]
+    column_with_content = ColumnMarkdownNode(children=children)
+    expected = "::: column\n## Column Title\n\nColumn content here\n:::"
+    assert column_with_content.to_markdown() == expected
+
+
+def test_equation_markdown_node():
+    """Test EquationMarkdownNode"""
+    equation_simple = EquationMarkdownNode(expression="E = mc^2")
+    expected = "[equation](E = mc^2)"
+    assert equation_simple.to_markdown() == expected
+
+    equation_with_parens = EquationMarkdownNode(expression="f(x) = sin(x)")
+    expected = '[equation]("f(x) = sin(x)")'
+    assert equation_with_parens.to_markdown() == expected
+
+    equation_with_quotes = EquationMarkdownNode(expression='say "hello"')
+    expected = '[equation]("say \\"hello\\"")'
+    assert equation_with_quotes.to_markdown() == expected
+
+    equation_empty = EquationMarkdownNode(expression="")
+    expected = "[equation]()"
+    assert equation_empty.to_markdown() == expected
+
+    equation_whitespace = EquationMarkdownNode(expression="   ")
+    expected = "[equation]()"
+    assert equation_whitespace.to_markdown() == expected
