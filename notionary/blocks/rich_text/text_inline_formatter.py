@@ -54,7 +54,7 @@ class TextInlineFormatter:
             remaining = remaining[pos + len(match.group(0)) :]
 
         return segs
-
+    
     @classmethod
     def extract_text_with_formatting(cls, rich_text: list[RichTextObject]) -> str:
         """
@@ -63,21 +63,46 @@ class TextInlineFormatter:
         parts: list[str] = []
 
         for obj in rich_text:
-            content = obj.plain_text or getattr(obj.text, "content", "")
+            # Basisinhalt
+            content = obj.plain_text or (obj.text.content if obj.text else "")
 
-            # Mentions behandeln
-            if obj.type == "mention" and hasattr(obj, "mention"):
-                if obj.mention.get("type") == "page":
-                    page_id = obj.mention["page"]["id"]
-                    parts.append(f"@[{page_id}]")
+            # Equations
+            if obj.type == "equation" and obj.equation:
+                parts.append(f"${obj.equation.expression}$")
+                continue
+
+            # Mentions
+            if obj.type == "mention" and obj.mention:
+                m = obj.mention
+                if m.type == "page" and m.page:
+                    parts.append(f"@[{m.page.id}]")
+                    continue
+                elif m.type == "user" and m.user:
+                    parts.append(f"@user({m.user.id})")
+                    continue
+                elif m.type == "database" and m.database:
+                    parts.append(f"@db({m.database.id})")
+                    continue
+                elif m.type == "date" and m.date:
+                    if m.date.end:
+                        parts.append(f"{m.date.start}–{m.date.end}")
+                    else:
+                        parts.append(m.date.start)
+                    continue
+                elif m.type == "link_preview" and m.link_preview:
+                    # Als Link rendern
+                    content = f"[{content}]({m.link_preview.url})"
+                elif m.type == "template_mention" and m.template_mention:
+                    tm = m.template_mention.type
+                    parts.append("@template_user" if tm == "template_mention_user" else "@template_date")
                     continue
 
-            # Links
-            if getattr(obj.text, "link", None):
+            # Normale Links (text.link)
+            if obj.text and obj.text.link:
                 url = obj.text.link.url
                 content = f"[{content}]({url})"
 
-            # Code zuerst, damit keine Konflikte mit anderen Markern entstehen
+            # Inline-Formatierungen
             ann = obj.annotations.model_dump() if obj.annotations else {}
             if ann.get("code"):
                 content = f"`{content}`"
@@ -93,3 +118,4 @@ class TextInlineFormatter:
             parts.append(content)
 
         return "".join(parts)
+

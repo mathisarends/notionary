@@ -72,6 +72,7 @@ BlockColor = Literal[
     "default_background",
 ]
 
+# hier vllt. auch lieber ein enum draus machen würde ich hier wirklich nicht schlecht finden (für die developer experience )
 BlockType = Literal[
     "bookmark",
     "breadcrumb",
