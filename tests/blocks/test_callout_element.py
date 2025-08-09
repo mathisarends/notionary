@@ -7,7 +7,7 @@ from unittest.mock import Mock
 
 from notionary.blocks.callout.callout_element import CalloutElement
 from notionary.blocks.callout.callout_models import CalloutBlock
-from notionary.blocks.block_models import BlockType
+from notionary.blocks.block_types import BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.models.icon_types import EmojiIcon
 
@@ -22,7 +22,7 @@ def test_match_markdown():
     # Valid
     assert CalloutElement.match_markdown("[callout](Simple text)")
     assert CalloutElement.match_markdown('[callout](Text "🔥")')
-    
+
     # Invalid
     assert not CalloutElement.match_markdown("Regular text")
     assert not CalloutElement.match_markdown("[callout]()")
@@ -35,11 +35,11 @@ def test_match_notion():
     block.type = BlockType.CALLOUT
     block.callout = Mock()
     assert CalloutElement.match_notion(block)
-    
+
     # Invalid - wrong type
     block.type = BlockType.PARAGRAPH
     assert not CalloutElement.match_notion(block)
-    
+
     # Invalid - no callout content
     block.type = BlockType.CALLOUT
     block.callout = None
@@ -49,7 +49,7 @@ def test_match_notion():
 def test_markdown_to_notion_simple():
     """Test einfache Markdown -> Notion Konvertierung."""
     result = CalloutElement.markdown_to_notion("[callout](Test content)")
-    
+
     assert result is not None
     assert result.callout.icon.emoji == "💡"  # Default
     assert result.callout.color == "gray_background"
@@ -59,7 +59,7 @@ def test_markdown_to_notion_simple():
 def test_markdown_to_notion_with_emoji():
     """Test Markdown -> Notion mit Custom Emoji."""
     result = CalloutElement.markdown_to_notion('[callout](Warning "⚠️")')
-    
+
     assert result is not None
     assert result.callout.icon.emoji == "⚠️"
     assert result.callout.rich_text[0].plain_text == "Warning"
@@ -76,13 +76,13 @@ def test_notion_to_markdown_simple():
     callout_data = CalloutBlock(
         rich_text=[create_rich_text("Test content")],
         icon=EmojiIcon(emoji="💡"),
-        color="gray_background"
+        color="gray_background",
     )
-    
+
     block = Mock()
     block.type = BlockType.CALLOUT
     block.callout = callout_data
-    
+
     result = CalloutElement.notion_to_markdown(block)
     assert result == "[callout](Test content)"
 
@@ -92,13 +92,13 @@ def test_notion_to_markdown_with_emoji():
     callout_data = CalloutBlock(
         rich_text=[create_rich_text("Warning")],
         icon=EmojiIcon(emoji="⚠️"),
-        color="gray_background"
+        color="gray_background",
     )
-    
+
     block = Mock()
     block.type = BlockType.CALLOUT
     block.callout = callout_data
-    
+
     result = CalloutElement.notion_to_markdown(block)
     assert result == '[callout](Warning "⚠️")'
 
@@ -110,7 +110,7 @@ def test_notion_to_markdown_invalid():
     block.type = BlockType.PARAGRAPH
     block.callout = None
     assert CalloutElement.notion_to_markdown(block) is None
-    
+
     # No callout content
     block.type = BlockType.CALLOUT
     block.callout = None
@@ -124,17 +124,17 @@ def test_roundtrip():
         '[callout](Warning "⚠️")',
         '[callout](Success "✅")',
     ]
-    
+
     for original in test_cases:
         # Markdown -> Notion
         notion_result = CalloutElement.markdown_to_notion(original)
         assert notion_result is not None
-        
+
         # Create block for notion_to_markdown
         block = Mock()
         block.type = BlockType.CALLOUT
         block.callout = notion_result.callout
-        
+
         # Notion -> Markdown
         result = CalloutElement.notion_to_markdown(block)
         assert result == original
@@ -145,7 +145,7 @@ def test_different_emojis(emoji):
     """Test verschiedene Emojis."""
     markdown = f'[callout](Test "{emoji}")'
     result = CalloutElement.markdown_to_notion(markdown)
-    
+
     assert result is not None
     assert result.callout.icon.emoji == emoji
 

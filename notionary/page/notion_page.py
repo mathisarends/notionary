@@ -5,6 +5,7 @@ from typing import Any, Optional, TYPE_CHECKING
 import random
 
 from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
 from notionary.models.notion_database_response import NotionPageResponse
 from notionary.models.notion_page_response import DatabaseParent
 from notionary.page.client import NotionPageClient
@@ -56,16 +57,16 @@ class NotionPage(LoggingMixin):
         self._client = NotionPageClient(token=token)
         self._page_data = None
 
-        self._block_element_registry = BlockRegistry.create_registry()
+        self.block_element_registry = BlockRegistry.create_registry()
 
         self._page_content_writer = PageContentWriter(
             page_id=self._page_id,
-            block_registry=self._block_element_registry,
+            block_registry=self.block_element_registry,
         )
 
         self._page_content_retriever = PageContentRetriever(
             page_id=self._page_id,
-            block_registry=self._block_element_registry,
+            block_registry=self.block_element_registry,
         )
 
     @classmethod
@@ -131,11 +132,9 @@ class NotionPage(LoggingMixin):
         except Exception as e:
             cls.logger.error("Error finding page by name: %s", str(e))
             raise
-        
+
     @classmethod
-    async def from_url(
-        cls, url: str, token: Optional[str] = None
-    ) -> NotionPage:
+    async def from_url(cls, url: str, token: Optional[str] = None) -> NotionPage:
         """
         Create a NotionPage from a Notion page URL.
         """
@@ -143,13 +142,13 @@ class NotionPage(LoggingMixin):
             page_id = extract_uuid(url)
             if not page_id:
                 raise ValueError(f"Could not extract page ID from URL: {url}")
-            
+
             formatted_id = format_uuid(page_id) or page_id
 
             async with NotionPageClient(token=token) as client:
                 page_response = await client.get_page(formatted_id)
                 return await cls._create_from_response(page_response, token)
-                
+
         except Exception as e:
             cls.logger.error("Error creating page from URL '%s': %s", url, str(e))
             raise
@@ -189,7 +188,7 @@ class NotionPage(LoggingMixin):
         Get the properties of the page.
         """
         return self._properties
-    
+
     @property
     def is_archived(self) -> bool:
         return self._is_archived
@@ -199,14 +198,11 @@ class NotionPage(LoggingMixin):
         return self._is_in_trash
 
     @property
-    def block_registry(self) -> BlockRegistry:
+    def block_registry_builder(self) -> BlockRegistryBuilder:
         """
-        Get the block element registry associated with this page.
-
-        Returns:
-            BlockElementRegistry: The registry of block elements.
+        Returns the block registry builder for this page.
         """
-        return self._block_element_registry
+        return self.block_element_registry.builder
 
     def get_notion_markdown_system_prompt(self) -> str:
         """
@@ -215,7 +211,7 @@ class NotionPage(LoggingMixin):
         Returns:
             str: The formatting prompt.
         """
-        return self._block_element_registry.get_notion_markdown_syntax_prompt()
+        return self.block_element_registry.get_notion_markdown_syntax_prompt()
 
     async def set_title(self, title: str) -> str:
         """

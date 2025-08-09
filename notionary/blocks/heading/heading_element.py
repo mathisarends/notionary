@@ -33,7 +33,8 @@ class HeadingElement(NotionBlockElement):
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         return (
-            block.type in (
+            block.type
+            in (
                 BlockType.HEADING_1,
                 BlockType.HEADING_2,
                 BlockType.HEADING_3,
@@ -100,7 +101,7 @@ class HeadingElement(NotionBlockElement):
 
         # Use dashed underline for level 2 headings
         if level == 2:
-            underline = '-' * len(text)
+            underline = "-" * len(text)
             return f"{text}\n{underline}"
 
         # Fallback to hash-style for other levels

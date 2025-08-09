@@ -1,8 +1,11 @@
 import json
 from typing import Optional
 
+from mkdocs.structure.toc import TableOfContents
+
 from notionary.blocks.block_client import NotionBlockClient
 from notionary.blocks.block_models import Block
+from notionary.blocks.divider.divider_models import DividerBlock
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.content.markdown_whitespace_processor import (
     MarkdownWhitespaceProcessor,
@@ -42,9 +45,11 @@ class PageContentWriter(LoggingMixin):
             str: The processed markdown content that was appended (None if failed)
         """
         if prepend_table_of_contents:
+            self._ensure_table_of_contents_exists_in_registry()
             markdown_text = "[toc]\n\n" + markdown_text
 
         if append_divider:
+            self._ensure_divider_exists_in_registry()
             markdown_text = markdown_text + "\n\n---\n"
 
         processed_markdown = self._process_markdown_whitespace(markdown_text)
@@ -175,3 +180,15 @@ class PageContentWriter(LoggingMixin):
 
         processor = MarkdownWhitespaceProcessor()
         return processor.process_lines(lines)
+
+    def _ensure_table_of_contents_exists_in_registry(self) -> None:
+        """Ensure TableOfContents is registered in the block registry."""
+        if self.block_registry.contains(TableOfContents):
+            return
+        self.block_registry = self.block_registry.register(TableOfContents)
+
+    def _ensure_divider_exists_in_registry(self) -> None:
+        """Ensure DividerBlock is registered in the block registry."""
+        if self.block_registry.contains(DividerBlock):
+            return
+        self.block_registry = self.block_registry.register(DividerBlock)

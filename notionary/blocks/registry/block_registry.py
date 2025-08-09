@@ -1,8 +1,5 @@
 from __future__ import annotations
-from typing import Optional, Set, Type, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
+from typing import Optional, Type, TYPE_CHECKING
 
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.page.markdown_syntax_prompt_generator import (
@@ -17,24 +14,27 @@ from notionary.telemetry import (
     NotionToMarkdownConversionEvent,
 )
 
+if TYPE_CHECKING:
+    from notionary.blocks.block_models import Block, BlockCreateResult
+    from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
+
 
 class BlockRegistry:
     """Registry of elements that can convert between Markdown and Notion."""
 
-    def __init__(self, elements=None):
+    def __init__(self, builder: Optional[BlockRegistryBuilder] = None):
         """
         Initialize a new registry instance.
 
         Args:
-            elements: Initial elements to register
+            builder: BlockRegistryBuilder instance to delegate operations to
         """
-        self._elements: list[NotionBlockElement] = []
-        self._element_types: Set[Type[NotionBlockElement]] = set()
+        # Import here to avoid circular imports
+        from notionary.blocks.registry.block_registry_builder import (
+            BlockRegistryBuilder,
+        )
 
-        if elements:
-            for element in elements:
-                self.register(element)
-
+        self._builder: BlockRegistryBuilder = builder or BlockRegistryBuilder()
         self.telemetry = ProductTelemetry()
 
     @classmethod
@@ -46,38 +46,62 @@ class BlockRegistry:
             BlockRegistryBuilder,
         )
 
-        return BlockRegistryBuilder.create_registry()
+        builder = BlockRegistryBuilder()
+        builder = (
+            builder.with_headings()
+            .with_callouts()
+            .with_code()
+            .with_dividers()
+            .with_tables()
+            .with_bulleted_list()
+            .with_numbered_list()
+            .with_toggles()
+            .with_quotes()
+            .with_todos()
+            .with_bookmarks()
+            .with_images()
+            .with_videos()
+            .with_embeds()
+            .with_audio()
+            .with_paragraphs()
+            .with_toggleable_heading_element()
+            .with_columns()
+            .with_equation()
+            .with_table_of_contents()
+            .with_breadcrumbs()
+        )
+
+        return cls(builder=builder)
+
+    @property
+    def builder(self) -> BlockRegistryBuilder:
+        return self._builder
 
     def register(self, element_class: Type[NotionBlockElement]) -> bool:
         """
-        Register an element class.
+        Register an element class via builder.
         """
-        if element_class in self._element_types:
-            return False
-
-        self._elements.append(element_class)
-        self._element_types.add(element_class)
-        return True
+        initial_count = len(self._builder._elements)
+        self._builder._add_element(element_class)
+        return len(self._builder._elements) > initial_count
 
     def deregister(self, element_class: Type[NotionBlockElement]) -> bool:
         """
-        Deregister an element class.
+        Deregister an element class via builder.
         """
-        if element_class in self._element_types:
-            self._elements.remove(element_class)
-            self._element_types.remove(element_class)
-            return True
-        return False
+        initial_count = len(self._builder._elements)
+        self._builder.remove_element(element_class)
+        return len(self._builder._elements) < initial_count
 
     def contains(self, element_class: Type[NotionBlockElement]) -> bool:
         """
         Checks if a specific element is contained in the registry.
         """
-        return element_class in self._elements
+        return element_class.__name__ in self._builder._elements
 
     def find_markdown_handler(self, text: str) -> Optional[Type[NotionBlockElement]]:
         """Find an element that can handle the given markdown text."""
-        for element in self._elements:
+        for element in self._builder._elements.values():
             if element.match_markdown(text):
                 return element
         return None
@@ -113,13 +137,13 @@ class BlockRegistry:
 
     def get_elements(self) -> list[Type[NotionBlockElement]]:
         """Get all registered elements."""
-        return self._elements.copy()
+        return list(self._builder._elements.values())
 
     def get_notion_markdown_syntax_prompt(self) -> str:
         """
         Generates an LLM system prompt that describes the Markdown syntax of all registered elements.
         """
-        element_classes = self._elements.copy()
+        element_classes = list(self._builder._elements.values())
 
         formatter_names = [e.__name__ for e in element_classes]
         if "TextInlineFormatter" not in formatter_names:
@@ -129,11 +153,9 @@ class BlockRegistry:
 
         return MarkdownSyntaxPromptGenerator.generate_system_prompt(element_classes)
 
-    def _find_notion_handler(
-        self, block: "Block"
-    ) -> Optional[Type[NotionBlockElement]]:
+    def _find_notion_handler(self, block: Block) -> Optional[Type[NotionBlockElement]]:
         """Find an element that can handle the given Notion block."""
-        for element in self._elements:
+        for element in self._builder._elements.values():
             if element.match_notion(block):
                 return element
         return None

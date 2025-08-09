@@ -29,9 +29,7 @@ class NumberedListElement(NotionBlockElement):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        return (
-            block.type == BlockType.NUMBERED_LIST_ITEM and block.numbered_list_item
-        )
+        return block.type == BlockType.NUMBERED_LIST_ITEM and block.numbered_list_item
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:

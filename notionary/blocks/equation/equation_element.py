@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 import re
 
-from notionary.blocks.block_models import BlockType
+from notionary.blocks.block_types import BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent

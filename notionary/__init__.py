@@ -1,3 +1,7 @@
+from notionary.blocks._bootstrap import bootstrap_blocks
+
+bootstrap_blocks()
+
 from .database import NotionDatabase, DatabaseFilterBuilder
 from .page.notion_page import NotionPage
 from .workspace import NotionWorkspace

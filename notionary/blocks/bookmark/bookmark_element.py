@@ -8,8 +8,7 @@ from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import BlockCreateResult
+from notionary.blocks.block_models import BlockCreateResult
 
 # BookmarkElement implementation using BlockType enum and TextInlineFormatter
 class BookmarkElement(NotionBlockElement):
@@ -80,7 +79,7 @@ class BookmarkElement(NotionBlockElement):
             return f"[bookmark]({url})"
 
         text = TextInlineFormatter.extract_text_with_formatting(captions)
-        
+
         if " - " in text:
             title, desc = map(str.strip, text.split(" - ", 1))
             return f'[bookmark]({url} "{title}" "{desc}")'

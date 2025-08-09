@@ -30,9 +30,7 @@ class BulletedListElement(NotionBlockElement):
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if this element can handle the given Notion block."""
-        return (
-            block.type == BlockType.BULLETED_LIST_ITEM and block.bulleted_list_item
-        )
+        return block.type == BlockType.BULLETED_LIST_ITEM and block.bulleted_list_item
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:

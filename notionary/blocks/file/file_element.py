@@ -1,28 +1,24 @@
 from __future__ import annotations
 import re
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
 from notionary.blocks.file.file_element_models import (
     CreateFileBlock,
     ExternalFile,
     FileBlock,
-    FileType
+    FileType,
 )
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
     ParagraphBlock,
 )
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.block_models import (
-    Block,
-    BlockType,
-)
+
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.prompts import ElementPromptContent, ElementPromptBuilder
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.block_models import Block, BlockCreateResult, BlockType
 
 
 class FileElement(NotionBlockElement):

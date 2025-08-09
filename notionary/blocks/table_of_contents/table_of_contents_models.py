@@ -1,6 +1,6 @@
 from typing import Literal
 from pydantic import BaseModel
-from notionary.blocks.block_models import BlockColor
+from notionary.blocks.block_types import BlockColor
 
 
 class TableOfContentsBlock(BaseModel):

@@ -3,8 +3,12 @@ from unittest.mock import Mock
 
 from notionary.blocks.table.table_element import TableElement
 from notionary.blocks.table.table_models import TableBlock
-from notionary.blocks.block_models import BlockType
-from notionary.blocks.rich_text.rich_text_models import RichTextObject, TextContent, TextAnnotations
+from notionary.blocks.block_types import BlockType
+from notionary.blocks.rich_text.rich_text_models import (
+    RichTextObject,
+    TextContent,
+    TextAnnotations,
+)
 
 
 def create_rich_text(content: str) -> RichTextObject:
@@ -43,7 +47,7 @@ def test_notion_to_markdown_with_data():
     assert result is not None
     lines = result.split("\n")
     assert len(lines) >= 2  # At least header + separator
-    
+
     # Check that data is included
     assert "John" in result
     assert "25" in result
@@ -57,11 +61,11 @@ def test_match_notion():
     block.type = BlockType.TABLE  # BlockType enum
     block.table = Mock()
     assert TableElement.match_notion(block)
-    
+
     # Invalid - wrong type
     block.type = BlockType.PARAGRAPH
     assert not TableElement.match_notion(block)
-    
+
     # Invalid - no table content
     block.type = BlockType.TABLE
     block.table = None

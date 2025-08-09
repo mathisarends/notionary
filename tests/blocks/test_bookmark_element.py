@@ -7,7 +7,7 @@ import pytest
 from unittest.mock import Mock
 
 from notionary.blocks.bookmark.bookmark_element import BookmarkElement
-from notionary.blocks.block_models import BlockType
+from notionary.blocks.block_types import BlockType
 from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
 
 
@@ -73,6 +73,7 @@ def test_markdown_to_notion_with_title():
     # TextInlineFormatter erstellt RichText-Strukturen
     # Wir testen den Text-Inhalt über extract_text_with_formatting
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+
     text = TextInlineFormatter.extract_text_with_formatting(result.bookmark.caption)
     assert "Beispiel-Titel" in text
 
@@ -89,7 +90,10 @@ def test_markdown_to_notion_with_title_and_description():
 
     # Caption sollte "Beispiel-Titel – Eine Beschreibung" enthalten (em dash)
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-    caption_text = TextInlineFormatter.extract_text_with_formatting(result.bookmark.caption)
+
+    caption_text = TextInlineFormatter.extract_text_with_formatting(
+        result.bookmark.caption
+    )
     assert caption_text == "Beispiel-Titel – Eine Beschreibung"
 
 
@@ -108,7 +112,7 @@ def test_markdown_to_notion_invalid():
 def test_notion_to_markdown_simple():
     """Test Konvertierung von einfachem Notion-Bookmark."""
     bookmark_data = BookmarkBlock(url="https://example.com", caption=[])
-    
+
     block = Mock()
     block.type = BlockType.BOOKMARK
     block.bookmark = bookmark_data
@@ -121,10 +125,11 @@ def test_notion_to_markdown_with_title():
     """Test Konvertierung von Notion-Bookmark mit Titel."""
     # Verwende TextInlineFormatter um korrekte RichText-Struktur zu erstellen
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+
     caption = TextInlineFormatter.parse_inline_formatting("Beispiel-Titel")
-    
+
     bookmark_data = BookmarkBlock(url="https://example.com", caption=caption)
-    
+
     block = Mock()
     block.type = BlockType.BOOKMARK
     block.bookmark = bookmark_data
@@ -137,16 +142,21 @@ def test_notion_to_markdown_with_title_and_description():
     """Test Konvertierung von Notion-Bookmark mit Titel und Beschreibung."""
     # Verwende TextInlineFormatter mit hyphen für korrekte Trennung
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-    caption = TextInlineFormatter.parse_inline_formatting("Beispiel-Titel - Eine Beschreibung")
-    
+
+    caption = TextInlineFormatter.parse_inline_formatting(
+        "Beispiel-Titel - Eine Beschreibung"
+    )
+
     bookmark_data = BookmarkBlock(url="https://example.com", caption=caption)
-    
+
     block = Mock()
     block.type = BlockType.BOOKMARK
     block.bookmark = bookmark_data
 
     result = BookmarkElement.notion_to_markdown(block)
-    assert result == '[bookmark](https://example.com "Beispiel-Titel" "Eine Beschreibung")'
+    assert (
+        result == '[bookmark](https://example.com "Beispiel-Titel" "Eine Beschreibung")'
+    )
 
 
 def test_notion_to_markdown_invalid():
@@ -201,7 +211,7 @@ def test_url_validation(url, expected):
 def simple_bookmark_block():
     """Fixture für einfachen Bookmark-Block."""
     bookmark_data = BookmarkBlock(url="https://example.com", caption=[])
-    
+
     block = Mock()
     block.type = BlockType.BOOKMARK
     block.bookmark = bookmark_data
@@ -212,10 +222,11 @@ def simple_bookmark_block():
 def titled_bookmark_block():
     """Fixture für Bookmark-Block mit Titel."""
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+
     caption = TextInlineFormatter.parse_inline_formatting("Test Title")
-    
+
     bookmark_data = BookmarkBlock(url="https://example.com", caption=caption)
-    
+
     block = Mock()
     block.type = BlockType.BOOKMARK
     block.bookmark = bookmark_data
@@ -280,12 +291,12 @@ def test_unicode_in_captions():
     for original in test_cases:
         notion_result = BookmarkElement.markdown_to_notion(original)
         assert notion_result is not None
-        
+
         # Erstelle Mock-Block für notion_to_markdown
         block = Mock()
         block.type = BlockType.BOOKMARK
         block.bookmark = notion_result.bookmark
-        
+
         back = BookmarkElement.notion_to_markdown(block)
         assert back == original
 
@@ -329,24 +340,27 @@ def test_caption_separator_behavior():
     """Test das Verhalten mit verschiedenen Separatoren."""
     # Die Implementation verwendet em dash (–) beim Erstellen,
     # aber erkennt hyphen (-) beim Parsen
-    
+
     # Test mit hyphen input
     result_hyphen = BookmarkElement.markdown_to_notion(
         '[bookmark](https://example.com "Title" "Description")'
     )
-    
+
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-    caption_text = TextInlineFormatter.extract_text_with_formatting(result_hyphen.bookmark.caption)
+
+    caption_text = TextInlineFormatter.extract_text_with_formatting(
+        result_hyphen.bookmark.caption
+    )
     assert caption_text == "Title – Description"  # em dash in output
-    
+
     # Test parsing with hyphen
     hyphen_caption = TextInlineFormatter.parse_inline_formatting("Title - Description")
     bookmark_data = BookmarkBlock(url="https://example.com", caption=hyphen_caption)
-    
+
     block = Mock()
     block.type = BlockType.BOOKMARK
     block.bookmark = bookmark_data
-    
+
     result = BookmarkElement.notion_to_markdown(block)
     assert result == '[bookmark](https://example.com "Title" "Description")'
 

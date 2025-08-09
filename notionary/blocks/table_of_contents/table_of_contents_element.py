@@ -2,7 +2,7 @@ from __future__ import annotations
 import re
 from typing import Optional, TYPE_CHECKING
 
-from notionary.blocks.block_models import BlockType
+from notionary.blocks.block_types import BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.table_of_contents.table_of_contents_models import (
     CreateTableOfContentsBlock,

@@ -155,6 +155,68 @@ class BlockRegistryBuilder:
     def with_breadcrumbs(self) -> Self:
         return self._add_element(BreadcrumbElement)
 
+    def without_headings(self) -> Self:
+        return self.remove_element(HeadingElement)
+
+    def without_callouts(self) -> Self:
+        return self.remove_element(CalloutElement)
+
+    def without_code(self) -> Self:
+        return self.remove_element(CodeElement)
+
+    def without_dividers(self) -> Self:
+        return self.remove_element(DividerElement)
+
+    def without_tables(self) -> Self:
+        return self.remove_element(TableElement)
+
+    def without_bulleted_list(self) -> Self:
+        return self.remove_element(BulletedListElement)
+
+    def without_numbered_list(self) -> Self:
+        return self.remove_element(NumberedListElement)
+
+    def without_toggles(self) -> Self:
+        return self.remove_element(ToggleElement)
+
+    def without_quotes(self) -> Self:
+        return self.remove_element(QuoteElement)
+
+    def without_todos(self) -> Self:
+        return self.remove_element(TodoElement)
+
+    def without_bookmarks(self) -> Self:
+        return self.remove_element(BookmarkElement)
+
+    def without_images(self) -> Self:
+        return self.remove_element(ImageElement)
+
+    def without_videos(self) -> Self:
+        return self.remove_element(VideoElement)
+
+    def without_embeds(self) -> Self:
+        return self.remove_element(EmbedElement)
+
+    def without_audio(self) -> Self:
+        return self.remove_element(AudioElement)
+
+    def without_toggleable_heading_element(self) -> Self:
+        return self.remove_element(ToggleableHeadingElement)
+
+    def without_columns(self) -> Self:
+        self.remove_element(ColumnListElement)
+        self.remove_element(ColumnElement)
+        return self
+
+    def without_equation(self) -> Self:
+        return self.remove_element(EquationElement)
+
+    def without_table_of_contents(self) -> Self:
+        return self.remove_element(TableOfContentsElement)
+
+    def without_breadcrumbs(self) -> Self:
+        return self.remove_element(BreadcrumbElement)
+
     def build(self) -> BlockRegistry:
         """
         Build and return the configured BlockRegistry instance.

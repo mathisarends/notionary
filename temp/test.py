@@ -4,6 +4,9 @@ from notionary import NotionPage
 async def main():
     # Hole die Seite über ihren Namen
     page = await NotionPage.from_page_name("Jarvis Clipboard")
+    page.block_element_registry = (
+        page.block_registry_builder.without_bulleted_list().build()
+    )
 
     # Table of contents, Standardfarbe
     toc_block = """

@@ -1,12 +1,9 @@
 from __future__ import annotations
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 from abc import ABC
 
-if TYPE_CHECKING:
-    from notionary.blocks.block_models import Block, BlockCreateResult
-
+from notionary.blocks.block_models import Block, BlockCreateResult
 from notionary.prompts.element_prompt_content import ElementPromptContent
-
 
 class NotionBlockElement(ABC):
     """Base class for elements that can be converted between Markdown and Notion."""

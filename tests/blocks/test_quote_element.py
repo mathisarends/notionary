@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 from notionary.blocks.quote.quote_element import QuoteElement
 from notionary.blocks.quote.quote_models import QuoteBlock
-from notionary.blocks.block_models import BlockType
+from notionary.blocks.block_types import BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 
@@ -21,7 +21,7 @@ def test_match_markdown():
     assert QuoteElement.match_markdown("[quote](Simple quote text)")
     assert QuoteElement.match_markdown("[quote](Quote with **bold** text)")
     assert QuoteElement.match_markdown("  [quote](Quote with whitespace)  ")
-    
+
     # Invalid
     assert not QuoteElement.match_markdown("> Standard blockquote")
     assert not QuoteElement.match_markdown("[quote]()")  # Empty
@@ -37,11 +37,11 @@ def test_match_notion():
     block.type = BlockType.QUOTE
     block.quote = Mock()
     assert QuoteElement.match_notion(block)
-    
+
     # Invalid - wrong type
     block.type = BlockType.PARAGRAPH
     assert not QuoteElement.match_notion(block)
-    
+
     # Invalid - no quote content
     block.type = BlockType.QUOTE
     block.quote = None
@@ -51,7 +51,7 @@ def test_match_notion():
 def test_markdown_to_notion():
     """Test Markdown -> Notion conversion."""
     result = QuoteElement.markdown_to_notion("[quote](Test quote)")
-    
+
     assert result is not None
     assert result.type == "quote"
     assert result.quote.color == "default"
@@ -66,7 +66,7 @@ def test_markdown_to_notion_with_formatting():
         "[quote](Quote with *italic* text)",
         "[quote](Quote with `code` text)",
     ]
-    
+
     for text in test_cases:
         result = QuoteElement.markdown_to_notion(text)
         assert result is not None
@@ -83,22 +83,19 @@ def test_markdown_to_notion_invalid():
         "",
         "[quote](Multi\nline)",
     ]
-    
+
     for text in invalid_cases:
         assert QuoteElement.markdown_to_notion(text) is None
 
 
 def test_notion_to_markdown():
     """Test Notion -> Markdown conversion."""
-    quote_data = QuoteBlock(
-        rich_text=[create_rich_text("Test quote")],
-        color="default"
-    )
-    
+    quote_data = QuoteBlock(rich_text=[create_rich_text("Test quote")], color="default")
+
     block = Mock()
     block.type = BlockType.QUOTE
     block.quote = quote_data
-    
+
     result = QuoteElement.notion_to_markdown(block)
     assert result == "[quote](Test quote)"
 
@@ -110,17 +107,14 @@ def test_notion_to_markdown_invalid():
     block.type = BlockType.PARAGRAPH
     block.quote = None
     assert QuoteElement.notion_to_markdown(block) is None
-    
+
     # No quote content
     block.type = BlockType.QUOTE
     block.quote = None
     assert QuoteElement.notion_to_markdown(block) is None
-    
+
     # Empty text
-    quote_data = QuoteBlock(
-        rich_text=[create_rich_text("")],
-        color="default"
-    )
+    quote_data = QuoteBlock(rich_text=[create_rich_text("")], color="default")
     block.quote = quote_data
     assert QuoteElement.notion_to_markdown(block) is None
 
@@ -132,17 +126,17 @@ def test_roundtrip():
         "[quote](Quote with symbols !@#)",
         "[quote](Quote with numbers 123)",
     ]
-    
+
     for original in test_cases:
         # Markdown -> Notion
         notion_result = QuoteElement.markdown_to_notion(original)
         assert notion_result is not None
-        
+
         # Create block for notion_to_markdown
         block = Mock()
         block.type = BlockType.QUOTE
         block.quote = notion_result.quote
-        
+
         # Notion -> Markdown
         result = QuoteElement.notion_to_markdown(block)
         assert result == original
@@ -151,11 +145,11 @@ def test_roundtrip():
 def test_pattern_regex():
     """Test regex pattern directly."""
     pattern = QuoteElement.PATTERN
-    
+
     # Valid
     assert pattern.match("[quote](Simple text)")
     assert pattern.match("[quote](Text with spaces)")
-    
+
     # Invalid
     assert not pattern.match("[quote]()")
     assert not pattern.match("[quote](Multi\nline)")
@@ -170,7 +164,7 @@ def test_special_characters():
         "[quote](Quote with symbols: !@#$%)",
         "[quote](Quote with punctuation: .?!)",
     ]
-    
+
     for text in special_cases:
         assert QuoteElement.match_markdown(text)
         result = QuoteElement.markdown_to_notion(text)
@@ -183,7 +177,7 @@ def test_whitespace_handling():
     result = QuoteElement.markdown_to_notion("[quote](  text with spaces  )")
     assert result is not None
     assert result.quote.rich_text[0].plain_text == "text with spaces"
-    
+
     # Whitespace around quote should be handled
     assert QuoteElement.match_markdown("  [quote](text)  ")
 
@@ -196,7 +190,7 @@ def test_empty_content_edge_cases():
         "[quote](\t)",
         "[quote](\n)",
     ]
-    
+
     for text in empty_cases:
         assert not QuoteElement.match_markdown(text)
         assert QuoteElement.markdown_to_notion(text) is None
@@ -209,7 +203,7 @@ def test_multiline_not_supported():
         "[quote](Line one\rLine two)",
         "[quote](Line one\r\nLine two)",
     ]
-    
+
     for text in multiline_cases:
         assert not QuoteElement.match_markdown(text)
         assert QuoteElement.markdown_to_notion(text) is None

@@ -40,7 +40,7 @@ class ToggleableHeadingElement(NotionBlockElement):
             BlockType.HEADING_3,
         ):
             return False
-        
+
         if block.heading_1 and block.heading_1.is_toggleable:
             return True
         if block.heading_2 and block.heading_2.is_toggleable:
