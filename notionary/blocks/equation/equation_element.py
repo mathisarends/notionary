@@ -1,12 +1,11 @@
 from __future__ import annotations
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 import re
 
 from notionary.blocks.block_types import BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
-
 from notionary.blocks.block_models import Block, BlockCreateResult
 
 
@@ -20,18 +19,22 @@ class EquationElement(NotionBlockElement):
     No $$...$$ parsing.
     """
 
-    _BRACKET_QUOTED = re.compile(
-        r'^\[equation\]\(\s*"(?P<expr_q>(?:[^"\\]|\\.)+)"\s*\)$',
+    _QUOTED_PATTERN = re.compile(
+        r'^\[equation\]\(\s*"(?P<quoted_expr>(?:[^"\\]|\\.)*)"\s*\)$',
         re.DOTALL,
     )
 
-    # Unquoted: bis zur ersten ')', keine Newlines
-    _BRACKET_UNQUOTED = re.compile(r"^\[equation\]\(\s*(?P<expr_u>[^)\r\n]+?)\s*\)$")
+    _UNQUOTED_PATTERN = re.compile(
+        r"^\[equation\]\(\s*(?P<unquoted_expr>[^)\r\n]+?)\s*\)$"
+    )
 
     @classmethod
     def match_markdown(cls, text: str) -> bool:
-        s = text.strip()
-        return bool(cls._BRACKET_QUOTED.match(s) or cls._BRACKET_UNQUOTED.match(s))
+        input_text = text.strip()
+        return bool(
+            cls._QUOTED_PATTERN.match(input_text)
+            or cls._UNQUOTED_PATTERN.match(input_text)
+        )
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -39,29 +42,32 @@ class EquationElement(NotionBlockElement):
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
-        s = text.strip()
+        input_text = text.strip()
 
-        # [equation]("...")  — robust (erlaubt ')', Newlines, \" usw.)
-        m = cls._BRACKET_QUOTED.match(s)
-        if m:
-            expr = m.group("expr_q")
+        # Try quoted form first: [equation]("...")
+        quoted_match = cls._QUOTED_PATTERN.match(input_text)
+        if quoted_match:
+            raw_expression = quoted_match.group("quoted_expr")
             # Unescape \" and \\ for Notion
-            expr = expr.encode("utf-8").decode("unicode_escape")
-            expr = expr.replace('\\"', '"')  # falls unicode_escape nicht alles greift
+            unescaped_expression = raw_expression.encode("utf-8").decode(
+                "unicode_escape"
+            )
+            unescaped_expression = unescaped_expression.replace('\\"', '"')
+            final_expression = unescaped_expression.strip()
+
             return (
-                CreateEquationBlock(equation=EquationBlock(expression=expr.strip()))
-                if expr.strip()
+                CreateEquationBlock(equation=EquationBlock(expression=final_expression))
+                if final_expression
                 else None
             )
 
-        # [equation](...)
-        m = cls._BRACKET_UNQUOTED.match(s)
-        if m:
-            expr = m.group("expr_u").strip()
-            # Hard rule: unquoted darf kein ')' und keinen Newline enthalten (Regex stellt das sicher)
+        # Try unquoted form: [equation](...)
+        unquoted_match = cls._UNQUOTED_PATTERN.match(input_text)
+        if unquoted_match:
+            raw_expression = unquoted_match.group("unquoted_expr").strip()
             return (
-                CreateEquationBlock(equation=EquationBlock(expression=expr))
-                if expr
+                CreateEquationBlock(equation=EquationBlock(expression=raw_expression))
+                if raw_expression
                 else None
             )
 
@@ -72,15 +78,16 @@ class EquationElement(NotionBlockElement):
         if block.type != BlockType.EQUATION or not block.equation:
             return None
 
-        expr = (block.equation.expression or "").strip()
-        if not expr:
+        expression = (block.equation.expression or "").strip()
+        if not expression:
             return None
 
-        # Wenn riskante Zeichen vorkommen, quoted-Form verwenden
-        if ("\n" in expr) or (")" in expr) or ('"' in expr):
-            q = expr.replace("\\", "\\\\").replace('"', r"\"")
-            return f'[equation]("{q}")'
-        return f"[equation]({expr})"
+        # Use quoted form if expression contains risky characters
+        if ("\n" in expression) or (")" in expression) or ('"' in expression):
+            escaped_expression = expression.replace("\\", "\\\\").replace('"', r"\"")
+            return f'[equation]("{escaped_expression}")'
+
+        return f"[equation]({expression})"
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

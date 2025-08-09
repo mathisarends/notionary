@@ -35,21 +35,23 @@ class TableOfContentsElement(NotionBlockElement):
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
-        m = cls.PATTERN.match(text.strip())
-        if not m:
+        input_match = cls.PATTERN.match(text.strip())
+        if not input_match:
             return None
 
-        color = (m.group("color") or "default").lower()
+        color = (input_match.group("color") or "default").lower()
         return CreateTableOfContentsBlock(
             table_of_contents=TableOfContentsBlock(color=color)
         )
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != BlockType.TABLE_OF_CONTENTS and not block.table_of_contents:
+        # Fix: Use 'or' instead of 'and'
+        if block.type != BlockType.TABLE_OF_CONTENTS or not block.table_of_contents:
             return None
 
-        color = block.table_of_contents.color
+        color = block.table_of_contents.color.value
+
         if color == "default":
             return "[toc]"
         return f"[toc]({color})"
