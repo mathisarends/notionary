@@ -4,7 +4,7 @@ Tests conversion between Markdown file embeds and Notion file blocks.
 """
 
 import pytest
-from notionary.blocks.file import FileElement
+from notionary.blocks.file.file_element import FileElement
 from notionary.blocks.file.file_element_models import (
     FileBlock,
     CreateFileBlock,

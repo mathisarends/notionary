@@ -5,8 +5,8 @@ Adapted for the new Stack/LineProcessor system.
 """
 
 import pytest
-from notionary.blocks.code import CodeElement
-from notionary.blocks.code.code_models import CodeBlock, CreateCodeBlock
+from notionary.blocks.code.code_element import CodeElement
+from notionary.blocks.code.code_models import CodeBlock, CreateCodeBlock, CodeLanguage
 from notionary.blocks.block_models import Block
 from notionary.blocks.rich_text.rich_text_models import (
     RichTextObject,
@@ -107,7 +107,7 @@ def test_notion_to_markdown_simple():
     block = create_block_with_required_fields(
         type="code",
         code=CodeBlock(
-            language="python", rich_text=[create_rich_text_object("print('Hi')")]
+            language=CodeLanguage.PYTHON, rich_text=[create_rich_text_object("print('Hi')")]
         ),
     )
 
@@ -120,7 +120,7 @@ def test_notion_to_markdown_plain_text():
     block = create_block_with_required_fields(
         type="code",
         code=CodeBlock(
-            language="plain text", rich_text=[create_rich_text_object("some code")]
+            language=CodeLanguage.PLAIN_TEXT, rich_text=[create_rich_text_object("some code")]
         ),
     )
 
@@ -133,7 +133,7 @@ def test_notion_to_markdown_with_caption():
     block = create_block_with_required_fields(
         type="code",
         code=CodeBlock(
-            language="python",
+            language=CodeLanguage.PYTHON,
             rich_text=[create_rich_text_object("print('test')")],
             caption=[create_rich_text_object("Example")],
         ),
@@ -207,12 +207,12 @@ def test_extract_caption_empty_list():
 @pytest.mark.parametrize(
     "language,expected_lang",
     [
-        ("python", "python"),
-        ("javascript", "javascript"),
-        ("bash", "bash"),
-        ("json", "json"),
-        ("", "plain text"),  # No language specified
-        ("unknownlang", "plain text"),  # Unknown language
+        ("python", CodeLanguage.PYTHON),
+        ("javascript", CodeLanguage.JAVASCRIPT),
+        ("bash", CodeLanguage.BASH),
+        ("json", CodeLanguage.JSON),
+        ("", CodeLanguage.PLAIN_TEXT),  # No language specified
+        ("unknownlang", CodeLanguage.PLAIN_TEXT),  # Unknown language
     ],
 )
 def test_language_support(language, expected_lang):
@@ -254,7 +254,7 @@ def simple_code_block():
     return create_block_with_required_fields(
         type="code",
         code=CodeBlock(
-            language="python", rich_text=[create_rich_text_object("print('test')")]
+            language=CodeLanguage.PYTHON, rich_text=[create_rich_text_object("print('test')")]
         ),
     )
 
@@ -265,7 +265,7 @@ def code_block_with_caption():
     return create_block_with_required_fields(
         type="code",
         code=CodeBlock(
-            language="javascript",
+            language=CodeLanguage.JAVASCRIPT,
             rich_text=[create_rich_text_object("console.log('hello');")],
             caption=[create_rich_text_object("Example JS code")],
         ),
@@ -315,7 +315,7 @@ def test_multiline_content():
 
     block = create_block_with_required_fields(
         type="code",
-        code=CodeBlock(language="python", rich_text=rich_text_list),
+        code=CodeBlock(language=CodeLanguage.PYTHON, rich_text=rich_text_list),
     )
 
     result = CodeElement.notion_to_markdown(block)
@@ -327,7 +327,7 @@ def test_empty_content():
     """Test handling of empty content."""
     block = create_block_with_required_fields(
         type="code",
-        code=CodeBlock(language="python", rich_text=[]),
+        code=CodeBlock(language=CodeLanguage.PYTHON, rich_text=[]),
     )
 
     result = CodeElement.notion_to_markdown(block)

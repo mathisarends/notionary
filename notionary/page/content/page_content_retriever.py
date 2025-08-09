@@ -43,38 +43,40 @@ class PageContentRetriever(LoggingMixin):
         markdown_parts = []
 
         for block in blocks:
-            # Convert the block itself using the registry
-            block_markdown = self._block_registry.notion_to_markdown(block)
+            block_markdown = self._process_single_block(block, indent_level)
+            if block_markdown:
+                markdown_parts.append(block_markdown)
 
-            if not block_markdown:
-                continue
-
-            # Apply indentation if needed
-            if indent_level > 0:
-                block_markdown = self._indent_text(
-                    block_markdown, spaces=indent_level * 4
-                )
-
-            # If block has children, process them recursively with increased indentation
-            if self._has_children(block):
-                children_markdown = self._convert_blocks_to_markdown(
-                    block.children, indent_level=indent_level + 1
-                )
-
-                if children_markdown:
-                    # Combine parent block with indented children
-                    block_markdown = f"{block_markdown}\n{children_markdown}"
-
-            markdown_parts.append(block_markdown)
-
-        # Join all blocks at this level with appropriate spacing
         separator = "\n\n" if indent_level == 0 else "\n"
-        return separator.join(filter(None, markdown_parts))
+        return separator.join(markdown_parts)
+
+    def _process_single_block(self, block: Block, indent_level: int) -> str:
+        """Process a single block and return its markdown representation."""
+        block_markdown = self._block_registry.notion_to_markdown(block)
+        if not block_markdown:
+            return ""
+
+        # Apply indentation if needed
+        if indent_level > 0:
+            block_markdown = self._indent_text(block_markdown, spaces=indent_level * 4)
+
+        # Early return if no children
+        if not self._has_children(block):
+            return block_markdown
+
+        # Process children recursively
+        children_markdown = self._convert_blocks_to_markdown(
+            block.children, indent_level=indent_level + 1
+        )
+
+        # Early return if no children content
+        if not children_markdown:
+            return block_markdown
+
+        return f"{block_markdown}\n{children_markdown}"
 
     def _has_children(self, block: Block) -> bool:
-        """
-        Check if block has children that need processing.
-        """
+        """Check if block has children that need processing."""
         return (
             block.has_children
             and block.children is not None
@@ -82,29 +84,10 @@ class PageContentRetriever(LoggingMixin):
         )
 
     def _indent_text(self, text: str, spaces: int = 4) -> str:
-        """
-        Indent each line of text with specified number of spaces.
-        """
+        """Indent each line of text with specified number of spaces."""
         if not text:
             return text
 
         indent = " " * spaces
         lines = text.split("\n")
-        return "\n".join(
-            [f"{indent}{line}" if line.strip() else line for line in lines]
-        )
-
-    # Optional: If you still need toggle extraction for specific use cases
-    def _extract_text_content(self, block: Block) -> str:
-        """
-        Extract plain text content from any block type.
-        """
-        content = block.get_block_content()
-        if not content:
-            return ""
-
-        rich_text = content.rich_text if hasattr(content, "rich_text") else None
-        if rich_text:
-            return "".join([rt.plain_text for rt in rich_text])
-
-        return ""
+        return "\n".join(f"{indent}{line}" if line.strip() else line for line in lines)

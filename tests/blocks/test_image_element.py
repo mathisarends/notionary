@@ -5,9 +5,8 @@ Tests core functionality for image embeds ([image](url)).
 
 import pytest
 from unittest.mock import Mock
-from notionary.blocks.image_block import ImageElement
+from notionary.blocks.image_block.image_element import ImageElement
 from notionary.blocks.image_block.image_models import CreateImageBlock
-from notionary.blocks.file.file_element_models import FileBlock
 from notionary.blocks.paragraph.paragraph_models import CreateParagraphBlock
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 

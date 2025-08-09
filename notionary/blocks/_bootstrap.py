@@ -66,14 +66,23 @@ def bootstrap_blocks() -> None:
 
     # Add missing types that are needed for model rebuilding
     # These are the types that are only defined in TYPE_CHECKING in block_models
-    from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
-    from notionary.blocks.breadcrumbs.breadcrumb_models import BreadcrumbBlock, CreateBreadcrumbBlock
+    from notionary.blocks.bookmark.bookmark_models import (
+        BookmarkBlock,
+        CreateBookmarkBlock,
+    )
+    from notionary.blocks.breadcrumbs.breadcrumb_models import (
+        BreadcrumbBlock,
+        CreateBreadcrumbBlock,
+    )
     from notionary.blocks.bulleted_list.bulleted_list_models import (
         BulletedListItemBlock,
         CreateBulletedListItemBlock,
     )
     from notionary.blocks.callout.callout_models import CalloutBlock, CreateCalloutBlock
-    from notionary.blocks.child_page.child_page_models import ChildPageBlock, CreateChildPageBlock
+    from notionary.blocks.child_page.child_page_models import (
+        ChildPageBlock,
+        CreateChildPageBlock,
+    )
     from notionary.blocks.code.code_models import CodeBlock, CreateCodeBlock
     from notionary.blocks.column.column_models import (
         ColumnBlock,
@@ -83,7 +92,10 @@ def bootstrap_blocks() -> None:
     )
     from notionary.blocks.divider.divider_models import DividerBlock, CreateDividerBlock
     from notionary.blocks.embed.embed_models import EmbedBlock, CreateEmbedBlock
-    from notionary.blocks.equation.equation_models import EquationBlock, CreateEquationBlock
+    from notionary.blocks.equation.equation_models import (
+        EquationBlock,
+        CreateEquationBlock,
+    )
     from notionary.blocks.file.file_element_models import FileBlock, CreateFileBlock
     from notionary.blocks.heading.heading_models import (
         HeadingBlock,
@@ -96,7 +108,10 @@ def bootstrap_blocks() -> None:
         NumberedListItemBlock,
         CreateNumberedListItemBlock,
     )
-    from notionary.blocks.paragraph.paragraph_models import ParagraphBlock, CreateParagraphBlock
+    from notionary.blocks.paragraph.paragraph_models import (
+        ParagraphBlock,
+        CreateParagraphBlock,
+    )
     from notionary.blocks.quote.quote_models import QuoteBlock, CreateQuoteBlock
     from notionary.blocks.table.table_models import TableBlock, TableRowBlock
     from notionary.blocks.todo.todo_models import ToDoBlock, CreateToDoBlock

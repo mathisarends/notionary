@@ -5,7 +5,7 @@ Tests core functionality for embed syntax ([embed](url)).
 
 import pytest
 from unittest.mock import Mock
-from notionary.blocks.embed import EmbedElement
+from notionary.blocks.embed.embed_element import EmbedElement
 from notionary.blocks.embed.embed_models import CreateEmbedBlock, EmbedBlock
 from notionary.blocks.file.file_element_models import (
     ExternalFile,

@@ -4,7 +4,7 @@ Tests the essential functionality for divider block handling.
 """
 
 import pytest
-from notionary.blocks.divider import DividerElement
+from notionary.blocks.divider.divider_element import DividerElement
 from notionary.blocks.divider.divider_models import CreateDividerBlock, DividerBlock
 from notionary.blocks.paragraph.paragraph_models import CreateParagraphBlock
 from notionary.blocks.block_models import Block

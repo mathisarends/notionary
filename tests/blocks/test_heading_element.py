@@ -6,11 +6,8 @@ Tests core functionality for markdown headings (#, ##, ###).
 import pytest
 from unittest.mock import Mock
 from notionary.blocks.block_types import BlockType
-from notionary.blocks.heading import HeadingElement
+from notionary.blocks.heading.heading_element import HeadingElement
 from notionary.blocks.heading.heading_models import (
-    CreateHeading1Block,
-    CreateHeading2Block,
-    CreateHeading3Block,
     HeadingBlock,
 )
 from notionary.blocks.rich_text.rich_text_models import RichTextObject

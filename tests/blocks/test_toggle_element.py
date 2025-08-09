@@ -5,7 +5,7 @@ Tests conversion between Markdown toggles and Notion toggle blocks.
 
 import pytest
 from unittest.mock import Mock
-from notionary.blocks.toggle import ToggleElement
+from notionary.blocks.toggle.toggle_element import ToggleElement
 from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 

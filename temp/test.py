@@ -21,8 +21,10 @@ Außerdem ein [Link](https://example.com) und ~~durchgestrichen~~.
 Siehe Seite: @[248389d5-7bd3-8193-8dc3-ea10c22502f1]
     """
 
-    # Block anhängen + Divider danach
     await page.replace_content(toc_block)
+
+    content = await page.get_text_content()
+    print("content", content)
 
 
 if __name__ == "__main__":

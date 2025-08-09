@@ -58,12 +58,15 @@ class CodeElement(NotionBlockElement):
         if not block.code:
             return None
 
-        language = block.code.language or ""
+        language_enum = block.code.language
         rich_text = block.code.rich_text or []
         caption = block.code.caption or []
 
         code_content = cls.extract_content(rich_text)
         caption_text = cls.extract_caption(caption)
+
+        # Convert enum to string value
+        language = language_enum.value if language_enum else ""
 
         # Handle language - convert "plain text" back to empty string for markdown
         if language == cls.DEFAULT_LANGUAGE:
@@ -82,14 +85,17 @@ class CodeElement(NotionBlockElement):
         return result
 
     @classmethod
-    def _normalize_language(cls, language: str) -> str:
+    def _normalize_language(cls, language: str) -> CodeLanguage:
         """
-        Normalize the language string to a valid CodeLanguage value or default.
+        Normalize the language string to a valid CodeLanguage enum or default.
         """
-        valid_languages = [lang.value.lower() for lang in CodeLanguage]
-        if language not in valid_languages:
-            return cls.DEFAULT_LANGUAGE
-        return language
+        # Try to find matching enum by value
+        for lang_enum in CodeLanguage:
+            if lang_enum.value.lower() == language.lower():
+                return lang_enum
+        
+        # Return default if not found
+        return CodeLanguage.PLAIN_TEXT
 
     @staticmethod
     def extract_content(rich_text_list: list[RichTextObject]) -> str:

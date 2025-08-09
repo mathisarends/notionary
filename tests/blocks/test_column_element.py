@@ -4,7 +4,7 @@ Tests the essential functionality for column block handling.
 """
 
 import pytest
-from notionary.blocks.column import ColumnElement
+from notionary.blocks.column.column_element import ColumnElement
 from notionary.blocks.column.column_models import ColumnBlock, CreateColumnBlock
 from notionary.blocks.block_models import Block
 

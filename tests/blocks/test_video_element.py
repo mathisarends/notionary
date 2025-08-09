@@ -3,7 +3,6 @@ Minimal tests for VideoElement.
 Tests core functionality for video blocks with [video](url) syntax.
 """
 
-import pytest
 from unittest.mock import Mock
 from notionary.blocks.video.video_element import VideoElement
 from notionary.blocks.video.video_element_models import CreateVideoBlock
