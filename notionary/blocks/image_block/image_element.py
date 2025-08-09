@@ -9,7 +9,7 @@ from notionary.blocks.block_models import (
     Block,
 )
 from notionary.blocks.file.file_element_models import ExternalFile, FileObject
-from notionary.blocks.image_block.image_models import CreateImageBlock, ImageBlock
+from notionary.blocks.image_block.image_models import CreateImageBlock, FileBlock
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
@@ -53,7 +53,7 @@ class ImageElement(NotionBlockElement):
 
         url, caption_text = m.group(1), m.group(2) or ""
         # Build ImageBlock
-        image_block = ImageBlock(
+        image_block = FileBlock(
             type="external", external=ExternalFile(url=url), caption=[]
         )
         if caption_text.strip():

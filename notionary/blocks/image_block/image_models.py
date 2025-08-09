@@ -1,23 +1,11 @@
-from typing import Literal, Optional
+from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from notionary.blocks.file.file_element_models import (
-    ExternalFile,
-    FileUploadFile,
-    NotionHostedFile,
+    FileBlock,
 )
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
-
-
-class ImageBlock(BaseModel):
-    type: Literal["external", "file", "file_upload"]
-    external: Optional[ExternalFile] = None
-    file: Optional[NotionHostedFile] = None
-    file_upload: Optional[FileUploadFile] = None
-    caption: list[RichTextObject] = Field(default_factory=list)
-
 
 class CreateImageBlock(BaseModel):
     type: Literal["image"] = "image"
-    image: ImageBlock
+    image: FileBlock

@@ -11,6 +11,7 @@ from notionary.blocks.column.column_element import ColumnElement
 from notionary.blocks.column.column_list_element import ColumnListElement
 from notionary.blocks.divider.divider_element import DividerElement
 from notionary.blocks.embed.embed_element import EmbedElement
+from notionary.blocks.equation.equation_element import EquationElement
 from notionary.blocks.heading.heading_element import HeadingElement
 from notionary.blocks.image_block.image_element import ImageElement
 from notionary.blocks.notion_block_element import NotionBlockElement
@@ -66,6 +67,7 @@ class BlockRegistryBuilder:
             .with_paragraphs()
             .with_toggleable_heading_element()
             .with_columns()
+            .with_equation()
         ).build()
 
     def remove_element(self, element_class: Type[NotionBlockElement]) -> Self:
@@ -155,6 +157,10 @@ class BlockRegistryBuilder:
         self._add_element(ColumnListElement)
         self._add_element(ColumnElement)
         return self
+
+    def with_equation(self) -> Self:
+        """Add support for equation elements."""
+        return self._add_element(EquationElement)
 
     def build(self) -> BlockRegistry:
         """

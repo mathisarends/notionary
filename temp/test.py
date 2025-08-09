@@ -1,17 +1,15 @@
-from notionary import NotionDatabase
+from notionary import NotionPage
 
 
 async def main():
-    db = await NotionDatabase.from_database_name("Snipd Database")
+    page = await NotionPage.from_page_name("Jarvis Clipboard")
 
-    pages = await db.get_all_pages()
+    equation = """
+[equation](x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a})
+    """
 
-    print(f"Total pages in database: {len(pages)}")
-    for i, page in enumerate(pages, 1):
-        print(f"{i:3d}. {page.title} (ID: {page.id})")
-
-
+    await page.append_markdown(equation, append_divider=True)
+    
 if __name__ == "__main__":
     import asyncio
-
     asyncio.run(main())

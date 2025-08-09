@@ -2,7 +2,7 @@ from __future__ import annotations
 import re
 from typing import Optional, TYPE_CHECKING
 
-from notionary.blocks.file.file_element_models import ExternalFile, FileObject
+from notionary.blocks.file.file_element_models import ExternalFile, FileBlock, FileObject
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
@@ -10,7 +10,7 @@ from notionary.blocks.paragraph.paragraph_models import (
 )
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.blocks.video.video_element_models import CreateVideoBlock, VideoBlock
+from notionary.blocks.video.video_element_models import CreateVideoBlock
 from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 
 if TYPE_CHECKING:
@@ -60,7 +60,7 @@ class VideoElement(NotionBlockElement):
         if vid_id:
             url = f"https://www.youtube.com/watch?v={vid_id}"
 
-        video_block = VideoBlock(
+        video_block = FileBlock(
             type="external", external=ExternalFile(url=url), caption=[]
         )
         if caption_text.strip():

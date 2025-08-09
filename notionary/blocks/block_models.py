@@ -33,7 +33,7 @@ if TYPE_CHECKING:
         CreateHeading3Block,
         HeadingBlock,
     )
-    from notionary.blocks.image_block import CreateImageBlock, ImageBlock
+    from notionary.blocks.image_block import CreateImageBlock
     from notionary.blocks.numbered_list import (
         CreateNumberedListItemBlock,
         NumberedListItemBlock,
@@ -41,13 +41,12 @@ if TYPE_CHECKING:
     from notionary.blocks.paragraph import CreateParagraphBlock, ParagraphBlock
     from notionary.blocks.quote import CreateQuoteBlock, QuoteBlock
     from notionary.blocks.table import (
-        CreateTableOfContentsBlock,
         TableBlock,
         TableRowBlock,
     )
     from notionary.blocks.todo import CreateToDoBlock, ToDoBlock
     from notionary.blocks.toggle import CreateToggleBlock, ToggleBlock
-    from notionary.blocks.video import CreateVideoBlock, VideoBlock
+    from notionary.blocks.video import CreateVideoBlock
 
 
 BlockColor = Literal[
@@ -179,7 +178,7 @@ class Block(BaseModel):
     heading_1: Optional[HeadingBlock] = None
     heading_2: Optional[HeadingBlock] = None
     heading_3: Optional[HeadingBlock] = None
-    image: Optional[ImageBlock] = None
+    image: Optional[FileBlock] = None
     numbered_list_item: Optional[NumberedListItemBlock] = None
     paragraph: Optional[ParagraphBlock] = None
     quote: Optional[QuoteBlock] = None
@@ -187,7 +186,7 @@ class Block(BaseModel):
     table_row: Optional[TableRowBlock] = None
     to_do: Optional[ToDoBlock] = None
     toggle: Optional[ToggleBlock] = None
-    video: Optional[VideoBlock] = None
+    video: Optional[FileBlock] = None
 
     def get_block_content(self) -> Optional[Any]:
         """Get the content object for this block based on its type."""
@@ -225,7 +224,7 @@ from notionary.blocks.heading import (
     CreateHeading2Block,
     CreateHeading3Block,
 )
-from notionary.blocks.image_block import ImageBlock, CreateImageBlock
+from notionary.blocks.image_block import CreateImageBlock
 from notionary.blocks.numbered_list import (
     NumberedListItemBlock,
     CreateNumberedListItemBlock,
@@ -235,7 +234,7 @@ from notionary.blocks.quote import QuoteBlock, CreateQuoteBlock
 from notionary.blocks.table import TableBlock, TableRowBlock
 from notionary.blocks.todo import ToDoBlock, CreateToDoBlock
 from notionary.blocks.toggle import ToggleBlock, CreateToggleBlock
-from notionary.blocks.video import VideoBlock, CreateVideoBlock
+from notionary.blocks.video import CreateVideoBlock
 
 BlockCreateRequest = Union[
     CreateBookmarkBlock,
@@ -290,7 +289,6 @@ EmbedBlock.model_rebuild()
 EquationBlock.model_rebuild()
 FileBlock.model_rebuild()
 HeadingBlock.model_rebuild()
-ImageBlock.model_rebuild()
 NumberedListItemBlock.model_rebuild()
 ParagraphBlock.model_rebuild()
 QuoteBlock.model_rebuild()
@@ -298,7 +296,6 @@ TableBlock.model_rebuild()
 TableRowBlock.model_rebuild()
 ToDoBlock.model_rebuild()
 ToggleBlock.model_rebuild()
-VideoBlock.model_rebuild()
 
 CreateBookmarkBlock.model_rebuild()
 CreateBreadcrumbBlock.model_rebuild()
