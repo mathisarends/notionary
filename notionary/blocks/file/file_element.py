@@ -17,6 +17,7 @@ from notionary.blocks.block_models import (
     Block,
 )
 from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.prompts import ElementPromptContent, ElementPromptBuilder
 
 if TYPE_CHECKING:
@@ -77,24 +78,29 @@ class FileElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "file" or block.file is None:
+        if block.type != "file" or not block.file:
             return None
-        fo: FileObject = block.file
-        url = ""
-        if fo.type == "external" and fo.external:
-            url = fo.external.url
-        elif fo.type == "file" and fo.file:
-            url = fo.file.url
-        if not url:
+
+        fb: FileBlock = block.file
+
+        # URL ermitteln (nur external/file sinnvoll für Markdown)
+        if fb.type == "external" and fb.external:
+            url = fb.external.url
+        elif fb.type == "file" and fb.file:
+            url = fb.file.url
+        elif fb.type == "file_upload":
+            # Hochgeladene, unveröffentlichte Datei → hat keine stabile URL
             return None
-        captions = fo.caption or []
-        if not captions:
+        else:
+            return None
+
+        if not fb.caption:
             return f"[file]({url})"
-        text = "".join(
-            rt.plain_text if hasattr(rt, "plain_text") else rt.text.content
-            for rt in captions
-        )
-        return f'[file]({url} "{text}")'
+
+        caption_md = TextInlineFormatter.extract_text_with_formatting(fb.caption)
+        if caption_md:
+            return f'[file]({url} "{caption_md}")'
+        return f"[file]({url})"
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

@@ -50,19 +50,18 @@ class QuoteElement(NotionBlockElement):
         # Return a typed QuoteBlock
         quote_content = QuoteBlock(rich_text=rich_text, color="default")
         return CreateQuoteBlock(quote=quote_content)
-
+    
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "quote" or block.quote is None:
+        if block.type != "quote" or not block.quote:
             return None
-        # extract rich_text
+
         rich = block.quote.rich_text
-        # convert to markdown content
-        text = TextInlineFormatter.extract_text_with_formatting(
-            [rt.model_dump() for rt in rich]
-        )
+        text = TextInlineFormatter.extract_text_with_formatting(rich)
+        
         if not text.strip():
             return None
+
         return f"[quote]({text.strip()})"
 
     @classmethod

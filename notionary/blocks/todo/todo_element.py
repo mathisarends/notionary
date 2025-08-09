@@ -62,17 +62,14 @@ class TodoElement(NotionBlockElement):
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion to_do block to markdown todo item."""
-        if block.type != "to_do" or block.to_do is None:
+        if block.type != "to_do" or not block.to_do:
             return None
+
         td = block.to_do
-        checked = td.checked
-        # extract formatted content
-        rich_list = td.rich_text
-        content = TextInlineFormatter.extract_text_with_formatting(
-            [rt.model_dump() for rt in rich_list]
-        )
-        checkbox = "[x]" if checked else "[ ]"
+        content = TextInlineFormatter.extract_text_with_formatting(td.rich_text)
+        checkbox = "[x]" if td.checked else "[ ]"
         return f"- {checkbox} {content}"
+
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

@@ -2,6 +2,8 @@ from __future__ import annotations
 import re
 from typing import Optional, TYPE_CHECKING
 
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
+
 if TYPE_CHECKING:
     from notionary.blocks.block_models import Block, BlockCreateResult
 
@@ -55,15 +57,15 @@ class BulletedListElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        """Convert Notion bulleted list item block to markdown."""
-        if block.type != "bulleted_list_item" or block.bulleted_list_item is None:
+        """Convert Notion bulleted_list_item block to Markdown."""
+        if block.type != "bulleted_list_item" or not block.bulleted_list_item:
             return None
-        # extract rich_text list of RichTextObject
+
         rich_list = block.bulleted_list_item.rich_text
-        # convert to markdown with inline formatting
-        text = TextInlineFormatter.extract_text_with_formatting(
-            [rt.model_dump() for rt in rich_list]
-        )
+        if not rich_list:
+            return "-"
+
+        text = TextInlineFormatter.extract_text_with_formatting(rich_list)
         return f"- {text}"
 
     @classmethod

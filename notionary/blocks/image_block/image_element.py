@@ -69,30 +69,28 @@ class ImageElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "image" or block.image is None:
+        if block.type != "image" or not block.image:
             return None
-        file_object: FileObject = block.image
-        # extract URL
-        if file_object.type == "external" and file_object.external:
-            url = file_object.external.url
-        elif file_object.type == "file" and file_object.file:
-            url = file_object.file.url
+
+        fo: FileObject = block.image
+
+        if fo.type == "external" and fo.external:
+            url = fo.external.url
+        elif fo.type == "file" and fo.file:
+            url = fo.file.url
         else:
             return None
-        # captions
-        captions = file_object.caption or []
+
+        captions = fo.caption or []
         if not captions:
             return f"[image]({url})"
-        # compile caption text
-        parts: list[str] = []
-        for rt in captions:
-            # use plain_text if available, otherwise formatted
-            parts.append(
-                rt.plain_text
-                or TextInlineFormatter.extract_text_with_formatting([rt.model_dump()])
-            )
-        caption = "".join(parts)
-        return f'[image]({url} "{caption}")'
+
+        caption_text = "".join(
+            (rt.plain_text or TextInlineFormatter.extract_text_with_formatting([rt]))
+            for rt in captions
+        )
+
+        return f'[image]({url} "{caption_text}")'
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

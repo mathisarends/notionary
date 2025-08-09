@@ -77,30 +77,25 @@ class ToggleableHeadingElement(NotionBlockElement):
     @staticmethod
     def notion_to_markdown(block: Block) -> Optional[str]:
         """Convert Notion toggleable heading block to markdown collapsible heading."""
-        block_type = block.type
-
-        if not block_type.startswith("heading_"):
+        if not block.type.startswith("heading_"):
             return None
 
+        # heading_1 → 1, heading_2 → 2, heading_3 → 3
         try:
-            level = int(block_type[-1])
+            level = int(block.type[-1])
             if not 1 <= level <= 3:
                 return None
         except ValueError:
             return None
 
         heading_content = block.get_block_content()
-        if not heading_content:
+        if not isinstance(heading_content, HeadingBlock):
             return None
 
-        # Check if it's toggleable
-        if not getattr(heading_content, "is_toggleable", False):
-            return None
-
-        rich_text = getattr(heading_content, "rich_text", [])
-        text = TextInlineFormatter.extract_text_with_formatting(rich_text)
+        text = TextInlineFormatter.extract_text_with_formatting(heading_content.rich_text)
         prefix = "#" * level
         return f"+{prefix} {text or ''}"
+
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

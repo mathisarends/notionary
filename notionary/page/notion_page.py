@@ -223,7 +223,9 @@ class NotionPage(LoggingMixin):
         """
         return await self._page_content_writer.clear_page_content()
 
-    async def replace_content(self, markdown: str) -> bool:
+    async def replace_content(
+        self, markdown: str, prepend_table_of_contents=False, append_divider=False
+    ) -> bool:
         """
         Replace the entire page content with new markdown content.
         """
@@ -232,7 +234,9 @@ class NotionPage(LoggingMixin):
             self.logger.error("Failed to clear page content before replacement")
 
         return await self._page_content_writer.append_markdown(
-            markdown_text=markdown, append_divider=False
+            markdown_text=markdown,
+            prepend_table_of_contents=prepend_table_of_contents,
+            append_divider=append_divider,
         )
 
     async def get_text_content(self) -> str:

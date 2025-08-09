@@ -17,6 +17,7 @@ from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 if TYPE_CHECKING:
     from notionary.blocks.block_models import Block, BlockCreateResult
 
+
 class ToggleElement(NotionBlockElement):
     """
     Simplified ToggleElement class that works with the stack-based converter.

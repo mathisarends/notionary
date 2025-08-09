@@ -40,12 +40,11 @@ class ParagraphElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "paragraph" or block.paragraph is None:
+        if block.type != "paragraph" or not block.paragraph:
             return None
+
         rich_list = block.paragraph.rich_text
-        markdown = TextInlineFormatter.extract_text_with_formatting(
-            [rt.model_dump() for rt in rich_list]
-        )
+        markdown = TextInlineFormatter.extract_text_with_formatting(rich_list)
         return markdown or None
 
     @classmethod

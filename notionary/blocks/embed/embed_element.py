@@ -64,31 +64,28 @@ class EmbedElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "embed" or block.embed is None:
+        if block.type != "embed" or not block.embed:
             return None
+
         fo: FileObject = block.embed
-        # extract URL
-        if isinstance(fo, ExternalFile):
-            url = fo.url
-        elif isinstance(fo, NotionHostedFile):
+
+        if isinstance(fo, (ExternalFile, NotionHostedFile)):
             url = fo.url
         elif isinstance(fo, FileUploadFile):
-            # file_upload is unsupported for embed
             return None
         else:
             return None
-        captions = fo.caption or []
-        if not captions:
+
+        if not fo.caption:
             return f"[embed]({url})"
+
         text = "".join(
-            (
-                rt.plain_text
-                if hasattr(rt, "plain_text")
-                else TextInlineFormatter.extract_text_with_formatting([rt.model_dump()])
-            )
-            for rt in captions
+            rt.plain_text or TextInlineFormatter.extract_text_with_formatting([rt])
+            for rt in fo.caption
         )
+
         return f'[embed]({url} "{text}")'
+
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:

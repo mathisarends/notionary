@@ -47,15 +47,14 @@ class NumberedListElement(NotionBlockElement):
         )
         return CreateNumberedListItemBlock(numbered_list_item=numbered_list_content)
 
+    # FIX: Roundtrip conversions will never work this way here
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "numbered_list_item" or block.numbered_list_item is None:
+        if block.type != "numbered_list_item" or not block.numbered_list_item:
             return None
 
         rich = block.numbered_list_item.rich_text
-        content = TextInlineFormatter.extract_text_with_formatting(
-            [rt.model_dump() for rt in rich]
-        )
+        content = TextInlineFormatter.extract_text_with_formatting(rich)
         return f"1. {content}"
 
     @classmethod

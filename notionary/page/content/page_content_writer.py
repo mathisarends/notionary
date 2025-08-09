@@ -94,8 +94,8 @@ class PageContentWriter(LoggingMixin):
 
             return deleted_content if deleted_content else None
 
-        except Exception as e:
-            self.logger.error("Error clearing page content: %s", str(e))
+        except Exception:
+            self.logger.error("Error clearing page content", exc_info=True)
             return None
 
     async def _delete_block_with_children(self, block: Block) -> bool:

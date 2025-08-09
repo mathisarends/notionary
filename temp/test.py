@@ -12,11 +12,12 @@ async def main():
 # Test 123
 Dies ist ein **fettgedrucktes** Wort, hier *kursiv*, und hier `Code`.
 Außerdem ein [Link](https://example.com) und ~~durchgestrichen~~.
+
+Siehe Seite: @[248389d5-7bd3-8193-8dc3-ea10c22502f1]
     """
 
-
     # Block anhängen + Divider danach
-    await page.append_markdown(toc_block, append_divider=True)
+    await page.replace_content(toc_block)
 
 
 if __name__ == "__main__":

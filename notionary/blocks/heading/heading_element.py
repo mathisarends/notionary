@@ -1,6 +1,6 @@
 from __future__ import annotations
 import re
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, cast
 
 from notionary.blocks.heading.heading_models import (
     CreateHeading1Block,
@@ -75,12 +75,15 @@ class HeadingElement(NotionBlockElement):
             return None
 
         heading_obj = getattr(block, block.type)
-        if not heading_obj or not heading_obj.rich_text:
+        if not heading_obj:
             return None
 
-        text = TextInlineFormatter.extract_text_with_formatting(
-            [rt.model_dump() for rt in heading_obj.rich_text]
-        )
+        heading_data = cast(HeadingBlock, heading_obj)
+
+        if not heading_data.rich_text:
+            return None
+
+        text = TextInlineFormatter.extract_text_with_formatting(heading_data.rich_text)
         if not text:
             return None
 

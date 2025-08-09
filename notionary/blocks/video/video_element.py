@@ -81,28 +81,30 @@ class VideoElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "video" or block.video is None:
+        if block.type != "video" or not block.video:
             return None
+
         fo: FileObject = block.video
-        # extract URL
+
+        # URL ermitteln
         if fo.type == "external" and fo.external:
             url = fo.external.url
         elif fo.type == "file" and fo.file:
             url = fo.file.url
         else:
-            return None
-        # caption
+            return None  # (file_upload o.ä. hier nicht supported)
+
+        # Captions
         captions = fo.caption or []
         if not captions:
             return f"[video]({url})"
-        parts: list[str] = []
-        for rt in captions:
-            parts.append(
-                rt.plain_text
-                or TextInlineFormatter.extract_text_with_formatting([rt.model_dump()])
-            )
-        caption = "".join(parts)
-        return f'[video]({url} "{caption}")'
+
+        caption_text = "".join(
+            (rt.plain_text or TextInlineFormatter.extract_text_with_formatting([rt]))
+            for rt in captions
+        )
+
+        return f'[video]({url} "{caption_text}")'
 
     @classmethod
     def _get_youtube_id(cls, url: str) -> Optional[str]:

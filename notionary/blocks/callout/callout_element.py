@@ -71,28 +71,22 @@ class CalloutElement(NotionBlockElement):
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != "callout" or block.callout is None:
+        if block.type != "callout" or not block.callout:
             return None
 
         data = block.callout
-        # extract formatted content
-        content = TextInlineFormatter.extract_text_with_formatting(
-            [rt.model_dump() for rt in data.rich_text]
-        )
+
+        content = TextInlineFormatter.extract_text_with_formatting(data.rich_text)
         if not content:
             return None
-        # determine emoji
-        icon: IconObject = block.callout.icon  # IconObject union type
-        emoji_char = cls._get_emoji(icon)
+
+        icon: Optional[IconObject] = block.callout.icon
+        emoji_char = icon.emoji if isinstance(icon, EmojiIcon) else cls.DEFAULT_EMOJI
+
         if emoji_char and emoji_char != cls.DEFAULT_EMOJI:
             return f'[callout]({content} "{emoji_char}")'
         return f"[callout]({content})"
 
-    @classmethod
-    def _get_emoji(cls, icon: IconObject) -> str:
-        if hasattr(icon, "emoji"):
-            return icon.emoji or ""
-        return ""
 
     @classmethod
     def get_llm_prompt_content(cls) -> ElementPromptContent:
