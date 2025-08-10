@@ -16,7 +16,7 @@ from notionary.blocks.paragraph.paragraph_models import (
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.video.video_element_models import CreateVideoBlock
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 
 from notionary.blocks.block_models import Block, BlockCreateResult
 
@@ -113,23 +113,3 @@ class VideoElement(NotionBlockElement):
             if m:
                 return m.group(1)
         return None
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Embeds video content from external sources like YouTube or direct video files."
-            )
-            .with_usage_guidelines(
-                "Use video blocks to include tutorials, demos, or any multimedia content inline."
-            )
-            .with_syntax('[video](https://example.com/video.mp4 "Optional caption")')
-            .with_examples(
-                [
-                    "[video](https://youtu.be/dQw4w9WgXcQ)",
-                    '[video](https://example.com/demo.mp4 "Demo video")',
-                ]
-            )
-            .build()
-        )

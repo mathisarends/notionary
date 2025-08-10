@@ -11,7 +11,7 @@ from notionary.blocks.bulleted_list.bulleted_list_models import (
 from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 
 
 class BulletedListElement(NotionBlockElement):
@@ -62,16 +62,3 @@ class BulletedListElement(NotionBlockElement):
 
         text = TextInlineFormatter.extract_text_with_formatting(rich_list)
         return f"- {text}"
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description("Creates bulleted list items for unordered lists.")
-            .with_usage_guidelines(
-                "Use for lists where order doesn't matter, such as features, options, or items without hierarchy."
-            )
-            .with_syntax("- Item text")
-            .with_standard_markdown()
-            .build()
-        )

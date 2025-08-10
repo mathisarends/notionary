@@ -12,7 +12,7 @@ from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
     ParagraphBlock,
 )
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 
 
 class DividerElement(NotionBlockElement):
@@ -53,20 +53,3 @@ class DividerElement(NotionBlockElement):
         if block.type != BlockType.DIVIDER or not block.divider:
             return None
         return "---"
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Creates a horizontal divider to separate content sections visually."
-            )
-            .with_usage_guidelines(
-                "Use dividers sparingly to break up sections; only when explicitly requested."
-            )
-            .with_syntax("---")
-            .with_examples(
-                ["## Section 1\nContent\n\n---\n\n## Section 2\nMore content"]
-            )
-            .build()
-        )

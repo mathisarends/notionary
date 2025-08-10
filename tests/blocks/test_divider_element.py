@@ -104,20 +104,6 @@ def test_notion_to_markdown_invalid():
     result = DividerElement.notion_to_markdown(invalid_divider)
     assert result is None
 
-
-def test_get_llm_prompt_content():
-    """Test that LLM prompt content is properly structured."""
-    prompt_content = DividerElement.get_llm_prompt_content()
-
-    assert prompt_content is not None
-    assert hasattr(prompt_content, "description")
-    assert hasattr(prompt_content, "syntax")
-    assert hasattr(prompt_content, "examples")
-
-    assert "divider" in prompt_content.description.lower()
-    assert "---" in prompt_content.syntax
-
-
 @pytest.mark.parametrize(
     "markdown,should_match",
     [

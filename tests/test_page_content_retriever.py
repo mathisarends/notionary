@@ -4,7 +4,6 @@ No pytest-asyncio dependency required.
 """
 
 import asyncio
-import pytest
 from unittest.mock import Mock, AsyncMock, patch
 from notionary.page.content.page_content_retriever import PageContentRetriever
 from notionary.blocks.block_models import Block, BlockType
@@ -12,25 +11,24 @@ from notionary.blocks.block_models import Block, BlockType
 
 def create_block_with_required_fields(**kwargs) -> Block:
     """Helper to create Block with all required fields."""
-    defaults = {
-        "object": "block",
-        "id": "test-id",
-        "created_time": "2023-01-01T00:00:00.000Z",
-        "last_edited_time": "2023-01-01T00:00:00.000Z",
-        "created_by": {"object": "user", "id": "user-id"},
-        "last_edited_by": {"object": "user", "id": "user-id"},
-        "has_children": False,
-        "children": None,
-    }
-    defaults.update(kwargs)
-    return Block(**defaults)
+    return Block(
+        object="block",
+        id=kwargs.get("id", "test-id"),
+        type=kwargs.get("type", BlockType.PARAGRAPH),
+        created_time="2023-01-01T00:00:00.000Z",
+        last_edited_time="2023-01-01T00:00:00.000Z",
+        created_by={"object": "user", "id": "user-id"},
+        last_edited_by={"object": "user", "id": "user-id"},
+        has_children=kwargs.get("has_children", False),
+        children=kwargs.get("children", None),
+    )
 
 
 def create_mock_registry_with_rich_text():
     """Create a realistic mock registry that handles rich text formatting."""
     registry = Mock()
 
-    def mock_notion_to_markdown(block):
+    def mock_notion_to_markdown(block: Block):
         """Mock that simulates real rich text conversion."""
         if block.type == BlockType.PARAGRAPH:
             return f"This is **bold** and *italic* text in paragraph {block.id}"
@@ -243,32 +241,38 @@ def test_complex_nested_structure_with_toggles():
             # Verify nested indentation levels
             lines = result.split("\n")
 
-            # Level 0: Main heading (no indent)
+            # Level 0: Main heading (keine Einrückung)
             main_heading = next(line for line in lines if "main-heading" in line)
-            assert not main_heading.startswith(" ")
+            assert not main_heading.startswith(" ")  # ✓ korrekt
 
-            # Level 1: Outer toggle (4 spaces)
+            # Level 0: Outer toggle (KEINE Einrückung, da auf Root-Level!)
             outer_toggle_line = next(line for line in lines if "outer-toggle" in line)
-            assert outer_toggle_line.startswith(
-                "    "
-            ) and not outer_toggle_line.startswith("        ")
+            assert not outer_toggle_line.startswith(" ")  # ← Das sollte der Test prüfen
 
-            # Level 2: Content inside outer toggle (8 spaces)
+            # Level 1: Content inside outer toggle (4 Leerzeichen)
             outer_paragraph = next(line for line in lines if "outer-paragraph" in line)
-            assert outer_paragraph.startswith("        ")
+            assert outer_paragraph.startswith(
+                "    "
+            ) and not outer_paragraph.startswith("        ")
 
-            # Level 2: Inner toggle (8 spaces)
+            # Level 1: Inner toggle (4 Leerzeichen)
             inner_toggle_line = next(line for line in lines if "inner-toggle" in line)
-            assert inner_toggle_line.startswith("        ")
+            assert inner_toggle_line.startswith(
+                "    "
+            ) and not inner_toggle_line.startswith("        ")
 
-            # Level 3: Content inside inner toggle (12 spaces)
+            # Level 2: Content inside inner toggle (8 Leerzeichen)
             nested_paragraph = next(
                 line for line in lines if "nested-paragraph" in line
             )
-            assert nested_paragraph.startswith("            ")
+            assert nested_paragraph.startswith(
+                "        "
+            ) and not nested_paragraph.startswith("            ")
 
             nested_callout = next(line for line in lines if "nested-callout" in line)
-            assert nested_callout.startswith("            ")
+            assert nested_callout.startswith(
+                "        "
+            ) and not nested_callout.startswith("            ")
 
     # Run the async test
     asyncio.run(async_test())

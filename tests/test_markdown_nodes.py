@@ -257,36 +257,42 @@ def test_todo_markdown_node():
 
 def test_toggle_markdown_node():
     """Test ToggleMarkdownNode"""
+    
     # Test ohne Content
-    toggle = ToggleMarkdownNode(title="Details")
+    toggle = ToggleMarkdownNode(title="Details", children=[])  # ← children=[] hinzufügen
     expected = "+++ Details"
     assert toggle.to_markdown() == expected
 
-    # Test mit Content
+    # Test mit Content - MarkdownNode-Objekte erstellen
+    line1_node = ParagraphMarkdownNode(text="Line 1")
+    line2_node = ParagraphMarkdownNode(text="Line 2")
+
     toggle_with_content = ToggleMarkdownNode(
-        title="More Info", content=["Line 1", "Line 2"]
+        title="More Info",
+        children=[line1_node, line2_node]  # ← children statt content, MarkdownNode-Objekte
     )
-    expected = "+++ More Info\n| Line 1\n| Line 2"
+    expected = "+++ More Info\n| Line 1\n|\n| Line 2"  # Mit leerer Zeile zwischen Paragraphen
     assert toggle_with_content.to_markdown() == expected
-
-
 def test_toggleable_heading_markdown_node():
     """Test ToggleableHeadingMarkdownNode"""
     # Test ohne Content
-    toggleable_h1 = ToggleableHeadingMarkdownNode(text="Section 1", level=1)
+    toggleable_h1 = ToggleableHeadingMarkdownNode(text="Section 1", level=1, children=[])
     expected = "+# Section 1"
     assert toggleable_h1.to_markdown() == expected
 
     # Test mit Content
     toggleable_h2 = ToggleableHeadingMarkdownNode(
-        text="Section 2", level=2, content=["Content line 1", "Content line 2"]
+        text="Section 2", level=2, children=[
+            ParagraphMarkdownNode(text="Content line 1"),
+            ParagraphMarkdownNode(text="Content line 2")
+        ]
     )
-    expected = "+## Section 2\n| Content line 1\n| Content line 2"
+    expected = "+## Section 2\n| Content line 1\n|\n| Content line 2"  # Mit leerer Zeile zwischen Paragraphen
     assert toggleable_h2.to_markdown() == expected
 
     # Test ungültiges Level
     with pytest.raises(ValueError):
-        ToggleableHeadingMarkdownNode(text="Invalid", level=4)
+        ToggleableHeadingMarkdownNode(text="Invalid", level=4, children=[])
 
 
 def test_video_markdown_node():
@@ -351,7 +357,7 @@ def test_column_markdown_node():
         ParagraphMarkdownNode(text="Column content here"),
     ]
     column_with_content = ColumnMarkdownNode(children=children)
-    expected = "::: column\n## Column Title\n\nColumn content here\n:::"
+    expected = "::: column\n| ## Column Title\n|\n| Column content here\n:::"
     assert column_with_content.to_markdown() == expected
 
 

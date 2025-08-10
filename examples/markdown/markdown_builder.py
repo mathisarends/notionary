@@ -1,4 +1,4 @@
-from notionary.blocks.mappings import MarkdownBuilder
+from notionary import MarkdownBuilder
 
 
 def demo_comprehensive_builder():
@@ -29,7 +29,7 @@ def demo_comprehensive_builder():
             url="https://example.com/image.jpg", caption="Sample Image", alt="Alt text"
         )
         .video(url="https://youtube.com/watch?v=xyz", caption="Demo Video")
-        .document(url="https://example.com/doc.pdf", caption="Important Document")
+        .file(url="https://example.com/doc.pdf", caption="Important Document")
         # Interactive elements
         .heading(text="🔗 Interactive Elements", level=2)
         .bookmark(
@@ -67,7 +67,7 @@ def demo_comprehensive_builder():
             content=["Nested content", "Additional info"],
         )
         # Mentions and references
-        .divider()
+        .tid()
         .quote(
             text="The fluent interface pattern makes complex content creation simple and readable."
         )
@@ -113,12 +113,8 @@ def demo_list_variations():
         .bulleted_list(items=["Feature A", "Feature B", "Feature C"])
         # Individual items
         .paragraph(text="**Method 2: Individual items**")
-        .numbered_list_item(text="Single numbered item")
-        .bulleted_list_item(text="Single bulleted item")
-        # Using convenience methods
-        .paragraph(text="**Method 3: Convenience methods**")
-        .add_numbered_items("Step 1", "Step 2", "Step 3")
-        .add_bulleted_items("Point A", "Point B", "Point C")
+        .numbered_list(text="Single numbered item")
+        .bulleted_list(text="Single bulleted item")
         .build()
     )
 

@@ -98,17 +98,3 @@ class FileElement(NotionBlockElement):
         if caption_md:
             return f'[file]({url} "{caption_md}")'
         return f"[file]({url})"
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Embeds external files (PDFs, Word/Excel docs, etc.) via Notion file blocks."
-            )
-            .with_usage_guidelines(
-                "Use file embeds to share reports, manuals, or any cloud-hosted files with optional captions."
-            )
-            .with_syntax('[file](https://example.com/doc.pdf "Caption")')
-            .build()
-        )

@@ -56,6 +56,8 @@ class PageContentWriter(LoggingMixin):
 
         try:
             blocks = self._markdown_to_notion_converter.convert(processed_markdown)
+            """ import json
+            print("blocks", json.dumps([block.model_dump() for block in blocks], indent=2)) """
 
             result = await self._block_client.append_block_children(
                 block_id=self.page_id, children=blocks
@@ -183,12 +185,8 @@ class PageContentWriter(LoggingMixin):
 
     def _ensure_table_of_contents_exists_in_registry(self) -> None:
         """Ensure TableOfContents is registered in the block registry."""
-        if self.block_registry.contains(TableOfContents):
-            return
-        self.block_registry = self.block_registry.register(TableOfContents)
+        self.block_registry.register(TableOfContents)
 
     def _ensure_divider_exists_in_registry(self) -> None:
         """Ensure DividerBlock is registered in the block registry."""
-        if self.block_registry.contains(DividerBlock):
-            return
-        self.block_registry = self.block_registry.register(DividerBlock)
+        self.block_registry.register(DividerBlock)

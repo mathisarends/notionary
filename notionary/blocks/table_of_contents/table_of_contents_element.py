@@ -8,7 +8,7 @@ from notionary.blocks.table_of_contents.table_of_contents_models import (
     CreateTableOfContentsBlock,
     TableOfContentsBlock,
 )
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 
 from notionary.blocks.block_models import Block, BlockCreateResult
 
@@ -55,25 +55,3 @@ class TableOfContentsElement(NotionBlockElement):
         if color == "default":
             return "[toc]"
         return f"[toc]({color})"
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Inserts a dynamic table of contents based on the headings in the page."
-            )
-            .with_usage_guidelines(
-                "Use [toc] to insert a table of contents with default color, "
-                "or [toc](color) for a custom color (e.g., blue, blue_background)."
-            )
-            .with_syntax("[toc] · [toc](blue) · [toc](blue_background)")
-            .with_examples(
-                [
-                    "[toc]",
-                    "[toc](gray)",
-                    "[toc](blue_background)",
-                ]
-            )
-            .build()
-        )

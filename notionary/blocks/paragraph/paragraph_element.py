@@ -9,7 +9,7 @@ from notionary.blocks.paragraph.paragraph_models import (
     ParagraphBlock,
 )
 from notionary.blocks.notion_block_element import NotionBlockElement
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
@@ -46,23 +46,3 @@ class ParagraphElement(NotionBlockElement):
         rich_list = block.paragraph.rich_text
         markdown = TextInlineFormatter.extract_text_with_formatting(rich_list)
         return markdown or None
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Creates standard paragraph blocks for text with support for inline formatting."
-            )
-            .with_usage_guidelines(
-                "Use for normal text. Applies **bold**, *italic*, `code`, ~~strikethrough~~, __underline__, and links."
-            )
-            .with_syntax("Just write text normally without prefix")
-            .with_examples(
-                [
-                    "This is a simple paragraph.",
-                    "Paragraph with **bold** and [link](https://example.com).",
-                ]
-            )
-            .build()
-        )

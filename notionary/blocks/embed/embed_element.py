@@ -15,7 +15,7 @@ from notionary.blocks.file.file_element_models import (
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 
 from notionary.blocks.block_models import Block, BlockCreateResult
 
@@ -84,22 +84,4 @@ class EmbedElement(NotionBlockElement):
         )
 
         return f'[embed]({url} "{text}")'
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description("Embeds external content URLs as interactive embeds.")
-            .with_usage_guidelines(
-                "Use embeds for interactive or reference content; supports captioning."
-            )
-            .with_syntax('[embed](https://example.com "Caption")')
-            .with_examples(
-                [
-                    '[embed](https://www.youtube.com/watch?v=dQw4w9WgXcQ "Watch this video!")',
-                    '[embed](https://maps.google.com "Location Map")',
-                    "[embed](https://example.com)",
-                ]
-            )
-            .build()
-        )
+    

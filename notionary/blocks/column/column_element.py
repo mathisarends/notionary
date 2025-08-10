@@ -6,7 +6,7 @@ from notionary.blocks.block_models import Block, BlockCreateResult
 from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.column.column_models import ColumnBlock, CreateColumnBlock
 from notionary.blocks.notion_block_element import NotionBlockElement
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 
 
 class ColumnElement(NotionBlockElement):
@@ -36,26 +36,3 @@ class ColumnElement(NotionBlockElement):
         # Empty ColumnBlock - content added by stack processor
         column_content = ColumnBlock(column_ratio=None)
         return CreateColumnBlock(column=column_content)
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """LLM prompt for individual column."""
-        return (
-            ElementPromptBuilder()
-            .with_description("Creates a single column within a column layout.")
-            .with_syntax("::: column\n[content]\n:::")
-            .with_examples(
-                [
-                    "::: column\nThis is the left column.\n:::",
-                    "::: column\n## Features\n- Fast\n- Reliable\n:::",
-                    "::: column\n| Name | Age |\n|------|-----|\n| Alice | 30 |\n| Bob | 25 |\n\n```python\nprint('Hello from column!')\n```\n:::",
-                    "::: column\n> This is a quote block in a column.\n\nRegular paragraph below.\n:::",
-                ]
-            )
-            .with_usage_guidelines(
-                "Use this syntax to create a column layout in your document. "
-                "Columns are useful for presenting content side-by-side, such as tables, multiple code blocks, or images. "
-                "This helps to visually compare or organize related information in a structured way."
-            )
-            .build()
-        )

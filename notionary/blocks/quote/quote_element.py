@@ -5,7 +5,7 @@ from typing import Optional
 from notionary.blocks.block_models import Block, BlockCreateResult
 
 from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -62,23 +62,3 @@ class QuoteElement(NotionBlockElement):
             return None
 
         return f"[quote]({text.strip()})"
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Creates blockquotes that visually distinguish quoted text."
-            )
-            .with_usage_guidelines(
-                "Use quotes for quoting external sources or highlighting important statements."
-            )
-            .with_syntax("[quote](Quote text)")
-            .with_examples(
-                [
-                    "[quote](This is a simple blockquote)",
-                    "[quote](Knowledge is power)",
-                ]
-            )
-            .build()
-        )

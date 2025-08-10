@@ -252,11 +252,3 @@ def test_multiple_caption_parts():
 
     result = ImageElement.notion_to_markdown(block)
     assert result == '[image](https://example.com/pic.jpg "Part 1 Part 2")'
-
-
-def test_get_llm_prompt_content():
-    """Test LLM prompt content generation."""
-    content = ImageElement.get_llm_prompt_content()
-    assert content is not None
-    assert hasattr(content, "syntax")
-    assert "[image]" in content.syntax

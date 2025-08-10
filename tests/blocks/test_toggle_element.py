@@ -231,12 +231,3 @@ def test_special_characters():
         result = ToggleElement.markdown_to_notion(md)
         assert result is not None
         # Just verify it doesn't crash
-
-
-def test_get_llm_prompt_content():
-    """Test LLM prompt content generation."""
-    content = ToggleElement.get_llm_prompt_content()
-    assert content is not None
-    assert hasattr(content, "syntax")
-    assert "+++" in content.syntax
-    assert "pipe" in content.syntax.lower()

@@ -14,7 +14,7 @@ from notionary.blocks.numbered_list.numbered_list_models import (
     NumberedListItemBlock,
 )
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 
 
 class NumberedListElement(NotionBlockElement):
@@ -54,16 +54,3 @@ class NumberedListElement(NotionBlockElement):
         rich = block.numbered_list_item.rich_text
         content = TextInlineFormatter.extract_text_with_formatting(rich)
         return f"1. {content}"
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description("Creates numbered list items for ordered sequences.")
-            .with_usage_guidelines(
-                "Use for lists where order matters, such as steps, rankings, or sequential items."
-            )
-            .with_syntax("1. Item text")
-            .with_standard_markdown()
-            .build()
-        )

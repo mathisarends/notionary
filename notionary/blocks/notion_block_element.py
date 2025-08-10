@@ -33,7 +33,3 @@ class NotionBlockElement(ABC):
     def match_notion(cls, block: Block) -> bool:
         """Check if this element can handle the given Notion block."""
         return bool(cls.notion_to_markdown(block))  # Now calls the class's version
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """Returns a dictionary with information for LLM prompts about this element."""

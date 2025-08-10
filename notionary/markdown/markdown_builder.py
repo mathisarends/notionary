@@ -17,6 +17,7 @@ from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
 )
 from notionary.blocks.callout.callout_markdown_node import CalloutMarkdownNode
 from notionary.blocks.code.code_markdown_node import CodeMarkdownNode
+from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
 from notionary.blocks.divider.divider_markdown_node import DividerMarkdownNode
 from notionary.blocks.embed.embed_markdown_node import EmbedMarkdownNode
 from notionary.blocks.equation.equation_element_markdown_node import (
@@ -111,7 +112,7 @@ class MarkdownBuilder:
         """
         return self.paragraph(content)
 
-    def quote(self, text: str, author: Optional[str] = None) -> Self:
+    def quote(self, text: str) -> Self:
         """
         Add a blockquote.
 
@@ -119,7 +120,7 @@ class MarkdownBuilder:
             text: Quote text content
             author: Optional quote author/attribution
         """
-        self.children.append(QuoteMarkdownNode(text=text, author=author))
+        self.children.append(QuoteMarkdownNode(text=text))
         return self
 
     def divider(self) -> Self:
@@ -187,30 +188,59 @@ class MarkdownBuilder:
         self.children.append(CalloutMarkdownNode(text=text, emoji=emoji))
         return self
 
-    def toggle(self, title: str, content: Optional[list[str]] = None) -> Self:
+    def toggle(
+        self, title: str, builder_func: Callable[["MarkdownBuilder"], "MarkdownBuilder"]
+    ) -> Self:
         """
-        Add a toggle block.
+        Add a toggle block with content built using the builder API.
 
         Args:
             title: The toggle title/header text
-            content: Optional list of content items inside the toggle
+            builder_func: Function that receives a MarkdownBuilder and returns it configured
+
+        Example:
+            builder.toggle("Advanced Settings", lambda t:
+                t.h3("Configuration")
+                .paragraph("Settings description")
+                .table(["Setting", "Value"], [["Debug", "True"]])
+                .callout("Important note", "⚠️")
+            )
         """
-        self.children.append(ToggleMarkdownNode(title=title, content=content))
+        toggle_builder = MarkdownBuilder()
+        builder_func(toggle_builder)
+        self.children.append(
+            ToggleMarkdownNode(title=title, children=toggle_builder.children)
+        )
         return self
 
     def toggleable_heading(
-        self, text: str, level: int = 2, content: Optional[list[str]] = None
+        self,
+        text: str,
+        level: int,
+        builder_func: Callable[["MarkdownBuilder"], "MarkdownBuilder"],
     ) -> Self:
         """
-        Add a toggleable heading.
+        Add a toggleable heading with content built using the builder API.
 
         Args:
             text: The heading text content
-            level: Heading level (1-3), defaults to 2
-            content: Optional list of content items inside the toggleable heading
+            level: Heading level (1-3)
+            builder_func: Function that receives a MarkdownBuilder and returns it configured
+
+        Example:
+            builder.toggleable_heading("Advanced Section", 2, lambda t:
+                t.paragraph("Introduction to this section")
+                .numbered_list(["Step 1", "Step 2", "Step 3"])
+                .code("example_code()", "python")
+                .table(["Feature", "Status"], [["API", "Ready"]])
+            )
         """
+        toggle_builder = MarkdownBuilder()
+        builder_func(toggle_builder)
         self.children.append(
-            ToggleableHeadingMarkdownNode(text=text, level=level, content=content)
+            ToggleableHeadingMarkdownNode(
+                text=text, level=level, children=toggle_builder.children
+            )
         )
         return self
 
@@ -370,9 +400,36 @@ class MarkdownBuilder:
                 lambda col: col.h2("Right").bulleted_list(["Item 1", "Item 2"])
             )
         """
+        if len(builder_funcs) < 2:
+            raise ValueError("Column layout requires at least 2 columns")
+
+        # Erstelle alle einzelnen Columns
+        columns = []
         for builder_func in builder_funcs:
-            self.column(builder_func)
+            col_builder = MarkdownBuilder()
+            builder_func(col_builder)
+            columns.append(ColumnMarkdownNode(children=col_builder.children))
+
+        # Erstelle ColumnList Container mit den Columns als children
+        from notionary.blocks.column.column_list_markdown_node import (
+            ColumnListMarkdownNode,
+        )
+
+        self.children.append(ColumnListMarkdownNode(columns=columns))
         return self
+
+    # Entferne die alte column() method oder mache sie privat
+    def _column(
+        self, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder]
+    ) -> ColumnMarkdownNode:
+        """
+        Internal helper to create a single column.
+        Use columns() instead for public API.
+        """
+
+        col_builder = MarkdownBuilder()
+        builder_func(col_builder)
+        return ColumnMarkdownNode(children=col_builder.children)
 
     def column_with_nodes(self, *nodes: MarkdownNode) -> Self:
         """

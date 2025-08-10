@@ -2,14 +2,9 @@ from __future__ import annotations
 from typing import Optional, Type
 
 from notionary.blocks.notion_block_element import NotionBlockElement
-from notionary.page.markdown_syntax_prompt_generator import (
-    MarkdownSyntaxPromptGenerator,
-)
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 from notionary.telemetry import (
     ProductTelemetry,
-    NotionMarkdownSyntaxPromptEvent,
     MarkdownToNotionConversionEvent,
     NotionToMarkdownConversionEvent,
 )
@@ -31,7 +26,7 @@ class BlockRegistry:
         """
         # Import here to avoid circular imports
         from notionary.blocks.registry.block_registry_builder import (
-            BlockRegistryBuilder,
+            BlockRegistryBuilder
         )
 
         self._builder: BlockRegistryBuilder = builder or BlockRegistryBuilder()
@@ -63,13 +58,14 @@ class BlockRegistry:
             .with_videos()
             .with_embeds()
             .with_audio()
-            .with_paragraphs()
             .with_toggleable_heading_element()
             .with_columns()
             .with_equation()
             .with_table_of_contents()
             .with_breadcrumbs()
-        )
+            .with_ignore_element()
+            .with_paragraphs() # position here is important - its a fallback!
+        ) 
 
         return cls(builder=builder)
 
@@ -138,20 +134,6 @@ class BlockRegistry:
     def get_elements(self) -> list[Type[NotionBlockElement]]:
         """Get all registered elements."""
         return list(self._builder._elements.values())
-
-    def get_notion_markdown_syntax_prompt(self) -> str:
-        """
-        Generates an LLM system prompt that describes the Markdown syntax of all registered elements.
-        """
-        element_classes = list(self._builder._elements.values())
-
-        formatter_names = [e.__name__ for e in element_classes]
-        if "TextInlineFormatter" not in formatter_names:
-            element_classes = element_classes + [TextInlineFormatter]
-
-        self.telemetry.capture(NotionMarkdownSyntaxPromptEvent())
-
-        return MarkdownSyntaxPromptGenerator.generate_system_prompt(element_classes)
 
     def _find_notion_handler(self, block: Block) -> Optional[Type[NotionBlockElement]]:
         """Find an element that can handle the given Notion block."""

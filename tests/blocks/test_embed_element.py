@@ -313,11 +313,3 @@ def test_different_embed_types():
         result = EmbedElement.markdown_to_notion(markdown)
         assert result is not None
         assert result.embed.url == url
-
-
-def test_get_llm_prompt_content():
-    """Test LLM prompt content generation."""
-    content = EmbedElement.get_llm_prompt_content()
-    assert content is not None
-    assert hasattr(content, "syntax")
-    assert "[embed]" in content.syntax

@@ -9,7 +9,7 @@ from notionary.blocks.block_models import BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.file.file_element_models import ExternalFile
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 from notionary.blocks.block_models import Block, BlockCreateResult
@@ -104,25 +104,3 @@ class AudioElement(NotionBlockElement):
     @classmethod
     def _is_likely_audio_url(cls, url: str) -> bool:
         return any(url.lower().endswith(ext) for ext in cls.SUPPORTED_EXTENSIONS)
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description("Embeds an audio file playable directly in the page.")
-            .with_usage_guidelines(
-                "Use for sound files, music, podcasts or voice recordings; supports MP3, WAV, OGG, M4A."
-            )
-            .with_syntax('[audio](https://example.com/audio.mp3 "Optional caption")')
-            .with_examples(
-                [
-                    "[audio](https://example.com/song.mp3)",
-                    '[audio](https://example.com/podcast.mp3 "Episode 1: Intro")',
-                    '[audio](https://example.com/effect.wav "Sound effect")',
-                ]
-            )
-            .with_avoidance_guidelines(
-                "Ensure URLs end in supported extensions; some browsers may not play all formats."
-            )
-            .build()
-        )

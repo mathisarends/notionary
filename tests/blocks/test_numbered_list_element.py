@@ -114,12 +114,6 @@ def test_notion_to_markdown_invalid():
     assert NumberedListElement.notion_to_markdown(mock_block) is None
 
 
-def test_get_llm_prompt_content():
-    """Test LLM prompt content generation."""
-    result = NumberedListElement.get_llm_prompt_content()
-    assert result is not None
-
-
 def test_pattern_regex_directly():
     """Test the PATTERN regex directly."""
     pattern = NumberedListElement.PATTERN

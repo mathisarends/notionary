@@ -86,24 +86,3 @@ class CalloutElement(NotionBlockElement):
         if emoji_char and emoji_char != cls.DEFAULT_EMOJI:
             return f'[callout]({content} "{emoji_char}")'
         return f"[callout]({content})"
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Creates a callout block highlighting important info with an optional icon."
-            )
-            .with_usage_guidelines(
-                "Use callouts for warnings, tips, notes or any content that needs emphasis."
-            )
-            .with_syntax('[callout](Text content "Optional emoji")')
-            .with_examples(
-                [
-                    "[callout](Note this important point)",
-                    '[callout](Remember to save your work "💾")',
-                    '[callout](Warning: data loss possible "⚠️")',
-                ]
-            )
-            .build()
-        )

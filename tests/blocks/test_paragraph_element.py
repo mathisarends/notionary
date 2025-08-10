@@ -116,13 +116,6 @@ def test_notion_to_markdown_invalid():
     mock_block.paragraph = None
     assert ParagraphElement.notion_to_markdown(mock_block) is None
 
-
-def test_get_llm_prompt_content():
-    """Test LLM prompt content generation."""
-    result = ParagraphElement.get_llm_prompt_content()
-    assert result is not None
-
-
 def test_accepts_any_text():
     """Test that paragraphs accept any non-empty text."""
     various_texts = [

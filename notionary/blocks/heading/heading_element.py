@@ -14,7 +14,7 @@ from notionary.blocks.block_models import (
 )
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 
 from notionary.blocks.block_models import Block, BlockCreateResult
 
@@ -105,20 +105,3 @@ class HeadingElement(NotionBlockElement):
 
         # Fallback to hash-style for other levels
         return f"{('#' * level)} {text}"
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Use Markdown headings (#, ##, ###) to structure content hierarchically."
-            )
-            .with_usage_guidelines(
-                "Use to group content into sections and define a clear hierarchy."
-            )
-            .with_avoidance_guidelines(
-                "Only H1–H3 are supported; deeper levels are not available in Notion."
-            )
-            .with_standard_markdown()
-            .build()
-        )

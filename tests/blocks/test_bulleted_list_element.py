@@ -100,13 +100,6 @@ def test_notion_to_markdown_invalid():
     mock_block.bulleted_list_item = None
     assert BulletedListElement.notion_to_markdown(mock_block) is None
 
-
-def test_get_llm_prompt_content():
-    """Test LLM prompt content generation."""
-    result = BulletedListElement.get_llm_prompt_content()
-    assert result is not None
-
-
 def test_different_bullet_types():
     """Test different bullet characters."""
     bullets = ["- Item", "* Item", "+ Item"]

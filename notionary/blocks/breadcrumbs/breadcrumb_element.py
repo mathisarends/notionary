@@ -1,13 +1,12 @@
 from __future__ import annotations
 import re
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
 from notionary.blocks.breadcrumbs.breadcrumb_models import (
     BreadcrumbBlock,
     CreateBreadcrumbBlock,
 )
 from notionary.blocks.notion_block_element import NotionBlockElement
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
 from notionary.blocks.block_models import Block, BlockType
 
 from notionary.blocks.block_models import BlockCreateResult
@@ -43,15 +42,3 @@ class BreadcrumbElement(NotionBlockElement):
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type == BlockType.BREADCRUMB and block.breadcrumb:
             return cls.BREADCRUMB_MARKER
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Inserts a breadcrumb block that shows the page hierarchy."
-            )
-            .with_syntax(cls.BREADCRUMB_MARKER)
-            .with_examples([cls.BREADCRUMB_MARKER])
-            .build()
-        )

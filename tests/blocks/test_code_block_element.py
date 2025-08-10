@@ -107,7 +107,8 @@ def test_notion_to_markdown_simple():
     block = create_block_with_required_fields(
         type="code",
         code=CodeBlock(
-            language=CodeLanguage.PYTHON, rich_text=[create_rich_text_object("print('Hi')")]
+            language=CodeLanguage.PYTHON,
+            rich_text=[create_rich_text_object("print('Hi')")],
         ),
     )
 
@@ -120,7 +121,8 @@ def test_notion_to_markdown_plain_text():
     block = create_block_with_required_fields(
         type="code",
         code=CodeBlock(
-            language=CodeLanguage.PLAIN_TEXT, rich_text=[create_rich_text_object("some code")]
+            language=CodeLanguage.PLAIN_TEXT,
+            rich_text=[create_rich_text_object("some code")],
         ),
     )
 
@@ -254,7 +256,8 @@ def simple_code_block():
     return create_block_with_required_fields(
         type="code",
         code=CodeBlock(
-            language=CodeLanguage.PYTHON, rich_text=[create_rich_text_object("print('test')")]
+            language=CodeLanguage.PYTHON,
+            rich_text=[create_rich_text_object("print('test')")],
         ),
     )
 
@@ -332,11 +335,3 @@ def test_empty_content():
 
     result = CodeElement.notion_to_markdown(block)
     assert result == "```python\n\n```"
-
-
-def test_get_llm_prompt_content():
-    """Test that LLM prompt content is properly structured."""
-    prompt_content = CodeElement.get_llm_prompt_content()
-
-    assert prompt_content is not None
-    assert "```" in prompt_content.syntax

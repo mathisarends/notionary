@@ -5,7 +5,7 @@ import re
 from notionary.blocks.block_types import BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 from notionary.blocks.block_models import Block, BlockCreateResult
 
 
@@ -88,25 +88,3 @@ class EquationElement(NotionBlockElement):
             return f'[equation]("{escaped_expression}")'
 
         return f"[equation]({expression})"
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description("Renders LaTeX math as a Notion equation block.")
-            .with_usage_guidelines(
-                "Use [equation](...) for inline formulas. "
-                'If your expression contains ")" or a newline, use the quoted form: [equation]("...").'
-            )
-            .with_syntax(
-                '[equation](E = mc^2)  ·  [equation]("x = \\\\frac{-b\\\\pm\\\\sqrt{b^2-4ac}}{2a}")'
-            )
-            .with_examples(
-                [
-                    "[equation](E = mc^2)",
-                    '[equation]("f(x) = \\sin(x) + \\cos(x)")',
-                    '[equation]("P(A \\mid B) = \\frac{P(A \\cap B)}{P(B)}")',
-                ]
-            )
-            .build()
-        )

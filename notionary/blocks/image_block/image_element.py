@@ -17,7 +17,7 @@ from notionary.blocks.paragraph.paragraph_models import (
 )
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 
 
 class ImageElement(NotionBlockElement):
@@ -91,23 +91,3 @@ class ImageElement(NotionBlockElement):
         )
 
         return f'[image]({url} "{caption_text}")'
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Embeds an image from an external URL or Notion-hosted file."
-            )
-            .with_usage_guidelines(
-                "Use images to include visual content like diagrams, charts, screenshots, or photos."
-            )
-            .with_syntax('[image](https://example.com/image.jpg "Optional caption")')
-            .with_examples(
-                [
-                    "[image](https://example.com/chart.png)",
-                    '[image](https://example.com/photo.jpg "A beautiful sunrise")',
-                ]
-            )
-            .build()
-        )

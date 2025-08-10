@@ -10,7 +10,7 @@ from notionary.blocks.heading.heading_models import (
     CreateHeading2Block,
     CreateHeading3Block,
 )
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -104,27 +104,3 @@ class ToggleableHeadingElement(NotionBlockElement):
         )
         prefix = "#" * level
         return f"+{prefix} {text or ''}"
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """
-        Returns structured LLM prompt metadata for the collapsible heading element.
-        """
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Collapsible headings combine heading structure with toggleable visibility."
-            )
-            .with_usage_guidelines(
-                "Use when you want to create a structured section that can be expanded or collapsed."
-            )
-            .with_syntax("+# Collapsible Heading\n| Content with pipe prefix")
-            .with_examples(
-                [
-                    "+# Main Collapsible Section\n| Content under the section",
-                    "+## Subsection\n| This content is hidden until expanded",
-                    "+### Detailed Information\n| Technical details go here",
-                ]
-            )
-            .build()
-        )

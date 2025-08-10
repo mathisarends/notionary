@@ -12,7 +12,7 @@ from notionary.blocks.table.table_models import (
     CreateTableBlock,
     TableBlock,
 )
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 
 
 class TableElement(NotionBlockElement):
@@ -132,28 +132,3 @@ class TableElement(NotionBlockElement):
     def is_table_row(cls, line: str) -> bool:
         """Check if a line is a valid table row."""
         return bool(cls.ROW_PATTERN.match(line.strip()))
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """Returns information for LLM prompts about this element."""
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Creates formatted tables with rows and columns for structured data. "
-                "Tables now work within columns and other parent elements using the | prefix system."
-            )
-            .with_usage_guidelines(
-                "Use tables to organize and present structured data in a grid format. "
-                "Can be embedded in columns, toggles, and other parent elements."
-            )
-            .with_syntax(
-                "| Header 1 | Header 2 | Header 3 |\n| | -------- | -------- | -------- |\n| | Cell 1   | Cell 2   | Cell 3   |"
-            )
-            .with_examples(
-                [
-                    "| Product | Price | Stock |\n| | ------- | ----- | ----- |\n| | Widget A | $10.99 | 42 |",
-                    "| Name | Role | Department |\n| | ---- | ---- | ---------- |\n| | John Smith | Manager | Marketing |",
-                ]
-            )
-            .build()
-        )

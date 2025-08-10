@@ -204,15 +204,6 @@ class NotionPage(LoggingMixin):
         """
         return self.block_element_registry.builder
 
-    def get_notion_markdown_system_prompt(self) -> str:
-        """
-        Get the formatting prompt for the page content manager.
-
-        Returns:
-            str: The formatting prompt.
-        """
-        return self.block_element_registry.get_notion_markdown_syntax_prompt()
-
     async def set_title(self, title: str) -> str:
         """
         Set the title of the page.

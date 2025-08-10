@@ -13,6 +13,7 @@ from notionary.blocks.divider.divider_element import DividerElement
 from notionary.blocks.embed.embed_element import EmbedElement
 from notionary.blocks.equation.equation_element import EquationElement
 from notionary.blocks.heading.heading_element import HeadingElement
+from notionary.blocks.ignore_element.IgnoreElement import IgnoreElement
 from notionary.blocks.image_block.image_element import ImageElement
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.numbered_list.numbered_list_element import NumberedListElement
@@ -73,6 +74,7 @@ class BlockRegistryBuilder:
             .with_columns()
             .with_equation()
             .with_table_of_contents()
+            .with_ignore_element()
             .with_breadcrumbs()
         ).build()
 
@@ -154,6 +156,9 @@ class BlockRegistryBuilder:
 
     def with_breadcrumbs(self) -> Self:
         return self._add_element(BreadcrumbElement)
+    
+    def with_ignore_element(self) -> Self:
+        return self._add_element(IgnoreElement)
 
     def without_headings(self) -> Self:
         return self.remove_element(HeadingElement)

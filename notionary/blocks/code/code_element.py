@@ -93,7 +93,7 @@ class CodeElement(NotionBlockElement):
         for lang_enum in CodeLanguage:
             if lang_enum.value.lower() == language.lower():
                 return lang_enum
-        
+
         # Return default if not found
         return CodeLanguage.PLAIN_TEXT
 
@@ -106,32 +106,3 @@ class CodeElement(NotionBlockElement):
     def extract_caption(caption_list: list[RichTextObject]) -> str:
         """Extract caption text from caption array."""
         return "".join(rt.plain_text for rt in caption_list if rt.plain_text)
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """
-        Returns structured LLM prompt metadata for the code block element.
-        """
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Use fenced code blocks to format content as code. Supports language annotations like "
-                "'python', 'json', or 'mermaid'. Code blocks now work within columns and tables using the | prefix system."
-            )
-            .with_usage_guidelines(
-                "Use code blocks when you want to present technical content like code snippets, terminal commands, "
-                "JSON structures, or system diagrams. Can be embedded in columns, tables, and other parent elements."
-            )
-            .with_syntax(
-                "```language\n| code line 1\n| code line 2\n```\nCaption: optional caption\n\n"
-                "OR for standalone:\n\n"
-                "```language\ncode content\n```"
-            )
-            .with_examples(
-                [
-                    "```python\n| print('Hello, world!')\n| return 42\n```",
-                    '```json\n| {\n|   "name": "Alice",\n|   "age": 30\n| }\n```',
-                ]
-            )
-            .build()
-        )

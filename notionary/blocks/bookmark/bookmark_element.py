@@ -6,7 +6,7 @@ from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookm
 from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 
 from notionary.blocks.block_models import BlockCreateResult
 
@@ -86,22 +86,3 @@ class BookmarkElement(NotionBlockElement):
             return f'[bookmark]({url} "{title}" "{desc}")'
 
         return f'[bookmark]({url} "{text}")'
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description("Creates a bookmark block linking to an external URL.")
-            .with_usage_guidelines(
-                "Use bookmarks to embed link previews with optional title and description."
-            )
-            .with_syntax('[bookmark](https://example.com "Title" "Description")')
-            .with_examples(
-                [
-                    "[bookmark](https://example.com)",
-                    '[bookmark](https://example.com "Title")',
-                    '[bookmark](https://example.com "Title" "Desc")',
-                ]
-            )
-            .build()
-        )

@@ -53,27 +53,26 @@ class PageContentRetriever(LoggingMixin):
     def _process_single_block(self, block: Block, indent_level: int) -> str:
         """Process a single block and return its markdown representation."""
         block_markdown = self._block_registry.notion_to_markdown(block)
-        if not block_markdown:
-            return ""
 
-        # Apply indentation if needed
-        if indent_level > 0:
+        if block_markdown and indent_level > 0:
             block_markdown = self._indent_text(block_markdown, spaces=indent_level * 4)
 
-        # Early return if no children
-        if not self._has_children(block):
-            return block_markdown
+        # Check if block has children (IMMER prüfen, nicht nur wenn block_markdown existiert!)
+        if self._has_children(block):
+            children_markdown = self._convert_blocks_to_markdown(
+                block.children, indent_level=indent_level + 1
+            )
 
-        # Process children recursively
-        children_markdown = self._convert_blocks_to_markdown(
-            block.children, indent_level=indent_level + 1
-        )
+            if children_markdown:
+                # If block has content, combine with children
+                if block_markdown:
+                    return f"{block_markdown}\n{children_markdown}"
+                # If block has no content but has children, return just children
+                else:
+                    return children_markdown
 
-        # Early return if no children content
-        if not children_markdown:
-            return block_markdown
-
-        return f"{block_markdown}\n{children_markdown}"
+        # Return block content (or empty string if no content and no children)
+        return block_markdown or ""
 
     def _has_children(self, block: Block) -> bool:
         """Check if block has children that need processing."""

@@ -55,7 +55,6 @@ class MarkdownToNotionConverter:
         parent_stack: list[ParentBlockContext] = []
 
         for line in lines:
-            # Create context
             context = LineProcessingContext(
                 line=line,
                 result_blocks=result_blocks,

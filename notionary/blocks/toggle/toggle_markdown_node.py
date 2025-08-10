@@ -1,35 +1,54 @@
 from __future__ import annotations
 
-from typing import Optional, List
 from pydantic import BaseModel
 from notionary.markdown.markdown_node import MarkdownNode
 
 
 class ToggleMarkdownBlockParams(BaseModel):
     title: str
-    content: Optional[List[str]] = None
+    children: list[MarkdownNode]
+    model_config = {"arbitrary_types_allowed": True}
 
 
 class ToggleMarkdownNode(MarkdownNode):
     """
-    Programmatic interface for creating Notion-style Markdown toggle blocks
-    with pipe-prefixed nested content.
+    Clean programmatic interface for creating Notion-style Markdown toggle blocks
+    with pipe-prefixed nested content using MarkdownNode children.
+
     Example:
-        +++ Details
-        | Here are the details.
-        | You can add more lines.
+        +++ Advanced Details
+        | ## Subheading
+        |
+        | Paragraph with **bold** text
+        |
+        | - list item 1
+        | - list item 2
+        |
+        | ```python
+        | print("code example")
+        | ```
     """
 
-    def __init__(self, title: str, content: Optional[List[str]] = None):
+    def __init__(self, title: str, children: list[MarkdownNode]):
         self.title = title
-        self.content = content or []
+        self.children = children
 
     @classmethod
     def from_params(cls, params: ToggleMarkdownBlockParams) -> ToggleMarkdownNode:
-        return cls(title=params.title, content=params.content)
+        return cls(title=params.title, children=params.children)
 
     def to_markdown(self) -> str:
         result = f"+++ {self.title}"
-        if self.content:
-            result += "\n" + "\n".join([f"| {line}" for line in self.content])
-        return result
+
+        if not self.children:
+            return result
+
+        # Convert children to markdown and add toggle prefix
+        content_parts = [child.to_markdown() for child in self.children]
+        content_text = "\n\n".join(content_parts)
+
+        # Add toggle prefix to each line
+        lines = content_text.split("\n")
+        prefixed_lines = [f"| {line}" if line.strip() else "|" for line in lines]
+
+        return result + "\n" + "\n".join(prefixed_lines)

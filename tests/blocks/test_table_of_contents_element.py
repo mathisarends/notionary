@@ -174,18 +174,6 @@ def test_notion_to_markdown_invalid():
     )
     assert TableOfContentsElement.notion_to_markdown(no_toc_block) is None
 
-
-def test_get_llm_prompt_content():
-    """Test that get_llm_prompt_content returns valid content."""
-    content = TableOfContentsElement.get_llm_prompt_content()
-
-    assert content.description is not None
-    assert content.syntax is not None
-    assert content.examples is not None
-    assert len(content.examples) > 0
-    assert "[toc]" in content.examples
-
-
 def test_bidirectional_conversion():
     """Test that markdown -> notion -> markdown is consistent."""
     original_inputs = ["[toc]", "[toc](blue)", "[toc](gray_background)"]

@@ -105,27 +105,3 @@ class ToggleElement(NotionBlockElement):
                 elif "plain_text" in text_obj:
                     result += text_obj.get("plain_text", "")
         return result
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        """
-        Returns structured LLM prompt metadata for the toggle element with pipe syntax examples.
-        """
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Toggle elements are collapsible sections that help organize and hide detailed information."
-            )
-            .with_usage_guidelines(
-                "Use toggles for supplementary information that's not essential for the first reading, "
-                "such as details, examples, or technical information."
-            )
-            .with_syntax("+++ Toggle Title\n| Toggle content with pipe prefix")
-            .with_examples(
-                [
-                    "+++ Key Findings\n| The research demonstrates **three main conclusions**:\n| 1. First important point\n| 2. Second important point",
-                    "+++ FAQ\n| **Q: When should I use toggles?**\n| *A: Use toggles for supplementary information.*",
-                ]
-            )
-            .build()
-        )

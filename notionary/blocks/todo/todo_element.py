@@ -6,7 +6,7 @@ from notionary.blocks.block_models import Block, BlockCreateResult
 
 from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
-from notionary.prompts import ElementPromptBuilder, ElementPromptContent
+
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
@@ -68,25 +68,3 @@ class TodoElement(NotionBlockElement):
         content = TextInlineFormatter.extract_text_with_formatting(td.rich_text)
         checkbox = "[x]" if td.checked else "[ ]"
         return f"- {checkbox} {content}"
-
-    @classmethod
-    def get_llm_prompt_content(cls) -> ElementPromptContent:
-        return (
-            ElementPromptBuilder()
-            .with_description(
-                "Creates interactive to-do items with checkboxes that can be marked complete."
-            )
-            .with_usage_guidelines(
-                "Use to-do items for task lists, checklists, or tracking progress on items."
-            )
-            .with_syntax("- [ ] Task to complete")
-            .with_examples(
-                [
-                    "- [ ] Draft project proposal",
-                    "- [x] Create initial timeline",
-                    "* [ ] Review code changes",
-                    "+ [x] Finalize handoff checklist",
-                ]
-            )
-            .build()
-        )
