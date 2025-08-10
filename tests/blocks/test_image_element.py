@@ -14,7 +14,9 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 def test_match_markdown_valid():
     """Test recognition of valid image formats."""
     assert ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
-    assert ImageElement.markdown_to_notion('[image](https://test.com/img.png "Caption")')
+    assert ImageElement.markdown_to_notion(
+        '[image](https://test.com/img.png "Caption")'
+    )
     assert ImageElement.markdown_to_notion("[image](http://site.org/photo.gif)")
     assert ImageElement.markdown_to_notion("  [image](https://example.com/img.jpg)  ")
 

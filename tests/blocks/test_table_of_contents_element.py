@@ -47,8 +47,12 @@ def test_match_markdown_valid_with_color():
 def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
     assert not TableOfContentsElement.markdown_to_notion("toc")  # Missing brackets
-    assert not TableOfContentsElement.markdown_to_notion("[toc")  # Missing closing bracket
-    assert not TableOfContentsElement.markdown_to_notion("toc]")  # Missing opening bracket
+    assert not TableOfContentsElement.markdown_to_notion(
+        "[toc"
+    )  # Missing closing bracket
+    assert not TableOfContentsElement.markdown_to_notion(
+        "toc]"
+    )  # Missing opening bracket
     assert not TableOfContentsElement.markdown_to_notion(
         "[table_of_contents]"
     )  # Wrong name

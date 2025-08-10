@@ -14,7 +14,6 @@ from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.models.icon_types import EmojiIcon, IconObject
 
 
-
 class CalloutElement(NotionBlockElement):
     """
     Handles conversion between Markdown callouts and Notion callout blocks.

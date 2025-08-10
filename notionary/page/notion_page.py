@@ -1,11 +1,12 @@
 from __future__ import annotations
 import asyncio
 
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, Callable, Optional, TYPE_CHECKING, Union
 import random
 
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
+from notionary.markdown.markdown_builder import MarkdownBuilder
 from notionary.models.notion_database_response import NotionPageResponse
 from notionary.models.notion_page_response import DatabaseParent
 from notionary.page.client import NotionPageClient
@@ -224,38 +225,64 @@ class NotionPage(LoggingMixin):
             self.logger.error("Error setting page title: %s", str(e))
 
     async def append_markdown(
-        self, markdown: str, prepend_table_of_contents=False, append_divider=False
+        self,
+        content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder]],
+        *,
+        prepend_table_of_contents: bool = False,
+        append_divider: bool = False,
     ) -> bool:
         """
         Append markdown content to the page.
+
+        Args:
+            content: Either raw markdown text OR a callback function that receives a MarkdownBuilder
+            prepend_table_of_contents: Whether to prepend table of contents
+            append_divider: Whether to append a divider
+
+        Returns:
+            bool: True if successful, False otherwise
         """
-        return await self._page_content_writer.append_markdown(
-            markdown_text=markdown,
+        result = await self._page_content_writer.append_markdown(
+            content=content,
             append_divider=append_divider,
             prepend_table_of_contents=prepend_table_of_contents,
         )
+        return result is not None
+
+    async def replace_content(
+        self,
+        content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder]],
+        *,
+        prepend_table_of_contents: bool = False,
+        append_divider: bool = False,
+    ) -> bool:
+        """
+        Replace the entire page content with new markdown content.
+
+        Args:
+            content: Either raw markdown text OR a callback function that receives a MarkdownBuilder
+            prepend_table_of_contents: Whether to prepend table of contents
+            append_divider: Whether to append a divider
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        clear_result = await self._page_content_writer.clear_page_content()
+        if not clear_result:
+            self.logger.error("Failed to clear page content before replacement")
+
+        result = await self._page_content_writer.append_markdown(
+            content=content,
+            prepend_table_of_contents=prepend_table_of_contents,
+            append_divider=append_divider,
+        )
+        return result is not None
 
     async def clear_page_content(self) -> str:
         """
         Clear all content from the page.
         """
         return await self._page_content_writer.clear_page_content()
-
-    async def replace_content(
-        self, markdown: str, prepend_table_of_contents=False, append_divider=False
-    ) -> bool:
-        """
-        Replace the entire page content with new markdown content.
-        """
-        clear_result = await self._page_content_writer.clear_page_content()
-        if not clear_result:
-            self.logger.error("Failed to clear page content before replacement")
-
-        return await self._page_content_writer.append_markdown(
-            markdown_text=markdown,
-            prepend_table_of_contents=prepend_table_of_contents,
-            append_divider=append_divider,
-        )
 
     async def get_text_content(self) -> str:
         """

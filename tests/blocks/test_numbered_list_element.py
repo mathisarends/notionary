@@ -16,7 +16,9 @@ def test_match_markdown_valid():
     """Test recognition of valid numbered list formats."""
     assert NumberedListElement.markdown_to_notion("1. First item") is not None
     assert NumberedListElement.markdown_to_notion("2. Second item") is not None
-    assert NumberedListElement.markdown_to_notion("123. Item with big number") is not None
+    assert (
+        NumberedListElement.markdown_to_notion("123. Item with big number") is not None
+    )
     assert NumberedListElement.markdown_to_notion("  1. Indented item") is not None
     assert NumberedListElement.markdown_to_notion("    10. Deep indented") is not None
 

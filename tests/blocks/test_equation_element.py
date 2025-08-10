@@ -50,8 +50,12 @@ def test_match_markdown_valid_quoted():
 def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
     assert not EquationElement.markdown_to_notion("[equation]")  # Missing expression
-    assert not EquationElement.markdown_to_notion("equation(E = mc^2)")  # Missing brackets
-    assert not EquationElement.markdown_to_notion("[eq](E = mc^2)")  # Wrong element name
+    assert not EquationElement.markdown_to_notion(
+        "equation(E = mc^2)"
+    )  # Missing brackets
+    assert not EquationElement.markdown_to_notion(
+        "[eq](E = mc^2)"
+    )  # Wrong element name
     assert not EquationElement.markdown_to_notion(
         "[equation](E = mc^2"
     )  # Missing closing paren

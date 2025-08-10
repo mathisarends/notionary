@@ -24,7 +24,9 @@ def test_match_markdown():
     assert ToggleableHeadingElement.markdown_to_notion("+# Heading 1") is not None
     assert ToggleableHeadingElement.markdown_to_notion("+## Heading 2") is not None
     assert ToggleableHeadingElement.markdown_to_notion("+### Heading 3") is not None
-    assert ToggleableHeadingElement.markdown_to_notion("+# Text with spaces") is not None
+    assert (
+        ToggleableHeadingElement.markdown_to_notion("+# Text with spaces") is not None
+    )
 
     # Invalid patterns
     assert ToggleableHeadingElement.markdown_to_notion("# Regular heading") is None

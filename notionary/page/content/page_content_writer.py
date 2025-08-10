@@ -1,5 +1,5 @@
 import json
-from typing import Optional
+from typing import Callable, Optional, Union
 
 from mkdocs.structure.toc import TableOfContents
 
@@ -7,6 +7,7 @@ from notionary.blocks.block_client import NotionBlockClient
 from notionary.blocks.block_models import Block
 from notionary.blocks.divider.divider_models import DividerBlock
 from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.markdown.markdown_builder import MarkdownBuilder
 from notionary.page.content.markdown_whitespace_processor import (
     MarkdownWhitespaceProcessor,
 )
@@ -34,25 +35,69 @@ class PageContentWriter(LoggingMixin):
 
     async def append_markdown(
         self,
-        markdown_text: str,
+        content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder]],
+        *,
         append_divider: bool = True,
-        prepend_table_of_contents=False,
+        prepend_table_of_contents: bool = False,
     ) -> Optional[str]:
         """
-        Append markdown text to a Notion page, automatically handling content length limits.
+        Append markdown content to a Notion page using either text or builder callback.
+
+        Args:
+            content: Either raw markdown text OR a callback function that receives a MarkdownBuilder
+            append_divider: Whether to append a divider
+            prepend_table_of_contents: Whether to prepend table of contents
 
         Returns:
             str: The processed markdown content that was appended (None if failed)
+
+        Examples:
+            # Traditional string way (unchanged)
+            await page.append_markdown("# Title\nContent")
+
+            # New builder callback way
+            await page.append_markdown(lambda b: (
+                b.heading("Title")
+                 .paragraph("Content")
+                 .bulleted_list(["Item 1", "Item 2"])
+            ))
+
+            # Complex nested structures
+            await page.append_markdown(lambda b: (
+                b.heading("Project Overview")
+                 .toggleable_heading("Details", level=2, children=[
+                     b._paragraph("Hidden content"),
+                     b._code("print('hello')", language="python")
+                 ])
+                 .columns(
+                     lambda col: col.heading("Left", 2).paragraph("Left content"),
+                     lambda col: col.heading("Right", 2).paragraph("Right content"),
+                     width_ratios=[0.7, 0.3]
+                 )
+            ))
         """
+
+        if isinstance(content, str):
+            final_markdown = content
+        elif callable(content):
+            builder = MarkdownBuilder()
+            content(builder)
+            final_markdown = builder.build()
+        else:
+            raise ValueError(
+                "content must be either a string or a callable that takes a MarkdownBuilder"
+            )
+
+        # Add optional components
         if prepend_table_of_contents:
             self._ensure_table_of_contents_exists_in_registry()
-            markdown_text = "[toc]\n\n" + markdown_text
+            final_markdown = "[toc]\n\n" + final_markdown
 
         if append_divider:
             self._ensure_divider_exists_in_registry()
-            markdown_text = markdown_text + "\n\n---\n"
+            final_markdown = final_markdown + "\n\n---\n"
 
-        processed_markdown = self._process_markdown_whitespace(markdown_text)
+        processed_markdown = self._process_markdown_whitespace(final_markdown)
 
         try:
             blocks = self._markdown_to_notion_converter.convert(processed_markdown)

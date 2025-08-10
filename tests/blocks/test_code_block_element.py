@@ -51,7 +51,9 @@ def test_match_markdown_not_code_start():
     """Test rejection of non-code-start formats."""
     assert CodeElement.markdown_to_notion("This is just text.") is None
     assert CodeElement.markdown_to_notion("`inline code`") is None
-    assert not CodeElement.markdown_to_notion("```python\ncode content")  # Not just start
+    assert not CodeElement.markdown_to_notion(
+        "```python\ncode content"
+    )  # Not just start
     assert not CodeElement.markdown_to_notion("Some text ```python")  # Not at beginning
 
 
