@@ -19,7 +19,6 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-
 class ImageElement(NotionBlockElement):
     """
     Handles conversion between Markdown images and Notion image blocks.

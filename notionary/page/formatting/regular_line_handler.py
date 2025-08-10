@@ -10,6 +10,7 @@ from notionary.page.formatting.line_handler import (
 
 from notionary.blocks.block_models import BlockCreateRequest, BlockCreateResult
 
+
 # TODO: Der column parser funktioniert hier so überhaupt nicht leider
 class RegularLineHandler(LineHandler):
     """Handles regular lines (creating new blocks)."""
@@ -61,7 +62,7 @@ class RegularLineHandler(LineHandler):
         result = context.block_registry.markdown_to_notion(context.line)
         if not result:
             return
-        
+
         blocks = self._normalize_to_list(result)
         for block in blocks:
             context.result_blocks.append(block)

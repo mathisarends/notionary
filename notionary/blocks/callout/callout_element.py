@@ -12,7 +12,7 @@ from notionary.blocks.callout.callout_models import CalloutBlock, CreateCalloutB
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.models.icon_types import EmojiIcon, IconObject
-from notionary.prompts import ElementPromptContent, ElementPromptBuilder
+
 
 
 class CalloutElement(NotionBlockElement):
@@ -37,10 +37,6 @@ class CalloutElement(NotionBlockElement):
 
     DEFAULT_EMOJI = "💡"
     DEFAULT_COLOR = "gray_background"
-
-    @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        return bool(cls.PATTERN.match(text.strip()))
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:

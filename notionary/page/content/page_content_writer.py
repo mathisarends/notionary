@@ -56,8 +56,6 @@ class PageContentWriter(LoggingMixin):
 
         try:
             blocks = self._markdown_to_notion_converter.convert(processed_markdown)
-            import json
-            print("blocks", json.dumps([block.model_dump() for block in blocks], indent=2))
 
             result = await self._block_client.append_block_children(
                 block_id=self.page_id, children=blocks

@@ -16,7 +16,7 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.prompts import ElementPromptContent, ElementPromptBuilder
+
 
 from notionary.blocks.block_models import Block, BlockCreateResult, BlockType
 

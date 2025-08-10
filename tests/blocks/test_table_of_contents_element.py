@@ -174,6 +174,7 @@ def test_notion_to_markdown_invalid():
     )
     assert TableOfContentsElement.notion_to_markdown(no_toc_block) is None
 
+
 def test_bidirectional_conversion():
     """Test that markdown -> notion -> markdown is consistent."""
     original_inputs = ["[toc]", "[toc](blue)", "[toc](gray_background)"]

@@ -5,10 +5,6 @@ from typing import Optional
 
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
-from notionary.prompts import (
-    ElementPromptContent,
-    ElementPromptBuilder,
-)
 from notionary.blocks.block_models import (
     Block,
     BlockType,

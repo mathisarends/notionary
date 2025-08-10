@@ -4,7 +4,6 @@ from notionary.blocks.block_models import Block, BlockCreateResult
 from notionary.blocks.notion_block_element import NotionBlockElement
 
 
-
 class IgnoreElement(NotionBlockElement):
     """
     Handles container end tags and other lines that should be ignored.

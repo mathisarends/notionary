@@ -14,7 +14,6 @@ from notionary.blocks.paragraph.paragraph_models import (
 )
 
 
-
 class DividerElement(NotionBlockElement):
     """
     Handles conversion between Markdown horizontal dividers and Notion divider blocks.

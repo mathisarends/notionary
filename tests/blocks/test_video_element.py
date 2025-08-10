@@ -181,6 +181,7 @@ def test_notion_to_markdown_invalid():
     mock_block.video = None
     assert VideoElement.notion_to_markdown(mock_block) is None
 
+
 def test_get_youtube_id():
     """Test YouTube ID extraction."""
     test_cases = [

@@ -3,7 +3,6 @@ from typing import Optional
 from abc import ABC
 
 from notionary.blocks.block_models import Block, BlockCreateResult
-from notionary.prompts.element_prompt_content import ElementPromptContent
 
 
 class NotionBlockElement(ABC):

@@ -14,7 +14,6 @@ from notionary.blocks.table.table_models import (
 )
 
 
-
 class TableElement(NotionBlockElement):
     """
     Handles conversion between Markdown tables and Notion table blocks.

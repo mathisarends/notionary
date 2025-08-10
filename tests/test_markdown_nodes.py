@@ -257,9 +257,11 @@ def test_todo_markdown_node():
 
 def test_toggle_markdown_node():
     """Test ToggleMarkdownNode"""
-    
+
     # Test ohne Content
-    toggle = ToggleMarkdownNode(title="Details", children=[])  # ← children=[] hinzufügen
+    toggle = ToggleMarkdownNode(
+        title="Details", children=[]
+    )  # ← children=[] hinzufügen
     expected = "+++ Details"
     assert toggle.to_markdown() == expected
 
@@ -269,23 +271,34 @@ def test_toggle_markdown_node():
 
     toggle_with_content = ToggleMarkdownNode(
         title="More Info",
-        children=[line1_node, line2_node]  # ← children statt content, MarkdownNode-Objekte
+        children=[
+            line1_node,
+            line2_node,
+        ],  # ← children statt content, MarkdownNode-Objekte
     )
-    expected = "+++ More Info\n| Line 1\n|\n| Line 2"  # Mit leerer Zeile zwischen Paragraphen
+    expected = (
+        "+++ More Info\n| Line 1\n|\n| Line 2"  # Mit leerer Zeile zwischen Paragraphen
+    )
     assert toggle_with_content.to_markdown() == expected
+
+
 def test_toggleable_heading_markdown_node():
     """Test ToggleableHeadingMarkdownNode"""
     # Test ohne Content
-    toggleable_h1 = ToggleableHeadingMarkdownNode(text="Section 1", level=1, children=[])
+    toggleable_h1 = ToggleableHeadingMarkdownNode(
+        text="Section 1", level=1, children=[]
+    )
     expected = "+# Section 1"
     assert toggleable_h1.to_markdown() == expected
 
     # Test mit Content
     toggleable_h2 = ToggleableHeadingMarkdownNode(
-        text="Section 2", level=2, children=[
+        text="Section 2",
+        level=2,
+        children=[
             ParagraphMarkdownNode(text="Content line 1"),
-            ParagraphMarkdownNode(text="Content line 2")
-        ]
+            ParagraphMarkdownNode(text="Content line 2"),
+        ],
     )
     expected = "+## Section 2\n| Content line 1\n|\n| Content line 2"  # Mit leerer Zeile zwischen Paragraphen
     assert toggleable_h2.to_markdown() == expected

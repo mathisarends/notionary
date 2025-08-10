@@ -388,16 +388,16 @@ class MarkdownBuilder:
         return self
 
     def columns(
-        self, 
+        self,
         *builder_funcs: Callable[["MarkdownBuilder"], "MarkdownBuilder"],
-        width_ratios: Optional[list[float]] = None
+        width_ratios: Optional[list[float]] = None,
     ) -> Self:
         """
         Add multiple columns in a layout.
 
         Args:
             *builder_funcs: Multiple functions, each building one column
-            width_ratios: Optional list of width ratios (0.0 to 1.0). 
+            width_ratios: Optional list of width ratios (0.0 to 1.0).
                         If None, columns have equal width.
                         Length must match number of builder_funcs.
 
@@ -407,14 +407,14 @@ class MarkdownBuilder:
                 lambda col: col.h2("Left").paragraph("Left content"),
                 lambda col: col.h2("Right").paragraph("Right content")
             )
-            
+
             # Custom ratios:
             builder.columns(
                 lambda col: col.h2("Main").paragraph("70% width"),
                 lambda col: col.h2("Sidebar").paragraph("30% width"),
                 width_ratios=[0.7, 0.3]
             )
-            
+
             # Three columns with custom ratios:
             builder.columns(
                 lambda col: col.h3("Nav").paragraph("Navigation"),
@@ -425,11 +425,13 @@ class MarkdownBuilder:
         """
         if len(builder_funcs) < 2:
             raise ValueError("Column layout requires at least 2 columns")
-        
+
         if width_ratios is not None:
             if len(width_ratios) != len(builder_funcs):
-                raise ValueError(f"width_ratios length ({len(width_ratios)}) must match number of columns ({len(builder_funcs)})")
-            
+                raise ValueError(
+                    f"width_ratios length ({len(width_ratios)}) must match number of columns ({len(builder_funcs)})"
+                )
+
             ratio_sum = sum(width_ratios)
             if not (0.9 <= ratio_sum <= 1.1):  # Allow small floating point errors
                 raise ValueError(f"width_ratios should sum to 1.0, got {ratio_sum}")
@@ -438,20 +440,21 @@ class MarkdownBuilder:
         columns = []
         for i, builder_func in enumerate(builder_funcs):
             width_ratio = width_ratios[i] if width_ratios else None
-            
+
             col_builder = MarkdownBuilder()
             builder_func(col_builder)
-            
+
             column_node = ColumnMarkdownNode(
-                children=col_builder.children,
-                width_ratio=width_ratio
+                children=col_builder.children, width_ratio=width_ratio
             )
             columns.append(column_node)
 
         self.children.append(ColumnListMarkdownNode(columns=columns))
         return self
 
-    def column_with_nodes(self, *nodes: MarkdownNode, width_ratio: Optional[float] = None) -> Self:
+    def column_with_nodes(
+        self, *nodes: MarkdownNode, width_ratio: Optional[float] = None
+    ) -> Self:
         """
         Add a column with pre-built MarkdownNode objects.
 
@@ -465,7 +468,7 @@ class MarkdownBuilder:
                 HeadingMarkdownNode(text="Title", level=2),
                 ParagraphMarkdownNode(text="Content")
             )
-            
+
             # New API with ratio:
             builder.column_with_nodes(
                 HeadingMarkdownNode(text="Sidebar", level=2),
@@ -475,13 +478,9 @@ class MarkdownBuilder:
         """
         from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
 
-        column_node = ColumnMarkdownNode(
-            children=list(nodes), 
-            width_ratio=width_ratio
-        )
+        column_node = ColumnMarkdownNode(children=list(nodes), width_ratio=width_ratio)
         self.children.append(column_node)
         return self
-
 
     def _column(
         self, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder]

@@ -22,7 +22,7 @@ class ColumnMarkdownNode(MarkdownNode):
         |
         | Some content here
         :::
-        
+
         ::: column 0.7
         | # Wide Column (70%)
         |
@@ -30,7 +30,9 @@ class ColumnMarkdownNode(MarkdownNode):
         :::
     """
 
-    def __init__(self, children: list[MarkdownNode], width_ratio: Optional[float] = None):
+    def __init__(
+        self, children: list[MarkdownNode], width_ratio: Optional[float] = None
+    ):
         self.children = children
         self.width_ratio = width_ratio
 
@@ -57,5 +59,3 @@ class ColumnMarkdownNode(MarkdownNode):
         prefixed_lines = [f"| {line}" if line.strip() else "|" for line in lines]
 
         return f"{start_tag}\n" + "\n".join(prefixed_lines) + "\n:::"
-
-

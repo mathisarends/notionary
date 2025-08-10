@@ -84,4 +84,3 @@ class EmbedElement(NotionBlockElement):
         )
 
         return f'[embed]({url} "{text}")'
-    

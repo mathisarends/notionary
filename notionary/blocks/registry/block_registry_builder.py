@@ -156,7 +156,7 @@ class BlockRegistryBuilder:
 
     def with_breadcrumbs(self) -> Self:
         return self._add_element(BreadcrumbElement)
-    
+
     def with_ignore_element(self) -> Self:
         return self._add_element(IgnoreElement)
 

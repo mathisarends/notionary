@@ -13,7 +13,6 @@ from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-
 class BulletedListElement(NotionBlockElement):
     """Class for converting between Markdown bullet lists and Notion bulleted list items."""
 

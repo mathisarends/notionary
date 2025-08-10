@@ -16,7 +16,6 @@ from notionary.blocks.numbered_list.numbered_list_models import (
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-
 class NumberedListElement(NotionBlockElement):
     """Converts between Markdown numbered lists and Notion numbered list items."""
 

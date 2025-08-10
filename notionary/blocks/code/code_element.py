@@ -8,7 +8,6 @@ from notionary.blocks.block_models import Block, BlockType
 from notionary.blocks.code.code_models import CodeBlock, CodeLanguage, CreateCodeBlock
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.prompts import ElementPromptContent, ElementPromptBuilder
 
 
 class CodeElement(NotionBlockElement):

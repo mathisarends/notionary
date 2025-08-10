@@ -26,7 +26,7 @@ class BlockRegistry:
         """
         # Import here to avoid circular imports
         from notionary.blocks.registry.block_registry_builder import (
-            BlockRegistryBuilder
+            BlockRegistryBuilder,
         )
 
         self._builder: BlockRegistryBuilder = builder or BlockRegistryBuilder()
@@ -64,8 +64,8 @@ class BlockRegistry:
             .with_table_of_contents()
             .with_breadcrumbs()
             .with_ignore_element()
-            .with_paragraphs() # position here is important - its a fallback!
-        ) 
+            .with_paragraphs()  # position here is important - its a fallback!
+        )
 
         return cls(builder=builder)
 

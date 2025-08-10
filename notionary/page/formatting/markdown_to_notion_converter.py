@@ -1,6 +1,7 @@
 from __future__ import annotations
 import re
 
+from notionary.blocks.block_types import BlockType
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -57,7 +58,7 @@ class MarkdownToNotionConverter:
         for line in lines:
             if self._is_column_line_end(line):
                 continue
-            
+
             context = LineProcessingContext(
                 line=line,
                 result_blocks=result_blocks,
@@ -168,42 +169,32 @@ class MarkdownToNotionConverter:
     def _assign_children(
         self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]
     ):
-        """Assign children to a parent block."""
+        """Assign children to a parent block using BlockType."""
 
-        if hasattr(parent_block, "toggle") and hasattr(parent_block.toggle, "children"):
+        block_type = parent_block.type
+
+        if block_type == BlockType.TOGGLE:
             parent_block.toggle.children = children
             return
 
-        if hasattr(parent_block, "column_list") and hasattr(
-            parent_block.column_list, "children"
-        ):
+        if block_type == BlockType.COLUMN_LIST:
             parent_block.column_list.children = children
             return
 
-        if hasattr(parent_block, "column") and hasattr(parent_block.column, "children"):
+        if block_type == BlockType.COLUMN:
             parent_block.column.children = children
             return
 
-        if hasattr(parent_block, "heading_1") and hasattr(
-            parent_block.heading_1, "children"
-        ):
+        if block_type == BlockType.HEADING_1:
             parent_block.heading_1.children = children
             return
 
-        if hasattr(parent_block, "heading_2") and hasattr(
-            parent_block.heading_2, "children"
-        ):
+        if block_type == BlockType.HEADING_2:
             parent_block.heading_2.children = children
             return
 
-        if hasattr(parent_block, "heading_3") and hasattr(
-            parent_block.heading_3, "children"
-        ):
+        if block_type == BlockType.HEADING_3:
             parent_block.heading_3.children = children
-            return
-
-        if hasattr(parent_block, "children"):
-            parent_block.children = children
 
     def _is_column_line_end(self, line: str) -> bool:
         """Check if a line indicates the end of a column."""

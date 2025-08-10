@@ -104,6 +104,7 @@ def test_notion_to_markdown_invalid():
     result = DividerElement.notion_to_markdown(invalid_divider)
     assert result is None
 
+
 @pytest.mark.parametrize(
     "markdown,should_match",
     [

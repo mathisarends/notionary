@@ -9,7 +9,6 @@ from notionary.blocks.column.column_models import ColumnListBlock, CreateColumnL
 from notionary.blocks.notion_block_element import NotionBlockElement
 
 
-
 class ColumnListElement(NotionBlockElement):
     """
     Handles the `::: columns` container.

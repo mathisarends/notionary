@@ -178,6 +178,7 @@ def test_notion_to_markdown_invalid():
     mock_block.to_do = None
     assert TodoElement.notion_to_markdown(mock_block) is None
 
+
 def test_pattern_regex_directly():
     """Test the PATTERN and DONE_PATTERN regex directly."""
     unchecked_pattern = TodoElement.PATTERN

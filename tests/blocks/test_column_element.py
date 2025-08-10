@@ -68,6 +68,7 @@ def test_markdown_to_notion_invalid():
     result = ColumnElement.markdown_to_notion(":: column")  # Wrong syntax
     assert result is None
 
+
 @pytest.mark.parametrize(
     "markdown,should_match",
     [

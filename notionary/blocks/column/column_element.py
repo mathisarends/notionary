@@ -11,7 +11,7 @@ class ColumnElement(NotionBlockElement):
     """
     Handles individual `::: column` blocks with optional width ratio.
     Content is automatically added by the stack processor.
-    
+
     Supported syntax:
     - `::: column` (equal width)
     - `::: column 0.5` (50% width)
@@ -40,8 +40,6 @@ class ColumnElement(NotionBlockElement):
         ratio_str = match.group(1)
         width_ratio = None
 
-        print("widthratio", width_ratio)
-
         if ratio_str:
             try:
                 width_ratio = float(ratio_str)
@@ -59,7 +57,7 @@ class ColumnElement(NotionBlockElement):
         """Convert Notion column to markdown."""
         if not cls.match_notion(block):
             return ""
-        
+
         if not block.column.width_ratio:
             return "::: column"
 

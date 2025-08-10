@@ -71,10 +71,10 @@ class NotionBlockClient(BaseNotionClient):
             params["start_cursor"] = start_cursor
 
         response = await self.get(f"blocks/{block_id}/children", params=params)
-        
+
         if not response:
             return None
-        
+
         try:
             return BlockChildrenResponse.model_validate(response)
         except Exception as e:
