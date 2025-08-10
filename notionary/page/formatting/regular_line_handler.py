@@ -1,5 +1,5 @@
-from __future__ import annotations
-
+from notionary.blocks.column.column_element import ColumnElement
+from notionary.blocks.column.column_list_element import ColumnListElement
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.formatting.line_handler import (
@@ -7,13 +7,11 @@ from notionary.page.formatting.line_handler import (
     LineProcessingContext,
     ParentBlockContext,
 )
-
 from notionary.blocks.block_models import BlockCreateRequest, BlockCreateResult
 
 
-# TODO: Der column parser funktioniert hier so überhaupt nicht leider
 class RegularLineHandler(LineHandler):
-    """Handles regular lines (creating new blocks)."""
+    """Handles regular lines (creating new blocks) - now without column-specific logic."""
 
     def _can_handle(self, context: LineProcessingContext) -> bool:
         return context.line.strip()
@@ -44,7 +42,6 @@ class RegularLineHandler(LineHandler):
                     context.result_blocks.append(block)
                 else:
                     child_prefix = self._get_child_prefix(element)
-
                     parent_context = ParentBlockContext(
                         block=block,
                         element_type=element,
@@ -67,27 +64,25 @@ class RegularLineHandler(LineHandler):
         for block in blocks:
             context.result_blocks.append(block)
 
-    def _can_have_children(
-        self, block: BlockCreateRequest, element: NotionBlockElement
-    ) -> bool:
+    def _can_have_children(self, block: BlockCreateRequest, element: NotionBlockElement) -> bool:
         """Check if a block can have children."""
-        child_prefixes = {
-            "ToggleElement": "|",
-            "ToggleableHeadingElement": "|",
-            "ColumnListElement": "|",
-            "ColumnElement": "|",
-            "CodeElement": "RAW",
-            "TableElement": "TABLE_ROW",
-        }
-
-        element_name = element.__name__
-        if element_name in child_prefixes:
+        # Import here to avoid circular imports
+        from notionary.blocks.code.code_element import CodeElement
+        from notionary.blocks.table.table_element import TableElement
+        from notionary.blocks.toggle.toggle_element import ToggleElement
+        from notionary.blocks.toggleable_heading.toggleable_heading_element import ToggleableHeadingElement
+        
+        # Use subclass checks instead of string names
+        parent_elements = (CodeElement, TableElement, ToggleElement, ToggleableHeadingElement, 
+                          ColumnListElement, ColumnElement)
+        
+        if issubclass(element, parent_elements):
             return True
 
-        # Check various block types
+        # Check block attributes
         attrs_to_check = [
             ("toggle", "children"),
-            ("column_list", "children"),
+            ("column_list", "children"), 
             ("column", "children"),
             ("code", "rich_text"),
             ("table", "children"),
@@ -104,84 +99,54 @@ class RegularLineHandler(LineHandler):
 
     def _get_child_prefix(self, element: NotionBlockElement) -> str:
         """Determine the child prefix for the element type."""
-        child_prefixes = {
-            "ToggleElement": "|",
-            "ToggleableHeadingElement": "|",
-            "ColumnListElement": "|",
-            "ColumnElement": "|",
-            "CodeElement": "RAW",
-            "TableElement": "TABLE_ROW",
-        }
-        element_name = element.__name__
-        return child_prefixes.get(element_name, "|")
+        from notionary.blocks.code.code_element import CodeElement
+        from notionary.blocks.table.table_element import TableElement
+        
+        if issubclass(element, CodeElement):
+            return "RAW"
+        elif issubclass(element, TableElement):
+            return "TABLE_ROW"
+        else:
+            return "|"
 
     def _finalize_open_parents(self, context: LineProcessingContext) -> None:
-        """Finalize all open parent blocks."""
+        """Finalize all open parent blocks - now without column-specific logic."""
         while context.parent_stack:
             parent_context = context.parent_stack.pop()
 
             if parent_context.has_children():
-                if parent_context.element_type.__name__ == "ColumnListElement":
-                    # Column processing
-                    children_text = "\n".join(parent_context.child_lines)
-                    children_blocks = self._convert_children_text(
-                        children_text, context.block_registry
-                    )
-                    column_children = [
-                        block
-                        for block in children_blocks
-                        if (
-                            hasattr(block, "column")
-                            and getattr(block, "type", None) == "column"
-                        )
-                    ]
-                    parent_context.block.column_list.children = column_children
-                else:
-                    # Standard processing for other elements
-                    children_text = "\n".join(parent_context.child_lines)
-                    children_blocks = self._convert_children_text(
-                        children_text, context.block_registry
-                    )
-                    self._assign_children(parent_context.block, children_blocks)
+                children_text = "\n".join(parent_context.child_lines)
+                children_blocks = self._convert_children_text(children_text, context.block_registry)
+                self._assign_children(parent_context.block, children_blocks)
 
             context.result_blocks.append(parent_context.block)
 
-    def _convert_children_text(
-        self, text: str, block_registry: BlockRegistry
-    ) -> list[BlockCreateRequest]:
+    def _convert_children_text(self, text: str, block_registry: BlockRegistry) -> list[BlockCreateRequest]:
         """Recursively convert children text."""
-        from notionary.page.formatting.markdown_to_notion_converter import (
-            MarkdownToNotionConverter,
-        )
+        from notionary.page.formatting.markdown_to_notion_converter import MarkdownToNotionConverter
 
         if not text.strip():
             return []
 
-        # Create a new converter for children
         child_converter = MarkdownToNotionConverter(block_registry)
         return child_converter._process_lines(text)
 
-    def _assign_children(
-        self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]
-    ) -> None:
+    def _assign_children(self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]) -> None:
         """Assign children to a parent block."""
         attrs_to_check = [
             ("toggle", "children"),
             ("column_list", "children"),
-            ("column", "children"),
+            ("column", "children"), 
             ("heading_1", "children"),
             ("heading_2", "children"),
             ("heading_3", "children"),
         ]
 
         for attr1, attr2 in attrs_to_check:
-            if hasattr(parent_block, attr1) and hasattr(
-                getattr(parent_block, attr1), attr2
-            ):
+            if hasattr(parent_block, attr1) and hasattr(getattr(parent_block, attr1), attr2):
                 setattr(getattr(parent_block, attr1), attr2, children)
                 return
 
-        # Fallback
         if hasattr(parent_block, "children"):
             parent_block.children = children
 

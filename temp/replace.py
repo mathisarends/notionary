@@ -7,47 +7,15 @@ async def main():
 
     test_markdown = """## 🚀 Capability-based Parser Test
 
-    +++ Toggle Title
-    | Nested content line 1
-    | +++ Nested Toggle
-    | | Double nested content line 1
-    | | Double nested content line 2
-    | Nested content line 2
+    ```python
+    print("hello world")
+    ```
 
-    +## Wichtige Infos
-    | Das ist ein Detail
-    | Noch mehr Details
-
-    ::: columns
-    | ::: column
-    | | ## Left Column  
-    | | This is content in the left column.
-    | | 
-    | | | Name   | Alter | Stadt   | Abteilung    |
-    | | |--------|-------|---------|--------------|
-    | | | Alice  | 30    | Berlin  | Engineering  |
-    | | | Bob    | 25    | Hamburg | Marketing    |
-    | | | Carol  | 28    | Munich  | Design       |
-    | | | David  | 32    | Cologne | Sales        |
-    | | 
-    | | Some text after the table.
-    | ::: column
-    | | ## Right Column
-    | | This is content in the right column.
-    | | - Another point
-    | | - Final point
-    | |
-    | | ```python
-    | | def hello_world():
-    | |     print("Hello from the right column!")
-    | |     return "Success"
-    | | ```
-    | | Caption: Schleife in Python
-    | |
-    | | > This is a quote block in the right column.
-    | | > It can span multiple lines.
-
-    Regular paragraph after everything.
+    | Name   | Value |
+    |--------|-------|
+    | Alpha  | 1     |
+    | Beta   | 2     |
+    | Gamma  | 3     |
     """
 
     edge_result = await page.append_markdown(test_markdown, append_divider=True)
