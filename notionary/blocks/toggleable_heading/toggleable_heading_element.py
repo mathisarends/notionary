@@ -25,11 +25,6 @@ class ToggleableHeadingElement(NotionBlockElement):
     PATTERN = re.compile(r"^\+(?P<level>#{1,3})\s+(?P<content>.+)$")
 
     @staticmethod
-    def match_markdown(text: str) -> bool:
-        """Check if text is a markdown collapsible heading."""
-        return bool(ToggleableHeadingElement.PATTERN.match(text.strip()))
-
-    @staticmethod
     def match_notion(block: Block) -> bool:
         """Check if block is a Notion toggleable heading."""
         # Use BlockType enum for matching heading blocks
@@ -53,8 +48,7 @@ class ToggleableHeadingElement(NotionBlockElement):
         Convert markdown collapsible heading to a toggleable Notion HeadingBlock.
         Children are automatically handled by the StackBasedMarkdownConverter.
         """
-        match = cls.PATTERN.match(text.strip())
-        if not match:
+        if not (match := cls.PATTERN.match(text.strip())):
             return None
 
         level = len(match.group("level"))  # Count # characters

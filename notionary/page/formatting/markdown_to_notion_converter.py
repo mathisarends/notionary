@@ -1,11 +1,10 @@
-from __future__ import annotations
-
 from notionary.blocks.block_types import BlockType
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.content.notion_text_length_utils import fix_blocks_content_length
 from notionary.page.formatting.child_content_handler import ChildContentHandler
 from notionary.page.formatting.code_block_handler import CodeBlockHandler
 from notionary.page.formatting.column_handler import ColumnHandler
+from notionary.page.formatting.toggle_handler import ToggleHandler
 from notionary.page.formatting.line_handler import (
     LineProcessingContext,
     ParentBlockContext,
@@ -27,10 +26,13 @@ class MarkdownToNotionConverter:
         code_handler = CodeBlockHandler()
         table_handler = TableHandler()
         column_handler = ColumnHandler()
+        toggle_handler = ToggleHandler()
         child_handler = ChildContentHandler()
         regular_handler = RegularLineHandler()
 
-        code_handler.set_next(table_handler).set_next(column_handler).set_next(child_handler).set_next(regular_handler)
+        code_handler.set_next(table_handler).set_next(column_handler).set_next(
+            toggle_handler
+        ).set_next(child_handler).set_next(regular_handler)
         self._handler_chain = code_handler
 
     def convert(self, markdown_text: str) -> list[BlockCreateRequest]:
@@ -60,16 +62,20 @@ class MarkdownToNotionConverter:
         self._finalize_remaining_parents(result_blocks, parent_stack)
         return result_blocks
 
-    def _finalize_remaining_parents(self, result_blocks: list[BlockCreateRequest], parent_stack: list[ParentBlockContext]) -> None:
+    def _finalize_remaining_parents(
+        self,
+        result_blocks: list[BlockCreateRequest],
+        parent_stack: list[ParentBlockContext],
+    ) -> None:
         """Finalize any remaining open parent blocks with unified logic."""
         while parent_stack:
             context = parent_stack.pop()
-            
+
             if context.has_children():
                 children_text = "\n".join(context.child_lines)
                 children_blocks = self._convert_children_text(children_text)
                 self._assign_children(context.block, children_blocks)
-            
+
             result_blocks.append(context.block)
 
     def _convert_children_text(self, text: str) -> list[BlockCreateRequest]:
@@ -78,7 +84,9 @@ class MarkdownToNotionConverter:
         child_converter = MarkdownToNotionConverter(self._block_registry)
         return child_converter._process_lines(text)
 
-    def _assign_children(self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]):
+    def _assign_children(
+        self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]
+    ):
         """Assign children to a parent block using BlockType."""
         block_type = parent_block.type
 

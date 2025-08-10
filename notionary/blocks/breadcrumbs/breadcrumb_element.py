@@ -24,17 +24,13 @@ class BreadcrumbElement(NotionBlockElement):
     PATTERN = re.compile(r"^\[breadcrumb\]\s*$", re.IGNORECASE)
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        return bool(cls.PATTERN.match(text.strip()))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         # Kein extra Payload – nur Typ prüfen
         return block.type == BlockType.BREADCRUMB and block.breadcrumb
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
-        if not cls.match_markdown(text):
+        if not cls.PATTERN.match(text.strip()):
             return None
         return CreateBreadcrumbBlock(breadcrumb=BreadcrumbBlock())
 

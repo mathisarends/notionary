@@ -24,11 +24,6 @@ class NotionBlockElement(ABC):
         """Convert Notion block to markdown."""
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        """Check if this element can handle the given markdown text."""
-        return bool(cls.markdown_to_notion(text))  # Now calls the class's version
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if this element can handle the given Notion block."""
         return bool(cls.notion_to_markdown(block))  # Now calls the class's version

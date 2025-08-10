@@ -28,22 +28,11 @@ class AudioElement(NotionBlockElement):
     - Caption is optional descriptive text (enclosed in quotes)
     """
 
-    # Regex patterns
     URL_PATTERN = r"(https?://[^\s\"]+)"
     CAPTION_PATTERN = r'(?:\s+"([^"]+)")?'
     PATTERN = re.compile(r"^\[audio\]\(" + URL_PATTERN + CAPTION_PATTERN + r"\)$")
 
-    # Supported audio extensions
     SUPPORTED_EXTENSIONS = {".mp3", ".wav", ".ogg", ".oga", ".m4a"}
-
-    @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        text = text.strip()
-        m = cls.PATTERN.match(text)
-        if not m:
-            return False
-        url = m.group(1)
-        return cls._is_likely_audio_url(url)
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -52,15 +41,15 @@ class AudioElement(NotionBlockElement):
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
-        """Convert markdown audio embed to Notion audio block."""
-        m = cls.PATTERN.match(text.strip())
-        if not m:
+        """Convert markdown audio embed to Notion audio block (or return None if not matching)."""
+        match = cls.PATTERN.match(text.strip())
+        if not match:
             return None
+        url = match.group(1)
 
-        url = m.group(1)
-        caption_text = m.group(2)
-        if not url:
+        if not cls._is_likely_audio_url(url):
             return None
+        caption_text = match.group(2)
 
         # Create caption rich text objects
         caption_objects = []
@@ -68,7 +57,6 @@ class AudioElement(NotionBlockElement):
             caption_rt = RichTextObject.from_plain_text(caption_text)
             caption_objects = [caption_rt]
 
-        # Create AudioBlock content object
         audio_content = FileBlock(
             type=FileType.EXTERNAL,
             external=ExternalFile(url=url),

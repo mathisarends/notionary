@@ -31,11 +31,6 @@ class BookmarkElement(NotionBlockElement):
     )
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        text = text.strip()
-        return text.startswith("[bookmark]") and bool(cls.PATTERN.match(text))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         return block.type == BlockType.BOOKMARK and block.bookmark
 
@@ -44,8 +39,7 @@ class BookmarkElement(NotionBlockElement):
         """
         Convert a markdown bookmark into a Notion BookmarkBlock.
         """
-        m = cls.PATTERN.match(text.strip())
-        if not m:
+        if not (m := cls.PATTERN.match(text.strip())):
             return None
 
         url, title, description = m.group(1), m.group(2), m.group(3)

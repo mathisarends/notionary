@@ -26,10 +26,6 @@ class TodoElement(NotionBlockElement):
     DONE_PATTERN = re.compile(r"^\s*[-*+]\s+\[x\]\s+(.+)$", re.IGNORECASE)
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        return bool(cls.PATTERN.match(text) or cls.DONE_PATTERN.match(text))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         return block.type == BlockType.TO_DO and block.to_do
 

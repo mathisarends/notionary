@@ -25,11 +25,6 @@ class ToggleElement(NotionBlockElement):
     TRANSCRIPT_TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+Transcript$")
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        """Check if the text is a markdown toggle."""
-        return bool(cls.TOGGLE_PATTERN.match(text.strip()))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if the block is a Notion toggle block."""
         return block.type == BlockType.TOGGLE
@@ -40,8 +35,7 @@ class ToggleElement(NotionBlockElement):
         Convert markdown toggle line to Notion ToggleBlock.
         Children are automatically handled by the StackBasedMarkdownConverter.
         """
-        match = cls.TOGGLE_PATTERN.match(text.strip())
-        if not match:
+        if not (match := cls.TOGGLE_PATTERN.match(text.strip())):
             return None
 
         title = match.group(1).strip()

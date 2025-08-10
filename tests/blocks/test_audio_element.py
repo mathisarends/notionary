@@ -6,9 +6,9 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 
 def test_match_markdown_valid_audio():
-    assert AudioElement.match_markdown("[audio](https://example.com/track.mp3)")
-    assert AudioElement.match_markdown('[audio](https://audio.de/a.wav "Ein Track")')
-    assert AudioElement.match_markdown('   [audio](https://x.org/b.ogg "Hallo")   ')
+    assert AudioElement.markdown_to_notion("[audio](https://example.com/track.mp3)") is not None
+    assert AudioElement.markdown_to_notion('[audio](https://audio.de/a.wav "Ein Track")') is not None
+    assert AudioElement.markdown_to_notion('   [audio](https://x.org/b.ogg "Hallo")   ') is not None
     assert AudioElement.match_markdown("[audio](https://test.com/file.m4a)")
     # Auch OGA und Großbuchstaben
     assert AudioElement.match_markdown("[audio](https://example.com/audio.OGA)")

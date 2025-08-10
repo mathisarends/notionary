@@ -26,17 +26,12 @@ class TableOfContentsElement(NotionBlockElement):
     PATTERN = re.compile(r"^\[toc\](?:\((?P<color>[a-z_]+)\))?$", re.IGNORECASE)
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        return bool(cls.PATTERN.match(text.strip()))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         return block.type == BlockType.TABLE_OF_CONTENTS and block.table_of_contents
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
-        input_match = cls.PATTERN.match(text.strip())
-        if not input_match:
+        if not (input_match := cls.PATTERN.match(text.strip())):
             return None
 
         color = (input_match.group("color") or "default").lower()

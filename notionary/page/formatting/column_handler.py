@@ -16,7 +16,7 @@ class ColumnHandler(LineHandler):
     def _can_handle(self, context: LineProcessingContext) -> bool:
         return (
             self._is_column_end(context)
-            or self._is_column_list_end(context) 
+            or self._is_column_list_end(context)
             or self._is_in_column_context(context)
         )
 
@@ -43,7 +43,7 @@ class ColumnHandler(LineHandler):
         """Check if we need to end a single column."""
         if not self._end_pattern.match(context.line.strip()):
             return False
-        
+
         if not context.parent_stack:
             return False
 
@@ -55,7 +55,7 @@ class ColumnHandler(LineHandler):
         """Check if we need to end a column list."""
         if not self._end_pattern.match(context.line.strip()):
             return False
-        
+
         if not context.parent_stack:
             return False
 
@@ -69,7 +69,9 @@ class ColumnHandler(LineHandler):
             return False
 
         current_parent = context.parent_stack[-1]
-        if not issubclass(current_parent.element_type, (ColumnListElement, ColumnElement)):
+        if not issubclass(
+            current_parent.element_type, (ColumnListElement, ColumnElement)
+        ):
             return False
 
         # Check for | prefix
@@ -78,15 +80,21 @@ class ColumnHandler(LineHandler):
     def _finalize_column(self, context: LineProcessingContext) -> None:
         """Finalize a single column and add it to the column list."""
         column_context = context.parent_stack.pop()
-        
+
         if column_context.has_children():
             children_text = "\n".join(column_context.child_lines)
-            children_blocks = self._convert_children_text(children_text, context.block_registry)
+            children_blocks = self._convert_children_text(
+                children_text, context.block_registry
+            )
             column_context.block.column.children = children_blocks
 
         # Add finished column to the column list (which should be next on stack)
-        if context.parent_stack and issubclass(context.parent_stack[-1].element_type, ColumnListElement):
-            context.parent_stack[-1].block.column_list.children.append(column_context.block)
+        if context.parent_stack and issubclass(
+            context.parent_stack[-1].element_type, ColumnListElement
+        ):
+            context.parent_stack[-1].block.column_list.children.append(
+                column_context.block
+            )
         else:
             # Fallback: add to result_blocks if no column list parent
             context.result_blocks.append(column_context.block)
@@ -94,14 +102,17 @@ class ColumnHandler(LineHandler):
     def _finalize_column_list(self, context: LineProcessingContext) -> None:
         """Finalize a column list."""
         column_list_context = context.parent_stack.pop()
-        
+
         if column_list_context.has_children():
             children_text = "\n".join(column_list_context.child_lines)
-            children_blocks = self._convert_children_text(children_text, context.block_registry)
-            
+            children_blocks = self._convert_children_text(
+                children_text, context.block_registry
+            )
+
             # Filter only column blocks
             column_children = [
-                block for block in children_blocks
+                block
+                for block in children_blocks
                 if hasattr(block, "column") and getattr(block, "type", None) == "column"
             ]
             column_list_context.block.column_list.children = column_children
@@ -122,10 +133,12 @@ class ColumnHandler(LineHandler):
 
     def _convert_children_text(self, text: str, block_registry) -> list:
         """Convert children text to blocks."""
-        from notionary.page.formatting.markdown_to_notion_converter import MarkdownToNotionConverter
-        
+        from notionary.page.formatting.markdown_to_notion_converter import (
+            MarkdownToNotionConverter,
+        )
+
         if not text.strip():
             return []
-        
+
         child_converter = MarkdownToNotionConverter(block_registry)
         return child_converter._process_lines(text)

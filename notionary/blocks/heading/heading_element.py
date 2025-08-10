@@ -2,6 +2,7 @@ from __future__ import annotations
 import re
 from typing import Optional, cast
 
+from notionary.blocks.block_types import BlockColor
 from notionary.blocks.heading.heading_models import (
     CreateHeading1Block,
     CreateHeading2Block,
@@ -25,11 +26,6 @@ class HeadingElement(NotionBlockElement):
     PATTERN = re.compile(r"^(#{1,3})[ \t]+(.+)$")
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        m = cls.PATTERN.match(text)
-        return bool(m and m.group(2).strip())
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         return (
             block.type
@@ -44,21 +40,21 @@ class HeadingElement(NotionBlockElement):
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown headings (#, ##, ###) to Notion HeadingBlock."""
-        m = cls.PATTERN.match(text.strip())
-        if not m:
+        match = cls.PATTERN.match(text.strip())
+        if not match:
             return None
 
-        level = len(m.group(1))
+        level = len(match.group(1))
         if level < 1 or level > 3:
             return None
 
-        content = m.group(2).strip()
+        content = match.group(2).strip()
         if not content:
             return None
 
         rich_text = TextInlineFormatter.parse_inline_formatting(content)
         heading_content = HeadingBlock(
-            rich_text=rich_text, color="default", is_toggleable=False
+            rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=False
         )
 
         if level == 1:

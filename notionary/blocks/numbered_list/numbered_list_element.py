@@ -8,6 +8,7 @@ from notionary.blocks.block_models import (
     Block,
     BlockType,
 )
+from notionary.blocks.block_types import BlockColor
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.numbered_list.numbered_list_models import (
     CreateNumberedListItemBlock,
@@ -22,25 +23,21 @@ class NumberedListElement(NotionBlockElement):
     PATTERN = re.compile(r"^\s*(\d+)\.\s+(.+)$")
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        return bool(cls.PATTERN.match(text))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         return block.type == BlockType.NUMBERED_LIST_ITEM and block.numbered_list_item
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown numbered list item to Notion NumberedListItemBlock."""
-        m = cls.PATTERN.match(text.strip())
-        if not m:
+        match = cls.PATTERN.match(text.strip())
+        if not match:
             return None
 
-        content = m.group(2)
+        content = match.group(2)
         rich_text = TextInlineFormatter.parse_inline_formatting(content)
 
         numbered_list_content = NumberedListItemBlock(
-            rich_text=rich_text, color="default"
+            rich_text=rich_text, color=BlockColor.DEFAULT
         )
         return CreateNumberedListItemBlock(numbered_list_item=numbered_list_content)
 

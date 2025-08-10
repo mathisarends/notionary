@@ -45,22 +45,18 @@ class VideoElement(NotionBlockElement):
     ]
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        return bool(cls.PATTERN.match(text.strip()))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         return block.type == BlockType.VIDEO and block.video
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown video syntax to a Notion VideoBlock plus an empty paragraph."""
-        m = cls.PATTERN.match(text.strip())
-        if not m:
+        match = cls.PATTERN.match(text.strip())
+        if not match:
             return None
 
-        url, caption_text = m.group(1), m.group(2) or ""
-        # Normalize YouTube URLs by extracting ID
+        url, caption_text = match.group(1), match.group(2) or ""
+
         vid_id = cls._get_youtube_id(url)
         if vid_id:
             url = f"https://www.youtube.com/watch?v={vid_id}"

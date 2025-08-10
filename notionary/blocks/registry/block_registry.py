@@ -63,7 +63,6 @@ class BlockRegistry:
             .with_equation()
             .with_table_of_contents()
             .with_breadcrumbs()
-            .with_ignore_element()
             .with_paragraphs()  # position here is important - its a fallback!
         )
 

@@ -37,27 +37,23 @@ class EmbedElement(NotionBlockElement):
     )
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        return bool(cls.PATTERN.match(text.strip()))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         return block.type == BlockType.EMBED and block.embed
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown embed syntax to Notion EmbedBlock."""
-        m = cls.PATTERN.match(text.strip())
-        if not m:
+        match = cls.PATTERN.match(text.strip())
+        if not match:
             return None
 
-        url, caption_text = m.group(1), m.group(2) or ""
+        url, rich_text = match.group(1), match.group(2) or ""
 
         # Build EmbedBlock
         embed_block = EmbedBlock(url=url, caption=[])
-        if caption_text.strip():
-            rt = RichTextObject.from_plain_text(caption_text.strip())
-            embed_block.caption = [rt]
+        if rich_text.strip():
+            rich_text_obj = RichTextObject.from_plain_text(rich_text.strip())
+            embed_block.caption = [rich_text_obj]
 
         return CreateEmbedBlock(embed=embed_block)
 

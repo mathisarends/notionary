@@ -58,15 +58,19 @@ class TableHandler(LineHandler):
             context.result_blocks.append(table_context.block)
             return
 
-        table_rows, separator_found = self._process_table_lines(table_context.child_lines)
-        
+        table_rows, separator_found = self._process_table_lines(
+            table_context.child_lines
+        )
+
         table_context.block.table.children = table_rows
         if table_rows and separator_found:
             table_context.block.table.has_column_header = True
 
         context.result_blocks.append(table_context.block)
 
-    def _process_table_lines(self, child_lines: list[str]) -> tuple[list[CreateTableRowBlock], bool]:
+    def _process_table_lines(
+        self, child_lines: list[str]
+    ) -> tuple[list[CreateTableRowBlock], bool]:
         table_rows = []
         separator_found = False
 

@@ -11,11 +11,18 @@ async def main():
     print("hello world")
     ```
 
+    
+    +### Spinnen
+    | sind wilde
+    | tiere    
+
+
     | Name   | Value |
     |--------|-------|
     | Alpha  | 1     |
     | Beta   | 2     |
     | Gamma  | 3     |
+
     """
 
     edge_result = await page.append_markdown(test_markdown, append_divider=True)

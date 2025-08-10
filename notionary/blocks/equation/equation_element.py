@@ -29,14 +29,6 @@ class EquationElement(NotionBlockElement):
     )
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        input_text = text.strip()
-        return bool(
-            cls._QUOTED_PATTERN.match(input_text)
-            or cls._UNQUOTED_PATTERN.match(input_text)
-        )
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         return block.type == BlockType.EQUATION and block.equation
 
@@ -45,8 +37,7 @@ class EquationElement(NotionBlockElement):
         input_text = text.strip()
 
         # Try quoted form first: [equation]("...")
-        quoted_match = cls._QUOTED_PATTERN.match(input_text)
-        if quoted_match:
+        if quoted_match := cls._QUOTED_PATTERN.match(input_text):
             raw_expression = quoted_match.group("quoted_expr")
             # Unescape \" and \\ for Notion
             unescaped_expression = raw_expression.encode("utf-8").decode(
@@ -62,8 +53,7 @@ class EquationElement(NotionBlockElement):
             )
 
         # Try unquoted form: [equation](...)
-        unquoted_match = cls._UNQUOTED_PATTERN.match(input_text)
-        if unquoted_match:
+        if unquoted_match := cls._UNQUOTED_PATTERN.match(input_text):
             raw_expression = unquoted_match.group("unquoted_expr").strip()
             return (
                 CreateEquationBlock(equation=EquationBlock(expression=raw_expression))

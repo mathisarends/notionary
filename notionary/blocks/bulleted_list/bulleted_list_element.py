@@ -20,10 +20,6 @@ class BulletedListElement(NotionBlockElement):
     PATTERN = re.compile(r"^(\s*)[*\-+]\s+(?!\[[ x]\])(.+)$")
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        return bool(cls.PATTERN.match(text.rstrip()))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if this element can handle the given Notion block."""
         return block.type == BlockType.BULLETED_LIST_ITEM and block.bulleted_list_item
@@ -33,12 +29,11 @@ class BulletedListElement(NotionBlockElement):
         """
         Convert a markdown bulleted list item into a Notion BulletedListItemBlock.
         """
-        m = cls.PATTERN.match(text.strip())
-        if not m:
+        if not (match := cls.PATTERN.match(text.strip())):
             return None
 
         # Extract the content part (second capture group)
-        content = m.group(2)
+        content = match.group(2)
 
         # Parse inline markdown formatting into RichTextObject list
         rich_text = TextInlineFormatter.parse_inline_formatting(content)

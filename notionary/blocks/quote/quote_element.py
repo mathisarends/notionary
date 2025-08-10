@@ -4,6 +4,7 @@ from typing import Optional
 
 from notionary.blocks.block_models import Block, BlockCreateResult
 
+from notionary.blocks.block_types import BlockColor
 from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
 
 from notionary.blocks.block_models import Block, BlockType
@@ -24,22 +25,17 @@ class QuoteElement(NotionBlockElement):
     PATTERN = re.compile(r"^\[quote\]\(([^\n\r]+)\)$")
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        match = cls.PATTERN.match(text.strip())
-        return bool(match and match.group(1).strip())
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         return block.type == BlockType.QUOTE and block.quote
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown quote to Notion QuoteBlock."""
-        m = cls.PATTERN.match(text.strip())
-        if not m:
+        match = cls.PATTERN.match(text.strip())
+        if not match:
             return None
 
-        content = m.group(1).strip()
+        content = match.group(1).strip()
         if not content:
             return None
 
@@ -47,7 +43,7 @@ class QuoteElement(NotionBlockElement):
         rich_text = TextInlineFormatter.parse_inline_formatting(content)
 
         # Return a typed QuoteBlock
-        quote_content = QuoteBlock(rich_text=rich_text, color="default")
+        quote_content = QuoteBlock(rich_text=rich_text, color=BlockColor.DEFAULT)
         return CreateQuoteBlock(quote=quote_content)
 
     @classmethod

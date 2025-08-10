@@ -14,6 +14,7 @@ from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.models.icon_types import EmojiIcon, IconObject
 
 
+
 class CalloutElement(NotionBlockElement):
     """
     Handles conversion between Markdown callouts and Notion callout blocks.
@@ -44,11 +45,11 @@ class CalloutElement(NotionBlockElement):
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert a markdown callout into a Notion CalloutBlock."""
-        m = cls.PATTERN.match(text.strip())
-        if not m:
+        match = cls.PATTERN.match(text.strip())
+        if not match:
             return None
 
-        content, emoji = m.group(1), m.group(2)
+        content, emoji = match.group(1), match.group(2)
         if not content:
             return None
 

@@ -25,10 +25,6 @@ class DividerElement(NotionBlockElement):
     PATTERN = re.compile(r"^\s*-{3,}\s*$")
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        return bool(cls.PATTERN.match(text))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if this element can handle the given Notion block."""
         return block.type == BlockType.DIVIDER and block.divider

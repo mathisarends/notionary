@@ -21,11 +21,6 @@ class ColumnElement(NotionBlockElement):
     COLUMN_START = re.compile(r"^:::\s*column(?:\s+(0?\.\d+|1\.0?))?\s*$")
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        """Check if text starts a single column."""
-        return bool(cls.COLUMN_START.match(text.strip()))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if block is a Notion column."""
         return block.type == BlockType.COLUMN and block.column
@@ -33,8 +28,7 @@ class ColumnElement(NotionBlockElement):
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert `::: column [ratio]` to Notion ColumnBlock."""
-        match = cls.COLUMN_START.match(text.strip())
-        if not match:
+        if not (match := cls.COLUMN_START.match(text.strip())):
             return None
 
         ratio_str = match.group(1)

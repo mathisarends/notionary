@@ -36,21 +36,17 @@ class ImageElement(NotionBlockElement):
     )
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        return bool(cls.PATTERN.match(text.strip()))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         return block.type == BlockType.IMAGE and block.image
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown image syntax to Notion ImageBlock followed by an empty paragraph."""
-        m = cls.PATTERN.match(text.strip())
-        if not m:
+        match = cls.PATTERN.match(text.strip())
+        if not match:
             return None
 
-        url, caption_text = m.group(1), m.group(2) or ""
+        url, caption_text = match.group(1), match.group(2) or ""
         # Build ImageBlock
         image_block = FileBlock(
             type="external", external=ExternalFile(url=url), caption=[]

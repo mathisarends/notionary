@@ -25,11 +25,6 @@ class CodeElement(NotionBlockElement):
     CODE_START_PATTERN = re.compile(r"^```(\w*)\s*$")
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        """Check if text starts a code block."""
-        return bool(cls.CODE_START_PATTERN.match(text.strip()))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if block is a Notion code block."""
         return block.type == BlockType.CODE and block.code
@@ -37,8 +32,7 @@ class CodeElement(NotionBlockElement):
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert opening ```language to Notion code block."""
-        match = cls.CODE_START_PATTERN.match(text.strip())
-        if not match:
+        if not (match := cls.CODE_START_PATTERN.match(text.strip())):
             return None
 
         language = (match.group(1) or cls.DEFAULT_LANGUAGE).lower()

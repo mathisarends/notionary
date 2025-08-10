@@ -30,11 +30,6 @@ class TableElement(NotionBlockElement):
     SEPARATOR_PATTERN = re.compile(r"^\s*\|([\s\-:|]+)\|\s*$")
 
     @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        """Check if text starts a table (first row with | ... |)."""
-        return bool(cls.ROW_PATTERN.match(text.strip()))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if block is a Notion table."""
         return block.type == BlockType.TABLE and block.table
