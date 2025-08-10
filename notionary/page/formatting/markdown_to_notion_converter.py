@@ -55,6 +55,9 @@ class MarkdownToNotionConverter:
         parent_stack: list[ParentBlockContext] = []
 
         for line in lines:
+            if self._is_column_line_end(line):
+                continue
+            
             context = LineProcessingContext(
                 line=line,
                 result_blocks=result_blocks,
@@ -201,3 +204,7 @@ class MarkdownToNotionConverter:
 
         if hasattr(parent_block, "children"):
             parent_block.children = children
+
+    def _is_column_line_end(self, line: str) -> bool:
+        """Check if a line indicates the end of a column."""
+        return line.strip() == ":::"
