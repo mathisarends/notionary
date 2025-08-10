@@ -14,22 +14,22 @@ from notionary.blocks.numbered_list.numbered_list_models import (
 
 def test_match_markdown_valid():
     """Test recognition of valid numbered list formats."""
-    assert NumberedListElement.match_markdown("1. First item")
-    assert NumberedListElement.match_markdown("2. Second item")
-    assert NumberedListElement.match_markdown("123. Item with big number")
-    assert NumberedListElement.match_markdown("  1. Indented item")
-    assert NumberedListElement.match_markdown("    10. Deep indented")
+    assert NumberedListElement.markdown_to_notion("1. First item") is not None
+    assert NumberedListElement.markdown_to_notion("2. Second item") is not None
+    assert NumberedListElement.markdown_to_notion("123. Item with big number") is not None
+    assert NumberedListElement.markdown_to_notion("  1. Indented item") is not None
+    assert NumberedListElement.markdown_to_notion("    10. Deep indented") is not None
 
 
 def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not NumberedListElement.match_markdown("- Bulleted item")
-    assert not NumberedListElement.match_markdown("* Another bullet")
-    assert not NumberedListElement.match_markdown("1 Missing dot")
-    assert not NumberedListElement.match_markdown("1.Missing space")
-    assert not NumberedListElement.match_markdown("a. Letter instead of number")
-    assert not NumberedListElement.match_markdown("Regular text")
-    assert not NumberedListElement.match_markdown("")
+    assert NumberedListElement.markdown_to_notion("- Bulleted item") is None
+    assert NumberedListElement.markdown_to_notion("* Another bullet") is None
+    assert NumberedListElement.markdown_to_notion("1 Missing dot") is None
+    assert NumberedListElement.markdown_to_notion("1.Missing space") is None
+    assert NumberedListElement.markdown_to_notion("a. Letter instead of number") is None
+    assert NumberedListElement.markdown_to_notion("Regular text") is None
+    assert NumberedListElement.markdown_to_notion("") is None
 
 
 def test_match_notion_valid():
@@ -131,9 +131,9 @@ def test_pattern_regex_directly():
 
 def test_whitespace_handling():
     """Test handling of whitespace."""
-    assert NumberedListElement.match_markdown("1. Item   ")  # trailing
-    assert NumberedListElement.match_markdown("1. Item\n")  # newline
-    assert NumberedListElement.match_markdown("  1. Item")  # leading indentation
+    assert NumberedListElement.markdown_to_notion("1. Item   ")  # trailing
+    assert NumberedListElement.markdown_to_notion("1. Item\n")  # newline
+    assert NumberedListElement.markdown_to_notion("  1. Item")  # leading indentation
 
 
 def test_special_characters():
@@ -146,7 +146,7 @@ def test_special_characters():
     ]
 
     for text in test_cases:
-        assert NumberedListElement.match_markdown(text)
+        assert NumberedListElement.markdown_to_notion(text) is not None
         result = NumberedListElement.markdown_to_notion(text)
         assert result is not None
 
@@ -160,7 +160,7 @@ def test_large_numbers():
     ]
 
     for text in large_number_cases:
-        assert NumberedListElement.match_markdown(text)
+        assert NumberedListElement.markdown_to_notion(text) is not None
         result = NumberedListElement.markdown_to_notion(text)
         assert result is not None
 
@@ -190,6 +190,6 @@ def test_indentation_levels():
     ]
 
     for text in indentation_cases:
-        assert NumberedListElement.match_markdown(text)
+        assert NumberedListElement.markdown_to_notion(text) is not None
         result = NumberedListElement.markdown_to_notion(text)
         assert result is not None

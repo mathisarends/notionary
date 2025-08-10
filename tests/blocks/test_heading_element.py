@@ -15,19 +15,19 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 def test_match_markdown_valid():
     """Test recognition of valid heading formats."""
-    assert HeadingElement.match_markdown("# Heading 1")
-    assert HeadingElement.match_markdown("## Heading 2")
-    assert HeadingElement.match_markdown("### Heading 3")
-    assert HeadingElement.match_markdown("#  Heading with spaces")
+    assert HeadingElement.markdown_to_notion("# Heading 1") is not None
+    assert HeadingElement.markdown_to_notion("## Heading 2") is not None
+    assert HeadingElement.markdown_to_notion("### Heading 3") is not None
+    assert HeadingElement.markdown_to_notion("#  Heading with spaces") is not None
 
 
 def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not HeadingElement.match_markdown("#### Too deep")
-    assert not HeadingElement.match_markdown("#No space")
-    assert not HeadingElement.match_markdown("# ")  # No content
-    assert not HeadingElement.match_markdown("Regular text")
-    assert not HeadingElement.match_markdown("")
+    assert HeadingElement.markdown_to_notion("#### Too deep") is None
+    assert HeadingElement.markdown_to_notion("#No space") is None
+    assert not HeadingElement.markdown_to_notion("# ")  # No content
+    assert HeadingElement.markdown_to_notion("Regular text") is None
+    assert HeadingElement.markdown_to_notion("") is None
 
 
 def test_match_notion():
@@ -129,5 +129,8 @@ def test_pattern_matching():
 )
 def test_markdown_patterns(markdown, should_match):
     """Test various markdown patterns."""
-    result = HeadingElement.match_markdown(markdown)
-    assert result == should_match
+    result = HeadingElement.markdown_to_notion(markdown)
+    if should_match:
+        assert result is not None
+    else:
+        assert result is None

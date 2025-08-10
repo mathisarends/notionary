@@ -12,33 +12,33 @@ from notionary.blocks.paragraph.paragraph_models import CreateParagraphBlock
 
 def test_match_markdown_valid():
     """Test recognition of valid video formats."""
-    assert VideoElement.match_markdown("[video](https://example.com/video.mp4)")
-    assert VideoElement.match_markdown(
+    assert VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
+    assert VideoElement.markdown_to_notion(
         '[video](https://example.com/video.mp4 "Caption")'
     )
-    assert VideoElement.match_markdown("[video](https://youtu.be/dQw4w9WgXcQ)")
-    assert VideoElement.match_markdown(
+    assert VideoElement.markdown_to_notion("[video](https://youtu.be/dQw4w9WgXcQ)")
+    assert VideoElement.markdown_to_notion(
         "[video](https://youtube.com/watch?v=dQw4w9WgXcQ)"
     )
-    assert VideoElement.match_markdown("  [video](https://example.com/video.mov)  ")
+    assert VideoElement.markdown_to_notion("  [video](https://example.com/video.mov)  ")
 
 
 def test_match_markdown_invalid():
     """Test rejection of invalid video formats."""
-    assert not VideoElement.match_markdown("[video]")
-    assert not VideoElement.match_markdown("[video]()")
-    assert not VideoElement.match_markdown("[video](not-a-url)")
-    assert not VideoElement.match_markdown(
+    assert VideoElement.markdown_to_notion("[video]") is None
+    assert not VideoElement.markdown_to_notion("[video]()")
+    assert not VideoElement.markdown_to_notion("[video](not-a-url)")
+    assert not VideoElement.markdown_to_notion(
         "[video](ftp://example.com/video.mp4)"
     )  # Only http/https
-    assert not VideoElement.match_markdown(
+    assert not VideoElement.markdown_to_notion(
         "video(https://example.com/video.mp4)"
     )  # Missing brackets
-    assert not VideoElement.match_markdown(
+    assert not VideoElement.markdown_to_notion(
         "[embed](https://example.com/video.mp4)"
     )  # Wrong tag
-    assert not VideoElement.match_markdown("")
-    assert not VideoElement.match_markdown("Regular text")
+    assert VideoElement.markdown_to_notion("") is None
+    assert VideoElement.markdown_to_notion("Regular text") is None
 
 
 def test_match_notion_valid():
@@ -246,14 +246,14 @@ def test_video_file_extensions():
         url = f"https://example.com/video{ext}"
         markdown = f"[video]({url})"
 
-        assert VideoElement.match_markdown(markdown)
+        assert VideoElement.markdown_to_notion(markdown) is not None
         result = VideoElement.markdown_to_notion(markdown)
         assert result is not None
 
 
 def test_whitespace_handling():
     """Test handling of whitespace."""
-    assert VideoElement.match_markdown("  [video](https://example.com/video.mp4)  ")
+    assert VideoElement.markdown_to_notion("  [video](https://example.com/video.mp4)  ")
 
     result = VideoElement.markdown_to_notion(
         "  [video](https://example.com/video.mp4)  "
@@ -271,7 +271,7 @@ def test_url_protocols():
 
     for url in valid_urls:
         markdown = f"[video]({url})"
-        assert VideoElement.match_markdown(markdown)
+        assert VideoElement.markdown_to_notion(markdown) is not None
 
     # Invalid protocols should not match the pattern
     invalid_urls = [
@@ -281,4 +281,4 @@ def test_url_protocols():
 
     for url in invalid_urls:
         markdown = f"[video]({url})"
-        assert not VideoElement.match_markdown(markdown)
+        assert VideoElement.markdown_to_notion(markdown) is None

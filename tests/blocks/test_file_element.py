@@ -47,12 +47,12 @@ def create_block_with_required_fields(**kwargs) -> Block:
 
 
 def test_match_markdown_valid_files():
-    assert FileElement.match_markdown("[file](https://example.com/doc.pdf)")
-    assert FileElement.match_markdown(
+    assert FileElement.markdown_to_notion("[file](https://example.com/doc.pdf)")
+    assert FileElement.markdown_to_notion(
         '[file](https://drive.google.com/file/d/123 "My Report")'
     )
-    assert FileElement.match_markdown("   [file](https://abc.com/x.docx)   ")
-    assert FileElement.match_markdown(
+    assert FileElement.markdown_to_notion("   [file](https://abc.com/x.docx)   ")
+    assert FileElement.markdown_to_notion(
         '[file](https://example.com/y.xlsx "Finanzen Q4")'
     )
 
@@ -67,7 +67,7 @@ def test_match_markdown_valid_files():
     ],
 )
 def test_match_markdown_param_valid(text):
-    assert FileElement.match_markdown(text)
+    assert FileElement.markdown_to_notion(text) is not None
 
 
 @pytest.mark.parametrize(
@@ -87,7 +87,7 @@ def test_match_markdown_param_valid(text):
 def test_match_markdown_param_invalid(text):
     # Adjust expectations based on actual FileElement behavior
     # Some of these might actually match the pattern but fail during conversion
-    result = FileElement.match_markdown(text)
+    result = FileElement.markdown_to_notion(text)
     # For most invalid cases, this should be False
     if text in ["[file](not-a-url)", "[file](ftp://site.com/file.pdf)"]:
         # These might match the pattern but fail URL validation
@@ -314,7 +314,7 @@ def test_integration_with_other_elements():
         "   ",
     ]
     for text in not_files:
-        assert not FileElement.match_markdown(text)
+        assert FileElement.markdown_to_notion(text) is None
 
 
 def test_file_types_and_extensions():

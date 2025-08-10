@@ -13,21 +13,21 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 def test_match_markdown_valid():
     """Test recognition of valid image formats."""
-    assert ImageElement.match_markdown("[image](https://example.com/pic.jpg)")
-    assert ImageElement.match_markdown('[image](https://test.com/img.png "Caption")')
-    assert ImageElement.match_markdown("[image](http://site.org/photo.gif)")
-    assert ImageElement.match_markdown("  [image](https://example.com/img.jpg)  ")
+    assert ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
+    assert ImageElement.markdown_to_notion('[image](https://test.com/img.png "Caption")')
+    assert ImageElement.markdown_to_notion("[image](http://site.org/photo.gif)")
+    assert ImageElement.markdown_to_notion("  [image](https://example.com/img.jpg)  ")
 
 
 def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not ImageElement.match_markdown(
+    assert not ImageElement.markdown_to_notion(
         "[img](https://example.com/pic.jpg)"
     )  # Wrong prefix
-    assert not ImageElement.match_markdown("[image](not-a-url)")  # Invalid URL
-    assert not ImageElement.match_markdown("[image]()")  # Empty URL
-    assert not ImageElement.match_markdown("Regular text")
-    assert not ImageElement.match_markdown("")
+    assert not ImageElement.markdown_to_notion("[image](not-a-url)")  # Invalid URL
+    assert not ImageElement.markdown_to_notion("[image]()")  # Empty URL
+    assert ImageElement.markdown_to_notion("Regular text") is None
+    assert ImageElement.markdown_to_notion("") is None
 
 
 def test_match_notion():
@@ -183,8 +183,11 @@ def test_notion_to_markdown_invalid():
 )
 def test_markdown_patterns(markdown, should_match):
     """Test various markdown patterns."""
-    result = ImageElement.match_markdown(markdown)
-    assert result == should_match
+    result = ImageElement.markdown_to_notion(markdown)
+    if should_match:
+        assert result is not None
+    else:
+        assert result is None
 
 
 def test_pattern_matching():

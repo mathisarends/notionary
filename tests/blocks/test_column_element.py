@@ -26,17 +26,17 @@ def create_block_with_required_fields(**kwargs) -> Block:
 
 def test_match_markdown_valid():
     """Test recognition of valid column start syntax."""
-    assert ColumnElement.match_markdown("::: column")
-    assert ColumnElement.match_markdown(":::column")  # No space
-    assert ColumnElement.match_markdown("::: column ")  # Trailing space
+    assert ColumnElement.markdown_to_notion("::: column") is not None
+    assert ColumnElement.markdown_to_notion(":::column")  # No space
+    assert ColumnElement.markdown_to_notion("::: column ")  # Trailing space
 
 
 def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not ColumnElement.match_markdown("This is just text.")
-    assert not ColumnElement.match_markdown(":: column")  # Wrong marker
-    assert not ColumnElement.match_markdown("::: columns")  # Plural
-    assert not ColumnElement.match_markdown("text ::: column")  # Not at start
+    assert ColumnElement.markdown_to_notion("This is just text.") is None
+    assert not ColumnElement.markdown_to_notion(":: column")  # Wrong marker
+    assert not ColumnElement.markdown_to_notion("::: columns")  # Plural
+    assert not ColumnElement.markdown_to_notion("text ::: column")  # Not at start
 
 
 def test_match_notion():
@@ -83,5 +83,8 @@ def test_markdown_to_notion_invalid():
 )
 def test_markdown_patterns(markdown, should_match):
     """Test recognition of various column patterns."""
-    result = ColumnElement.match_markdown(markdown)
-    assert result == should_match
+    result = ColumnElement.markdown_to_notion(markdown)
+    if should_match:
+        assert result is not None
+    else:
+        assert result is None

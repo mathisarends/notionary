@@ -14,20 +14,20 @@ from notionary.blocks.bulleted_list.bulleted_list_models import (
 
 def test_match_markdown_valid():
     """Test recognition of valid bulleted list formats."""
-    assert BulletedListElement.match_markdown("- First item")
-    assert BulletedListElement.match_markdown("* Second item")
-    assert BulletedListElement.match_markdown("+ Third item")
-    assert BulletedListElement.match_markdown("  - Indented item")
-    assert BulletedListElement.match_markdown("    * Deep indented")
+    assert BulletedListElement.markdown_to_notion("- First item") is not None
+    assert BulletedListElement.markdown_to_notion("* Second item") is not None
+    assert BulletedListElement.markdown_to_notion("+ Third item") is not None
+    assert BulletedListElement.markdown_to_notion("  - Indented item") is not None
+    assert BulletedListElement.markdown_to_notion("    * Deep indented") is not None
 
 
 def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not BulletedListElement.match_markdown("- [ ] Todo item")
-    assert not BulletedListElement.match_markdown("- [x] Completed todo")
-    assert not BulletedListElement.match_markdown("1. Numbered item")
-    assert not BulletedListElement.match_markdown("Regular text")
-    assert not BulletedListElement.match_markdown("")
+    assert BulletedListElement.markdown_to_notion("- [ ] Todo item") is None
+    assert BulletedListElement.markdown_to_notion("- [x] Completed todo") is None
+    assert BulletedListElement.markdown_to_notion("1. Numbered item") is None
+    assert BulletedListElement.markdown_to_notion("Regular text") is None
+    assert BulletedListElement.markdown_to_notion("") is None
 
 
 def test_match_notion_valid():
@@ -106,16 +106,16 @@ def test_different_bullet_types():
     bullets = ["- Item", "* Item", "+ Item"]
 
     for bullet in bullets:
-        assert BulletedListElement.match_markdown(bullet)
+        assert BulletedListElement.markdown_to_notion(bullet) is not None
         result = BulletedListElement.markdown_to_notion(bullet)
         assert result is not None
 
 
 def test_whitespace_handling():
     """Test handling of whitespace."""
-    assert BulletedListElement.match_markdown("- Item   ")  # trailing
-    assert BulletedListElement.match_markdown("- Item\n")  # newline
-    assert BulletedListElement.match_markdown("  - Item")  # leading
+    assert BulletedListElement.markdown_to_notion("- Item   ")  # trailing
+    assert BulletedListElement.markdown_to_notion("- Item\n")  # newline
+    assert BulletedListElement.markdown_to_notion("  - Item")  # leading
 
 
 def test_special_characters():
@@ -127,6 +127,6 @@ def test_special_characters():
     ]
 
     for text in test_cases:
-        assert BulletedListElement.match_markdown(text)
+        assert BulletedListElement.markdown_to_notion(text) is not None
         result = BulletedListElement.markdown_to_notion(text)
         assert result is not None

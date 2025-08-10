@@ -30,33 +30,33 @@ def create_block_with_required_fields(**kwargs) -> Block:
 
 def test_match_markdown_valid_default():
     """Test recognition of valid default TOC syntax."""
-    assert TableOfContentsElement.match_markdown("[toc]")
-    assert TableOfContentsElement.match_markdown("[TOC]")  # Case insensitive
-    assert TableOfContentsElement.match_markdown("  [toc]  ")  # With spaces
+    assert TableOfContentsElement.markdown_to_notion("[toc]") is not None
+    assert TableOfContentsElement.markdown_to_notion("[TOC]")  # Case insensitive
+    assert TableOfContentsElement.markdown_to_notion("  [toc]  ")  # With spaces
 
 
 def test_match_markdown_valid_with_color():
     """Test recognition of valid TOC syntax with colors."""
-    assert TableOfContentsElement.match_markdown("[toc](blue)")
-    assert TableOfContentsElement.match_markdown("[toc](gray)")
-    assert TableOfContentsElement.match_markdown("[toc](blue_background)")
-    assert TableOfContentsElement.match_markdown("[toc](red_background)")
-    assert TableOfContentsElement.match_markdown("[TOC](BLUE)")  # Case insensitive
+    assert TableOfContentsElement.markdown_to_notion("[toc](blue)")
+    assert TableOfContentsElement.markdown_to_notion("[toc](gray)")
+    assert TableOfContentsElement.markdown_to_notion("[toc](blue_background)")
+    assert TableOfContentsElement.markdown_to_notion("[toc](red_background)")
+    assert TableOfContentsElement.markdown_to_notion("[TOC](BLUE)")  # Case insensitive
 
 
 def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not TableOfContentsElement.match_markdown("toc")  # Missing brackets
-    assert not TableOfContentsElement.match_markdown("[toc")  # Missing closing bracket
-    assert not TableOfContentsElement.match_markdown("toc]")  # Missing opening bracket
-    assert not TableOfContentsElement.match_markdown(
+    assert not TableOfContentsElement.markdown_to_notion("toc")  # Missing brackets
+    assert not TableOfContentsElement.markdown_to_notion("[toc")  # Missing closing bracket
+    assert not TableOfContentsElement.markdown_to_notion("toc]")  # Missing opening bracket
+    assert not TableOfContentsElement.markdown_to_notion(
         "[table_of_contents]"
     )  # Wrong name
-    assert not TableOfContentsElement.match_markdown("[toc]()")  # Empty parentheses
-    assert not TableOfContentsElement.match_markdown(
+    assert not TableOfContentsElement.markdown_to_notion("[toc]()")  # Empty parentheses
+    assert not TableOfContentsElement.markdown_to_notion(
         "[breadcrumb]"
     )  # Different element
-    assert not TableOfContentsElement.match_markdown("")  # Empty string
+    assert not TableOfContentsElement.markdown_to_notion("")  # Empty string
 
 
 def test_match_notion_valid():

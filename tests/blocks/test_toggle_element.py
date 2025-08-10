@@ -24,7 +24,11 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
     ],
 )
 def test_match_markdown(text, expected):
-    assert ToggleElement.match_markdown(text) == expected
+    result = ToggleElement.markdown_to_notion(text)
+    if expected:
+        assert result is not None
+    else:
+        assert result is None
 
 
 @pytest.mark.parametrize(

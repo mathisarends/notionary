@@ -9,10 +9,10 @@ def test_match_markdown_valid_audio():
     assert AudioElement.markdown_to_notion("[audio](https://example.com/track.mp3)") is not None
     assert AudioElement.markdown_to_notion('[audio](https://audio.de/a.wav "Ein Track")') is not None
     assert AudioElement.markdown_to_notion('   [audio](https://x.org/b.ogg "Hallo")   ') is not None
-    assert AudioElement.match_markdown("[audio](https://test.com/file.m4a)")
+    assert AudioElement.markdown_to_notion("[audio](https://test.com/file.m4a)")
     # Auch OGA und Großbuchstaben
-    assert AudioElement.match_markdown("[audio](https://example.com/audio.OGA)")
-    assert AudioElement.match_markdown(
+    assert AudioElement.markdown_to_notion("[audio](https://example.com/audio.OGA)")
+    assert AudioElement.markdown_to_notion(
         '[audio](https://audio.com/abc.mp3 "Mit Caption")'
     )
 
@@ -27,7 +27,7 @@ def test_match_markdown_valid_audio():
     ],
 )
 def test_match_markdown_param_valid(text):
-    assert AudioElement.match_markdown(text)
+    assert AudioElement.markdown_to_notion(text) is not None
 
 
 @pytest.mark.parametrize(
@@ -47,7 +47,7 @@ def test_match_markdown_param_valid(text):
     ],
 )
 def test_match_markdown_param_invalid(text):
-    assert not AudioElement.match_markdown(text)
+    assert AudioElement.markdown_to_notion(text) is None
 
 
 def test_match_notion_block():
@@ -227,7 +227,7 @@ def test_extra_whitespace_and_caption_spaces():
     """Test handling of whitespace in input and captions."""
     # Whitespace around the markdown should be stripped by match_markdown
     md = '   [audio](https://aud.io/a.mp3 "  Caption mit Leerzeichen   ")   '
-    assert AudioElement.match_markdown(md)
+    assert AudioElement.markdown_to_notion(md) is not None
 
     block = AudioElement.markdown_to_notion(md)
     assert block is not None
@@ -247,7 +247,7 @@ def test_integration_with_other_elements():
         "   ",
     ]
     for text in not_audio:
-        assert not AudioElement.match_markdown(text)
+        assert AudioElement.markdown_to_notion(text) is None
 
 
 def test_url_validation_via_match_markdown():
@@ -261,7 +261,7 @@ def test_url_validation_via_match_markdown():
         "[audio](https://example.com/file.oga)",
     ]
     for url in valid_urls:
-        assert AudioElement.match_markdown(url)
+        assert AudioElement.markdown_to_notion(url) is not None
 
     # Invalid URLs (no proper audio extension)
     invalid_urls = [
@@ -271,14 +271,14 @@ def test_url_validation_via_match_markdown():
         "[audio](not-a-url)",  # Not a URL
     ]
     for url in invalid_urls:
-        assert not AudioElement.match_markdown(url)
+        assert AudioElement.markdown_to_notion(url) is None
 
 
 def test_caption_with_quotes():
     """Test handling of quotes within captions."""
     # Simple caption without internal quotes should definitely work
     simple_caption = '[audio](https://example.com/file.mp3 "Simple caption")'
-    assert AudioElement.match_markdown(simple_caption)
+    assert AudioElement.markdown_to_notion(simple_caption) is not None
 
 
 def test_multiple_caption_rich_text_objects():

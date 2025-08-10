@@ -18,16 +18,16 @@ def create_rich_text(content: str) -> RichTextObject:
 def test_match_markdown():
     """Test Markdown pattern matching."""
     # Valid
-    assert QuoteElement.match_markdown("[quote](Simple quote text)")
-    assert QuoteElement.match_markdown("[quote](Quote with **bold** text)")
-    assert QuoteElement.match_markdown("  [quote](Quote with whitespace)  ")
+    assert QuoteElement.markdown_to_notion("[quote](Simple quote text)")
+    assert QuoteElement.markdown_to_notion("[quote](Quote with **bold** text)")
+    assert QuoteElement.markdown_to_notion("  [quote](Quote with whitespace)  ")
 
     # Invalid
-    assert not QuoteElement.match_markdown("> Standard blockquote")
-    assert not QuoteElement.match_markdown("[quote]()")  # Empty
-    assert not QuoteElement.match_markdown("[quote](   )")  # Whitespace only
-    assert not QuoteElement.match_markdown("[quote](Multi\nline)")  # Multiline
-    assert not QuoteElement.match_markdown("Regular text")
+    assert QuoteElement.markdown_to_notion("> Standard blockquote") is None
+    assert not QuoteElement.markdown_to_notion("[quote]()")  # Empty
+    assert not QuoteElement.markdown_to_notion("[quote](   )")  # Whitespace only
+    assert not QuoteElement.markdown_to_notion("[quote](Multi\nline)")  # Multiline
+    assert QuoteElement.markdown_to_notion("Regular text") is None
 
 
 def test_match_notion():
@@ -166,7 +166,7 @@ def test_special_characters():
     ]
 
     for text in special_cases:
-        assert QuoteElement.match_markdown(text)
+        assert QuoteElement.markdown_to_notion(text) is not None
         result = QuoteElement.markdown_to_notion(text)
         assert result is not None
 
@@ -179,7 +179,7 @@ def test_whitespace_handling():
     assert result.quote.rich_text[0].plain_text == "text with spaces"
 
     # Whitespace around quote should be handled
-    assert QuoteElement.match_markdown("  [quote](text)  ")
+    assert QuoteElement.markdown_to_notion("  [quote](text)  ")
 
 
 def test_empty_content_edge_cases():
@@ -192,7 +192,7 @@ def test_empty_content_edge_cases():
     ]
 
     for text in empty_cases:
-        assert not QuoteElement.match_markdown(text)
+        assert QuoteElement.markdown_to_notion(text) is None
         assert QuoteElement.markdown_to_notion(text) is None
 
 
@@ -205,5 +205,5 @@ def test_multiline_not_supported():
     ]
 
     for text in multiline_cases:
-        assert not QuoteElement.match_markdown(text)
+        assert QuoteElement.markdown_to_notion(text) is None
         assert QuoteElement.markdown_to_notion(text) is None

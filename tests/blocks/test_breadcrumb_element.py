@@ -27,25 +27,25 @@ def create_block_with_required_fields(**kwargs) -> Block:
 
 def test_match_markdown_valid():
     """Test recognition of valid breadcrumb syntax."""
-    assert BreadcrumbElement.match_markdown("[breadcrumb]")
-    assert BreadcrumbElement.match_markdown("[BREADCRUMB]")  # Case insensitive
-    assert BreadcrumbElement.match_markdown("  [breadcrumb]  ")  # With spaces
-    assert BreadcrumbElement.match_markdown("\t[breadcrumb]\n")  # With whitespace
+    assert BreadcrumbElement.markdown_to_notion("[breadcrumb]") is not None
+    assert BreadcrumbElement.markdown_to_notion("[BREADCRUMB]")  # Case insensitive
+    assert BreadcrumbElement.markdown_to_notion("  [breadcrumb]  ")  # With spaces
+    assert BreadcrumbElement.markdown_to_notion("\t[breadcrumb]\n")  # With whitespace
 
 
 def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not BreadcrumbElement.match_markdown("breadcrumb")  # Missing brackets
-    assert not BreadcrumbElement.match_markdown(
+    assert not BreadcrumbElement.markdown_to_notion("breadcrumb")  # Missing brackets
+    assert not BreadcrumbElement.markdown_to_notion(
         "[breadcrumb"
     )  # Missing closing bracket
-    assert not BreadcrumbElement.match_markdown(
+    assert not BreadcrumbElement.markdown_to_notion(
         "breadcrumb]"
     )  # Missing opening bracket
-    assert not BreadcrumbElement.match_markdown("[bread crumb]")  # Space in name
-    assert not BreadcrumbElement.match_markdown("[breadcrumbs]")  # Wrong plural
-    assert not BreadcrumbElement.match_markdown("[toc]")  # Different element
-    assert not BreadcrumbElement.match_markdown("")  # Empty string
+    assert not BreadcrumbElement.markdown_to_notion("[bread crumb]")  # Space in name
+    assert not BreadcrumbElement.markdown_to_notion("[breadcrumbs]")  # Wrong plural
+    assert not BreadcrumbElement.markdown_to_notion("[toc]")  # Different element
+    assert not BreadcrumbElement.markdown_to_notion("")  # Empty string
 
 
 def test_match_notion_valid():

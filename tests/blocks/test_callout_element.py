@@ -20,12 +20,12 @@ def create_rich_text(content: str) -> RichTextObject:
 def test_match_markdown():
     """Test Markdown-Erkennung."""
     # Valid
-    assert CalloutElement.match_markdown("[callout](Simple text)")
-    assert CalloutElement.match_markdown('[callout](Text "🔥")')
+    assert CalloutElement.markdown_to_notion("[callout](Simple text)")
+    assert CalloutElement.markdown_to_notion('[callout](Text "🔥")')
 
     # Invalid
-    assert not CalloutElement.match_markdown("Regular text")
-    assert not CalloutElement.match_markdown("[callout]()")
+    assert CalloutElement.markdown_to_notion("Regular text") is None
+    assert not CalloutElement.markdown_to_notion("[callout]()")
 
 
 def test_match_notion():

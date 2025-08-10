@@ -27,39 +27,39 @@ def create_block_with_required_fields(**kwargs) -> Block:
 
 def test_match_markdown_valid_unquoted():
     """Test recognition of valid unquoted equation syntax."""
-    assert EquationElement.match_markdown("[equation](E = mc^2)")
-    assert EquationElement.match_markdown("[equation](x + y = z)")
-    assert EquationElement.match_markdown("[equation](a = b)")
-    assert EquationElement.match_markdown("  [equation](simple)  ")  # With spaces
+    assert EquationElement.markdown_to_notion("[equation](E = mc^2)")
+    assert EquationElement.markdown_to_notion("[equation](x + y = z)")
+    assert EquationElement.markdown_to_notion("[equation](a = b)")
+    assert EquationElement.markdown_to_notion("  [equation](simple)  ")  # With spaces
 
 
 def test_match_markdown_valid_quoted():
     """Test recognition of valid quoted equation syntax."""
-    assert EquationElement.match_markdown('[equation]("E = mc^2")')
-    assert EquationElement.match_markdown(
+    assert EquationElement.markdown_to_notion('[equation]("E = mc^2")')
+    assert EquationElement.markdown_to_notion(
         '[equation]("f(x) = sin(x)")'
     )  # With parentheses
-    assert EquationElement.match_markdown(
+    assert EquationElement.markdown_to_notion(
         '[equation]("x = a\\ny = b")'
     )  # With newlines
-    assert EquationElement.match_markdown(
+    assert EquationElement.markdown_to_notion(
         '[equation]("say \\"hello\\"")'
     )  # With escaped quotes
 
 
 def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not EquationElement.match_markdown("[equation]")  # Missing expression
-    assert not EquationElement.match_markdown("equation(E = mc^2)")  # Missing brackets
-    assert not EquationElement.match_markdown("[eq](E = mc^2)")  # Wrong element name
-    assert not EquationElement.match_markdown(
+    assert not EquationElement.markdown_to_notion("[equation]")  # Missing expression
+    assert not EquationElement.markdown_to_notion("equation(E = mc^2)")  # Missing brackets
+    assert not EquationElement.markdown_to_notion("[eq](E = mc^2)")  # Wrong element name
+    assert not EquationElement.markdown_to_notion(
         "[equation](E = mc^2"
     )  # Missing closing paren
-    assert not EquationElement.match_markdown(
+    assert not EquationElement.markdown_to_notion(
         "[equation]E = mc^2)"
     )  # Missing opening paren
-    assert not EquationElement.match_markdown("[toc](blue)")  # Different element
-    assert not EquationElement.match_markdown("")  # Empty string
+    assert not EquationElement.markdown_to_notion("[toc](blue)")  # Different element
+    assert not EquationElement.markdown_to_notion("")  # Empty string
 
 
 def test_match_notion_valid():

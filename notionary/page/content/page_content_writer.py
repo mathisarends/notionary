@@ -53,7 +53,6 @@ class PageContentWriter(LoggingMixin):
             markdown_text = markdown_text + "\n\n---\n"
 
         processed_markdown = self._process_markdown_whitespace(markdown_text)
-        print("processed", processed_markdown)
 
         try:
             blocks = self._markdown_to_notion_converter.convert(processed_markdown)

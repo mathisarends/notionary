@@ -17,26 +17,26 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 def test_match_markdown_valid():
     """Test recognition of valid embed formats."""
-    assert EmbedElement.match_markdown("[embed](https://example.com)")
-    assert EmbedElement.match_markdown(
+    assert EmbedElement.markdown_to_notion("[embed](https://example.com)")
+    assert EmbedElement.markdown_to_notion(
         '[embed](https://youtube.com/watch?v=123 "Video")'
     )
-    assert EmbedElement.match_markdown("[embed](http://site.org/content)")
-    assert EmbedElement.match_markdown("  [embed](https://example.com)  ")
+    assert EmbedElement.markdown_to_notion("[embed](http://site.org/content)")
+    assert EmbedElement.markdown_to_notion("  [embed](https://example.com)  ")
 
 
 def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not EmbedElement.match_markdown(
+    assert not EmbedElement.markdown_to_notion(
         "[image](https://example.com)"
     )  # Wrong prefix
-    assert not EmbedElement.match_markdown("[embed](not-a-url)")  # Invalid URL
-    assert not EmbedElement.match_markdown("[embed]()")  # Empty URL
-    assert not EmbedElement.match_markdown(
+    assert not EmbedElement.markdown_to_notion("[embed](not-a-url)")  # Invalid URL
+    assert not EmbedElement.markdown_to_notion("[embed]()")  # Empty URL
+    assert not EmbedElement.markdown_to_notion(
         "[embed](ftp://example.com)"
     )  # Non-http protocol
-    assert not EmbedElement.match_markdown("Regular text")
-    assert not EmbedElement.match_markdown("")
+    assert EmbedElement.markdown_to_notion("Regular text") is None
+    assert EmbedElement.markdown_to_notion("") is None
 
 
 def test_match_notion():
@@ -196,8 +196,11 @@ def test_notion_to_markdown_invalid():
 )
 def test_markdown_patterns(markdown, should_match):
     """Test various markdown patterns."""
-    result = EmbedElement.match_markdown(markdown)
-    assert result == should_match
+    result = EmbedElement.markdown_to_notion(markdown)
+    if should_match:
+        assert result is not None
+    else:
+        assert result is None
 
 
 def test_pattern_matching():
@@ -224,7 +227,7 @@ def test_url_protocols():
     ]
 
     for url in valid_urls:
-        assert EmbedElement.match_markdown(url)
+        assert EmbedElement.markdown_to_notion(url) is not None
         result = EmbedElement.markdown_to_notion(url)
         assert result is not None
 
@@ -236,7 +239,7 @@ def test_url_protocols():
     ]
 
     for url in invalid_urls:
-        assert not EmbedElement.match_markdown(url)
+        assert EmbedElement.markdown_to_notion(url) is None
 
 
 def test_roundtrip_conversion_external():
@@ -309,7 +312,7 @@ def test_different_embed_types():
 
     for url in embed_urls:
         markdown = f"[embed]({url})"
-        assert EmbedElement.match_markdown(markdown)
+        assert EmbedElement.markdown_to_notion(markdown) is not None
         result = EmbedElement.markdown_to_notion(markdown)
         assert result is not None
         assert result.embed.url == url

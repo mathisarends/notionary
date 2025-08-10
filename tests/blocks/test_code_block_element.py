@@ -41,18 +41,18 @@ def create_block_with_required_fields(**kwargs) -> Block:
 
 def test_match_markdown_code_start():
     """Test recognition of code block start syntax."""
-    assert CodeElement.match_markdown("```python")
-    assert CodeElement.match_markdown("```js")
-    assert CodeElement.match_markdown("```")
-    assert CodeElement.match_markdown("```bash")
+    assert CodeElement.markdown_to_notion("```python") is not None
+    assert CodeElement.markdown_to_notion("```js") is not None
+    assert CodeElement.markdown_to_notion("```") is not None
+    assert CodeElement.markdown_to_notion("```bash") is not None
 
 
 def test_match_markdown_not_code_start():
     """Test rejection of non-code-start formats."""
-    assert not CodeElement.match_markdown("This is just text.")
-    assert not CodeElement.match_markdown("`inline code`")
-    assert not CodeElement.match_markdown("```python\ncode content")  # Not just start
-    assert not CodeElement.match_markdown("Some text ```python")  # Not at beginning
+    assert CodeElement.markdown_to_notion("This is just text.") is None
+    assert CodeElement.markdown_to_notion("`inline code`") is None
+    assert not CodeElement.markdown_to_notion("```python\ncode content")  # Not just start
+    assert not CodeElement.markdown_to_notion("Some text ```python")  # Not at beginning
 
 
 def test_match_notion():
@@ -245,8 +245,11 @@ def test_language_support(language, expected_lang):
 )
 def test_markdown_patterns(markdown, should_match):
     """Test recognition of various Markdown patterns."""
-    result = CodeElement.match_markdown(markdown)
-    assert result == should_match
+    result = CodeElement.markdown_to_notion(markdown)
+    if should_match:
+        assert result is not None
+    else:
+        assert result is None
 
 
 # Fixtures for common test data

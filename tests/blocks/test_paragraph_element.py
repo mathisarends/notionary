@@ -14,20 +14,20 @@ from notionary.blocks.paragraph.paragraph_models import (
 
 def test_match_markdown_valid():
     """Test recognition of valid paragraph text."""
-    assert ParagraphElement.match_markdown("Simple text")
-    assert ParagraphElement.match_markdown("Text with **bold** formatting")
-    assert ParagraphElement.match_markdown("Text with [link](https://example.com)")
-    assert ParagraphElement.match_markdown("  Text with leading spaces")
-    assert ParagraphElement.match_markdown("Text with trailing spaces  ")
-    assert ParagraphElement.match_markdown("Multi word paragraph text")
+    assert ParagraphElement.markdown_to_notion("Simple text") is not None
+    assert ParagraphElement.markdown_to_notion("Text with **bold** formatting") is not None
+    assert ParagraphElement.markdown_to_notion("Text with [link](https://example.com)")
+    assert ParagraphElement.markdown_to_notion("  Text with leading spaces") is not None
+    assert ParagraphElement.markdown_to_notion("Text with trailing spaces  ") is not None
+    assert ParagraphElement.markdown_to_notion("Multi word paragraph text") is not None
 
 
 def test_match_markdown_invalid():
     """Test rejection of empty or whitespace-only text."""
-    assert not ParagraphElement.match_markdown("")
-    assert not ParagraphElement.match_markdown("   ")
-    assert not ParagraphElement.match_markdown("\n")
-    assert not ParagraphElement.match_markdown("\t")
+    assert ParagraphElement.markdown_to_notion("") is None
+    assert ParagraphElement.markdown_to_notion("   ") is None
+    assert ParagraphElement.markdown_to_notion("\n") is None
+    assert ParagraphElement.markdown_to_notion("\t") is None
 
 
 def test_match_notion_valid():
@@ -128,7 +128,7 @@ def test_accepts_any_text():
     ]
 
     for text in various_texts:
-        assert ParagraphElement.match_markdown(text)
+        assert ParagraphElement.markdown_to_notion(text) is not None
         result = ParagraphElement.markdown_to_notion(text)
         assert result is not None
 
@@ -136,8 +136,8 @@ def test_accepts_any_text():
 def test_whitespace_handling():
     """Test handling of various whitespace scenarios."""
     # Leading/trailing whitespace should still match
-    assert ParagraphElement.match_markdown("  text  ")
-    assert ParagraphElement.match_markdown("\ttext\t")
+    assert ParagraphElement.markdown_to_notion("  text  ") is not None
+    assert ParagraphElement.markdown_to_notion("\ttext\t") is not None
 
     # But should convert successfully
     result = ParagraphElement.markdown_to_notion("  text  ")
@@ -155,7 +155,7 @@ def test_special_characters():
     ]
 
     for text in special_cases:
-        assert ParagraphElement.match_markdown(text)
+        assert ParagraphElement.markdown_to_notion(text) is not None
         result = ParagraphElement.markdown_to_notion(text)
         assert result is not None
 
@@ -174,7 +174,7 @@ def test_markdown_formatting_syntax():
     ]
 
     for text in formatting_cases:
-        assert ParagraphElement.match_markdown(text)
+        assert ParagraphElement.markdown_to_notion(text) is not None
         result = ParagraphElement.markdown_to_notion(text)
         assert result is not None
 
@@ -188,7 +188,7 @@ def test_multiline_text():
     ]
 
     for text in multiline_cases:
-        assert ParagraphElement.match_markdown(text)
+        assert ParagraphElement.markdown_to_notion(text) is not None
         result = ParagraphElement.markdown_to_notion(text)
         assert result is not None
 
@@ -204,7 +204,7 @@ def test_edge_cases():
     ]
 
     for text in edge_cases:
-        assert ParagraphElement.match_markdown(text)
+        assert ParagraphElement.markdown_to_notion(text) is not None
         result = ParagraphElement.markdown_to_notion(text)
         assert result is not None
 

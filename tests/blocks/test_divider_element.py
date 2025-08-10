@@ -26,18 +26,18 @@ def create_block_with_required_fields(**kwargs) -> Block:
 
 def test_match_markdown_valid():
     """Test recognition of valid divider syntax."""
-    assert DividerElement.match_markdown("---")
-    assert DividerElement.match_markdown("----")  # More dashes
-    assert DividerElement.match_markdown("-----")
-    assert DividerElement.match_markdown("  ---  ")  # With spaces
+    assert DividerElement.markdown_to_notion("---") is not None
+    assert DividerElement.markdown_to_notion("----")  # More dashes
+    assert DividerElement.markdown_to_notion("-----") is not None
+    assert DividerElement.markdown_to_notion("  ---  ")  # With spaces
 
 
 def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not DividerElement.match_markdown("--")  # Too few dashes
-    assert not DividerElement.match_markdown("text ---")  # Not alone
-    assert not DividerElement.match_markdown("--- text")
-    assert not DividerElement.match_markdown("This is just text.")
+    assert not DividerElement.markdown_to_notion("--")  # Too few dashes
+    assert not DividerElement.markdown_to_notion("text ---")  # Not alone
+    assert DividerElement.markdown_to_notion("--- text") is None
+    assert DividerElement.markdown_to_notion("This is just text.") is None
 
 
 def test_match_notion():
@@ -120,5 +120,8 @@ def test_notion_to_markdown_invalid():
 )
 def test_markdown_patterns(markdown, should_match):
     """Test recognition of various divider patterns."""
-    result = DividerElement.match_markdown(markdown)
-    assert result == should_match
+    result = DividerElement.markdown_to_notion(markdown)
+    if should_match:
+        assert result is not None
+    else:
+        assert result is None

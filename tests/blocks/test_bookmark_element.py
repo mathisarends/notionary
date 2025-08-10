@@ -14,17 +14,17 @@ from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookm
 def test_match_markdown():
     """Test die Erkennung von Markdown-Bookmarks."""
     # Gültige Bookmark-Formate
-    assert BookmarkElement.match_markdown("[bookmark](https://example.com)")
-    assert BookmarkElement.match_markdown('[bookmark](https://example.com "Titel")')
-    assert BookmarkElement.match_markdown(
+    assert BookmarkElement.markdown_to_notion("[bookmark](https://example.com)")
+    assert BookmarkElement.markdown_to_notion('[bookmark](https://example.com "Titel")')
+    assert BookmarkElement.markdown_to_notion(
         '[bookmark](https://example.com "Titel" "Beschreibung")'
     )
 
     # Ungültige Formate
-    assert not BookmarkElement.match_markdown("[link](https://example.com)")
-    assert not BookmarkElement.match_markdown("Dies ist kein Bookmark")
-    assert not BookmarkElement.match_markdown("[bookmark](nicht-url)")
-    assert not BookmarkElement.match_markdown(
+    assert not BookmarkElement.markdown_to_notion("[link](https://example.com)")
+    assert BookmarkElement.markdown_to_notion("Dies ist kein Bookmark") is None
+    assert not BookmarkElement.markdown_to_notion("[bookmark](nicht-url)")
+    assert not BookmarkElement.markdown_to_notion(
         "[bookmark](ftp://example.com)"
     )  # Nur http/https
 
@@ -202,8 +202,11 @@ def test_notion_to_markdown_invalid():
 def test_url_validation(url, expected):
     """Test URL-Validierung in verschiedenen Formaten."""
     markdown = f"[bookmark]({url})"
-    result = BookmarkElement.match_markdown(markdown)
-    assert result == expected
+    result = BookmarkElement.markdown_to_notion(markdown)
+    if expected:
+        assert result is not None
+    else:
+        assert result is None
 
 
 # Fixtures für wiederkehrende Test-Daten
@@ -312,7 +315,7 @@ def test_special_characters_in_urls():
 
     for url in special_urls:
         markdown = f"[bookmark]({url})"
-        assert BookmarkElement.match_markdown(markdown)
+        assert BookmarkElement.markdown_to_notion(markdown) is not None
 
         result = BookmarkElement.markdown_to_notion(markdown)
         assert result is not None
@@ -323,17 +326,17 @@ def test_edge_cases():
     """Test verschiedene Edge Cases."""
     # Sehr lange URLs
     long_url = "https://example.com/" + "a" * 1000
-    assert BookmarkElement.match_markdown(f"[bookmark]({long_url})")
+    assert BookmarkElement.markdown_to_notion(f"[bookmark]({long_url})")
 
     # URLs mit vielen Pfad-Segmenten
     deep_url = "https://example.com/" + "/".join(["segment"] * 50)
-    assert BookmarkElement.match_markdown(f"[bookmark]({deep_url})")
+    assert BookmarkElement.markdown_to_notion(f"[bookmark]({deep_url})")
 
     # Bookmark ohne schließende Klammer
-    assert not BookmarkElement.match_markdown("[bookmark](https://example.com")
+    assert BookmarkElement.markdown_to_notion("[bookmark](https://example.com") is None
 
     # Bookmark ohne URL
-    assert not BookmarkElement.match_markdown("[bookmark]()")
+    assert not BookmarkElement.markdown_to_notion("[bookmark]()")
 
 
 def test_caption_separator_behavior():

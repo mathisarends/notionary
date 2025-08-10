@@ -14,39 +14,39 @@ from notionary.blocks.todo.todo_models import (
 
 def test_match_markdown_unchecked():
     """Test recognition of unchecked todo formats."""
-    assert TodoElement.match_markdown("- [ ] Unchecked task")
-    assert TodoElement.match_markdown("* [ ] Asterisk todo")
-    assert TodoElement.match_markdown("+ [ ] Plus todo")
-    assert TodoElement.match_markdown("  - [ ] Indented todo")
-    assert TodoElement.match_markdown("    * [ ] Deep indented")
+    assert TodoElement.markdown_to_notion("- [ ] Unchecked task") is not None
+    assert TodoElement.markdown_to_notion("* [ ] Asterisk todo") is not None
+    assert TodoElement.markdown_to_notion("+ [ ] Plus todo") is not None
+    assert TodoElement.markdown_to_notion("  - [ ] Indented todo") is not None
+    assert TodoElement.markdown_to_notion("    * [ ] Deep indented") is not None
 
 
 def test_match_markdown_checked():
     """Test recognition of checked todo formats."""
-    assert TodoElement.match_markdown("- [x] Checked task")
-    assert TodoElement.match_markdown("* [x] Asterisk checked")
-    assert TodoElement.match_markdown("+ [x] Plus checked")
-    assert TodoElement.match_markdown("- [X] Uppercase X")
-    assert TodoElement.match_markdown("* [X] Uppercase asterisk")
+    assert TodoElement.markdown_to_notion("- [x] Checked task") is not None
+    assert TodoElement.markdown_to_notion("* [x] Asterisk checked") is not None
+    assert TodoElement.markdown_to_notion("+ [x] Plus checked") is not None
+    assert TodoElement.markdown_to_notion("- [X] Uppercase X") is not None
+    assert TodoElement.markdown_to_notion("* [X] Uppercase asterisk") is not None
 
 
 def test_match_markdown_invalid():
     """Test rejection of invalid todo formats."""
     # Regular bullets without checkboxes
-    assert not TodoElement.match_markdown("- Regular bullet")
-    assert not TodoElement.match_markdown("* Regular asterisk")
-    assert not TodoElement.match_markdown("+ Regular plus")
+    assert TodoElement.markdown_to_notion("- Regular bullet") is None
+    assert TodoElement.markdown_to_notion("* Regular asterisk") is None
+    assert TodoElement.markdown_to_notion("+ Regular plus") is None
 
     # Wrong checkbox syntax
-    assert not TodoElement.match_markdown("- [?] Wrong symbol")
-    assert not TodoElement.match_markdown("- [] Missing space")
-    assert not TodoElement.match_markdown("- [ Missing bracket")
-    assert not TodoElement.match_markdown("- Missing checkbox")
+    assert TodoElement.markdown_to_notion("- [?] Wrong symbol") is None
+    assert TodoElement.markdown_to_notion("- [] Missing space") is None
+    assert TodoElement.markdown_to_notion("- [ Missing bracket") is None
+    assert TodoElement.markdown_to_notion("- Missing checkbox") is None
 
     # Other formats
-    assert not TodoElement.match_markdown("1. [ ] Numbered todo")
-    assert not TodoElement.match_markdown("Regular text")
-    assert not TodoElement.match_markdown("")
+    assert TodoElement.markdown_to_notion("1. [ ] Numbered todo") is None
+    assert TodoElement.markdown_to_notion("Regular text") is None
+    assert TodoElement.markdown_to_notion("") is None
 
 
 def test_match_notion_valid():
@@ -207,7 +207,7 @@ def test_whitespace_handling():
     ]
 
     for text in whitespace_cases:
-        assert TodoElement.match_markdown(text)
+        assert TodoElement.markdown_to_notion(text) is not None
         result = TodoElement.markdown_to_notion(text)
         assert result is not None
 
@@ -222,7 +222,7 @@ def test_inline_formatting():
     ]
 
     for text in formatting_cases:
-        assert TodoElement.match_markdown(text)
+        assert TodoElement.markdown_to_notion(text) is not None
         result = TodoElement.markdown_to_notion(text)
         assert result is not None
 
@@ -237,7 +237,7 @@ def test_special_characters():
     ]
 
     for text in special_cases:
-        assert TodoElement.match_markdown(text)
+        assert TodoElement.markdown_to_notion(text) is not None
         result = TodoElement.markdown_to_notion(text)
         assert result is not None
 
@@ -295,8 +295,11 @@ def test_edge_cases():
     ]
 
     for text, should_match in edge_cases:
-        match_result = TodoElement.match_markdown(text)
-        assert match_result == should_match
+        match_result = TodoElement.markdown_to_notion(text)
+        if should_match:
+            assert match_result is not None
+        else:
+            assert match_result is None
 
         if should_match:
             result = TodoElement.markdown_to_notion(text)

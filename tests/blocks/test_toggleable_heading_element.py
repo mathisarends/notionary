@@ -21,16 +21,16 @@ def create_rich_text(content: str) -> RichTextObject:
 def test_match_markdown():
     """Test Markdown pattern matching."""
     # Valid patterns
-    assert ToggleableHeadingElement.match_markdown("+# Heading 1")
-    assert ToggleableHeadingElement.match_markdown("+## Heading 2")
-    assert ToggleableHeadingElement.match_markdown("+### Heading 3")
-    assert ToggleableHeadingElement.match_markdown("+# Text with spaces")
+    assert ToggleableHeadingElement.markdown_to_notion("+# Heading 1") is not None
+    assert ToggleableHeadingElement.markdown_to_notion("+## Heading 2") is not None
+    assert ToggleableHeadingElement.markdown_to_notion("+### Heading 3") is not None
+    assert ToggleableHeadingElement.markdown_to_notion("+# Text with spaces") is not None
 
     # Invalid patterns
-    assert not ToggleableHeadingElement.match_markdown("# Regular heading")
-    assert not ToggleableHeadingElement.match_markdown("+#### Too many levels")
-    assert not ToggleableHeadingElement.match_markdown("+ Missing hash")
-    assert not ToggleableHeadingElement.match_markdown("+#")  # No content
+    assert ToggleableHeadingElement.markdown_to_notion("# Regular heading") is None
+    assert ToggleableHeadingElement.markdown_to_notion("+#### Too many levels") is None
+    assert ToggleableHeadingElement.markdown_to_notion("+ Missing hash") is None
+    assert not ToggleableHeadingElement.markdown_to_notion("+#")  # No content
 
 
 def test_match_notion():
