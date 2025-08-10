@@ -10,6 +10,7 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.block_models import BlockCreateRequest
 
 
+# TODO_: Hier könnte man gut line handler einbauen (ein code block gehört ja z.B. immer zusammen)
 @dataclass
 class ParentBlockContext:
     """Context for a block that expects children."""

@@ -7,7 +7,6 @@ Maps 1:1 to the available blocks with clear, expressive method names.
 """
 
 from __future__ import annotations
-from ctypes import Union
 from typing import Callable, Optional, Self
 
 from notionary.blocks.audio.audio_markdown_node import AudioMarkdownNode
@@ -18,6 +17,7 @@ from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
 )
 from notionary.blocks.callout.callout_markdown_node import CalloutMarkdownNode
 from notionary.blocks.code.code_markdown_node import CodeMarkdownNode
+from notionary.blocks.code.code_models import CodeLanguage
 from notionary.blocks.column.column_list_markdown_node import ColumnListMarkdownNode
 from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
 from notionary.blocks.divider.divider_markdown_node import DividerMarkdownNode
@@ -333,6 +333,21 @@ class MarkdownBuilder:
         """
         self.children.append(
             CodeMarkdownNode(code=code, language=language, caption=caption)
+        )
+        return self
+
+    def mermaid(self, diagram: str, caption: Optional[str] = None) -> Self:
+        """
+        Add a Mermaid diagram block.
+
+        Args:
+            diagram: The Mermaid diagram source code
+            caption: Optional diagram caption text
+        """
+        self.children.append(
+            CodeMarkdownNode(
+                code=diagram, language=CodeLanguage.MERMAID, caption=caption
+            )
         )
         return self
 

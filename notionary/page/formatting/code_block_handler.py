@@ -107,7 +107,7 @@ class CodeBlockHandler(LineHandler):
         # Verify it's a code block and add caption
         if hasattr(last_block, "code"):
             # For CreateCodeBlock objects - add to caption list
-            caption_rich_text = RichTextObject.from_plain_text(caption_text)
+            caption_rich_text = RichTextObject.for_code_block(caption_text)
             last_block.code.caption.append(caption_rich_text)
 
     def _extract_caption_text(self, line: str) -> str:

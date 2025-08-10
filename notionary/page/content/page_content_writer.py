@@ -50,31 +50,6 @@ class PageContentWriter(LoggingMixin):
 
         Returns:
             str: The processed markdown content that was appended (None if failed)
-
-        Examples:
-            # Traditional string way (unchanged)
-            await page.append_markdown("# Title\nContent")
-
-            # New builder callback way
-            await page.append_markdown(lambda b: (
-                b.heading("Title")
-                 .paragraph("Content")
-                 .bulleted_list(["Item 1", "Item 2"])
-            ))
-
-            # Complex nested structures
-            await page.append_markdown(lambda b: (
-                b.heading("Project Overview")
-                 .toggleable_heading("Details", level=2, children=[
-                     b._paragraph("Hidden content"),
-                     b._code("print('hello')", language="python")
-                 ])
-                 .columns(
-                     lambda col: col.heading("Left", 2).paragraph("Left content"),
-                     lambda col: col.heading("Right", 2).paragraph("Right content"),
-                     width_ratios=[0.7, 0.3]
-                 )
-            ))
         """
 
         if isinstance(content, str):
