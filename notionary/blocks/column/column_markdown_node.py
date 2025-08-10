@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from pydantic import BaseModel
 from notionary.markdown.markdown_node import MarkdownNode
@@ -6,39 +7,46 @@ from notionary.markdown.markdown_node import MarkdownNode
 
 class ColumnMarkdownBlockParams(BaseModel):
     children: list[MarkdownNode]
+    width_ratio: Optional[float] = None
     model_config = {"arbitrary_types_allowed": True}
 
 
 class ColumnMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating a single Markdown column block
-    with pipe-prefixed nested content using MarkdownNode children.
+    with pipe-prefixed nested content and optional width ratio.
 
     Example:
         ::: column
         | # Column Title
         |
         | Some content here
+        :::
+        
+        ::: column 0.7
+        | # Wide Column (70%)
         |
-        | - List item 1
-        | - List item 2
-        |
-        | ```python
-        | print("code example")
-        | ```
+        | This column takes 70% width
         :::
     """
 
-    def __init__(self, children: list[MarkdownNode]):
+    def __init__(self, children: list[MarkdownNode], width_ratio: Optional[float] = None):
         self.children = children
+        self.width_ratio = width_ratio
 
     @classmethod
     def from_params(cls, params: ColumnMarkdownBlockParams) -> ColumnMarkdownNode:
-        return cls(children=params.children)
+        return cls(children=params.children, width_ratio=params.width_ratio)
 
     def to_markdown(self) -> str:
+        # Start tag with optional width ratio
+        if self.width_ratio is not None:
+            start_tag = f"::: column {self.width_ratio}"
+        else:
+            start_tag = "::: column"
+
         if not self.children:
-            return "::: column\n:::"
+            return f"{start_tag}\n:::"
 
         # Convert children to markdown and add column prefix
         content_parts = [child.to_markdown() for child in self.children]
@@ -48,4 +56,6 @@ class ColumnMarkdownNode(MarkdownNode):
         lines = content_text.split("\n")
         prefixed_lines = [f"| {line}" if line.strip() else "|" for line in lines]
 
-        return "::: column\n" + "\n".join(prefixed_lines) + "\n:::"
+        return f"{start_tag}\n" + "\n".join(prefixed_lines) + "\n:::"
+
+

@@ -3,6 +3,7 @@ Pytest tests for ColumnElement.
 Tests the essential functionality for column block handling.
 """
 
+from turtle import width
 import pytest
 from notionary.blocks.column.column_element import ColumnElement
 from notionary.blocks.column.column_models import ColumnBlock, CreateColumnBlock
@@ -42,7 +43,7 @@ def test_match_notion():
     """Test recognition of Notion column blocks."""
     column_block = create_block_with_required_fields(
         type="column",
-        column=ColumnBlock(column_ratio=None),
+        column=ColumnBlock(width_ratio=None),
     )
     assert ColumnElement.match_notion(column_block)
 
@@ -56,7 +57,7 @@ def test_markdown_to_notion():
 
     assert isinstance(result, CreateColumnBlock)
     assert result.type == "column"
-    assert result.column.column_ratio is None  # Default ratio
+    assert result.column.width_ratio is None  # Default ratio
 
 
 def test_markdown_to_notion_invalid():

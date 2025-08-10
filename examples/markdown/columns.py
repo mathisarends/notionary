@@ -23,10 +23,14 @@ async def main():
             lambda col: (
                 col.h2("Right Column") 
                 .paragraph("This is simple text in the right column.")
-            )
+            ),
+            width_ratios=[0.7, 0.3]
         )
         
         markdown_content = builder.build()
+
+        print("markdown_content", markdown_content)
+        
         print("Generated markdown:")
         print(markdown_content)
         print("=" * 50)

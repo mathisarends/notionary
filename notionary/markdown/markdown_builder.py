@@ -7,6 +7,7 @@ Maps 1:1 to the available blocks with clear, expressive method names.
 """
 
 from __future__ import annotations
+from ctypes import Union
 from typing import Callable, Optional, Self
 
 from notionary.blocks.audio.audio_markdown_node import AudioMarkdownNode
@@ -17,6 +18,7 @@ from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
 )
 from notionary.blocks.callout.callout_markdown_node import CalloutMarkdownNode
 from notionary.blocks.code.code_markdown_node import CodeMarkdownNode
+from notionary.blocks.column.column_list_markdown_node import ColumnListMarkdownNode
 from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
 from notionary.blocks.divider.divider_markdown_node import DividerMarkdownNode
 from notionary.blocks.embed.embed_markdown_node import EmbedMarkdownNode
@@ -386,39 +388,101 @@ class MarkdownBuilder:
         return self
 
     def columns(
-        self, *builder_funcs: Callable[[MarkdownBuilder], MarkdownBuilder]
+        self, 
+        *builder_funcs: Callable[["MarkdownBuilder"], "MarkdownBuilder"],
+        width_ratios: Optional[list[float]] = None
     ) -> Self:
         """
         Add multiple columns in a layout.
 
         Args:
             *builder_funcs: Multiple functions, each building one column
+            width_ratios: Optional list of width ratios (0.0 to 1.0). 
+                        If None, columns have equal width.
+                        Length must match number of builder_funcs.
 
-        Example:
+        Examples:
+            # Equal width (original API unchanged):
             builder.columns(
                 lambda col: col.h2("Left").paragraph("Left content"),
-                lambda col: col.h2("Right").bulleted_list(["Item 1", "Item 2"])
+                lambda col: col.h2("Right").paragraph("Right content")
+            )
+            
+            # Custom ratios:
+            builder.columns(
+                lambda col: col.h2("Main").paragraph("70% width"),
+                lambda col: col.h2("Sidebar").paragraph("30% width"),
+                width_ratios=[0.7, 0.3]
+            )
+            
+            # Three columns with custom ratios:
+            builder.columns(
+                lambda col: col.h3("Nav").paragraph("Navigation"),
+                lambda col: col.h2("Main").paragraph("Main content"),
+                lambda col: col.h3("Ads").paragraph("Advertisement"),
+                width_ratios=[0.2, 0.6, 0.2]
             )
         """
         if len(builder_funcs) < 2:
             raise ValueError("Column layout requires at least 2 columns")
+        
+        if width_ratios is not None:
+            if len(width_ratios) != len(builder_funcs):
+                raise ValueError(f"width_ratios length ({len(width_ratios)}) must match number of columns ({len(builder_funcs)})")
+            
+            ratio_sum = sum(width_ratios)
+            if not (0.9 <= ratio_sum <= 1.1):  # Allow small floating point errors
+                raise ValueError(f"width_ratios should sum to 1.0, got {ratio_sum}")
 
-        # Erstelle alle einzelnen Columns
+        # Create all columns
         columns = []
-        for builder_func in builder_funcs:
+        for i, builder_func in enumerate(builder_funcs):
+            width_ratio = width_ratios[i] if width_ratios else None
+            
             col_builder = MarkdownBuilder()
             builder_func(col_builder)
-            columns.append(ColumnMarkdownNode(children=col_builder.children))
-
-        # Erstelle ColumnList Container mit den Columns als children
-        from notionary.blocks.column.column_list_markdown_node import (
-            ColumnListMarkdownNode,
-        )
+            
+            column_node = ColumnMarkdownNode(
+                children=col_builder.children,
+                width_ratio=width_ratio
+            )
+            columns.append(column_node)
 
         self.children.append(ColumnListMarkdownNode(columns=columns))
         return self
 
-    # Entferne die alte column() method oder mache sie privat
+    def column_with_nodes(self, *nodes: MarkdownNode, width_ratio: Optional[float] = None) -> Self:
+        """
+        Add a column with pre-built MarkdownNode objects.
+
+        Args:
+            *nodes: MarkdownNode objects to include in the column
+            width_ratio: Optional width ratio (0.0 to 1.0)
+
+        Examples:
+            # Original API (unchanged):
+            builder.column_with_nodes(
+                HeadingMarkdownNode(text="Title", level=2),
+                ParagraphMarkdownNode(text="Content")
+            )
+            
+            # New API with ratio:
+            builder.column_with_nodes(
+                HeadingMarkdownNode(text="Sidebar", level=2),
+                ParagraphMarkdownNode(text="Narrow content"),
+                width_ratio=0.25
+            )
+        """
+        from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
+
+        column_node = ColumnMarkdownNode(
+            children=list(nodes), 
+            width_ratio=width_ratio
+        )
+        self.children.append(column_node)
+        return self
+
+
     def _column(
         self, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder]
     ) -> ColumnMarkdownNode:
@@ -426,28 +490,9 @@ class MarkdownBuilder:
         Internal helper to create a single column.
         Use columns() instead for public API.
         """
-
         col_builder = MarkdownBuilder()
         builder_func(col_builder)
         return ColumnMarkdownNode(children=col_builder.children)
-
-    def column_with_nodes(self, *nodes: MarkdownNode) -> Self:
-        """
-        Add a column with pre-built MarkdownNode objects.
-
-        Args:
-            *nodes: MarkdownNode objects to include in the column
-
-        Example:
-            builder.column_with_nodes(
-                HeadingMarkdownNode(text="Title", level=2),
-                ParagraphMarkdownNode(text="Content")
-            )
-        """
-        from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
-
-        self.children.append(ColumnMarkdownNode(children=list(nodes)))
-        return self
 
     def build(self) -> str:
         """Build and return the final markdown string."""

@@ -27,6 +27,7 @@ class NotionBlockClient(BaseNotionClient):
                 return None
         return None
 
+    # das hier ist falsch (Columns werden nicht richtig abgebildet)
     async def get_blocks_by_page_id_recursively(
         self, page_id: str, parent_id: Optional[str] = None
     ) -> list[Block]:
@@ -70,13 +71,15 @@ class NotionBlockClient(BaseNotionClient):
             params["start_cursor"] = start_cursor
 
         response = await self.get(f"blocks/{block_id}/children", params=params)
-        if response:
-            try:
-                return BlockChildrenResponse.model_validate(response)
-            except Exception as e:
-                self.logger.error("Failed to parse block children response: %s", str(e))
-                return None
-        return None
+        
+        if not response:
+            return None
+        
+        try:
+            return BlockChildrenResponse.model_validate(response)
+        except Exception as e:
+            self.logger.error("Failed to parse block children response: %s", str(e))
+            return None
 
     async def get_all_block_children(self, block_id: str) -> list[Block]:
         """

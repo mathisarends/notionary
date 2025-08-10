@@ -18,14 +18,15 @@ class ColumnListMarkdownNode(MarkdownNode):
 
     Example:
     ::: columns
-    ::: column
-    | Left content
-    | with prefixed lines
-    :::
-    ::: column
-    | Right content  
-    | with prefixed lines
-    :::
+    | ::: column
+    | | Left content
+    | | with double prefixed lines
+    | :::
+    |
+    | ::: column 0.3
+    | | Right content (30% width)
+    | | with double prefixed lines
+    | :::
     :::
     """
 
@@ -42,11 +43,9 @@ class ColumnListMarkdownNode(MarkdownNode):
         if not self.columns:
             return "::: columns\n:::"
 
-        # Convert columns to markdown and add column list prefix
         column_parts = [column.to_markdown() for column in self.columns]
         columns_content = "\n\n".join(column_parts)
 
-        # Add column list prefix to each line (same logic as Toggle)
         lines = columns_content.split("\n")
         prefixed_lines = [f"| {line}" if line.strip() else "|" for line in lines]
 
