@@ -42,6 +42,7 @@ from notionary.blocks.toggle.toggle_markdown_node import ToggleMarkdownNode
 from notionary.blocks.toggleable_heading.toggleable_heading_markdown_node import (
     ToggleableHeadingMarkdownNode,
 )
+from notionary.blocks.pdf.pdf_markdown_node import PdfMarkdownNode
 from notionary.blocks.video.video_markdown_node import VideoMarkdownNode
 from notionary.markdown.markdown_node import MarkdownNode
 
@@ -507,6 +508,17 @@ class MarkdownBuilder:
         col_builder = MarkdownBuilder()
         builder_func(col_builder)
         return ColumnMarkdownNode(children=col_builder.children)
+    
+    def pdf(self, url: str, caption: Optional[str] = None) -> Self:
+        """
+        Add a PDF document.
+
+        Args:
+            url: PDF URL or file path
+            caption: Optional PDF caption text
+        """
+        self.children.append(PdfMarkdownNode(url=url, caption=caption))
+        return self
 
     def build(self) -> str:
         """Build and return the final markdown string."""

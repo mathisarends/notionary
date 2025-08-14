@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import Union, Optional
 
-
 _bootstrapped = False
 
 
@@ -9,60 +8,6 @@ def bootstrap_blocks() -> None:
     global _bootstrapped
     if _bootstrapped:
         return
-
-    from notionary.blocks import (
-        bookmark,
-        breadcrumbs,
-        bulleted_list,
-        callout,
-        child_page,
-        code,
-        column,
-        divider,
-        embed,
-        equation,
-        file,
-        heading,
-        image_block,
-        numbered_list,
-        paragraph,
-        quote,
-        table,
-        todo,
-        toggle,
-        video,
-        toggleable_heading,
-        table_of_contents,
-    )
-    from notionary.blocks import block_models
-
-    # Collect all exports from modules
-    ns = {}
-    for m in (
-        bookmark,
-        breadcrumbs,
-        bulleted_list,
-        callout,
-        child_page,
-        code,
-        column,
-        divider,
-        embed,
-        equation,
-        file,
-        heading,
-        image_block,
-        numbered_list,
-        paragraph,
-        quote,
-        table,
-        todo,
-        toggle,
-        video,
-        toggleable_heading,
-        table_of_contents,
-    ):
-        ns.update(vars(m))
 
     # Add missing types that are needed for model rebuilding
     # These are the types that are only defined in TYPE_CHECKING in block_models
@@ -117,11 +62,14 @@ def bootstrap_blocks() -> None:
     from notionary.blocks.todo.todo_models import ToDoBlock, CreateToDoBlock
     from notionary.blocks.toggle.toggle_models import ToggleBlock, CreateToggleBlock
     from notionary.blocks.video.video_element_models import CreateVideoBlock
+    from notionary.blocks.pdf.pdf_models import CreatePdfBlock
     from notionary.blocks.table_of_contents.table_of_contents_models import (
         TableOfContentsBlock,
         CreateTableOfContentsBlock,
     )
     from notionary.blocks.block_types import BlockType
+    
+
 
     # Define the Union types that are needed for model rebuilding
     BlockCreateRequest = Union[
@@ -148,6 +96,7 @@ def bootstrap_blocks() -> None:
         CreateToggleBlock,
         CreateVideoBlock,
         CreateTableOfContentsBlock,
+        CreatePdfBlock
     ]
 
     BlockCreateResult = Optional[Union[list[BlockCreateRequest], BlockCreateRequest]]

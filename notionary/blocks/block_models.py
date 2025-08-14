@@ -56,6 +56,7 @@ if TYPE_CHECKING:
     from notionary.blocks.todo.todo_models import ToDoBlock, CreateToDoBlock
     from notionary.blocks.toggle.toggle_models import ToggleBlock, CreateToggleBlock
     from notionary.blocks.video.video_element_models import CreateVideoBlock
+    from notionary.blocks.pdf.pdf_models import CreatePdfBlock
     from notionary.blocks.table_of_contents.table_of_contents_models import (
         TableOfContentsBlock,
         CreateTableOfContentsBlock,
@@ -141,6 +142,7 @@ class Block(BaseModel):
     to_do: Optional[ToDoBlock] = None
     toggle: Optional[ToggleBlock] = None
     video: Optional[FileBlock] = None
+    pdf: Optional[FileBlock] = None
     table_of_contents: Optional[TableOfContentsBlock] = None
 
     def get_block_content(self) -> Optional[Any]:
@@ -173,6 +175,7 @@ if TYPE_CHECKING:
         CreateToggleBlock,
         CreateVideoBlock,
         CreateTableOfContentsBlock,
+        CreatePdfBlock,
     ]
     BlockCreateResult = Optional[Union[list[BlockCreateRequest], BlockCreateRequest]]
 else:

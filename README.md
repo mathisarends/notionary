@@ -13,11 +13,11 @@
 - **Rich Markdown to Notion**: Convert extended Markdown (callouts, toggles, columns) directly into beautiful Notion blocks
 - **Smart Discovery**: Find pages and databases by name with fuzzy matching - no more hunting for URLs
 - **Async-First Architecture**: Built for modern Python with full async/await support and high performance
-- **AI-Ready Integration**: Generate LLM system prompts and let AI agents create Notion content seamlessly
 
 ---
 
 # Quick start
+
 ```bash
 pip install notionary
 ```
@@ -30,29 +30,30 @@ NOTION_SECRET=YOUR_INTEGRATION_KEY
 ```
 
 ### Creating and Managing Pages 🚀
+
 ```python
 from notionary import NotionPage
 
 async def main():
     # Simpy find an existing page by its title
     page = await NotionPage.from_page_name("My Test Page")
-    
+
     # Add rich content with custom Markdown
     content = """
     # 🚀 Generated with Notionary
-    
+
     !> [💡] This page was created programmatically!
-    
+
     ## Features
     - **Rich** Markdown support
     - Database integration
     - AI-ready content generation
-    
+
     +++ Click to see more details
     | Notionary makes it easy to create beautiful Notion pages
     | directly from Python code with intuitive Markdown syntax.
     """
-    
+
     await page.replace_content(content)
     print(f"✅ Page updated: {page.url}")
 
@@ -76,7 +77,7 @@ async def main():
   await page.set_title("🆕 New Project Entry")
   await page.set_property_value_by_name("Status", "In Progress")
   await page.set_property_value_by_name("Priority", "High")
-  
+
   # find pages created in the last 7 days
   count = 0
   async for page in db.iter_pages_with_filter(
@@ -178,6 +179,7 @@ def hello_world():
 Explore the `examples/` directory for comprehensive guides:
 
 ### 🚀 Core Examples
+
 - [**Page Management**](examples/page_example.py) - Create, update, and manage Notion pages
 - [**Page Operations**](examples/page.py) - Advanced page manipulation and content handling
 - [**Database Operations**](examples/database.py) - Connect to and manage Notion databases
@@ -185,6 +187,7 @@ Explore the `examples/` directory for comprehensive guides:
 - [**Workspace Discovery**](examples/workspace_discovery.py) - Explore and discover your Notion workspace
 
 ### 📝 Markdown Examples
+
 - [**Basic Formatting**](examples/markdown/basic.py) - Text formatting, lists, and basic elements
 - [**Callouts**](examples/markdown/callout.py) - Create beautiful callout blocks with icons
 - [**Toggles**](examples/markdown/toggle.py) - Collapsible content sections
