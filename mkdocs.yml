@@ -1,4 +1,6 @@
 site_name: Notionary
+site_url: https://mathisarends.github.io/notionary/
+
 theme:
   name: material
   palette:
@@ -17,3 +19,9 @@ nav:
 
 repo_url: https://github.com/mathisarends/notionary
 repo_name: mathisarends/notionary
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
