@@ -28,7 +28,7 @@ class MarkdownToNotionConverter:
         column_handler = ColumnHandler()
         toggle_handler = ToggleHandler()
         child_handler = ChildContentHandler()
-        regular_handler = RegularLineHandler()
+        regular_handler = RegularLineHandler() # this is an inline line handler basically (multiline elements we dont really need anymore)
 
         code_handler.set_next(table_handler).set_next(column_handler).set_next(
             toggle_handler

@@ -1,32 +1,24 @@
-import re
+from notionary import NotionPage
 
-# Current regex
-COLUMNS_START = re.compile(r"^:::\s*columns\s*$")
-
-# Test strings
-test_strings = [
-    "::: columns",
-    ":::columns",
-    "::: columns ",
-    " ::: columns",
-    ":::  columns  ",
-]
-
-print("Testing current regex:")
-for test in test_strings:
-    result = bool(COLUMNS_START.match(test.strip()))
-    print(f"'{test}' -> {result}")
-
-# Fixed regex - more flexible
-COLUMNS_START_FIXED = re.compile(r"^:::\s*columns\s*$", re.IGNORECASE)
-
-print("\nTesting fixed regex:")
-for test in test_strings:
-    result = bool(COLUMNS_START_FIXED.match(test.strip()))
-    print(f"'{test}' -> {result}")
-
-# Test the exact string from your log
-exact_string = "::: columns"
-print(
-    f"\nExact test: '{exact_string}' -> {bool(COLUMNS_START.match(exact_string.strip()))}"
-)
+async def main():
+    page = await NotionPage.from_page_name("Jarvis Clipboard")
+    
+    # Füge einen Toggle-Block mit einer Tabelle im Inneren hinzu
+    result = await page.append_markdown(
+        lambda builder: builder.toggle(
+            "📋 Clipboard Tabelle",
+            lambda t: t.table(
+                headers=["Spalte A", "Spalte B"],
+                rows=[
+                    ["Wert 1", "Wert 2"],
+                    ["Wert 3", "Wert 4"]
+                ]
+            )
+        )
+    )
+    
+    print("result", result)
+    
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())

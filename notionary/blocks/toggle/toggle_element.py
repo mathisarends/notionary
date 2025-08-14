@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from typing import Optional
 
+from notionary.blocks.block_types import BlockColor
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
 from notionary.blocks.block_models import (
@@ -42,7 +43,7 @@ class ToggleElement(NotionBlockElement):
         rich_text = TextInlineFormatter.parse_inline_formatting(title)
 
         # Create toggle block with empty children - they will be populated automatically
-        toggle_content = ToggleBlock(rich_text=rich_text, color="default", children=[])
+        toggle_content = ToggleBlock(rich_text=rich_text, color=BlockColor.DEFAULT, children=[])
 
         return CreateToggleBlock(toggle=toggle_content)
 

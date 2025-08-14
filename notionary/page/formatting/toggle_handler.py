@@ -90,6 +90,7 @@ class ToggleHandler(LineHandler):
         match = self._toggle_content_pattern.match(context.line)
         if match:
             content = match.group(1)
+            print("content", content)
             context.parent_stack[-1].add_child_line(content)
 
     def _convert_children_text(
@@ -104,6 +105,7 @@ class ToggleHandler(LineHandler):
             return []
 
         child_converter = MarkdownToNotionConverter(block_registry)
+        print("text", text)
         return child_converter._process_lines(text)
 
     def _assign_toggle_children(
