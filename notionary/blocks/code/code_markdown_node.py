@@ -1,14 +1,8 @@
 from __future__ import annotations
 
 from typing import Optional
-from pydantic import BaseModel
+from notionary.blocks.code.code_models import CodeBlock
 from notionary.markdown.markdown_node import MarkdownNode
-
-
-class CodeMarkdownBlockParams(BaseModel):
-    code: str
-    language: Optional[str] = None
-    caption: Optional[str] = None
 
 
 class CodeMarkdownNode(MarkdownNode):
@@ -32,8 +26,8 @@ class CodeMarkdownNode(MarkdownNode):
         self.caption = caption
 
     @classmethod
-    def from_params(cls, params: CodeMarkdownBlockParams) -> CodeMarkdownNode:
-        return cls(code=params.code, language=params.language, caption=params.caption)
+    def from_params(cls, params: CodeBlock) -> CodeMarkdownNode:
+        return cls(code=params.rich_text, language=params.language, caption=params.caption)
 
     def to_markdown(self) -> str:
         lang = self.language or ""

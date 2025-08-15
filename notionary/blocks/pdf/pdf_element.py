@@ -25,21 +25,24 @@ class PdfElement(NotionBlockElement):
     Handles conversion between Markdown PDF embeds and Notion PDF blocks.
 
     Markdown PDF syntax:
-    - [pdf](https://example.com/document.pdf "Caption")
-    - [pdf](https://example.com/document.pdf)
+    - [pdf](https://example.com/document.pdf "Caption")     # External URL
+    - [pdf](notion://file_id_here "Caption")                # Notion hosted file
+    - [pdf](upload://upload_id_here "Caption")              # File upload
+    - [pdf](https://example.com/document.pdf)               # Without caption
 
-    Supports external PDF URLs with optional captions.
+    Supports all three PDF types: external, notion-hosted, and file uploads.
     """
 
     PATTERN = re.compile(
         r"^\[pdf\]\("  # prefix
-        r'(https?://[^\s\)"]+)'  # URL
+        r'((?:https?://|notion://|upload://)[^\s\)"]+)'  # URL with protocol
         r'(?:\s+"([^"]*)")?'  # optional caption
         r"\)$"
     )
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
+        # Notion PDF block covers PDFs
         return block.type == BlockType.PDF and block.pdf
 
     @classmethod

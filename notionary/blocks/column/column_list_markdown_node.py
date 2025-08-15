@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
+from notionary.markdown.markdown_document_model import MarkdownBlock
 from notionary.markdown.markdown_node import MarkdownNode
 from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
 
 
 class ColumnListMarkdownBlockParams(BaseModel):
-    columns: list[ColumnMarkdownNode]
+    columns: list[list[MarkdownBlock]]
     model_config = {"arbitrary_types_allowed": True}
 
 
