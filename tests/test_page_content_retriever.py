@@ -5,7 +5,7 @@ No pytest-asyncio dependency required.
 
 import asyncio
 from unittest.mock import Mock, AsyncMock, patch
-from notionary.page.content.page_content_retriever import PageContentRetriever
+from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.blocks.block_models import Block, BlockType
 
 
