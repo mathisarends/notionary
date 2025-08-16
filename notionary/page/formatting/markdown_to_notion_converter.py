@@ -6,6 +6,7 @@ from notionary.page.formatting.code_block_handler import CodeBlockHandler
 from notionary.page.formatting.column_handler import ColumnHandler
 from notionary.page.formatting.column_list_handler import ColumnListHandler
 from notionary.page.formatting.toggle_handler import ToggleHandler
+from notionary.page.formatting.toggleable_heading_handler import ToggleableHeadingHandler
 from notionary.page.formatting.line_handler import (
     LineProcessingContext,
     ParentBlockContext,
@@ -26,19 +27,20 @@ class MarkdownToNotionConverter:
     def _setup_handler_chain(self) -> None:
         code_handler = CodeBlockHandler()
         table_handler = TableHandler()
-        column_list_handler = ColumnListHandler()
-        column_handler = ColumnHandler()
-        toggle_handler = ToggleHandler()
-        child_handler = ChildContentHandler()
+        column_list_handler = ColumnListHandler()  # Handles column lists first
+        column_handler = ColumnHandler()  # Handles individual columns
+        toggle_handler = ToggleHandler()  # Handles regular toggles
+        toggleable_heading_handler = ToggleableHeadingHandler()  # Handles toggleable headings
+        child_handler = ChildContentHandler()  # Fixed to respect column contexts
         regular_handler = (
             RegularLineHandler()
-        )  # Handles normal content and column children
+        )
 
-        # Chain setup: column_list_handler before column_handler
-        # because column lists need to be started before individual columns
         code_handler.set_next(table_handler).set_next(column_list_handler).set_next(
             column_handler
-        ).set_next(toggle_handler).set_next(child_handler).set_next(regular_handler)
+        ).set_next(toggleable_heading_handler).set_next(toggle_handler).set_next(
+            child_handler
+        ).set_next(regular_handler)
         
         self._handler_chain = code_handler
 

@@ -40,7 +40,8 @@ class RegularLineHandler(LineHandler):
             
         current_parent = context.parent_stack[-1]
         
-        # These elements manage their own children via specific handlers
+        # Only Column elements manage their children via RegularLineHandler
+        # Toggle elements now manage their own children via specialized handlers
         managed_elements = (ColumnListElement, ColumnElement)
         
         return issubclass(current_parent.element_type, managed_elements)
@@ -50,14 +51,22 @@ class RegularLineHandler(LineHandler):
         context.parent_stack[-1].add_child_line(context.line)
 
     def _process_regular_line(self, context: LineProcessingContext) -> bool:
-        """Process a regular line and check for parent blocks."""
+        """Process a regular line - now only for non-heading, non-toggle, non-column content."""
+        # Skip lines that look like any special directives  
+        line = context.line.strip()
+        if line.startswith((":::", "+++", "#")):
+            return False
+        
+        # Try to create blocks through registry for other special elements (lists, etc.)
         for element in context.block_registry.get_elements():
             # Skip elements that are handled by specialized handlers
-            if issubclass(element, (ColumnListElement, ColumnElement)):
-                continue
-                
-            # Skip lines that look like column directives  
-            if context.line.strip().startswith(":::"):
+            from notionary.blocks.toggle.toggle_element import ToggleElement
+            from notionary.blocks.toggleable_heading.toggleable_heading_element import (
+                ToggleableHeadingElement,
+            )
+            from notionary.blocks.heading.heading_element import HeadingElement
+            
+            if issubclass(element, (ColumnListElement, ColumnElement, ToggleElement, ToggleableHeadingElement, HeadingElement)):
                 continue
                 
             if not (result := element.markdown_to_notion(context.line)):
@@ -68,25 +77,21 @@ class RegularLineHandler(LineHandler):
                 continue
 
             for block in blocks:
-                if not self._can_have_children(block, element):
-                    context.result_blocks.append(block)
-                else:
-                    child_prefix = self._get_child_prefix(element)
-                    parent_context = ParentBlockContext(
-                        block=block,
-                        element_type=element,
-                        child_prefix=child_prefix,
-                        child_lines=[],
-                    )
-                    context.parent_stack.append(parent_context)
+                # Since we skip most parent elements above, most blocks should go directly to result
+                context.result_blocks.append(block)
 
             return True
 
         return False
 
     def _process_as_paragraph(self, context: LineProcessingContext) -> None:
-        """Process a line as a paragraph."""
-        result = context.block_registry.markdown_to_notion(context.line)
+        """Process a line as a simple paragraph - no more complex block types."""
+        # Create a simple paragraph block directly
+        from notionary.blocks.paragraph.paragraph_element import ParagraphElement
+        
+        paragraph_element = ParagraphElement()
+        result = paragraph_element.markdown_to_notion(context.line)
+        
         if not result:
             return
 
@@ -97,32 +102,13 @@ class RegularLineHandler(LineHandler):
     def _can_have_children(
         self, block: BlockCreateRequest, element: NotionBlockElement
     ) -> bool:
-        """Check if a block can have children."""
-        from notionary.blocks.code.code_element import CodeElement
-        from notionary.blocks.table.table_element import TableElement
-        from notionary.blocks.toggle.toggle_element import ToggleElement
-        from notionary.blocks.toggleable_heading.toggleable_heading_element import (
-            ToggleableHeadingElement,
-        )
-
-        parent_elements = (
-            CodeElement,
-            TableElement,
-            ToggleElement,
-            ToggleableHeadingElement,  # Only toggleable headings, not regular headings
-            # ColumnListElement, ColumnElement removed - handled by specialized handlers
-        )
-
-        if issubclass(element, parent_elements):
-            return True
-
-        # Check block attributes for children capability - BUT skip regular headings
+        """Check if a block can have children - simplified since most parent blocks are handled elsewhere."""
+        # Most parent elements are now handled by specialized handlers
+        # Only check for basic cases like lists, etc.
+        
         attrs_to_check = [
-            ("toggle", "children"),
-            ("code", "rich_text"),
-            ("table", "children"),
-            # Removed heading_1, heading_2, heading_3 - regular headings don't need children
-            # Only toggleable headings are handled by ToggleableHeadingElement above
+            ("code", "rich_text"),  # Code blocks still use old system
+            ("table", "children"),  # Tables still use old system
         ]
 
         for attr1, attr2 in attrs_to_check:
@@ -145,6 +131,8 @@ class RegularLineHandler(LineHandler):
 
     def _finalize_unmanaged_parents(self, context: LineProcessingContext) -> None:
         """Finalize only unmanaged parent blocks (not Column/ColumnList)."""
+        # Note: Toggle/ToggleableHeading are now managed by their own handlers
+        
         parents_to_finalize = []
         
         # Collect unmanaged parents from the top of the stack
@@ -185,13 +173,11 @@ class RegularLineHandler(LineHandler):
     def _assign_children(
         self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]
     ) -> None:
-        """Assign children to a parent block."""
+        """Assign children to a parent block - simplified."""
+        # Most parent blocks are now handled by specialized handlers
         attrs_to_check = [
-            ("toggle", "children"),
-            ("heading_1", "children"),
-            ("heading_2", "children"),
-            ("heading_3", "children"),
-            # column-related removed - handled by specialized handlers
+            ("code", "rich_text"),  # Code blocks
+            ("table", "children"),  # Tables  
         ]
 
         for attr1, attr2 in attrs_to_check:
@@ -201,6 +187,7 @@ class RegularLineHandler(LineHandler):
                 setattr(getattr(parent_block, attr1), attr2, children)
                 return
 
+        # Fallback for any block with a children attribute
         if hasattr(parent_block, "children"):
             parent_block.children = children
 

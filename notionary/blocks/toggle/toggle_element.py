@@ -22,8 +22,9 @@ class ToggleElement(NotionBlockElement):
     Children are automatically handled by the StackBasedMarkdownConverter.
     """
 
-    TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+(.+)$")
-    TRANSCRIPT_TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+Transcript$")
+    # Updated pattern for ultra-simplified +++ Title syntax (no quotes!)
+    TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+(.+)$", re.IGNORECASE)
+    TRANSCRIPT_TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+Transcript$", re.IGNORECASE)
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -52,7 +53,7 @@ class ToggleElement(NotionBlockElement):
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """
-        Converts a Notion toggle block into markdown using pipe-prefixed lines.
+        Converts a Notion toggle block into markdown using the ultra-simplified +++ syntax.
         """
         if block.type != BlockType.TOGGLE:
             return None
@@ -65,18 +66,18 @@ class ToggleElement(NotionBlockElement):
         # Extract title from rich_text
         title = cls._extract_text_content(toggle_data.rich_text or [])
 
-        # Create toggle line
-        toggle_line = f"+++ {title}"
+        # Create toggle line with ultra-simplified syntax (no quotes!)
+        toggle_line = f'+++ {title}'
 
         # Process children if available
         children = toggle_data.children or []
         if not children:
-            return toggle_line
+            return toggle_line + "\n+++"
 
-        # Add a placeholder line for each child using pipe syntax
-        child_lines = ["| [Nested content]" for _ in children]
+        # Add a placeholder line for each child
+        child_lines = ["[Nested content]" for _ in children]
 
-        return toggle_line + "\n" + "\n".join(child_lines)
+        return toggle_line + "\n" + "\n".join(child_lines) + "\n+++"
 
     @classmethod
     def _extract_text_content(cls, rich_text: list[RichTextObject]) -> str:

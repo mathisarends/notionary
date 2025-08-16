@@ -22,7 +22,8 @@ class ToggleableHeadingElement(NotionBlockElement):
     Children are automatically handled by the StackBasedMarkdownConverter.
     """
 
-    PATTERN = re.compile(r"^\+(?P<level>#{1,3})\s+(?P<content>.+)$")
+    # Updated pattern for ultra-simplified +++# Title syntax (no quotes!)
+    PATTERN = re.compile(r"^[+]{3}(?P<level>#{1,3})\s+(.+)$", re.IGNORECASE)
 
     @staticmethod
     def match_notion(block: Block) -> bool:
@@ -52,7 +53,7 @@ class ToggleableHeadingElement(NotionBlockElement):
             return None
 
         level = len(match.group("level"))  # Count # characters
-        content = match.group("content").strip()
+        content = match.group(2).strip()  # group(2) is the title (no quotes needed)
 
         if level < 1 or level > 3 or not content:
             return None
@@ -97,4 +98,5 @@ class ToggleableHeadingElement(NotionBlockElement):
             heading_content.rich_text
         )
         prefix = "#" * level
-        return f"+{prefix} {text or ''}"
+        
+        return f'+++{prefix} {text or ""}'

@@ -13,20 +13,13 @@ class ToggleMarkdownBlockParams(BaseModel):
 class ToggleMarkdownNode(MarkdownNode):
     """
     Clean programmatic interface for creating Notion-style Markdown toggle blocks
-    with pipe-prefixed nested content using MarkdownNode children.
+    with the simplified +++ "Title" syntax.
 
     Example:
-        +++ Advanced Details
-        | ## Subheading
-        |
-        | Paragraph with **bold** text
-        |
-        | - list item 1
-        | - list item 2
-        |
-        | ```python
-        | print("code example")
-        | ```
+        +++ "Advanced Details"
+        Content here
+        More content
+        +++
     """
 
     def __init__(self, title: str, children: list[MarkdownNode]):
@@ -38,17 +31,15 @@ class ToggleMarkdownNode(MarkdownNode):
         return cls(title=params.title, children=params.children)
 
     def to_markdown(self) -> str:
-        result = f"+++ {self.title}"
+        # ✅ Updated to new simplified syntax
+        result = f'+++ "{self.title}"'
 
         if not self.children:
+            result += "\n+++"
             return result
 
-        # Convert children to markdown and add toggle prefix
+        # Convert children to markdown 
         content_parts = [child.to_markdown() for child in self.children]
         content_text = "\n\n".join(content_parts)
 
-        # Add toggle prefix to each line
-        lines = content_text.split("\n")
-        prefixed_lines = [f"| {line}" if line.strip() else "|" for line in lines]
-
-        return result + "\n" + "\n".join(prefixed_lines)
+        return result + "\n" + content_text + "\n+++"
