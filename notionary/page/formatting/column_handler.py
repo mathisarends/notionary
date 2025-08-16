@@ -10,11 +10,15 @@ from notionary.page.formatting.line_handler import (
 
 
 class ColumnHandler(LineHandler):
-    """Handles single column elements - both start and end."""
+    """Handles single column elements - both start and end.
+    Syntax:
+    ::: column      # Start individual column (can have optional parameters)
+    Content here
+    :::             # End column
+    """
 
     def __init__(self):
         super().__init__()
-        # ✅ Allow parameters after 'column' (like widths, classes, etc.)
         self._start_pattern = re.compile(r"^:::\s*column(\s+.*?)?\s*$", re.IGNORECASE)
         self._end_pattern = re.compile(r"^:::\s*$")
 
@@ -24,14 +28,12 @@ class ColumnHandler(LineHandler):
     def _process(self, context: LineProcessingContext) -> None:
         if self._is_column_start(context):
             self._start_column(context)
-            context.was_processed = True
-            context.should_continue = True
+            self._mark_processed(context)
             return
 
         if self._is_column_end(context):
             self._finalize_column(context)
-            context.was_processed = True
-            context.should_continue = True
+            self._mark_processed(context)
 
     def _is_column_start(self, context: LineProcessingContext) -> bool:
         """Check if line starts a column (::: column)."""
@@ -51,17 +53,8 @@ class ColumnHandler(LineHandler):
 
     def _start_column(self, context: LineProcessingContext) -> None:
         """Start a new column."""
-        # Create Column block using the element from registry
-        column_element = None
-        for element in context.block_registry.get_elements():
-            if issubclass(element, ColumnElement):
-                column_element = element
-                break
-
-        if not column_element:
-            return
-
-        # Create the block
+        # Create Column block directly - much more efficient!
+        column_element = ColumnElement()
         result = column_element.markdown_to_notion(context.line)
         if not result:
             return
@@ -71,36 +64,49 @@ class ColumnHandler(LineHandler):
         # Push to parent stack
         parent_context = ParentBlockContext(
             block=block,
-            element_type=column_element,
+            element_type=ColumnElement,
             child_lines=[],
         )
         context.parent_stack.append(parent_context)
 
     def _finalize_column(self, context: LineProcessingContext) -> None:
-        """Finalize a single column and add it to the column list."""
+        """Finalize a single column and add it to the column list or result."""
         column_context = context.parent_stack.pop()
+        self._assign_column_children_if_any(column_context, context)
 
-        if column_context.has_children():
-            children_text = "\n".join(column_context.child_lines)
-            children_blocks = self._convert_children_text(
-                children_text, context.block_registry
-            )
-            # ✅ Column should contain ANY blocks (headings, paragraphs, etc.)
-            # NOT just column blocks!
-            column_context.block.column.children = children_blocks
+        if self._try_add_to_parent_column_list(column_context, context):
+            return
 
-        # Add finished column to the column list (which should be next on stack)
-        if context.parent_stack and hasattr(context.parent_stack[-1], "element_type"):
-            from notionary.blocks.column.column_list_element import ColumnListElement
-
-            if issubclass(context.parent_stack[-1].element_type, ColumnListElement):
-                context.parent_stack[-1].block.column_list.children.append(
-                    column_context.block
-                )
-                return
-
-        # Fallback: add to result_blocks if no column list parent
         context.result_blocks.append(column_context.block)
+
+    def _assign_column_children_if_any(
+        self, column_context: ParentBlockContext, context: LineProcessingContext
+    ) -> None:
+        """Collect and assign any children blocks inside this column."""
+        if not column_context.has_children():
+            return
+
+        children_text = "\n".join(column_context.child_lines)
+        children_blocks = self._convert_children_text(
+            children_text, context.block_registry
+        )
+        column_context.block.column.children = children_blocks
+
+    def _try_add_to_parent_column_list(
+        self, column_context: ParentBlockContext, context: LineProcessingContext
+    ) -> bool:
+        """If the previous stack element is a ColumnList, append column and return True."""
+        if not context.parent_stack:
+            return False
+
+        parent = context.parent_stack[-1]
+        from notionary.blocks.column.column_list_element import ColumnListElement
+
+        if not issubclass(parent.element_type, ColumnListElement):
+            return False
+
+        parent.block.column_list.children.append(column_context.block)
+        return True
 
     def _convert_children_text(self, text: str, block_registry) -> list:
         """Convert children text to blocks."""
@@ -113,3 +119,8 @@ class ColumnHandler(LineHandler):
 
         child_converter = MarkdownToNotionConverter(block_registry)
         return child_converter._process_lines(text)
+
+    def _mark_processed(self, context: LineProcessingContext) -> None:
+        """Mark context as processed and signal to continue."""
+        context.was_processed = True
+        context.should_continue = True

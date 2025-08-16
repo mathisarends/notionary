@@ -28,14 +28,15 @@ class MarkdownToNotionConverter:
     def _setup_handler_chain(self) -> None:
         code_handler = CodeBlockHandler()
         table_handler = TableHandler()
-        column_list_handler = ColumnListHandler()  # Handles column lists first
-        column_handler = ColumnHandler()  # Handles individual columns
-        toggle_handler = ToggleHandler()  # Handles regular toggles
+        column_list_handler = ColumnListHandler()
+        column_handler = ColumnHandler()
+        toggle_handler = ToggleHandler()
         toggleable_heading_handler = (
             ToggleableHeadingHandler()
-        )  # Handles toggleable headings
+        )
         regular_handler = RegularLineHandler()
 
+        # register more specific elements first
         code_handler.set_next(table_handler).set_next(column_list_handler).set_next(
             column_handler
         ).set_next(toggleable_heading_handler).set_next(toggle_handler).set_next(
@@ -71,9 +72,6 @@ class MarkdownToNotionConverter:
             )
 
             self._handler_chain.handle(context)
-
-            if context.lines_consumed:
-                print(f"DEBUG: Consumed {context.lines_consumed} lines")
 
             # Skip consumed lines
             i += 1 + context.lines_consumed

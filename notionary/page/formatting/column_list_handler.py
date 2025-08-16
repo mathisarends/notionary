@@ -10,7 +10,17 @@ from notionary.page.formatting.line_handler import (
 
 
 class ColumnListHandler(LineHandler):
-    """Handles column list elements - both start and end."""
+    """Handles column list elements - both start and end.
+    Syntax:
+    ::: columns     # Start column list
+    ::: column      # Individual column
+    Content here
+    :::             # End column
+    ::: column      # Another column
+    More content
+    :::             # End column
+    :::             # End column list
+    """
 
     def __init__(self):
         super().__init__()
@@ -76,24 +86,30 @@ class ColumnListHandler(LineHandler):
         context.parent_stack.append(parent_context)
 
     def _finalize_column_list(self, context: LineProcessingContext) -> None:
-        """Finalize a column list."""
+        """Finalize a column list and add it to result_blocks."""
         column_list_context = context.parent_stack.pop()
-
-        if column_list_context.has_children():
-            children_text = "\n".join(column_list_context.child_lines)
-            children_blocks = self._convert_children_text(
-                children_text, context.block_registry
-            )
-
-            # Filter only column blocks
-            column_children = [
-                block
-                for block in children_blocks
-                if hasattr(block, "column") and getattr(block, "type", None) == "column"
-            ]
-            column_list_context.block.column_list.children = column_children
-
+        self._assign_column_list_children_if_any(column_list_context, context)
         context.result_blocks.append(column_list_context.block)
+
+    def _assign_column_list_children_if_any(
+        self, column_list_context: ParentBlockContext, context: LineProcessingContext
+    ) -> None:
+        """Collect and assign any column children blocks inside this column list."""
+        if not column_list_context.has_children():
+            return
+
+        children_text = "\n".join(column_list_context.child_lines)
+        children_blocks = self._convert_children_text(
+            children_text, context.block_registry
+        )
+
+        # Filter only column blocks
+        column_children = [
+            block
+            for block in children_blocks
+            if hasattr(block, "column") and getattr(block, "type", None) == "column"
+        ]
+        column_list_context.block.column_list.children = column_children
 
     def _convert_children_text(self, text: str, block_registry) -> list:
         """Convert children text to blocks."""

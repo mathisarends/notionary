@@ -50,24 +50,6 @@ class LineProcessingContext:
             return []
         return self.all_lines[self.current_line_index + 1 :]
 
-    def peek_next_line(self, offset: int = 1) -> Optional[str]:
-        """Peek at the next line without consuming it."""
-        if self.all_lines is None or self.current_line_index is None:
-            return None
-        next_index = self.current_line_index + offset
-        if next_index < len(self.all_lines):
-            return self.all_lines[next_index]
-        return None
-
-    def consume_lines(self, count: int) -> list[str]:
-        """Consume the next 'count' lines and return them."""
-        if self.all_lines is None or self.current_line_index is None:
-            return []
-        start_idx = self.current_line_index + 1
-        end_idx = min(start_idx + count, len(self.all_lines))
-        self.lines_consumed = end_idx - start_idx
-        return self.all_lines[start_idx:end_idx]
-
 
 class LineHandler(ABC):
     """Abstract base class for line handlers."""

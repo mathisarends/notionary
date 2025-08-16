@@ -62,7 +62,7 @@ if TYPE_CHECKING:
         CreateTableOfContentsBlock,
     )
     from notionary.blocks.table.table_models import CreateTableBlock
-    
+
 
 class BlockChildrenResponse(BaseModel):
     object: Literal["list"]
@@ -177,7 +177,7 @@ if TYPE_CHECKING:
         CreateVideoBlock,
         CreateTableOfContentsBlock,
         CreatePdfBlock,
-        CreateTableBlock
+        CreateTableBlock,
     ]
     BlockCreateResult = Optional[Union[list[BlockCreateRequest], BlockCreateRequest]]
 else:

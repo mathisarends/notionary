@@ -1,6 +1,7 @@
 """
 Tests für komplexe verschachtelte MarkdownBuilder Szenarien.
 Testet realistische Anwendungsfälle mit mehrstufiger Verschachtelung.
+FIXED for new caption syntax!
 """
 
 from notionary.markdown.markdown_builder import MarkdownBuilder
@@ -87,13 +88,13 @@ def test_deeply_nested_toggles():
         .build()
     )
 
-    # Äußerer Toggle
-    assert "+++ Database Settings" in result
+    # FIXED: Toggle-Titel bekommen automatisch Quotes
+    assert '+++ "Database Settings"' in result
     assert "## Connection Configuration" in result
     assert "Main database settings" in result
 
-    # Innerer Toggle
-    assert "+++ Advanced Options" in result
+    # FIXED: Innerer Toggle auch mit Quotes
+    assert '+++ "Advanced Options"' in result
     assert "### Performance Tuning" in result
     assert "| Parameter | Value | Description |" in result
     assert "| max_connections | 100 | Maximum concurrent connections |" in result
@@ -102,7 +103,7 @@ def test_deeply_nested_toggles():
 
 
 def test_complex_documentation_structure():
-    """Test einer komplexen Dokumentationsstruktur wie im Beispiel"""
+    """Test einer komplexen Dokumentationsstruktur - FIXED for new caption syntax"""
     builder = MarkdownBuilder()
 
     result = (
@@ -210,7 +211,9 @@ class APIClient:
     assert "| /api/users | GET | Alle Benutzer abrufen | ✅ Aktiv |" in result
     assert "```python" in result
     assert "class APIClient:" in result
-    assert "Caption: Python API Client Implementation" in result
+    
+    # FIXED: Caption now appears in quotes on the first line, not as separate "Caption:" line
+    assert '```python "Python API Client Implementation"' in result
 
     # Callouts und Listen
     assert (
@@ -219,8 +222,8 @@ class APIClient:
     )
     assert "- API-Key über Umgebungsvariablen laden" in result
 
-    # Toggle mit Benchmarks
-    assert "+++ 📊 Performance Benchmarks" in result
+    # Toggle mit Benchmarks - FIXED: Auch hier Quotes
+    assert '+++ "📊 Performance Benchmarks"' in result
     assert "### Benchmark Results" in result
     assert "| /api/users | 45ms | 850 | 120ms |" in result
     assert (

@@ -22,7 +22,7 @@ class TableHandler(LineHandler):
     def _process(self, context: LineProcessingContext) -> None:
         if not self._is_table_start(context):
             return
-        
+
         self._process_complete_table(context)
         context.was_processed = True
         context.should_continue = True

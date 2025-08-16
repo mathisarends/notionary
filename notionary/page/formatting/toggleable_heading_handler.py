@@ -32,22 +32,20 @@ class ToggleableHeadingHandler(LineHandler):
         )
 
     def _process(self, context: LineProcessingContext) -> None:
+        """Process toggleable heading start, end, or content with unified handling."""
+
+        def _handle(action):
+            action(context)
+            context.was_processed = True
+            context.should_continue = True
+            return True
+
         if self._is_toggleable_heading_start(context):
-            self._start_toggleable_heading(context)
-            context.was_processed = True
-            context.should_continue = True
-            return
-
+            return _handle(self._start_toggleable_heading)
         if self._is_toggleable_heading_end(context):
-            self._finalize_toggleable_heading(context)
-            context.was_processed = True
-            context.should_continue = True
-            return
-
+            return _handle(self._finalize_toggleable_heading)
         if self._is_toggleable_heading_content(context):
-            self._add_toggleable_heading_content(context)
-            context.was_processed = True
-            context.should_continue = True
+            return _handle(self._add_toggleable_heading_content)
 
     def _is_toggleable_heading_start(self, context: LineProcessingContext) -> bool:
         """Check if line starts a toggleable heading (+++# "Title")."""

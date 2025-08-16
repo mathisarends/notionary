@@ -4,21 +4,24 @@ from notionary.blocks.code.code_element import CodeElement
 from notionary.page.formatting.line_handler import (
     LineHandler,
     LineProcessingContext,
-    ParentBlockContext,
 )
 
 
 class CodeBlockHandler(LineHandler):
-    """Handles code block specific logic with batching."""
+    """Handles code block specific logic with batching.
+
+    Markdown syntax:
+    ```language "optional caption"
+    code lines...
+    ```
+    """
 
     def __init__(self):
         super().__init__()
-        # Updated pattern to capture language and optional caption in quotes
         self._code_start_pattern = re.compile(r"^```(\w*)\s*(?:\"([^\"]*)\")?\s*$")
         self._code_end_pattern = re.compile(r"^```\s*$")
 
     def _can_handle(self, context: LineProcessingContext) -> bool:
-        # Don't handle code blocks if we're inside any parent context - let parent handler collect the lines
         if self._is_inside_parent_context(context):
             return False
         return self._is_code_start(context)
@@ -26,8 +29,7 @@ class CodeBlockHandler(LineHandler):
     def _process(self, context: LineProcessingContext) -> None:
         if self._is_code_start(context):
             self._process_complete_code_block(context)
-            context.was_processed = True
-            context.should_continue = True
+            self._mark_processed(context)
 
     def _is_code_start(self, context: LineProcessingContext) -> bool:
         """Check if this line starts a code block."""
@@ -40,45 +42,58 @@ class CodeBlockHandler(LineHandler):
     def _process_complete_code_block(self, context: LineProcessingContext) -> None:
         """Process the entire code block in one go."""
         # Extract language and caption from opening fence
-        match = self._code_start_pattern.match(context.line.strip())
-        language = match.group(1) if match and match.group(1) else ""
-        caption = match.group(2) if match and match.group(2) else ""
+        language, caption = self._extract_fence_info(context.line)
 
-        # Create code block with just the language part for CodeElement
-        code_start_line = f"```{language}"
-        code_element = CodeElement()
-        result = code_element.markdown_to_notion(code_start_line)
+        # Create base code block
+        result = CodeElement.markdown_to_notion(f"```{language}")
         if not result:
             return
 
-        block = result if not isinstance(result, list) else result[0]
+        block = result[0] if isinstance(result, list) else result
 
-        # Find all lines until closing fence
-        code_lines = []
-        remaining_lines = context.get_remaining_lines()
-        lines_to_consume = 0
+        code_lines, lines_to_consume = self._collect_code_lines(context)
 
-        for i, line in enumerate(remaining_lines):
-            if self._code_end_pattern.match(line.strip()):
-                lines_to_consume = i + 1  # Include the closing fence
-                break
-            code_lines.append(line)
-        else:
-            # No closing fence found - consume all remaining lines
-            lines_to_consume = len(remaining_lines)
-            code_lines = remaining_lines
+        self._set_block_content(block, code_lines)
 
-        # Set the code content
-        if code_lines:
-            code_content = "\n".join(code_lines)
-            if hasattr(block, "code") and hasattr(block.code, "rich_text"):
-                block.code.rich_text = [RichTextObject.for_code_block(code_content)]
+        self._set_block_caption(block, caption)
 
-        # Set the caption if provided
-        if caption and hasattr(block, "code") and hasattr(block.code, "caption"):
-            caption_rich_text = RichTextObject.for_code_block(caption)
-            block.code.caption.append(caption_rich_text)
-
-        # Tell the main loop to skip the consumed lines
         context.lines_consumed = lines_to_consume
         context.result_blocks.append(block)
+
+    def _extract_fence_info(self, line: str) -> tuple[str, str]:
+        """Extract the language and optional caption from a code fence."""
+        match = self._code_start_pattern.match(line.strip())
+        lang = match.group(1) if match and match.group(1) else ""
+        cap = match.group(2) if match and match.group(2) else ""
+        return lang, cap
+
+    def _collect_code_lines(
+        self, context: LineProcessingContext
+    ) -> tuple[list[str], int]:
+        """Collect lines until closing fence and return (lines, count_to_consume)."""
+        lines = []
+        for idx, ln in enumerate(context.get_remaining_lines()):
+            if self._code_end_pattern.match(ln.strip()):
+                return lines, idx + 1
+            lines.append(ln)
+        # No closing fence: consume all remaining
+        rem = context.get_remaining_lines()
+        return rem, len(rem)
+
+    def _mark_processed(self, context: LineProcessingContext) -> None:
+        """Mark context as processed and continue."""
+        context.was_processed = True
+        context.should_continue = True
+
+    def _set_block_content(self, block, code_lines: list[str]) -> None:
+        """Set the code rich_text content on the block."""
+        if not code_lines:
+            return
+        content = "\n".join(code_lines)
+        block.code.rich_text = [RichTextObject.for_code_block(content)]
+
+    def _set_block_caption(self, block, caption: str) -> None:
+        """Append caption to the code block if provided."""
+        if not caption:
+            return
+        block.code.caption.append(RichTextObject.for_code_block(caption))
