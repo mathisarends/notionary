@@ -2,7 +2,11 @@ from __future__ import annotations
 import re
 
 from notionary.blocks.column.column_list_element import ColumnListElement
-from notionary.page.formatting.line_handler import LineHandler, LineProcessingContext, ParentBlockContext
+from notionary.page.formatting.line_handler import (
+    LineHandler,
+    LineProcessingContext,
+    ParentBlockContext,
+)
 
 
 class ColumnListHandler(LineHandler):
@@ -14,10 +18,7 @@ class ColumnListHandler(LineHandler):
         self._end_pattern = re.compile(r"^:::\s*$")
 
     def _can_handle(self, context: LineProcessingContext) -> bool:
-        return (
-            self._is_column_list_start(context)
-            or self._is_column_list_end(context)
-        )
+        return self._is_column_list_start(context) or self._is_column_list_end(context)
 
     def _process(self, context: LineProcessingContext) -> None:
         if self._is_column_list_start(context):
@@ -57,17 +58,17 @@ class ColumnListHandler(LineHandler):
             if issubclass(element, ColumnListElement):
                 column_list_element = element
                 break
-        
+
         if not column_list_element:
             return
-            
+
         # Create the block
         result = column_list_element.markdown_to_notion(context.line)
         if not result:
             return
-            
+
         block = result if not isinstance(result, list) else result[0]
-        
+
         # Push to parent stack
         parent_context = ParentBlockContext(
             block=block,

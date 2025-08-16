@@ -79,6 +79,7 @@ class PageContentWriter(LoggingMixin):
 
             children_dicts = [block.model_dump(exclude_none=True) for block in blocks]
             import json
+
             print("json", json.dumps(children_dicts, indent=2))
 
             result = await self._block_client.append_block_children(

@@ -38,7 +38,7 @@ class ToggleMarkdownNode(MarkdownNode):
             result += "\n+++"
             return result
 
-        # Convert children to markdown 
+        # Convert children to markdown
         content_parts = [child.to_markdown() for child in self.children]
         content_text = "\n\n".join(content_parts)
 

@@ -12,11 +12,11 @@ class ChildContentHandler(LineHandler):
     def _can_handle(self, context: LineProcessingContext) -> bool:
         if not context.parent_stack:
             return False
-            
+
         # Skip if we're in column context - RegularLineHandler handles this
         if self._is_in_column_context(context):
             return False
-            
+
         return self._matches_child_pattern(context)
 
     def _process(self, context: LineProcessingContext) -> None:
@@ -37,7 +37,9 @@ class ChildContentHandler(LineHandler):
     def _is_in_column_context(self, context: LineProcessingContext) -> bool:
         """Check if we're inside a column context that RegularLineHandler should handle."""
         current_parent = context.parent_stack[-1]
-        return issubclass(current_parent.element_type, (ColumnListElement, ColumnElement))
+        return issubclass(
+            current_parent.element_type, (ColumnListElement, ColumnElement)
+        )
 
     def _matches_child_pattern(self, context: LineProcessingContext) -> bool:
         """Check if line matches the child pattern for current parent."""

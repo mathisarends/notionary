@@ -29,37 +29,34 @@ class ToggleHandler(LineHandler):
         )
 
     def _process(self, context: LineProcessingContext) -> None:
-        if self._is_toggle_start(context):
-            self._start_toggle(context)
+        def _handle_and_continue(action_func):
+            action_func(context)
             context.was_processed = True
             context.should_continue = True
-            return
+            return True
+
+        if self._is_toggle_start(context):
+            return _handle_and_continue(self._start_toggle)
 
         if self._is_toggle_end(context):
-            self._finalize_toggle(context)
-            context.was_processed = True
-            context.should_continue = True
-            return
+            return _handle_and_continue(self._finalize_toggle)
 
         if self._is_toggle_content(context):
-            self._add_toggle_content(context)
-            context.was_processed = True
-            context.should_continue = True
-            return
+            return _handle_and_continue(self._add_toggle_content)
 
     def _is_toggle_start(self, context: LineProcessingContext) -> bool:
         """Check if line starts a toggle (+++ Title)."""
         line = context.line.strip()
-        
+
         # Must match our pattern
         if not self._start_pattern.match(line):
             return False
-            
+
         # But NOT match toggleable heading pattern (has # after +++)
         toggleable_heading_pattern = re.compile(r"^[+]{3}#{1,3}\s+.+$", re.IGNORECASE)
         if toggleable_heading_pattern.match(line):
             return False
-            
+
         return True
 
     def _is_toggle_end(self, context: LineProcessingContext) -> bool:
@@ -77,14 +74,14 @@ class ToggleHandler(LineHandler):
     def _start_toggle(self, context: LineProcessingContext) -> None:
         """Start a new toggle block."""
         toggle_element = ToggleElement()
-        
+
         # Create the block
         result = toggle_element.markdown_to_notion(context.line)
         if not result:
             return
-            
+
         block = result if not isinstance(result, list) else result[0]
-        
+
         # Push to parent stack
         parent_context = ParentBlockContext(
             block=block,

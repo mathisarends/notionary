@@ -27,7 +27,9 @@ class CodeMarkdownNode(MarkdownNode):
 
     @classmethod
     def from_params(cls, params: CodeBlock) -> CodeMarkdownNode:
-        return cls(code=params.rich_text, language=params.language, caption=params.caption)
+        return cls(
+            code=params.rich_text, language=params.language, caption=params.caption
+        )
 
     def to_markdown(self) -> str:
         lang = self.language or ""

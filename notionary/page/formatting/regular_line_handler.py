@@ -37,13 +37,13 @@ class RegularLineHandler(LineHandler):
         """Check if we're inside a parent context that manages its own children."""
         if not context.parent_stack:
             return False
-            
+
         current_parent = context.parent_stack[-1]
-        
+
         # Only Column elements manage their children via RegularLineHandler
         # Toggle elements now manage their own children via specialized handlers
         managed_elements = (ColumnListElement, ColumnElement)
-        
+
         return issubclass(current_parent.element_type, managed_elements)
 
     def _add_to_parent_context(self, context: LineProcessingContext) -> None:
@@ -52,11 +52,11 @@ class RegularLineHandler(LineHandler):
 
     def _process_regular_line(self, context: LineProcessingContext) -> bool:
         """Process a regular line - now only for non-heading, non-toggle, non-column content."""
-        # Skip lines that look like any special directives  
+        # Skip lines that look like any special directives
         line = context.line.strip()
         if line.startswith((":::", "+++", "#")):
             return False
-        
+
         # Try to create blocks through registry for other special elements (lists, etc.)
         for element in context.block_registry.get_elements():
             # Skip elements that are handled by specialized handlers
@@ -65,10 +65,19 @@ class RegularLineHandler(LineHandler):
                 ToggleableHeadingElement,
             )
             from notionary.blocks.heading.heading_element import HeadingElement
-            
-            if issubclass(element, (ColumnListElement, ColumnElement, ToggleElement, ToggleableHeadingElement, HeadingElement)):
+
+            if issubclass(
+                element,
+                (
+                    ColumnListElement,
+                    ColumnElement,
+                    ToggleElement,
+                    ToggleableHeadingElement,
+                    HeadingElement,
+                ),
+            ):
                 continue
-                
+
             if not (result := element.markdown_to_notion(context.line)):
                 continue
 
@@ -88,10 +97,10 @@ class RegularLineHandler(LineHandler):
         """Process a line as a simple paragraph - no more complex block types."""
         # Create a simple paragraph block directly
         from notionary.blocks.paragraph.paragraph_element import ParagraphElement
-        
+
         paragraph_element = ParagraphElement()
         result = paragraph_element.markdown_to_notion(context.line)
-        
+
         if not result:
             return
 
@@ -105,7 +114,7 @@ class RegularLineHandler(LineHandler):
         """Check if a block can have children - simplified since most parent blocks are handled elsewhere."""
         # Most parent elements are now handled by specialized handlers
         # Only check for basic cases like lists, etc.
-        
+
         attrs_to_check = [
             ("code", "rich_text"),  # Code blocks still use old system
             ("table", "children"),  # Tables still use old system
@@ -132,19 +141,21 @@ class RegularLineHandler(LineHandler):
     def _finalize_unmanaged_parents(self, context: LineProcessingContext) -> None:
         """Finalize only unmanaged parent blocks (not Column/ColumnList)."""
         # Note: Toggle/ToggleableHeading are now managed by their own handlers
-        
+
         parents_to_finalize = []
-        
+
         # Collect unmanaged parents from the top of the stack
         while context.parent_stack:
             current_parent = context.parent_stack[-1]
-            
+
             # If it's a managed element, don't finalize it
-            if issubclass(current_parent.element_type, (ColumnListElement, ColumnElement)):
+            if issubclass(
+                current_parent.element_type, (ColumnListElement, ColumnElement)
+            ):
                 break
-                
+
             parents_to_finalize.append(context.parent_stack.pop())
-        
+
         # Process the collected parents
         for parent_context in reversed(parents_to_finalize):
             if parent_context.has_children():
@@ -177,7 +188,7 @@ class RegularLineHandler(LineHandler):
         # Most parent blocks are now handled by specialized handlers
         attrs_to_check = [
             ("code", "rich_text"),  # Code blocks
-            ("table", "children"),  # Tables  
+            ("table", "children"),  # Tables
         ]
 
         for attr1, attr2 in attrs_to_check:

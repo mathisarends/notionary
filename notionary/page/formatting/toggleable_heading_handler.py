@@ -19,7 +19,9 @@ class ToggleableHeadingHandler(LineHandler):
     def __init__(self):
         super().__init__()
         # +++# Title, +++## Title, +++### Title (no quotes!)
-        self._start_pattern = re.compile(r"^[+]{3}(?P<level>#{1,3})\s+(.+)$", re.IGNORECASE)
+        self._start_pattern = re.compile(
+            r"^[+]{3}(?P<level>#{1,3})\s+(.+)$", re.IGNORECASE
+        )
         # +++
         self._end_pattern = re.compile(r"^[+]{3}\s*$")
 
@@ -67,14 +69,14 @@ class ToggleableHeadingHandler(LineHandler):
     def _start_toggleable_heading(self, context: LineProcessingContext) -> None:
         """Start a new toggleable heading block."""
         toggleable_heading_element = ToggleableHeadingElement()
-        
+
         # Create the block
         result = toggleable_heading_element.markdown_to_notion(context.line)
         if not result:
             return
-            
+
         block = result if not isinstance(result, list) else result[0]
-        
+
         # Push to parent stack
         parent_context = ParentBlockContext(
             block=block,

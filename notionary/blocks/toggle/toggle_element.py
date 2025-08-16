@@ -67,7 +67,7 @@ class ToggleElement(NotionBlockElement):
         title = cls._extract_text_content(toggle_data.rich_text or [])
 
         # Create toggle line with ultra-simplified syntax (no quotes!)
-        toggle_line = f'+++ {title}'
+        toggle_line = f"+++ {title}"
 
         # Process children if available
         children = toggle_data.children or []

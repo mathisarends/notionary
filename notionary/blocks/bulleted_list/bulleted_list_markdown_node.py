@@ -6,7 +6,6 @@ from notionary.markdown.markdown_node import MarkdownNode
 
 class BulletedListMarkdownBlockParams(BaseModel):
     texts: list[str]
-    
 
 
 class BulletedListMarkdownNode(MarkdownNode):

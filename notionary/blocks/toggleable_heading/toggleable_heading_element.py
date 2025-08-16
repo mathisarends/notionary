@@ -98,5 +98,5 @@ class ToggleableHeadingElement(NotionBlockElement):
             heading_content.rich_text
         )
         prefix = "#" * level
-        
+
         return f'+++{prefix} {text or ""}'
