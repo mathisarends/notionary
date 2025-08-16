@@ -16,13 +16,13 @@ async def main():
         builder.columns(
             # Column 1
             lambda col: (
-                col.h2("Left Column").paragraph(
+                col.paragraph("Left Column").paragraph(
                     "This is simple text in the left column."
                 )
             ),
             # Column 2
             lambda col: (
-                col.h2("Right Column").paragraph(
+                col.paragraph("Right Column").paragraph(
                     "This is simple text in the right column."
                 )
             ),

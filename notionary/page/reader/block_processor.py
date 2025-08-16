@@ -3,6 +3,7 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.reader.block_handler import BlockHandler
 from notionary.page.reader.context import BlockProcessingContext
 from notionary.page.reader.column_block_handler import ColumnBlockHandler
+from notionary.page.reader.column_list_block_handler import ColumnListBlockHandler
 from notionary.page.reader.regular_block_handler import RegularBlockHandler
 from notionary.page.reader.toggle_block_handler import ToggleBlockHandler
 from notionary.page.reader.toggleable_heading_block_handler import ToggleableHeadingBlockHandler
@@ -19,13 +20,14 @@ class BlockProcessor:
         """Setup the chain of handlers in priority order."""
         toggle_handler = ToggleBlockHandler()
         toggleable_heading_handler = ToggleableHeadingBlockHandler()
+        column_list_handler = ColumnListBlockHandler()
         column_handler = ColumnBlockHandler()
         regular_handler = RegularBlockHandler()
 
         # Chain handlers - most specific first
         toggle_handler.set_next(toggleable_heading_handler).set_next(
-            column_handler
-        ).set_next(regular_handler)
+            column_list_handler
+        ).set_next(column_handler).set_next(regular_handler)
 
         self._handler_chain = toggle_handler
 

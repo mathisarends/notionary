@@ -94,10 +94,5 @@ class HeadingElement(NotionBlockElement):
         if not text:
             return None
 
-        # Use dashed underline for level 2 headings
-        if level == 2:
-            underline = "-" * len(text)
-            return f"{text}\n{underline}"
-
-        # Fallback to hash-style for other levels
+        # Use hash-style for all heading levels
         return f"{('#' * level)} {text}"
