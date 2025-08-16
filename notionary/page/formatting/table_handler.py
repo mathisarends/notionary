@@ -15,7 +15,6 @@ class TableHandler(LineHandler):
         self._separator_pattern = re.compile(r"^\s*\|([\s\-:|]+)\|\s*$")
 
     def _can_handle(self, context: LineProcessingContext) -> bool:
-        # Don't handle tables if we're inside any parent context - let parent handler collect the lines
         if self._is_inside_parent_context(context):
             return False
         return self._is_table_start(context)
@@ -73,11 +72,10 @@ class TableHandler(LineHandler):
 
         # Process the table content
         table_rows, separator_found = self._process_table_lines(table_lines)
-        
-        if hasattr(block, "table") and hasattr(block.table, "children"):
-            block.table.children = table_rows
-            if table_rows and separator_found:
-                block.table.has_column_header = True
+
+        table = block.table
+        table.children = table_rows
+        table.has_column_header = bool(separator_found)
 
         # Tell the main loop to skip the consumed lines
         context.lines_consumed = lines_to_consume

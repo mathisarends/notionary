@@ -18,7 +18,6 @@ class ToggleableHeadingHandler(LineHandler):
 
     def __init__(self):
         super().__init__()
-        # +++# Title, +++## Title, +++### Title (no quotes!)
         self._start_pattern = re.compile(
             r"^[+]{3}(?P<level>#{1,3})\s+(.+)$", re.IGNORECASE
         )
@@ -81,7 +80,6 @@ class ToggleableHeadingHandler(LineHandler):
         parent_context = ParentBlockContext(
             block=block,
             element_type=ToggleableHeadingElement,
-            child_prefix="",  # No prefix needed
             child_lines=[],
         )
         context.parent_stack.append(parent_context)

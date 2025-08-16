@@ -72,7 +72,6 @@ class ColumnHandler(LineHandler):
         parent_context = ParentBlockContext(
             block=block,
             element_type=column_element,
-            child_prefix="",  # No prefix needed
             child_lines=[],
         )
         context.parent_stack.append(parent_context)

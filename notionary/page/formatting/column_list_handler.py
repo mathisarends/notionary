@@ -31,8 +31,6 @@ class ColumnListHandler(LineHandler):
             self._finalize_column_list(context)
             context.was_processed = True
             context.should_continue = True
-            return
-            return
 
     def _is_column_list_start(self, context: LineProcessingContext) -> bool:
         """Check if line starts a column list (::: columns)."""
@@ -73,7 +71,6 @@ class ColumnListHandler(LineHandler):
         parent_context = ParentBlockContext(
             block=block,
             element_type=column_list_element,
-            child_prefix="",  # No prefix needed
             child_lines=[],
         )
         context.parent_stack.append(parent_context)

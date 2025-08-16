@@ -84,7 +84,6 @@ class ToggleHandler(LineHandler):
         parent_context = ParentBlockContext(
             block=block,
             element_type=ToggleElement,
-            child_prefix="",  # No prefix needed
             child_lines=[],
         )
         context.parent_stack.append(parent_context)

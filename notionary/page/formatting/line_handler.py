@@ -15,7 +15,6 @@ class ParentBlockContext:
 
     block: BlockCreateRequest
     element_type: NotionBlockElement
-    child_prefix: str
     child_lines: list[str]
 
     def add_child_line(self, content: str):

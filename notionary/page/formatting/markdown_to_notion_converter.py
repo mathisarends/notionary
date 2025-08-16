@@ -1,7 +1,6 @@
 from notionary.blocks.block_types import BlockType
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.content.notion_text_length_utils import fix_blocks_content_length
-from notionary.page.formatting.child_content_handler import ChildContentHandler
 from notionary.page.formatting.code_block_handler import CodeBlockHandler
 from notionary.page.formatting.column_handler import ColumnHandler
 from notionary.page.formatting.column_list_handler import ColumnListHandler
@@ -35,14 +34,11 @@ class MarkdownToNotionConverter:
         toggleable_heading_handler = (
             ToggleableHeadingHandler()
         )  # Handles toggleable headings
-        child_handler = ChildContentHandler()  # Fixed to respect column contexts
         regular_handler = RegularLineHandler()
 
         code_handler.set_next(table_handler).set_next(column_list_handler).set_next(
             column_handler
         ).set_next(toggleable_heading_handler).set_next(toggle_handler).set_next(
-            child_handler
-        ).set_next(
             regular_handler
         )
 
