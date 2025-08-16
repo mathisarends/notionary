@@ -43,7 +43,16 @@ async def main():
 
         +++ Python Code Example
         Here's a simple Python function:
+        ```python
+        def fibonacci(n):
+            if n <= 1:
+                return n
+            return fibonacci(n-1) + fibonacci(n-2)
 
+        # Example usage
+        for i in range(10):
+            print(f"fibonacci({i}) = {fibonacci(i)}")
+        ```
 
 
         This function calculates Fibonacci numbers recursively.

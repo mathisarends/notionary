@@ -1,8 +1,6 @@
 from __future__ import annotations
 import re
 
-from notionary.blocks.block_models import BlockCreateRequest
-from notionary.blocks.block_types import BlockType
 from notionary.blocks.toggle.toggle_element import ToggleElement
 from notionary.page.formatting.line_handler import (
     LineHandler,

@@ -6,11 +6,9 @@ from typing import Optional
 
 from notionary.blocks.notion_block_element import NotionBlockElement
 from notionary.blocks.registry.block_registry import BlockRegistry
-
 from notionary.blocks.block_models import BlockCreateRequest
 
 
-# TODO_: Hier könnte man gut line handler einbauen (ein code block gehört ja z.B. immer zusammen)
 @dataclass
 class ParentBlockContext:
     """Context for a block that expects children."""
@@ -37,10 +35,39 @@ class LineProcessingContext:
     result_blocks: list[BlockCreateRequest]
     parent_stack: list[ParentBlockContext]
     block_registry: BlockRegistry
+    
+    # Optional fields for line jumping (only available in top-level processing)
+    all_lines: Optional[list[str]] = None
+    current_line_index: Optional[int] = None
+    lines_consumed: int = 0
 
     # Result indicators
     was_processed: bool = False
     should_continue: bool = False
+
+    def get_remaining_lines(self) -> list[str]:
+        """Get all remaining lines from current position."""
+        if self.all_lines is None or self.current_line_index is None:
+            return []
+        return self.all_lines[self.current_line_index + 1:]
+    
+    def peek_next_line(self, offset: int = 1) -> Optional[str]:
+        """Peek at the next line without consuming it."""
+        if self.all_lines is None or self.current_line_index is None:
+            return None
+        next_index = self.current_line_index + offset
+        if next_index < len(self.all_lines):
+            return self.all_lines[next_index]
+        return None
+    
+    def consume_lines(self, count: int) -> list[str]:
+        """Consume the next 'count' lines and return them."""
+        if self.all_lines is None or self.current_line_index is None:
+            return []
+        start_idx = self.current_line_index + 1
+        end_idx = min(start_idx + count, len(self.all_lines))
+        self.lines_consumed = end_idx - start_idx
+        return self.all_lines[start_idx:end_idx]
 
 
 class LineHandler(ABC):

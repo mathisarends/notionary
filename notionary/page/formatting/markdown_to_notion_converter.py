@@ -6,7 +6,9 @@ from notionary.page.formatting.code_block_handler import CodeBlockHandler
 from notionary.page.formatting.column_handler import ColumnHandler
 from notionary.page.formatting.column_list_handler import ColumnListHandler
 from notionary.page.formatting.toggle_handler import ToggleHandler
-from notionary.page.formatting.toggleable_heading_handler import ToggleableHeadingHandler
+from notionary.page.formatting.toggleable_heading_handler import (
+    ToggleableHeadingHandler,
+)
 from notionary.page.formatting.line_handler import (
     LineProcessingContext,
     ParentBlockContext,
@@ -30,18 +32,20 @@ class MarkdownToNotionConverter:
         column_list_handler = ColumnListHandler()  # Handles column lists first
         column_handler = ColumnHandler()  # Handles individual columns
         toggle_handler = ToggleHandler()  # Handles regular toggles
-        toggleable_heading_handler = ToggleableHeadingHandler()  # Handles toggleable headings
+        toggleable_heading_handler = (
+            ToggleableHeadingHandler()
+        )  # Handles toggleable headings
         child_handler = ChildContentHandler()  # Fixed to respect column contexts
-        regular_handler = (
-            RegularLineHandler()
-        )
+        regular_handler = RegularLineHandler()
 
         code_handler.set_next(table_handler).set_next(column_list_handler).set_next(
             column_handler
         ).set_next(toggleable_heading_handler).set_next(toggle_handler).set_next(
             child_handler
-        ).set_next(regular_handler)
-        
+        ).set_next(
+            regular_handler
+        )
+
         self._handler_chain = code_handler
 
     def convert(self, markdown_text: str) -> list[BlockCreateRequest]:
@@ -56,15 +60,25 @@ class MarkdownToNotionConverter:
         result_blocks: list[BlockCreateRequest] = []
         parent_stack: list[ParentBlockContext] = []
 
-        for line in lines:
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+
             context = LineProcessingContext(
                 line=line,
                 result_blocks=result_blocks,
                 parent_stack=parent_stack,
                 block_registry=self._block_registry,
+                all_lines=lines,
+                current_line_index=i,
+                lines_consumed=0,
             )
 
             self._handler_chain.handle(context)
+
+            # Skip consumed lines
+            i += 1 + context.lines_consumed
+
             if context.should_continue:
                 continue
 
