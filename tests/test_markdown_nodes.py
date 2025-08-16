@@ -112,7 +112,7 @@ def test_code_markdown_node():
     code_with_caption = CodeMarkdownNode(
         code="print('Hello World')", language="python", caption="Example code"
     )
-    expected = '```python "Example code"\nprint(\'Hello World\')\n```'
+    expected = "```python \"Example code\"\nprint('Hello World')\n```"
     assert code_with_caption.to_markdown() == expected
 
 
@@ -263,7 +263,7 @@ def test_toggle_markdown_node():
     assert toggle.to_markdown() == expected
 
     # Test mit Content
-    line1_node = ParagraphMarkdownNode(text="Line 1") 
+    line1_node = ParagraphMarkdownNode(text="Line 1")
     line2_node = ParagraphMarkdownNode(text="Line 2")
 
     toggle_with_content = ToggleMarkdownNode(

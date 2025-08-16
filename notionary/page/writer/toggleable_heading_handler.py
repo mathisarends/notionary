@@ -6,10 +6,10 @@ from notionary.blocks.block_types import BlockType
 from notionary.blocks.toggleable_heading.toggleable_heading_element import (
     ToggleableHeadingElement,
 )
-from notionary.page.formatting.line_handler import (
+from notionary.page.writer.context import ParentBlockContext
+from notionary.page.writer.line_handler import (
     LineHandler,
     LineProcessingContext,
-    ParentBlockContext,
 )
 
 
@@ -127,7 +127,7 @@ class ToggleableHeadingHandler(LineHandler):
 
     def _convert_children_text(self, text: str, block_registry) -> list:
         """Convert children text to blocks."""
-        from notionary.page.formatting.markdown_to_notion_converter import (
+        from notionary.page.writer.markdown_to_notion_converter import (
             MarkdownToNotionConverter,
         )
 

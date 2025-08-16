@@ -2,10 +2,10 @@ from __future__ import annotations
 import re
 
 from notionary.blocks.toggle.toggle_element import ToggleElement
-from notionary.page.formatting.line_handler import (
+from notionary.page.writer.context import ParentBlockContext
+from notionary.page.writer.line_handler import (
     LineHandler,
     LineProcessingContext,
-    ParentBlockContext,
 )
 
 
@@ -14,9 +14,7 @@ class ToggleHandler(LineHandler):
 
     def __init__(self):
         super().__init__()
-        # ✅ FIXED: +++ Title (ultra-simplified - no "toggle", no quotes!)
         self._start_pattern = re.compile(r"^[+]{3}\s+(.+)$", re.IGNORECASE)
-        # +++
         self._end_pattern = re.compile(r"^[+]{3}\s*$")
 
     def _can_handle(self, context: LineProcessingContext) -> bool:
@@ -120,7 +118,7 @@ class ToggleHandler(LineHandler):
 
     def _convert_children_text(self, text: str, block_registry) -> list:
         """Convert children text to blocks."""
-        from notionary.page.formatting.markdown_to_notion_converter import (
+        from notionary.page.writer.markdown_to_notion_converter import (
             MarkdownToNotionConverter,
         )
 

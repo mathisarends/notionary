@@ -8,13 +8,13 @@ from notionary.blocks.block_models import Block
 from notionary.blocks.divider.divider_models import DividerBlock
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.markdown.markdown_builder import MarkdownBuilder
-from notionary.page.content.markdown_whitespace_processor import (
+from notionary.page.markdown_whitespace_processor import (
     MarkdownWhitespaceProcessor,
 )
-from notionary.page.formatting.markdown_to_notion_converter import (
+from notionary.page.writer.markdown_to_notion_converter import (
     MarkdownToNotionConverter,
 )
-from notionary.page.content.page_content_retriever import PageContentRetriever
+from notionary.page.reader.page_content_retriever import PageContentRetriever
 
 from notionary.util import LoggingMixin
 

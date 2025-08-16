@@ -1,7 +1,7 @@
 import re
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.code.code_element import CodeElement
-from notionary.page.formatting.line_handler import (
+from notionary.page.writer.line_handler import (
     LineHandler,
     LineProcessingContext,
 )

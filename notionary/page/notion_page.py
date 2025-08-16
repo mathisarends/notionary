@@ -10,10 +10,10 @@ from notionary.markdown.markdown_builder import MarkdownBuilder
 from notionary.models.notion_database_response import NotionPageResponse
 from notionary.models.notion_page_response import DatabaseParent
 from notionary.page.client import NotionPageClient
-from notionary.page.content.page_content_retriever import PageContentRetriever
+from notionary.page.reader.page_content_retriever import PageContentRetriever
 
 
-from notionary.page.content.page_content_writer import PageContentWriter
+from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.property_formatter import NotionPropertyFormatter
 from notionary.page.utils import extract_property_value
 

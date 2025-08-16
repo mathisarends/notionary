@@ -1,19 +1,19 @@
 from notionary.blocks.block_types import BlockType
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.page.content.notion_text_length_utils import fix_blocks_content_length
-from notionary.page.formatting.code_block_handler import CodeBlockHandler
-from notionary.page.formatting.column_handler import ColumnHandler
-from notionary.page.formatting.column_list_handler import ColumnListHandler
-from notionary.page.formatting.toggle_handler import ToggleHandler
-from notionary.page.formatting.toggleable_heading_handler import (
+from notionary.page.notion_text_length_utils import fix_blocks_content_length
+from notionary.page.writer.code_block_handler import CodeBlockHandler
+from notionary.page.writer.column_handler import ColumnHandler
+from notionary.page.writer.column_list_handler import ColumnListHandler
+from notionary.page.writer.context import ParentBlockContext
+from notionary.page.writer.toggle_handler import ToggleHandler
+from notionary.page.writer.toggleable_heading_handler import (
     ToggleableHeadingHandler,
 )
-from notionary.page.formatting.line_handler import (
+from notionary.page.writer.line_handler import (
     LineProcessingContext,
-    ParentBlockContext,
 )
-from notionary.page.formatting.regular_line_handler import RegularLineHandler
-from notionary.page.formatting.table_handler import TableHandler
+from notionary.page.writer.regular_line_handler import RegularLineHandler
+from notionary.page.writer.table_handler import TableHandler
 
 from notionary.blocks.block_models import BlockCreateRequest
 
@@ -31,9 +31,7 @@ class MarkdownToNotionConverter:
         column_list_handler = ColumnListHandler()
         column_handler = ColumnHandler()
         toggle_handler = ToggleHandler()
-        toggleable_heading_handler = (
-            ToggleableHeadingHandler()
-        )
+        toggleable_heading_handler = ToggleableHeadingHandler()
         regular_handler = RegularLineHandler()
 
         # register more specific elements first

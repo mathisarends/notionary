@@ -211,7 +211,7 @@ class APIClient:
     assert "| /api/users | GET | Alle Benutzer abrufen | ✅ Aktiv |" in result
     assert "```python" in result
     assert "class APIClient:" in result
-    
+
     # FIXED: Caption now appears in quotes on the first line, not as separate "Caption:" line
     assert '```python "Python API Client Implementation"' in result
 
