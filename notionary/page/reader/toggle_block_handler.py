@@ -34,7 +34,7 @@ class ToggleBlockHandler(BlockHandler):
             processor = BlockProcessor(context.block_registry)
             children_markdown = processor.convert_blocks_to_markdown(
                 context.get_children_blocks(), 
-                indent_level=context.indent_level + 1
+                indent_level=0  # No indentation for content inside toggles
             )
         
         # Create toggle end line
