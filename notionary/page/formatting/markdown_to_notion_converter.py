@@ -4,6 +4,7 @@ from notionary.page.content.notion_text_length_utils import fix_blocks_content_l
 from notionary.page.formatting.child_content_handler import ChildContentHandler
 from notionary.page.formatting.code_block_handler import CodeBlockHandler
 from notionary.page.formatting.column_handler import ColumnHandler
+from notionary.page.formatting.column_list_handler import ColumnListHandler
 from notionary.page.formatting.toggle_handler import ToggleHandler
 from notionary.page.formatting.line_handler import (
     LineProcessingContext,
@@ -25,16 +26,20 @@ class MarkdownToNotionConverter:
     def _setup_handler_chain(self) -> None:
         code_handler = CodeBlockHandler()
         table_handler = TableHandler()
+        column_list_handler = ColumnListHandler()
         column_handler = ColumnHandler()
         toggle_handler = ToggleHandler()
         child_handler = ChildContentHandler()
         regular_handler = (
             RegularLineHandler()
-        )  # this is an inline line handler basically (multiline elements we dont really need anymore)
+        )  # Handles normal content and column children
 
-        code_handler.set_next(table_handler).set_next(column_handler).set_next(
-            toggle_handler
-        ).set_next(child_handler).set_next(regular_handler)
+        # Chain setup: column_list_handler before column_handler
+        # because column lists need to be started before individual columns
+        code_handler.set_next(table_handler).set_next(column_list_handler).set_next(
+            column_handler
+        ).set_next(toggle_handler).set_next(child_handler).set_next(regular_handler)
+        
         self._handler_chain = code_handler
 
     def convert(self, markdown_text: str) -> list[BlockCreateRequest]:

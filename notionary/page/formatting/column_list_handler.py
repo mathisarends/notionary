@@ -1,0 +1,110 @@
+from __future__ import annotations
+import re
+
+from notionary.blocks.column.column_list_element import ColumnListElement
+from notionary.page.formatting.line_handler import LineHandler, LineProcessingContext, ParentBlockContext
+
+
+class ColumnListHandler(LineHandler):
+    """Handles column list elements - both start and end."""
+
+    def __init__(self):
+        super().__init__()
+        self._start_pattern = re.compile(r"^:::\s*columns?\s*$", re.IGNORECASE)
+        self._end_pattern = re.compile(r"^:::\s*$")
+
+    def _can_handle(self, context: LineProcessingContext) -> bool:
+        return (
+            self._is_column_list_start(context)
+            or self._is_column_list_end(context)
+        )
+
+    def _process(self, context: LineProcessingContext) -> None:
+        if self._is_column_list_start(context):
+            self._start_column_list(context)
+            context.was_processed = True
+            context.should_continue = True
+            return
+
+        if self._is_column_list_end(context):
+            self._finalize_column_list(context)
+            context.was_processed = True
+            context.should_continue = True
+            return
+            return
+
+    def _is_column_list_start(self, context: LineProcessingContext) -> bool:
+        """Check if line starts a column list (::: columns)."""
+        return self._start_pattern.match(context.line.strip()) is not None
+
+    def _is_column_list_end(self, context: LineProcessingContext) -> bool:
+        """Check if we need to end a column list (:::)."""
+        if not self._end_pattern.match(context.line.strip()):
+            return False
+
+        if not context.parent_stack:
+            return False
+
+        # Check if top of stack is a ColumnList
+        current_parent = context.parent_stack[-1]
+        return issubclass(current_parent.element_type, ColumnListElement)
+
+    def _start_column_list(self, context: LineProcessingContext) -> None:
+        """Start a new column list."""
+        # Create ColumnList block using the element from registry
+        column_list_element = None
+        for element in context.block_registry.get_elements():
+            if issubclass(element, ColumnListElement):
+                column_list_element = element
+                break
+        
+        if not column_list_element:
+            return
+            
+        # Create the block
+        result = column_list_element.markdown_to_notion(context.line)
+        if not result:
+            return
+            
+        block = result if not isinstance(result, list) else result[0]
+        
+        # Push to parent stack
+        parent_context = ParentBlockContext(
+            block=block,
+            element_type=column_list_element,
+            child_prefix="",  # No prefix needed
+            child_lines=[],
+        )
+        context.parent_stack.append(parent_context)
+
+    def _finalize_column_list(self, context: LineProcessingContext) -> None:
+        """Finalize a column list."""
+        column_list_context = context.parent_stack.pop()
+
+        if column_list_context.has_children():
+            children_text = "\n".join(column_list_context.child_lines)
+            children_blocks = self._convert_children_text(
+                children_text, context.block_registry
+            )
+
+            # Filter only column blocks
+            column_children = [
+                block
+                for block in children_blocks
+                if hasattr(block, "column") and getattr(block, "type", None) == "column"
+            ]
+            column_list_context.block.column_list.children = column_children
+
+        context.result_blocks.append(column_list_context.block)
+
+    def _convert_children_text(self, text: str, block_registry) -> list:
+        """Convert children text to blocks."""
+        from notionary.page.formatting.markdown_to_notion_converter import (
+            MarkdownToNotionConverter,
+        )
+
+        if not text.strip():
+            return []
+
+        child_converter = MarkdownToNotionConverter(block_registry)
+        return child_converter._process_lines(text)

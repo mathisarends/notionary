@@ -11,13 +11,21 @@ from notionary.blocks.block_models import BlockCreateRequest, BlockCreateResult
 
 
 class RegularLineHandler(LineHandler):
-    """Handles regular lines (creating new blocks) - cleaned up without toggle-specific logic."""
+    """Handles regular lines - respects parent contexts like columns."""
 
     def _can_handle(self, context: LineProcessingContext) -> bool:
         return context.line.strip()
 
     def _process(self, context: LineProcessingContext) -> None:
-        self._finalize_open_parents(context)
+        # Check if we're inside a parent context (Column/ColumnList/etc.)
+        if self._is_in_parent_context(context):
+            self._add_to_parent_context(context)
+            context.was_processed = True
+            context.should_continue = True
+            return
+
+        # Only finalize parents if we're NOT in a managed parent context
+        self._finalize_unmanaged_parents(context)
 
         block_created = self._process_regular_line(context)
         if not block_created:
@@ -25,9 +33,33 @@ class RegularLineHandler(LineHandler):
 
         context.was_processed = True
 
+    def _is_in_parent_context(self, context: LineProcessingContext) -> bool:
+        """Check if we're inside a parent context that manages its own children."""
+        if not context.parent_stack:
+            return False
+            
+        current_parent = context.parent_stack[-1]
+        
+        # These elements manage their own children via specific handlers
+        managed_elements = (ColumnListElement, ColumnElement)
+        
+        return issubclass(current_parent.element_type, managed_elements)
+
+    def _add_to_parent_context(self, context: LineProcessingContext) -> None:
+        """Add line as child to the current parent context."""
+        context.parent_stack[-1].add_child_line(context.line)
+
     def _process_regular_line(self, context: LineProcessingContext) -> bool:
         """Process a regular line and check for parent blocks."""
         for element in context.block_registry.get_elements():
+            # Skip elements that are handled by specialized handlers
+            if issubclass(element, (ColumnListElement, ColumnElement)):
+                continue
+                
+            # Skip lines that look like column directives  
+            if context.line.strip().startswith(":::"):
+                continue
+                
             if not (result := element.markdown_to_notion(context.line)):
                 continue
 
@@ -77,24 +109,20 @@ class RegularLineHandler(LineHandler):
             CodeElement,
             TableElement,
             ToggleElement,
-            ToggleableHeadingElement,
-            ColumnListElement,
-            ColumnElement,
+            ToggleableHeadingElement,  # Only toggleable headings, not regular headings
+            # ColumnListElement, ColumnElement removed - handled by specialized handlers
         )
 
         if issubclass(element, parent_elements):
             return True
 
-        # Check block attributes for children capability
+        # Check block attributes for children capability - BUT skip regular headings
         attrs_to_check = [
             ("toggle", "children"),
-            ("column_list", "children"),
-            ("column", "children"),
             ("code", "rich_text"),
             ("table", "children"),
-            ("heading_1", "children"),
-            ("heading_2", "children"),
-            ("heading_3", "children"),
+            # Removed heading_1, heading_2, heading_3 - regular headings don't need children
+            # Only toggleable headings are handled by ToggleableHeadingElement above
         ]
 
         for attr1, attr2 in attrs_to_check:
@@ -113,13 +141,24 @@ class RegularLineHandler(LineHandler):
         elif issubclass(element, TableElement):
             return "TABLE_ROW"
         else:
-            return "|"
+            return ""  # No prefix for most elements
 
-    def _finalize_open_parents(self, context: LineProcessingContext) -> None:
-        """Finalize all open parent blocks - no toggle logic needed here anymore."""
+    def _finalize_unmanaged_parents(self, context: LineProcessingContext) -> None:
+        """Finalize only unmanaged parent blocks (not Column/ColumnList)."""
+        parents_to_finalize = []
+        
+        # Collect unmanaged parents from the top of the stack
         while context.parent_stack:
-            parent_context = context.parent_stack.pop()
-
+            current_parent = context.parent_stack[-1]
+            
+            # If it's a managed element, don't finalize it
+            if issubclass(current_parent.element_type, (ColumnListElement, ColumnElement)):
+                break
+                
+            parents_to_finalize.append(context.parent_stack.pop())
+        
+        # Process the collected parents
+        for parent_context in reversed(parents_to_finalize):
             if parent_context.has_children():
                 children_text = "\n".join(parent_context.child_lines)
                 children_blocks = self._convert_children_text(
@@ -149,11 +188,10 @@ class RegularLineHandler(LineHandler):
         """Assign children to a parent block."""
         attrs_to_check = [
             ("toggle", "children"),
-            ("column_list", "children"),
-            ("column", "children"),
             ("heading_1", "children"),
             ("heading_2", "children"),
             ("heading_3", "children"),
+            # column-related removed - handled by specialized handlers
         ]
 
         for attr1, attr2 in attrs_to_check:

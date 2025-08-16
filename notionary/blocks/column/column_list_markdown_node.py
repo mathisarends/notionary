@@ -14,20 +14,19 @@ class ColumnListMarkdownBlockParams(BaseModel):
 class ColumnListMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating a Markdown column list container.
-    This represents the `::: columns` container that holds multiple columns
-    with properly prefixed content.
+    This represents the `::: columns` container that holds multiple columns.
 
     Example:
     ::: columns
-    | ::: column
-    | | Left content
-    | | with double prefixed lines
-    | :::
-    |
-    | ::: column 0.3
-    | | Right content (30% width)
-    | | with double prefixed lines
-    | :::
+    ::: column
+    Left content
+    with nested lines
+    :::
+
+    ::: column 0.3
+    Right content (30% width)
+    with nested lines
+    :::
     :::
     """
 
@@ -47,7 +46,4 @@ class ColumnListMarkdownNode(MarkdownNode):
         column_parts = [column.to_markdown() for column in self.columns]
         columns_content = "\n\n".join(column_parts)
 
-        lines = columns_content.split("\n")
-        prefixed_lines = [f"| {line}" if line.strip() else "|" for line in lines]
-
-        return "::: columns\n" + "\n".join(prefixed_lines) + "\n:::"
+        return f"::: columns\n{columns_content}\n:::"
