@@ -75,7 +75,7 @@ class MarkdownToNotionConverter:
             )
 
             self._handler_chain.handle(context)
-            
+
             if context.lines_consumed:
                 print(f"DEBUG: Consumed {context.lines_consumed} lines")
 

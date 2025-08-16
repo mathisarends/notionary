@@ -32,11 +32,11 @@ class CodeMarkdownNode(MarkdownNode):
 
     def to_markdown(self) -> str:
         lang = self.language or ""
-        
+
         # Build the opening fence with optional caption
         opening_fence = f"```{lang}"
         if self.caption:
             opening_fence += f' "{self.caption}"'
-        
+
         content = f"{opening_fence}\n{self.code}\n```"
         return content

@@ -9,6 +9,19 @@ async def main():
         page = await NotionPage.from_page_name("Jarvis Clipboard")
 
         markdown = """
+        | Name | Age |
+        |------|-----|
+        | Alice| 30  |
+        | Bob  | 25  |
+
+        +++ Table Toggle
+        Here is a markdown table inside a toggle:
+        | Product | Price |
+        |---------|-------|
+        | Apple   | $1    |
+        | Banana  | $0.5  |
+        +++
+
         ```python "bin lit"
         def fibonacci(n):
             if n <= 1:
@@ -19,26 +32,9 @@ async def main():
         for i in range(10):
             print(f"fibonacci({i}) = {fibonacci(i)}")
         ```
-        
-        +++ My Toggle
-        This is content inside the toggle.
-        More content here.
-        +++
-
-        +++ Another Toggle
-        Different content.
-        +++
-        +++# Chapter 1
-        Content for chapter 1.
-        Some paragraphs here.
-        +++
 
         +++## Section A
         Content for section A.
-        +++
-
-        +++### Subsection
-        Detailed content.
         +++
 
         +++ Python Code Example

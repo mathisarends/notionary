@@ -35,7 +35,7 @@ class LineProcessingContext:
     result_blocks: list[BlockCreateRequest]
     parent_stack: list[ParentBlockContext]
     block_registry: BlockRegistry
-    
+
     # Optional fields for line jumping (only available in top-level processing)
     all_lines: Optional[list[str]] = None
     current_line_index: Optional[int] = None
@@ -49,8 +49,8 @@ class LineProcessingContext:
         """Get all remaining lines from current position."""
         if self.all_lines is None or self.current_line_index is None:
             return []
-        return self.all_lines[self.current_line_index + 1:]
-    
+        return self.all_lines[self.current_line_index + 1 :]
+
     def peek_next_line(self, offset: int = 1) -> Optional[str]:
         """Peek at the next line without consuming it."""
         if self.all_lines is None or self.current_line_index is None:
@@ -59,7 +59,7 @@ class LineProcessingContext:
         if next_index < len(self.all_lines):
             return self.all_lines[next_index]
         return None
-    
+
     def consume_lines(self, count: int) -> list[str]:
         """Consume the next 'count' lines and return them."""
         if self.all_lines is None or self.current_line_index is None:

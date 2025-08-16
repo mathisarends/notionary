@@ -4,7 +4,9 @@ from notionary.blocks.code.code_element import CodeElement
 from notionary.page.formatting.line_handler import (
     LineHandler,
     LineProcessingContext,
+    ParentBlockContext,
 )
+
 
 class CodeBlockHandler(LineHandler):
     """Handles code block specific logic with batching."""
@@ -16,8 +18,8 @@ class CodeBlockHandler(LineHandler):
         self._code_end_pattern = re.compile(r"^```\s*$")
 
     def _can_handle(self, context: LineProcessingContext) -> bool:
-        # Don't handle code blocks if we're inside a toggle - let toggle handler collect the lines
-        if self._is_inside_toggle(context):
+        # Don't handle code blocks if we're inside any parent context - let parent handler collect the lines
+        if self._is_inside_parent_context(context):
             return False
         return self._is_code_start(context)
 
@@ -31,14 +33,9 @@ class CodeBlockHandler(LineHandler):
         """Check if this line starts a code block."""
         return self._code_start_pattern.match(context.line.strip()) is not None
 
-    def _is_inside_toggle(self, context: LineProcessingContext) -> bool:
-        """Check if we're currently inside a toggle context."""
-        if not context.parent_stack:
-            return False
-        
-        from notionary.blocks.toggle.toggle_element import ToggleElement
-        current_parent = context.parent_stack[-1]
-        return issubclass(current_parent.element_type, ToggleElement)
+    def _is_inside_parent_context(self, context: LineProcessingContext) -> bool:
+        """Check if we're currently inside any parent context (toggle, heading, etc.)."""
+        return len(context.parent_stack) > 0
 
     def _process_complete_code_block(self, context: LineProcessingContext) -> None:
         """Process the entire code block in one go."""
@@ -74,11 +71,11 @@ class CodeBlockHandler(LineHandler):
         # Set the code content
         if code_lines:
             code_content = "\n".join(code_lines)
-            if hasattr(block, 'code') and hasattr(block.code, 'rich_text'):
+            if hasattr(block, "code") and hasattr(block.code, "rich_text"):
                 block.code.rich_text = [RichTextObject.for_code_block(code_content)]
 
         # Set the caption if provided
-        if caption and hasattr(block, 'code') and hasattr(block.code, 'caption'):
+        if caption and hasattr(block, "code") and hasattr(block.code, "caption"):
             caption_rich_text = RichTextObject.for_code_block(caption)
             block.code.caption.append(caption_rich_text)
 

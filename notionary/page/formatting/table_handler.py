@@ -7,7 +7,7 @@ from notionary.page.formatting.line_handler import LineHandler, LineProcessingCo
 
 
 class TableHandler(LineHandler):
-    """Handles table specific logic."""
+    """Handles table specific logic with batching."""
 
     def __init__(self):
         super().__init__()
@@ -15,66 +15,82 @@ class TableHandler(LineHandler):
         self._separator_pattern = re.compile(r"^\s*\|([\s\-:|]+)\|\s*$")
 
     def _can_handle(self, context: LineProcessingContext) -> bool:
-        return self._is_table_end(context) or self._is_table_row(context)
+        # Don't handle tables if we're inside any parent context - let parent handler collect the lines
+        if self._is_inside_parent_context(context):
+            return False
+        return self._is_table_start(context)
 
     def _process(self, context: LineProcessingContext) -> None:
-        if self._is_table_end(context):
-            self._finalize_table(context)
+        if not self._is_table_start(context):
+            return
+        
+        self._process_complete_table(context)
+        context.was_processed = True
+        context.should_continue = True
+
+    def _is_inside_parent_context(self, context: LineProcessingContext) -> bool:
+        """Check if we're currently inside any parent context (toggle, heading, etc.)."""
+        return len(context.parent_stack) > 0
+
+    def _is_table_start(self, context: LineProcessingContext) -> bool:
+        """Check if this line starts a table."""
+        return self._table_row_pattern.match(context.line.strip()) is not None
+
+    def _process_complete_table(self, context: LineProcessingContext) -> None:
+        """Process the entire table in one go."""
+        # Create table element
+        table_element = TableElement()
+        result = table_element.markdown_to_notion(context.line)
+        if not result:
             return
 
-        if self._is_table_row(context):
-            self._add_table_row(context)
-            context.was_processed = True
-            context.should_continue = True
+        block = result if not isinstance(result, list) else result[0]
 
-    def _is_table_end(self, context: LineProcessingContext) -> bool:
-        if not context.parent_stack:
-            return False
+        # Collect all table lines (including the current one)
+        table_lines = [context.line]
+        remaining_lines = context.get_remaining_lines()
+        lines_to_consume = 0
 
-        current_parent = context.parent_stack[-1]
-        if not issubclass(current_parent.element_type, TableElement):
-            return False
+        # Find all consecutive table rows
+        for i, line in enumerate(remaining_lines):
+            line_stripped = line.strip()
+            if not line_stripped:
+                # Empty line - continue to allow for spacing in tables
+                table_lines.append(line)
+                continue
 
-        return (
-            not self._table_row_pattern.match(context.line.strip())
-            and context.line.strip()
-        )
+            if self._table_row_pattern.match(
+                line_stripped
+            ) or self._separator_pattern.match(line_stripped):
+                table_lines.append(line)
+            else:
+                # Not a table line - stop here
+                lines_to_consume = i
+                break
+        else:
+            # Consumed all remaining lines
+            lines_to_consume = len(remaining_lines)
 
-    def _is_table_row(self, context: LineProcessingContext) -> bool:
-        if not context.parent_stack:
-            return False
+        # Process the table content
+        table_rows, separator_found = self._process_table_lines(table_lines)
+        
+        if hasattr(block, "table") and hasattr(block.table, "children"):
+            block.table.children = table_rows
+            if table_rows and separator_found:
+                block.table.has_column_header = True
 
-        current_parent = context.parent_stack[-1]
-        return (
-            issubclass(current_parent.element_type, TableElement)
-            and current_parent.child_prefix == "TABLE_ROW"
-            and self._table_row_pattern.match(context.line.strip())
-        )
-
-    def _finalize_table(self, context: LineProcessingContext) -> None:
-        table_context = context.parent_stack.pop()
-
-        if not table_context.has_children():
-            context.result_blocks.append(table_context.block)
-            return
-
-        table_rows, separator_found = self._process_table_lines(
-            table_context.child_lines
-        )
-
-        table_context.block.table.children = table_rows
-        if table_rows and separator_found:
-            table_context.block.table.has_column_header = True
-
-        context.result_blocks.append(table_context.block)
+        # Tell the main loop to skip the consumed lines
+        context.lines_consumed = lines_to_consume
+        context.result_blocks.append(block)
 
     def _process_table_lines(
-        self, child_lines: list[str]
+        self, table_lines: list[str]
     ) -> tuple[list[CreateTableRowBlock], bool]:
+        """Process all table lines and return rows and separator status."""
         table_rows = []
         separator_found = False
 
-        for line in child_lines:
+        for line in table_lines:
             line = line.strip()
             if not line:
                 continue
@@ -103,9 +119,6 @@ class TableHandler(LineHandler):
         if not rich_text:
             rich_text = [RichTextObject.from_plain_text(cell)]
         return rich_text
-
-    def _add_table_row(self, context: LineProcessingContext) -> None:
-        context.parent_stack[-1].add_child_line(context.line)
 
     def _parse_table_row(self, row_text: str) -> list[str]:
         row_content = row_text.strip()
