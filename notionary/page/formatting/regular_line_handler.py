@@ -116,7 +116,6 @@ class RegularLineHandler(LineHandler):
         # Only check for basic cases like lists, etc.
 
         attrs_to_check = [
-            ("code", "rich_text"),  # Code blocks still use old system
             ("table", "children"),  # Tables still use old system
         ]
 

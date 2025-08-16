@@ -9,7 +9,7 @@ async def main():
         page = await NotionPage.from_page_name("Jarvis Clipboard")
 
         markdown = """
-        ```python
+        ```python "bin lit"
         def fibonacci(n):
             if n <= 1:
                 return n
