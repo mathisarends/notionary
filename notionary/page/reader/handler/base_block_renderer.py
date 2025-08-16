@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from notionary.page.reader.context import BlockProcessingContext
+from notionary.page.reader.handler.block_rendering_context import BlockRenderingContext
 
 
 class BlockHandler(ABC):
@@ -17,7 +17,7 @@ class BlockHandler(ABC):
         self._next_handler = handler
         return handler
 
-    def handle(self, context: BlockProcessingContext) -> None:
+    def handle(self, context: BlockRenderingContext) -> None:
         """Handle the block or pass to next handler."""
         if self._can_handle(context):
             self._process(context)
@@ -25,12 +25,12 @@ class BlockHandler(ABC):
             self._next_handler.handle(context)
 
     @abstractmethod
-    def _can_handle(self, context: BlockProcessingContext) -> bool:
+    def _can_handle(self, context: BlockRenderingContext) -> bool:
         """Check if this handler can process the current block."""
         pass
 
     @abstractmethod
-    def _process(self, context: BlockProcessingContext) -> None:
+    def _process(self, context: BlockRenderingContext) -> None:
         """Process the block and update context."""
         pass
 

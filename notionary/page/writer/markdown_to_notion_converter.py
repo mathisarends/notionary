@@ -1,19 +1,18 @@
 from notionary.blocks.block_types import BlockType
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.notion_text_length_utils import fix_blocks_content_length
-from notionary.page.writer.code_block_handler import CodeBlockHandler
-from notionary.page.writer.column_handler import ColumnHandler
-from notionary.page.writer.column_list_handler import ColumnListHandler
-from notionary.page.writer.context import ParentBlockContext
-from notionary.page.writer.toggle_handler import ToggleHandler
-from notionary.page.writer.toggleable_heading_handler import (
-    ToggleableHeadingHandler,
-)
-from notionary.page.writer.line_handler import (
+from notionary.page.writer.handler import (
+    CodeHandler,
+    ColumnHandler,
     LineProcessingContext,
+    ColumnListHandler,
+    ParentBlockContext,
+    ParentBlockContext,
+    ToggleHandler,
+    ToggleableHeadingHandler,
+    TableHandler,
+    RegularLineHandler,
 )
-from notionary.page.writer.regular_line_handler import RegularLineHandler
-from notionary.page.writer.table_handler import TableHandler
 
 from notionary.blocks.block_models import BlockCreateRequest
 
@@ -26,7 +25,7 @@ class MarkdownToNotionConverter:
         self._setup_handler_chain()
 
     def _setup_handler_chain(self) -> None:
-        code_handler = CodeBlockHandler()
+        code_handler = CodeHandler()
         table_handler = TableHandler()
         column_list_handler = ColumnListHandler()
         column_handler = ColumnHandler()

@@ -1,6 +1,6 @@
 from notionary.blocks.column.column_element import ColumnElement
 from notionary.blocks.column.column_list_element import ColumnListElement
-from notionary.page.writer.line_handler import (
+from notionary.page.writer.handler import (
     LineHandler,
     LineProcessingContext,
 )

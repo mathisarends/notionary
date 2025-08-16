@@ -3,7 +3,7 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.table.table_element import TableElement
 from notionary.blocks.table.table_models import CreateTableRowBlock, TableRowBlock
-from notionary.page.writer.line_handler import LineHandler, LineProcessingContext
+from notionary.page.writer.handler import LineHandler, LineProcessingContext
 
 
 class TableHandler(LineHandler):

@@ -6,8 +6,8 @@ from notionary.blocks.block_types import BlockType
 from notionary.blocks.toggleable_heading.toggleable_heading_element import (
     ToggleableHeadingElement,
 )
-from notionary.page.writer.context import ParentBlockContext
-from notionary.page.writer.line_handler import (
+from notionary.page.writer.handler import (
+    ParentBlockContext,
     LineHandler,
     LineProcessingContext,
 )
