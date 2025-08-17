@@ -33,7 +33,7 @@ def bootstrap_blocks() -> None:
         toggleable_heading,
         table_of_contents,
     )
-    from notionary.blocks import block_models
+    from notionary.blocks import models
 
     # Collect all exports from modules
     ns = {}
@@ -121,7 +121,7 @@ def bootstrap_blocks() -> None:
         TableOfContentsBlock,
         CreateTableOfContentsBlock,
     )
-    from notionary.blocks.block_types import BlockType
+    from notionary.blocks.types import BlockType
 
     # Define the Union types that are needed for model rebuilding
     BlockCreateRequest = Union[
@@ -208,8 +208,8 @@ def bootstrap_blocks() -> None:
     )
 
     # Now rebuild with complete namespace
-    block_models.Block.model_rebuild(_types_namespace=ns)
-    block_models.BlockChildrenResponse.model_rebuild(_types_namespace=ns)
+    models.Block.model_rebuild(_types_namespace=ns)
+    models.BlockChildrenResponse.model_rebuild(_types_namespace=ns)
 
     # Rebuild all individual block models
     BookmarkBlock.model_rebuild()

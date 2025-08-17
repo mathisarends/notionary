@@ -11,7 +11,7 @@ should be ≤ 2000, instead was 2162."
 
 import re
 import logging
-from notionary.blocks.block_models import BlockCreateRequest
+from notionary.blocks.models import BlockCreateRequest
 
 logger = logging.getLogger(__name__)
 

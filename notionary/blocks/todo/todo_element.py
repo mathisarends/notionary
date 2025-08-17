@@ -2,16 +2,16 @@ from __future__ import annotations
 import re
 from typing import Optional, TYPE_CHECKING
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
-from notionary.blocks.block_models import Block, BlockType
+from notionary.blocks.models import Block, BlockType
 from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
 
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-class TodoElement(NotionBlockElement):
+class TodoElement(BaseBlockElement):
     """
     Handles conversion between Markdown todo items and Notion to_do blocks.
 

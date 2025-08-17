@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Dict, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 from notionary.database.client import NotionDatabaseClient
 from notionary.database.exceptions import DatabaseNotFoundException
-from notionary.models.notion_database_response import NotionDatabaseResponse
+from notionary.database.models import NotionDatabaseResponse
 from notionary.util import LoggingMixin, format_uuid, SingletonMetaClass
 from notionary.util.fuzzy import find_best_match
 
@@ -22,7 +22,7 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
     """
 
     def __init__(self):
-        self._database_cache: Dict[str, NotionDatabase] = {}
+        self._database_cache: dict[str, NotionDatabase] = {}
 
     async def get_database_by_id(
         self, database_id: str, token: Optional[str] = None, force_refresh: bool = False

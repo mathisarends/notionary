@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, Union, Any, Literal, TYPE_CHECKING
 from pydantic import BaseModel
-from notionary.blocks.block_types import BlockType
+from notionary.blocks.types import BlockType
 
 if TYPE_CHECKING:
     from notionary.blocks.bookmark import (

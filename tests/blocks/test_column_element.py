@@ -3,11 +3,10 @@ Pytest tests for ColumnElement.
 Tests the essential functionality for column block handling.
 """
 
-from turtle import width
 import pytest
 from notionary.blocks.column.column_element import ColumnElement
 from notionary.blocks.column.column_models import ColumnBlock, CreateColumnBlock
-from notionary.blocks.block_models import Block
+from notionary.blocks.models import Block
 
 
 def create_block_with_required_fields(**kwargs) -> Block:

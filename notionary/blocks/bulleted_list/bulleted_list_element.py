@@ -2,18 +2,18 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
 from notionary.blocks.bulleted_list.bulleted_list_models import (
     BulletedListItemBlock,
     CreateBulletedListItemBlock,
 )
-from notionary.blocks.block_models import Block, BlockType
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.models import Block, BlockType
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-class BulletedListElement(NotionBlockElement):
+class BulletedListElement(BaseBlockElement):
     """Class for converting between Markdown bullet lists and Notion bulleted list items."""
 
     # Regex for markdown bullets (excluding todo items [ ] or [x])

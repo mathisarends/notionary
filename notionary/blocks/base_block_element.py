@@ -2,10 +2,10 @@ from __future__ import annotations
 from typing import Optional
 from abc import ABC
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
 
-class NotionBlockElement(ABC):
+class BaseBlockElement(ABC):
     """Base class for elements that can be converted between Markdown and Notion."""
 
     @classmethod

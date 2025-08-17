@@ -2,18 +2,18 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from notionary.blocks.block_types import BlockType
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.types import BlockType
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.table_of_contents.table_of_contents_models import (
     CreateTableOfContentsBlock,
     TableOfContentsBlock,
 )
 
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
 
-class TableOfContentsElement(NotionBlockElement):
+class TableOfContentsElement(BaseBlockElement):
     """
     Handles conversion between Markdown [toc] syntax and Notion table_of_contents blocks.
 

@@ -1,34 +1,25 @@
-from pydantic import BaseModel
-from dataclasses import dataclass
-from typing import Optional, List, Dict, Any, Literal, Union
-
-from notionary.models.notion_page_response import Cover, Icon
 from pydantic import BaseModel, ConfigDict
+from typing import Optional, Any, Literal, Union
 
 
-# Reusing existing types from your codebase
-@dataclass
-class TextContent:
+class TextContent(BaseModel):
     content: str
     link: Optional[str] = None
 
 
-@dataclass
-class RichText:
+class RichText(BaseModel):
     type: str
     text: TextContent
     plain_text: str
-    href: Optional[str]
+    href: Optional[str] = None
 
 
-@dataclass
-class User:
+class User(BaseModel):
     object: str
     id: str
 
 
-@dataclass
-class Parent:
+class Parent(BaseModel):
     type: Literal["page_id", "workspace", "block_id", "database_id"]
     page_id: Optional[str] = None
     block_id: Optional[str] = None
@@ -38,7 +29,7 @@ class Parent:
 # Rich text types for Pydantic models
 class TextContentPydantic(BaseModel):
     content: str
-    link: Optional[Dict[str, str]] = None
+    link: Optional[dict[str, str]] = None
 
 
 class Annotations(BaseModel):
@@ -58,6 +49,33 @@ class RichTextItemPydantic(BaseModel):
     href: Optional[str] = None
 
 
+# Cover and Icon types
+class ExternalFile(BaseModel):
+    """Represents an external file, e.g., for cover images."""
+
+    url: str
+
+
+class Cover(BaseModel):
+    """Cover image for a Notion page."""
+
+    type: str
+    external: ExternalFile
+
+
+class EmojiIcon(BaseModel):
+    type: Literal["emoji"]
+    emoji: str
+
+
+class ExternalIcon(BaseModel):
+    type: Literal["external"]
+    external: ExternalFile
+
+
+Icon = Union[EmojiIcon, ExternalIcon]
+
+
 # Database property schema types (these are schema definitions, not values)
 class StatusOption(BaseModel):
     id: str
@@ -70,12 +88,12 @@ class StatusGroup(BaseModel):
     id: str
     name: str
     color: str
-    option_ids: List[str]
+    option_ids: list[str]
 
 
 class StatusPropertySchema(BaseModel):
-    options: List[StatusOption]
-    groups: List[StatusGroup]
+    options: list[StatusOption]
+    groups: list[StatusGroup]
 
 
 class DatabaseStatusProperty(BaseModel):
@@ -88,7 +106,7 @@ class DatabaseStatusProperty(BaseModel):
 class RelationPropertySchema(BaseModel):
     database_id: str
     type: str  # "single_property"
-    single_property: Dict[str, Any]
+    single_property: dict[str, Any]
 
 
 class DatabaseRelationProperty(BaseModel):
@@ -102,14 +120,14 @@ class DatabaseUrlProperty(BaseModel):
     id: str
     name: str
     type: Literal["url"]
-    url: Dict[str, Any]  # Usually empty dict
+    url: dict[str, Any]  # Usually empty dict
 
 
 class DatabaseRichTextProperty(BaseModel):
     id: str
     name: str
     type: Literal["rich_text"]
-    rich_text: Dict[str, Any]  # Usually empty dict
+    rich_text: dict[str, Any]  # Usually empty dict
 
 
 class MultiSelectOption(BaseModel):
@@ -120,7 +138,7 @@ class MultiSelectOption(BaseModel):
 
 
 class MultiSelectPropertySchema(BaseModel):
-    options: List[MultiSelectOption]
+    options: list[MultiSelectOption]
 
 
 class DatabaseMultiSelectProperty(BaseModel):
@@ -134,7 +152,7 @@ class DatabaseTitleProperty(BaseModel):
     id: str
     name: str
     type: Literal["title"]
-    title: Dict[str, Any]  # Usually empty dict
+    title: dict[str, Any]  # Usually empty dict
 
 
 # Generic database property for unknown types
@@ -178,7 +196,7 @@ class RelationItem(BaseModel):
 class RelationProperty(BaseModel):
     id: str
     type: str  # 'relation'
-    relation: List[RelationItem]
+    relation: list[RelationItem]
     has_more: bool
 
 
@@ -191,7 +209,7 @@ class UrlProperty(BaseModel):
 class RichTextProperty(BaseModel):
     id: str
     type: str  # 'rich_text'
-    rich_text: List[RichTextItemPydantic]
+    rich_text: list[RichTextItemPydantic]
 
 
 class MultiSelectItem(BaseModel):
@@ -203,13 +221,13 @@ class MultiSelectItem(BaseModel):
 class MultiSelectProperty(BaseModel):
     id: str
     type: str  # 'multi_select'
-    multi_select: List[MultiSelectItem]
+    multi_select: list[MultiSelectItem]
 
 
 class TitleProperty(BaseModel):
     id: str
     type: str  # 'title'
-    title: List[RichTextItemPydantic]
+    title: list[RichTextItemPydantic]
 
 
 # Cover types
@@ -243,17 +261,16 @@ class NotionDatabaseResponse(BaseModel):
 
     object: Literal["database"]
     id: str
-    cover: Optional[Any] = None
+    cover: Optional[Cover] = None
     icon: Optional[Icon] = None
-    cover: Optional[Cover]
     created_time: str
     last_edited_time: str
     created_by: NotionUser
     last_edited_by: NotionUser
-    title: List[RichTextItemPydantic]
-    description: List[Any]
+    title: list[RichTextItemPydantic]
+    description: list[Any]
     is_inline: bool
-    properties: Dict[
+    properties: dict[
         str, Any
     ]  # Using Any for flexibility with different property schemas
     parent: NotionParent
@@ -275,23 +292,9 @@ class NotionPageResponse(BaseModel):
     parent: NotionParent
     archived: bool
     in_trash: bool
-    properties: Dict[str, Any]
+    properties: dict[str, Any]
     url: str
     public_url: Optional[str] = None
-
-
-class NotionQueryResponse(BaseModel):
-    """
-    Complete Notion search/query response model that can contain both pages and databases.
-    """
-
-    object: Literal["list"]
-    results: List[Union[NotionPageResponse, NotionDatabaseResponse]]
-    next_cursor: Optional[str] = None
-    has_more: bool
-    type: Literal["page_or_database"]
-    page_or_database: Dict[str, Any]
-    request_id: str
 
 
 # Specific response type for database queries (pages only)
@@ -301,26 +304,11 @@ class NotionQueryDatabaseResponse(BaseModel):
     """
 
     object: Literal["list"]
-    results: List[NotionPageResponse]
+    results: list[NotionPageResponse]
     next_cursor: Optional[str] = None
     has_more: bool
     type: Literal["page_or_database"]
-    page_or_database: Dict[str, Any]
-    request_id: str
-
-
-# Specific response type for search results (can be mixed)
-class NotionSearchResponse(BaseModel):
-    """
-    Notion search response model that can return both pages and databases.
-    """
-
-    object: Literal["list"]
-    results: List[Union[NotionPageResponse, NotionDatabaseResponse]]
-    next_cursor: Optional[str] = None
-    has_more: bool
-    type: Literal["page_or_database"]
-    page_or_database: Dict[str, Any]
+    page_or_database: dict[str, Any]
     request_id: str
 
 
@@ -330,9 +318,9 @@ class NotionDatabaseSearchResponse(BaseModel):
     """
 
     object: Literal["list"]
-    results: List[NotionDatabaseResponse]
+    results: list[NotionDatabaseResponse]
     next_cursor: Optional[str] = None
     has_more: bool
     type: Literal["page_or_database"]
-    page_or_database: Dict[str, Any]
+    page_or_database: dict[str, Any]
     request_id: str

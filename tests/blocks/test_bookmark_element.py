@@ -7,7 +7,7 @@ import pytest
 from unittest.mock import Mock
 
 from notionary.blocks.bookmark.bookmark_element import BookmarkElement
-from notionary.blocks.block_types import BlockType
+from notionary.blocks.types import BlockType
 from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
 
 

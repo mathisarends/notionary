@@ -3,20 +3,20 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from notionary.blocks.block_types import BlockColor
+from notionary.blocks.types import BlockColor
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
-from notionary.blocks.block_models import (
+from notionary.blocks.models import (
     Block,
     BlockType,
 )
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
 
-class ToggleElement(NotionBlockElement):
+class ToggleElement(BaseBlockElement):
     """
     Simplified ToggleElement class that works with the stack-based converter.
     Children are automatically handled by the StackBasedMarkdownConverter.

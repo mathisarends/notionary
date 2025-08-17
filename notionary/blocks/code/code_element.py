@@ -2,15 +2,15 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
-from notionary.blocks.block_models import Block, BlockType
+from notionary.blocks.models import Block, BlockType
 from notionary.blocks.code.code_models import CodeBlock, CodeLanguage, CreateCodeBlock
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 
-class CodeElement(NotionBlockElement):
+class CodeElement(BaseBlockElement):
     """
     Handles conversion between Markdown code blocks and Notion code blocks.
     Now integrated into the LineProcessor stack system.

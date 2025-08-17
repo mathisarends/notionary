@@ -2,14 +2,14 @@ from __future__ import annotations
 from typing import Optional
 import re
 
-from notionary.blocks.block_types import BlockType
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.types import BlockType
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
 
-class EquationElement(NotionBlockElement):
+class EquationElement(BaseBlockElement):
     """
     Only supports bracket style (analog zu [video]):
 

@@ -14,13 +14,13 @@ from notionary.blocks.paragraph.paragraph_models import (
 )
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-from notionary.blocks.block_models import Block, BlockCreateResult, BlockType
+from notionary.blocks.models import Block, BlockCreateResult, BlockType
 
 
-class PdfElement(NotionBlockElement):
+class PdfElement(BaseBlockElement):
     """
     Handles conversion between Markdown PDF embeds and Notion PDF blocks.
 

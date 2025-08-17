@@ -4,7 +4,7 @@ from notionary.page.writer.handler import (
     LineHandler,
     LineProcessingContext,
 )
-from notionary.blocks.block_models import BlockCreateRequest, BlockCreateResult
+from notionary.blocks.models import BlockCreateRequest, BlockCreateResult
 
 
 class RegularLineHandler(LineHandler):

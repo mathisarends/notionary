@@ -1,11 +1,9 @@
-from typing import Dict, Any, List, Optional
+from typing import Any, Optional
 from notionary.base_notion_client import BaseNotionClient
-from notionary.models.notion_page_response import NotionPageResponse
-from notionary.models.notion_database_response import NotionQueryDatabaseResponse
-from notionary.util import singleton
+from notionary.page.models import NotionPageResponse
+from notionary.database.models import NotionQueryDatabaseResponse
 
 
-@singleton
 class NotionPageClient(BaseNotionClient):
     """
     Client for Notion page-specific operations.
@@ -22,7 +20,7 @@ class NotionPageClient(BaseNotionClient):
     async def create_page(
         self,
         parent_database_id: Optional[str] = None,
-        properties: Optional[Dict[str, Any]] = None,
+        properties: Optional[dict[str, Any]] = None,
     ) -> NotionPageResponse:
         """
         Creates a new page in a Notion database or as a child page.
@@ -36,7 +34,7 @@ class NotionPageClient(BaseNotionClient):
         return NotionPageResponse.model_validate(response)
 
     async def patch_page(
-        self, page_id: str, data: Optional[Dict[str, Any]] = None
+        self, page_id: str, data: Optional[dict[str, Any]] = None
     ) -> NotionPageResponse:
         """
         Updates a Notion page with the provided data.
@@ -73,7 +71,7 @@ class NotionPageClient(BaseNotionClient):
         return NotionQueryDatabaseResponse.model_validate(result)
 
     async def update_page_properties(
-        self, page_id: str, properties: Dict[str, Any]
+        self, page_id: str, properties: dict[str, Any]
     ) -> NotionPageResponse:
         """
         Updates only the properties of a Notion page.
@@ -95,14 +93,14 @@ class NotionPageClient(BaseNotionClient):
         data = {"archived": False}
         return await self.patch_page(page_id, data)
 
-    async def get_page_blocks(self, page_id: str) -> List[Dict[str, Any]]:
+    async def get_page_blocks(self, page_id: str) -> list[dict[str, Any]]:
         """
         Retrieves all blocks of a Notion page.
         """
         response = await self.get(f"blocks/{page_id}/children")
         return response.get("results", [])
 
-    async def get_block_children(self, block_id: str) -> List[Dict[str, Any]]:
+    async def get_block_children(self, block_id: str) -> list[dict[str, Any]]:
         """
         Retrieves all children blocks of a specific block.
         """

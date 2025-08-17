@@ -1,9 +1,8 @@
-import pytest
 from unittest.mock import Mock
 
 from notionary.blocks.table.table_element import TableElement
 from notionary.blocks.table.table_models import TableBlock
-from notionary.blocks.block_types import BlockType
+from notionary.blocks.types import BlockType
 from notionary.blocks.rich_text.rich_text_models import (
     RichTextObject,
     TextContent,

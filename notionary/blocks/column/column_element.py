@@ -2,12 +2,12 @@ from __future__ import annotations
 import re
 from turtle import width
 
-from notionary.blocks.block_models import Block, BlockCreateResult, BlockType
+from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.column.column_models import ColumnBlock, CreateColumnBlock
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.base_block_element import BaseBlockElement
 
 
-class ColumnElement(NotionBlockElement):
+class ColumnElement(BaseBlockElement):
     """
     Handles individual `::: column` blocks with optional width ratio.
     Content is automatically added by the stack processor.

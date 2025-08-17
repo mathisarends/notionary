@@ -6,13 +6,13 @@ from notionary.blocks.breadcrumbs.breadcrumb_models import (
     BreadcrumbBlock,
     CreateBreadcrumbBlock,
 )
-from notionary.blocks.notion_block_element import NotionBlockElement
-from notionary.blocks.block_models import Block, BlockType
+from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.models import Block, BlockType
 
-from notionary.blocks.block_models import BlockCreateResult
+from notionary.blocks.models import BlockCreateResult
 
 
-class BreadcrumbElement(NotionBlockElement):
+class BreadcrumbElement(BaseBlockElement):
     """
     Handles conversion between Markdown breadcrumb marker and Notion breadcrumb blocks.
 

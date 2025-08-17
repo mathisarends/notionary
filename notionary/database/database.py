@@ -1,10 +1,10 @@
 from __future__ import annotations
 import asyncio
 import random
-from typing import Any, AsyncGenerator, Dict, Optional
+from typing import Any, AsyncGenerator, Optional
 
 from notionary.database.client import NotionDatabaseClient
-from notionary.models.notion_database_response import (
+from notionary.database.models import (
     NotionDatabaseResponse,
     NotionPageResponse,
     NotionQueryDatabaseResponse,
@@ -38,7 +38,7 @@ class NotionDatabase(LoggingMixin):
         title: str,
         url: str,
         emoji_icon: Optional[str] = None,
-        properties: Optional[Dict[str, Any]] = None,
+        properties: Optional[dict[str, Any]] = None,
         token: Optional[str] = None,
     ):
         """
@@ -103,7 +103,7 @@ class NotionDatabase(LoggingMixin):
         return self._emoji_icon
 
     @property
-    def properties(self) -> Optional[Dict[str, Any]]:
+    def properties(self) -> Optional[dict[str, Any]]:
         """Get the database properties (readonly)."""
         return self._properties
 
@@ -328,7 +328,7 @@ class NotionDatabase(LoggingMixin):
     async def _iter_pages(
         self,
         page_size: int = 100,
-        filter_conditions: Optional[Dict[str, Any]] = None,
+        filter_conditions: Optional[dict[str, Any]] = None,
     ) -> AsyncGenerator[NotionPage, None]:
         """
         Asynchronous generator that yields NotionPage objects from the database.
@@ -422,7 +422,7 @@ class NotionDatabase(LoggingMixin):
         except (KeyError, TypeError, AttributeError):
             return None
 
-    async def _get_relation_options(self, property_name: str) -> list[Dict[str, Any]]:
+    async def _get_relation_options(self, property_name: str) -> list[dict[str, Any]]:
         """
         Retrieve the titles of all pages related to a relation property.
 
@@ -445,7 +445,7 @@ class NotionDatabase(LoggingMixin):
     async def _paginate_database(
         self,
         page_size: int = 100,
-        filter_conditions: Optional[Dict[str, Any]] = None,
+        filter_conditions: Optional[dict[str, Any]] = None,
     ) -> AsyncGenerator[list[NotionPageResponse], None]:
         """
         Central pagination logic for Notion Database queries.
@@ -461,7 +461,7 @@ class NotionDatabase(LoggingMixin):
         has_more = True
 
         while has_more:
-            query_data: Dict[str, Any] = {"page_size": page_size}
+            query_data: dict[str, Any] = {"page_size": page_size}
 
             if start_cursor:
                 query_data["start_cursor"] = start_cursor

@@ -1,8 +1,8 @@
 from __future__ import annotations
 import re
 
-from notionary.blocks.block_models import BlockCreateRequest
-from notionary.blocks.block_types import BlockType
+from notionary.blocks.models import BlockCreateRequest
+from notionary.blocks.types import BlockType
 from notionary.blocks.toggleable_heading.toggleable_heading_element import (
     ToggleableHeadingElement,
 )

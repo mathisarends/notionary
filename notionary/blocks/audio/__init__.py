@@ -7,7 +7,7 @@ from notionary.blocks.audio.audio_markdown_node import (
 
 __all__ = [
     "AudioElement",
-    "CreateAudioBlock", 
+    "CreateAudioBlock",
     "AudioMarkdownNode",
     "AudioMarkdownBlockParams",
 ]

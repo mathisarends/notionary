@@ -5,11 +5,13 @@ Minimale Tests für CalloutElement - nur das Wesentliche.
 import pytest
 from unittest.mock import Mock
 
-from notionary.blocks.callout.callout_element import CalloutElement
-from notionary.blocks.callout.callout_models import CalloutBlock
-from notionary.blocks.block_types import BlockType
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.models.icon_types import EmojiIcon
+from notionary.blocks.callout.callout_element import (
+    CalloutElement,
+    EmojiIcon,
+    CalloutBlock,
+)
+from notionary.blocks.types import BlockType
+from notionary.blocks.rich_text import RichTextObject
 
 
 def create_rich_text(content: str) -> RichTextObject:

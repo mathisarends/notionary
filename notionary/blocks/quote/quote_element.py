@@ -2,17 +2,17 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
-from notionary.blocks.block_types import BlockColor
+from notionary.blocks.types import BlockColor
 from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
 
-from notionary.blocks.block_models import Block, BlockType
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.models import Block, BlockType
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-class QuoteElement(NotionBlockElement):
+class QuoteElement(BaseBlockElement):
     """
     Handles conversion between Markdown quotes and Notion quote blocks.
 

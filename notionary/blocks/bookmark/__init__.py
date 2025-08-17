@@ -12,6 +12,6 @@ __all__ = [
     "BookmarkElement",
     "BookmarkBlock",
     "CreateBookmarkBlock",
-    "BookmarkMarkdownNode", 
+    "BookmarkMarkdownNode",
     "BookmarkMarkdownBlockParams",
 ]

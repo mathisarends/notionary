@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 from notionary.blocks.quote.quote_element import QuoteElement
 from notionary.blocks.quote.quote_models import QuoteBlock
-from notionary.blocks.block_types import BlockType
+from notionary.blocks.types import BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 

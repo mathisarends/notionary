@@ -7,7 +7,7 @@ Adapted for the new Stack/LineProcessor system.
 import pytest
 from notionary.blocks.code.code_element import CodeElement
 from notionary.blocks.code.code_models import CodeBlock, CreateCodeBlock, CodeLanguage
-from notionary.blocks.block_models import Block
+from notionary.blocks.models import Block
 from notionary.blocks.rich_text.rich_text_models import (
     RichTextObject,
     TextContent,

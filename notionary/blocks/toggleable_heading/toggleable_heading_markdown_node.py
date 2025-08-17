@@ -45,15 +45,22 @@ class ToggleableHeadingMarkdownNode(MarkdownNode):
         return cls(text=params.text, level=params.level, children=params.children)
 
     def to_markdown(self) -> str:
-        prefix = "+++" + ("#" * self.level)
+        # Use the correct +# syntax, not +++#
+        prefix = "+" + ("#" * self.level)
         result = f"{prefix} {self.text}"
 
         if not self.children:
-            result += "\n+++"
             return result
 
-        # Convert children to markdown
-        content_parts = [child.to_markdown() for child in self.children]
-        content_text = "\n\n".join(content_parts)
+        # Convert children to markdown with pipe prefix for nested content
+        content_parts = []
+        for child in self.children:
+            child_md = child.to_markdown()
+            # Prefix each line with pipe
+            prefixed_lines = ["| " + line for line in child_md.split("\n")]
+            content_parts.append("\n".join(prefixed_lines))
+        
+        # Add empty pipe line between paragraphs
+        content_text = "\n|\n".join(content_parts)
 
-        return result + "\n" + content_text + "\n+++"
+        return result + "\n" + content_text

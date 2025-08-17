@@ -2,7 +2,7 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
 from notionary.blocks.heading.heading_models import (
     HeadingBlock,
@@ -11,12 +11,12 @@ from notionary.blocks.heading.heading_models import (
     CreateHeading3Block,
 )
 
-from notionary.blocks.block_models import Block, BlockType
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.models import Block, BlockType
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-class ToggleableHeadingElement(NotionBlockElement):
+class ToggleableHeadingElement(BaseBlockElement):
     """
     Simplified ToggleableHeadingElement that works with the stack-based converter.
     Children are automatically handled by the StackBasedMarkdownConverter.

@@ -3,18 +3,18 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
-from notionary.blocks.block_types import BlockType
+from notionary.blocks.types import BlockType
 from notionary.blocks.divider.divider_models import CreateDividerBlock, DividerBlock
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
     ParagraphBlock,
 )
 
 
-class DividerElement(NotionBlockElement):
+class DividerElement(BaseBlockElement):
     """
     Handles conversion between Markdown horizontal dividers and Notion divider blocks.
 

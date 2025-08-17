@@ -2,14 +2,14 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
-from notionary.blocks.block_models import (
+from notionary.blocks.models import (
     Block,
     BlockType,
 )
-from notionary.blocks.block_types import BlockColor
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.types import BlockColor
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.numbered_list.numbered_list_models import (
     CreateNumberedListItemBlock,
     NumberedListItemBlock,
@@ -17,7 +17,7 @@ from notionary.blocks.numbered_list.numbered_list_models import (
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-class NumberedListElement(NotionBlockElement):
+class NumberedListElement(BaseBlockElement):
     """Converts between Markdown numbered lists and Notion numbered list items."""
 
     PATTERN = re.compile(r"^\s*(\d+)\.\s+(.+)$")

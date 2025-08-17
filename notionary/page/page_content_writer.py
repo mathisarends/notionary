@@ -3,8 +3,8 @@ from typing import Callable, Optional, Union
 
 from mkdocs.structure.toc import TableOfContents
 
-from notionary.blocks.block_client import NotionBlockClient
-from notionary.blocks.block_models import Block
+from notionary.blocks.client import NotionBlockClient
+from notionary.blocks.models import Block
 from notionary.blocks.divider.divider_models import DividerBlock
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.markdown.markdown_builder import MarkdownBuilder

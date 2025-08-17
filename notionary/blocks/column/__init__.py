@@ -20,7 +20,7 @@ __all__ = [
     "ColumnListElement",
     "ColumnBlock",
     "CreateColumnBlock",
-    "ColumnListBlock", 
+    "ColumnListBlock",
     "CreateColumnListBlock",
     "ColumnMarkdownNode",
     "ColumnMarkdownBlockParams",

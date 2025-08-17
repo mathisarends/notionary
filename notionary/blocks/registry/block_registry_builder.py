@@ -14,7 +14,7 @@ from notionary.blocks.embed.embed_element import EmbedElement
 from notionary.blocks.equation.equation_element import EquationElement
 from notionary.blocks.heading.heading_element import HeadingElement
 from notionary.blocks.image_block.image_element import ImageElement
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.numbered_list.numbered_list_element import NumberedListElement
 from notionary.blocks.paragraph.paragraph_element import ParagraphElement
 from notionary.blocks.quote.quote_element import QuoteElement
@@ -76,7 +76,7 @@ class BlockRegistryBuilder:
             .with_breadcrumbs()
         ).build()
 
-    def remove_element(self, element_class: Type[NotionBlockElement]) -> Self:
+    def remove_element(self, element_class: Type[BaseBlockElement]) -> Self:
         """
         Remove an element class from the registry configuration.
 
@@ -243,7 +243,7 @@ class BlockRegistryBuilder:
         self._elements.pop(ParagraphElement.__name__, None)
         self._elements[ParagraphElement.__name__] = ParagraphElement
 
-    def _add_element(self, element_class: Type[NotionBlockElement]) -> Self:
+    def _add_element(self, element_class: Type[BaseBlockElement]) -> Self:
         """
         Add an element class to the registry configuration.
         If the element already exists, it's moved to the end.

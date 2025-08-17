@@ -1,10 +1,23 @@
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 from pydantic import BaseModel, Field
 
-from notionary.blocks.block_models import Block
-from notionary.blocks.block_types import BlockColor
+from notionary.blocks.models import Block
+from notionary.blocks.types import BlockColor
+from notionary.blocks.file.file_element_models import FileBlock
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.models.icon_types import IconObject
+
+
+class EmojiIcon(BaseModel):
+    type: Literal["emoji"] = "emoji"
+    emoji: str
+
+
+class FileIcon(BaseModel):
+    type: Literal["file"] = "file"
+    file: FileBlock
+
+
+IconObject = Union[EmojiIcon, FileIcon]
 
 
 class CalloutBlock(BaseModel):

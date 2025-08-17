@@ -2,19 +2,19 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
-from notionary.blocks.block_models import (
+from notionary.blocks.models import (
     Block,
     BlockType,
 )
 from notionary.blocks.callout.callout_models import CalloutBlock, CreateCalloutBlock
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.models.icon_types import EmojiIcon, IconObject
+from notionary.blocks.callout.callout_models import EmojiIcon, IconObject
 
 
-class CalloutElement(NotionBlockElement):
+class CalloutElement(BaseBlockElement):
     """
     Handles conversion between Markdown callouts and Notion callout blocks.
 

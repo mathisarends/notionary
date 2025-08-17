@@ -1,4 +1,4 @@
-from notionary.blocks._bootstrap import bootstrap_blocks
+from notionary.blocks import bootstrap_blocks
 
 bootstrap_blocks()
 

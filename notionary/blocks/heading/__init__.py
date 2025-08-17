@@ -14,7 +14,7 @@ __all__ = [
     "HeadingElement",
     "HeadingBlock",
     "CreateHeading1Block",
-    "CreateHeading2Block", 
+    "CreateHeading2Block",
     "CreateHeading3Block",
     "HeadingMarkdownNode",
     "HeadingMarkdownBlockParams",

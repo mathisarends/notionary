@@ -4,12 +4,12 @@ import asyncio
 from typing import Any, Callable, Optional, TYPE_CHECKING, Union
 import random
 
-from notionary.blocks.block_client import NotionBlockClient
+from notionary.blocks.client import NotionBlockClient
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
 from notionary.markdown.markdown_builder import MarkdownBuilder
-from notionary.models.notion_database_response import NotionPageResponse
-from notionary.models.notion_page_response import DatabaseParent
+from notionary.page.models import NotionPageResponse
+from notionary.blocks.models import DatabaseParent
 from notionary.page.client import NotionPageClient
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 

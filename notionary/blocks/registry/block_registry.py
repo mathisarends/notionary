@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Optional, Type
 
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.base_block_element import BaseBlockElement
 
 from notionary.telemetry import (
     ProductTelemetry,
@@ -9,7 +9,7 @@ from notionary.telemetry import (
     NotionToMarkdownConversionEvent,
 )
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
 from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
 
@@ -72,7 +72,7 @@ class BlockRegistry:
     def builder(self) -> BlockRegistryBuilder:
         return self._builder
 
-    def register(self, element_class: Type[NotionBlockElement]) -> bool:
+    def register(self, element_class: Type[BaseBlockElement]) -> bool:
         """
         Register an element class via builder.
         """
@@ -80,7 +80,7 @@ class BlockRegistry:
         self._builder._add_element(element_class)
         return len(self._builder._elements) > initial_count
 
-    def deregister(self, element_class: Type[NotionBlockElement]) -> bool:
+    def deregister(self, element_class: Type[BaseBlockElement]) -> bool:
         """
         Deregister an element class via builder.
         """
@@ -88,13 +88,13 @@ class BlockRegistry:
         self._builder.remove_element(element_class)
         return len(self._builder._elements) < initial_count
 
-    def contains(self, element_class: Type[NotionBlockElement]) -> bool:
+    def contains(self, element_class: Type[BaseBlockElement]) -> bool:
         """
         Checks if a specific element is contained in the registry.
         """
         return element_class.__name__ in self._builder._elements
 
-    def find_markdown_handler(self, text: str) -> Optional[Type[NotionBlockElement]]:
+    def find_markdown_handler(self, text: str) -> Optional[Type[BaseBlockElement]]:
         """Find an element that can handle the given markdown text."""
         for element in self._builder._elements.values():
             if element.match_markdown(text):
@@ -130,11 +130,11 @@ class BlockRegistry:
 
         return handler.notion_to_markdown(block)
 
-    def get_elements(self) -> list[Type[NotionBlockElement]]:
+    def get_elements(self) -> list[Type[BaseBlockElement]]:
         """Get all registered elements."""
         return list(self._builder._elements.values())
 
-    def _find_notion_handler(self, block: Block) -> Optional[Type[NotionBlockElement]]:
+    def _find_notion_handler(self, block: Block) -> Optional[Type[BaseBlockElement]]:
         """Find an element that can handle the given Notion block."""
         for element in self._builder._elements.values():
             if element.match_notion(block):

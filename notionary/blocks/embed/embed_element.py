@@ -2,7 +2,7 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from notionary.blocks.block_models import (
+from notionary.blocks.models import (
     Block,
     BlockType,
 )
@@ -12,15 +12,15 @@ from notionary.blocks.file.file_element_models import (
     FileUploadFile,
     NotionHostedFile,
 )
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
 
-class EmbedElement(NotionBlockElement):
+class EmbedElement(BaseBlockElement):
     """
     Handles conversion between Markdown embeds and Notion embed blocks.
 

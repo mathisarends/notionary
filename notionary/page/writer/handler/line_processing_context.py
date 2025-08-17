@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.blocks.block_models import BlockCreateRequest
+from notionary.blocks.models import BlockCreateRequest
 
 
 @dataclass
@@ -13,7 +13,7 @@ class ParentBlockContext:
     """Context for a block that expects children."""
 
     block: BlockCreateRequest
-    element_type: NotionBlockElement
+    element_type: BaseBlockElement
     child_lines: list[str]
     child_blocks: list[BlockCreateRequest] = field(default_factory=list)
 

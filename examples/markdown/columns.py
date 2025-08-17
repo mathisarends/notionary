@@ -14,12 +14,14 @@ async def main():
 
         builder.columns(
             lambda col: (
-                col.paragraph("Left column start")
-                .toggleable_heading("Left toggle", 2, lambda t: t.paragraph("inside left toggle"))
+                col.paragraph("Left column start").toggleable_heading(
+                    "Left toggle", 2, lambda t: t.paragraph("inside left toggle")
+                )
             ),
             lambda col: (
-                col.paragraph("Right column start")
-                .toggle("Right toggle", lambda t: t.paragraph("inside right toggle"))
+                col.paragraph("Right column start").toggle(
+                    "Right toggle", lambda t: t.paragraph("inside right toggle")
+                )
             ),
             width_ratios=[0.5, 0.5],
         )

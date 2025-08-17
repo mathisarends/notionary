@@ -3,16 +3,16 @@ import re
 from typing import Optional
 
 from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
-from notionary.blocks.block_models import Block, BlockType
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.models import Block, BlockType
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-from notionary.blocks.block_models import BlockCreateResult
+from notionary.blocks.models import BlockCreateResult
 
 
 # BookmarkElement implementation using BlockType enum and TextInlineFormatter
-class BookmarkElement(NotionBlockElement):
+class BookmarkElement(BaseBlockElement):
     """
     Handles conversion between Markdown bookmarks and Notion bookmark blocks.
 

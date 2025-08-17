@@ -10,7 +10,7 @@ from notionary.blocks.callout.callout_markdown_node import (
 
 __all__ = [
     "CalloutElement",
-    "CalloutBlock", 
+    "CalloutBlock",
     "CreateCalloutBlock",
     "CalloutMarkdownNode",
     "CalloutMarkdownBlockParams",

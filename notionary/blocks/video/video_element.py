@@ -2,13 +2,13 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from notionary.blocks.block_types import BlockType
+from notionary.blocks.types import BlockType
 from notionary.blocks.file.file_element_models import (
     ExternalFile,
     FileBlock,
     FileType,
 )
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
     ParagraphBlock,
@@ -18,10 +18,10 @@ from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.video.video_element_models import CreateVideoBlock
 
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
 
-class VideoElement(NotionBlockElement):
+class VideoElement(BaseBlockElement):
     """
     Handles conversion between Markdown video embeds and Notion video blocks.
 

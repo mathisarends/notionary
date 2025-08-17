@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import re
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
-from notionary.blocks.block_models import Block
-from notionary.blocks.block_types import BlockType
+from notionary.blocks.models import Block
+from notionary.blocks.types import BlockType
 from notionary.blocks.column.column_models import ColumnListBlock, CreateColumnListBlock
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.base_block_element import BaseBlockElement
 
 
-class ColumnListElement(NotionBlockElement):
+class ColumnListElement(BaseBlockElement):
     """
     Handles the `::: columns` container.
     Individual columns are handled by ColumnElement.

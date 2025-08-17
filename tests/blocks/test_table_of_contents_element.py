@@ -11,7 +11,7 @@ from notionary.blocks.table_of_contents.table_of_contents_models import (
     TableOfContentsBlock,
     CreateTableOfContentsBlock,
 )
-from notionary.blocks.block_models import Block, BlockType
+from notionary.blocks.models import Block, BlockType
 
 
 def create_block_with_required_fields(**kwargs) -> Block:

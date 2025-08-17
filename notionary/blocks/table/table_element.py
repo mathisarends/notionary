@@ -2,10 +2,10 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
-from notionary.blocks.block_types import BlockType
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.types import BlockType
+from notionary.blocks.base_block_element import BaseBlockElement
 
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.table.table_models import (
@@ -14,7 +14,7 @@ from notionary.blocks.table.table_models import (
 )
 
 
-class TableElement(NotionBlockElement):
+class TableElement(BaseBlockElement):
     """
     Handles conversion between Markdown tables and Notion table blocks.
     Now integrated into the LineProcessor stack system.

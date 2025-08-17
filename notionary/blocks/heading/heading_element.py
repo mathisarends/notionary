@@ -2,25 +2,25 @@ from __future__ import annotations
 import re
 from typing import Optional, cast
 
-from notionary.blocks.block_types import BlockColor
+from notionary.blocks.types import BlockColor
 from notionary.blocks.heading.heading_models import (
     CreateHeading1Block,
     CreateHeading2Block,
     CreateHeading3Block,
     HeadingBlock,
 )
-from notionary.blocks.block_models import (
+from notionary.blocks.models import (
     Block,
     BlockType,
 )
-from notionary.blocks.notion_block_element import NotionBlockElement
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-from notionary.blocks.block_models import Block, BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult
 
 
-class HeadingElement(NotionBlockElement):
+class HeadingElement(BaseBlockElement):
     """Handles conversion between Markdown headings and Notion heading blocks."""
 
     PATTERN = re.compile(r"^(#{1,3})[ \t]+(.+)$")

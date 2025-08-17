@@ -8,7 +8,7 @@ from notionary.blocks.breadcrumbs.breadcrumb_models import (
     BreadcrumbBlock,
     CreateBreadcrumbBlock,
 )
-from notionary.blocks.block_models import Block, BlockType
+from notionary.blocks.models import Block, BlockType
 
 
 def create_block_with_required_fields(**kwargs) -> Block:
