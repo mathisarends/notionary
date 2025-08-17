@@ -39,5 +39,5 @@ class BlockRenderingContext:
         """Convert children blocks to markdown using the callback."""
         if not self.has_children() or not self.convert_children_callback:
             return ""
-        
+
         return self.convert_children_callback(self.get_children_blocks(), indent_level)

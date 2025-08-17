@@ -29,9 +29,7 @@ class PageContentWriter(LoggingMixin):
             block_registry=block_registry
         )
 
-        self._content_retriever = PageContentRetriever(
-            block_registry=block_registry
-        )
+        self._content_retriever = PageContentRetriever(block_registry=block_registry)
 
     async def append_markdown(
         self,

@@ -19,16 +19,15 @@ class PageContentRetriever(LoggingMixin):
         block_registry: BlockRegistry,
     ):
         self._block_registry = block_registry
-        
+
         self._setup_handler_chain()
-        
+
     async def convert_to_markdown(self, blocks: list[Block]) -> str:
         """
         Retrieve page content and convert it to Markdown.
         Uses the chain of responsibility pattern for scalable block processing.
         """
         return self._convert_blocks_to_markdown(blocks, indent_level=0)
-
 
     def _setup_handler_chain(self) -> None:
         """Setup the chain of handlers in priority order."""

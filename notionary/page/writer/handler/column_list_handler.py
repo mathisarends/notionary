@@ -95,18 +95,23 @@ class ColumnListHandler(LineHandler):
         self, column_list_context: ParentBlockContext, context: LineProcessingContext
     ) -> None:
         """Collect and assign any column children blocks inside this column list."""
-        if not column_list_context.has_children():
-            return
-
-        children_text = "\n".join(column_list_context.child_lines)
-        children_blocks = self._convert_children_text(
-            children_text, context.block_registry
-        )
+        all_children = []
+        
+        # Process text lines
+        if column_list_context.child_lines:
+            children_text = "\n".join(column_list_context.child_lines)
+            children_blocks = self._convert_children_text(
+                children_text, context.block_registry
+            )
+            all_children.extend(children_blocks)
+        
+        if column_list_context.child_blocks:
+            all_children.extend(column_list_context.child_blocks)
 
         # Filter only column blocks
         column_children = [
             block
-            for block in children_blocks
+            for block in all_children
             if hasattr(block, "column") and getattr(block, "type", None) == "column"
         ]
         column_list_context.block.column_list.children = column_children

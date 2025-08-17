@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from notionary.blocks.notion_block_element import NotionBlockElement
@@ -15,15 +15,19 @@ class ParentBlockContext:
     block: BlockCreateRequest
     element_type: NotionBlockElement
     child_lines: list[str]
+    child_blocks: list[BlockCreateRequest] = field(default_factory=list)
 
     def add_child_line(self, content: str):
         """Adds a child line."""
         self.child_lines.append(content)
+    
+    def add_child_block(self, block: BlockCreateRequest):
+        """Adds a processed child block."""
+        self.child_blocks.append(block)
 
     def has_children(self) -> bool:
         """Checks if children have been collected."""
         return len(self.child_lines) > 0
-
 
 @dataclass
 class LineProcessingContext:

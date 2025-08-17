@@ -76,46 +76,4 @@ class MarkdownToNotionConverter:
             if context.should_continue:
                 continue
 
-        self._finalize_remaining_parents(result_blocks, parent_stack)
         return result_blocks
-
-    def _finalize_remaining_parents(
-        self,
-        result_blocks: list[BlockCreateRequest],
-        parent_stack: list[ParentBlockContext],
-    ) -> None:
-        """Finalize any remaining open parent blocks with unified logic."""
-        while parent_stack:
-            context = parent_stack.pop()
-
-            if context.has_children():
-                children_text = "\n".join(context.child_lines)
-                children_blocks = self._convert_children_text(children_text)
-                self._assign_children(context.block, children_blocks)
-
-            result_blocks.append(context.block)
-
-    def _convert_children_text(self, text: str) -> list[BlockCreateRequest]:
-        if not text.strip():
-            return []
-        child_converter = MarkdownToNotionConverter(self._block_registry)
-        return child_converter._process_lines(text)
-
-    def _assign_children(
-        self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]
-    ):
-        """Assign children to a parent block using BlockType."""
-        block_type = parent_block.type
-
-        if block_type == BlockType.TOGGLE:
-            parent_block.toggle.children = children
-        elif block_type == BlockType.COLUMN_LIST:
-            parent_block.column_list.children = children
-        elif block_type == BlockType.COLUMN:
-            parent_block.column.children = children
-        elif block_type == BlockType.HEADING_1:
-            parent_block.heading_1.children = children
-        elif block_type == BlockType.HEADING_2:
-            parent_block.heading_2.children = children
-        elif block_type == BlockType.HEADING_3:
-            parent_block.heading_3.children = children

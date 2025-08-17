@@ -25,20 +25,21 @@ class ToggleHandler(LineHandler):
         )
 
     def _process(self, context: LineProcessingContext) -> None:
-        def _handle_and_continue(action_func):
-            action_func(context)
+        # Explicit, readable branches (small duplication is acceptable)
+        if self._is_toggle_start(context):
+            self._start_toggle(context)
             context.was_processed = True
             context.should_continue = True
-            return True
-
-        if self._is_toggle_start(context):
-            return _handle_and_continue(self._start_toggle)
 
         if self._is_toggle_end(context):
-            return _handle_and_continue(self._finalize_toggle)
+            self._finalize_toggle(context)
+            context.was_processed = True
+            context.should_continue = True
 
         if self._is_toggle_content(context):
-            return _handle_and_continue(self._add_toggle_content)
+            self._add_toggle_content(context)
+            context.was_processed = True
+            context.should_continue = True
 
     def _is_toggle_start(self, context: LineProcessingContext) -> bool:
         """Check if line starts a toggle (+++ Title)."""
@@ -97,7 +98,14 @@ class ToggleHandler(LineHandler):
             )
             toggle_context.block.toggle.children = children_blocks
 
-        context.result_blocks.append(toggle_context.block)
+        # Check if we have a parent context to add this toggle to
+        if context.parent_stack:
+            # Add this toggle as a child block to the parent
+            parent_context = context.parent_stack[-1]
+            parent_context.add_child_block(toggle_context.block)
+        else:
+            # No parent, add to top level
+            context.result_blocks.append(toggle_context.block)
 
     def _is_toggle_content(self, context: LineProcessingContext) -> bool:
         """Check if we're inside a toggle context and should handle content."""

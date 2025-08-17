@@ -1,5 +1,6 @@
 from notionary.page.reader.handler import BlockHandler, BlockRenderingContext
 
+
 class LineRenderer(BlockHandler):
     """Handles all regular blocks that don't need special parent/children processing."""
 
@@ -19,7 +20,9 @@ class LineRenderer(BlockHandler):
                 return
 
             # Import here to avoid circular dependency and process children
-            from notionary.page.reader.page_content_retriever import PageContentRetriever
+            from notionary.page.reader.page_content_retriever import (
+                PageContentRetriever,
+            )
 
             retriever = PageContentRetriever(context.block_registry)
             children_markdown = retriever._convert_blocks_to_markdown(
@@ -50,6 +53,8 @@ class LineRenderer(BlockHandler):
         )
 
         context.markdown_result = (
-            f"{block_markdown}\n{children_markdown}" if children_markdown else block_markdown
+            f"{block_markdown}\n{children_markdown}"
+            if children_markdown
+            else block_markdown
         )
         context.was_processed = True

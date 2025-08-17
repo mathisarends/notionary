@@ -9,7 +9,7 @@ from .toggleable_heading_renderer import ToggleableHeadingRenderer
 __all__ = [
     "BlockHandler",
     "BlockRenderingContext",
-    "ColumnListRenderer", 
+    "ColumnListRenderer",
     "ColumnRenderer",
     "LineRenderer",
     "ToggleRenderer",

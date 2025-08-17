@@ -104,13 +104,37 @@ class ToggleableHeadingHandler(LineHandler):
         heading_context = context.parent_stack.pop()
 
         if heading_context.has_children():
-            children_text = "\n".join(heading_context.child_lines)
-            children_blocks = self._convert_children_text(
-                children_text, context.block_registry
-            )
-            self._assign_heading_children(heading_context.block, children_blocks)
+            all_children = self._get_all_children(heading_context, context.block_registry)
+            self._assign_heading_children(heading_context.block, all_children)
 
-        context.result_blocks.append(heading_context.block)
+        # Check if we have a parent context to add this heading to
+        if context.parent_stack:
+            # Add this heading as a child block to the parent
+            parent_context = context.parent_stack[-1]
+            if hasattr(parent_context, 'add_child_block'):
+                parent_context.add_child_block(heading_context.block)
+            else:
+                # Fallback: add to result_blocks for backward compatibility
+                context.result_blocks.append(heading_context.block)
+        else:
+            # No parent, add to top level
+            context.result_blocks.append(heading_context.block)
+
+    def _get_all_children(self, parent_context: ParentBlockContext, block_registry) -> list:
+        """Helper method to combine text-based and direct block children."""
+        children_blocks = []
+        
+        # Process text lines
+        if parent_context.child_lines:
+            children_text = "\n".join(parent_context.child_lines)
+            text_blocks = self._convert_children_text(children_text, block_registry)
+            children_blocks.extend(text_blocks)
+        
+        # Add direct blocks
+        if hasattr(parent_context, 'child_blocks') and parent_context.child_blocks:
+            children_blocks.extend(parent_context.child_blocks)
+        
+        return children_blocks
 
     def _assign_heading_children(
         self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]

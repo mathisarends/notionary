@@ -74,24 +74,36 @@ class ColumnHandler(LineHandler):
         column_context = context.parent_stack.pop()
         self._assign_column_children_if_any(column_context, context)
 
-        if self._try_add_to_parent_column_list(column_context, context):
-            return
+        if context.parent_stack:
+            parent = context.parent_stack[-1]
+            from notionary.blocks.column.column_list_element import ColumnListElement
+            
+            if issubclass(parent.element_type, ColumnListElement):
+                # Add to parent using the new system
+                parent.add_child_block(column_context.block)
+                return
 
+        # Fallback: no parent or parent is not ColumnList
         context.result_blocks.append(column_context.block)
 
     def _assign_column_children_if_any(
         self, column_context: ParentBlockContext, context: LineProcessingContext
     ) -> None:
         """Collect and assign any children blocks inside this column."""
-        if not column_context.has_children():
-            return
-
-        children_text = "\n".join(column_context.child_lines)
-        children_blocks = self._convert_children_text(
-            children_text, context.block_registry
-        )
-        column_context.block.column.children = children_blocks
-
+        all_children = []
+        
+        # Process text lines
+        if column_context.child_lines:
+            children_text = "\n".join(column_context.child_lines)
+            text_blocks = self._convert_children_text(children_text, context.block_registry)
+            all_children.extend(text_blocks)
+        
+        # Add direct child blocks (like processed toggles)
+        if  column_context.child_blocks:
+            all_children.extend(column_context.child_blocks)
+        
+        column_context.block.column.children = all_children
+        
     def _try_add_to_parent_column_list(
         self, column_context: ParentBlockContext, context: LineProcessingContext
     ) -> bool:
