@@ -45,18 +45,15 @@ class ToggleableHeadingMarkdownNode(MarkdownNode):
         return cls(text=params.text, level=params.level, children=params.children)
 
     def to_markdown(self) -> str:
-        prefix = "+" + ("#" * self.level)
+        prefix = "+++" + ("#" * self.level)
         result = f"{prefix} {self.text}"
 
         if not self.children:
+            result += "\n+++"
             return result
 
-        # Convert children to markdown and add toggle prefix
+        # Convert children to markdown
         content_parts = [child.to_markdown() for child in self.children]
         content_text = "\n\n".join(content_parts)
 
-        # Add toggle prefix to each line
-        lines = content_text.split("\n")
-        prefixed_lines = [f"| {line}" if line.strip() else "|" for line in lines]
-
-        return result + "\n" + "\n".join(prefixed_lines)
+        return result + "\n" + content_text + "\n+++"

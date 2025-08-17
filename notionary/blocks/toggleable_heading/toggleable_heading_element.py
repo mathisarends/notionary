@@ -22,7 +22,7 @@ class ToggleableHeadingElement(NotionBlockElement):
     Children are automatically handled by the StackBasedMarkdownConverter.
     """
 
-    # Updated pattern for ultra-simplified +++# Title syntax (no quotes!)
+    # Updated pattern for simplified +++# Title syntax (no quotes!)
     PATTERN = re.compile(r"^[+]{3}(?P<level>#{1,3})\s+(.+)$", re.IGNORECASE)
 
     @staticmethod
