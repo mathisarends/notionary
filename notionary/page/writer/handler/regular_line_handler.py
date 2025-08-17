@@ -50,6 +50,7 @@ class RegularLineHandler(LineHandler):
             )
             from notionary.blocks.table.table_element import TableElement
             from notionary.blocks.code.code_element import CodeElement
+            from notionary.blocks.paragraph.paragraph_element import ParagraphElement
 
             specialized_elements = (
                 ColumnListElement,
@@ -58,6 +59,7 @@ class RegularLineHandler(LineHandler):
                 ToggleableHeadingElement,
                 TableElement,
                 CodeElement,
+                ParagraphElement,  # Skip paragraph to ensure equations are processed first
             )
 
             if issubclass(element, specialized_elements):

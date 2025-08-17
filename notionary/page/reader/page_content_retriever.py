@@ -1,4 +1,3 @@
-from notionary.blocks.block_client import NotionBlockClient
 from notionary.blocks.block_models import Block
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.reader.handler import (
@@ -17,13 +16,19 @@ class PageContentRetriever(LoggingMixin):
 
     def __init__(
         self,
-        page_id: str,
         block_registry: BlockRegistry,
     ):
-        self.page_id = page_id
         self._block_registry = block_registry
-        self.client = NotionBlockClient()
+        
         self._setup_handler_chain()
+        
+    async def convert_to_markdown(self, blocks: list[Block]) -> str:
+        """
+        Retrieve page content and convert it to Markdown.
+        Uses the chain of responsibility pattern for scalable block processing.
+        """
+        return self._convert_blocks_to_markdown(blocks, indent_level=0)
+
 
     def _setup_handler_chain(self) -> None:
         """Setup the chain of handlers in priority order."""
@@ -63,14 +68,3 @@ class PageContentRetriever(LoggingMixin):
 
         separator = "\n\n" if indent_level == 0 else "\n"
         return separator.join(markdown_parts)
-
-    async def get_page_content(self) -> str:
-        """
-        Retrieve page content and convert it to Markdown.
-        Uses the chain of responsibility pattern for scalable block processing.
-        """
-        blocks = await self.client.get_blocks_by_page_id_recursively(
-            page_id=self.page_id
-        )
-
-        return self._convert_blocks_to_markdown(blocks, indent_level=0)

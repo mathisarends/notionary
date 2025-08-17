@@ -4,6 +4,7 @@ import asyncio
 from typing import Any, Callable, Optional, TYPE_CHECKING, Union
 import random
 
+from notionary.blocks.block_client import NotionBlockClient
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
 from notionary.markdown.markdown_builder import MarkdownBuilder
@@ -56,6 +57,7 @@ class NotionPage(LoggingMixin):
         self._parent_database = parent_database
 
         self._client = NotionPageClient(token=token)
+        self._block_client = NotionBlockClient(token=token)
         self._page_data = None
 
         self.block_element_registry = BlockRegistry.create_registry()
@@ -66,7 +68,6 @@ class NotionPage(LoggingMixin):
         )
 
         self._page_content_retriever = PageContentRetriever(
-            page_id=self._page_id,
             block_registry=self.block_element_registry,
         )
 
@@ -291,7 +292,10 @@ class NotionPage(LoggingMixin):
         Returns:
             str: The text content of the page.
         """
-        return await self._page_content_retriever.get_page_content()
+        blocks = await self._block_client.get_blocks_by_page_id_recursively(
+            page_id=self._page_id
+        )
+        return await self._page_content_retriever.convert_to_markdown(blocks=blocks)
 
     async def set_emoji_icon(self, emoji: str) -> Optional[str]:
         """

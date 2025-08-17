@@ -35,7 +35,7 @@ class ToggleableHeadingRenderer(BlockHandler):
             from notionary.page.reader.page_content_retriever import PageContentRetriever
 
             # Create a temporary retriever to process children
-            retriever = PageContentRetriever("", context.block_registry)
+            retriever = PageContentRetriever(context.block_registry)
             children_markdown = retriever._convert_blocks_to_markdown(
                 context.get_children_blocks(),
                 indent_level=0  # No indentation for content inside toggleable headings
