@@ -44,14 +44,14 @@ class RegularLineHandler(LineHandler):
         """Process a regular line for simple elements (lists, etc.)."""
         for element in context.block_registry.get_elements():
             # Skip all elements that have specialized handlers
-            from notionary.blocks.toggle.toggle_element import ToggleElement
-            from notionary.blocks.toggleable_heading.toggleable_heading_element import (
+            from notionary.blocks.toggle import ToggleElement
+            from notionary.blocks.toggleable_heading import (
                 ToggleableHeadingElement,
             )
-            from notionary.blocks.table.table_element import TableElement
-            from notionary.blocks.code.code_element import CodeElement
-            from notionary.blocks.paragraph.paragraph_element import ParagraphElement
-
+            from notionary.blocks.table import TableElement
+            from notionary.blocks.code import CodeElement
+            from notionary.blocks.paragraph import ParagraphElement
+            
             specialized_elements = (
                 ColumnListElement,
                 ColumnElement,

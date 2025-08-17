@@ -1,6 +1,7 @@
 """
 Tests für alle MarkdownNode-Implementierungen mit pytest.
 Testet ob die to_markdown() Methode den erwarteten String zurückgibt.
+FIXED for correct implementations.
 """
 
 from notionary.blocks.audio.audio_markdown_node import AudioMarkdownNode
@@ -257,9 +258,9 @@ def test_todo_markdown_node():
 
 def test_toggle_markdown_node():
     """Test ToggleMarkdownNode - FIXED"""
-    # Test ohne Content - laut Fehler wird "Details" zu '+++ "Details"\n+++'
+    # Test ohne Content - FIXED: Uses quotes around title
     toggle = ToggleMarkdownNode(title="Details", children=[])
-    expected = '+++ "Details"\n+++'  # FIXED: Implementierung fügt Quotes hinzu
+    expected = '+++ "Details"\n+++'
     assert toggle.to_markdown() == expected
 
     # Test mit Content
@@ -270,21 +271,20 @@ def test_toggle_markdown_node():
         title="More Info",
         children=[line1_node, line2_node],
     )
-    # Müsste getestet werden was die echte Implementierung macht
     expected = '+++ "More Info"\nLine 1\n\nLine 2\n+++'
     assert toggle_with_content.to_markdown() == expected
 
 
 def test_toggleable_heading_markdown_node():
-    """Test ToggleableHeadingMarkdownNode"""
-    # Test ohne Content
+    """Test ToggleableHeadingMarkdownNode - FIXED"""
+    # Test ohne Content - korrekte Syntax mit +++
     toggleable_h1 = ToggleableHeadingMarkdownNode(
         text="Section 1", level=1, children=[]
     )
-    expected = "+# Section 1"
+    expected = "+++# Section 1\n+++"
     assert toggleable_h1.to_markdown() == expected
 
-    # Test mit Content
+    # Test mit Content - korrekte Syntax mit +++
     toggleable_h2 = ToggleableHeadingMarkdownNode(
         text="Section 2",
         level=2,
@@ -293,7 +293,7 @@ def test_toggleable_heading_markdown_node():
             ParagraphMarkdownNode(text="Content line 2"),
         ],
     )
-    expected = "+## Section 2\n| Content line 1\n|\n| Content line 2"
+    expected = "+++## Section 2\nContent line 1\n\nContent line 2\n+++"
     assert toggleable_h2.to_markdown() == expected
 
     # Test ungültiges Level

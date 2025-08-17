@@ -9,7 +9,6 @@ from notionary.blocks.table_of_contents.table_of_contents_models import (
     TableOfContentsBlock,
 )
 
-
 from notionary.blocks.models import Block, BlockCreateResult
 
 

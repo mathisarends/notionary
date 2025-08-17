@@ -2,33 +2,33 @@ from __future__ import annotations
 from typing import Type, TYPE_CHECKING, Self
 from collections import OrderedDict
 
-from notionary.blocks.audio.audio_element import AudioElement
-from notionary.blocks.bookmark.bookmark_element import BookmarkElement
-from notionary.blocks.bulleted_list.bulleted_list_element import BulletedListElement
-from notionary.blocks.callout.callout_element import CalloutElement
-from notionary.blocks.code.code_element import CodeElement
-from notionary.blocks.column.column_element import ColumnElement
-from notionary.blocks.column.column_list_element import ColumnListElement
-from notionary.blocks.divider.divider_element import DividerElement
-from notionary.blocks.embed.embed_element import EmbedElement
-from notionary.blocks.equation.equation_element import EquationElement
-from notionary.blocks.heading.heading_element import HeadingElement
-from notionary.blocks.image_block.image_element import ImageElement
+from notionary.blocks.audio import AudioElement
+from notionary.blocks.bookmark import BookmarkElement
+from notionary.blocks.bulleted_list import BulletedListElement
+from notionary.blocks.callout import CalloutElement
+from notionary.blocks.code import CodeElement
+from notionary.blocks.column import ColumnElement
+from notionary.blocks.column import ColumnListElement
+from notionary.blocks.divider import DividerElement
+from notionary.blocks.embed import EmbedElement
+from notionary.blocks.equation import EquationElement
+from notionary.blocks.heading import HeadingElement
+from notionary.blocks.image_block import ImageElement
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.numbered_list.numbered_list_element import NumberedListElement
-from notionary.blocks.paragraph.paragraph_element import ParagraphElement
-from notionary.blocks.quote.quote_element import QuoteElement
-from notionary.blocks.table.table_element import TableElement
-from notionary.blocks.table_of_contents.table_of_contents_element import (
+from notionary.blocks.numbered_list import NumberedListElement
+from notionary.blocks.paragraph import ParagraphElement
+from notionary.blocks.quote import QuoteElement
+from notionary.blocks.table import TableElement
+from notionary.blocks.table_of_contents import (
     TableOfContentsElement,
 )
-from notionary.blocks.breadcrumbs.breadcrumb_element import BreadcrumbElement
-from notionary.blocks.todo.todo_element import TodoElement
-from notionary.blocks.toggle.toggle_element import ToggleElement
-from notionary.blocks.toggleable_heading.toggleable_heading_element import (
+from notionary.blocks.breadcrumbs import BreadcrumbElement
+from notionary.blocks.todo import TodoElement
+from notionary.blocks.toggle import ToggleElement
+from notionary.blocks.toggleable_heading import (
     ToggleableHeadingElement,
 )
-from notionary.blocks.video.video_element import VideoElement
+from notionary.blocks.video import VideoElement
 
 if TYPE_CHECKING:
     from notionary.blocks.registry.block_registry import BlockRegistry

@@ -1,12 +1,10 @@
-import json
 from typing import Callable, Optional, Union
 
-from mkdocs.structure.toc import TableOfContents
-
 from notionary.blocks.client import NotionBlockClient
+from notionary.blocks.divider import DividerElement
 from notionary.blocks.models import Block
-from notionary.blocks.divider.divider_models import DividerBlock
 from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.table_of_contents import TableOfContentsElement
 from notionary.markdown.markdown_builder import MarkdownBuilder
 from notionary.page.markdown_whitespace_processor import (
     MarkdownWhitespaceProcessor,
@@ -206,8 +204,8 @@ class PageContentWriter(LoggingMixin):
 
     def _ensure_table_of_contents_exists_in_registry(self) -> None:
         """Ensure TableOfContents is registered in the block registry."""
-        self.block_registry.register(TableOfContents)
+        self.block_registry.register(TableOfContentsElement)
 
     def _ensure_divider_exists_in_registry(self) -> None:
         """Ensure DividerBlock is registered in the block registry."""
-        self.block_registry.register(DividerBlock)
+        self.block_registry.register(DividerElement)

@@ -31,8 +31,7 @@ class ToggleMarkdownNode(MarkdownNode):
         return cls(title=params.title, children=params.children)
 
     def to_markdown(self) -> str:
-        # Add quotes around title as expected by tests
-        result = f'+++ "{self.title}"'
+        result = f'+++ {self.title}'
 
         if not self.children:
             result += "\n+++"

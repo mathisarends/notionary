@@ -9,93 +9,93 @@ Maps 1:1 to the available blocks with clear, expressive method names.
 from __future__ import annotations
 from typing import Callable, Optional, Self, Any
 
-from notionary.blocks.audio.audio_markdown_node import (
+from notionary.blocks.audio import (
     AudioMarkdownNode,
     AudioMarkdownBlockParams,
 )
-from notionary.blocks.bookmark.bookmark_markdown_node import (
+from notionary.blocks.bookmark import (
     BookmarkMarkdownNode,
     BookmarkMarkdownBlockParams,
 )
-from notionary.blocks.breadcrumbs.breadcrumb_markdown_node import BreadcrumbMarkdownNode
-from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
+from notionary.blocks.breadcrumbs import BreadcrumbMarkdownNode
+from notionary.blocks.bulleted_list import (
     BulletedListMarkdownNode,
     BulletedListMarkdownBlockParams,
 )
-from notionary.blocks.callout.callout_markdown_node import (
+from notionary.blocks.callout import (
     CalloutMarkdownNode,
     CalloutMarkdownBlockParams,
 )
-from notionary.blocks.code.code_markdown_node import (
+from notionary.blocks.code import (
     CodeMarkdownNode,
 )
-from notionary.blocks.code.code_models import CodeBlock, CodeLanguage
-from notionary.blocks.column.column_list_markdown_node import (
+from notionary.blocks.code import CodeBlock, CodeLanguage
+from notionary.blocks.column import (
     ColumnListMarkdownBlockParams,
     ColumnListMarkdownNode,
 )
-from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
-from notionary.blocks.divider.divider_markdown_node import (
+from notionary.blocks.column import ColumnMarkdownNode
+from notionary.blocks.divider import (
     DividerMarkdownNode,
     DividerMarkdownBlockParams,
 )
-from notionary.blocks.embed.embed_markdown_node import (
+from notionary.blocks.embed import (
     EmbedMarkdownNode,
     EmbedMarkdownBlockParams,
 )
-from notionary.blocks.equation.equation_element_markdown_node import (
+from notionary.blocks.equation import (
     EquationMarkdownNode,
     EquationMarkdownBlockParams,
 )
-from notionary.blocks.file.file_element_markdown_node import (
+from notionary.blocks.file import (
     FileMarkdownNode,
     FileMarkdownNodeParams,
 )
-from notionary.blocks.heading.heading_markdown_node import (
+from notionary.blocks.heading import (
     HeadingMarkdownNode,
     HeadingMarkdownBlockParams,
 )
-from notionary.blocks.image_block.image_markdown_node import (
+from notionary.blocks.image_block import (
     ImageMarkdownNode,
     ImageMarkdownBlockParams,
 )
-from notionary.blocks.numbered_list.numbered_list_markdown_node import (
+from notionary.blocks.numbered_list import (
     NumberedListMarkdownNode,
     NumberedListMarkdownBlockParams,
 )
-from notionary.blocks.paragraph.paragraph_markdown_node import (
+from notionary.blocks.paragraph import (
     ParagraphMarkdownNode,
     ParagraphMarkdownBlockParams,
 )
-from notionary.blocks.pdf.pdf_markdown_node import (
+from notionary.blocks.pdf import (
     PdfMarkdownNode,
     PdfMarkdownNodeParams,
 )
-from notionary.blocks.quote.quote_markdown_node import (
+from notionary.blocks.quote import (
     QuoteMarkdownNode,
     QuoteMarkdownBlockParams,
 )
-from notionary.blocks.table.table_markdown_node import (
+from notionary.blocks.table import (
     TableMarkdownNode,
     TableMarkdownBlockParams,
 )
-from notionary.blocks.table_of_contents.table_of_contents_markdown_node import (
+from notionary.blocks.table_of_contents import (
     TableOfContentsMarkdownNode,
     TableOfContentsMarkdownBlockParams,
 )
-from notionary.blocks.todo.todo_markdown_node import (
+from notionary.blocks.todo import (
     TodoMarkdownNode,
     TodoMarkdownBlockParams,
 )
-from notionary.blocks.toggle.toggle_markdown_node import (
+from notionary.blocks.toggle import (
     ToggleMarkdownBlockParams,
     ToggleMarkdownNode,
 )
-from notionary.blocks.toggleable_heading.toggleable_heading_markdown_node import (
+from notionary.blocks.toggleable_heading import (
     ToggleableHeadingMarkdownBlockParams,
     ToggleableHeadingMarkdownNode,
 )
-from notionary.blocks.video.video_markdown_node import (
+from notionary.blocks.video import (
     VideoMarkdownNode,
     VideoMarkdownBlockParams,
 )
