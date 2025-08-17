@@ -452,7 +452,7 @@ class MarkdownBuilder:
         """
         self.children.append(
             CodeMarkdownNode(
-                code=diagram, language=CodeLanguage.MERMAID, caption=caption
+                code=diagram, language=CodeLanguage.MERMAID.value, caption=caption
             )
         )
         return self
