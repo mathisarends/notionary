@@ -5,63 +5,63 @@ from pydantic import BaseModel
 from notionary.blocks.block_types import BlockType
 
 if TYPE_CHECKING:
-    from notionary.blocks.bookmark.bookmark_models import (
+    from notionary.blocks.bookmark import (
         BookmarkBlock,
         CreateBookmarkBlock,
     )
-    from notionary.blocks.breadcrumbs.breadcrumb_models import (
+    from notionary.blocks.breadcrumbs import (
         BreadcrumbBlock,
         CreateBreadcrumbBlock,
     )
-    from notionary.blocks.bulleted_list.bulleted_list_models import (
+    from notionary.blocks.bulleted_list import (
         BulletedListItemBlock,
         CreateBulletedListItemBlock,
     )
-    from notionary.blocks.callout.callout_models import CalloutBlock, CreateCalloutBlock
-    from notionary.blocks.child_page.child_page_models import (
+    from notionary.blocks.callout import CalloutBlock, CreateCalloutBlock
+    from notionary.blocks.child_page import (
         ChildPageBlock,
         CreateChildPageBlock,
     )
-    from notionary.blocks.code.code_models import CodeBlock, CreateCodeBlock
-    from notionary.blocks.column.column_models import (
+    from notionary.blocks.code import CodeBlock, CreateCodeBlock
+    from notionary.blocks.column import (
         ColumnBlock,
         ColumnListBlock,
         CreateColumnBlock,
         CreateColumnListBlock,
     )
-    from notionary.blocks.divider.divider_models import DividerBlock, CreateDividerBlock
-    from notionary.blocks.embed.embed_models import EmbedBlock, CreateEmbedBlock
-    from notionary.blocks.equation.equation_models import (
+    from notionary.blocks.divider import DividerBlock, CreateDividerBlock
+    from notionary.blocks.embed import EmbedBlock, CreateEmbedBlock
+    from notionary.blocks.equation import (
         EquationBlock,
         CreateEquationBlock,
     )
-    from notionary.blocks.file.file_element_models import FileBlock, CreateFileBlock
-    from notionary.blocks.heading.heading_models import (
+    from notionary.blocks.file import FileBlock, CreateFileBlock
+    from notionary.blocks.heading import (
         HeadingBlock,
         CreateHeading1Block,
         CreateHeading2Block,
         CreateHeading3Block,
     )
-    from notionary.blocks.image_block.image_models import CreateImageBlock
-    from notionary.blocks.numbered_list.numbered_list_models import (
+    from notionary.blocks.image_block import CreateImageBlock
+    from notionary.blocks.numbered_list import (
         NumberedListItemBlock,
         CreateNumberedListItemBlock,
     )
-    from notionary.blocks.paragraph.paragraph_models import (
+    from notionary.blocks.paragraph import (
         ParagraphBlock,
         CreateParagraphBlock,
     )
-    from notionary.blocks.quote.quote_models import QuoteBlock, CreateQuoteBlock
-    from notionary.blocks.table.table_models import TableBlock, TableRowBlock
-    from notionary.blocks.todo.todo_models import ToDoBlock, CreateToDoBlock
-    from notionary.blocks.toggle.toggle_models import ToggleBlock, CreateToggleBlock
-    from notionary.blocks.video.video_element_models import CreateVideoBlock
-    from notionary.blocks.pdf.pdf_models import CreatePdfBlock
-    from notionary.blocks.table_of_contents.table_of_contents_models import (
+    from notionary.blocks.quote import QuoteBlock, CreateQuoteBlock
+    from notionary.blocks.table import TableBlock, TableRowBlock
+    from notionary.blocks.todo import ToDoBlock, CreateToDoBlock
+    from notionary.blocks.toggle import ToggleBlock, CreateToggleBlock
+    from notionary.blocks.video import CreateVideoBlock
+    from notionary.blocks.pdf import CreatePdfBlock
+    from notionary.blocks.table_of_contents import (
         TableOfContentsBlock,
         CreateTableOfContentsBlock,
     )
-    from notionary.blocks.table.table_models import CreateTableBlock
+    from notionary.blocks.table import CreateTableBlock
 
 
 class BlockChildrenResponse(BaseModel):

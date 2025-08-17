@@ -77,7 +77,7 @@ class ColumnHandler(LineHandler):
         if context.parent_stack:
             parent = context.parent_stack[-1]
             from notionary.blocks.column.column_list_element import ColumnListElement
-            
+
             if issubclass(parent.element_type, ColumnListElement):
                 # Add to parent using the new system
                 parent.add_child_block(column_context.block)
@@ -91,19 +91,21 @@ class ColumnHandler(LineHandler):
     ) -> None:
         """Collect and assign any children blocks inside this column."""
         all_children = []
-        
+
         # Process text lines
         if column_context.child_lines:
             children_text = "\n".join(column_context.child_lines)
-            text_blocks = self._convert_children_text(children_text, context.block_registry)
+            text_blocks = self._convert_children_text(
+                children_text, context.block_registry
+            )
             all_children.extend(text_blocks)
-        
+
         # Add direct child blocks (like processed toggles)
-        if  column_context.child_blocks:
+        if column_context.child_blocks:
             all_children.extend(column_context.child_blocks)
-        
+
         column_context.block.column.children = all_children
-        
+
     def _try_add_to_parent_column_list(
         self, column_context: ParentBlockContext, context: LineProcessingContext
     ) -> bool:

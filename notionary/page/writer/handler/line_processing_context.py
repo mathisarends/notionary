@@ -20,14 +20,15 @@ class ParentBlockContext:
     def add_child_line(self, content: str):
         """Adds a child line."""
         self.child_lines.append(content)
-    
+
     def add_child_block(self, block: BlockCreateRequest):
         """Adds a processed child block."""
         self.child_blocks.append(block)
 
     def has_children(self) -> bool:
         """Checks if children have been collected."""
-        return len(self.child_lines) > 0
+        return len(self.child_lines) > 0 or len(self.child_blocks) > 0
+
 
 @dataclass
 class LineProcessingContext:

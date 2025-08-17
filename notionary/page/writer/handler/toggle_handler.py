@@ -92,11 +92,10 @@ class ToggleHandler(LineHandler):
         toggle_context = context.parent_stack.pop()
 
         if toggle_context.has_children():
-            children_text = "\n".join(toggle_context.child_lines)
-            children_blocks = self._convert_children_text(
-                children_text, context.block_registry
+            all_children = self._get_all_children(
+                toggle_context, context.block_registry
             )
-            toggle_context.block.toggle.children = children_blocks
+            toggle_context.block.toggle.children = all_children
 
         # Check if we have a parent context to add this toggle to
         if context.parent_stack:
@@ -135,3 +134,19 @@ class ToggleHandler(LineHandler):
 
         child_converter = MarkdownToNotionConverter(block_registry)
         return child_converter._process_lines(text)
+
+    def _get_all_children(self, parent_context, block_registry) -> list:
+        """Helper method to combine text-based and direct block children."""
+        children_blocks = []
+
+        # Process text lines
+        if parent_context.child_lines:
+            children_text = "\n".join(parent_context.child_lines)
+            text_blocks = self._convert_children_text(children_text, block_registry)
+            children_blocks.extend(text_blocks)
+
+        # Add direct blocks (like processed columns)
+        if hasattr(parent_context, "child_blocks") and parent_context.child_blocks:
+            children_blocks.extend(parent_context.child_blocks)
+
+        return children_blocks

@@ -89,14 +89,23 @@ class ColumnListHandler(LineHandler):
         """Finalize a column list and add it to result_blocks."""
         column_list_context = context.parent_stack.pop()
         self._assign_column_list_children_if_any(column_list_context, context)
-        context.result_blocks.append(column_list_context.block)
+
+        # Check if we have a parent context to add this column_list to
+        if context.parent_stack:
+            # Add this column_list as a child block to the parent (like Toggle)
+            parent_context = context.parent_stack[-1]
+            parent_context.add_child_block(column_list_context.block)
+
+        else:
+            # No parent, add to top level
+            context.result_blocks.append(column_list_context.block)
 
     def _assign_column_list_children_if_any(
         self, column_list_context: ParentBlockContext, context: LineProcessingContext
     ) -> None:
         """Collect and assign any column children blocks inside this column list."""
         all_children = []
-        
+
         # Process text lines
         if column_list_context.child_lines:
             children_text = "\n".join(column_list_context.child_lines)
@@ -104,7 +113,7 @@ class ColumnListHandler(LineHandler):
                 children_text, context.block_registry
             )
             all_children.extend(children_blocks)
-        
+
         if column_list_context.child_blocks:
             all_children.extend(column_list_context.child_blocks)
 
