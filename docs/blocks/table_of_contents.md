@@ -73,16 +73,31 @@ How to handle API errors...
 ## Programmatic Usage
 
 ```python
-from notionary.blocks.table_of_contents import TableOfContentsMarkdownNode
+from notionary import MarkdownBuilder
 
-# Default TOC
-toc = TableOfContentsMarkdownNode()
+# Default table of contents
+builder = (MarkdownBuilder()
+    .h1("User Guide")
+    .toc()
+    .h2("Getting Started")
+    .paragraph("Introduction to the platform...")
+    .h2("Advanced Features")
+    .paragraph("Learn about advanced capabilities...")
+    .h2("Troubleshooting")
+    .paragraph("Common issues and solutions...")
+)
 
-# Styled TOC
-styled_toc = TableOfContentsMarkdownNode(color="blue_background")
+# Styled table of contents
+styled_builder = (MarkdownBuilder()
+    .h1("API Documentation")
+    .toc("blue_background")
+    .h2("Authentication")
+    .paragraph("API authentication methods...")
+    .h2("Endpoints")
+    .paragraph("Available API endpoints...")
+)
 
-# Add to page
-await page.append_markdown("[toc]\n\n# Page Content")
+print(builder.build())
 ```
 
 ## Automatic Generation
@@ -94,20 +109,6 @@ Table of contents automatically includes:
 - **H3 headings** (### Level 3)
 - **Clickable links** to each section
 - **Nested structure** following heading hierarchy
-
-## Behavior
-
-- **Live updates**: TOC updates when headings change
-- **Smooth scrolling**: Clicking links smoothly scrolls to sections
-- **Mobile friendly**: Adapts to small screens
-- **Keyboard accessible**: Supports keyboard navigation
-
-## Best Practices
-
-- **Place early**: Add TOC near the top of long documents
-- **Long content**: Most useful for pages with 5+ sections
-- **Clear headings**: Use descriptive heading text
-- **Logical hierarchy**: Maintain proper heading levels
 
 ## Common Use Cases
 

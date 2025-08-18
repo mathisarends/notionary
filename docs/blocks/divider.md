@@ -53,47 +53,18 @@ Common issues and solutions.
 ## Programmatic Usage
 
 ```python
-from notionary.blocks.divider import DividerMarkdownNode
+from notionary import MarkdownBuilder
 
-# Create divider
-divider = DividerMarkdownNode()
-markdown = divider.to_markdown()
+builder = (MarkdownBuilder()
+    .h2("Section 1")
+    .paragraph("Content here.")
+    .divider()
+    .h2("Section 2")
+    .paragraph("More content here.")
+)
 
-# Add between content sections
-content = """
-## Section 1
-Content here.
-
----
-
-## Section 2
-More content here.
-"""
-await page.append_markdown(content)
+print(builder.build())
 ```
-
-## Visual Effect
-
-Dividers appear as:
-
-- **Horizontal line** across page width
-- **Subtle styling** that matches theme
-- **Spacing** above and below for visual breathing room
-- **Responsive** design that works on all screen sizes
-
-## Best Practices
-
-- **Logical breaks**: Use between distinct topics
-- **Don't overuse**: Too many dividers create visual clutter
-- **Alternative to headings**: When new heading isn't needed
-- **Before important sections**: Emphasize key content
-
-## Common Use Cases
-
-- **Long articles** - Break up dense content
-- **Multi-topic pages** - Separate different subjects
-- **Before calls-to-action** - Emphasize important actions
-- **Documentation** - Separate sections logically
 
 ## Related Blocks
 

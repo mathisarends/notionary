@@ -47,7 +47,7 @@ client = NotionClient(token=os.getenv("NOTION_TOKEN"))
 ### Using MarkdownBuilder
 
 ```python
-from notionary.markdown.markdown_builder import MarkdownBuilder
+from notionary import MarkdownBuilder
 
 builder = (MarkdownBuilder()
     .h2("API Examples")

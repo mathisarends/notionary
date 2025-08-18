@@ -2,7 +2,7 @@
 
 Toggle blocks create collapsible content sections that help organize information and reduce visual clutter. Perfect for FAQ sections, detailed explanations, and progressive disclosure.
 
-## Syntax
+## Basic Syntax
 
 ```markdown
 +++ Toggle Title
@@ -11,9 +11,7 @@ This can be multiple lines and include formatting.
 +++
 ```
 
-## Basic Usage
-
-### Simple Toggle
+## Simple Toggle
 
 ```markdown
 +++ Click to expand
@@ -22,121 +20,99 @@ More details that are initially collapsed.
 +++
 ```
 
-### FAQ Style
+### MarkdownBuilder Example
 
-```markdown
-+++ How do I get started?
-1. Create an account
-2. Set up your workspace  
-3. Invite team members
-4. Start building!
-+++
+```python
+from notionary import MarkdownBuilder
 
-+++ What are the pricing options?
-We offer three plans:
+builder = (MarkdownBuilder()
+    .h1("FAQ Page")
+    .toggle("How do I get started?", lambda content: (content
+        .numbered_list([
+            "Create an account",
+            "Set up your workspace",
+            "Invite team members",
+            "Start building!"
+        ])
+    ))
+)
 
-- **Free**: Up to 3 users
-- **Pro**: Unlimited users ($10/month)
-- **Enterprise**: Custom pricing
-  +++
+print(builder.build())
 ```
 
-## Rich Content Support
+## Rich Content
 
-### Formatted Text
-
-```markdown
+````markdown
 +++ Advanced Configuration
 This toggle contains **important** information about _configuration options_.
 
 You can include `code snippets` and [links](https://example.com).
 
-- Lists work too
-- Multiple bullet points
-- Nested information
-+++
-```
-
-### Nested Blocks
-
-````markdown
-+++ Development Setup
-
-## Prerequisites
-
-Before starting development:
-
-[callout](💡 **Tip:** Use a virtual environment "💡")
-
 ```bash
-pip install -r requirements.txt
+pip install notionary
 ```
 ````
-
-### Configuration
-
-Create a `.env` file with:
-
-```
-API_TOKEN=your_token_here
-```
 
 +++
 
 ````
 
-## Programmatic Usage
-
-### Creating Toggles
+### MarkdownBuilder Example
 
 ```python
-from notionary.blocks.toggle import ToggleMarkdownNode
-from notionary.blocks.paragraph import ParagraphMarkdownNode
-
-# Simple toggle
-toggle = ToggleMarkdownNode(
-    title="Click to expand",
-    children=[
-        ParagraphMarkdownNode(text="Hidden content here")
-    ]
+builder = (MarkdownBuilder()
+    .toggle("Development Setup", lambda content: (content
+        .h2("Prerequisites")
+        .callout("💡 **Tip:** Use a virtual environment", "💡")
+        .code("pip install -r requirements.txt", "bash")
+        .paragraph("Create a `.env` file with your API token.")
+    ))
 )
-
-markdown = toggle.to_markdown()
 ````
 
-### Complex Nested Content
+## Nested Content
+
+```markdown
++++ Documentation Guide
+## Installation
+
+[callout](💡 **Quick Start:** Follow these steps "💡")
+
+1. Install dependencies
+2. Configure settings
+3. Run initialization
+
++++ Troubleshooting
+- Port already in use
+- Missing environment variables
+- Permission errors
++++
+
++++
+```
+
+### MarkdownBuilder Example
 
 ```python
-from notionary.blocks.toggle import ToggleMarkdownNode
-from notionary.blocks.callout import CalloutMarkdownNode
-from notionary.blocks.code import CodeMarkdownNode
-
-# Toggle with multiple child blocks
-complex_toggle = ToggleMarkdownNode(
-    title="API Integration Guide",
-    children=[
-        CalloutMarkdownNode(
-            text="Ensure you have valid API credentials",
-            emoji="🔑"
-        ),
-        CodeMarkdownNode(
-            code="const client = new NotionClient(token);",
-            language="javascript"
-        )
-    ]
+builder = (MarkdownBuilder()
+    .toggle("API Documentation", lambda content: (content
+        .toggle("Authentication", lambda auth: (auth
+            .callout("🔑 **Required:** API token for all requests", "🔑")
+            .code('headers = {"Authorization": f"Bearer {token}"}', "python")
+        ))
+        .toggle("Rate Limiting", lambda rate: (rate
+            .paragraph("Maximum 3 requests per second.")
+            .code("time.sleep(2 ** attempt)", "python", "Exponential backoff")
+        ))
+    ))
 )
 ```
 
-### Using with Pages
+## Use Cases
 
-```python
-import asyncio
-from notionary import NotionPage
+### FAQ Sections
 
-async def add_faq():
-    page = await NotionPage.from_page_name("FAQ Page")
-
-    faq_content = """
+```markdown
 +++ How do I reset my password?
 1. Go to the login page
 2. Click "Forgot Password"
@@ -146,59 +122,21 @@ async def add_faq():
 
 +++ Can I export my data?
 Yes! You can export your data in several formats:
+
 - **JSON** - Complete data export
 - **CSV** - Spreadsheet format
 - **PDF** - Printable documents
-+++
-    """
-
-    await page.append_markdown(faq_content)
-
-asyncio.run(add_faq())
+  +++
 ```
-
-### With MarkdownBuilder
-
-````python
-from notionary.markdown import MarkdownBuilder
-
-def create_documentation():
-    builder = MarkdownBuilder()
-
-    builder.heading("API Documentation", level=1)
-
-    # Add toggle sections
-    builder.toggle(
-        title="Authentication",
-        content="""
-[callout](🔑 **Required:** API token for all requests "🔑")
-
-```python
-headers = {"Authorization": f"Bearer {token}"}
-````
-
-        """
-    )
-
-    builder.toggle(
-        title="Rate Limiting",
-        content="Maximum 3 requests per second. Use exponential backoff for retries."
-    )
-
-    return builder.build()
-
-await page.replace_content(create_documentation)
-
-````
-
-## Use Cases
 
 ### Documentation
 
-```markdown
+````markdown
 +++ Installation
+
 ```bash
-npm install notionary
+pip install notionary
+```
 ````
 
 Set up your environment:
@@ -206,43 +144,6 @@ Set up your environment:
 ```bash
 export NOTION_TOKEN="your_token_here"
 ```
-
-+++
-
-+++ Configuration
-Create a `config.json` file:
-
-```json
-{
-  "apiUrl": "https://api.notion.com/v1",
-  "timeout": 5000
-}
-```
-
-+++
-
-````
-
-### Troubleshooting Guides
-
-```markdown
-+++ Error: "Invalid API token"
-This error occurs when:
-1. Token is expired
-2. Token has insufficient permissions
-3. Token format is incorrect
-
-**Solution:** Generate a new token in Notion settings.
-+++
-
-+++ Error: "Rate limit exceeded"
-You're sending requests too quickly.
-
-**Solution:** Implement exponential backoff:
-```python
-import time
-time.sleep(2 ** retry_count)
-````
 
 +++
 
@@ -259,83 +160,7 @@ Think of it like a waiter in a restaurant - you give your order
 (request) to the waiter, who takes it to the kitchen (server),
 and brings back your food (response).
 +++
-
-+++ Intermediate: Authentication Methods
-APIs use various authentication methods:
-- **API Keys** - Simple token-based auth
-- **OAuth** - Secure delegation
-- **JWT** - Stateless tokens
-+++
 ````
-
-## Nested Toggles
-
-````markdown
-+++ Development Environment
-
-## Local Setup
-
-+++ Option 1: Docker
-
-```bash
-docker run -it notionary/dev
-```
-````
-
-+++
-
-+++ Option 2: Manual Install
-
-1. Install Python 3.8+
-2. Create virtual environment
-3. Install dependencies
-   +++
-
-## Testing
-
-+++ Unit Tests
-
-```bash
-pytest tests/unit/
-```
-
-+++
-
-+++ Integration Tests
-
-```bash
-pytest tests/integration/
-```
-
-+++
-+++
-
-```
-
-## Performance Considerations
-
-### Loading Behavior
-
-- Toggles load collapsed by default
-- Content is rendered but hidden
-- No impact on page load time
-- Instant expand/collapse
-
-### SEO and Accessibility
-
-- Content inside toggles is indexed
-- Screen readers can access collapsed content
-- Keyboard navigation supported
-- Semantic HTML structure maintained
-
-## Styling Options
-
-While Notionary focuses on content structure, toggles inherit Notion's visual styling:
-
-- Consistent expand/collapse animations
-- Theme-aware colors (light/dark mode)
-- Mobile-responsive design
-- Icon consistency
 
 ## Related Blocks
 
@@ -343,4 +168,3 @@ While Notionary focuses on content structure, toggles inherit Notion's visual st
 - **[Callout](callout.md)** - Highlighted information boxes
 - **[Column](column.md)** - Layout organization
 - **[Quote](quote.md)** - Emphasized text blocks
-```

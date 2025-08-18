@@ -31,7 +31,7 @@ Quote blocks highlight important text, citations, and emphasized content with vi
 ### Using MarkdownBuilder
 
 ```python
-from notionary.markdown.markdown_builder import MarkdownBuilder
+from notionary import MarkdownBuilder
 
 builder = (MarkdownBuilder()
     .h2("Development Principles")
@@ -42,22 +42,6 @@ builder = (MarkdownBuilder()
 )
 
 print(builder.build())
-```
-
-### Creating Quote Blocks Programmatically
-
-```python
-from notionary.blocks.quote import QuoteMarkdownNode
-
-# Simple quote
-quote = QuoteMarkdownNode(text="Code is poetry written in logic.")
-
-# Rich text quote
-rich_quote = QuoteMarkdownNode(
-    text="The **best code** is _no code_ at all. Every line is a liability."
-)
-
-print(quote.to_markdown())
 ```
 
 ## Common Use Cases

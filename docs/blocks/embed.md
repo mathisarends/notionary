@@ -37,47 +37,17 @@ Embed blocks integrate external web content directly into your Notion pages.
 ## Programmatic Usage
 
 ```python
-from notionary.blocks.embed import EmbedMarkdownNode
+from notionary import MarkdownBuilder
 
-# Simple embed
-embed = EmbedMarkdownNode(
-    url="https://github.com/user/repo",
-    caption="Project Repository"
+builder = (MarkdownBuilder()
+    .h1("Project Resources")
+    .embed("https://github.com/user/repo", "Project Repository")
+    .embed("https://codepen.io/user/pen/abc123", "Live Demo")
+    .embed("https://figma.com/file/design-id", "Design Prototype")
 )
 
-# Add to page
-await page.append_markdown('[embed](https://example.com "Live Demo")')
+print(builder.build())
 ```
-
-## Content Types
-
-- **GitHub repositories** - Show repo information
-- **CodePen/JSFiddle** - Interactive code examples
-- **Figma designs** - Design prototypes
-- **Google Maps** - Location embeds
-- **Calendars** - Schedule integration
-- **Forms** - Surveys and feedback
-
-## Behavior
-
-- **Responsive**: Adapts to container width
-- **Interactive**: Maintains original functionality
-- **Secure**: Sandboxed iframe implementation
-- **Loading**: Shows placeholder while content loads
-
-## Best Practices
-
-- **Test embeds**: Verify content displays correctly
-- **Mobile consideration**: Ensure embeds work on mobile
-- **Loading time**: Consider impact on page performance
-- **Fallback text**: Use descriptive captions
-
-## Common Use Cases
-
-- **Live demos** - Show working applications
-- **Design previews** - Display prototypes
-- **Documentation** - Embed external docs
-- **Tools integration** - Include external services
 
 ## Related Blocks
 

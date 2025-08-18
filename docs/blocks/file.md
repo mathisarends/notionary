@@ -37,49 +37,17 @@ File blocks provide downloadable attachments and file links for documents, archi
 ## Programmatic Usage
 
 ```python
-from notionary.blocks.file import FileMarkdownNode
+from notionary import MarkdownBuilder
 
-# File with caption
-file_block = FileMarkdownNode(
-    url="https://example.com/manual.pdf",
-    caption="Installation Manual"
+builder = (MarkdownBuilder()
+    .h1("Download Resources")
+    .file("https://example.com/user-guide.pdf", "Installation Manual")
+    .file("https://releases.example.com/v1.2.0.zip", "Source Code Package")
+    .file("https://data.example.com/sample.csv", "Sample Dataset")
 )
 
-# Add to documentation
-await page.append_markdown('[file](https://example.com/guide.pdf "Setup Guide")')
+print(builder.build())
 ```
-
-## File Information
-
-Files display:
-
-- **File name** from URL or caption
-- **File size** (when available)
-- **File type icon** based on extension
-- **Download link** for direct access
-
-## Common File Types
-
-- **PDF** - Documents, manuals, reports
-- **ZIP/TAR** - Source code, assets, packages
-- **CSV/XLSX** - Data exports, spreadsheets
-- **DOC/DOCX** - Text documents, specifications
-- **JSON/XML** - Configuration, data files
-
-## Best Practices
-
-- **Descriptive captions**: Clearly describe file contents
-- **File organization**: Group related files together
-- **Version control**: Include version numbers in names
-- **Access permissions**: Ensure files are publicly accessible
-
-## Common Use Cases
-
-- **Documentation attachments** - Supplementary materials
-- **Software releases** - Download packages
-- **Data exports** - CSV reports and datasets
-- **Templates** - Downloadable examples
-- **Resources** - Additional materials
 
 ## Related Blocks
 

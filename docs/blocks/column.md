@@ -15,34 +15,25 @@ Right column content
 :::
 ```
 
-## Column Layouts
+### MarkdownBuilder Example
 
-### Two Column Layout
+```python
+from notionary import MarkdownBuilder
 
-```markdown
-::: columns
-::: column
+builder = (MarkdownBuilder()
+    .h1("Product Comparison")
+    .columns(
+        lambda col: col.h3("Features").bulleted_list(["Fast", "Secure", "Reliable"]),
+        lambda col: col.h3("Benefits").bulleted_list(["Save time", "Reduce costs", "Scale easily"])
+    )
+)
 
-## Features
-
-- Easy to use
-- Fast performance
-- Great documentation
-- Active community
-  :::
-  ::: column
-
-## Benefits
-
-- Save development time
-- Reduce complexity
-- Improve maintainability
-- Scale efficiently
-  :::
-  :::
+print(builder.build())
 ```
 
-### Three Column Layout
+## Column Layouts
+
+### Multiple Columns
 
 ```markdown
 ::: columns
@@ -51,8 +42,6 @@ Right column content
 ## Starter
 
 - Basic features
-- 1 user
-- Email support
 - $9/month
   :::
   ::: column
@@ -60,8 +49,6 @@ Right column content
 ## Professional
 
 - Advanced features
-- 10 users
-- Priority support
 - $29/month
   :::
   ::: column
@@ -69,46 +56,22 @@ Right column content
 ## Enterprise
 
 - All features
-- Unlimited users
-- Dedicated support
 - Custom pricing
   :::
   :::
 ```
 
-### Four Column Layout
+### MarkdownBuilder Example
 
-```markdown
-::: columns
-::: column
-
-### Q1
-
-Revenue: $1.2M
-Growth: +15%
-:::
-::: column
-
-### Q2
-
-Revenue: $1.4M
-Growth: +17%
-:::
-::: column
-
-### Q3
-
-Revenue: $1.6M
-Growth: +14%
-:::
-::: column
-
-### Q4
-
-Revenue: $1.8M
-Growth: +13%
-:::
-:::
+```python
+builder = (MarkdownBuilder()
+    .h2("Pricing Plans")
+    .columns(
+        lambda col: col.h3("Starter").bulleted_list(["Basic features", "$9/month"]),
+        lambda col: col.h3("Professional").bulleted_list(["Advanced features", "$29/month"]),
+        lambda col: col.h3("Enterprise").bulleted_list(["All features", "Custom pricing"])
+    )
+)
 ```
 
 ## Width Ratios
@@ -121,60 +84,32 @@ Growth: +13%
 
 ## Main Content (70%)
 
-This column takes up 70% of the available width.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Primary content area with more space.
 :::
 ::: column 0.3
 
 ## Sidebar (30%)
 
-This narrower column is perfect for:
-
 - Quick links
 - Related info
-- Call-to-action
   :::
   :::
 ```
 
-### Common Ratio Patterns
+### MarkdownBuilder Example
 
-```markdown
-# 2:1 Ratio
-
-::: columns
-::: column 0.67
-Primary content area
-:::
-::: column 0.33
-Secondary information
-:::
-:::
-
-# 1:2 Ratio
-
-::: columns
-::: column 0.33
-Navigation or menu
-:::
-::: column 0.67
-Main article content
-:::
-:::
-
-# Golden Ratio
-
-::: columns
-::: column 0.618
-Featured content
-:::
-::: column 0.382
-Supporting details
-:::
-:::
+```python
+builder = (MarkdownBuilder()
+    .h1("Documentation Layout")
+    .columns(
+        lambda col: col.h2("Main Content").paragraph("Primary content area"),
+        lambda col: col.h3("Sidebar").bulleted_list(["Quick links", "Related info"]),
+        width_ratios=[0.7, 0.3]
+    )
+)
 ```
 
-## Rich Content in Columns
+## Rich Content
 
 ### Mixed Content Types
 
@@ -186,15 +121,9 @@ Supporting details
 
 [callout](💡 **Quick Start:** Follow these steps "💡")
 
-1. Install dependencies
-2. Configure settings
-3. Run initialization
-
 ```bash
-npm install
-npm run setup
+pip install notionary
 ```
-````
 
 :::
 ::: column
@@ -204,72 +133,48 @@ npm run setup
 +++ Common Issues
 
 - Port already in use
-- Missing environment variables
-- Permission errors
-  +++
-
-+++ Getting Help
-
-- Check documentation
-- Join our Discord
-- Submit GitHub issue
+- Missing variables
   +++
   :::
   :::
-
 ````
 
-### Code Comparisons
+### MarkdownBuilder Example
 
-```markdown
-::: columns
-::: column
-### Python Implementation
 ```python
-def fetch_page(page_id):
-    response = client.get(f"/pages/{page_id}")
-    return response.json()
-
-page = fetch_page("abc123")
-print(page["title"])
-````
-
-:::
-::: column
-
-### JavaScript Implementation
-
-```javascript
-async function fetchPage(pageId) {
-  const response = await client.get(`/pages/${pageId}`);
-  return response.data;
-}
-
-const page = await fetchPage("abc123");
-console.log(page.title);
+builder = (MarkdownBuilder()
+    .columns(
+        lambda col: (col
+            .h2("Setup Guide")
+            .callout("💡 **Quick Start:** Follow these steps", "💡")
+            .code("pip install notionary", "bash")
+        ),
+        lambda col: (col
+            .h2("Troubleshooting")
+            .toggle("Common Issues", lambda t: t.bulleted_list([
+                "Port already in use",
+                "Missing variables"
+            ]))
+        )
+    )
+)
 ```
 
-:::
-:::
+## Code Comparisons
 
-````
+### Before/After Example
 
-### Before/After Comparisons
-
-```markdown
+````markdown
 ::: columns
 ::: column
-## ❌ Before
-```python
-# Manual API calls
-import requests
 
-def get_page(page_id):
-    headers = {"Authorization": f"Bearer {token}"}
-    url = f"https://api.notion.com/v1/pages/{page_id}"
-    response = requests.get(url, headers=headers)
-    return response.json()
-````
+## ❌ Before
+
+```python
+import requests
+response = requests.get(url, headers=headers)
+data = response.json()
+```
 
 :::
 ::: column
@@ -277,273 +182,31 @@ def get_page(page_id):
 ## ✅ After
 
 ```python
-# Using Notionary
 from notionary import NotionPage
-
-async def get_page(page_name):
-    page = await NotionPage.from_page_name(page_name)
-    return page
+page = await NotionPage.from_page_name("My Page")
 ```
 
 :::
 :::
-
 ````
 
-## Programmatic Usage
-
-### Creating Column Layouts
+### MarkdownBuilder Example
 
 ```python
-from notionary.blocks.column import ColumnListMarkdownNode, ColumnMarkdownNode
-from notionary.blocks.paragraph import ParagraphMarkdownNode
-
-# Create columns programmatically
-left_column = ColumnMarkdownNode(
-    children=[
-        ParagraphMarkdownNode(text="Left column content")
-    ]
-)
-
-right_column = ColumnMarkdownNode(
-    children=[
-        ParagraphMarkdownNode(text="Right column content")
-    ]
-)
-
-column_layout = ColumnListMarkdownNode(
-    columns=[left_column, right_column]
-)
-
-markdown = column_layout.to_markdown()
-````
-
-### With Custom Widths
-
-```python
-# Custom width ratios
-narrow_column = ColumnMarkdownNode(
-    children=[...],
-    width_ratio=0.3
-)
-
-wide_column = ColumnMarkdownNode(
-    children=[...],
-    width_ratio=0.7
-)
-
-layout = ColumnListMarkdownNode(
-    columns=[narrow_column, wide_column]
+builder = (MarkdownBuilder()
+    .h2("API Comparison")
+    .columns(
+        lambda col: (col
+            .h3("❌ Before")
+            .code('import requests\nresponse = requests.get(url)', "python")
+        ),
+        lambda col: (col
+            .h3("✅ After")
+            .code('from notionary import NotionPage\npage = await NotionPage.from_page_name("My Page")', "python")
+        )
+    )
 )
 ```
-
-### Using with Pages
-
-```python
-import asyncio
-from notionary import NotionPage
-
-async def create_comparison():
-    page = await NotionPage.from_page_name("Feature Comparison")
-
-    comparison_content = """
-# Product Comparison
-
-::: columns
-::: column
-## Basic Plan
-- 5 projects
-- 10GB storage
-- Email support
-- $10/month
-
-[callout](✅ **Best for:** Small teams "✅")
-:::
-::: column
-## Pro Plan
-- Unlimited projects
-- 100GB storage
-- Priority support
-- Advanced features
-- $25/month
-
-[callout](🚀 **Best for:** Growing companies "🚀")
-:::
-:::
-    """
-
-    await page.replace_content(comparison_content)
-
-asyncio.run(create_comparison())
-```
-
-## Layout Patterns
-
-### Documentation Layout
-
-````markdown
-::: columns
-::: column 0.25
-
-## Navigation
-
-- [Getting Started](#start)
-- [API Reference](#api)
-- [Examples](#examples)
-- [FAQ](#faq)
-
-[callout](💡 **Tip:** Use Cmd+K to search "💡")
-:::
-::: column 0.75
-
-## Main Content
-
-### Getting Started {#start}
-
-Welcome to our comprehensive documentation.
-
-### Quick Installation
-
-```bash
-pip install notionary
-```
-````
-
-### First Steps
-
-1. Set up authentication
-2. Create your first page
-3. Add some content
-   :::
-   :::
-
-````
-
-### Landing Page Layout
-
-```markdown
-::: columns
-::: column
-## Why Choose Us?
-
-### 🚀 Fast Performance
-Optimized for speed and efficiency.
-
-### 🔒 Secure by Default
-Enterprise-grade security built-in.
-
-### 📚 Great Documentation
-Comprehensive guides and examples.
-
-### 🌍 Global Community
-Join thousands of developers worldwide.
-:::
-::: column
-## Get Started Today
-
-[callout](🎉 **Free Trial:** No credit card required "🎉")
-
-```bash
-# Quick installation
-pip install notionary
-
-# Start building
-python -c "import notionary; print('Ready!')"
-````
-
-### What's Included:
-
-- ✅ Full API access
-- ✅ Premium support
-- ✅ Advanced features
-- ✅ 30-day guarantee
-
-[Start Your Free Trial →](#signup)
-:::
-:::
-
-````
-
-### Feature Showcase
-
-```markdown
-::: columns
-::: column 0.4
-## Key Features
-
-### 🎯 Focused Design
-Clean, intuitive interface that gets out of your way.
-
-### ⚡ Lightning Fast
-Optimized performance for large-scale applications.
-
-### 🔧 Highly Configurable
-Customize every aspect to fit your workflow.
-:::
-::: column 0.6
-## Live Demo
-
-```python
-# See it in action
-from notionary import NotionPage
-
-async def demo():
-    # Find any page by name
-    page = await NotionPage.from_page_name("My Project")
-
-    # Add rich content instantly
-    await page.append_markdown("""
-    # Project Update
-
-    [callout](✅ **Status:** On track "✅")
-
-    ## Next Steps
-    - [ ] Review mockups
-    - [ ] Implement features
-    - [ ] Deploy to staging
-    """)
-
-# Try it yourself!
-import asyncio
-asyncio.run(demo())
-````
-
-:::
-:::
-
-````
-
-## Responsive Behavior
-
-### Mobile Considerations
-
-Columns automatically stack on mobile devices:
-- **Desktop**: Side-by-side layout
-- **Mobile**: Stacked vertically
-- **Tablet**: Depends on content width
-
-### Content Guidelines
-
-```markdown
-# ✅ Good - Concise content per column
-::: columns
-::: column
-## Short Title
-Brief, scannable content works best in columns.
-:::
-::: column
-## Another Title
-Keep paragraphs short for better readability.
-:::
-:::
-
-# ❌ Avoid - Long content in narrow columns
-::: columns
-::: column
-This is a very long paragraph that becomes difficult to read when constrained to a narrow column width. The text becomes choppy and hard to follow.
-:::
-:::
-````
 
 ## Nested Layouts
 
@@ -555,48 +218,51 @@ This is a very long paragraph that becomes difficult to read when constrained to
 ::: column
 ### Basic
 $10/month
-- Feature A
-- Feature B
 :::
 ::: column
-### Premium
-$25/month  
-- All Basic features
-- Feature C
-- Feature D
+### Premium  
+$25/month
 :::
 :::
 +++
 ```
 
-### Columns in Columns
+### MarkdownBuilder Example
+
+```python
+builder = (MarkdownBuilder()
+    .toggle("Pricing Comparison", lambda t: t.columns(
+        lambda col: col.h3("Basic").paragraph("$10/month"),
+        lambda col: col.h3("Premium").paragraph("$25/month")
+    ))
+)
+```
+
+## Responsive Behavior
+
+Columns automatically stack on mobile devices:
+
+- **Desktop**: Side-by-side layout
+- **Mobile**: Stacked vertically
+- **Tablet**: Depends on content width
+
+### Content Guidelines
 
 ```markdown
-::: columns
-::: column
-
-## Left Section
+# ✅ Good - Concise content
 
 ::: columns
 ::: column
 
-### Sub A
+## Short Title
 
-Content A
+Brief, scannable content works best.
 :::
 ::: column
 
-### Sub B
+## Another Title
 
-Content B
-:::
-:::
-:::
-::: column
-
-## Right Section
-
-Full-width content on the right side.
+Keep paragraphs short for readability.
 :::
 :::
 ```
@@ -605,41 +271,10 @@ Full-width content on the right side.
 
 ### Content Balance
 
-```markdown
-# ✅ Good - Balanced content
-
-::: columns
-::: column
-
-## Feature A
-
-Similar amount of content
-:::
-::: column
-
-## Feature B
-
-Similar amount of content
-:::
-:::
-
-# ❌ Avoid - Unbalanced content
-
-::: columns
-::: column
-
-## Long Section
-
-Very long content that makes this column much taller than the other one.
-:::
-::: column
-
-## Short
-
-Brief.
-:::
-:::
-```
+- Keep similar content amounts in each column
+- Use semantic headings for accessibility
+- Test with screen readers
+- Ensure content reads logically when stacked
 
 ### Visual Hierarchy
 
@@ -663,13 +298,6 @@ Additional context.
 :::
 :::
 ```
-
-### Accessibility
-
-- Use semantic headings in columns
-- Ensure content reads logically when stacked
-- Test with screen readers
-- Maintain proper contrast ratios
 
 ## Related Blocks
 
