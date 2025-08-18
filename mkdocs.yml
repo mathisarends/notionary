@@ -3,18 +3,45 @@ site_url: https://mathisarends.github.io/notionary/
 
 theme:
   name: material
+  features:
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
   palette:
     - scheme: default
-      primary: blue gray
-      accent: cyan
+      primary: deep purple
+      accent: purple
     - scheme: slate
-      primary: blue gray
-      accent: cyan
+      primary: deep purple
+      accent: purple
 
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Features: features.md
+  - Blocks:
+      - Overview: blocks/index.md
+      - Paragraph: blocks/paragraph.md
+      - Heading: blocks/heading.md
+      - Callout: blocks/callout.md
+      - Code: blocks/code.md
+      - Quote: blocks/quote.md
+      - Divider: blocks/divider.md
+      - Column: blocks/column.md
+      - Toggle: blocks/toggle.md
+      - Table: blocks/table.md
+      - Equation: blocks/equation.md
+      - Breadcrumb: blocks/breadcrumb.md
+      - Table of Contents: blocks/table_of_contents.md
+      - Embed: blocks/embed.md
+      - File: blocks/file.md
+      - PDF: blocks/pdf.md
+      - Lists:
+          - Bulleted List: blocks/bulleted_list.md
+          - Numbered List: blocks/numbered_list.md
+      - Media:
+          - Image: blocks/image.md
+          - Video: blocks/video.md
   - Contributing: contributing.md
 
 repo_url: https://github.com/mathisarends/notionary
@@ -22,6 +49,14 @@ repo_name: mathisarends/notionary
 
 markdown_extensions:
   - admonition
-  - codehilite
+  - attr_list
+  - md_in_html
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
   - toc:
       permalink: true

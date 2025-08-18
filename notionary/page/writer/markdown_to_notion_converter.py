@@ -1,4 +1,3 @@
-from notionary.blocks.types import BlockType
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.notion_text_length_utils import fix_blocks_content_length
 from notionary.page.writer.handler import (

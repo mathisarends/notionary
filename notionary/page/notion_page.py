@@ -249,7 +249,7 @@ class NotionPage(LoggingMixin):
             prepend_table_of_contents=prepend_table_of_contents,
         )
         return result is not None
-
+    
     async def replace_content(
         self,
         content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder]],
