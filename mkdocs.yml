@@ -4,9 +4,14 @@ site_url: https://mathisarends.github.io/notionary/
 theme:
   name: material
   features:
+    # bestehende Features
     - content.code.copy
     - content.code.select
     - content.code.annotate
+    # NEU: Tabs + Section-Index + (optional) sticky Tabs
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
   palette:
     - scheme: default
       primary: deep purple
@@ -15,10 +20,20 @@ theme:
       primary: deep purple
       accent: purple
 
+# Top-Level-Tabs (jede Gruppe hat ein eigenes index.md)
 nav:
-  - Home: index.md
-  - Getting Started: getting-started.md
-  - Features: features.md
+  - Get Started:
+      - Overview: get-started/index.md
+      - Installation: get-started/installation.md
+
+  - Database:
+      - Overview: concepts/index.md
+      - Markdown Format: concepts/markdown.md
+      - Builder Mapping: concepts/markdown-builder.md
+
+  - Page:
+      - Page API: page/index.md
+
   - Blocks:
       - Overview: blocks/index.md
       - Paragraph: blocks/paragraph.md
@@ -42,7 +57,9 @@ nav:
       - Media:
           - Image: blocks/image.md
           - Video: blocks/video.md
-  - Contributing: contributing.md
+
+  - Contributing:
+      - Overview: contributing/index.md
 
 repo_url: https://github.com/mathisarends/notionary
 repo_name: mathisarends/notionary

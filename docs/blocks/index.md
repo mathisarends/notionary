@@ -2,6 +2,8 @@
 
 Notionary provides comprehensive support for all Notion block types through two powerful approaches. Each block type can be created, modified, and converted between Markdown and Notion format seamlessly.
 
+> **Note:** The block APIs documented in this section are used within the `append_markdown()` and `replace_content()` methods of `NotionPage`. These methods accept either markdown strings or MarkdownBuilder functions to create rich content.
+
 ## Two Ways to Create Content
 
 ### 1. Direct Markdown Syntax
