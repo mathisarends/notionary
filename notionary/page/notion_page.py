@@ -435,7 +435,6 @@ class NotionPage(LoggingMixin):
             )
             return []
 
-    # Diese Methode hier sollte auch für relation properties funktionieren aber gerne auch eine dedizierte hier
     async def set_property_value_by_name(self, property_name: str, value: Any) -> Any:
         """
         Set the value of a specific property by its name.

@@ -27,9 +27,10 @@ nav:
       - Installation: get-started/installation.md
 
   - Database:
-      - Overview: concepts/index.md
-      - Markdown Format: concepts/markdown.md
-      - Builder Mapping: concepts/markdown-builder.md
+      - Overview: database/index.md
+      - Connecting to a database: database/connecting.md
+      - Editing Information: database/customization.md
+      - Create a page: database/create_page.md
 
   - Page:
       - Page API: page/index.md
