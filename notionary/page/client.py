@@ -1,7 +1,8 @@
 from typing import Any, Optional
+
 from notionary.base_notion_client import BaseNotionClient
-from notionary.page.models import NotionPageResponse
 from notionary.database.models import NotionQueryDatabaseResponse
+from notionary.page.models import NotionPageResponse
 
 
 class NotionPageClient(BaseNotionClient):

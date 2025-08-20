@@ -28,12 +28,14 @@ nav:
 
   - Database:
       - Overview: database/index.md
-      - Connecting to a database: database/connecting.md
+      - Instantiating a Database: database/connecting.md
       - Editing Information: database/customization.md
       - Create a page: database/create_page.md
 
   - Page:
       - Page API: page/index.md
+      - Content Management: page/content.md
+      - Page Customization: page/customization.md
 
   - Blocks:
       - Overview: blocks/index.md

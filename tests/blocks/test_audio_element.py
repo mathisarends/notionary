@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import Mock
+
+import pytest
 
 from notionary.blocks.audio.audio_element import AudioElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject

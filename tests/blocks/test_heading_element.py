@@ -3,14 +3,14 @@ Minimal tests for HeadingElement.
 Tests core functionality for markdown headings (#, ##, ###).
 """
 
-import pytest
 from unittest.mock import Mock
-from notionary.blocks.types import BlockType
+
+import pytest
+
 from notionary.blocks.heading.heading_element import HeadingElement
-from notionary.blocks.heading.heading_models import (
-    HeadingBlock,
-)
+from notionary.blocks.heading.heading_models import HeadingBlock
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.types import BlockType
 
 
 def test_match_markdown_valid():

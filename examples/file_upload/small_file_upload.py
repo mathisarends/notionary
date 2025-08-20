@@ -10,7 +10,8 @@ SETUP: Create a small test file or use any existing file < 20MB.
 
 import asyncio
 from pathlib import Path
-from notionary import NotionFileUpload, NotionBotUser
+
+from notionary import NotionBotUser, NotionFileUpload
 
 TEST_FILE_PATH = Path(__file__).parent / "my_document.pdf"
 

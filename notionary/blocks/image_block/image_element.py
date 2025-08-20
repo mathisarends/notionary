@@ -1,16 +1,12 @@
 from __future__ import annotations
+
 import re
 from typing import Optional
 
-from notionary.blocks.models import Block, BlockCreateResult
-
-from notionary.blocks.models import (
-    Block,
-    BlockType,
-)
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import ExternalFile, FileType
 from notionary.blocks.image_block.image_models import CreateImageBlock, FileBlock
-from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
     ParagraphBlock,

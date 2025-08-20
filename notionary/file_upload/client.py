@@ -1,16 +1,16 @@
-from typing import Optional, BinaryIO
 from io import BytesIO
 from pathlib import Path
-import httpx
+from typing import BinaryIO, Optional
 
 import aiofiles
+import httpx
 
 from notionary.base_notion_client import BaseNotionClient
 from notionary.file_upload.models import (
-    FileUploadResponse,
-    FileUploadListResponse,
-    FileUploadCreateRequest,
     FileUploadCompleteRequest,
+    FileUploadCreateRequest,
+    FileUploadListResponse,
+    FileUploadResponse,
 )
 
 

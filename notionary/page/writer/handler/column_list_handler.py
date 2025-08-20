@@ -1,11 +1,12 @@
 from __future__ import annotations
+
 import re
 
 from notionary.blocks.column.column_list_element import ColumnListElement
 from notionary.page.writer.handler import (
-    ParentBlockContext,
     LineHandler,
     LineProcessingContext,
+    ParentBlockContext,
 )
 
 

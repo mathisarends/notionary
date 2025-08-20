@@ -1,17 +1,13 @@
 from __future__ import annotations
+
 import re
 from typing import Optional
 
-from notionary.blocks.models import Block, BlockCreateResult
-
-from notionary.blocks.types import BlockType
 from notionary.blocks.base_block_element import BaseBlockElement
-
+from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.blocks.table.table_models import (
-    CreateTableBlock,
-    TableBlock,
-)
+from notionary.blocks.table.table_models import CreateTableBlock, TableBlock
+from notionary.blocks.types import BlockType
 
 
 class TableElement(BaseBlockElement):

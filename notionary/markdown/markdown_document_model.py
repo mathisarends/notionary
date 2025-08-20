@@ -1,34 +1,37 @@
 from __future__ import annotations
-from typing import Union, Optional, Literal
+
+from typing import Literal, Optional, Union
+
 from pydantic import BaseModel, Field
+
+from notionary.blocks.bookmark.bookmark_markdown_node import BookmarkMarkdownBlockParams
+from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
+    BulletedListMarkdownBlockParams,
+)
+from notionary.blocks.callout.callout_markdown_node import CalloutMarkdownBlockParams
+from notionary.blocks.divider.divider_markdown_node import DividerMarkdownBlockParams
+from notionary.blocks.embed.embed_markdown_node import EmbedMarkdownBlockParams
+from notionary.blocks.equation.equation_element_markdown_node import (
+    EquationMarkdownBlockParams,
+)
+from notionary.blocks.file.file_element_markdown_node import FileMarkdownNodeParams
 
 # Import all the existing params models
 from notionary.blocks.heading.heading_markdown_node import HeadingMarkdownBlockParams
+from notionary.blocks.image_block.image_markdown_node import ImageMarkdownBlockParams
+from notionary.blocks.numbered_list.numbered_list_markdown_node import (
+    NumberedListMarkdownBlockParams,
+)
 from notionary.blocks.paragraph.paragraph_markdown_node import (
     ParagraphMarkdownBlockParams,
 )
 from notionary.blocks.quote.quote_markdown_node import QuoteMarkdownBlockParams
-from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
-    BulletedListMarkdownBlockParams,
-)
-from notionary.blocks.numbered_list.numbered_list_markdown_node import (
-    NumberedListMarkdownBlockParams,
-)
-from notionary.blocks.todo.todo_markdown_node import TodoMarkdownBlockParams
-from notionary.blocks.callout.callout_markdown_node import CalloutMarkdownBlockParams
-from notionary.blocks.image_block.image_markdown_node import ImageMarkdownBlockParams
-from notionary.blocks.video.video_markdown_node import VideoMarkdownBlockParams
-from notionary.blocks.file.file_element_markdown_node import FileMarkdownNodeParams
-from notionary.blocks.bookmark.bookmark_markdown_node import BookmarkMarkdownBlockParams
-from notionary.blocks.embed.embed_markdown_node import EmbedMarkdownBlockParams
 from notionary.blocks.table.table_markdown_node import TableMarkdownBlockParams
-from notionary.blocks.divider.divider_markdown_node import DividerMarkdownBlockParams
-from notionary.blocks.equation.equation_element_markdown_node import (
-    EquationMarkdownBlockParams,
-)
 from notionary.blocks.table_of_contents.table_of_contents_markdown_node import (
     TableOfContentsMarkdownBlockParams,
 )
+from notionary.blocks.todo.todo_markdown_node import TodoMarkdownBlockParams
+from notionary.blocks.video.video_markdown_node import VideoMarkdownBlockParams
 
 
 class HeadingBlock(BaseModel):

@@ -1,15 +1,14 @@
 from __future__ import annotations
+
 import re
 from typing import Optional
 
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.breadcrumbs.breadcrumb_models import (
     BreadcrumbBlock,
     CreateBreadcrumbBlock,
 )
-from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.models import Block, BlockType
-
-from notionary.blocks.models import BlockCreateResult
+from notionary.blocks.models import Block, BlockCreateResult, BlockType
 
 
 class BreadcrumbElement(BaseBlockElement):

@@ -1,33 +1,29 @@
 from __future__ import annotations
-from typing import Type, TYPE_CHECKING, Self
+
 from collections import OrderedDict
+from typing import TYPE_CHECKING, Self, Type
 
 from notionary.blocks.audio import AudioElement
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.bookmark import BookmarkElement
+from notionary.blocks.breadcrumbs import BreadcrumbElement
 from notionary.blocks.bulleted_list import BulletedListElement
 from notionary.blocks.callout import CalloutElement
 from notionary.blocks.code import CodeElement
-from notionary.blocks.column import ColumnElement
-from notionary.blocks.column import ColumnListElement
+from notionary.blocks.column import ColumnElement, ColumnListElement
 from notionary.blocks.divider import DividerElement
 from notionary.blocks.embed import EmbedElement
 from notionary.blocks.equation import EquationElement
 from notionary.blocks.heading import HeadingElement
 from notionary.blocks.image_block import ImageElement
-from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.numbered_list import NumberedListElement
 from notionary.blocks.paragraph import ParagraphElement
 from notionary.blocks.quote import QuoteElement
 from notionary.blocks.table import TableElement
-from notionary.blocks.table_of_contents import (
-    TableOfContentsElement,
-)
-from notionary.blocks.breadcrumbs import BreadcrumbElement
+from notionary.blocks.table_of_contents import TableOfContentsElement
 from notionary.blocks.todo import TodoElement
 from notionary.blocks.toggle import ToggleElement
-from notionary.blocks.toggleable_heading import (
-    ToggleableHeadingElement,
-)
+from notionary.blocks.toggleable_heading import ToggleableHeadingElement
 from notionary.blocks.video import VideoElement
 
 if TYPE_CHECKING:

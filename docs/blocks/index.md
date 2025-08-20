@@ -123,8 +123,8 @@ Text-based content blocks for writing and formatting.
 
 Structured list content for organization.
 
-- **[Bulleted List](blocks/bulleted-list.md)** - Unordered lists with bullets
-- **[Numbered List](blocks/numbered-list.md)** - Ordered lists with numbers
+- **[Bulleted List](blocks/bulleted_list.md)** - Unordered lists with bullets
+- **[Numbered List](blocks/numbered_list.md)** - Ordered lists with numbers
 - **[To Do](blocks/todo.md)** - Checkbox task lists
 
 ### Interactive Blocks
@@ -132,15 +132,14 @@ Structured list content for organization.
 Blocks that provide interactive functionality.
 
 - **[Toggle](blocks/toggle.md)** - Collapsible content sections
-- **[Toggleable Heading](blocks/toggleable-heading.md)** - Collapsible headings
+- **[Toggleable Heading](blocks/toggleable_heading.md)** - Collapsible headings
 
 ### Layout Blocks
 
 Blocks for structuring page layout and organization.
 
 - **[Divider](blocks/divider.md)** - Horizontal dividing lines
-- **[Column List](blocks/column-list.md)** - Multi-column layouts
-- **[Column](blocks/column.md)** - Individual columns
+- **[Column](blocks/column.md)** - Multi-column layouts and individual columns
 - **[Table](blocks/table.md)** - Structured data tables
 
 ### Files & Media
@@ -163,7 +162,7 @@ Scientific and mathematical content.
 
 Page navigation and structure.
 
-- **[Table of Contents](blocks/table-of-contents.md)** - Automatic page TOC
+- **[Table of Contents](blocks/table_of_contents.md)** - Automatic page TOC
 - **[Breadcrumb](blocks/breadcrumb.md)** - Navigation breadcrumbs
 
 ## Content Creation Examples

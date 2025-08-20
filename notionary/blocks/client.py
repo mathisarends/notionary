@@ -1,10 +1,7 @@
-from typing import Optional, Any
+from typing import Any, Optional
+
 from notionary.base_notion_client import BaseNotionClient
-from notionary.blocks.models import (
-    Block,
-    BlockChildrenResponse,
-    BlockCreateRequest,
-)
+from notionary.blocks.models import Block, BlockChildrenResponse, BlockCreateRequest
 
 
 class NotionBlockClient(BaseNotionClient):

@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 from pydantic import BaseModel
+
 from notionary.markdown.markdown_node import MarkdownNode
 
 

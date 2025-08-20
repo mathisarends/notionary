@@ -3,8 +3,8 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from notionary.blocks.models import Block
-from notionary.blocks.types import BlockColor
 from notionary.blocks.rich_text import RichTextObject
+from notionary.blocks.types import BlockColor
 
 
 class BulletedListItemBlock(BaseModel):

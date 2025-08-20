@@ -1,9 +1,9 @@
-from pydantic import BaseModel
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any, Literal, Union
+from typing import Any, Dict, List, Literal, Optional, Union
+
+from pydantic import BaseModel, ConfigDict
 
 from notionary.page.models import Cover, Icon
-from pydantic import BaseModel, ConfigDict
 
 
 @dataclass

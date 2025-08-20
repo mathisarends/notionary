@@ -11,7 +11,8 @@ SETUP: No files needed - content is generated in memory.
 import asyncio
 import json
 from datetime import datetime
-from notionary import NotionFileUpload, NotionBotUser
+
+from notionary import NotionBotUser, NotionFileUpload
 
 FILENAME = "dynamic_report.json"
 CONTENT_TYPE = "application/json"

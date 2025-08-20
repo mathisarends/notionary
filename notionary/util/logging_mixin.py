@@ -1,7 +1,7 @@
 import logging
-from typing import Optional, ClassVar
-
 import os
+from typing import ClassVar, Optional
+
 from dotenv import load_dotenv
 
 load_dotenv()

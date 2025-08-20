@@ -1,7 +1,8 @@
 from __future__ import annotations
+
 import difflib
-from typing import List, Any, TypeVar, Callable, Optional
 from dataclasses import dataclass
+from typing import Any, Callable, List, Optional, TypeVar
 
 T = TypeVar("T")
 

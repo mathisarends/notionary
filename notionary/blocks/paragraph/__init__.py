@@ -1,11 +1,11 @@
 from notionary.blocks.paragraph.paragraph_element import ParagraphElement
-from notionary.blocks.paragraph.paragraph_models import (
-    ParagraphBlock,
-    CreateParagraphBlock,
-)
 from notionary.blocks.paragraph.paragraph_markdown_node import (
-    ParagraphMarkdownNode,
     ParagraphMarkdownBlockParams,
+    ParagraphMarkdownNode,
+)
+from notionary.blocks.paragraph.paragraph_models import (
+    CreateParagraphBlock,
+    ParagraphBlock,
 )
 
 __all__ = [

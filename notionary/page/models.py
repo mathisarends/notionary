@@ -1,5 +1,6 @@
+from typing import Any, Literal, Optional, Union
+
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, Any, Literal, Union
 
 
 class TextContent(BaseModel):

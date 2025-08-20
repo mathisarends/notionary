@@ -1,14 +1,11 @@
 """Quote block handling for Notionary."""
 
 from notionary.blocks.quote.quote_element import QuoteElement
-from notionary.blocks.quote.quote_models import (
-    QuoteBlock,
-    CreateQuoteBlock,
-)
 from notionary.blocks.quote.quote_markdown_node import (
-    QuoteMarkdownNode,
     QuoteMarkdownBlockParams,
+    QuoteMarkdownNode,
 )
+from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
 
 __all__ = [
     "QuoteElement",

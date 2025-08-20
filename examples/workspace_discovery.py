@@ -9,6 +9,7 @@ SETUP: Make sure your NOTION_TOKEN environment variable is set.
 """
 
 import asyncio
+
 from notionary import NotionWorkspace
 
 # Replace with your search term

@@ -1,7 +1,7 @@
-from .logging_mixin import LoggingMixin
-from .singleton import singleton
-from .page_id_utils import format_uuid, extract_uuid
 from .factory_only import factory_only
+from .logging_mixin import LoggingMixin
+from .page_id_utils import extract_uuid, format_uuid
+from .singleton import singleton
 from .singleton_metaclass import SingletonMetaClass
 
 __all__ = [

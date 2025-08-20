@@ -1,10 +1,11 @@
 from typing import Literal, Optional, Union
+
 from pydantic import BaseModel, Field
 
-from notionary.blocks.models import Block
-from notionary.blocks.types import BlockColor
 from notionary.blocks.file.file_element_models import FileBlock
+from notionary.blocks.models import Block
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.types import BlockColor
 
 
 class EmojiIcon(BaseModel):

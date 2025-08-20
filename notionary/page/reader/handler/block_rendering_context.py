@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Callable
+from typing import Callable, Optional
 
 from notionary.blocks.models import Block
 from notionary.blocks.registry.block_registry import BlockRegistry

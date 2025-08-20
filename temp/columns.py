@@ -1,5 +1,6 @@
 from pydantic import functional_serializers
-from notionary import NotionPage, MarkdownBuilder
+
+from notionary import MarkdownBuilder, NotionPage
 
 
 def create_complex_markdown():
@@ -152,16 +153,21 @@ print(f"Gefunden: {len(users)} Benutzer")""",
 
     # Toggleable Heading Element
     builder.toggleable_heading(
-        "🧩 Weitere technische Details anzeigen", 2,
+        "🧩 Weitere technische Details anzeigen",
+        2,
         lambda toggle: (
             toggle.h3("Technische Details")
-            .paragraph("Hier findest du weiterführende technische Informationen zur API-Architektur, Sicherheit und Skalierung.")
-            .bulleted_list([
-                "Microservice Architektur mit FastAPI",
-                "Automatisiertes Deployment via GitHub Actions",
-                "TLS/SSL Verschlüsselung für alle Endpunkte",
-                "Horizontal skalierbar durch Kubernetes",
-            ])
+            .paragraph(
+                "Hier findest du weiterführende technische Informationen zur API-Architektur, Sicherheit und Skalierung."
+            )
+            .bulleted_list(
+                [
+                    "Microservice Architektur mit FastAPI",
+                    "Automatisiertes Deployment via GitHub Actions",
+                    "TLS/SSL Verschlüsselung für alle Endpunkte",
+                    "Horizontal skalierbar durch Kubernetes",
+                ]
+            )
         ),
     )
 

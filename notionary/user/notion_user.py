@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import Optional, List
+from typing import List, Optional
+
 from notionary.user.base_notion_user import BaseNotionUser
 from notionary.user.client import NotionUserClient
-from notionary.user.models import (
-    NotionUserResponse,
-)
+from notionary.user.models import NotionUserResponse
 from notionary.util import factory_only
 from notionary.util.fuzzy import find_best_matches
 

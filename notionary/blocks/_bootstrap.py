@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Union, Optional
+
+from typing import Optional, Union
 
 _bootstrapped = False
 
@@ -23,17 +24,17 @@ def bootstrap_blocks() -> None:
         file,
         heading,
         image_block,
+        models,
         numbered_list,
         paragraph,
         quote,
         table,
+        table_of_contents,
         todo,
         toggle,
-        video,
         toggleable_heading,
-        table_of_contents,
+        video,
     )
-    from notionary.blocks import models
 
     # Collect all exports from modules
     ns = {}
@@ -89,39 +90,39 @@ def bootstrap_blocks() -> None:
         CreateColumnBlock,
         CreateColumnListBlock,
     )
-    from notionary.blocks.divider.divider_models import DividerBlock, CreateDividerBlock
-    from notionary.blocks.embed.embed_models import EmbedBlock, CreateEmbedBlock
+    from notionary.blocks.divider.divider_models import CreateDividerBlock, DividerBlock
+    from notionary.blocks.embed.embed_models import CreateEmbedBlock, EmbedBlock
     from notionary.blocks.equation.equation_models import (
-        EquationBlock,
         CreateEquationBlock,
+        EquationBlock,
     )
-    from notionary.blocks.file.file_element_models import FileBlock, CreateFileBlock
+    from notionary.blocks.file.file_element_models import CreateFileBlock, FileBlock
     from notionary.blocks.heading.heading_models import (
-        HeadingBlock,
         CreateHeading1Block,
         CreateHeading2Block,
         CreateHeading3Block,
+        HeadingBlock,
     )
     from notionary.blocks.image_block.image_models import CreateImageBlock
     from notionary.blocks.numbered_list.numbered_list_models import (
-        NumberedListItemBlock,
         CreateNumberedListItemBlock,
+        NumberedListItemBlock,
     )
     from notionary.blocks.paragraph.paragraph_models import (
-        ParagraphBlock,
         CreateParagraphBlock,
+        ParagraphBlock,
     )
-    from notionary.blocks.quote.quote_models import QuoteBlock, CreateQuoteBlock
-    from notionary.blocks.table.table_models import TableBlock, TableRowBlock
-    from notionary.blocks.todo.todo_models import ToDoBlock, CreateToDoBlock
-    from notionary.blocks.toggle.toggle_models import ToggleBlock, CreateToggleBlock
-    from notionary.blocks.video.video_element_models import CreateVideoBlock
     from notionary.blocks.pdf.pdf_models import CreatePdfBlock
+    from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
+    from notionary.blocks.table.table_models import TableBlock, TableRowBlock
     from notionary.blocks.table_of_contents.table_of_contents_models import (
-        TableOfContentsBlock,
         CreateTableOfContentsBlock,
+        TableOfContentsBlock,
     )
+    from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
+    from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
     from notionary.blocks.types import BlockType
+    from notionary.blocks.video.video_element_models import CreateVideoBlock
 
     # Define the Union types that are needed for model rebuilding
     BlockCreateRequest = Union[

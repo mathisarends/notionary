@@ -1,9 +1,9 @@
 from notionary.blocks.pdf.pdf_element import PdfElement
-from notionary.blocks.pdf.pdf_models import CreatePdfBlock
 from notionary.blocks.pdf.pdf_markdown_node import (
     PdfMarkdownNode,
     PdfMarkdownNodeParams,
 )
+from notionary.blocks.pdf.pdf_models import CreatePdfBlock
 
 __all__ = [
     "PdfElement",

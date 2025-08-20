@@ -4,14 +4,15 @@ Tests the essential functionality for table of contents block handling.
 """
 
 import pytest
+
+from notionary.blocks.models import Block, BlockType
 from notionary.blocks.table_of_contents.table_of_contents_element import (
     TableOfContentsElement,
 )
 from notionary.blocks.table_of_contents.table_of_contents_models import (
-    TableOfContentsBlock,
     CreateTableOfContentsBlock,
+    TableOfContentsBlock,
 )
-from notionary.blocks.models import Block, BlockType
 
 
 def create_block_with_required_fields(**kwargs) -> Block:

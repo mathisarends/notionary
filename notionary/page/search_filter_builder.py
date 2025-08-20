@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import Any, Dict, Optional, Literal
+
 from dataclasses import dataclass
+from typing import Any, Dict, Literal, Optional
 
 
 @dataclass

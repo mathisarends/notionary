@@ -3,6 +3,7 @@ Minimal example for using NotionBotUser.from_current_integration()
 """
 
 import asyncio
+
 from notionary import NotionBotUser
 
 

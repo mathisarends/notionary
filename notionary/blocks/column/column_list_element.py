@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import re
-from notionary.blocks.models import Block, BlockCreateResult
 
-from notionary.blocks.models import Block
-from notionary.blocks.types import BlockType
-from notionary.blocks.column.column_models import ColumnListBlock, CreateColumnListBlock
 from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.column.column_models import ColumnListBlock, CreateColumnListBlock
+from notionary.blocks.models import Block, BlockCreateResult
+from notionary.blocks.types import BlockType
 
 
 class ColumnListElement(BaseBlockElement):

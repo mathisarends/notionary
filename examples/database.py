@@ -10,7 +10,8 @@ SETUP: Replace DATABASE_NAME with an existing database in your Notion workspace.
 
 import asyncio
 import traceback
-from notionary import NotionDatabase, MarkdownBuilder
+
+from notionary import MarkdownBuilder, NotionDatabase
 
 # REPLACE DATABASE NAME
 DATABASE_NAME = "Wissen/Notizen"

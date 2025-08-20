@@ -3,17 +3,12 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from notionary.blocks.types import BlockColor
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
-from notionary.blocks.models import (
-    Block,
-    BlockType,
-)
 from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.models import Block, BlockCreateResult, BlockType
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-
-from notionary.blocks.models import Block, BlockCreateResult
+from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
+from notionary.blocks.types import BlockColor
 
 
 class ToggleElement(BaseBlockElement):

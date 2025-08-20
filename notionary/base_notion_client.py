@@ -2,9 +2,11 @@ import asyncio
 import os
 from abc import ABC
 from enum import Enum
-from typing import Dict, Any, Optional, Union
+from typing import Any, Dict, Optional, Union
+
 import httpx
 from dotenv import load_dotenv
+
 from notionary.util import LoggingMixin
 
 load_dotenv()

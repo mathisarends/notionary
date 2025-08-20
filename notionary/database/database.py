@@ -1,25 +1,24 @@
 from __future__ import annotations
+
 import asyncio
 import random
 from typing import Any, AsyncGenerator, Optional
 
 from notionary.database.client import NotionDatabaseClient
+from notionary.database.database_filter_builder import DatabaseFilterBuilder
+from notionary.database.database_provider import NotionDatabaseProvider
 from notionary.database.models import (
     NotionDatabaseResponse,
     NotionPageResponse,
     NotionQueryDatabaseResponse,
 )
 from notionary.page.notion_page import NotionPage
-
-from notionary.database.database_provider import NotionDatabaseProvider
-
-from notionary.database.database_filter_builder import DatabaseFilterBuilder
 from notionary.telemetry import (
-    ProductTelemetry,
     DatabaseFactoryUsedEvent,
+    ProductTelemetry,
     QueryOperationEvent,
 )
-from notionary.util import factory_only, LoggingMixin
+from notionary.util import LoggingMixin, factory_only
 
 
 class NotionDatabase(LoggingMixin):

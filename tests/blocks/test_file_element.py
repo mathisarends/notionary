@@ -4,21 +4,22 @@ Tests conversion between Markdown file embeds and Notion file blocks.
 """
 
 import pytest
+
 from notionary.blocks.file.file_element import FileElement
 from notionary.blocks.file.file_element_models import (
-    FileBlock,
     CreateFileBlock,
     ExternalFile,
-)
-from notionary.blocks.paragraph.paragraph_models import (
-    ParagraphBlock,
-    CreateParagraphBlock,
+    FileBlock,
 )
 from notionary.blocks.models import Block
+from notionary.blocks.paragraph.paragraph_models import (
+    CreateParagraphBlock,
+    ParagraphBlock,
+)
 from notionary.blocks.rich_text.rich_text_models import (
     RichTextObject,
-    TextContent,
     TextAnnotations,
+    TextContent,
 )
 
 

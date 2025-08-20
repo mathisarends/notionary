@@ -1,15 +1,15 @@
 from __future__ import annotations
+
 import re
 from typing import Optional
 
-from notionary.blocks.types import BlockType
 from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.table_of_contents.table_of_contents_models import (
     CreateTableOfContentsBlock,
     TableOfContentsBlock,
 )
-
-from notionary.blocks.models import Block, BlockCreateResult
+from notionary.blocks.types import BlockType
 
 
 class TableOfContentsElement(BaseBlockElement):

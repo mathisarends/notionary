@@ -3,8 +3,10 @@ Minimal tests for ParagraphElement.
 Tests core functionality for paragraph blocks.
 """
 
-import pytest
 from unittest.mock import Mock
+
+import pytest
+
 from notionary.blocks.paragraph.paragraph_element import ParagraphElement
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,

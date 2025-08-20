@@ -1,19 +1,17 @@
+from notionary.blocks.models import BlockCreateRequest
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.notion_text_length_utils import fix_blocks_content_length
 from notionary.page.writer.handler import (
     CodeHandler,
     ColumnHandler,
-    LineProcessingContext,
     ColumnListHandler,
+    LineProcessingContext,
     ParentBlockContext,
-    ParentBlockContext,
-    ToggleHandler,
-    ToggleableHeadingHandler,
-    TableHandler,
     RegularLineHandler,
+    TableHandler,
+    ToggleableHeadingHandler,
+    ToggleHandler,
 )
-
-from notionary.blocks.models import BlockCreateRequest
 
 
 class MarkdownToNotionConverter:

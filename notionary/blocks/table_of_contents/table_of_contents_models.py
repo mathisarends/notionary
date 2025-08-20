@@ -1,5 +1,7 @@
 from typing import Literal
+
 from pydantic import BaseModel
+
 from notionary.blocks.types import BlockColor
 
 

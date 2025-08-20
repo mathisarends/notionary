@@ -1,10 +1,9 @@
-from typing import Literal, Optional
 from enum import Enum
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from typing import Literal
 
 
 class FileType(str, Enum):

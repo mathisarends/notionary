@@ -4,10 +4,11 @@ Tests core functionality for video blocks with [video](url) syntax.
 """
 
 from unittest.mock import Mock
-from notionary.blocks.video.video_element import VideoElement
-from notionary.blocks.video.video_element_models import CreateVideoBlock
+
 from notionary.blocks.file.file_element_models import FileBlock
 from notionary.blocks.paragraph.paragraph_models import CreateParagraphBlock
+from notionary.blocks.video.video_element import VideoElement
+from notionary.blocks.video.video_element_models import CreateVideoBlock
 
 
 def test_match_markdown_valid():

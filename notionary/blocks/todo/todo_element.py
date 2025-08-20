@@ -1,14 +1,12 @@
 from __future__ import annotations
+
 import re
-from typing import Optional, TYPE_CHECKING
-
-from notionary.blocks.models import Block, BlockCreateResult
-
-from notionary.blocks.models import Block, BlockType
-from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
+from typing import TYPE_CHECKING, Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
 
 
 class TodoElement(BaseBlockElement):

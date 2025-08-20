@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
+
 from notionary.markdown.markdown_node import MarkdownNode
 
 
@@ -31,7 +32,7 @@ class ToggleMarkdownNode(MarkdownNode):
         return cls(title=params.title, children=params.children)
 
     def to_markdown(self) -> str:
-        result = f'+++ {self.title}'
+        result = f"+++ {self.title}"
 
         if not self.children:
             result += "\n+++"

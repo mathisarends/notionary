@@ -9,8 +9,9 @@ Resolves API errors like:
 should be ≤ 2000, instead was 2162."
 """
 
-import re
 import logging
+import re
+
 from notionary.blocks.models import BlockCreateRequest
 
 logger = logging.getLogger(__name__)

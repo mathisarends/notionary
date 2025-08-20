@@ -9,10 +9,11 @@ the Notion API's 100-block limit per request.
 IMPORTANT: Replace "Jarvis Clipboard" with the actual name of your page.
 """
 
-import time
 import asyncio
-import traceback
 import random
+import time
+import traceback
+
 from notionary import NotionPage
 
 YOUR_PAGE_NAME = "Jarvis Clipboard"

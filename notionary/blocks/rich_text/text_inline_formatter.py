@@ -1,5 +1,6 @@
 import re
 from typing import Any
+
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 

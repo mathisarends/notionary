@@ -3,12 +3,13 @@ Pytest tests for BookmarkElement.
 Updated to match the actual implementation.
 """
 
-import pytest
 from unittest.mock import Mock
 
+import pytest
+
 from notionary.blocks.bookmark.bookmark_element import BookmarkElement
-from notionary.blocks.types import BlockType
 from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
+from notionary.blocks.types import BlockType
 
 
 def test_match_markdown():

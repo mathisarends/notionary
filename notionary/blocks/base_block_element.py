@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import Optional
+
 from abc import ABC
+from typing import Optional
 
 from notionary.blocks.models import Block, BlockCreateResult
 

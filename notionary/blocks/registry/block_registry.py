@@ -1,17 +1,15 @@
 from __future__ import annotations
+
 from typing import Optional, Type
 
 from notionary.blocks.base_block_element import BaseBlockElement
-
+from notionary.blocks.models import Block, BlockCreateResult
+from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
 from notionary.telemetry import (
-    ProductTelemetry,
     MarkdownToNotionConversionEvent,
     NotionToMarkdownConversionEvent,
+    ProductTelemetry,
 )
-
-from notionary.blocks.models import Block, BlockCreateResult
-
-from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
 
 
 class BlockRegistry:

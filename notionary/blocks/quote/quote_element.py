@@ -1,15 +1,13 @@
 from __future__ import annotations
+
 import re
 from typing import Optional
 
-from notionary.blocks.models import Block, BlockCreateResult
-
-from notionary.blocks.types import BlockColor
-from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
-
-from notionary.blocks.models import Block, BlockType
 from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.models import Block, BlockCreateResult, BlockType
+from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.types import BlockColor
 
 
 class QuoteElement(BaseBlockElement):

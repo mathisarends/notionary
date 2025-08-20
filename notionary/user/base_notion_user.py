@@ -1,8 +1,9 @@
 from __future__ import annotations
+
 from abc import ABC
 from typing import Optional
-from notionary.user.client import NotionUserClient
 
+from notionary.user.client import NotionUserClient
 from notionary.util import LoggingMixin
 
 

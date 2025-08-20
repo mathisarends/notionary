@@ -1,24 +1,22 @@
 from __future__ import annotations
+
 import re
 from typing import Optional
 
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import (
     CreateFileBlock,
     ExternalFile,
     FileBlock,
     FileType,
 )
+from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
     ParagraphBlock,
 )
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-
-from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-
-
-from notionary.blocks.models import Block, BlockCreateResult, BlockType
 
 
 class FileElement(BaseBlockElement):

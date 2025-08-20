@@ -1,4 +1,5 @@
 import asyncio
+
 from notionary import NotionPage
 from notionary.markdown.markdown_builder import MarkdownBuilder
 

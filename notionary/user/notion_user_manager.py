@@ -1,7 +1,8 @@
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, List, Optional
+
 from notionary.user.client import NotionUserClient
-from notionary.user.notion_user import NotionUser
 from notionary.user.models import NotionUsersListResponse
+from notionary.user.notion_user import NotionUser
 from notionary.util import LoggingMixin
 
 

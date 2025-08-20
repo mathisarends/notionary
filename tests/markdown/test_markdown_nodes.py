@@ -4,6 +4,8 @@ Testet ob die to_markdown() Methode den erwarteten String zurückgibt.
 FIXED for correct implementations.
 """
 
+import pytest
+
 from notionary.blocks.audio.audio_markdown_node import AudioMarkdownNode
 from notionary.blocks.bookmark.bookmark_markdown_node import BookmarkMarkdownNode
 from notionary.blocks.breadcrumbs.breadcrumb_markdown_node import BreadcrumbMarkdownNode
@@ -36,8 +38,6 @@ from notionary.blocks.toggleable_heading.toggleable_heading_markdown_node import
     ToggleableHeadingMarkdownNode,
 )
 from notionary.blocks.video.video_markdown_node import VideoMarkdownNode
-
-import pytest
 
 
 def test_audio_markdown_node():

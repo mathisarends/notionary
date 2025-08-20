@@ -1,10 +1,7 @@
 from notionary.blocks.column.column_element import ColumnElement
 from notionary.blocks.column.column_list_element import ColumnListElement
-from notionary.page.writer.handler import (
-    LineHandler,
-    LineProcessingContext,
-)
 from notionary.blocks.models import BlockCreateRequest, BlockCreateResult
+from notionary.page.writer.handler import LineHandler, LineProcessingContext
 
 
 class RegularLineHandler(LineHandler):
@@ -44,14 +41,12 @@ class RegularLineHandler(LineHandler):
         """Process a regular line for simple elements (lists, etc.)."""
         for element in context.block_registry.get_elements():
             # Skip all elements that have specialized handlers
-            from notionary.blocks.toggle import ToggleElement
-            from notionary.blocks.toggleable_heading import (
-                ToggleableHeadingElement,
-            )
-            from notionary.blocks.table import TableElement
             from notionary.blocks.code import CodeElement
             from notionary.blocks.paragraph import ParagraphElement
-            
+            from notionary.blocks.table import TableElement
+            from notionary.blocks.toggle import ToggleElement
+            from notionary.blocks.toggleable_heading import ToggleableHeadingElement
+
             specialized_elements = (
                 ColumnListElement,
                 ColumnElement,

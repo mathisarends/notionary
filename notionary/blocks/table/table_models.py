@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 from typing import Literal
+
 from pydantic import BaseModel
 
 from notionary.blocks.rich_text.rich_text_models import RichTextObject

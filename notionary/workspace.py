@@ -1,6 +1,7 @@
 import asyncio
-from typing import Optional, List
-from notionary import NotionPage, NotionDatabase
+from typing import List, Optional
+
+from notionary import NotionDatabase, NotionPage
 from notionary.database.client import NotionDatabaseClient
 from notionary.page.client import NotionPageClient
 from notionary.user import NotionUser, NotionUserManager

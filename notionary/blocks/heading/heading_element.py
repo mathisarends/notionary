@@ -1,23 +1,18 @@
 from __future__ import annotations
+
 import re
 from typing import Optional, cast
 
-from notionary.blocks.types import BlockColor
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.heading.heading_models import (
     CreateHeading1Block,
     CreateHeading2Block,
     CreateHeading3Block,
     HeadingBlock,
 )
-from notionary.blocks.models import (
-    Block,
-    BlockType,
-)
-from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-
-
-from notionary.blocks.models import Block, BlockCreateResult
+from notionary.blocks.types import BlockColor
 
 
 class HeadingElement(BaseBlockElement):

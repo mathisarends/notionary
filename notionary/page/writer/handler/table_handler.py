@@ -1,4 +1,5 @@
 import re
+
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.table.table_element import TableElement

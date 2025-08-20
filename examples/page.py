@@ -9,6 +9,7 @@ SETUP: Replace PAGE_NAME with an existing page in your Notion workspace.
 """
 
 import asyncio
+
 from notionary import NotionPage
 
 PAGE_NAME = "Jarvis Clipboard"

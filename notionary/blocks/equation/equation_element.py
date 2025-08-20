@@ -1,12 +1,12 @@
 from __future__ import annotations
-from typing import Optional
-import re
 
-from notionary.blocks.types import BlockType
+import re
+from typing import Optional
+
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
-
 from notionary.blocks.models import Block, BlockCreateResult
+from notionary.blocks.types import BlockType
 
 
 class EquationElement(BaseBlockElement):

@@ -1,4 +1,5 @@
-from typing import Optional, List
+from typing import List, Optional
+
 from notionary.base_notion_client import BaseNotionClient
 from notionary.user.models import (
     NotionBotUserResponse,

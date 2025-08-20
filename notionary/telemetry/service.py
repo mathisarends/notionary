@@ -1,12 +1,13 @@
 import os
 import uuid
 from pathlib import Path
-from typing import Dict, Any, Optional
-from posthog import Posthog
+from typing import Any, Dict, Optional
+
 from dotenv import load_dotenv
+from posthog import Posthog
 
 from notionary.telemetry.views import BaseTelemetryEvent
-from notionary.util import SingletonMetaClass, LoggingMixin
+from notionary.util import LoggingMixin, SingletonMetaClass
 
 load_dotenv()
 
