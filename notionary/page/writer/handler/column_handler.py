@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 
 from notionary.blocks.column.column_element import ColumnElement
-from notionary.page.writer.handler import (
+from notionary.page.writer.handler.line_handler import (
     LineHandler,
     LineProcessingContext,
-    ParentBlockContext,
 )
+from notionary.page.writer.handler.line_processing_context import ParentBlockContext
 
 
 class ColumnHandler(LineHandler):

@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 
 from notionary.blocks.column.column_list_element import ColumnListElement
-from notionary.page.writer.handler import (
+from notionary.page.writer.handler.line_handler import (
     LineHandler,
     LineProcessingContext,
-    ParentBlockContext,
 )
 
+from notionary.page.writer.handler.line_processing_context import ParentBlockContext
 
 class ColumnListHandler(LineHandler):
     """Handles column list elements - both start and end.
