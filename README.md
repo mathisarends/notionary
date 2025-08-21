@@ -34,7 +34,7 @@ Transform complex Notion API interactions into simple, Pythonic code. Build AI a
 pip install notionary
 ```
 
-Set up your [Notion integration](https://mathisarends.github.io/notionary/get-started/installation/) and add your token:
+Set up your [Notion integration](https://www.notion.so/profile/integrations) and add your token:
 
 ```bash
 NOTION_SECRET=your_integration_key
@@ -49,17 +49,17 @@ from notionary import NotionPage, NotionDatabase
 async def main():
     # Work with pages - find by name, no exact match needed!
     page = await NotionPage.from_page_name("Meeting Notes")
-    
+
     # Direct Markdown - quick & intuitive
     await page.append_markdown("""
     ## Action Items
     - Review project proposal
-    - Schedule team meeting  
+    - Schedule team meeting
     - Update documentation
-    
+
     [callout](Important meeting decisions require follow-up "💡")
     """)
-    
+
     # Builder Pattern - type-safe & powerful for complex layouts
     await page.append_markdown(lambda builder: (
         builder
@@ -71,7 +71,7 @@ async def main():
                 .bulleted_list(["API design", "Database setup", "Authentication"])
             ),
             lambda col: (col
-                .h3("In Progress") 
+                .h3("In Progress")
                 .bulleted_list(["Frontend UI", "Testing", "Documentation"])
             )
         )
@@ -111,7 +111,7 @@ await project.replace_content(lambda builder: (
     .callout("New marketing initiative targeting Q2 growth", "🎯")
     .h2("Goals & Objectives")
     .numbered_list([
-        "Increase brand awareness by 25%", 
+        "Increase brand awareness by 25%",
         "Generate 500 qualified leads",
         "Launch in 3 target markets"
     ])
@@ -130,7 +130,7 @@ await project.replace_content(lambda builder: (
         .paragraph("Platform specifications and integration details.")
         .bulleted_list([
             "CRM integration with Salesforce",
-            "Analytics tracking setup", 
+            "Analytics tracking setup",
             "Landing page development"
         ])
     ))
@@ -154,23 +154,23 @@ See the complete [Block Types documentation](https://mathisarends.github.io/noti
 
 ## Core Features
 
-| Feature | Description |
-|---------|-------------|
-| **Smart Discovery** | Find pages/databases by name with fuzzy matching |
-| **Rich Markdown** | Extended syntax for callouts, toggles, columns, tables |
-| **Async-First** | Modern Python with full async/await support |
-| **Round-Trip** | Read content as markdown, edit, and write back |
-| **AI-Ready** | Generate system prompts for AI content creation |
-| **All Block Types** | Support for every Notion block type |
-| **Type Safety** | Full type hints for better IDE support |
-| **High Performance** | Efficient batch operations and caching |
+| Feature              | Description                                            |
+| -------------------- | ------------------------------------------------------ |
+| **Smart Discovery**  | Find pages/databases by name with fuzzy matching       |
+| **Rich Markdown**    | Extended syntax for callouts, toggles, columns, tables |
+| **Async-First**      | Modern Python with full async/await support            |
+| **Round-Trip**       | Read content as markdown, edit, and write back         |
+| **AI-Ready**         | Generate system prompts for AI content creation        |
+| **All Block Types**  | Support for every Notion block type                    |
+| **Type Safety**      | Full type hints for better IDE support                 |
+| **High Performance** | Efficient batch operations and caching                 |
 
 ## Examples & Documentation
 
 Explore comprehensive guides and real-world examples:
 
 - **[📖 Full Documentation](https://mathisarends.github.io/notionary/)** - Complete API reference and guides
-- **[Getting Started](https://mathisarends.github.io/notionary/get-started/)** - Quick setup and first steps  
+- **[Getting Started](https://mathisarends.github.io/notionary/get-started/)** - Quick setup and first steps
 - **[Page Management](https://mathisarends.github.io/notionary/page/)** - Work with page content and properties
 - **[Database Operations](https://mathisarends.github.io/notionary/database/)** - Query and manage databases
 - **[Block Types](https://mathisarends.github.io/notionary/blocks/)** - Complete formatting reference
@@ -178,11 +178,13 @@ Explore comprehensive guides and real-world examples:
 Check out the `examples/` directory for hands-on tutorials:
 
 ### Core Examples
+
 - **[Page Management](examples/page_example.py)** - Create, update, and manage pages
-- **[Database Operations](examples/database.py)** - Connect to and query databases  
+- **[Database Operations](examples/database.py)** - Connect to and query databases
 - **[Workspace Discovery](examples/workspace_discovery.py)** - Explore your workspace
 
-### Markdown Examples  
+### Markdown Examples
+
 - **[Basic Formatting](examples/markdown/basic.py)** - Text, lists, and links
 - **[Callouts](examples/markdown/callout.py)** - Eye-catching information boxes
 - **[Toggles](examples/markdown/toggle.py)** - Collapsible content sections
@@ -191,7 +193,7 @@ Check out the `examples/` directory for hands-on tutorials:
 
 ## Contributing
 
-We'd love your help making Notionary even better! 
+We'd love your help making Notionary even better!
 
 Whether it's fixing bugs, adding features, improving docs, or sharing examples - all contributions are welcome.
 
@@ -201,7 +203,7 @@ See our [Contributing Guide](https://mathisarends.github.io/notionary/contributi
 
 <div align="center">
 
-**Ready to transform your Notion workflow?** 
+**Ready to transform your Notion workflow?**
 
 [📖 Read the Docs](https://mathisarends.github.io/notionary/) • [Getting Started](https://mathisarends.github.io/notionary/get-started/) • [Examples](examples/)
 
