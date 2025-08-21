@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
@@ -28,7 +28,7 @@ class FileUploadListResponse(BaseModel):
     """
 
     object: Literal["list"]
-    results: List[FileUploadResponse]
+    results: list[FileUploadResponse]
     next_cursor: Optional[str] = None
     has_more: bool
     type: Literal["file_upload"]

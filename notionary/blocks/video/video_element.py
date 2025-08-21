@@ -4,12 +4,10 @@ import re
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.file.file_element_models import (ExternalFile, FileBlock,
-                                                       FileType)
+from notionary.blocks.file.file_element_models import ExternalFile, FileBlock, FileType
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.rich_text.text_inline_formatter import \
-    TextInlineFormatter
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.types import BlockType
 from notionary.blocks.video.video_element_models import CreateVideoBlock
 

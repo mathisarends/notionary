@@ -7,34 +7,36 @@ FIXED for correct implementations.
 import pytest
 
 from notionary.blocks.audio.audio_markdown_node import AudioMarkdownNode
-from notionary.blocks.bookmark.bookmark_markdown_node import \
-    BookmarkMarkdownNode
-from notionary.blocks.breadcrumbs.breadcrumb_markdown_node import \
-    BreadcrumbMarkdownNode
-from notionary.blocks.bulleted_list.bulleted_list_markdown_node import \
-    BulletedListMarkdownNode
+from notionary.blocks.bookmark.bookmark_markdown_node import BookmarkMarkdownNode
+from notionary.blocks.breadcrumbs.breadcrumb_markdown_node import BreadcrumbMarkdownNode
+from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
+    BulletedListMarkdownNode,
+)
 from notionary.blocks.callout.callout_markdown_node import CalloutMarkdownNode
 from notionary.blocks.code.code_markdown_node import CodeMarkdownNode
 from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
 from notionary.blocks.divider.divider_markdown_node import DividerMarkdownNode
 from notionary.blocks.embed.embed_markdown_node import EmbedMarkdownNode
-from notionary.blocks.equation.equation_element_markdown_node import \
-    EquationMarkdownNode
+from notionary.blocks.equation.equation_element_markdown_node import (
+    EquationMarkdownNode,
+)
 from notionary.blocks.file.file_element_markdown_node import FileMarkdownNode
 from notionary.blocks.heading.heading_markdown_node import HeadingMarkdownNode
 from notionary.blocks.image_block.image_markdown_node import ImageMarkdownNode
-from notionary.blocks.numbered_list.numbered_list_markdown_node import \
-    NumberedListMarkdownNode
-from notionary.blocks.paragraph.paragraph_markdown_node import \
-    ParagraphMarkdownNode
+from notionary.blocks.numbered_list.numbered_list_markdown_node import (
+    NumberedListMarkdownNode,
+)
+from notionary.blocks.paragraph.paragraph_markdown_node import ParagraphMarkdownNode
 from notionary.blocks.quote.quote_markdown_node import QuoteMarkdownNode
 from notionary.blocks.table.table_markdown_node import TableMarkdownNode
-from notionary.blocks.table_of_contents.table_of_contents_markdown_node import \
-    TableOfContentsMarkdownNode
+from notionary.blocks.table_of_contents.table_of_contents_markdown_node import (
+    TableOfContentsMarkdownNode,
+)
 from notionary.blocks.todo.todo_markdown_node import TodoMarkdownNode
 from notionary.blocks.toggle.toggle_markdown_node import ToggleMarkdownNode
-from notionary.blocks.toggleable_heading.toggleable_heading_markdown_node import \
-    ToggleableHeadingMarkdownNode
+from notionary.blocks.toggleable_heading.toggleable_heading_markdown_node import (
+    ToggleableHeadingMarkdownNode,
+)
 from notionary.blocks.video.video_markdown_node import VideoMarkdownNode
 
 

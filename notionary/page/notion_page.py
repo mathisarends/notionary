@@ -7,17 +7,16 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 from notionary.blocks.client import NotionBlockClient
 from notionary.blocks.models import DatabaseParent
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.blocks.registry.block_registry_builder import \
-    BlockRegistryBuilder
+from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
 from notionary.markdown.markdown_builder import MarkdownBuilder
 from notionary.page.client import NotionPageClient
 from notionary.page.models import NotionPageResponse
+from notionary.page.page_content_deleting_service import PageContentDeletingService
 from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.property_formatter import NotionPropertyFormatter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.page.utils import extract_property_value
-from notionary.util import (LoggingMixin, extract_uuid, factory_only,
-                            format_uuid)
+from notionary.util import LoggingMixin, extract_uuid, factory_only, format_uuid
 from notionary.util.fuzzy import find_best_match
 
 if TYPE_CHECKING:
@@ -61,6 +60,11 @@ class NotionPage(LoggingMixin):
         self.block_element_registry = BlockRegistry.create_registry()
 
         self._page_content_writer = PageContentWriter(
+            page_id=self._page_id,
+            block_registry=self.block_element_registry,
+        )
+
+        self._page_content_deleting_service = PageContentDeletingService(
             page_id=self._page_id,
             block_registry=self.block_element_registry,
         )
@@ -266,7 +270,7 @@ class NotionPage(LoggingMixin):
         Returns:
             bool: True if successful, False otherwise
         """
-        clear_result = await self._page_content_writer.clear_page_content()
+        clear_result = await self._page_content_deleting_service.clear_page_content()
         if not clear_result:
             self.logger.error("Failed to clear page content before replacement")
 
@@ -281,7 +285,7 @@ class NotionPage(LoggingMixin):
         """
         Clear all content from the page.
         """
-        return await self._page_content_writer.clear_page_content()
+        return await self._page_content_deleting_service.clear_page_content()
 
     async def get_text_content(self) -> str:
         """

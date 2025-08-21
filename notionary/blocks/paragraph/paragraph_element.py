@@ -4,10 +4,11 @@ from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult
-from notionary.blocks.paragraph.paragraph_models import (CreateParagraphBlock,
-                                                         ParagraphBlock)
-from notionary.blocks.rich_text.text_inline_formatter import \
-    TextInlineFormatter
+from notionary.blocks.paragraph.paragraph_models import (
+    CreateParagraphBlock,
+    ParagraphBlock,
+)
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.types import BlockColor, BlockType
 
 

@@ -6,9 +6,10 @@ from typing import Optional
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.numbered_list.numbered_list_models import (
-    CreateNumberedListItemBlock, NumberedListItemBlock)
-from notionary.blocks.rich_text.text_inline_formatter import \
-    TextInlineFormatter
+    CreateNumberedListItemBlock,
+    NumberedListItemBlock,
+)
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.types import BlockColor
 
 

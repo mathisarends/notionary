@@ -1,5 +1,6 @@
-from notionary.blocks.toggleable_heading.toggleable_heading_element import \
-    ToggleableHeadingElement
+from notionary.blocks.toggleable_heading.toggleable_heading_element import (
+    ToggleableHeadingElement,
+)
 from notionary.blocks.types import BlockType
 from notionary.page.reader.handler import BlockHandler, BlockRenderingContext
 
@@ -31,8 +32,9 @@ class ToggleableHeadingRenderer(BlockHandler):
         children_markdown = ""
         if context.has_children():
             # Import here to avoid circular dependency
-            from notionary.page.reader.page_content_retriever import \
-                PageContentRetriever
+            from notionary.page.reader.page_content_retriever import (
+                PageContentRetriever,
+            )
 
             # Create a temporary retriever to process children
             retriever = PageContentRetriever(context.block_registry)

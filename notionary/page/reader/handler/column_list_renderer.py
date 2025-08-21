@@ -22,8 +22,9 @@ class ColumnListRenderer(BlockHandler):
         children_markdown = ""
         if context.has_children():
             # Import here to avoid circular dependency
-            from notionary.page.reader.page_content_retriever import \
-                PageContentRetriever
+            from notionary.page.reader.page_content_retriever import (
+                PageContentRetriever,
+            )
 
             # Create a temporary retriever to process children
             retriever = PageContentRetriever(context.block_registry)

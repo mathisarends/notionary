@@ -3,10 +3,11 @@ from __future__ import annotations
 import re
 
 from notionary.blocks.column.column_element import ColumnElement
-from notionary.page.writer.handler.line_handler import (LineHandler,
-                                                        LineProcessingContext)
-from notionary.page.writer.handler.line_processing_context import \
-    ParentBlockContext
+from notionary.page.writer.handler.line_handler import (
+    LineHandler,
+    LineProcessingContext,
+)
+from notionary.page.writer.handler.line_processing_context import ParentBlockContext
 
 
 class ColumnHandler(LineHandler):
@@ -76,8 +77,7 @@ class ColumnHandler(LineHandler):
 
         if context.parent_stack:
             parent = context.parent_stack[-1]
-            from notionary.blocks.column.column_list_element import \
-                ColumnListElement
+            from notionary.blocks.column.column_list_element import ColumnListElement
 
             if issubclass(parent.element_type, ColumnListElement):
                 # Add to parent using the new system
@@ -115,8 +115,7 @@ class ColumnHandler(LineHandler):
             return False
 
         parent = context.parent_stack[-1]
-        from notionary.blocks.column.column_list_element import \
-            ColumnListElement
+        from notionary.blocks.column.column_list_element import ColumnListElement
 
         if not issubclass(parent.element_type, ColumnListElement):
             return False
@@ -126,8 +125,9 @@ class ColumnHandler(LineHandler):
 
     def _convert_children_text(self, text: str, block_registry) -> list:
         """Convert children text to blocks."""
-        from notionary.page.writer.markdown_to_notion_converter import \
-            MarkdownToNotionConverter
+        from notionary.page.writer.markdown_to_notion_converter import (
+            MarkdownToNotionConverter,
+        )
 
         if not text.strip():
             return []

@@ -4,11 +4,9 @@ import re
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.bookmark.bookmark_models import (BookmarkBlock,
-                                                       CreateBookmarkBlock)
+from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
-from notionary.blocks.rich_text.text_inline_formatter import \
-    TextInlineFormatter
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
 # BookmarkElement implementation using BlockType enum and TextInlineFormatter

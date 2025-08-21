@@ -2,8 +2,7 @@ import pytest
 
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.markdown.markdown_builder import MarkdownBuilder
-from notionary.page.writer.markdown_to_notion_converter import \
-    MarkdownToNotionConverter
+from notionary.page.writer.markdown_to_notion_converter import MarkdownToNotionConverter
 
 
 class TestMarkdownToNotionConverter:

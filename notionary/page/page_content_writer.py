@@ -2,13 +2,9 @@ from typing import Callable, Optional, Union
 
 from notionary.blocks.client import NotionBlockClient
 from notionary.blocks.divider import DividerElement
-from notionary.blocks.models import Block
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.table_of_contents import TableOfContentsElement
 from notionary.markdown.markdown_builder import MarkdownBuilder
-from notionary.page.markdown_whitespace_processor import \
-    MarkdownWhitespaceProcessor
-from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.page.writer.markdown_to_notion_converter import \
     MarkdownToNotionConverter
 from notionary.util import LoggingMixin
@@ -24,8 +20,6 @@ class PageContentWriter(LoggingMixin):
             block_registry=block_registry
         )
 
-        self._content_retriever = PageContentRetriever(block_registry=block_registry)
-
     async def append_markdown(
         self,
         content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder]],
@@ -35,14 +29,6 @@ class PageContentWriter(LoggingMixin):
     ) -> Optional[str]:
         """
         Append markdown content to a Notion page using either text or builder callback.
-
-        Args:
-            content: Either raw markdown text OR a callback function that receives a MarkdownBuilder
-            append_divider: Whether to append a divider
-            prepend_table_of_contents: Whether to prepend table of contents
-
-        Returns:
-            str: The processed markdown content that was appended (None if failed)
         """
 
         if isinstance(content, str):
@@ -85,114 +71,99 @@ class PageContentWriter(LoggingMixin):
             self.logger.error("Error appending markdown: %s", str(e), exc_info=True)
             return None
 
-    async def clear_page_content(self) -> Optional[str]:
-        """Clear all content of the page and return deleted content as markdown."""
-        try:
-            children_response = await self._block_client.get_block_children(
-                block_id=self.page_id
-            )
-
-            if not children_response or not children_response.results:
-                return None
-
-            # Use PageContentRetriever for sophisticated markdown conversion
-            deleted_content = self._content_retriever._convert_blocks_to_markdown(
-                children_response.results, indent_level=0
-            )
-
-            # Delete blocks
-            success = True
-            for block in children_response.results:
-                block_success = await self._delete_block_with_children(block)
-                if not block_success:
-                    success = False
-
-            if not success:
-                self.logger.warning("Some blocks could not be deleted")
-
-            return deleted_content if deleted_content else None
-
-        except Exception:
-            self.logger.error("Error clearing page content", exc_info=True)
-            return None
-
-    async def _delete_block_with_children(self, block: Block) -> bool:
-        """Delete a block and all its children recursively."""
-        if not block.id:
-            self.logger.error("Block has no valid ID")
-            return False
-
-        self.logger.debug("Deleting block: %s (type: %s)", block.id, block.type)
-
-        try:
-            if block.has_children and not await self._delete_block_children(block):
-                return False
-
-            return await self._delete_single_block(block)
-
-        except Exception as e:
-            self.logger.error("Failed to delete block %s: %s", block.id, str(e))
-            return False
-
-    async def _delete_block_children(self, block: Block) -> bool:
-        """Delete all children of a block."""
-        self.logger.debug("Block %s has children, deleting children first", block.id)
-
-        try:
-            children_blocks = await self._block_client.get_all_block_children(block.id)
-
-            if not children_blocks:
-                self.logger.debug("No children found for block: %s", block.id)
-                return True
-
-            self.logger.debug(
-                "Found %d children to delete for block: %s",
-                len(children_blocks),
-                block.id,
-            )
-
-            # Delete all children recursively
-            for child_block in children_blocks:
-                if not await self._delete_block_with_children(child_block):
-                    self.logger.error(
-                        "Failed to delete child block: %s", child_block.id
-                    )
-                    return False
-
-            self.logger.debug(
-                "Successfully deleted all children of block: %s", block.id
-            )
-            return True
-
-        except Exception as e:
-            self.logger.error(
-                "Failed to delete children of block %s: %s", block.id, str(e)
-            )
-            return False
-
-    async def _delete_single_block(self, block: Block) -> bool:
-        """Delete a single block."""
-        deleted_block: Optional[Block] = await self._block_client.delete_block(block.id)
-
-        if deleted_block is None:
-            self.logger.error("Failed to delete block: %s", block.id)
-            return False
-
-        if deleted_block.archived or deleted_block.in_trash:
-            self.logger.debug("Successfully deleted/archived block: %s", block.id)
-            return True
-        else:
-            self.logger.warning("Block %s was not properly archived/deleted", block.id)
-            return False
-
     def _process_markdown_whitespace(self, markdown_text: str) -> str:
         """Process markdown text to normalize whitespace while preserving code blocks."""
         lines = markdown_text.split("\n")
         if not lines:
             return ""
 
-        processor = MarkdownWhitespaceProcessor()
-        return processor.process_lines(lines)
+        return self._process_whitespace_lines(lines)
+
+    def _process_whitespace_lines(self, lines: list[str]) -> str:
+        """Process all lines and return the processed markdown."""
+        processed_lines = []
+        in_code_block = False
+        current_code_block = []
+
+        for line in lines:
+            processed_lines, in_code_block, current_code_block = self._process_single_line(
+                line, processed_lines, in_code_block, current_code_block
+            )
+
+        return "\n".join(processed_lines)
+
+    def _process_single_line(
+        self, 
+        line: str, 
+        processed_lines: list[str], 
+        in_code_block: bool, 
+        current_code_block: list[str]
+    ) -> tuple[list[str], bool, list[str]]:
+        """Process a single line and return updated state."""
+        if self._is_code_block_marker(line):
+            return self._handle_code_block_marker(
+                line, processed_lines, in_code_block, current_code_block
+            )
+        if in_code_block:
+            current_code_block.append(line)
+            return processed_lines, in_code_block, current_code_block
+        else:
+            processed_lines.append(line.lstrip())
+            return processed_lines, in_code_block, current_code_block
+
+    def _handle_code_block_marker(
+        self,
+        line: str,
+        processed_lines: list[str],
+        in_code_block: bool,
+        current_code_block: list[str]
+    ) -> tuple[list[str], bool, list[str]]:
+        """Handle code block start/end markers."""
+        if not in_code_block:
+            return self._start_code_block(line, processed_lines)
+        else:
+            return self._end_code_block(processed_lines, current_code_block)
+
+    def _start_code_block(
+        self, line: str, processed_lines: list[str]
+    ) -> tuple[list[str], bool, list[str]]:
+        """Start a new code block."""
+        processed_lines.append(self._normalize_code_block_start(line))
+        return processed_lines, True, []
+
+    def _end_code_block(
+        self, processed_lines: list[str], current_code_block: list[str]
+    ) -> tuple[list[str], bool, list[str]]:
+        """End the current code block."""
+        processed_lines.extend(self._normalize_code_block_content(current_code_block))
+        processed_lines.append("```")
+        return processed_lines, False, []
+
+    def _is_code_block_marker(self, line: str) -> bool:
+        """Check if line is a code block marker."""
+        return line.lstrip().startswith("```")
+
+    def _normalize_code_block_start(self, line: str) -> str:
+        """Normalize code block opening marker."""
+        language = line.lstrip().replace("```", "", 1).strip()
+        return "```" + language
+
+    def _normalize_code_block_content(self, code_lines: list[str]) -> list[str]:
+        """Normalize code block indentation."""
+        if not code_lines:
+            return []
+
+        # Find minimum indentation from non-empty lines
+        non_empty_lines = [line for line in code_lines if line.strip()]
+        if not non_empty_lines:
+            return [""] * len(code_lines)
+
+        min_indent = min(len(line) - len(line.lstrip()) for line in non_empty_lines)
+        if min_indent == 0:
+            return code_lines
+
+        # Remove common indentation
+        return ["" if not line.strip() else line[min_indent:] for line in code_lines]
 
     def _ensure_table_of_contents_exists_in_registry(self) -> None:
         """Ensure TableOfContents is registered in the block registry."""

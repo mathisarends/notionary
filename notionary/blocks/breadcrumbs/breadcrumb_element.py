@@ -5,7 +5,9 @@ from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.breadcrumbs.breadcrumb_models import (
-    BreadcrumbBlock, CreateBreadcrumbBlock)
+    BreadcrumbBlock,
+    CreateBreadcrumbBlock,
+)
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 
 

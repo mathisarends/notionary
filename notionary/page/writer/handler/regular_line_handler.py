@@ -57,8 +57,7 @@ class RegularLineHandler(LineHandler):
 
     def _process_as_paragraph(self, context: LineProcessingContext) -> None:
         """Process a line as a paragraph."""
-        from notionary.blocks.paragraph.paragraph_element import \
-            ParagraphElement
+        from notionary.blocks.paragraph.paragraph_element import ParagraphElement
 
         paragraph_element = ParagraphElement()
         result = paragraph_element.markdown_to_notion(context.line)
@@ -72,8 +71,7 @@ class RegularLineHandler(LineHandler):
         from notionary.blocks.paragraph import ParagraphElement
         from notionary.blocks.table import TableElement
         from notionary.blocks.toggle import ToggleElement
-        from notionary.blocks.toggleable_heading import \
-            ToggleableHeadingElement
+        from notionary.blocks.toggleable_heading import ToggleableHeadingElement
 
         return (
             ColumnListElement,

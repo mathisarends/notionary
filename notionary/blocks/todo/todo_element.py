@@ -5,8 +5,7 @@ from typing import TYPE_CHECKING, Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
-from notionary.blocks.rich_text.text_inline_formatter import \
-    TextInlineFormatter
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
 
 

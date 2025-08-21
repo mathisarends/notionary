@@ -6,7 +6,9 @@ from typing import Optional
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.table_of_contents.table_of_contents_models import (
-    CreateTableOfContentsBlock, TableOfContentsBlock)
+    CreateTableOfContentsBlock,
+    TableOfContentsBlock,
+)
 from notionary.blocks.types import BlockType
 
 

@@ -1,8 +1,10 @@
 from unittest.mock import Mock
 
-from notionary.blocks.rich_text.rich_text_models import (RichTextObject,
-                                                         TextAnnotations,
-                                                         TextContent)
+from notionary.blocks.rich_text.rich_text_models import (
+    RichTextObject,
+    TextAnnotations,
+    TextContent,
+)
 from notionary.blocks.table.table_element import TableElement
 from notionary.blocks.table.table_models import TableBlock
 from notionary.blocks.types import BlockType

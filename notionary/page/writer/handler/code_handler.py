@@ -2,8 +2,10 @@ import re
 
 from notionary.blocks.code.code_element import CodeElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.page.writer.handler.line_handler import (LineHandler,
-                                                        LineProcessingContext)
+from notionary.page.writer.handler.line_handler import (
+    LineHandler,
+    LineProcessingContext,
+)
 
 
 class CodeHandler(LineHandler):

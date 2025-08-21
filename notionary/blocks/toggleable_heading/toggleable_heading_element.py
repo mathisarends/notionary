@@ -4,13 +4,14 @@ import re
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.heading.heading_models import (CreateHeading1Block,
-                                                     CreateHeading2Block,
-                                                     CreateHeading3Block,
-                                                     HeadingBlock)
+from notionary.blocks.heading.heading_models import (
+    CreateHeading1Block,
+    CreateHeading2Block,
+    CreateHeading3Block,
+    HeadingBlock,
+)
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
-from notionary.blocks.rich_text.text_inline_formatter import \
-    TextInlineFormatter
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
 class ToggleableHeadingElement(BaseBlockElement):

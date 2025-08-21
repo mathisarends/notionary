@@ -5,7 +5,9 @@ Tests the essential functionality for breadcrumb block handling.
 
 from notionary.blocks.breadcrumbs.breadcrumb_element import BreadcrumbElement
 from notionary.blocks.breadcrumbs.breadcrumb_models import (
-    BreadcrumbBlock, CreateBreadcrumbBlock)
+    BreadcrumbBlock,
+    CreateBreadcrumbBlock,
+)
 from notionary.blocks.models import Block, BlockType
 
 

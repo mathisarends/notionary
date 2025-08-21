@@ -25,7 +25,7 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        await page.append_markdown(
+        await page.replace_content(
             """
             ### Overview
 

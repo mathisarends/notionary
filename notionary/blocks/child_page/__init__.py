@@ -1,5 +1,7 @@
 from notionary.blocks.child_page.child_page_models import (
-    ChildPageBlock, CreateChildPageBlock)
+    ChildPageBlock,
+    CreateChildPageBlock,
+)
 
 __all__ = [
     "ChildPageBlock",

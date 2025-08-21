@@ -4,8 +4,7 @@ Tests the essential functionality for equation block handling.
 """
 
 from notionary.blocks.equation.equation_element import EquationElement
-from notionary.blocks.equation.equation_models import (CreateEquationBlock,
-                                                       EquationBlock)
+from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
 from notionary.blocks.models import Block, BlockType
 
 
