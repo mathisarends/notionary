@@ -1,11 +1,8 @@
 from typing import List, Optional
 
 from notionary.base_notion_client import BaseNotionClient
-from notionary.user.models import (
-    NotionBotUserResponse,
-    NotionUserResponse,
-    NotionUsersListResponse,
-)
+from notionary.user.models import (NotionBotUserResponse, NotionUserResponse,
+                                   NotionUsersListResponse)
 
 
 class NotionUserClient(BaseNotionClient):

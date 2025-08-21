@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 from notionary.blocks.client import NotionBlockClient
 from notionary.blocks.models import DatabaseParent
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
+from notionary.blocks.registry.block_registry_builder import \
+    BlockRegistryBuilder
 from notionary.markdown.markdown_builder import MarkdownBuilder
 from notionary.page.client import NotionPageClient
 from notionary.page.models import NotionPageResponse
@@ -15,7 +16,8 @@ from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.property_formatter import NotionPropertyFormatter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.page.utils import extract_property_value
-from notionary.util import LoggingMixin, extract_uuid, factory_only, format_uuid
+from notionary.util import (LoggingMixin, extract_uuid, factory_only,
+                            format_uuid)
 from notionary.util.fuzzy import find_best_match
 
 if TYPE_CHECKING:

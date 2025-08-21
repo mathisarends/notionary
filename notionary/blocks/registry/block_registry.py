@@ -4,12 +4,11 @@ from typing import Optional, Type
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult
-from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
-from notionary.telemetry import (
-    MarkdownToNotionConversionEvent,
-    NotionToMarkdownConversionEvent,
-    ProductTelemetry,
-)
+from notionary.blocks.registry.block_registry_builder import \
+    BlockRegistryBuilder
+from notionary.telemetry import (MarkdownToNotionConversionEvent,
+                                 NotionToMarkdownConversionEvent,
+                                 ProductTelemetry)
 
 
 class BlockRegistry:
@@ -23,9 +22,8 @@ class BlockRegistry:
             builder: BlockRegistryBuilder instance to delegate operations to
         """
         # Import here to avoid circular imports
-        from notionary.blocks.registry.block_registry_builder import (
-            BlockRegistryBuilder,
-        )
+        from notionary.blocks.registry.block_registry_builder import \
+            BlockRegistryBuilder
 
         self._builder: BlockRegistryBuilder = builder or BlockRegistryBuilder()
         self.telemetry = ProductTelemetry()
@@ -35,9 +33,8 @@ class BlockRegistry:
         """
         Create a registry with all standard elements in recommended order.
         """
-        from notionary.blocks.registry.block_registry_builder import (
-            BlockRegistryBuilder,
-        )
+        from notionary.blocks.registry.block_registry_builder import \
+            BlockRegistryBuilder
 
         builder = BlockRegistryBuilder()
         builder = (

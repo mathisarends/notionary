@@ -1,12 +1,8 @@
 from .service import ProductTelemetry
-from .views import (
-    BaseTelemetryEvent,
-    DatabaseFactoryUsedEvent,
-    MarkdownToNotionConversionEvent,
-    NotionMarkdownSyntaxPromptEvent,
-    NotionToMarkdownConversionEvent,
-    QueryOperationEvent,
-)
+from .views import (BaseTelemetryEvent, DatabaseFactoryUsedEvent,
+                    MarkdownToNotionConversionEvent,
+                    NotionMarkdownSyntaxPromptEvent,
+                    NotionToMarkdownConversionEvent, QueryOperationEvent)
 
 __all__ = [
     "ProductTelemetry",

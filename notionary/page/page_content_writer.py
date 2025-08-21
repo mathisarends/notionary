@@ -6,9 +6,11 @@ from notionary.blocks.models import Block
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.table_of_contents import TableOfContentsElement
 from notionary.markdown.markdown_builder import MarkdownBuilder
-from notionary.page.markdown_whitespace_processor import MarkdownWhitespaceProcessor
+from notionary.page.markdown_whitespace_processor import \
+    MarkdownWhitespaceProcessor
 from notionary.page.reader.page_content_retriever import PageContentRetriever
-from notionary.page.writer.markdown_to_notion_converter import MarkdownToNotionConverter
+from notionary.page.writer.markdown_to_notion_converter import \
+    MarkdownToNotionConverter
 from notionary.util import LoggingMixin
 
 

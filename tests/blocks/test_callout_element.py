@@ -6,11 +6,9 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.callout.callout_element import (
-    CalloutBlock,
-    CalloutElement,
-    EmojiIcon,
-)
+from notionary.blocks.callout.callout_element import (CalloutBlock,
+                                                      CalloutElement,
+                                                      EmojiIcon)
 from notionary.blocks.rich_text import RichTextObject
 from notionary.blocks.types import BlockType
 

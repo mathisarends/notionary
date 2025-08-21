@@ -1,13 +1,10 @@
 from notionary.blocks.models import Block
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.page.reader.handler import (
-    BlockRenderingContext,
-    ColumnListRenderer,
-    ColumnRenderer,
-    LineRenderer,
-    ToggleableHeadingRenderer,
-    ToggleRenderer,
-)
+from notionary.page.reader.handler import (BlockRenderingContext,
+                                           ColumnListRenderer, ColumnRenderer,
+                                           LineRenderer,
+                                           ToggleableHeadingRenderer,
+                                           ToggleRenderer)
 from notionary.util import LoggingMixin
 
 

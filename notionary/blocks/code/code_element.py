@@ -4,7 +4,8 @@ import re
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.code.code_models import CodeBlock, CodeLanguage, CreateCodeBlock
+from notionary.blocks.code.code_models import (CodeBlock, CodeLanguage,
+                                               CreateCodeBlock)
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 

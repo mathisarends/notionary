@@ -7,13 +7,12 @@ Adapted for the new Stack/LineProcessor system.
 import pytest
 
 from notionary.blocks.code.code_element import CodeElement
-from notionary.blocks.code.code_models import CodeBlock, CodeLanguage, CreateCodeBlock
+from notionary.blocks.code.code_models import (CodeBlock, CodeLanguage,
+                                               CreateCodeBlock)
 from notionary.blocks.models import Block
-from notionary.blocks.rich_text.rich_text_models import (
-    RichTextObject,
-    TextAnnotations,
-    TextContent,
-)
+from notionary.blocks.rich_text.rich_text_models import (RichTextObject,
+                                                         TextAnnotations,
+                                                         TextContent)
 
 
 def create_rich_text_object(content: str) -> RichTextObject:

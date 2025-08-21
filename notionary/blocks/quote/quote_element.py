@@ -6,7 +6,8 @@ from typing import Optional
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.rich_text.text_inline_formatter import \
+    TextInlineFormatter
 from notionary.blocks.types import BlockColor
 
 

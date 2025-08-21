@@ -4,7 +4,8 @@ import re
 from turtle import width
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.column.column_models import ColumnBlock, CreateColumnBlock
+from notionary.blocks.column.column_models import (ColumnBlock,
+                                                   CreateColumnBlock)
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 
 

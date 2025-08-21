@@ -1,21 +1,24 @@
+from typing import cast
+
 from notionary.blocks.models import BlockCreateRequest
+from notionary.blocks.paragraph.paragraph_models import (CreateParagraphBlock,
+                                                         ParagraphBlock)
 from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.types import BlockType
 from notionary.page.notion_text_length_utils import fix_blocks_content_length
-from notionary.page.writer.handler import (
-    CodeHandler,
-    ColumnHandler,
-    ColumnListHandler,
-    LineProcessingContext,
-    ParentBlockContext,
-    RegularLineHandler,
-    TableHandler,
-    ToggleableHeadingHandler,
-    ToggleHandler,
-)
+from notionary.page.writer.handler import (CodeHandler, ColumnHandler,
+                                           ColumnListHandler,
+                                           LineProcessingContext,
+                                           ParentBlockContext,
+                                           RegularLineHandler, TableHandler,
+                                           ToggleableHeadingHandler,
+                                           ToggleHandler)
 
 
 class MarkdownToNotionConverter:
     """Converts Markdown text to Notion API block format with unified stack-based processing."""
+
+    BLOCKS_NEEDING_EMPTY_PARAGRAPH = {"divider", "file", "image", "pdf", "video"}
 
     def __init__(self, block_registry: BlockRegistry) -> None:
         self._block_registry = block_registry
@@ -44,6 +47,7 @@ class MarkdownToNotionConverter:
             return []
 
         all_blocks = self._process_lines(markdown_text)
+        all_blocks = self._add_empty_paragraphs_for_media_blocks(all_blocks)
         return fix_blocks_content_length(all_blocks)
 
     def _process_lines(self, text: str) -> list[BlockCreateRequest]:
@@ -74,3 +78,44 @@ class MarkdownToNotionConverter:
                 continue
 
         return result_blocks
+
+    def _add_empty_paragraphs_for_media_blocks(
+        self, blocks: list[BlockCreateRequest]
+    ) -> list[BlockCreateRequest]:
+        """Add empty paragraphs before configured block types."""
+        if not blocks:
+            return blocks
+
+        result = []
+
+        for i, block in enumerate(blocks):
+            block_type = block.type
+
+            if (
+                block_type in self.BLOCKS_NEEDING_EMPTY_PARAGRAPH
+                and i > 0
+                and not self._is_empty_paragraph(result[-1] if result else None)
+            ):
+
+                # Create empty paragraph block inline
+                empty_paragraph = CreateParagraphBlock(
+                    paragraph=ParagraphBlock(rich_text=[])
+                )
+                result.append(empty_paragraph)
+
+            result.append(block)
+
+        return result
+
+    def _is_empty_paragraph(self, block: BlockCreateRequest | None) -> bool:
+        if not block or block.type != BlockType.PARAGRAPH:
+            return False
+        if not isinstance(block, CreateParagraphBlock):
+            return False  # Safety: nur Paragraph-Create-Block hat .paragraph
+
+        para_block = cast(CreateParagraphBlock, block)
+        paragraph: ParagraphBlock | None = para_block.paragraph
+        if not paragraph:
+            return False
+
+        return not paragraph.rich_text or len(paragraph.rich_text) == 0

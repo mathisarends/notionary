@@ -7,17 +7,12 @@ from typing import Any, AsyncGenerator, Optional
 from notionary.database.client import NotionDatabaseClient
 from notionary.database.database_filter_builder import DatabaseFilterBuilder
 from notionary.database.database_provider import NotionDatabaseProvider
-from notionary.database.models import (
-    NotionDatabaseResponse,
-    NotionPageResponse,
-    NotionQueryDatabaseResponse,
-)
+from notionary.database.models import (NotionDatabaseResponse,
+                                       NotionPageResponse,
+                                       NotionQueryDatabaseResponse)
 from notionary.page.notion_page import NotionPage
-from notionary.telemetry import (
-    DatabaseFactoryUsedEvent,
-    ProductTelemetry,
-    QueryOperationEvent,
-)
+from notionary.telemetry import (DatabaseFactoryUsedEvent, ProductTelemetry,
+                                 QueryOperationEvent)
 from notionary.util import LoggingMixin, factory_only
 
 

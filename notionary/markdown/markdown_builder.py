@@ -11,51 +11,44 @@ from __future__ import annotations
 from typing import Any, Callable, Optional, Self
 
 from notionary.blocks.audio import AudioMarkdownBlockParams, AudioMarkdownNode
-from notionary.blocks.bookmark import BookmarkMarkdownBlockParams, BookmarkMarkdownNode
+from notionary.blocks.bookmark import (BookmarkMarkdownBlockParams,
+                                       BookmarkMarkdownNode)
 from notionary.blocks.breadcrumbs import BreadcrumbMarkdownNode
-from notionary.blocks.bulleted_list import (
-    BulletedListMarkdownBlockParams,
-    BulletedListMarkdownNode,
-)
-from notionary.blocks.callout import CalloutMarkdownBlockParams, CalloutMarkdownNode
+from notionary.blocks.bulleted_list import (BulletedListMarkdownBlockParams,
+                                            BulletedListMarkdownNode)
+from notionary.blocks.callout import (CalloutMarkdownBlockParams,
+                                      CalloutMarkdownNode)
 from notionary.blocks.code import CodeBlock, CodeLanguage, CodeMarkdownNode
-from notionary.blocks.column import (
-    ColumnListMarkdownBlockParams,
-    ColumnListMarkdownNode,
-    ColumnMarkdownNode,
-)
-from notionary.blocks.divider import DividerMarkdownBlockParams, DividerMarkdownNode
+from notionary.blocks.column import (ColumnListMarkdownBlockParams,
+                                     ColumnListMarkdownNode,
+                                     ColumnMarkdownNode)
+from notionary.blocks.divider import (DividerMarkdownBlockParams,
+                                      DividerMarkdownNode)
 from notionary.blocks.embed import EmbedMarkdownBlockParams, EmbedMarkdownNode
-from notionary.blocks.equation import EquationMarkdownBlockParams, EquationMarkdownNode
+from notionary.blocks.equation import (EquationMarkdownBlockParams,
+                                       EquationMarkdownNode)
 from notionary.blocks.file import FileMarkdownNode, FileMarkdownNodeParams
-from notionary.blocks.heading import HeadingMarkdownBlockParams, HeadingMarkdownNode
-from notionary.blocks.image_block import ImageMarkdownBlockParams, ImageMarkdownNode
-from notionary.blocks.numbered_list import (
-    NumberedListMarkdownBlockParams,
-    NumberedListMarkdownNode,
-)
-from notionary.blocks.paragraph import (
-    ParagraphMarkdownBlockParams,
-    ParagraphMarkdownNode,
-)
+from notionary.blocks.heading import (HeadingMarkdownBlockParams,
+                                      HeadingMarkdownNode)
+from notionary.blocks.image_block import (ImageMarkdownBlockParams,
+                                          ImageMarkdownNode)
+from notionary.blocks.numbered_list import (NumberedListMarkdownBlockParams,
+                                            NumberedListMarkdownNode)
+from notionary.blocks.paragraph import (ParagraphMarkdownBlockParams,
+                                        ParagraphMarkdownNode)
 from notionary.blocks.pdf import PdfMarkdownNode, PdfMarkdownNodeParams
 from notionary.blocks.quote import QuoteMarkdownBlockParams, QuoteMarkdownNode
 from notionary.blocks.table import TableMarkdownBlockParams, TableMarkdownNode
 from notionary.blocks.table_of_contents import (
-    TableOfContentsMarkdownBlockParams,
-    TableOfContentsMarkdownNode,
-)
+    TableOfContentsMarkdownBlockParams, TableOfContentsMarkdownNode)
 from notionary.blocks.todo import TodoMarkdownBlockParams, TodoMarkdownNode
-from notionary.blocks.toggle import ToggleMarkdownBlockParams, ToggleMarkdownNode
+from notionary.blocks.toggle import (ToggleMarkdownBlockParams,
+                                     ToggleMarkdownNode)
 from notionary.blocks.toggleable_heading import (
-    ToggleableHeadingMarkdownBlockParams,
-    ToggleableHeadingMarkdownNode,
-)
+    ToggleableHeadingMarkdownBlockParams, ToggleableHeadingMarkdownNode)
 from notionary.blocks.video import VideoMarkdownBlockParams, VideoMarkdownNode
-from notionary.markdown.markdown_document_model import (
-    MarkdownBlock,
-    MarkdownDocumentModel,
-)
+from notionary.markdown.markdown_document_model import (MarkdownBlock,
+                                                        MarkdownDocumentModel)
 from notionary.markdown.markdown_node import MarkdownNode
 
 
@@ -550,7 +543,8 @@ class MarkdownBuilder:
                 width_ratio=0.25
             )
         """
-        from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
+        from notionary.blocks.column.column_markdown_node import \
+            ColumnMarkdownNode
 
         column_node = ColumnMarkdownNode(children=list(nodes), width_ratio=width_ratio)
         self.children.append(column_node)

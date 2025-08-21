@@ -20,9 +20,8 @@ class LineRenderer(BlockHandler):
                 return
 
             # Import here to avoid circular dependency and process children
-            from notionary.page.reader.page_content_retriever import (
-                PageContentRetriever,
-            )
+            from notionary.page.reader.page_content_retriever import \
+                PageContentRetriever
 
             retriever = PageContentRetriever(context.block_registry)
             children_markdown = retriever._convert_blocks_to_markdown(
@@ -45,7 +44,8 @@ class LineRenderer(BlockHandler):
             return
 
         # Otherwise process children and combine
-        from notionary.page.reader.page_content_retriever import PageContentRetriever
+        from notionary.page.reader.page_content_retriever import \
+            PageContentRetriever
 
         retriever = PageContentRetriever(context.block_registry)
         children_markdown = retriever._convert_blocks_to_markdown(

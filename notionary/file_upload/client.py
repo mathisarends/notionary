@@ -6,12 +6,10 @@ import aiofiles
 import httpx
 
 from notionary.base_notion_client import BaseNotionClient
-from notionary.file_upload.models import (
-    FileUploadCompleteRequest,
-    FileUploadCreateRequest,
-    FileUploadListResponse,
-    FileUploadResponse,
-)
+from notionary.file_upload.models import (FileUploadCompleteRequest,
+                                          FileUploadCreateRequest,
+                                          FileUploadListResponse,
+                                          FileUploadResponse)
 
 
 class NotionFileUploadClient(BaseNotionClient):

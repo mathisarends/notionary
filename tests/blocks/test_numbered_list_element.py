@@ -7,11 +7,10 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.numbered_list.numbered_list_element import NumberedListElement
+from notionary.blocks.numbered_list.numbered_list_element import \
+    NumberedListElement
 from notionary.blocks.numbered_list.numbered_list_models import (
-    CreateNumberedListItemBlock,
-    NumberedListItemBlock,
-)
+    CreateNumberedListItemBlock, NumberedListItemBlock)
 
 
 def test_match_markdown_valid():

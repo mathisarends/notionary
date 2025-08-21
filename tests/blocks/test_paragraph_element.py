@@ -8,10 +8,8 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.paragraph.paragraph_element import ParagraphElement
-from notionary.blocks.paragraph.paragraph_models import (
-    CreateParagraphBlock,
-    ParagraphBlock,
-)
+from notionary.blocks.paragraph.paragraph_models import (CreateParagraphBlock,
+                                                         ParagraphBlock)
 
 
 def test_match_markdown_valid():

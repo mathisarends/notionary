@@ -9,15 +9,9 @@ from notionary.database.client import NotionDatabaseClient
 from notionary.database.database_filter_builder import DatabaseFilterBuilder
 from notionary.database.database_provider import NotionDatabaseProvider
 from notionary.models.notion_database_response import (
-    NotionDatabaseResponse,
-    NotionPageResponse,
-    NotionQueryDatabaseResponse,
-)
-from notionary.telemetry import (
-    DatabaseFactoryUsedEvent,
-    ProductTelemetry,
-    QueryOperationEvent,
-)
+    NotionDatabaseResponse, NotionPageResponse, NotionQueryDatabaseResponse)
+from notionary.telemetry import (DatabaseFactoryUsedEvent, ProductTelemetry,
+                                 QueryOperationEvent)
 from notionary.util import LoggingMixin, factory_only
 
 

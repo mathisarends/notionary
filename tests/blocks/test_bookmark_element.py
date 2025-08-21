@@ -8,7 +8,8 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.bookmark.bookmark_element import BookmarkElement
-from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
+from notionary.blocks.bookmark.bookmark_models import (BookmarkBlock,
+                                                       CreateBookmarkBlock)
 from notionary.blocks.types import BlockType
 
 
@@ -73,7 +74,8 @@ def test_markdown_to_notion_with_title():
     assert len(result.bookmark.caption) >= 1
     # TextInlineFormatter erstellt RichText-Strukturen
     # Wir testen den Text-Inhalt über extract_text_with_formatting
-    from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+    from notionary.blocks.rich_text.text_inline_formatter import \
+        TextInlineFormatter
 
     text = TextInlineFormatter.extract_text_with_formatting(result.bookmark.caption)
     assert "Beispiel-Titel" in text
@@ -90,7 +92,8 @@ def test_markdown_to_notion_with_title_and_description():
     assert result.bookmark.url == "https://example.com"
 
     # Caption sollte "Beispiel-Titel – Eine Beschreibung" enthalten (em dash)
-    from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+    from notionary.blocks.rich_text.text_inline_formatter import \
+        TextInlineFormatter
 
     caption_text = TextInlineFormatter.extract_text_with_formatting(
         result.bookmark.caption
@@ -125,7 +128,8 @@ def test_notion_to_markdown_simple():
 def test_notion_to_markdown_with_title():
     """Test Konvertierung von Notion-Bookmark mit Titel."""
     # Verwende TextInlineFormatter um korrekte RichText-Struktur zu erstellen
-    from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+    from notionary.blocks.rich_text.text_inline_formatter import \
+        TextInlineFormatter
 
     caption = TextInlineFormatter.parse_inline_formatting("Beispiel-Titel")
 
@@ -142,7 +146,8 @@ def test_notion_to_markdown_with_title():
 def test_notion_to_markdown_with_title_and_description():
     """Test Konvertierung von Notion-Bookmark mit Titel und Beschreibung."""
     # Verwende TextInlineFormatter mit hyphen für korrekte Trennung
-    from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+    from notionary.blocks.rich_text.text_inline_formatter import \
+        TextInlineFormatter
 
     caption = TextInlineFormatter.parse_inline_formatting(
         "Beispiel-Titel - Eine Beschreibung"
@@ -225,7 +230,8 @@ def simple_bookmark_block():
 @pytest.fixture
 def titled_bookmark_block():
     """Fixture für Bookmark-Block mit Titel."""
-    from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+    from notionary.blocks.rich_text.text_inline_formatter import \
+        TextInlineFormatter
 
     caption = TextInlineFormatter.parse_inline_formatting("Test Title")
 
@@ -350,7 +356,8 @@ def test_caption_separator_behavior():
         '[bookmark](https://example.com "Title" "Description")'
     )
 
-    from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+    from notionary.blocks.rich_text.text_inline_formatter import \
+        TextInlineFormatter
 
     caption_text = TextInlineFormatter.extract_text_with_formatting(
         result_hyphen.bookmark.caption

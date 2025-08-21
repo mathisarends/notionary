@@ -1,12 +1,10 @@
 from typing import Any, Dict, Optional
 
 from notionary.base_notion_client import BaseNotionClient
-from notionary.database.models import (
-    NotionDatabaseResponse,
-    NotionDatabaseSearchResponse,
-    NotionPageResponse,
-    NotionQueryDatabaseResponse,
-)
+from notionary.database.models import (NotionDatabaseResponse,
+                                       NotionDatabaseSearchResponse,
+                                       NotionPageResponse,
+                                       NotionQueryDatabaseResponse)
 
 
 class NotionDatabaseClient(BaseNotionClient):

@@ -3,7 +3,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from notionary.page.reader.handler.block_rendering_context import BlockRenderingContext
+from notionary.page.reader.handler.block_rendering_context import \
+    BlockRenderingContext
 
 
 class BlockHandler(ABC):

@@ -8,43 +8,34 @@ from notionary.blocks.types import BlockType
 
 if TYPE_CHECKING:
     from notionary.blocks.bookmark import BookmarkBlock, CreateBookmarkBlock
-    from notionary.blocks.breadcrumbs import BreadcrumbBlock, CreateBreadcrumbBlock
-    from notionary.blocks.bulleted_list import (
-        BulletedListItemBlock,
-        CreateBulletedListItemBlock,
-    )
+    from notionary.blocks.breadcrumbs import (BreadcrumbBlock,
+                                              CreateBreadcrumbBlock)
+    from notionary.blocks.bulleted_list import (BulletedListItemBlock,
+                                                CreateBulletedListItemBlock)
     from notionary.blocks.callout import CalloutBlock, CreateCalloutBlock
-    from notionary.blocks.child_page import ChildPageBlock, CreateChildPageBlock
+    from notionary.blocks.child_page import (ChildPageBlock,
+                                             CreateChildPageBlock)
     from notionary.blocks.code import CodeBlock, CreateCodeBlock
-    from notionary.blocks.column import (
-        ColumnBlock,
-        ColumnListBlock,
-        CreateColumnBlock,
-        CreateColumnListBlock,
-    )
+    from notionary.blocks.column import (ColumnBlock, ColumnListBlock,
+                                         CreateColumnBlock,
+                                         CreateColumnListBlock)
     from notionary.blocks.divider import CreateDividerBlock, DividerBlock
     from notionary.blocks.embed import CreateEmbedBlock, EmbedBlock
     from notionary.blocks.equation import CreateEquationBlock, EquationBlock
     from notionary.blocks.file import CreateFileBlock, FileBlock
-    from notionary.blocks.heading import (
-        CreateHeading1Block,
-        CreateHeading2Block,
-        CreateHeading3Block,
-        HeadingBlock,
-    )
+    from notionary.blocks.heading import (CreateHeading1Block,
+                                          CreateHeading2Block,
+                                          CreateHeading3Block, HeadingBlock)
     from notionary.blocks.image_block import CreateImageBlock
-    from notionary.blocks.numbered_list import (
-        CreateNumberedListItemBlock,
-        NumberedListItemBlock,
-    )
+    from notionary.blocks.numbered_list import (CreateNumberedListItemBlock,
+                                                NumberedListItemBlock)
     from notionary.blocks.paragraph import CreateParagraphBlock, ParagraphBlock
     from notionary.blocks.pdf import CreatePdfBlock
     from notionary.blocks.quote import CreateQuoteBlock, QuoteBlock
-    from notionary.blocks.table import CreateTableBlock, TableBlock, TableRowBlock
-    from notionary.blocks.table_of_contents import (
-        CreateTableOfContentsBlock,
-        TableOfContentsBlock,
-    )
+    from notionary.blocks.table import (CreateTableBlock, TableBlock,
+                                        TableRowBlock)
+    from notionary.blocks.table_of_contents import (CreateTableOfContentsBlock,
+                                                    TableOfContentsBlock)
     from notionary.blocks.todo import CreateToDoBlock, ToDoBlock
     from notionary.blocks.toggle import CreateToggleBlock, ToggleBlock
     from notionary.blocks.video import CreateVideoBlock

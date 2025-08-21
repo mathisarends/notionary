@@ -6,8 +6,10 @@ from typing import Optional
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
+from notionary.blocks.rich_text.text_inline_formatter import \
+    TextInlineFormatter
+from notionary.blocks.toggle.toggle_models import (CreateToggleBlock,
+                                                   ToggleBlock)
 from notionary.blocks.types import BlockColor
 
 
