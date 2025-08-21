@@ -44,7 +44,7 @@ class TableHandler(LineHandler):
         if not result:
             return
 
-        block = result if not isinstance(result, list) else result[0]
+        block = result
 
         # Collect all table lines (including the current one)
         table_lines = [context.line]

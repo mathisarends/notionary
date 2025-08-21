@@ -165,7 +165,7 @@ if TYPE_CHECKING:
         CreatePdfBlock,
         CreateTableBlock,
     ]
-    BlockCreateResult = Optional[Union[list[BlockCreateRequest], BlockCreateRequest]]
+    BlockCreateResult = Union[BlockCreateRequest]
 else:
     # at runtime there are no typings anyway
     BlockCreateRequest = Any

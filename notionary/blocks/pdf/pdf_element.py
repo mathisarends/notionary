@@ -6,10 +6,6 @@ from typing import Optional
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import ExternalFile, FileBlock, FileType
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
-from notionary.blocks.paragraph.paragraph_models import (
-    CreateParagraphBlock,
-    ParagraphBlock,
-)
 from notionary.blocks.pdf.pdf_models import CreatePdfBlock
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -57,12 +53,7 @@ class PdfElement(BaseBlockElement):
             rt = RichTextObject.from_plain_text(caption_text)
             pdf_block.caption = [rt]
 
-        empty_para = ParagraphBlock(rich_text=[])
-
-        return [
-            CreatePdfBlock(pdf=pdf_block),
-            CreateParagraphBlock(paragraph=empty_para),
-        ]
+        return CreatePdfBlock(pdf=pdf_block)
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

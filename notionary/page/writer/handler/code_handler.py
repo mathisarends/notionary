@@ -50,7 +50,7 @@ class CodeHandler(LineHandler):
         if not result:
             return
 
-        block = result[0] if isinstance(result, list) else result
+        block = result
 
         code_lines, lines_to_consume = self._collect_code_lines(context)
 

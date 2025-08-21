@@ -6,10 +6,6 @@ from typing import Optional
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import ExternalFile, FileBlock, FileType
 from notionary.blocks.models import Block, BlockCreateResult
-from notionary.blocks.paragraph.paragraph_models import (
-    CreateParagraphBlock,
-    ParagraphBlock,
-)
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.types import BlockType
@@ -63,12 +59,7 @@ class VideoElement(BaseBlockElement):
             rt = RichTextObject.from_plain_text(caption_text.strip())
             video_block.caption = [rt]
 
-        empty_para = ParagraphBlock(rich_text=[])
-
-        return [
-            CreateVideoBlock(video=video_block),
-            CreateParagraphBlock(paragraph=empty_para),
-        ]
+        return CreateVideoBlock(video=video_block)
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

@@ -152,7 +152,7 @@ def bootstrap_blocks() -> None:
         CreatePdfBlock,
     ]
 
-    BlockCreateResult = Optional[Union[list[BlockCreateRequest], BlockCreateRequest]]
+    BlockCreateResult = Optional[BlockCreateRequest]
 
     # Add all block types to namespace
     ns.update(

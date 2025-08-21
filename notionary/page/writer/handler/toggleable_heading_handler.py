@@ -73,7 +73,7 @@ class ToggleableHeadingHandler(LineHandler):
         if not result:
             return
 
-        block = result if not isinstance(result, list) else result[0]
+        block = result
 
         # Push to parent stack
         parent_context = ParentBlockContext(
