@@ -6,199 +6,205 @@
 
 <h1 align="center">Notion API simplified for Python developers 🐍</h1>
 
+<div align="center">
+
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Documentation](https://img.shields.io/badge/docs-mathisarends.github.io-blue.svg)](https://mathisarends.github.io/notionary/)
 
-- **Object-Oriented Design**: Clean, intuitive classes for Pages, Databases, and Workspaces with full CRUD operations
-- **Rich Markdown to Notion**: Convert extended Markdown (callouts, toggles, columns) directly into beautiful Notion blocks
-- **Smart Discovery**: Find pages and databases by name with fuzzy matching - no more hunting for URLs
-- **Async-First Architecture**: Built for modern Python with full async/await support and high performance
+Transform complex Notion API interactions into simple, Pythonic code. Build AI agents, automate workflows, and create dynamic content with ease.
+
+</div>
 
 ---
 
-# Quick start
+## Why Notionary?
+
+- **Smart Discovery**: Find pages and databases by name—no more hunting for URLs or IDs
+- **Rich Markdown**: Convert extended Markdown (callouts, toggles, columns) directly into beautiful Notion blocks
+- **Async-First**: Built for modern Python with full async/await support and high performance
+- **AI-Ready**: Perfect foundation for AI agents that generate and manage Notion content
+- **Round-Trip**: Read existing content, modify it, and write it back while preserving formatting
+
+---
+
+## Quick Start
 
 ```bash
 pip install notionary
 ```
 
-- Set up your Notion integration (notion.so/profile/integrations)
-- Add your integration key in your `.env` file.
+Set up your [Notion integration](https://mathisarends.github.io/notionary/get-started/installation/) and add your token:
 
 ```bash
-NOTION_SECRET=YOUR_INTEGRATION_KEY
+NOTION_SECRET=your_integration_key
 ```
 
-### Creating and Managing Pages 🚀
-
-```python
-from notionary import NotionPage
-
-async def main():
-    # Simpy find an existing page by its title
-    page = await NotionPage.from_page_name("My Test Page")
-
-    # Add rich content with custom Markdown
-    content = """
-    # 🚀 Generated with Notionary
-
-    !> [💡] This page was created programmatically!
-
-    ## Features
-    - **Rich** Markdown support
-    - Database integration
-    - AI-ready content generation
-
-    +++ Click to see more details
-    | Notionary makes it easy to create beautiful Notion pages
-    | directly from Python code with intuitive Markdown syntax.
-    """
-
-    await page.replace_content(content)
-    print(f"✅ Page updated: {page.url}")
-
-asyncio.run(main())
-```
-
----
-
-### Working with Databases 🔥
+### Simple Flow: Find → Create → Update
 
 ```python
 import asyncio
-from notionary import NotionDatabase
+from notionary import NotionPage, NotionDatabase
 
 async def main():
-  # Connect to database by name (fuzzy matching)
-  db = await NotionDatabase.from_database_name("Projects")
-
-  # Create a new page with properties
-  page = await db.create_blank_page()
-  await page.set_title("🆕 New Project Entry")
-  await page.set_property_value_by_name("Status", "In Progress")
-  await page.set_property_value_by_name("Priority", "High")
-
-  # find pages created in the last 7 days
-  count = 0
-  async for page in db.iter_pages_with_filter(
-      db.create_filter().with_created_last_n_days(7)
-  ):
-      count += 1
-      print(f"{count:2d}. {page.emoji_icon or '📄'} {page.title}")
+    # Work with pages - find by name, no exact match needed!
+    page = await NotionPage.from_page_name("Meeting Notes")
+    
+    # Direct Markdown - quick & intuitive
+    await page.append_markdown("""
+    ## Action Items
+    - Review project proposal
+    - Schedule team meeting  
+    - Update documentation
+    
+    [callout](Important meeting decisions require follow-up "💡")
+    """)
+    
+    # Builder Pattern - type-safe & powerful for complex layouts
+    await page.append_markdown(lambda builder: (
+        builder
+        .h2("Project Status")
+        .callout("Project milestone reached!", "🎉")
+        .columns(
+            lambda col: (col
+                .h3("Completed")
+                .bulleted_list(["API design", "Database setup", "Authentication"])
+            ),
+            lambda col: (col
+                .h3("In Progress") 
+                .bulleted_list(["Frontend UI", "Testing", "Documentation"])
+            )
+        )
+        .table(
+            headers=["Task", "Owner", "Due Date"],
+            rows=[
+                ["Launch prep", "Alice", "2024-03-15"],
+                ["Marketing", "Bob", "2024-03-20"]
+            ]
+        )
+    ))
 
 asyncio.run(main())
 ```
 
-## Custom Markdown Syntax
-
-Notionary extends standard Markdown with special syntax to support Notion-specific features:
-
-### Text Formatting
-
-- Standard: `**bold**`, `*italic*`, `~~strikethrough~~`, `` `code` ``
-- Links: `[text](url)`
-- Quotes: `> This is a quote`
-- Divider: `---`
-
-### Callouts
-
-```markdown
-!> [💡] This is a default callout with the light bulb emoji  
-!> [🔔] This is a notification with a bell emoji  
-!> [⚠️] Warning: This is an important note
-```
-
-### Toggles
-
-```markdown
-+++ How to use Notionary
-| 1. Initialize with NotionPage  
-| 2. Update metadata with set_title(), set_emoji_icon(), etc.  
-| 3. Add content with replace_content() or append_markdown()
-```
-
-### Multi-Column Layout
-
-```markdown
-::: columns
-::: column
-
-## Left Column
-
-- Item 1
-- Item 2
-- Item 3
-  :::
-  ::: column
-
-## Right Column
-
-This text appears in the second column. Multi-column layouts are perfect for:
-
-- Comparing features
-- Creating side-by-side content
-- Improving readability of wide content
-  :::
-  :::
-```
-
-### Code Blocks
+### Create Rich Database Entries
 
 ```python
-def hello_world():
-    print("Hello from Notionary!")
+# Work with databases - connect and create styled entries
+db = await NotionDatabase.from_database_name("Projects")
+
+# Create new project with full styling
+project = await db.create_blank_page()
+await project.set_title("New Marketing Campaign")
+await project.set_emoji_icon("🚀")
+await project.set_random_gradient_cover()
+
+# Set database properties
+await project.set_property_value_by_name("Status", "Planning")
+await project.set_property_value_by_name("Priority", "High")
+await project.set_property_value_by_name("Team Lead", "sarah@company.com")
+
+# Add rich content to the new page
+await project.replace_content(lambda builder: (
+    builder
+    .h1("Campaign Overview")
+    .callout("New marketing initiative targeting Q2 growth", "🎯")
+    .h2("Goals & Objectives")
+    .numbered_list([
+        "Increase brand awareness by 25%", 
+        "Generate 500 qualified leads",
+        "Launch in 3 target markets"
+    ])
+    .h2("Budget Breakdown")
+    .table(
+        headers=["Category", "Allocated", "Spent", "Remaining"],
+        rows=[
+            ["Digital Ads", "$15,000", "$3,200", "$11,800"],
+            ["Content Creation", "$8,000", "$1,500", "$6,500"],
+            ["Events", "$12,000", "$0", "$12,000"]
+        ]
+    )
+    .divider()
+    .toggle("Technical Requirements", lambda toggle: (
+        toggle
+        .paragraph("Platform specifications and integration details.")
+        .bulleted_list([
+            "CRM integration with Salesforce",
+            "Analytics tracking setup", 
+            "Landing page development"
+        ])
+    ))
+))
+
+print(f"✅ Created styled project: {project.url}")
 ```
 
-### To-do Lists
+### Extended Markdown Syntax
 
-```markdown
-- [ ] Define project scope
-- [x] Create timeline
-- [ ] Assign resources
-```
+Notionary supports rich formatting with callouts, toggles, multi-column layouts, tables, media embeds, and more. Use either direct markdown syntax or the type-safe builder pattern.
 
-### Tables
+See the complete [Block Types documentation](https://mathisarends.github.io/notionary/blocks/) for all available formatting options and syntax examples.
 
-```markdown
-| Feature         | Status      | Priority |
-| --------------- | ----------- | -------- |
-| API Integration | Complete    | High     |
-| Documentation   | In Progress | Medium   |
-```
+## What You Can Build
 
-### More Elements
+- **AI Content Generation** - Perfect for AI agents that create structured reports and documentation
+- **Workflow Automation** - Update project status, sync data between databases, generate reports
+- **Dynamic Documentation** - Auto-generate team docs, API references, and knowledge bases
+- **Content Management** - Bulk page updates, template generation, and content migration
 
-```markdown
-![Caption](https://example.com/image.jpg)  
-@[Caption](https://youtube.com/watch?v=...)  
-[bookmark](https://example.com "Title" "Description")
-```
+## Core Features
 
-## Examples
+| Feature | Description |
+|---------|-------------|
+| **Smart Discovery** | Find pages/databases by name with fuzzy matching |
+| **Rich Markdown** | Extended syntax for callouts, toggles, columns, tables |
+| **Async-First** | Modern Python with full async/await support |
+| **Round-Trip** | Read content as markdown, edit, and write back |
+| **AI-Ready** | Generate system prompts for AI content creation |
+| **All Block Types** | Support for every Notion block type |
+| **Type Safety** | Full type hints for better IDE support |
+| **High Performance** | Efficient batch operations and caching |
 
-Explore the `examples/` directory for comprehensive guides:
+## Examples & Documentation
 
-### 🚀 Core Examples
+Explore comprehensive guides and real-world examples:
 
-- [**Page Management**](examples/page_example.py) - Create, update, and manage Notion pages
-- [**Page Operations**](examples/page.py) - Advanced page manipulation and content handling
-- [**Database Operations**](examples/database.py) - Connect to and manage Notion databases
-- [**Database Iteration**](examples/database_iteration.py) - Query and filter database entries
-- [**Workspace Discovery**](examples/workspace_discovery.py) - Explore and discover your Notion workspace
+- **[📖 Full Documentation](https://mathisarends.github.io/notionary/)** - Complete API reference and guides
+- **[Getting Started](https://mathisarends.github.io/notionary/get-started/)** - Quick setup and first steps  
+- **[Page Management](https://mathisarends.github.io/notionary/page/)** - Work with page content and properties
+- **[Database Operations](https://mathisarends.github.io/notionary/database/)** - Query and manage databases
+- **[Block Types](https://mathisarends.github.io/notionary/blocks/)** - Complete formatting reference
 
-### 📝 Markdown Examples
+Check out the `examples/` directory for hands-on tutorials:
 
-- [**Basic Formatting**](examples/markdown/basic.py) - Text formatting, lists, and basic elements
-- [**Callouts**](examples/markdown/callout.py) - Create beautiful callout blocks with icons
-- [**Toggles**](examples/markdown/toggle.py) - Collapsible content sections
-- [**Multi-Column Layouts**](examples/markdown/columns.py) - Side-by-side content arrangement
-- [**Code Blocks**](examples/markdown/code.py) - Syntax-highlighted code examples
-- [**Tables**](examples/markdown/table.py) - Structured data presentation
-- [**Media Embeds**](examples/markdown/embed.py) - Images, videos, and rich media
-- [**Audio Content**](examples/markdown/audio.py) - Audio file integration
+### Core Examples
+- **[Page Management](examples/page_example.py)** - Create, update, and manage pages
+- **[Database Operations](examples/database.py)** - Connect to and query databases  
+- **[Workspace Discovery](examples/workspace_discovery.py)** - Explore your workspace
 
-Each example is self-contained and demonstrates specific features with practical use cases.
+### Markdown Examples  
+- **[Basic Formatting](examples/markdown/basic.py)** - Text, lists, and links
+- **[Callouts](examples/markdown/callout.py)** - Eye-catching information boxes
+- **[Toggles](examples/markdown/toggle.py)** - Collapsible content sections
+- **[Multi-Column](examples/markdown/columns.py)** - Side-by-side layouts
+- **[Tables](examples/markdown/table.py)** - Structured data presentation
 
 ## Contributing
 
-Contributions welcome — feel free to submit a pull request!
+We'd love your help making Notionary even better! 
+
+Whether it's fixing bugs, adding features, improving docs, or sharing examples - all contributions are welcome.
+
+See our [Contributing Guide](https://mathisarends.github.io/notionary/contributing/) to get started.
+
+---
+
+<div align="center">
+
+**Ready to transform your Notion workflow?** 
+
+[📖 Read the Docs](https://mathisarends.github.io/notionary/) • [Getting Started](https://mathisarends.github.io/notionary/get-started/) • [Examples](examples/)
+
+Built with ❤️ for the Python community
+
+</div>
