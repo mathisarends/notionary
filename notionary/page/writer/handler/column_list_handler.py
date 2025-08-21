@@ -10,6 +10,7 @@ from notionary.page.writer.handler.line_handler import (
 
 from notionary.page.writer.handler.line_processing_context import ParentBlockContext
 
+
 class ColumnListHandler(LineHandler):
     """Handles column list elements - both start and end.
     Syntax:
