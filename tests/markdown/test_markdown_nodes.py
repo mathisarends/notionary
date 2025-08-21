@@ -258,9 +258,9 @@ def test_todo_markdown_node():
 
 def test_toggle_markdown_node():
     """Test ToggleMarkdownNode - FIXED"""
-    # Test ohne Content - FIXED: Uses quotes around title
+    # Test ohne Content - FIXED: Uses correct syntax without quotes
     toggle = ToggleMarkdownNode(title="Details", children=[])
-    expected = '+++ "Details"\n+++'
+    expected = '+++Details\n+++'
     assert toggle.to_markdown() == expected
 
     # Test mit Content
@@ -271,7 +271,7 @@ def test_toggle_markdown_node():
         title="More Info",
         children=[line1_node, line2_node],
     )
-    expected = '+++ "More Info"\nLine 1\n\nLine 2\n+++'
+    expected = '+++More Info\nLine 1\n\nLine 2\n+++'
     assert toggle_with_content.to_markdown() == expected
 
 

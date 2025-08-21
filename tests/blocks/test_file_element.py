@@ -134,11 +134,10 @@ def test_match_notion_block():
 def test_markdown_to_notion(markdown, url, caption):
     result = FileElement.markdown_to_notion(markdown)
     assert result is not None
-    assert isinstance(result, list)
-    assert len(result) == 2  # File block + empty paragraph
+    assert isinstance(result, CreateFileBlock)
 
     # Check file block
-    file_block = result[0]
+    file_block = result
     assert isinstance(file_block, CreateFileBlock)
     assert file_block.type == "file"
     assert file_block.file.type == "external"
@@ -149,12 +148,6 @@ def test_markdown_to_notion(markdown, url, caption):
         assert file_block.file.caption[0].plain_text == caption
     else:
         assert file_block.file.caption == []
-
-    # Check empty paragraph
-    paragraph_block = result[1]
-    assert isinstance(paragraph_block, CreateParagraphBlock)
-    assert paragraph_block.type == "paragraph"
-    assert paragraph_block.paragraph.rich_text == []
 
 
 def test_markdown_to_notion_invalid_cases():
@@ -250,7 +243,7 @@ def test_roundtrip_conversion(markdown):
     assert notion_blocks is not None
 
     # Create Block for notion_to_markdown
-    file_create_block = notion_blocks[0]
+    file_create_block = notion_blocks
     notion_block = create_block_with_required_fields(
         type="file", file=file_create_block.file
     )
@@ -277,7 +270,7 @@ def test_unicode_and_special_caption(caption):
     assert blocks is not None
 
     # Create Block for roundtrip
-    file_create_block = blocks[0]
+    file_create_block = blocks
     file_block = create_block_with_required_fields(
         type="file", file=file_create_block.file
     )
@@ -291,7 +284,7 @@ def test_extra_whitespace_and_newlines():
     blocks = FileElement.markdown_to_notion(md)
     assert blocks is not None
 
-    file_block = blocks[0]
+    file_block = blocks
     assert isinstance(file_block, CreateFileBlock)
     assert file_block.file.caption[0].plain_text == "  Caption with spaces   "
 
@@ -342,7 +335,7 @@ def test_file_types_and_extensions():
 
         result = FileElement.markdown_to_notion(markdown)
         assert result is not None
-        assert result[0].file.external.url == url
+        assert result.file.external.url == url
 
 
 def test_complex_urls():
@@ -358,7 +351,7 @@ def test_complex_urls():
         markdown = f"[file]({url})"
         result = FileElement.markdown_to_notion(markdown)
         assert result is not None
-        assert result[0].file.external.url == url
+        assert result.file.external.url == url
 
 
 # Fixtures for common test data
@@ -429,11 +422,8 @@ def test_file_block_structure():
     markdown = '[file](https://example.com/test.pdf "Test Document")'
     result = FileElement.markdown_to_notion(markdown)
 
-    assert isinstance(result, list)
-    assert len(result) == 2
-
     # Check file block structure
-    file_block = result[0]
+    file_block = result
     assert isinstance(file_block, CreateFileBlock)
     assert file_block.type == "file"
     assert isinstance(file_block.file, FileBlock)
@@ -442,10 +432,3 @@ def test_file_block_structure():
     assert file_block.file.external.url == "https://example.com/test.pdf"
     assert len(file_block.file.caption) == 1
     assert file_block.file.caption[0].plain_text == "Test Document"
-
-    # Check paragraph block structure
-    paragraph_block = result[1]
-    assert isinstance(paragraph_block, CreateParagraphBlock)
-    assert paragraph_block.type == "paragraph"
-    assert isinstance(paragraph_block.paragraph, ParagraphBlock)
-    assert paragraph_block.paragraph.rich_text == []

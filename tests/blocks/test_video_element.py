@@ -71,17 +71,8 @@ def test_markdown_to_notion_basic():
     result = VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
 
     assert result is not None
-    assert isinstance(result, list)
-    assert len(result) == 2  # Video block + empty paragraph
-
-    # First block should be video
-    video_block = result[0]
-    assert isinstance(video_block, CreateVideoBlock)
-    assert isinstance(video_block.video, FileBlock)
-
-    # Second block should be empty paragraph
-    para_block = result[1]
-    assert isinstance(para_block, CreateParagraphBlock)
+    assert isinstance(result, CreateVideoBlock)
+    assert isinstance(result.video, FileBlock)
 
 
 def test_markdown_to_notion_with_caption():
@@ -91,10 +82,8 @@ def test_markdown_to_notion_with_caption():
     )
 
     assert result is not None
-    assert len(result) == 2
-
-    video_block = result[0]
-    assert len(video_block.video.caption) > 0  # Should have caption
+    assert isinstance(result, CreateVideoBlock)
+    assert len(result.video.caption) > 0  # Should have caption
 
 
 def test_markdown_to_notion_without_caption():
@@ -102,7 +91,7 @@ def test_markdown_to_notion_without_caption():
     result = VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
 
     assert result is not None
-    video_block = result[0]
+    video_block = result
     assert len(video_block.video.caption) == 0  # Should have no caption
 
 

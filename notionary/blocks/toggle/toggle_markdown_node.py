@@ -32,7 +32,7 @@ class ToggleMarkdownNode(MarkdownNode):
         return cls(title=params.title, children=params.children)
 
     def to_markdown(self) -> str:
-        result = f"+++ {self.title}"
+        result = f'+++{self.title}'
 
         if not self.children:
             result += "\n+++"

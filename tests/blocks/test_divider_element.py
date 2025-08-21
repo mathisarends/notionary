@@ -61,17 +61,9 @@ def test_markdown_to_notion():
     """Test conversion of divider to Notion blocks."""
     result = DividerElement.markdown_to_notion("---")
 
-    assert len(result) == 2  # Empty paragraph + divider
-
-    # First should be empty paragraph
-    para_block = result[0]
-    assert isinstance(para_block, CreateParagraphBlock)
-    assert para_block.paragraph.rich_text == []
-
-    # Second should be divider
-    divider_block = result[1]
-    assert isinstance(divider_block, CreateDividerBlock)
-    assert divider_block.type == "divider"
+    # Should return just the divider block
+    assert isinstance(result, CreateDividerBlock)
+    assert result.type == "divider"
 
 
 def test_markdown_to_notion_invalid():

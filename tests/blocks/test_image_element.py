@@ -60,20 +60,14 @@ def test_markdown_to_notion_without_caption():
     result = ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
 
     assert result is not None
-    assert len(result) == 2  # Image block + empty paragraph
-
+    
     # Check image block
-    image_block = result[0]
+    image_block = result
     assert isinstance(image_block, CreateImageBlock)
     assert image_block.type == "image"
     assert image_block.image.type == "external"
     assert image_block.image.external.url == "https://example.com/pic.jpg"
     assert image_block.image.caption == []
-
-    # Check empty paragraph
-    paragraph_block = result[1]
-    assert isinstance(paragraph_block, CreateParagraphBlock)
-    assert paragraph_block.paragraph.rich_text == []
 
 
 def test_markdown_to_notion_with_caption():
@@ -83,7 +77,7 @@ def test_markdown_to_notion_with_caption():
     )
 
     assert result is not None
-    image_block = result[0]
+    image_block = result
 
     assert isinstance(image_block, CreateImageBlock)
     assert image_block.image.external.url == "https://example.com/pic.jpg"
@@ -222,7 +216,7 @@ def test_roundtrip_conversion():
         assert notion_result is not None
 
         # Create mock block for notion_to_markdown
-        image_create_block = notion_result[0]
+        image_create_block = notion_result
         block = Mock()
         block.type = "image"
         block.image = image_create_block.image
@@ -238,7 +232,7 @@ def test_caption_with_special_characters():
     result = ImageElement.markdown_to_notion(markdown)
 
     assert result is not None
-    image_block = result[0]
+    image_block = result
     caption_text = image_block.image.caption[0].plain_text
     assert caption_text == "Photo with ümlaut & emoji 🌅"
 
