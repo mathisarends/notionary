@@ -14,8 +14,8 @@ from notionary.page.writer.handler import (
 from notionary.page.writer.markdown_to_notion_formatting_post_processor import (
     MarkdownToNotionFormattingPostProcessor,
 )
-from notionary.page.writer.markdown_to_notion_text_length_post_processor import (
-    MarkdownToNotionTextLengthPostProcessor,
+from notionary.page.writer.notion_text_length_processor import (
+    NotionTextLengthProcessor,
 )
 
 
@@ -25,7 +25,8 @@ class MarkdownToNotionConverter:
     def __init__(self, block_registry: BlockRegistry) -> None:
         self._block_registry = block_registry
         self._formatting_post_processor = MarkdownToNotionFormattingPostProcessor()
-        self._text_length_post_processor = MarkdownToNotionTextLengthPostProcessor()
+        self._text_length_post_processor = NotionTextLengthProcessor()
+
         self._setup_handler_chain()
 
     def _setup_handler_chain(self) -> None:
