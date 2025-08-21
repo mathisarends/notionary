@@ -11,8 +11,12 @@ from notionary.page.writer.handler import (
     ToggleableHeadingHandler,
     ToggleHandler,
 )
-from notionary.page.writer.markdown_to_notion_formatting_post_processor import MarkdownToNotionFormattingPostProcessor
-from notionary.page.writer.markdown_to_notion_text_length_post_processor import MarkdownToNotionTextLengthPostProcessor
+from notionary.page.writer.markdown_to_notion_formatting_post_processor import (
+    MarkdownToNotionFormattingPostProcessor,
+)
+from notionary.page.writer.markdown_to_notion_text_length_post_processor import (
+    MarkdownToNotionTextLengthPostProcessor,
+)
 
 
 class MarkdownToNotionConverter:
@@ -47,13 +51,13 @@ class MarkdownToNotionConverter:
             return []
 
         all_blocks = self._process_lines(markdown_text)
-        
+
         # Apply formatting post-processing (empty paragraphs)
         all_blocks = self._formatting_post_processor.process(all_blocks)
-        
+
         # Apply text length post-processing (truncation)
         all_blocks = self._text_length_post_processor.process(all_blocks)
-        
+
         return all_blocks
 
     def _process_lines(self, text: str) -> list[BlockCreateRequest]:

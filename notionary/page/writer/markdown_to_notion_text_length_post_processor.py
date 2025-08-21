@@ -1,7 +1,7 @@
 """
 Post-processor for handling Notion API text length limitations.
 
-Handles text length validation and truncation for blocks that exceed 
+Handles text length validation and truncation for blocks that exceed
 Notion's rich_text character limit of 2000 characters per element.
 """
 
@@ -21,10 +21,12 @@ class MarkdownToNotionTextLengthPostProcessor:
         """Process blocks to fix text length limits."""
         if not blocks:
             return blocks
-        
+
         return self._fix_blocks_content_length(blocks)
 
-    def _fix_blocks_content_length(self, blocks: list[BlockCreateRequest]) -> list[BlockCreateRequest]:
+    def _fix_blocks_content_length(
+        self, blocks: list[BlockCreateRequest]
+    ) -> list[BlockCreateRequest]:
         """Check each block and ensure text content doesn't exceed Notion's limit."""
         fixed_blocks: list[BlockCreateRequest] = []
 
@@ -35,7 +37,9 @@ class MarkdownToNotionTextLengthPostProcessor:
             fixed_blocks.append(fixed_block)
         return fixed_blocks
 
-    def _fix_single_block_content(self, block: BlockCreateRequest) -> BlockCreateRequest:
+    def _fix_single_block_content(
+        self, block: BlockCreateRequest
+    ) -> BlockCreateRequest:
         """Fix content length in a single block and its children recursively."""
         block_copy = block.model_copy(deep=True)
         self._fix_block_rich_text_direct(block_copy)
@@ -66,7 +70,11 @@ class MarkdownToNotionTextLengthPostProcessor:
             attr_value = getattr(block, attr_name, None)
 
             # Skip None values, strings (like 'type'), and callable methods
-            if attr_value is None or isinstance(attr_value, str) or callable(attr_value):
+            if (
+                attr_value is None
+                or isinstance(attr_value, str)
+                or callable(attr_value)
+            ):
                 continue
 
             # If it's an object with rich_text or children, it's likely our content
@@ -99,7 +107,7 @@ class MarkdownToNotionTextLengthPostProcessor:
                         self.max_text_length,
                     )
                     # Direct assignment - no parsing needed!
-                    rich_text_item.text.content = content[:self.max_text_length]
+                    rich_text_item.text.content = content[: self.max_text_length]
 
     def _flatten_blocks(self, blocks: list) -> list[BlockCreateRequest]:
         """Flatten nested block lists."""

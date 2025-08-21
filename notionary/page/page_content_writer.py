@@ -5,8 +5,7 @@ from notionary.blocks.divider import DividerElement
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.table_of_contents import TableOfContentsElement
 from notionary.markdown.markdown_builder import MarkdownBuilder
-from notionary.page.writer.markdown_to_notion_converter import \
-    MarkdownToNotionConverter
+from notionary.page.writer.markdown_to_notion_converter import MarkdownToNotionConverter
 from notionary.util import LoggingMixin
 
 
@@ -86,18 +85,20 @@ class PageContentWriter(LoggingMixin):
         current_code_block = []
 
         for line in lines:
-            processed_lines, in_code_block, current_code_block = self._process_single_line(
-                line, processed_lines, in_code_block, current_code_block
+            processed_lines, in_code_block, current_code_block = (
+                self._process_single_line(
+                    line, processed_lines, in_code_block, current_code_block
+                )
             )
 
         return "\n".join(processed_lines)
 
     def _process_single_line(
-        self, 
-        line: str, 
-        processed_lines: list[str], 
-        in_code_block: bool, 
-        current_code_block: list[str]
+        self,
+        line: str,
+        processed_lines: list[str],
+        in_code_block: bool,
+        current_code_block: list[str],
     ) -> tuple[list[str], bool, list[str]]:
         """Process a single line and return updated state."""
         if self._is_code_block_marker(line):
@@ -116,7 +117,7 @@ class PageContentWriter(LoggingMixin):
         line: str,
         processed_lines: list[str],
         in_code_block: bool,
-        current_code_block: list[str]
+        current_code_block: list[str],
     ) -> tuple[list[str], bool, list[str]]:
         """Handle code block start/end markers."""
         if not in_code_block:
