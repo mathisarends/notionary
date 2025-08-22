@@ -4,7 +4,7 @@ import re
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.numbered_list.numbered_list_models import (
     CreateNumberedListItemBlock,
@@ -51,7 +51,8 @@ class NumberedListElement(BaseBlockElement):
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
         """Get system prompt information for numbered list blocks."""
-        return super().get_system_prompt_information(
+        return BlockElementMarkdownInformation(
+            block_type=cls.__name__,
             description="Numbered list items create ordered lists with sequential numbering",
             syntax_examples=[
                 "1. First item",

@@ -10,7 +10,7 @@ from notionary.blocks.callout.callout_models import (
     EmojiIcon,
     IconObject,
 )
-from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
@@ -86,7 +86,8 @@ class CalloutElement(BaseBlockElement):
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
         """Get system prompt information for callout blocks."""
-        return super().get_system_prompt_information(
+        return BlockElementMarkdownInformation(
+            block_type=cls.__name__,
             description="Callout blocks create highlighted text boxes with optional custom emojis for emphasis",
             syntax_examples=[
                 "[callout](This is important information)",

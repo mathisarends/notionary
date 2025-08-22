@@ -5,7 +5,7 @@ from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.code.code_models import CodeBlock, CodeLanguage, CreateCodeBlock
-from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
@@ -136,7 +136,8 @@ class CodeElement(BaseBlockElement):
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
         """Get system prompt information for code blocks."""
-        return super().get_system_prompt_information(
+        return BlockElementMarkdownInformation(
+            block_type=cls.__name__,
             description="Code blocks display syntax-highlighted code with optional language specification and captions",
             syntax_examples=[
                 "```\nprint('Hello World')\n```",

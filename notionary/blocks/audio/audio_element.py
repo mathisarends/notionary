@@ -6,7 +6,7 @@ from typing import Optional
 from notionary.blocks.audio.audio_models import CreateAudioBlock
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import ExternalFile, FileBlock, FileType
-from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -89,7 +89,8 @@ class AudioElement(BaseBlockElement):
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
         """Get system prompt information for audio blocks."""
-        return super().get_system_prompt_information(
+        return BlockElementMarkdownInformation(
+            block_type=cls.__name__,
             description="Audio blocks embed audio files from external URLs with optional captions",
             syntax_examples=[
                 "[audio](https://example.com/song.mp3)",

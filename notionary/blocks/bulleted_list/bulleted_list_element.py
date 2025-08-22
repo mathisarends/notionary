@@ -8,7 +8,7 @@ from notionary.blocks.bulleted_list.bulleted_list_models import (
     BulletedListItemBlock,
     CreateBulletedListItemBlock,
 )
-from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
@@ -60,7 +60,8 @@ class BulletedListElement(BaseBlockElement):
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
         """Get system prompt information for bulleted list blocks."""
-        return super().get_system_prompt_information(
+        return BlockElementMarkdownInformation(
+            block_type=cls.__name__,
             description="Bulleted list items create unordered lists with bullet points",
             syntax_examples=[
                 "- First item",

@@ -10,7 +10,7 @@ from notionary.blocks.heading.heading_models import (
     CreateHeading3Block,
     HeadingBlock,
 )
-from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
@@ -103,7 +103,8 @@ class ToggleableHeadingElement(BaseBlockElement):
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
         """Get system prompt information for toggleable heading blocks."""
-        return super().get_system_prompt_information(
+        return BlockElementMarkdownInformation(
+            block_type=cls.__name__,
             description="Toggleable heading blocks create collapsible sections with heading-style titles",
             syntax_examples=[
                 "+++# Main Section\nContent goes here\n+++",

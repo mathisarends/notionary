@@ -51,6 +51,7 @@ from notionary.blocks.toggleable_heading import (
     ToggleableHeadingMarkdownBlockParams,
     ToggleableHeadingMarkdownNode,
 )
+from notionary.blocks.types import BlockType, MarkdownBlockType
 from notionary.blocks.video import VideoMarkdownBlockParams, VideoMarkdownNode
 from notionary.markdown.markdown_document_model import (
     MarkdownBlock,
@@ -67,32 +68,38 @@ class MarkdownBuilder:
     def __init__(self) -> None:
         self.children: list[MarkdownNode] = []
 
-        # Explicit mapping instead of dynamic getattr - type-safe and clear
         self._block_processors: dict[str, Callable[[Any], None]] = {
-            "heading": self._add_heading,
-            "paragraph": self._add_paragraph,
-            "quote": self._add_quote,
-            "bulleted_list": self._add_bulleted_list,
-            "numbered_list": self._add_numbered_list,
-            "todo": self._add_todo,
-            "callout": self._add_callout,
-            "code": self._add_code,
-            "image": self._add_image,
-            "video": self._add_video,
-            "audio": self._add_audio,
-            "file": self._add_file,
-            "pdf": self._add_pdf,
-            "bookmark": self._add_bookmark,
-            "embed": self._add_embed,
-            "table": self._add_table,
-            "divider": self._add_divider,
-            "equation": self._add_equation,
-            "table_of_contents": self._add_table_of_contents,
-            "toggle": self._add_toggle,
-            "toggleable_heading": self._add_toggleable_heading,
-            "columns": self._add_columns,
-            "breadcrumb": self._add_breadcrumb,
-            "space": self._add_space,
+            MarkdownBlockType.HEADING_1: self._add_heading,
+            MarkdownBlockType.HEADING_2: self._add_heading,
+            MarkdownBlockType.HEADING_3: self._add_heading,
+            MarkdownBlockType.PARAGRAPH: self._add_paragraph,
+            MarkdownBlockType.QUOTE: self._add_quote,
+            MarkdownBlockType.BULLETED_LIST_ITEM: self._add_bulleted_list,
+            MarkdownBlockType.NUMBERED_LIST_ITEM: self._add_numbered_list,
+            MarkdownBlockType.TO_DO: self._add_todo,
+            MarkdownBlockType.CALLOUT: self._add_callout,
+            MarkdownBlockType.CODE: self._add_code,
+            MarkdownBlockType.IMAGE: self._add_image,
+            MarkdownBlockType.VIDEO: self._add_video,
+            MarkdownBlockType.AUDIO: self._add_audio,
+            MarkdownBlockType.FILE: self._add_file,
+            MarkdownBlockType.PDF: self._add_pdf,
+            MarkdownBlockType.BOOKMARK: self._add_bookmark,
+            MarkdownBlockType.EMBED: self._add_embed,
+            MarkdownBlockType.TABLE: self._add_table,
+            MarkdownBlockType.DIVIDER: self._add_divider,
+            MarkdownBlockType.EQUATION: self._add_equation,
+            MarkdownBlockType.TABLE_OF_CONTENTS: self._add_table_of_contents,
+            MarkdownBlockType.TOGGLE: self._add_toggle,
+            MarkdownBlockType.COLUMN_LIST: self._add_columns,
+            MarkdownBlockType.BREADCRUMB: self._add_breadcrumb,
+            MarkdownBlockType.HEADING: self._add_heading,
+            MarkdownBlockType.BULLETED_LIST: self._add_bulleted_list,
+            MarkdownBlockType.NUMBERED_LIST: self._add_numbered_list,
+            MarkdownBlockType.TODO: self._add_todo,
+            MarkdownBlockType.TOGGLEABLE_HEADING: self._add_toggleable_heading,
+            MarkdownBlockType.COLUMNS: self._add_columns,
+            MarkdownBlockType.SPACE: self._add_space,
         }
 
     @classmethod

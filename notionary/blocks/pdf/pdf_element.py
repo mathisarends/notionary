@@ -5,7 +5,7 @@ from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import ExternalFile, FileBlock, FileType
-from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.pdf.pdf_models import CreatePdfBlock
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
@@ -85,7 +85,8 @@ class PdfElement(BaseBlockElement):
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
         """Get system prompt information for PDF blocks."""
-        return super().get_system_prompt_information(
+        return BlockElementMarkdownInformation(
+            block_type=cls.__name__,
             description="PDF blocks embed and display PDF documents from external URLs with optional captions",
             syntax_examples=[
                 "[pdf](https://example.com/document.pdf)",

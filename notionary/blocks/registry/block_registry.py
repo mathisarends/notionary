@@ -149,7 +149,7 @@ class BlockRegistry:
         Returns:
             A formatted string with markdown syntax documentation
         """
-        from notionary.blocks.markdown_syntax_builder import MarkdownSyntaxBuilder
+        from notionary.blocks.syntax_prompt_builder import MarkdownSyntaxBuilder
 
         builder = MarkdownSyntaxBuilder(self)
 

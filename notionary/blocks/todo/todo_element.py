@@ -4,7 +4,7 @@ import re
 from typing import TYPE_CHECKING, Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
@@ -67,7 +67,8 @@ class TodoElement(BaseBlockElement):
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
         """Get system prompt information for todo blocks."""
-        return super().get_system_prompt_information(
+        return BlockElementMarkdownInformation(
+            block_type=cls.__name__,
             description="Todo blocks create interactive checkboxes for task management",
             syntax_examples=[
                 "- [ ] Unchecked todo item",

@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from notionary.blocks.registry.block_registry import BlockRegistry
-    from notionary.blocks.base_block_element import BaseBlockElement
-    
+
+
 @dataclass
 class BlockElementMarkdownInformation:
     """Metadata describing how a Notion block maps to Markdown syntax."""
@@ -19,7 +19,7 @@ class BlockElementMarkdownInformation:
     usage_guidelines: str
 
 
-class MarkdownSyntaxBuilder:
+class SyntaxPromptBuilder:
     """
     Builds a comprehensive markdown syntax reference from a block registry.
     Iterates over all registered elements and collects their system prompt information.
@@ -31,10 +31,6 @@ class MarkdownSyntaxBuilder:
     def build_markdown_reference(self) -> str:
         """
         Build a complete markdown syntax reference string.
-
-        Returns:
-            A structured string containing all markdown syntax information
-            from registered block elements.
         """
         sections = [
             self._build_header(),
@@ -50,7 +46,7 @@ class MarkdownSyntaxBuilder:
         lines = ["# Notionary Markdown Syntax"]
 
         for element_class in self.block_registry.get_elements():
-            info = self._get_element_info(element_class)
+            info: Optional[BlockElementMarkdownInformation] = element_class.get_system_prompt_information()
             if info and info.syntax_examples:
                 # Just show the first example for conciseness
                 example = info.syntax_examples[0]
@@ -58,13 +54,12 @@ class MarkdownSyntaxBuilder:
 
         return "\n".join(lines)
 
-
     def get_blocks_with_information(self) -> list[str]:
         """Get list of block names that provide system prompt information."""
         blocks = []
 
         for element_class in self.block_registry.get_elements():
-            info = self._get_element_info(element_class)
+            info: Optional[BlockElementMarkdownInformation] = element_class.get_system_prompt_information()
             if info:
                 blocks.append(info.block_type)
 
@@ -90,7 +85,7 @@ class MarkdownSyntaxBuilder:
         sections = []
 
         for element_class in self.block_registry.get_elements():
-            info = self._get_element_info(element_class)
+            info = element_class.get_system_prompt_information()
             if info:
                 sections.append(self._build_element_section(info))
 
@@ -102,57 +97,37 @@ class MarkdownSyntaxBuilder:
             f"## {info.block_type}",
             "",
             f"**Description:** {info.description}",
-            ""
+            "",
         ]
 
         if info.usage_guidelines:
-            section_parts.extend([
-                "**When to use:**",
-                info.usage_guidelines,
-                ""
-            ])
+            section_parts.extend(["**When to use:**", info.usage_guidelines, ""])
 
         if info.syntax_examples:
-            section_parts.extend([
-                "**Syntax:**",
-                "",
-                *self._format_syntax_examples(info.syntax_examples),
-                ""
-            ])
+            section_parts.extend(
+                [
+                    "**Syntax:**",
+                    "",
+                    *self._format_syntax_examples(info.syntax_examples),
+                    "",
+                ]
+            )
 
         return "\n".join(section_parts).rstrip()
 
     def _format_syntax_examples(self, examples: list[str]) -> list[str]:
         """Format syntax examples with proper markdown and clear structure."""
         formatted = []
-        
+
         for i, example in enumerate(examples, 1):
             if len(examples) > 1:
                 formatted.append(f"**Example {i}:**")
-                
+
             if "\n" in example:
                 # Multi-line example - use code block
-                formatted.extend([
-                    "```",
-                    example,
-                    "```",
-                    ""
-                ])
+                formatted.extend(["```", example, "```", ""])
             else:
                 # Single line - use inline code with description
-                formatted.extend([
-                    f"`{example}`",
-                    ""
-                ])
+                formatted.extend([f"`{example}`", ""])
 
         return formatted
-
-    def _get_element_info(
-        self, element_class: BaseBlockElement
-    ) -> Optional[BlockElementMarkdownInformation]:
-        """Safely get system prompt information from an element class."""
-        try:
-            return element_class.get_system_prompt_information()
-        except Exception:
-            # Skip elements that fail to provide information
-            return None

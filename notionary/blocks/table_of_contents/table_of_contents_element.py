@@ -4,7 +4,7 @@ import re
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.table_of_contents.table_of_contents_models import (
     CreateTableOfContentsBlock,
@@ -52,9 +52,11 @@ class TableOfContentsElement(BaseBlockElement):
         return f"[toc]({color})"
 
     @classmethod
+    @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
         """Get system prompt information for table of contents blocks."""
-        return super().get_system_prompt_information(
+        return BlockElementMarkdownInformation(
+            block_type=cls.__name__,
             description="Table of contents blocks automatically generate navigation for page headings",
             syntax_examples=[
                 "[toc]",

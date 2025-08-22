@@ -1,11 +1,9 @@
-from __future__ import annotations
-
-import re
 from typing import Optional
+import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.column.column_models import ColumnListBlock, CreateColumnListBlock
-from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.types import BlockType
 
@@ -39,12 +37,16 @@ class ColumnListElement(BaseBlockElement):
         return CreateColumnListBlock(column_list=column_list_content)
 
     @classmethod
+    @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
         """Get system prompt information for column list blocks."""
-        return super().get_system_prompt_information(
+        return BlockElementMarkdownInformation(
+            block_type=cls.__name__,
             description="Column list containers organize multiple columns in side-by-side layouts",
             syntax_examples=[
-                "::: columns\n::: column\nContent 1\n:::\n::: column\nContent 2\n:::\n:::"
+                "::: columns\n::: column\nContent 1\n:::\n::: column\nContent 2\n:::\n:::",
+                "::: columns\n::: column 0.6\nMain content\n:::\n::: column 0.4\nSidebar\n:::\n:::",
+                "::: columns\n::: column 0.25\nLeft\n:::\n::: column 0.5\nCenter\n:::\n::: column 0.25\nRight\n:::\n:::"
             ],
-            usage_guidelines="Use to create multi-column layouts. Contains individual ::: column blocks. Ends with :::. Each column can have different content and optional width ratios.",
+            usage_guidelines="Use to create multi-column layouts with at least 2 columns. Column width ratios must add up to 1.0 when specified. Each column can contain any block content. Ends with :::.",
         )

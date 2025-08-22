@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC
 from typing import Optional
 
-from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
 
 
@@ -31,12 +31,10 @@ class BaseBlockElement(ABC):
         return bool(cls.notion_to_markdown(block))  # Now calls the class's version
 
     @classmethod
-    def get_system_prompt_information(
-        cls, description: str, syntax_examples: list[str], usage_guidelines: str
-    ) -> Optional[BlockElementMarkdownInformation]:
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description=description,
-            syntax_examples=syntax_examples,
-            usage_guidelines=usage_guidelines,
-        )
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for this block element.
+        
+        Subclasses should override this method to provide their specific information.
+        Return None if the element should not be included in documentation.
+        """
+        return None

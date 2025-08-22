@@ -10,7 +10,7 @@ from notionary.blocks.file.file_element_models import (
     FileUploadFile,
     NotionHostedFile,
 )
-from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -80,7 +80,8 @@ class EmbedElement(BaseBlockElement):
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
         """Get system prompt information for embed blocks."""
-        return super().get_system_prompt_information(
+        return BlockElementMarkdownInformation(
+            block_type=cls.__name__,
             description="Embed blocks display interactive content from external URLs like videos, maps, or widgets",
             syntax_examples=[
                 "[embed](https://youtube.com/watch?v=123)",

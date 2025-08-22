@@ -5,7 +5,7 @@ import random
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from notionary.blocks.client import NotionBlockClient
-from notionary.blocks.markdown_syntax_builder import MarkdownSyntaxBuilder
+from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.blocks.models import DatabaseParent
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
@@ -210,7 +210,7 @@ class NotionPage(LoggingMixin):
         return self.block_element_registry.builder
 
     def get_prompt_information(self) -> str:
-        markdown_syntax_builder = MarkdownSyntaxBuilder()
+        markdown_syntax_builder = SyntaxPromptBuilder()
         return markdown_syntax_builder.build_concise_reference()
 
     async def set_title(self, title: str) -> str:
