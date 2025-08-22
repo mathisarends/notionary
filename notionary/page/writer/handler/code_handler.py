@@ -1,7 +1,6 @@
 import re
 
 from notionary.blocks.code.code_element import CodeElement
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.page.writer.handler.line_handler import (
     LineHandler,
     LineProcessingContext,
@@ -41,32 +40,17 @@ class CodeHandler(LineHandler):
         return len(context.parent_stack) > 0
 
     def _process_complete_code_block(self, context: LineProcessingContext) -> None:
-        """Process the entire code block in one go."""
-        # Extract language and caption from opening fence
-        language, caption = self._extract_fence_info(context.line)
-
-        # Create base code block
-        result = CodeElement.markdown_to_notion(f"```{language}")
-        if not result:
-            return
-
-        block = result
-
+        """Process the entire code block in one go using CodeElement."""
         code_lines, lines_to_consume = self._collect_code_lines(context)
 
-        self._set_block_content(block, code_lines)
-
-        self._set_block_caption(block, caption)
-
-        context.lines_consumed = lines_to_consume
-        context.result_blocks.append(block)
-
-    def _extract_fence_info(self, line: str) -> tuple[str, str]:
-        """Extract the language and optional caption from a code fence."""
-        match = self._code_start_pattern.match(line.strip())
-        lang = match.group(1) if match and match.group(1) else ""
-        cap = match.group(2) if match and match.group(2) else ""
-        return lang, cap
+        block = CodeElement.create_from_markdown_block(
+            opening_line=context.line,
+            code_lines=code_lines
+        )
+        
+        if block:
+            context.lines_consumed = lines_to_consume
+            context.result_blocks.append(block)
 
     def _collect_code_lines(
         self, context: LineProcessingContext
@@ -85,16 +69,3 @@ class CodeHandler(LineHandler):
         """Mark context as processed and continue."""
         context.was_processed = True
         context.should_continue = True
-
-    def _set_block_content(self, block, code_lines: list[str]) -> None:
-        """Set the code rich_text content on the block."""
-        if not code_lines:
-            return
-        content = "\n".join(code_lines)
-        block.code.rich_text = [RichTextObject.for_code_block(content)]
-
-    def _set_block_caption(self, block, caption: str) -> None:
-        """Append caption to the code block if provided."""
-        if not caption:
-            return
-        block.code.caption.append(RichTextObject.for_code_block(caption))

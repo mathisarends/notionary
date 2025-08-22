@@ -22,6 +22,7 @@ class CodeElement(BaseBlockElement):
 
     DEFAULT_LANGUAGE = "plain text"
     CODE_START_PATTERN = re.compile(r"^```(\w*)\s*$")
+    CODE_START_WITH_CAPTION_PATTERN = re.compile(r"^```(\w*)\s*(?:\"([^\"]*)\")?\s*$")
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -39,6 +40,42 @@ class CodeElement(BaseBlockElement):
 
         # Create empty CodeBlock - content will be added by stack processor
         code_block = CodeBlock(rich_text=[], language=language, caption=[])
+        return CreateCodeBlock(code=code_block)
+
+    @classmethod
+    def create_from_markdown_block(
+        cls, 
+        opening_line: str, 
+        code_lines: list[str]
+    ) -> BlockCreateResult:
+        """
+        Create a complete code block from markdown components.
+        """
+        match = cls.CODE_START_WITH_CAPTION_PATTERN.match(opening_line.strip())
+        if not match:
+            return None
+            
+        language = (match.group(1) or cls.DEFAULT_LANGUAGE).lower()
+        language = cls._normalize_language(language)
+        
+        caption = match.group(2) if match.group(2) else None
+        
+        # Create rich text content from code lines
+        rich_text = []
+        if code_lines:
+            content = "\n".join(code_lines)
+            rich_text = [RichTextObject.for_code_block(content)]
+        
+        caption_list = []
+        if caption:
+            caption_list = [RichTextObject.for_code_block(caption)]
+        
+        code_block = CodeBlock(
+            rich_text=rich_text, 
+            language=language, 
+            caption=caption_list
+        )
+        
         return CreateCodeBlock(code=code_block)
 
     @classmethod

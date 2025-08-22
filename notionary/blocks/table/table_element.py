@@ -5,8 +5,9 @@ from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.blocks.table.table_models import CreateTableBlock, TableBlock
+from notionary.blocks.table.table_models import CreateTableBlock, TableBlock, CreateTableRowBlock, TableRowBlock
 from notionary.blocks.types import BlockType
 
 
@@ -17,12 +18,11 @@ class TableElement(BaseBlockElement):
 
     Markdown table syntax:
     | Header 1 | Header 2 | Header 3 |
-    [table rows as child lines]
+    | -------- | -------- | -------- |
+    | Cell 1   | Cell 2   | Cell 3   |
     """
 
-    # Pattern für Table-Zeilen (jede Zeile die mit | startet und endet)
     ROW_PATTERN = re.compile(r"^\s*\|(.+)\|\s*$")
-    # Pattern für Separator-Zeilen
     SEPARATOR_PATTERN = re.compile(r"^\s*\|([\s\-:|]+)\|\s*$")
 
     @classmethod
@@ -40,7 +40,6 @@ class TableElement(BaseBlockElement):
         header_cells = cls._parse_table_row(text)
         col_count = len(header_cells)
 
-        # Create empty TableBlock - content will be added by stack processor
         table_block = TableBlock(
             table_width=col_count,
             has_column_header=True,
@@ -49,6 +48,85 @@ class TableElement(BaseBlockElement):
         )
 
         return CreateTableBlock(table=table_block)
+
+    @classmethod
+    def create_from_markdown_table(cls, table_lines: list[str]) -> BlockCreateResult:
+        """
+        Create a complete table block from markdown table lines.
+        """
+        if not table_lines:
+            return None
+            
+        first_row = None
+        for line in table_lines:
+            line = line.strip()
+            if line and cls.ROW_PATTERN.match(line):
+                first_row = line
+                break
+                
+        if not first_row:
+            return None
+            
+        # Parse header row to determine column count
+        header_cells = cls._parse_table_row(first_row)
+        col_count = len(header_cells)
+        
+        # Process all table lines
+        table_rows, separator_found = cls._process_table_lines(table_lines)
+        
+        # Create complete TableBlock
+        table_block = TableBlock(
+            table_width=col_count,
+            has_column_header=separator_found,
+            has_row_header=False,
+            children=table_rows,
+        )
+        
+        return CreateTableBlock(table=table_block)
+
+    @classmethod
+    def _process_table_lines(
+        cls, table_lines: list[str]
+    ) -> tuple[list[CreateTableRowBlock], bool]:
+        """Process all table lines and return rows and separator status."""
+        table_rows = []
+        separator_found = False
+
+        for line in table_lines:
+            line = line.strip()
+            if not line:
+                continue
+
+            if cls._is_separator_line(line):
+                separator_found = True
+                continue
+
+            if cls.ROW_PATTERN.match(line):
+                table_row = cls._create_table_row_from_line(line)
+                table_rows.append(table_row)
+
+        return table_rows, separator_found
+
+    @classmethod
+    def _is_separator_line(cls, line: str) -> bool:
+        """Check if line is a table separator (|---|---|)."""
+        return cls.SEPARATOR_PATTERN.match(line) is not None
+
+    @classmethod
+    def _create_table_row_from_line(cls, line: str) -> CreateTableRowBlock:
+        """Create a table row block from a markdown line."""
+        cells = cls._parse_table_row(line)
+        rich_text_cells = [cls._convert_cell_to_rich_text(cell) for cell in cells]
+        table_row = TableRowBlock(cells=rich_text_cells)
+        return CreateTableRowBlock(table_row=table_row)
+
+    @classmethod
+    def _convert_cell_to_rich_text(cls, cell: str) -> list[RichTextObject]:
+        """Convert cell text to rich text objects."""
+        rich_text = TextInlineFormatter.parse_inline_formatting(cell)
+        if not rich_text:
+            rich_text = [RichTextObject.from_plain_text(cell)]
+        return rich_text
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:
@@ -80,7 +158,7 @@ class TableElement(BaseBlockElement):
         header_processed = False
 
         for child in children:
-            if child.type != "table_row":
+            if child.type != BlockType.TABLE_ROW:
                 continue
 
             if not child.table_row:

@@ -25,25 +25,15 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        await page.replace_content(
-            """
-            ### Overview
-
-            This is a simple demo page for Notionary.
-
-            ### Features
-
-            - Retrieve page information
-            - Display text content
-            
-            ---
-            
-            this should work
-            
-            """
+        await page.append_markdown(lambda b: 
+            b.table(
+                headers=["Name", "Description"],
+                rows=[
+                    ["Item 1", "Description for item 1"],
+                    ["Item 2", "Description for item 2"],
+                ]
+            )
         )
-
-        print("yearh")
 
     except Exception as e:
         import traceback
