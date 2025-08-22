@@ -23,37 +23,39 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        # Test all media blocks with the new caption syntax
-        markdown = """
-# Caption Syntax Test
-
-## Bookmark Examples
-[bookmark](https://reddit.com)(caption:Popular discussion platform)
-
-## Image Examples  
-[image](https://example.com/screenshot.png)(caption:Dashboard overview)
-
-## Video Examples
-[video](https://www.youtube.com/watch?v=dQw4w9WgXcQ)(caption:Music Video)
-
-## Audio Examples
-[audio](https://example.com/interview.mp3)(caption:Live interview)
-
-## File Examples
-
-[file](https://example.com/manual.pdf)(caption:User manual)
-
-## PDF Examples
-[pdf](https://example.com/manual.pdf)(caption:Critical safety information)
-        """
-
+        # Test all media blocks with the MarkdownBuilder
         await page.append_markdown(
-            lambda b: b.bookmark(
-                title="Caption Syntax Test",
-                url="https://example.com",
-                caption="This is a test bookmark with caption.",
+            lambda b: (
+                b.h1("Caption Syntax Test")
+                .h2("Media Block Examples")
+                .bookmark(
+                    url="https://reddit.com",
+                    title="Reddit",
+                    caption="Popular discussion platform"
+                )
+                .image(
+                    url="https://example.com/screenshot.png",
+                    caption="Dashboard overview"
+                )
+                .video(
+                    url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                    caption="Music Video"
+                )
+                .audio(
+                    url="https://example.com/interview.mp3",
+                    caption="Live interview"
+                )
+                .file(
+                    url="https://example.com/manual.pdf",
+                    caption="User manual"
+                )
+                .pdf(
+                    url="https://example.com/manual.pdf",
+                    caption="Critical safety information"
+                )
             )
         )
+        
         print("✅ Successfully added all caption syntax examples!")
 
         content = await page.get_text_content()

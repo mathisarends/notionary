@@ -5,6 +5,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
 
 class ImageMarkdownBlockParams(BaseModel):
@@ -12,10 +13,9 @@ class ImageMarkdownBlockParams(BaseModel):
     caption: Optional[str] = None
 
 
-class ImageMarkdownNode(MarkdownNode):
+class ImageMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     """
     Programmatic interface for creating Notion-style image blocks.
-    Example: [image](https://example.com/image.jpg "Optional caption")
     """
 
     def __init__(
@@ -30,6 +30,11 @@ class ImageMarkdownNode(MarkdownNode):
         return cls(url=params.url, caption=params.caption)
 
     def to_markdown(self) -> str:
-        if self.caption:
-            return f'[image]({self.url} "{self.caption}")'
-        return f"[image]({self.url})"
+        """Return the Markdown representation.
+
+        Examples:
+        - [image](https://example.com/screenshot.png)
+        - [image](https://example.com/screenshot.png)(caption:Dashboard overview)
+        """
+        base_markdown = f"[image]({self.url})"
+        return self.append_caption_to_markdown(base_markdown, self.caption)

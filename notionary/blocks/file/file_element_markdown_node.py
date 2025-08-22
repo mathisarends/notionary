@@ -5,6 +5,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
 
 class FileMarkdownNodeParams(BaseModel):
@@ -12,10 +13,9 @@ class FileMarkdownNodeParams(BaseModel):
     caption: Optional[str] = None
 
 
-class FileMarkdownNode(MarkdownNode):
+class FileMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     """
     Programmatic interface for creating Notion-style Markdown file embeds.
-    Example: [file](https://example.com/file.pdf "My Caption")
     """
 
     def __init__(self, url: str, caption: Optional[str] = None):
@@ -27,9 +27,11 @@ class FileMarkdownNode(MarkdownNode):
         return cls(url=params.url, caption=params.caption)
 
     def to_markdown(self) -> str:
+        """Return the Markdown representation.
+
+        Examples:
+        - [file](https://example.com/document.pdf)
+        - [file](https://example.com/document.pdf)(caption:User manual)
         """
-        Convert to markdown as [file](url "caption") or [file](url) if caption is empty.
-        """
-        if self.caption:
-            return f'[file]({self.url} "{self.caption}")'
-        return f"[file]({self.url})"
+        base_markdown = f"[file]({self.url})"
+        return self.append_caption_to_markdown(base_markdown, self.caption)

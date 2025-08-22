@@ -5,6 +5,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
 
 class VideoMarkdownBlockParams(BaseModel):
@@ -12,10 +13,9 @@ class VideoMarkdownBlockParams(BaseModel):
     caption: Optional[str] = None
 
 
-class VideoMarkdownNode(MarkdownNode):
+class VideoMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     """
     Programmatic interface for creating Notion-style video blocks.
-    Example: [video](https://example.com/video.mp4 "Optional caption")
     """
 
     def __init__(self, url: str, caption: Optional[str] = None):
@@ -27,6 +27,11 @@ class VideoMarkdownNode(MarkdownNode):
         return cls(url=params.url, caption=params.caption)
 
     def to_markdown(self) -> str:
-        if self.caption:
-            return f'[video]({self.url} "{self.caption}")'
-        return f"[video]({self.url})"
+        """Return the Markdown representation.
+
+        Examples:
+        - [video](https://example.com/movie.mp4)
+        - [video](https://www.youtube.com/watch?v=dQw4w9WgXcQ)(caption:Music Video)
+        """
+        base_markdown = f"[video]({self.url})"
+        return self.append_caption_to_markdown(base_markdown, self.caption)

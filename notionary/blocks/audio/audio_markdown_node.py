@@ -5,6 +5,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
 
 class AudioMarkdownBlockParams(BaseModel):
@@ -12,7 +13,7 @@ class AudioMarkdownBlockParams(BaseModel):
     caption: Optional[str] = None
 
 
-class AudioMarkdownNode(MarkdownNode):
+class AudioMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     """
     Programmatic interface for creating Notion-style audio blocks.
     """
@@ -26,6 +27,11 @@ class AudioMarkdownNode(MarkdownNode):
         return cls(url=params.url, caption=params.caption)
 
     def to_markdown(self) -> str:
-        if self.caption:
-            return f'[audio]({self.url} "{self.caption}")'
-        return f"[audio]({self.url})"
+        """Return the Markdown representation.
+
+        Examples:
+        - [audio](https://example.com/song.mp3)
+        - [audio](https://example.com/song.mp3)(caption:Background music)
+        """
+        base_markdown = f"[audio]({self.url})"
+        return self.append_caption_to_markdown(base_markdown, self.caption)
