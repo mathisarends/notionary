@@ -46,7 +46,7 @@ class ColumnListElement(BaseBlockElement):
             syntax_examples=[
                 "::: columns\n::: column\nContent 1\n:::\n::: column\nContent 2\n:::\n:::",
                 "::: columns\n::: column 0.6\nMain content\n:::\n::: column 0.4\nSidebar\n:::\n:::",
-                "::: columns\n::: column 0.25\nLeft\n:::\n::: column 0.5\nCenter\n:::\n::: column 0.25\nRight\n:::\n:::"
+                "::: columns\n::: column 0.25\nLeft\n:::\n::: column 0.5\nCenter\n:::\n::: column 0.25\nRight\n:::\n:::",
             ],
             usage_guidelines="Use to create multi-column layouts with at least 2 columns. Column width ratios must add up to 1.0 when specified. Each column can contain any block content. Ends with :::.",
         )

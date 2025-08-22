@@ -5,29 +5,23 @@ from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
+from notionary.blocks.mixins import CaptionMixin
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-# BookmarkElement implementation using BlockType enum and TextInlineFormatter
-class BookmarkElement(BaseBlockElement):
+class BookmarkElement(BaseBlockElement, CaptionMixin):
     """
     Handles conversion between Markdown bookmarks and Notion bookmark blocks.
 
     Markdown bookmark syntax:
     - [bookmark](https://example.com) - URL only
-    - [bookmark](https://example.com "Title") - URL + title
-    - [bookmark](https://example.com "Title" "Description") - URL + title + description
+    - [bookmark](https://example.com)(caption:This is a caption) - URL with caption
+    - (caption:This is a caption)[bookmark](https://example.com) - caption before URL
     """
 
-    PATTERN = re.compile(
-        r"^\[bookmark\]\("  # prefix
-        r"(https?://[^\s\"]+)"  # URL
-        r"(?:\s+\"([^\"]+)\")?"  # optional Title
-        r"(?:\s+\"([^\"]+)\")?"  # optional Description
-        r"\)$"
-    )
+    # Flexible pattern that can handle caption in any position
+    BOOKMARK_PATTERN = re.compile(r"\[bookmark\]\((https?://[^\s\"]+)\)")
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -38,24 +32,17 @@ class BookmarkElement(BaseBlockElement):
         """
         Convert a markdown bookmark into a Notion BookmarkBlock.
         """
-        if not (m := cls.PATTERN.match(text.strip())):
+        # Use our own regex to find the bookmark URL
+        bookmark_match = cls.BOOKMARK_PATTERN.search(text.strip())
+        if not bookmark_match:
             return None
 
-        url, title, description = m.group(1), m.group(2), m.group(3)
+        url = bookmark_match.group(1)
+        
+        caption_text = cls.extract_caption(text.strip())
+        caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 
-        # Build caption texts
-        parts: list[str] = []
-        if title:
-            parts.append(title)
-        if description:
-            parts.append(description)
-
-        caption = []
-        if parts:
-            joined = " – ".join(parts)
-            caption = TextInlineFormatter.parse_inline_formatting(joined)
-
-        bookmark_data = BookmarkBlock(url=url, caption=caption)
+        bookmark_data = BookmarkBlock(url=url, caption=caption_rich_text)
         return CreateBookmarkBlock(bookmark=bookmark_data)
 
     @classmethod
@@ -68,28 +55,26 @@ class BookmarkElement(BaseBlockElement):
         if not url:
             return None
 
-        captions = bm.caption or []
-        if not captions:
-            return f"[bookmark]({url})"
+        result = f"[bookmark]({url})"
 
-        text = TextInlineFormatter.extract_text_with_formatting(captions)
+        # Add caption if present
+        caption_markdown = cls.format_caption_for_markdown(bm.caption or [])
+        if caption_markdown:
+            result += caption_markdown
 
-        if " - " in text:
-            title, desc = map(str.strip, text.split(" - ", 1))
-            return f'[bookmark]({url} "{title}" "{desc}")'
-
-        return f'[bookmark]({url} "{text}")'
+        return result
 
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
         """Get system prompt information for bookmark blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,
-            description="Bookmark blocks create previews of web pages with optional title and description",
+            description="Bookmark blocks create previews of web pages with optional captions",
             syntax_examples=[
                 "[bookmark](https://example.com)",
-                '[bookmark](https://example.com "Page Title")',
-                '[bookmark](https://example.com "Page Title" "Description text")',
+                "[bookmark](https://example.com)(caption:This is a caption)",
+                "(caption:Check out this repository)[bookmark](https://github.com/user/repo)",
+                "[bookmark](https://github.com/user/repo)(caption:Check out this **awesome** repository)",
             ],
-            usage_guidelines="Use for linking to external websites with rich previews. URL is required. Title and description are optional and will be shown in the preview card.",
+            usage_guidelines="Use for linking to external websites with rich previews. URL is required. Caption supports rich text formatting and is optional.",
         )

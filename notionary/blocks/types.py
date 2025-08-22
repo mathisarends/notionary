@@ -73,7 +73,7 @@ class MarkdownBlockType(str, Enum):
     Includes all BlockType values and adds user-friendly aliases
     for blocks with no direct Notion API counterpart.
     """
-    
+
     # All BlockType values
     BOOKMARK = "bookmark"
     BREADCRUMB = "breadcrumb"
@@ -107,7 +107,7 @@ class MarkdownBlockType(str, Enum):
     UNSUPPORTED = "unsupported"
     VIDEO = "video"
     AUDIO = "audio"
-    
+
     # Markdown-specific aliases
     HEADING = "heading"
     BULLETED_LIST = "bulleted_list"

@@ -46,7 +46,9 @@ class SyntaxPromptBuilder:
         lines = ["# Notionary Markdown Syntax"]
 
         for element_class in self.block_registry.get_elements():
-            info: Optional[BlockElementMarkdownInformation] = element_class.get_system_prompt_information()
+            info: Optional[BlockElementMarkdownInformation] = (
+                element_class.get_system_prompt_information()
+            )
             if info and info.syntax_examples:
                 # Just show the first example for conciseness
                 example = info.syntax_examples[0]
@@ -59,7 +61,9 @@ class SyntaxPromptBuilder:
         blocks = []
 
         for element_class in self.block_registry.get_elements():
-            info: Optional[BlockElementMarkdownInformation] = element_class.get_system_prompt_information()
+            info: Optional[BlockElementMarkdownInformation] = (
+                element_class.get_system_prompt_information()
+            )
             if info:
                 blocks.append(info.block_type)
 
