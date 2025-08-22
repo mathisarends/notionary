@@ -4,6 +4,7 @@ import re
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.table_of_contents.table_of_contents_models import (
     CreateTableOfContentsBlock,
@@ -49,3 +50,17 @@ class TableOfContentsElement(BaseBlockElement):
         if color == "default":
             return "[toc]"
         return f"[toc]({color})"
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for table of contents blocks."""
+        return super().get_system_prompt_information(
+            description="Table of contents blocks automatically generate navigation for page headings",
+            syntax_examples=[
+                "[toc]",
+                "[toc](blue)",
+                "[toc](blue_background)",
+                "[toc](gray_background)",
+            ],
+            usage_guidelines="Use to automatically generate a clickable table of contents from page headings. Optional color parameter changes the appearance. Default color is gray.",
+        )

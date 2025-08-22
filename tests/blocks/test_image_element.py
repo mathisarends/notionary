@@ -60,7 +60,7 @@ def test_markdown_to_notion_without_caption():
     result = ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
 
     assert result is not None
-    
+
     # Check image block
     image_block = result
     assert isinstance(image_block, CreateImageBlock)

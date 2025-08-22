@@ -10,6 +10,7 @@ from notionary.blocks.heading.heading_models import (
     CreateHeading3Block,
     HeadingBlock,
 )
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
@@ -98,3 +99,16 @@ class ToggleableHeadingElement(BaseBlockElement):
         prefix = "#" * level
 
         return f'+++{prefix} {text or ""}'
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for toggleable heading blocks."""
+        return super().get_system_prompt_information(
+            description="Toggleable heading blocks create collapsible sections with heading-style titles",
+            syntax_examples=[
+                "+++# Main Section\nContent goes here\n+++",
+                "+++## Subsection\nSubsection content\n+++",
+                "+++### Details\nDetailed information\n+++",
+            ],
+            usage_guidelines="Use for collapsible sections with heading structure. Combines heading levels (1-3) with toggle functionality. Great for organizing hierarchical expandable content.",
+        )

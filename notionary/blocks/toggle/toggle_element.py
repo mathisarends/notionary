@@ -4,6 +4,7 @@ import re
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -94,3 +95,16 @@ class ToggleElement(BaseBlockElement):
                 elif "plain_text" in text_obj:
                     result += text_obj.get("plain_text", "")
         return result
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for toggle blocks."""
+        return super().get_system_prompt_information(
+            description="Toggle blocks create collapsible sections with expandable content",
+            syntax_examples=[
+                "+++Title\nContent goes here\n+++",
+                "+++Details\nMore information\nAdditional content\n+++",
+                "+++FAQ\nFrequently asked questions\n+++",
+            ],
+            usage_guidelines="Use for collapsible content sections. Start with +++Title, add content, end with +++. Great for FAQs, details, or organizing long content.",
+        )

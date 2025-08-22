@@ -4,10 +4,16 @@ import re
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.blocks.table.table_models import CreateTableBlock, TableBlock, CreateTableRowBlock, TableRowBlock
+from notionary.blocks.table.table_models import (
+    CreateTableBlock,
+    TableBlock,
+    CreateTableRowBlock,
+    TableRowBlock,
+)
 from notionary.blocks.types import BlockType
 
 
@@ -56,24 +62,24 @@ class TableElement(BaseBlockElement):
         """
         if not table_lines:
             return None
-            
+
         first_row = None
         for line in table_lines:
             line = line.strip()
             if line and cls.ROW_PATTERN.match(line):
                 first_row = line
                 break
-                
+
         if not first_row:
             return None
-            
+
         # Parse header row to determine column count
         header_cells = cls._parse_table_row(first_row)
         col_count = len(header_cells)
-        
+
         # Process all table lines
         table_rows, separator_found = cls._process_table_lines(table_lines)
-        
+
         # Create complete TableBlock
         table_block = TableBlock(
             table_width=col_count,
@@ -81,7 +87,7 @@ class TableElement(BaseBlockElement):
             has_row_header=False,
             children=table_rows,
         )
-        
+
         return CreateTableBlock(table=table_block)
 
     @classmethod
@@ -200,3 +206,14 @@ class TableElement(BaseBlockElement):
     def is_table_row(cls, line: str) -> bool:
         """Check if a line is a valid table row."""
         return bool(cls.ROW_PATTERN.match(line.strip()))
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for table blocks."""
+        return super().get_system_prompt_information(
+            description="Table blocks create structured data in rows and columns with headers",
+            syntax_examples=[
+                "| Name | Age | City |\n| -------- | -------- | -------- |\n| Alice | 25 | Berlin |\n| Bob | 30 | Munich |"
+            ],
+            usage_guidelines="Use for structured data presentation. First row is header, second row is separator with dashes, following rows are data. Cells are separated by | characters.",
+        )

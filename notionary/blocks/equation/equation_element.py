@@ -5,6 +5,7 @@ from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.types import BlockType
 
@@ -78,3 +79,17 @@ class EquationElement(BaseBlockElement):
             return f'[equation]("{escaped_expression}")'
 
         return f"[equation]({expression})"
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for equation blocks."""
+        return super().get_system_prompt_information(
+            description="Equation blocks render mathematical expressions using LaTeX syntax",
+            syntax_examples=[
+                "[equation](E = mc^2)",
+                '[equation]("f(x) = sin(x)")',
+                '[equation]("\\\\frac{a}{b} + \\\\sqrt{c}")',
+                '[equation]("x^2 + y^2 = z^2")',
+            ],
+            usage_guidelines="Use for mathematical expressions and formulas. Simple expressions without parentheses or quotes can be unquoted. Complex expressions with parentheses, quotes, or newlines must be quoted.",
+        )

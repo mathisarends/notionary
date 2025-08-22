@@ -10,6 +10,7 @@ from notionary.blocks.file.file_element_models import (
     FileUploadFile,
     NotionHostedFile,
 )
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -75,3 +76,16 @@ class EmbedElement(BaseBlockElement):
         )
 
         return f'[embed]({url} "{text}")'
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for embed blocks."""
+        return super().get_system_prompt_information(
+            description="Embed blocks display interactive content from external URLs like videos, maps, or widgets",
+            syntax_examples=[
+                "[embed](https://youtube.com/watch?v=123)",
+                '[embed](https://maps.google.com/location "Map Location")',
+                '[embed](https://codepen.io/pen/123 "Interactive Demo")',
+            ],
+            usage_guidelines="Use for embedding interactive content that supports iframe embedding. URL must be from a supported platform. Caption describes the embedded content.",
+        )

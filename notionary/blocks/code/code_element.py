@@ -5,6 +5,7 @@ from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.code.code_models import CodeBlock, CodeLanguage, CreateCodeBlock
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
@@ -44,9 +45,7 @@ class CodeElement(BaseBlockElement):
 
     @classmethod
     def create_from_markdown_block(
-        cls, 
-        opening_line: str, 
-        code_lines: list[str]
+        cls, opening_line: str, code_lines: list[str]
     ) -> BlockCreateResult:
         """
         Create a complete code block from markdown components.
@@ -54,28 +53,26 @@ class CodeElement(BaseBlockElement):
         match = cls.CODE_START_WITH_CAPTION_PATTERN.match(opening_line.strip())
         if not match:
             return None
-            
+
         language = (match.group(1) or cls.DEFAULT_LANGUAGE).lower()
         language = cls._normalize_language(language)
-        
+
         caption = match.group(2) if match.group(2) else None
-        
+
         # Create rich text content from code lines
         rich_text = []
         if code_lines:
             content = "\n".join(code_lines)
             rich_text = [RichTextObject.for_code_block(content)]
-        
+
         caption_list = []
         if caption:
             caption_list = [RichTextObject.for_code_block(caption)]
-        
+
         code_block = CodeBlock(
-            rich_text=rich_text, 
-            language=language, 
-            caption=caption_list
+            rich_text=rich_text, language=language, caption=caption_list
         )
-        
+
         return CreateCodeBlock(code=code_block)
 
     @classmethod
@@ -135,3 +132,17 @@ class CodeElement(BaseBlockElement):
     def extract_caption(caption_list: list[RichTextObject]) -> str:
         """Extract caption text from caption array."""
         return "".join(rt.plain_text for rt in caption_list if rt.plain_text)
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for code blocks."""
+        return super().get_system_prompt_information(
+            description="Code blocks display syntax-highlighted code with optional language specification and captions",
+            syntax_examples=[
+                "```\nprint('Hello World')\n```",
+                "```python\nprint('Hello World')\n```",
+                "```python \"Example code\"\nprint('Hello World')\n```",
+                "```javascript\nconsole.log('Hello');\n```",
+            ],
+            usage_guidelines="Use for displaying code snippets. Language specification enables syntax highlighting. Caption in quotes on first line provides description. Supports many programming languages.",
+        )

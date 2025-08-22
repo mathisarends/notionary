@@ -4,6 +4,7 @@ import re
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.numbered_list.numbered_list_models import (
     CreateNumberedListItemBlock,
@@ -46,3 +47,18 @@ class NumberedListElement(BaseBlockElement):
         rich = block.numbered_list_item.rich_text
         content = TextInlineFormatter.extract_text_with_formatting(rich)
         return f"1. {content}"
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for numbered list blocks."""
+        return super().get_system_prompt_information(
+            description="Numbered list items create ordered lists with sequential numbering",
+            syntax_examples=[
+                "1. First item",
+                "2. Second item",
+                "3. Third item",
+                "1. Item with **bold text**",
+                "1. Item with *italic text*",
+            ],
+            usage_guidelines="Use numbers followed by periods to create ordered lists. Supports inline formatting like bold, italic, and links. Numbering is automatically handled by Notion.",
+        )

@@ -70,13 +70,14 @@ class NotionTextLengthProcessor(LoggingMixin):
         # Get the block's content using the block type as attribute name
         # We assume block.type always exists as per the BlockCreateRequest structure
         content = getattr(block, block.type, None)
-        
+
         # Verify it's a valid content object (has rich_text or children)
         if content and (
-            self._is_rich_text_container(content) or self._is_children_container(content)
+            self._is_rich_text_container(content)
+            or self._is_children_container(content)
         ):
             return content
-        
+
         return None
 
     def _fix_content_text_lengths(self, content: object) -> None:
@@ -138,10 +139,12 @@ class NotionTextLengthProcessor(LoggingMixin):
         """Type guard to check if an object has children attribute."""
         return hasattr(obj, "children") and isinstance(getattr(obj, "children"), list)
 
-    def _is_text_rich_text_object(self, rich_text_obj: RichTextObject) -> TypeGuard[RichTextObject]:
+    def _is_text_rich_text_object(
+        self, rich_text_obj: RichTextObject
+    ) -> TypeGuard[RichTextObject]:
         """Type guard to check if a RichTextObject is of type 'text' with content."""
         return (
-            rich_text_obj.type == "text" 
+            rich_text_obj.type == "text"
             and rich_text_obj.text is not None
             and rich_text_obj.text.content is not None
         )

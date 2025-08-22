@@ -4,6 +4,7 @@ import re
 from typing import TYPE_CHECKING, Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
@@ -62,3 +63,18 @@ class TodoElement(BaseBlockElement):
         content = TextInlineFormatter.extract_text_with_formatting(td.rich_text)
         checkbox = "[x]" if td.checked else "[ ]"
         return f"- {checkbox} {content}"
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for todo blocks."""
+        return super().get_system_prompt_information(
+            description="Todo blocks create interactive checkboxes for task management",
+            syntax_examples=[
+                "- [ ] Unchecked todo item",
+                "- [x] Checked todo item",
+                "* [ ] Todo with asterisk",
+                "+ [ ] Todo with plus sign",
+                "- [x] Completed task",
+            ],
+            usage_guidelines="Use for task lists and checkboxes. [ ] for unchecked, [x] for checked items. Supports -, *, or + as bullet markers. Interactive in Notion interface.",
+        )

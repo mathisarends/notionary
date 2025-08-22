@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import re
+from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.column.column_models import ColumnListBlock, CreateColumnListBlock
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.types import BlockType
 
@@ -35,3 +37,14 @@ class ColumnListElement(BaseBlockElement):
         # Empty ColumnListBlock - children (columns) added by stack processor
         column_list_content = ColumnListBlock()
         return CreateColumnListBlock(column_list=column_list_content)
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for column list blocks."""
+        return super().get_system_prompt_information(
+            description="Column list containers organize multiple columns in side-by-side layouts",
+            syntax_examples=[
+                "::: columns\n::: column\nContent 1\n:::\n::: column\nContent 2\n:::\n:::"
+            ],
+            usage_guidelines="Use to create multi-column layouts. Contains individual ::: column blocks. Ends with :::. Each column can have different content and optional width ratios.",
+        )

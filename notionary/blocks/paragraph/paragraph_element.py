@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
@@ -40,3 +41,17 @@ class ParagraphElement(BaseBlockElement):
         rich_list = block.paragraph.rich_text
         markdown = TextInlineFormatter.extract_text_with_formatting(rich_list)
         return markdown or None
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for paragraph blocks."""
+        return super().get_system_prompt_information(
+            description="Paragraph blocks contain regular text content with optional inline formatting",
+            syntax_examples=[
+                "This is a simple paragraph.",
+                "Paragraph with **bold text** and *italic text*.",
+                "Paragraph with [link](https://example.com) and `code`.",
+                "Multiple sentences in one paragraph. Each sentence flows naturally.",
+            ],
+            usage_guidelines="Use for regular text content. Supports inline formatting: **bold**, *italic*, `code`, [links](url). Default block type for plain text.",
+        )

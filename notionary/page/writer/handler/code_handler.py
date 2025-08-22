@@ -44,10 +44,9 @@ class CodeHandler(LineHandler):
         code_lines, lines_to_consume = self._collect_code_lines(context)
 
         block = CodeElement.create_from_markdown_block(
-            opening_line=context.line,
-            code_lines=code_lines
+            opening_line=context.line, code_lines=code_lines
         )
-        
+
         if block:
             context.lines_consumed = lines_to_consume
             context.result_blocks.append(block)

@@ -10,6 +10,7 @@ from notionary.blocks.file.file_element_models import (
     FileBlock,
     FileType,
 )
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -82,3 +83,16 @@ class FileElement(BaseBlockElement):
         if caption_md:
             return f'[file]({url} "{caption_md}")'
         return f"[file]({url})"
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for file blocks."""
+        return super().get_system_prompt_information(
+            description="File blocks embed downloadable files from external URLs with optional captions",
+            syntax_examples=[
+                "[file](https://example.com/document.pdf)",
+                '[file](https://example.com/document.pdf "Annual Report")',
+                '[file](https://example.com/spreadsheet.xlsx "Q1 Data")',
+            ],
+            usage_guidelines="Use for linking to downloadable files like PDFs, documents, spreadsheets. Supports various file formats. Caption should describe the file content or purpose.",
+        )

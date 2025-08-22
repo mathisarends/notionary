@@ -4,6 +4,7 @@ import re
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -56,3 +57,16 @@ class QuoteElement(BaseBlockElement):
             return None
 
         return f"[quote]({text.strip()})"
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for quote blocks."""
+        return super().get_system_prompt_information(
+            description="Quote blocks display highlighted quotations or emphasized text",
+            syntax_examples=[
+                "[quote](This is an important quote)",
+                "[quote](The only way to do great work is to love what you do)",
+                "[quote](Innovation distinguishes between a leader and a follower)",
+            ],
+            usage_guidelines="Use for quotations, important statements, or text that should be visually emphasized. Content should be meaningful and stand out from regular paragraphs.",
+        )

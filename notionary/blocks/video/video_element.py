@@ -5,6 +5,7 @@ from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import ExternalFile, FileBlock, FileType
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -95,3 +96,17 @@ class VideoElement(BaseBlockElement):
             if m:
                 return m.group(1)
         return None
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for video blocks."""
+        return super().get_system_prompt_information(
+            description="Video blocks embed videos from external URLs like YouTube, Vimeo, or direct video files",
+            syntax_examples=[
+                "[video](https://youtube.com/watch?v=abc123)",
+                "[video](https://vimeo.com/123456789)",
+                '[video](https://example.com/video.mp4 "Demo Video")',
+                '[video](https://youtu.be/abc123 "Tutorial")',
+            ],
+            usage_guidelines="Use for embedding videos from supported platforms or direct video file URLs. Supports YouTube, Vimeo, and direct video files. Caption describes the video content.",
+        )

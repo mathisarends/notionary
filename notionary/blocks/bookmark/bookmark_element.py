@@ -5,6 +5,7 @@ from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
@@ -78,3 +79,16 @@ class BookmarkElement(BaseBlockElement):
             return f'[bookmark]({url} "{title}" "{desc}")'
 
         return f'[bookmark]({url} "{text}")'
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for bookmark blocks."""
+        return super().get_system_prompt_information(
+            description="Bookmark blocks create previews of web pages with optional title and description",
+            syntax_examples=[
+                "[bookmark](https://example.com)",
+                '[bookmark](https://example.com "Page Title")',
+                '[bookmark](https://example.com "Page Title" "Description text")',
+            ],
+            usage_guidelines="Use for linking to external websites with rich previews. URL is required. Title and description are optional and will be shown in the preview card.",
+        )

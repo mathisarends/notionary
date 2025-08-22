@@ -8,6 +8,7 @@ from notionary.blocks.bulleted_list.bulleted_list_models import (
     BulletedListItemBlock,
     CreateBulletedListItemBlock,
 )
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
@@ -55,3 +56,18 @@ class BulletedListElement(BaseBlockElement):
 
         text = TextInlineFormatter.extract_text_with_formatting(rich_list)
         return f"- {text}"
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for bulleted list blocks."""
+        return super().get_system_prompt_information(
+            description="Bulleted list items create unordered lists with bullet points",
+            syntax_examples=[
+                "- First item",
+                "* Second item",
+                "+ Third item",
+                "- Item with **bold text**",
+                "- Item with *italic text*",
+            ],
+            usage_guidelines="Use -, *, or + to create bullet points. Supports inline formatting like bold, italic, and links. Do not use for todo items (use [ ] or [x] for those).",
+        )

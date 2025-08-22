@@ -3,10 +3,11 @@ from __future__ import annotations
 from enum import Enum
 
 from typing import Protocol, TYPE_CHECKING
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 if TYPE_CHECKING:
     from notionary.blocks.models import BlockCreateRequest
+    from notionary.blocks.rich_text.rich_text_models import RichTextObject
+
 
 class BlockColor(str, Enum):
     BLUE = "blue"
@@ -66,15 +67,13 @@ class BlockType(str, Enum):
     AUDIO = "audio"
 
 
-
-
-
 class HasRichText(Protocol):
     """Protocol for objects that have a rich_text attribute."""
+
     rich_text: list[RichTextObject]
 
 
 class HasChildren(Protocol):
     """Protocol for objects that have children blocks."""
-    children: list[BlockCreateRequest]
 
+    children: list[BlockCreateRequest]

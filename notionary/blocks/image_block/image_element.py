@@ -6,6 +6,7 @@ from typing import Optional
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import ExternalFile, FileType
 from notionary.blocks.image_block.image_models import CreateImageBlock, FileBlock
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -73,3 +74,16 @@ class ImageElement(BaseBlockElement):
         )
 
         return f'[image]({url} "{caption_text}")'
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for image blocks."""
+        return super().get_system_prompt_information(
+            description="Image blocks display images from external URLs with optional captions",
+            syntax_examples=[
+                "[image](https://example.com/photo.jpg)",
+                '[image](https://example.com/diagram.png "Architecture Diagram")',
+                '[image](https://example.com/chart.svg "Sales Chart")',
+            ],
+            usage_guidelines="Use for displaying images from external URLs. Supports common image formats (jpg, png, gif, svg, webp). Caption describes the image content.",
+        )

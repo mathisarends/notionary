@@ -138,3 +138,22 @@ class BlockRegistry:
             if element.match_notion(block):
                 return element
         return None
+
+    def build_markdown_syntax_reference(self, concise: bool = False) -> str:
+        """
+        Build a markdown syntax reference from all registered elements.
+
+        Args:
+            concise: If True, returns a concise version suitable for system prompts
+
+        Returns:
+            A formatted string with markdown syntax documentation
+        """
+        from notionary.blocks.markdown_syntax_builder import MarkdownSyntaxBuilder
+
+        builder = MarkdownSyntaxBuilder(self)
+
+        if concise:
+            return builder.build_concise_reference()
+        else:
+            return builder.build_markdown_reference()

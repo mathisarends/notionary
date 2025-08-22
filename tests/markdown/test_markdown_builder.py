@@ -89,12 +89,12 @@ def test_deeply_nested_toggles():
     )
 
     # FIXED: Toggle-Titel ohne Quotes (korrekte Syntax)
-    assert '+++Database Settings' in result
+    assert "+++Database Settings" in result
     assert "## Connection Configuration" in result
     assert "Main database settings" in result
 
     # FIXED: Innerer Toggle auch ohne Quotes
-    assert '+++Advanced Options' in result
+    assert "+++Advanced Options" in result
     assert "### Performance Tuning" in result
     assert "| Parameter | Value | Description |" in result
     assert "| max_connections | 100 | Maximum concurrent connections |" in result
@@ -223,7 +223,7 @@ class APIClient:
     assert "- API-Key über Umgebungsvariablen laden" in result
 
     # Toggle mit Benchmarks - FIXED: Korrekte Syntax ohne Quotes
-    assert '+++📊 Performance Benchmarks' in result
+    assert "+++📊 Performance Benchmarks" in result
     assert "### Benchmark Results" in result
     assert "| /api/users | 45ms | 850 | 120ms |" in result
     assert (

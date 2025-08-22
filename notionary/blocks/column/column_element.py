@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import re
+from typing import Optional
 from turtle import width
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.column.column_models import ColumnBlock, CreateColumnBlock
+from notionary.blocks.markdown_syntax_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 
 
@@ -57,3 +59,17 @@ class ColumnElement(BaseBlockElement):
             return "::: column"
 
         return f"::: column {block.column.width_ratio}"
+
+    @classmethod
+    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+        """Get system prompt information for column blocks."""
+        return super().get_system_prompt_information(
+            description="Column blocks create individual columns within a column layout container",
+            syntax_examples=[
+                "::: column",
+                "::: column 0.5",
+                "::: column 0.25",
+                "::: column 0.75",
+            ],
+            usage_guidelines="Use inside ::: columns container to create side-by-side layouts. Optional width ratio (0-1) controls column width. Default is equal width distribution.",
+        )

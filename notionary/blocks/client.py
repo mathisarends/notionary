@@ -24,7 +24,6 @@ class NotionBlockClient(BaseNotionClient):
                 return None
         return None
 
-    # das hier ist falsch (Columns werden nicht richtig abgebildet)
     async def get_blocks_by_page_id_recursively(
         self, page_id: str, parent_id: Optional[str] = None
     ) -> list[Block]:
