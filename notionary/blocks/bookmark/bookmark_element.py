@@ -74,7 +74,7 @@ class BookmarkElement(BaseBlockElement, CaptionMixin):
                 "[bookmark](https://example.com)",
                 "[bookmark](https://example.com)(caption:This is a caption)",
                 "(caption:Check out this repository)[bookmark](https://github.com/user/repo)",
-                "[bookmark](https://github.com/user/repo)(caption:Check out this **awesome** repository)",
+                "[bookmark](https://github.com/user/repo)(caption:Check out this awesome repository)",
             ],
             usage_guidelines="Use for linking to external websites with rich previews. URL is required. Caption supports rich text formatting and is optional.",
         )

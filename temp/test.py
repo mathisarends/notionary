@@ -31,6 +31,9 @@ async def main():
 
         await page.append_markdown(markdown)
         print("didi it")
+        
+        content = await page.get_text_content()
+        print(f"📄 Page content:\n{content}"    )
 
     except Exception as e:
         import traceback

@@ -6,27 +6,23 @@ from typing import Optional
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import ExternalFile, FileType
 from notionary.blocks.image_block.image_models import CreateImageBlock, FileBlock
+from notionary.blocks.mixins import CaptionMixin
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-class ImageElement(BaseBlockElement):
+class ImageElement(BaseBlockElement, CaptionMixin):
     """
     Handles conversion between Markdown images and Notion image blocks.
 
     Markdown image syntax:
     - [image](https://example.com/image.jpg) - URL only
-    - [image](https://example.com/image.jpg "Caption") - URL + caption
+    - [image](https://example.com/image.jpg)(caption:This is a caption) - URL with caption
+    - (caption:Profile picture)[image](https://example.com/avatar.jpg) - caption before URL
     """
 
-    PATTERN = re.compile(
-        r"^\[image\]\("  # prefix
-        r"(https?://[^\s\"]+)"  # URL (exclude whitespace and ")
-        r"(?:\s+\"([^\"]+)\")?"  # optional caption
-        r"\)$"
-    )
+    # Flexible pattern that can handle caption in any position
+    IMAGE_PATTERN = re.compile(r"\[image\]\((https?://[^\s\"]+)\)")
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -34,19 +30,22 @@ class ImageElement(BaseBlockElement):
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
-        """Convert markdown image syntax to Notion ImageBlock followed by an empty paragraph."""
-        match = cls.PATTERN.match(text.strip())
-        if not match:
+        """Convert markdown image syntax to Notion ImageBlock."""
+        # Use our own regex to find the image URL
+        image_match = cls.IMAGE_PATTERN.search(text.strip())
+        if not image_match:
             return None
 
-        url, caption_text = match.group(1), match.group(2) or ""
+        url = image_match.group(1)
+        
+        # Use mixin to extract caption (if present anywhere in text)
+        caption_text = cls.extract_caption(text.strip())
+        caption_rich_text = cls.build_caption_rich_text(caption_text or "")
+
         # Build ImageBlock
         image_block = FileBlock(
-            type="external", external=ExternalFile(url=url), caption=[]
+            type="external", external=ExternalFile(url=url), caption=caption_rich_text
         )
-        if caption_text.strip():
-            rt = RichTextObject.from_plain_text(caption_text.strip())
-            image_block.caption = [rt]
 
         return CreateImageBlock(image=image_block)
 

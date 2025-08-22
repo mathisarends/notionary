@@ -88,16 +88,21 @@ class RichTextObject(BaseModel):
             annotations=TextAnnotations(**ann) if ann else TextAnnotations(),
             plain_text=content,
         )
-
+        
     @classmethod
-    def for_code_block(cls, content: str) -> RichTextObject:
-        # keine annotations setzen → Notion Code-Highlight bleibt an
+    def for_caption(cls, content: str) -> RichTextObject:
         return cls(
             type="text",
             text=TextContent(content=content),
             annotations=None,
             plain_text=content,
-        )
+        )    
+
+    # TODO: remove this when mixin is cpmplete
+    @classmethod
+    def for_code_block(cls, content: str) -> RichTextObject:
+        # keine annotations setzen → Notion Code-Highlight bleibt an
+        return cls.for_caption(content)
 
     @classmethod
     def for_link(cls, content: str, url: str, **ann) -> RichTextObject:
