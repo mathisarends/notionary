@@ -5,7 +5,7 @@ from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
-from notionary.blocks.mixins import CaptionMixin
+from notionary.blocks.mixins.captions import CaptionMixin
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 
@@ -38,7 +38,7 @@ class BookmarkElement(BaseBlockElement, CaptionMixin):
             return None
 
         url = bookmark_match.group(1)
-        
+
         caption_text = cls.extract_caption(text.strip())
         caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 

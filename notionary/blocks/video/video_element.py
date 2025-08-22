@@ -5,31 +5,27 @@ from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import ExternalFile, FileBlock, FileType
+from notionary.blocks.mixins.captions import CaptionMixin
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.types import BlockType
 from notionary.blocks.video.video_element_models import CreateVideoBlock
 
 
-class VideoElement(BaseBlockElement):
+class VideoElement(BaseBlockElement, CaptionMixin):
     """
     Handles conversion between Markdown video embeds and Notion video blocks.
 
     Markdown video syntax:
     - [video](https://example.com/video.mp4) - URL only
-    - [video](https://example.com/video.mp4 "Caption") - URL + caption
+    - [video](https://example.com/video.mp4)(caption:Demo Video) - URL with caption
+    - (caption:Tutorial video)[video](https://youtube.com/watch?v=abc123) - caption before URL
 
     Supports YouTube, Vimeo, and direct file URLs.
     """
 
-    PATTERN = re.compile(
-        r"^\[video\]\("  # prefix
-        r"(https?://[^\s\"]+)"  # URL
-        r"(?:\s+\"([^\"]+)\")?"  # optional caption
-        r"\)$"
-    )
+    # Flexible pattern that can handle caption in any position
+    VIDEO_PATTERN = re.compile(r"\[video\]\((https?://[^\s\"]+)\)")
 
     YOUTUBE_PATTERNS = [
         re.compile(r"(?:https?://)?(?:www\.)?youtube\.com/watch\?v=([\w-]{11})"),
@@ -42,23 +38,27 @@ class VideoElement(BaseBlockElement):
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
-        """Convert markdown video syntax to a Notion VideoBlock plus an empty paragraph."""
-        match = cls.PATTERN.match(text.strip())
-        if not match:
+        """Convert markdown video syntax to a Notion VideoBlock."""
+        # Use our own regex to find the video URL
+        video_match = cls.VIDEO_PATTERN.search(text.strip())
+        if not video_match:
             return None
 
-        url, caption_text = match.group(1), match.group(2) or ""
+        url = video_match.group(1)
 
         vid_id = cls._get_youtube_id(url)
         if vid_id:
             url = f"https://www.youtube.com/watch?v={vid_id}"
 
+        # Use mixin to extract caption (if present anywhere in text)
+        caption_text = cls.extract_caption(text.strip())
+        caption_rich_text = cls.build_caption_rich_text(caption_text or "")
+
         video_block = FileBlock(
-            type=FileType.EXTERNAL, external=ExternalFile(url=url), caption=[]
+            type=FileType.EXTERNAL,
+            external=ExternalFile(url=url),
+            caption=caption_rich_text,
         )
-        if caption_text.strip():
-            rt = RichTextObject.from_plain_text(caption_text.strip())
-            video_block.caption = [rt]
 
         return CreateVideoBlock(video=video_block)
 
@@ -77,17 +77,14 @@ class VideoElement(BaseBlockElement):
         else:
             return None  # (file_upload o.ä. hier nicht supported)
 
-        # Captions
-        captions = fo.caption or []
-        if not captions:
-            return f"[video]({url})"
+        result = f"[video]({url})"
 
-        caption_text = "".join(
-            (rt.plain_text or TextInlineFormatter.extract_text_with_formatting([rt]))
-            for rt in captions
-        )
+        # Add caption if present
+        caption_markdown = cls.format_caption_for_markdown(fo.caption or [])
+        if caption_markdown:
+            result += caption_markdown
 
-        return f'[video]({url} "{caption_text}")'
+        return result
 
     @classmethod
     def _get_youtube_id(cls, url: str) -> Optional[str]:
@@ -106,8 +103,9 @@ class VideoElement(BaseBlockElement):
             syntax_examples=[
                 "[video](https://youtube.com/watch?v=abc123)",
                 "[video](https://vimeo.com/123456789)",
-                '[video](https://example.com/video.mp4 "Demo Video")',
-                '[video](https://youtu.be/abc123 "Tutorial")',
+                "[video](https://example.com/video.mp4)(caption:Demo Video)",
+                "(caption:Tutorial)[video](https://youtu.be/abc123)",
+                "[video](https://youtube.com/watch?v=xyz)(caption:**Important** tutorial)",
             ],
-            usage_guidelines="Use for embedding videos from supported platforms or direct video file URLs. Supports YouTube, Vimeo, and direct video files. Caption describes the video content.",
+            usage_guidelines="Use for embedding videos from supported platforms or direct video file URLs. Supports YouTube, Vimeo, and direct video files. Caption supports rich text formatting and describes the video content.",
         )

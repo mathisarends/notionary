@@ -88,7 +88,7 @@ class RichTextObject(BaseModel):
             annotations=TextAnnotations(**ann) if ann else TextAnnotations(),
             plain_text=content,
         )
-        
+
     @classmethod
     def for_caption(cls, content: str) -> RichTextObject:
         return cls(
@@ -96,7 +96,7 @@ class RichTextObject(BaseModel):
             text=TextContent(content=content),
             annotations=None,
             plain_text=content,
-        )    
+        )
 
     # TODO: remove this when mixin is cpmplete
     @classmethod

@@ -360,7 +360,7 @@ class MarkdownBuilder:
         return self
 
     def bookmark(
-        self, url: str, title: Optional[str] = None, description: Optional[str] = None
+        self, url: str, title: Optional[str] = None, caption: Optional[str] = None
     ) -> Self:
         """
         Add a bookmark.
@@ -371,7 +371,7 @@ class MarkdownBuilder:
             description: Optional bookmark description text
         """
         self.children.append(
-            BookmarkMarkdownNode(url=url, title=title, description=description)
+            BookmarkMarkdownNode(url=url, title=title, caption=caption)
         )
         return self
 

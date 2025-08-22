@@ -6,7 +6,7 @@ from typing import Optional
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import ExternalFile, FileType
 from notionary.blocks.image_block.image_models import CreateImageBlock, FileBlock
-from notionary.blocks.mixins import CaptionMixin
+from notionary.blocks.mixins.captions import CaptionMixin
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 
@@ -37,7 +37,7 @@ class ImageElement(BaseBlockElement, CaptionMixin):
             return None
 
         url = image_match.group(1)
-        
+
         # Use mixin to extract caption (if present anywhere in text)
         caption_text = cls.extract_caption(text.strip())
         caption_rich_text = cls.build_caption_rich_text(caption_text or "")
@@ -63,16 +63,14 @@ class ImageElement(BaseBlockElement, CaptionMixin):
         else:
             return None
 
-        captions = fo.caption or []
-        if not captions:
-            return f"[image]({url})"
+        result = f"[image]({url})"
 
-        caption_text = "".join(
-            (rt.plain_text or TextInlineFormatter.extract_text_with_formatting([rt]))
-            for rt in captions
-        )
+        # Add caption if present
+        caption_markdown = cls.format_caption_for_markdown(fo.caption or [])
+        if caption_markdown:
+            result += caption_markdown
 
-        return f'[image]({url} "{caption_text}")'
+        return result
 
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
@@ -82,8 +80,9 @@ class ImageElement(BaseBlockElement, CaptionMixin):
             description="Image blocks display images from external URLs with optional captions",
             syntax_examples=[
                 "[image](https://example.com/photo.jpg)",
-                '[image](https://example.com/diagram.png "Architecture Diagram")',
-                '[image](https://example.com/chart.svg "Sales Chart")',
+                "[image](https://example.com/diagram.png)(caption:Architecture Diagram)",
+                "(caption:Sales Chart)[image](https://example.com/chart.svg)",
+                "[image](https://example.com/screenshot.png)(caption:Dashboard **overview**)",
             ],
-            usage_guidelines="Use for displaying images from external URLs. Supports common image formats (jpg, png, gif, svg, webp). Caption describes the image content.",
+            usage_guidelines="Use for displaying images from external URLs. Supports common image formats (jpg, png, gif, svg, webp). Caption supports rich text formatting and describes the image content.",
         )

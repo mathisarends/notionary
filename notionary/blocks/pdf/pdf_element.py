@@ -5,32 +5,28 @@ from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import ExternalFile, FileBlock, FileType
+from notionary.blocks.mixins.captions import CaptionMixin
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.pdf.pdf_models import CreatePdfBlock
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-class PdfElement(BaseBlockElement):
+class PdfElement(BaseBlockElement, CaptionMixin):
     """
     Handles conversion between Markdown PDF embeds and Notion PDF blocks.
 
     Markdown PDF syntax:
-    - [pdf](https://example.com/document.pdf "Caption")     # External URL
-    - [pdf](notion://file_id_here "Caption")                # Notion hosted file
-    - [pdf](upload://upload_id_here "Caption")              # File upload
-    - [pdf](https://example.com/document.pdf)               # Without caption
+    - [pdf](https://example.com/document.pdf) - External URL
+    - [pdf](https://example.com/document.pdf)(caption:Annual Report 2024) - URL with caption
+    - (caption:User Manual)[pdf](https://example.com/manual.pdf) - caption before URL
+    - [pdf](notion://file_id_here)(caption:Notion hosted file) - Notion hosted file
+    - [pdf](upload://upload_id_here)(caption:File upload) - File upload
 
     Supports all three PDF types: external, notion-hosted, and file uploads.
     """
 
-    PATTERN = re.compile(
-        r"^\[pdf\]\("  # prefix
-        r'((?:https?://|notion://|upload://)[^\s\)"]+)'  # URL with protocol
-        r'(?:\s+"([^"]*)")?'  # optional caption
-        r"\)$"
-    )
+    # Flexible pattern that can handle caption in any position
+    PDF_PATTERN = re.compile(r"\[pdf\]\(((?:https?://|notion://|upload://)[^\s\"]+)\)")
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -39,20 +35,24 @@ class PdfElement(BaseBlockElement):
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
-        """Convert markdown PDF link to Notion FileBlock (used for PDF) followed by an empty paragraph."""
-        match = cls.PATTERN.match(text.strip())
-        if not match:
+        """Convert markdown PDF link to Notion FileBlock (used for PDF)."""
+        # Use our own regex to find the PDF URL
+        pdf_match = cls.PDF_PATTERN.search(text.strip())
+        if not pdf_match:
             return None
 
-        url, caption_text = match.group(1), match.group(2) or ""
+        url = pdf_match.group(1)
+
+        # Use mixin to extract caption (if present anywhere in text)
+        caption_text = cls.extract_caption(text.strip())
+        caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 
         # Build FileBlock using FileType enum (reused for PDF)
         pdf_block = FileBlock(
-            type=FileType.EXTERNAL, external=ExternalFile(url=url), caption=[]
+            type=FileType.EXTERNAL,
+            external=ExternalFile(url=url),
+            caption=caption_rich_text,
         )
-        if caption_text.strip():
-            rt = RichTextObject.from_plain_text(caption_text)
-            pdf_block.caption = [rt]
 
         return CreatePdfBlock(pdf=pdf_block)
 
@@ -74,13 +74,14 @@ class PdfElement(BaseBlockElement):
         else:
             return None
 
-        if not pb.caption:
-            return f"[pdf]({url})"
+        result = f"[pdf]({url})"
 
-        caption_md = TextInlineFormatter.extract_text_with_formatting(pb.caption)
-        if caption_md:
-            return f'[pdf]({url} "{caption_md}")'
-        return f"[pdf]({url})"
+        # Add caption if present
+        caption_markdown = cls.format_caption_for_markdown(pb.caption or [])
+        if caption_markdown:
+            result += caption_markdown
+
+        return result
 
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
@@ -90,8 +91,9 @@ class PdfElement(BaseBlockElement):
             description="PDF blocks embed and display PDF documents from external URLs with optional captions",
             syntax_examples=[
                 "[pdf](https://example.com/document.pdf)",
-                '[pdf](https://example.com/report.pdf "Annual Report 2024")',
-                '[pdf](https://example.com/manual.pdf "User Manual")',
+                "[pdf](https://example.com/report.pdf)(caption:Annual Report 2024)",
+                "(caption:User Manual)[pdf](https://example.com/manual.pdf)",
+                "[pdf](https://example.com/guide.pdf)(caption:**Important** documentation)",
             ],
-            usage_guidelines="Use for embedding PDF documents that can be viewed inline. Supports external URLs and Notion-hosted files. Caption should describe the PDF content.",
+            usage_guidelines="Use for embedding PDF documents that can be viewed inline. Supports external URLs and Notion-hosted files. Caption supports rich text formatting and should describe the PDF content.",
         )

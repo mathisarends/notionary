@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 from typing import Optional
-from turtle import width
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.column.column_models import ColumnBlock, CreateColumnBlock

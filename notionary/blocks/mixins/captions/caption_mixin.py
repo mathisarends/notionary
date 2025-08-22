@@ -1,5 +1,4 @@
-# caption_mixin.py
-from typing import Optional, Tuple
+from typing import Optional
 import re
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter

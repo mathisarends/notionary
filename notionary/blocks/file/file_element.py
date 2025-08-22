@@ -10,29 +10,25 @@ from notionary.blocks.file.file_element_models import (
     FileBlock,
     FileType,
 )
+from notionary.blocks.mixins.captions import CaptionMixin
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-class FileElement(BaseBlockElement):
+class FileElement(BaseBlockElement, CaptionMixin):
     """
     Handles conversion between Markdown file embeds and Notion file blocks.
 
     Markdown file syntax:
-    - [file](https://example.com/document.pdf "Caption")
-    - [file](https://example.com/document.pdf)
+    - [file](https://example.com/document.pdf) - URL only
+    - [file](https://example.com/document.pdf)(caption:Annual Report) - URL with caption
+    - (caption:Important document)[file](https://example.com/doc.pdf) - caption before URL
 
     Supports external file URLs with optional captions.
     """
 
-    PATTERN = re.compile(
-        r"^\[file\]\("  # prefix
-        r'(https?://[^\s\)"]+)'  # URL
-        r'(?:\s+"([^"]*)")?'  # optional caption
-        r"\)$"
-    )
+    # Flexible pattern that can handle caption in any position
+    FILE_PATTERN = re.compile(r"\[file\]\((https?://[^\s\"]+)\)")
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -41,20 +37,24 @@ class FileElement(BaseBlockElement):
 
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
-        """Convert markdown file link to Notion FileBlock followed by an empty paragraph."""
-        match = cls.PATTERN.match(text.strip())
-        if not match:
+        """Convert markdown file link to Notion FileBlock."""
+        # Use our own regex to find the file URL
+        file_match = cls.FILE_PATTERN.search(text.strip())
+        if not file_match:
             return None
 
-        url, caption_text = match.group(1), match.group(2) or ""
+        url = file_match.group(1)
+
+        # Use mixin to extract caption (if present anywhere in text)
+        caption_text = cls.extract_caption(text.strip())
+        caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 
         # Build FileBlock using FileType enum
         file_block = FileBlock(
-            type=FileType.EXTERNAL, external=ExternalFile(url=url), caption=[]
+            type=FileType.EXTERNAL,
+            external=ExternalFile(url=url),
+            caption=caption_rich_text,
         )
-        if caption_text.strip():
-            rt = RichTextObject.from_plain_text(caption_text)
-            file_block.caption = [rt]
 
         return CreateFileBlock(file=file_block)
 
@@ -76,13 +76,14 @@ class FileElement(BaseBlockElement):
         else:
             return None
 
-        if not fb.caption:
-            return f"[file]({url})"
+        result = f"[file]({url})"
 
-        caption_md = TextInlineFormatter.extract_text_with_formatting(fb.caption)
-        if caption_md:
-            return f'[file]({url} "{caption_md}")'
-        return f"[file]({url})"
+        # Add caption if present
+        caption_markdown = cls.format_caption_for_markdown(fb.caption or [])
+        if caption_markdown:
+            result += caption_markdown
+
+        return result
 
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
@@ -92,8 +93,9 @@ class FileElement(BaseBlockElement):
             description="File blocks embed downloadable files from external URLs with optional captions",
             syntax_examples=[
                 "[file](https://example.com/document.pdf)",
-                '[file](https://example.com/document.pdf "Annual Report")',
-                '[file](https://example.com/spreadsheet.xlsx "Q1 Data")',
+                "[file](https://example.com/document.pdf)(caption:Annual Report)",
+                "(caption:Q1 Data)[file](https://example.com/spreadsheet.xlsx)",
+                "[file](https://example.com/manual.docx)(caption:**User** manual)",
             ],
-            usage_guidelines="Use for linking to downloadable files like PDFs, documents, spreadsheets. Supports various file formats. Caption should describe the file content or purpose.",
+            usage_guidelines="Use for linking to downloadable files like PDFs, documents, spreadsheets. Supports various file formats. Caption supports rich text formatting and should describe the file content or purpose.",
         )
