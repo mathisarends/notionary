@@ -164,7 +164,9 @@ class TestTextInlineFormatterMentions:
     async def test_database_mention(self):
         """Test database mention parsing using the explicit @database[] syntax."""
         db_id = "223e4567-e89b-12d3-a456-426614174111"
-        result = await TextInlineFormatter.parse_inline_formatting(f"@database[{db_id}]")
+        result = await TextInlineFormatter.parse_inline_formatting(
+            f"@database[{db_id}]"
+        )
         assert len(result) == 1
         assert result[0].type == RichTextType.MENTION
         assert result[0].mention.database.id == db_id
@@ -194,7 +196,9 @@ class TestTextInlineFormatterComplex:
     async def test_nested_formatting_priority(self):
         """Test that first pattern wins when patterns overlap."""
         # Bold should take precedence over italic when they overlap
-        result = await TextInlineFormatter.parse_inline_formatting("**bold *and* text**")
+        result = await TextInlineFormatter.parse_inline_formatting(
+            "**bold *and* text**"
+        )
         # Should parse as one bold block, not separate italic inside
         assert len(result) == 1
         assert result[0].plain_text == "bold *and* text"
@@ -203,7 +207,9 @@ class TestTextInlineFormatterComplex:
     @pytest.mark.asyncio
     async def test_adjacent_formatting(self):
         """Test adjacent formatting blocks."""
-        result = await TextInlineFormatter.parse_inline_formatting("**bold**__underline__")
+        result = await TextInlineFormatter.parse_inline_formatting(
+            "**bold**__underline__"
+        )
         assert len(result) == 2
         assert result[0].annotations.bold is True
         assert result[1].annotations.underline is True
@@ -333,7 +339,9 @@ class TestTextInlineFormatterEdgeCases:
     async def test_whitespace_handling(self):
         """Test whitespace in formatting patterns."""
         # Leading/trailing spaces in formatting should be preserved
-        result = await TextInlineFormatter.parse_inline_formatting("** bold with spaces **")
+        result = await TextInlineFormatter.parse_inline_formatting(
+            "** bold with spaces **"
+        )
         assert len(result) == 1
         assert result[0].plain_text == " bold with spaces "
         assert result[0].annotations.bold is True

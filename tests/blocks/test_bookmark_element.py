@@ -81,7 +81,9 @@ async def test_markdown_to_notion_with_title():
     # Wir testen den Text-Inhalt über extract_text_with_formatting
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-    text = await TextInlineFormatter.extract_text_with_formatting(result.bookmark.caption)
+    text = await TextInlineFormatter.extract_text_with_formatting(
+        result.bookmark.caption
+    )
     assert "Beispiel-Titel" in text
 
 
@@ -382,7 +384,9 @@ async def test_caption_separator_behavior():
     assert caption_text == "Title – Description"  # em dash in output
 
     # Test parsing with hyphen
-    hyphen_caption = await TextInlineFormatter.parse_inline_formatting("Title - Description")
+    hyphen_caption = await TextInlineFormatter.parse_inline_formatting(
+        "Title - Description"
+    )
     bookmark_data = BookmarkBlock(url="https://example.com", caption=hyphen_caption)
 
     block = Mock()

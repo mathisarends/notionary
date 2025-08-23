@@ -1,5 +1,5 @@
 import re
-from typing import Optional, Match
+from typing import Optional, Match, Union, List
 
 from notionary.blocks.rich_text.rich_text_models import (
     RichTextObject,
@@ -43,10 +43,11 @@ class TextInlineFormatter:
         $E = mc^2$
         → RichTextObject.equation_inline("E = mc^2")
 
-    • Colored text / highlight
-        (red:important)            — sets text color to “red”
-        (blue_background:note)     — sets background to “blue_background”
-        → RichTextObject(plain_text="important", color="red")
+    • Colored text / highlight (supports nested formatting)
+        (red:important)                    — sets text color to "red"
+        (blue_background:note)             — sets background to "blue_background" 
+        (red_background:**bold text**)     — red background with bold formatting
+        → RichTextObject(plain_text="important", color="red", bold=True)
         Valid colors are any value in the BlockColor enum, e.g.:
             default, gray, brown, orange, yellow, green, blue, purple, pink, red
         or their `_background` variants.
@@ -93,10 +94,8 @@ class TextInlineFormatter:
             (cls.Patterns.DATABASE_MENTION, cls._handle_database_mention_pattern),
         ]
 
-    # Valid Notion colors from BlockColor enum
     VALID_COLORS = {color.value for color in BlockColor}
 
-    # Global resolver instance (can be overridden for testing)
     _resolver: Optional[NameIdResolver] = None
 
     @classmethod
@@ -139,17 +138,21 @@ class TextInlineFormatter:
                 plain_text = remaining[:position]
                 segments.append(RichTextObject.from_plain_text(plain_text))
 
-            # Convert pattern to RichTextObject - handle both sync and async handlers
+            # Convert pattern to RichTextObject(s) - handlers can now return single objects or lists
             if handler_name in [
                 cls._handle_page_mention_pattern,
                 cls._handle_database_mention_pattern,
+                cls._handle_color_pattern,  # Color pattern also needs async for recursive parsing
             ]:
-                rich_text_obj = await handler_name(match)
+                result = await handler_name(match)
             else:
-                rich_text_obj = handler_name(match)
+                result = handler_name(match)
 
-            if rich_text_obj:
-                segments.append(rich_text_obj)
+            # Handle both single RichTextObject and list of RichTextObjects
+            if isinstance(result, list):
+                segments.extend(result)
+            elif result:
+                segments.append(result)
 
             # Continue with text after the pattern
             remaining = remaining[position + len(match.group(0)) :]
@@ -177,74 +180,65 @@ class TextInlineFormatter:
         return None
 
     @classmethod
-    def _create_rich_text_from_pattern(
-        cls, match: Match, handler_name: str
-    ) -> Optional[RichTextObject]:
-        """Create RichTextObject using existing factory methods for consistency."""
-
-        # Dispatch to specific handler methods
-        handlers = {
-            "bold": cls._handle_bold_pattern,
-            "italic": cls._handle_italic_pattern,
-            "underline": cls._handle_underline_pattern,
-            "strikethrough": cls._handle_strikethrough_pattern,
-            "code": cls._handle_code_pattern,
-            "link": cls._handle_link_pattern,
-            "equation": cls._handle_equation_pattern,
-            "color": cls._handle_color_pattern,
-            "mention_page": cls._handle_page_mention_pattern,
-        }
-
-        handler = handlers.get(handler_name)
-        if handler:
-            return handler(match)
-
-        return None
-
-    # Pattern-specific handlers using existing RichTextObject factory methods
-
-    @classmethod
-    def _handle_bold_pattern(cls, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), bold=True)
-
-    @classmethod
-    def _handle_italic_pattern(cls, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), italic=True)
-
-    @classmethod
-    def _handle_underline_pattern(cls, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), underline=True)
-
-    @classmethod
-    def _handle_strikethrough_pattern(cls, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), strikethrough=True)
-
-    @classmethod
-    def _handle_code_pattern(cls, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), code=True)
-
-    @classmethod
-    def _handle_link_pattern(cls, match: Match) -> RichTextObject:
-        link_text, url = match.group(1), match.group(2)
-        return RichTextObject.for_link(link_text, url)
-
-    @classmethod
-    def _handle_equation_pattern(cls, match: Match) -> RichTextObject:
-        """Handle inline equations: $E = mc^2$"""
-        expression = match.group(1)
-        return RichTextObject.equation_inline(expression)
-
-    @classmethod
-    def _handle_color_pattern(cls, match: Match) -> RichTextObject:
-        """Handle colored text: (blue:colored text) or (red_background:highlighted text)"""
+    async def _handle_color_pattern(cls, match: Match) -> List[RichTextObject]:
+        """Handle colored text with support for nested formatting: (blue:**bold text**)"""
         color, content = match.group(1).lower(), match.group(2)
 
-        # Validate color against Notion's supported colors
         if color not in cls.VALID_COLORS:
-            # Invalid color - return as plain text
-            return RichTextObject.from_plain_text(f"({match.group(1)}:{content})")
+            return [RichTextObject.from_plain_text(f"({match.group(1)}:{content})")]
 
-        return RichTextObject.from_plain_text(content, color=color)
+        # Recursively parse the content inside the color pattern for nested formatting
+        parsed_segments = await cls._split_text_into_segments(content)
+        
+        # Apply the color to all resulting segments
+        colored_segments = []
+        for segment in parsed_segments:
+            # Create a new RichTextObject with the same formatting but with the color applied
+            if segment.type == RichTextType.TEXT:
+                # For text segments, we can combine the color with existing formatting
+                colored_segment = cls._apply_color_to_text_segment(segment, color)
+                colored_segments.append(colored_segment)
+            else:
+                # For non-text segments (equations, mentions, etc.), keep as-is
+                colored_segments.append(segment)
+        
+        return colored_segments
+
+    @classmethod
+    def _apply_color_to_text_segment(cls, segment: RichTextObject, color: str) -> RichTextObject:
+        """Apply color to a text segment while preserving existing formatting."""
+        if segment.type != RichTextType.TEXT:
+            return segment
+
+        # Extract existing formatting
+        annotations = segment.annotations
+        text_content = segment.text
+        plain_text = segment.plain_text
+
+        # Create new RichTextObject with color and existing formatting
+        if text_content and text_content.link:
+            # For links, preserve the link while adding color and formatting
+            return RichTextObject.for_link(
+                plain_text, 
+                text_content.link.url,
+                bold=annotations.bold if annotations else False,
+                italic=annotations.italic if annotations else False,
+                strikethrough=annotations.strikethrough if annotations else False,
+                underline=annotations.underline if annotations else False,
+                code=annotations.code if annotations else False,
+                color=color
+            )
+        else:
+            # For regular text, combine all formatting
+            return RichTextObject.from_plain_text(
+                plain_text,
+                bold=annotations.bold if annotations else False,
+                italic=annotations.italic if annotations else False,
+                strikethrough=annotations.strikethrough if annotations else False,
+                underline=annotations.underline if annotations else False,
+                code=annotations.code if annotations else False,
+                color=color
+            )
 
     @classmethod
     async def _handle_page_mention_pattern(cls, match: Match) -> RichTextObject:
@@ -381,3 +375,34 @@ class TextInlineFormatter:
             content = f"({annotations.color}:{content})"
 
         return content
+
+    @classmethod
+    def _handle_bold_pattern(cls, match: Match) -> RichTextObject:
+        return RichTextObject.from_plain_text(match.group(1), bold=True)
+
+    @classmethod
+    def _handle_italic_pattern(cls, match: Match) -> RichTextObject:
+        return RichTextObject.from_plain_text(match.group(1), italic=True)
+
+    @classmethod
+    def _handle_underline_pattern(cls, match: Match) -> RichTextObject:
+        return RichTextObject.from_plain_text(match.group(1), underline=True)
+
+    @classmethod
+    def _handle_strikethrough_pattern(cls, match: Match) -> RichTextObject:
+        return RichTextObject.from_plain_text(match.group(1), strikethrough=True)
+
+    @classmethod
+    def _handle_code_pattern(cls, match: Match) -> RichTextObject:
+        return RichTextObject.from_plain_text(match.group(1), code=True)
+
+    @classmethod
+    def _handle_link_pattern(cls, match: Match) -> RichTextObject:
+        link_text, url = match.group(1), match.group(2)
+        return RichTextObject.for_link(link_text, url)
+
+    @classmethod
+    def _handle_equation_pattern(cls, match: Match) -> RichTextObject:
+        """Handle inline equations: $E = mc^2$"""
+        expression = match.group(1)
+        return RichTextObject.equation_inline(expression)
