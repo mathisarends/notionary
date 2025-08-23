@@ -6,135 +6,173 @@ from typing import Optional
 
 from notionary import NotionPage, NotionWorkspace
 
-_NOTION_ID_RE = re.compile(
-    r"^[0-9a-f]{32}$|^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-    re.IGNORECASE,
-)
-
-
-def _looks_like_notion_id(text: str) -> bool:
-    return bool(_NOTION_ID_RE.match(text.replace("_", "").strip()))
-
-
-class NameToIdResolver:
+class NameIdResolver:
     """
-    Auflösung natürlicher Namen -> Notion-IDs.
-    - Pages: globale Suche + Fuzzy-Match
-    - Users: nur via Aliases / 'me' / direkte ID (API kann nicht global nach Name suchen)
+    Bidirectional resolver for Notion page names and IDs.
+    
+    Supports:
+    - Name → ID: Search workspace and find best fuzzy match
+    - ID → Name: Fetch page by ID and extract title
     """
+    
+    _NOTION_ID_RE = re.compile(
+        r"^[0-9a-f]{32}$|^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+        re.IGNORECASE,
+    )
 
     def __init__(
         self,
-        workspace: NotionWorkspace,
-        user_aliases: Optional[dict[str, str]] = None,  # name_lower -> user_id
-        page_aliases: Optional[dict[str, str]] = None,  # name_lower -> page_id
-        page_search_limit: int = 10,
-        page_match_threshold: float = 0.72,  # 0..1, ab wann ein Fuzzy-Match akzeptiert wird
+        *,
+        token: Optional[str] = None,
+        search_limit: int = 10,
+        match_threshold: float = 0.72,  # 0.0 to 1.0, minimum similarity for fuzzy match
     ):
-        self.workspace = workspace
-        self.user_aliases = {k.casefold(): v for k, v in (user_aliases or {}).items()}
-        self.page_aliases = {k.casefold(): v for k, v in (page_aliases or {}).items()}
-        self.page_search_limit = page_search_limit
-        self.page_match_threshold = page_match_threshold
-
-    # ---------------------------
-    # Public API
-    # ---------------------------
-
-    async def resolve_page(self, name: str) -> Optional[str]:
         """
-        Versucht, eine Page-ID aus einem natürlichen Namen zu bestimmen.
-        Strategie:
-          1) direkte ID?
-          2) Alias-Treffer?
-          3) Notion-Suche + Fuzzy-Match auf Page-Titel
+        Initialize the resolver with a Notion workspace.
         """
-        if not name:
+        self.workspace = NotionWorkspace(token=token)
+        self.search_limit = search_limit
+        self.match_threshold = match_threshold
+
+    async def resolve_id(self, page_name: str) -> Optional[str]:
+        """
+        Convert a page name to its Notion ID.
+        
+        Strategy:
+        1. Check if input is already a valid Notion ID
+        2. Search workspace for pages matching the name
+        3. Find best fuzzy match using title similarity
+        
+        Args:
+            page_name: Human-readable page name to resolve
+            
+        Returns:
+            Notion page ID if found, None otherwise
+        """
+        if not page_name:
             return None
 
-        n = name.strip()
-        if _looks_like_notion_id(n):
-            return n
+        cleaned_name = page_name.strip()
+        
+        # Return if already a valid Notion ID
+        if self._is_notion_id(cleaned_name):
+            return cleaned_name
 
-        # Alias
-        alias_hit = self.page_aliases.get(n.casefold())
-        if alias_hit:
-            return alias_hit
+        # Search workspace for matching pages
+        search_results = await self.workspace.search_pages(
+            query=cleaned_name, 
+            limit=self.search_limit
+        )
+        
+        # Find best match using fuzzy matching on titles
+        page_titles = [self._extract_page_title(page) for page in search_results]
+        best_match_id = self._find_best_fuzzy_match(
+            query=cleaned_name, 
+            candidate_titles=page_titles, 
+            candidate_pages=search_results
+        )
+        
+        return best_match_id
 
-        # Suche
-        pages = await self.workspace.search_pages(query=n, limit=self.page_search_limit)
-        candidate_titles = [_safe_title(p) for p in pages]
-        best_id = self._best_fuzzy_match(n, candidate_titles, pages)
-        return best_id
-
-    async def resolve_user(self, name: str) -> Optional[str]:
+    async def resolve_name(self, page_id: str) -> Optional[str]:
         """
-        Versucht, eine User-ID aus einem natürlichen Namen zu bestimmen.
-        Strategie:
-          1) direkte ID?
-          2) 'me'/'bot'/('ich') -> aktueller Bot-User
-          3) Alias (lokales Mapping)
-        Hinweis: Globale Usersuche ist mit der Notion-API hier nicht verfügbar.
+        Convert a Notion page ID to its human-readable name.
+        
+        Args:
+            page_id: Notion page ID to resolve
+            
+        Returns:
+            Page title/name if found, None if page doesn't exist or is inaccessible
         """
-        if not name:
+        if not page_id or not self._is_notion_id(page_id):
+            return None
+            
+        try:
+            page = await NotionPage.from_page_id(page_id)
+            return self._extract_page_title(page)
+        except Exception:
+            # Page not found, not accessible, or other error
             return None
 
-        n = name.strip()
-        if _looks_like_notion_id(n):
-            return n
-
-        # Sonderfälle
-        if n.casefold() in {"me", "bot", "current", "ich"}:
-            bot = await self.workspace.get_current_bot_user()
-            return bot.id if isinstance(bot, NotionUser) else None
-
-        # Alias
-        alias_hit = self.user_aliases.get(n.casefold())
-        if alias_hit:
-            return alias_hit
-
-        # Kein globaler Fallback möglich (API-Limit)
-        return None
-
-    # ---------------------------
-    # Internals
-    # ---------------------------
-
-    def _best_fuzzy_match(
-        self, query: str, titles: list[str], pages: list[NotionPage]
+    def _find_best_fuzzy_match(
+        self, 
+        query: str, 
+        candidate_titles: list[str], 
+        candidate_pages: list[NotionPage]
     ) -> Optional[str]:
         """
-        Nimmt den besten difflib-Match über Page-Titel, prüft Schwelle, gibt Page-ID zurück.
+        Find the best fuzzy match among candidate page titles.
+        
+        Uses difflib.SequenceMatcher to calculate similarity scores and returns
+        the page ID of the best match if it meets the threshold.
+        
+        Args:
+            query: The search query to match against
+            candidate_titles: List of page titles to compare
+            candidate_pages: Corresponding NotionPage objects
+            
+        Returns:
+            Page ID of best match, or None if no match meets threshold
         """
-        if not titles:
+        if not candidate_titles:
             return None
 
-        # difflib liefert 0..1 Ähnlichkeit über get_close_matches, aber ohne Score.
-        # Daher nutzen wir SequenceMatcher ratio pro Kandidat, um Schwelle zu prüfen.
-        best_score: float = -1.0
-        best_idx: Optional[int] = None
-
-        q = query.casefold()
-        for i, title in enumerate(titles):
-            score = difflib.SequenceMatcher(a=q, b=title.casefold()).ratio()
+        best_score = -1.0
+        best_index = None
+        normalized_query = query.casefold()
+        
+        # Find highest similarity score
+        for i, title in enumerate(candidate_titles):
+            score = difflib.SequenceMatcher(
+                a=normalized_query, 
+                b=title.casefold()
+            ).ratio()
+            
             if score > best_score:
                 best_score = score
-                best_idx = i
+                best_index = i
 
-        if best_idx is not None and best_score >= self.page_match_threshold:
-            return pages[best_idx].id
+        # Return best match if it meets threshold
+        if best_index is not None and best_score >= self.match_threshold:
+            return candidate_pages[best_index].id
 
-        # exakte (case-insensitive) Fallback-Prüfung, falls Schwelle nicht erreicht
+        # Fallback: try exact case-insensitive match
         try:
-            exact_idx = [t.casefold() for t in titles].index(q)
-            return pages[exact_idx].id
+            normalized_titles = [title.casefold() for title in candidate_titles]
+            exact_index = normalized_titles.index(normalized_query)
+            return candidate_pages[exact_index].id
         except ValueError:
             return None
 
+    def _extract_page_title(self, page: NotionPage) -> str:
+        """
+        Extract the title from a NotionPage object.
+        
+        Uses the page's built-in title property which handles the underlying
+        title parsing from Notion's block structure.
+        
+        Args:
+            page: NotionPage instance
+            
+        Returns:
+            Page title as string, empty string if no title
+        """
+        return page.title or ""
 
-def _safe_title(page: NotionPage) -> str:
-    # Passe an deine Page-API an; sollte robust einen Titelstring extrahieren.
-    # Häufig: page.properties["title"].title[0].plain_text, aber dein Wrapper abstrahiert das ggf.
-    return (
-        (getattr(page, "title", None) or "").strip() or getattr(page, "name", "") or ""
-    )
+    @classmethod
+    def _is_notion_id(cls, text: str) -> bool:
+        """
+        Check if a text string matches Notion ID format.
+        
+        Supports both formats:
+        - 32 hex characters: abc123def456...
+        - UUID with dashes: abc123de-f456-7890-abcd-ef1234567890
+        
+        Args:
+            text: String to check
+            
+        Returns:
+            True if text matches Notion ID format, False otherwise
+        """
+        cleaned_text = text.replace("_", "").strip()
+        return bool(cls._NOTION_ID_RE.match(cleaned_text))
