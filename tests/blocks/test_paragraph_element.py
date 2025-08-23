@@ -14,26 +14,28 @@ from notionary.blocks.paragraph.paragraph_models import (
 )
 
 
-def test_match_markdown_valid():
+@pytest.mark.asyncio
+async def test_match_markdown_valid():
     """Test recognition of valid paragraph text."""
-    assert ParagraphElement.markdown_to_notion("Simple text") is not None
+    assert await ParagraphElement.markdown_to_notion("Simple text") is not None
     assert (
-        ParagraphElement.markdown_to_notion("Text with **bold** formatting") is not None
+        await ParagraphElement.markdown_to_notion("Text with **bold** formatting") is not None
     )
-    assert ParagraphElement.markdown_to_notion("Text with [link](https://example.com)")
-    assert ParagraphElement.markdown_to_notion("  Text with leading spaces") is not None
+    assert await ParagraphElement.markdown_to_notion("Text with [link](https://example.com)")
+    assert await ParagraphElement.markdown_to_notion("  Text with leading spaces") is not None
     assert (
-        ParagraphElement.markdown_to_notion("Text with trailing spaces  ") is not None
+        await ParagraphElement.markdown_to_notion("Text with trailing spaces  ") is not None
     )
-    assert ParagraphElement.markdown_to_notion("Multi word paragraph text") is not None
+    assert await ParagraphElement.markdown_to_notion("Multi word paragraph text") is not None
 
 
-def test_match_markdown_invalid():
+@pytest.mark.asyncio
+async def test_match_markdown_invalid():
     """Test rejection of empty or whitespace-only text."""
-    assert ParagraphElement.markdown_to_notion("") is None
-    assert ParagraphElement.markdown_to_notion("   ") is None
-    assert ParagraphElement.markdown_to_notion("\n") is None
-    assert ParagraphElement.markdown_to_notion("\t") is None
+    assert await ParagraphElement.markdown_to_notion("") is None
+    assert await ParagraphElement.markdown_to_notion("   ") is None
+    assert await ParagraphElement.markdown_to_notion("\n") is None
+    assert await ParagraphElement.markdown_to_notion("\t") is None
 
 
 def test_match_notion_valid():
@@ -60,9 +62,10 @@ def test_match_notion_invalid():
     assert not ParagraphElement.match_notion(mock_block)
 
 
-def test_markdown_to_notion():
+@pytest.mark.asyncio
+async def test_markdown_to_notion():
     """Test conversion from markdown to Notion."""
-    result = ParagraphElement.markdown_to_notion("Test paragraph")
+    result = await ParagraphElement.markdown_to_notion("Test paragraph")
 
     assert result is not None
     assert isinstance(result, CreateParagraphBlock)
@@ -71,7 +74,8 @@ def test_markdown_to_notion():
     assert isinstance(result.paragraph.rich_text, list)
 
 
-def test_markdown_to_notion_with_formatting():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_with_formatting():
     """Test conversion with inline formatting."""
     test_cases = [
         "Text with **bold**",
@@ -82,19 +86,21 @@ def test_markdown_to_notion_with_formatting():
     ]
 
     for text in test_cases:
-        result = ParagraphElement.markdown_to_notion(text)
+        result = await ParagraphElement.markdown_to_notion(text)
         assert result is not None
         assert isinstance(result, CreateParagraphBlock)
 
 
-def test_markdown_to_notion_empty():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_empty():
     """Test that empty text returns None."""
-    assert ParagraphElement.markdown_to_notion("") is None
-    assert ParagraphElement.markdown_to_notion("   ") is None
-    assert ParagraphElement.markdown_to_notion("\n") is None
+    assert await ParagraphElement.markdown_to_notion("") is None
+    assert await ParagraphElement.markdown_to_notion("   ") is None
+    assert await ParagraphElement.markdown_to_notion("\n") is None
 
 
-def test_notion_to_markdown():
+@pytest.mark.asyncio
+async def test_notion_to_markdown():
     """Test conversion from Notion to markdown."""
     # Create mock rich text
     mock_rich_text = Mock()
@@ -106,24 +112,26 @@ def test_notion_to_markdown():
     mock_block.paragraph = Mock()
     mock_block.paragraph.rich_text = [mock_rich_text]
 
-    result = ParagraphElement.notion_to_markdown(mock_block)
+    result = await ParagraphElement.notion_to_markdown(mock_block)
 
     assert result is not None
     assert isinstance(result, str)
 
 
-def test_notion_to_markdown_invalid():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_invalid():
     """Test that invalid blocks return None."""
     mock_block = Mock()
     mock_block.type = "bulleted_list_item"
-    assert ParagraphElement.notion_to_markdown(mock_block) is None
+    assert await ParagraphElement.notion_to_markdown(mock_block) is None
 
     mock_block.type = "paragraph"
     mock_block.paragraph = None
-    assert ParagraphElement.notion_to_markdown(mock_block) is None
+    assert await ParagraphElement.notion_to_markdown(mock_block) is None
 
 
-def test_accepts_any_text():
+@pytest.mark.asyncio
+async def test_accepts_any_text():
     """Test that paragraphs accept any non-empty text."""
     various_texts = [
         "Simple sentence.",
@@ -134,23 +142,25 @@ def test_accepts_any_text():
     ]
 
     for text in various_texts:
-        assert ParagraphElement.markdown_to_notion(text) is not None
-        result = ParagraphElement.markdown_to_notion(text)
+        assert await ParagraphElement.markdown_to_notion(text) is not None
+        result = await ParagraphElement.markdown_to_notion(text)
         assert result is not None
 
 
-def test_whitespace_handling():
+@pytest.mark.asyncio
+async def test_whitespace_handling():
     """Test handling of various whitespace scenarios."""
     # Leading/trailing whitespace should still match
-    assert ParagraphElement.markdown_to_notion("  text  ") is not None
-    assert ParagraphElement.markdown_to_notion("\ttext\t") is not None
+    assert await ParagraphElement.markdown_to_notion("  text  ") is not None
+    assert await ParagraphElement.markdown_to_notion("\ttext\t") is not None
 
     # But should convert successfully
-    result = ParagraphElement.markdown_to_notion("  text  ")
+    result = await ParagraphElement.markdown_to_notion("  text  ")
     assert result is not None
 
 
-def test_special_characters():
+@pytest.mark.asyncio
+async def test_special_characters():
     """Test with special characters and Unicode."""
     special_cases = [
         "Text with äöü ß",
@@ -161,12 +171,13 @@ def test_special_characters():
     ]
 
     for text in special_cases:
-        assert ParagraphElement.markdown_to_notion(text) is not None
-        result = ParagraphElement.markdown_to_notion(text)
+        assert await ParagraphElement.markdown_to_notion(text) is not None
+        result = await ParagraphElement.markdown_to_notion(text)
         assert result is not None
 
 
-def test_markdown_formatting_syntax():
+@pytest.mark.asyncio
+async def test_markdown_formatting_syntax():
     """Test various markdown formatting syntax."""
     formatting_cases = [
         "**Bold text**",
@@ -180,12 +191,13 @@ def test_markdown_formatting_syntax():
     ]
 
     for text in formatting_cases:
-        assert ParagraphElement.markdown_to_notion(text) is not None
-        result = ParagraphElement.markdown_to_notion(text)
+        assert await ParagraphElement.markdown_to_notion(text) is not None
+        result = await ParagraphElement.markdown_to_notion(text)
         assert result is not None
 
 
-def test_multiline_text():
+@pytest.mark.asyncio
+async def test_multiline_text():
     """Test paragraphs with line breaks."""
     multiline_cases = [
         "Line one\nLine two",
@@ -194,12 +206,13 @@ def test_multiline_text():
     ]
 
     for text in multiline_cases:
-        assert ParagraphElement.markdown_to_notion(text) is not None
-        result = ParagraphElement.markdown_to_notion(text)
+        assert await ParagraphElement.markdown_to_notion(text) is not None
+        result = await ParagraphElement.markdown_to_notion(text)
         assert result is not None
 
 
-def test_edge_cases():
+@pytest.mark.asyncio
+async def test_edge_cases():
     """Test edge cases for paragraph content."""
     edge_cases = [
         "x",  # Single character
@@ -210,12 +223,13 @@ def test_edge_cases():
     ]
 
     for text in edge_cases:
-        assert ParagraphElement.markdown_to_notion(text) is not None
-        result = ParagraphElement.markdown_to_notion(text)
+        assert await ParagraphElement.markdown_to_notion(text) is not None
+        result = await ParagraphElement.markdown_to_notion(text)
         assert result is not None
 
 
-def test_notion_empty_rich_text():
+@pytest.mark.asyncio
+async def test_notion_empty_rich_text():
     """Test handling of empty rich text in Notion blocks."""
     # Mock block with empty rich text
     mock_block = Mock()
@@ -224,6 +238,6 @@ def test_notion_empty_rich_text():
     mock_block.paragraph.rich_text = []
 
     # Should handle gracefully
-    result = ParagraphElement.notion_to_markdown(mock_block)
+    result = await ParagraphElement.notion_to_markdown(mock_block)
     # Result could be None or empty string depending on implementation
     assert result is None or result == ""

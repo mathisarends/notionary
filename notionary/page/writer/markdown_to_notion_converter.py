@@ -55,7 +55,7 @@ class MarkdownToNotionConverter:
         if not markdown_text.strip():
             return []
 
-        all_blocks = await self._process_lines(markdown_text)
+        all_blocks = await self.process_lines(markdown_text)
 
         # Apply formatting post-processing (empty paragraphs)
         all_blocks = self._formatting_post_processor.process(all_blocks)
@@ -65,7 +65,7 @@ class MarkdownToNotionConverter:
 
         return all_blocks
 
-    async def _process_lines(self, text: str) -> list[BlockCreateRequest]:
+    async def process_lines(self, text: str) -> list[BlockCreateRequest]:
         lines = text.split("\n")
         result_blocks: list[BlockCreateRequest] = []
         parent_stack: list[ParentBlockContext] = []

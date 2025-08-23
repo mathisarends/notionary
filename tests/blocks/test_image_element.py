@@ -13,25 +13,27 @@ from notionary.blocks.paragraph.paragraph_models import CreateParagraphBlock
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 
-def test_match_markdown_valid():
+@pytest.mark.asyncio
+async def test_match_markdown_valid():
     """Test recognition of valid image formats."""
-    assert ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
-    assert ImageElement.markdown_to_notion(
+    assert await ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
+    assert await ImageElement.markdown_to_notion(
         "[image](https://test.com/img.png)(caption:Caption)"
     )
-    assert ImageElement.markdown_to_notion("[image](http://site.org/photo.gif)")
-    assert ImageElement.markdown_to_notion("  [image](https://example.com/img.jpg)  ")
+    assert await ImageElement.markdown_to_notion("[image](http://site.org/photo.gif)")
+    assert await ImageElement.markdown_to_notion("  [image](https://example.com/img.jpg)  ")
 
 
-def test_match_markdown_invalid():
+@pytest.mark.asyncio
+async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not ImageElement.markdown_to_notion(
+    assert not await ImageElement.markdown_to_notion(
         "[img](https://example.com/pic.jpg)"
     )  # Wrong prefix
-    assert not ImageElement.markdown_to_notion("[image](not-a-url)")  # Invalid URL
-    assert not ImageElement.markdown_to_notion("[image]()")  # Empty URL
-    assert ImageElement.markdown_to_notion("Regular text") is None
-    assert ImageElement.markdown_to_notion("") is None
+    assert not await ImageElement.markdown_to_notion("[image](not-a-url)")  # Invalid URL
+    assert not await ImageElement.markdown_to_notion("[image]()")  # Empty URL
+    assert await ImageElement.markdown_to_notion("Regular text") is None
+    assert await ImageElement.markdown_to_notion("") is None
 
 
 def test_match_notion():
@@ -55,9 +57,10 @@ def test_match_notion():
     assert not ImageElement.match_notion(empty_image_block)
 
 
-def test_markdown_to_notion_without_caption():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_without_caption():
     """Test conversion from markdown to Notion without caption."""
-    result = ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
+    result = await ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
 
     assert result is not None
 
@@ -70,9 +73,10 @@ def test_markdown_to_notion_without_caption():
     assert image_block.image.caption == []
 
 
-def test_markdown_to_notion_with_caption():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_with_caption():
     """Test conversion from markdown to Notion with caption."""
-    result = ImageElement.markdown_to_notion(
+    result = await ImageElement.markdown_to_notion(
         "[image](https://example.com/pic.jpg)(caption:My Photo)"
     )
 
@@ -85,14 +89,16 @@ def test_markdown_to_notion_with_caption():
     assert image_block.image.caption[0].plain_text == "My Photo"
 
 
-def test_markdown_to_notion_invalid():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_invalid():
     """Test invalid markdown returns None."""
-    assert ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)") is None
-    assert ImageElement.markdown_to_notion("[image]()") is None
-    assert ImageElement.markdown_to_notion("text") is None
+    assert await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)") is None
+    assert await ImageElement.markdown_to_notion("[image]()") is None
+    assert await ImageElement.markdown_to_notion("text") is None
 
 
-def test_notion_to_markdown_external_without_caption():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_external_without_caption():
     """Test conversion from Notion to markdown (external file, no caption)."""
     # Mock external file block
     block = Mock()
@@ -103,11 +109,12 @@ def test_notion_to_markdown_external_without_caption():
     block.image.external.url = "https://example.com/image.png"
     block.image.caption = []
 
-    result = ImageElement.notion_to_markdown(block)
+    result = await ImageElement.notion_to_markdown(block)
     assert result == "[image](https://example.com/image.png)"
 
 
-def test_notion_to_markdown_external_with_caption():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_external_with_caption():
     """Test conversion from Notion to markdown (external file, with caption)."""
     # Mock external file block with caption
     block = Mock()
@@ -121,11 +128,12 @@ def test_notion_to_markdown_external_with_caption():
     caption_rt = RichTextObject.from_plain_text("Beautiful sunset")
     block.image.caption = [caption_rt]
 
-    result = ImageElement.notion_to_markdown(block)
+    result = await ImageElement.notion_to_markdown(block)
     assert result == "[image](https://example.com/photo.jpg)(caption:Beautiful sunset)"
 
 
-def test_notion_to_markdown_notion_hosted():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_notion_hosted():
     """Test conversion from Notion-hosted file."""
     # Mock notion-hosted file
     block = Mock()
@@ -137,23 +145,24 @@ def test_notion_to_markdown_notion_hosted():
     block.image.file.url = "https://notion.s3.amazonaws.com/image123.png"
     block.image.caption = []
 
-    result = ImageElement.notion_to_markdown(block)
+    result = await ImageElement.notion_to_markdown(block)
     assert result == "[image](https://notion.s3.amazonaws.com/image123.png)"
 
 
-def test_notion_to_markdown_invalid():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_invalid():
     """Test invalid Notion blocks return None."""
     # Wrong type
     paragraph_block = Mock()
     paragraph_block.type = "paragraph"
     paragraph_block.image = None
-    assert ImageElement.notion_to_markdown(paragraph_block) is None
+    assert await ImageElement.notion_to_markdown(paragraph_block) is None
 
     # No image content
     image_block = Mock()
     image_block.type = "image"
     image_block.image = None
-    assert ImageElement.notion_to_markdown(image_block) is None
+    assert await ImageElement.notion_to_markdown(image_block) is None
 
     # Unsupported file type
     upload_block = Mock()
@@ -162,9 +171,10 @@ def test_notion_to_markdown_invalid():
     upload_block.image.type = "file_upload"
     upload_block.image.external = None
     upload_block.image.file = None
-    assert ImageElement.notion_to_markdown(upload_block) is None
+    assert await ImageElement.notion_to_markdown(upload_block) is None
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "markdown,should_match",
     [
@@ -182,9 +192,9 @@ def test_notion_to_markdown_invalid():
         ("", False),
     ],
 )
-def test_markdown_patterns(markdown, should_match):
+async def test_markdown_patterns(markdown, should_match):
     """Test various markdown patterns."""
-    result = ImageElement.markdown_to_notion(markdown)
+    result = await ImageElement.markdown_to_notion(markdown)
     if should_match:
         assert result is not None
     else:
@@ -211,7 +221,8 @@ def test_pattern_matching():
     assert ImageElement.markdown_to_notion("[image]()") is None
 
 
-def test_roundtrip_conversion():
+@pytest.mark.asyncio
+async def test_roundtrip_conversion():
     """Test that markdown -> notion -> markdown preserves content."""
     test_cases = [
         "[image](https://example.com/image.jpg)",
@@ -221,7 +232,7 @@ def test_roundtrip_conversion():
 
     for markdown in test_cases:
         # Convert to notion
-        notion_result = ImageElement.markdown_to_notion(markdown)
+        notion_result = await ImageElement.markdown_to_notion(markdown)
         assert notion_result is not None
 
         # Create proper Block mock for roundtrip
@@ -230,29 +241,17 @@ def test_roundtrip_conversion():
         notion_block.image = notion_result.image
 
         # Convert back to markdown
-        back_to_markdown = ImageElement.notion_to_markdown(notion_block)
+        back_to_markdown = await ImageElement.notion_to_markdown(notion_block)
         assert back_to_markdown == markdown
-        # Convert to notion
-        notion_result = ImageElement.markdown_to_notion(markdown)
-        assert notion_result is not None
-
-        # Create mock block for notion_to_markdown
-        image_create_block = notion_result
-        block = Mock()
-        block.type = "image"
-        block.image = image_create_block.image
-
-        # Convert back to markdown
-        result = ImageElement.notion_to_markdown(block)
-        assert result == markdown
 
 
-def test_caption_with_special_characters():
+@pytest.mark.asyncio
+async def test_caption_with_special_characters():
     """Test captions with special characters."""
     markdown = (
         "[image](https://example.com/pic.jpg)(caption:Photo with ümlaut & emoji 🌅)"
     )
-    result = ImageElement.markdown_to_notion(markdown)
+    result = await ImageElement.markdown_to_notion(markdown)
 
     assert result is not None
     image_block = result
@@ -260,7 +259,8 @@ def test_caption_with_special_characters():
     assert caption_text == "Photo with ümlaut & emoji 🌅"
 
 
-def test_multiple_caption_parts():
+@pytest.mark.asyncio
+async def test_multiple_caption_parts():
     """Test notion_to_markdown with multiple rich text objects in caption."""
     block = Mock()
     block.type = "image"
@@ -274,5 +274,5 @@ def test_multiple_caption_parts():
     rt2 = RichTextObject.from_plain_text("Part 2")
     block.image.caption = [rt1, rt2]
 
-    result = ImageElement.notion_to_markdown(block)
+    result = await ImageElement.notion_to_markdown(block)
     assert result == "[image](https://example.com/pic.jpg)(caption:Part 1 Part 2)"

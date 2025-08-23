@@ -6,6 +6,7 @@ from notionary.blocks.audio.audio_element import AudioElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 
+@pytest.mark.asyncio
 async def test_match_markdown_valid_audio():
     assert (
         await AudioElement.markdown_to_notion("[audio](https://example.com/track.mp3)")
@@ -33,6 +34,7 @@ async def test_match_markdown_valid_audio():
     )
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "text",
     [
@@ -43,10 +45,11 @@ async def test_match_markdown_valid_audio():
         "(caption:Background music)[audio](https://soundcloud.com/track.mp3)",
     ],
 )
-def test_match_markdown_param_valid(text):
-    assert AudioElement.markdown_to_notion(text) is not None
+async def test_match_markdown_param_valid(text):
+    assert await AudioElement.markdown_to_notion(text) is not None
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "text",
     [
@@ -63,8 +66,8 @@ def test_match_markdown_param_valid(text):
         "random text",
     ],
 )
-def test_match_markdown_param_invalid(text):
-    assert AudioElement.markdown_to_notion(text) is None
+async def test_match_markdown_param_invalid(text):
+    assert await AudioElement.markdown_to_notion(text) is None
 
 
 def test_match_notion_block():
@@ -85,10 +88,11 @@ def test_match_notion_block():
     assert not AudioElement.match_notion(image_block)
 
 
-def test_markdown_to_notion_with_caption():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_with_caption():
     """Test conversion from markdown to Notion with caption."""
     markdown = "[audio](https://abc.com/music.mp3)(caption:Mein Song)"
-    result = AudioElement.markdown_to_notion(markdown)
+    result = await AudioElement.markdown_to_notion(markdown)
 
     assert result is not None
     # Result sollte ein CreateAudioBlock Pydantic-Modell sein
@@ -99,10 +103,11 @@ def test_markdown_to_notion_with_caption():
     assert result.audio.caption[0].plain_text == "Mein Song"
 
 
-def test_markdown_to_notion_with_caption_before():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_with_caption_before():
     """Test conversion from markdown to Notion with caption before URL."""
     markdown = "(caption:Background music)[audio](https://abc.com/music.mp3)"
-    result = AudioElement.markdown_to_notion(markdown)
+    result = await AudioElement.markdown_to_notion(markdown)
 
     assert result is not None
     assert result.type == "audio"
@@ -112,10 +117,11 @@ def test_markdown_to_notion_with_caption_before():
     assert result.audio.caption[0].plain_text == "Background music"
 
 
-def test_markdown_to_notion_without_caption():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_without_caption():
     """Test conversion from markdown to Notion without caption."""
     markdown = "[audio](https://x.de/track.wav)"
-    result = AudioElement.markdown_to_notion(markdown)
+    result = await AudioElement.markdown_to_notion(markdown)
 
     assert result is not None
     assert result.type == "audio"
@@ -124,14 +130,16 @@ def test_markdown_to_notion_without_caption():
     assert result.audio.caption == []
 
 
-def test_markdown_to_notion_invalid_cases():
-    assert AudioElement.markdown_to_notion("[aud](https://a.com/x.mp3)") is None
-    assert AudioElement.markdown_to_notion("[audio]()") is None
-    assert AudioElement.markdown_to_notion("") is None
-    assert AudioElement.markdown_to_notion("nur Text") is None
+@pytest.mark.asyncio
+async def test_markdown_to_notion_invalid_cases():
+    assert await AudioElement.markdown_to_notion("[aud](https://a.com/x.mp3)") is None
+    assert await AudioElement.markdown_to_notion("[audio]()") is None
+    assert await AudioElement.markdown_to_notion("") is None
+    assert await AudioElement.markdown_to_notion("nur Text") is None
 
 
-def test_notion_to_markdown_with_caption():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_with_caption():
     """Test conversion from Notion to markdown with caption."""
     # Mock Block object
     notion_block = Mock()
@@ -145,11 +153,12 @@ def test_notion_to_markdown_with_caption():
     caption_rt = RichTextObject.from_plain_text("Der Sound")
     notion_block.audio.caption = [caption_rt]
 
-    result = AudioElement.notion_to_markdown(notion_block)
+    result = await AudioElement.notion_to_markdown(notion_block)
     assert result == "[audio](https://sound.com/track.ogg)(caption:Der Sound)"
 
 
-def test_notion_to_markdown_without_caption():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_without_caption():
     """Test conversion from Notion to markdown without caption."""
     notion_block = Mock()
     notion_block.type = "audio"
@@ -159,23 +168,24 @@ def test_notion_to_markdown_without_caption():
     notion_block.audio.external.url = "https://sound.com/no-caption.mp3"
     notion_block.audio.caption = []
 
-    result = AudioElement.notion_to_markdown(notion_block)
+    result = await AudioElement.notion_to_markdown(notion_block)
     assert result == "[audio](https://sound.com/no-caption.mp3)"
 
 
-def test_notion_to_markdown_invalid_cases():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_invalid_cases():
     """Test invalid cases return None."""
     # Wrong type
     paragraph_block = Mock()
     paragraph_block.type = "paragraph"
     paragraph_block.audio = None
-    assert AudioElement.notion_to_markdown(paragraph_block) is None
+    assert await AudioElement.notion_to_markdown(paragraph_block) is None
 
     # Audio is None
     audio_none_block = Mock()
     audio_none_block.type = "audio"
     audio_none_block.audio = None
-    assert AudioElement.notion_to_markdown(audio_none_block) is None
+    assert await AudioElement.notion_to_markdown(audio_none_block) is None
 
     # Not external type
     file_block = Mock()
@@ -183,7 +193,7 @@ def test_notion_to_markdown_invalid_cases():
     file_block.audio = Mock()
     file_block.audio.type = "file"
     file_block.audio.external = None
-    assert AudioElement.notion_to_markdown(file_block) is None
+    assert await AudioElement.notion_to_markdown(file_block) is None
 
     # Missing URL
     no_url_block = Mock()
@@ -192,9 +202,10 @@ def test_notion_to_markdown_invalid_cases():
     no_url_block.audio.type = "external"
     no_url_block.audio.external = Mock()
     no_url_block.audio.external.url = None
-    assert AudioElement.notion_to_markdown(no_url_block) is None
+    assert await AudioElement.notion_to_markdown(no_url_block) is None
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "markdown",
     [
@@ -204,10 +215,10 @@ def test_notion_to_markdown_invalid_cases():
         "(caption:Background music)[audio](https://example.com/song.mp3)",
     ],
 )
-def test_roundtrip_conversion(markdown):
+async def test_roundtrip_conversion(markdown):
     """Test that markdown -> notion -> markdown preserves content."""
     # Create proper Block object for testing
-    notion_result = AudioElement.markdown_to_notion(markdown)
+    notion_result = await AudioElement.markdown_to_notion(markdown)
     assert notion_result is not None
 
     # For roundtrip, we need to create a proper Block mock
@@ -218,7 +229,7 @@ def test_roundtrip_conversion(markdown):
     notion_block.audio.external = notion_result.audio.external
     notion_block.audio.caption = notion_result.audio.caption
 
-    back = AudioElement.notion_to_markdown(notion_block)
+    back = await AudioElement.notion_to_markdown(notion_block)
 
     # Note: The mixin may normalize caption position, so we need to check content equivalence
     # rather than exact string match for cases with captions
@@ -233,6 +244,7 @@ def test_roundtrip_conversion(markdown):
         assert back == markdown
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "caption",
     [
@@ -242,37 +254,40 @@ def test_roundtrip_conversion(markdown):
         "中文测试",
     ],
 )
-def test_unicode_and_special_caption(caption):
+async def test_unicode_and_special_caption(caption):
     """Test handling of Unicode and special characters in captions."""
     url = "https://audio.host/x.mp3"
     markdown = f"[audio]({url})(caption:{caption})"
-    block = AudioElement.markdown_to_notion(markdown)
+    block = await AudioElement.markdown_to_notion(markdown)
     assert block is not None
     assert block.audio.caption[0].plain_text == caption
 
 
-def test_empty_caption_edge_case():
+@pytest.mark.asyncio
+async def test_empty_caption_edge_case():
     """Test handling of empty caption."""
     url = "https://audio.host/x.mp3"
     markdown = f"[audio]({url})"
-    block = AudioElement.markdown_to_notion(markdown)
+    block = await AudioElement.markdown_to_notion(markdown)
     assert block is not None
     assert block.audio.caption == []
 
 
-def test_extra_whitespace_and_caption_spaces():
+@pytest.mark.asyncio
+async def test_extra_whitespace_and_caption_spaces():
     """Test handling of whitespace in input and captions."""
     # Whitespace around the markdown should be stripped by match_markdown
     md = "   [audio](https://aud.io/a.mp3)(caption:  Caption mit Leerzeichen   )   "
-    assert AudioElement.markdown_to_notion(md) is not None
+    assert await AudioElement.markdown_to_notion(md) is not None
 
-    block = AudioElement.markdown_to_notion(md)
+    block = await AudioElement.markdown_to_notion(md)
     assert block is not None
     # Caption spaces should be preserved
     assert block.audio.caption[0].plain_text == "  Caption mit Leerzeichen   "
 
 
-def test_integration_with_other_elements():
+@pytest.mark.asyncio
+async def test_integration_with_other_elements():
     """Test that AudioElement doesn't match non-audio markdown."""
     not_audio = [
         "# Heading",
@@ -284,10 +299,11 @@ def test_integration_with_other_elements():
         "   ",
     ]
     for text in not_audio:
-        assert AudioElement.markdown_to_notion(text) is None
+        assert await AudioElement.markdown_to_notion(text) is None
 
 
-def test_url_validation_via_match_markdown():
+@pytest.mark.asyncio
+async def test_url_validation_via_match_markdown():
     """Test URL validation through match_markdown (since _is_likely_audio_url is private/gone)."""
     # Valid HTTP/HTTPS URLs with audio extensions
     valid_urls = [
@@ -298,7 +314,7 @@ def test_url_validation_via_match_markdown():
         "[audio](https://example.com/file.oga)",
     ]
     for url in valid_urls:
-        assert AudioElement.markdown_to_notion(url) is not None
+        assert await AudioElement.markdown_to_notion(url) is not None
 
     # Invalid URLs (no proper audio extension)
     invalid_urls = [
@@ -308,20 +324,22 @@ def test_url_validation_via_match_markdown():
         "[audio](not-a-url)",  # Not a URL
     ]
     for url in invalid_urls:
-        assert AudioElement.markdown_to_notion(url) is None
+        assert await AudioElement.markdown_to_notion(url) is None
 
 
-def test_caption_with_rich_text():
+@pytest.mark.asyncio
+async def test_caption_with_rich_text():
     """Test handling of rich text formatting in captions."""
     # Test with bold formatting
     markdown = "[audio](https://example.com/file.mp3)(caption:**Bold** text)"
-    block = AudioElement.markdown_to_notion(markdown)
+    block = await AudioElement.markdown_to_notion(markdown)
     assert block is not None
     # The mixin should handle rich text parsing
     assert len(block.audio.caption) >= 1
 
 
-def test_multiple_caption_rich_text_objects():
+@pytest.mark.asyncio
+async def test_multiple_caption_rich_text_objects():
     """Test notion_to_markdown with multiple rich text objects in caption."""
     notion_block = Mock()
     notion_block.type = "audio"
@@ -335,11 +353,12 @@ def test_multiple_caption_rich_text_objects():
     rt2 = RichTextObject.from_plain_text("Part 2")
     notion_block.audio.caption = [rt1, rt2]
 
-    result = AudioElement.notion_to_markdown(notion_block)
+    result = await AudioElement.notion_to_markdown(notion_block)
     assert result == "[audio](https://example.com/audio.mp3)(caption:Part 1 Part 2)"
 
 
-def test_notion_to_markdown_with_plain_text_fallback():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_with_plain_text_fallback():
     """Test notion_to_markdown falls back to plain_text when text content is missing."""
     notion_block = Mock()
     notion_block.type = "audio"
@@ -352,5 +371,5 @@ def test_notion_to_markdown_with_plain_text_fallback():
     rt = RichTextObject.from_plain_text("Fallback Text")
     notion_block.audio.caption = [rt]
 
-    result = AudioElement.notion_to_markdown(notion_block)
+    result = await AudioElement.notion_to_markdown(notion_block)
     assert result == "[audio](https://example.com/audio.mp3)(caption:Fallback Text)"

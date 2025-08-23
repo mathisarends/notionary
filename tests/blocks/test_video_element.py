@@ -5,41 +5,45 @@ Tests core functionality for video blocks with [video](url) syntax.
 
 from unittest.mock import Mock
 
+import pytest
+
 from notionary.blocks.file.file_element_models import FileBlock
 from notionary.blocks.paragraph.paragraph_models import CreateParagraphBlock
 from notionary.blocks.video.video_element import VideoElement
 from notionary.blocks.video.video_element_models import CreateVideoBlock
 
 
-def test_match_markdown_valid():
+@pytest.mark.asyncio
+async def test_match_markdown_valid():
     """Test recognition of valid video formats."""
-    assert VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
-    assert VideoElement.markdown_to_notion(
+    assert await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
+    assert await VideoElement.markdown_to_notion(
         "[video](https://example.com/video.mp4)(caption:Caption)"
     )
-    assert VideoElement.markdown_to_notion("[video](https://youtu.be/dQw4w9WgXcQ)")
-    assert VideoElement.markdown_to_notion(
+    assert await VideoElement.markdown_to_notion("[video](https://youtu.be/dQw4w9WgXcQ)")
+    assert await VideoElement.markdown_to_notion(
         "[video](https://youtube.com/watch?v=dQw4w9WgXcQ)"
     )
-    assert VideoElement.markdown_to_notion("  [video](https://example.com/video.mov)  ")
+    assert await VideoElement.markdown_to_notion("  [video](https://example.com/video.mov)  ")
 
 
-def test_match_markdown_invalid():
+@pytest.mark.asyncio
+async def test_match_markdown_invalid():
     """Test rejection of invalid video formats."""
-    assert VideoElement.markdown_to_notion("[video]") is None
-    assert not VideoElement.markdown_to_notion("[video]()")
-    assert not VideoElement.markdown_to_notion("[video](not-a-url)")
-    assert not VideoElement.markdown_to_notion(
+    assert await VideoElement.markdown_to_notion("[video]") is None
+    assert not await VideoElement.markdown_to_notion("[video]()")
+    assert not await VideoElement.markdown_to_notion("[video](not-a-url)")
+    assert not await VideoElement.markdown_to_notion(
         "[video](ftp://example.com/video.mp4)"
     )  # Only http/https
-    assert not VideoElement.markdown_to_notion(
+    assert not await VideoElement.markdown_to_notion(
         "video(https://example.com/video.mp4)"
     )  # Missing brackets
-    assert not VideoElement.markdown_to_notion(
+    assert not await VideoElement.markdown_to_notion(
         "[embed](https://example.com/video.mp4)"
     )  # Wrong tag
-    assert VideoElement.markdown_to_notion("") is None
-    assert VideoElement.markdown_to_notion("Regular text") is None
+    assert await VideoElement.markdown_to_notion("") is None
+    assert await VideoElement.markdown_to_notion("Regular text") is None
 
 
 def test_match_notion_valid():
@@ -66,18 +70,20 @@ def test_match_notion_invalid():
     assert not VideoElement.match_notion(mock_block)
 
 
-def test_markdown_to_notion_basic():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_basic():
     """Test conversion from markdown to Notion."""
-    result = VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
+    result = await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
 
     assert result is not None
     assert isinstance(result, CreateVideoBlock)
     assert isinstance(result.video, FileBlock)
 
 
-def test_markdown_to_notion_with_caption():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_with_caption():
     """Test conversion with caption."""
-    result = VideoElement.markdown_to_notion(
+    result = await VideoElement.markdown_to_notion(
         "[video](https://example.com/video.mp4)(caption:Demo video)"
     )
 
@@ -86,24 +92,27 @@ def test_markdown_to_notion_with_caption():
     assert len(result.video.caption) > 0  # Should have caption
 
 
-def test_markdown_to_notion_without_caption():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_without_caption():
     """Test conversion without caption."""
-    result = VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
+    result = await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
 
     assert result is not None
     video_block = result
     assert len(video_block.video.caption) == 0  # Should have no caption
 
 
-def test_markdown_to_notion_invalid():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_invalid():
     """Test that invalid markdown returns None."""
-    assert VideoElement.markdown_to_notion("[video]()") is None
-    assert VideoElement.markdown_to_notion("[video](not-a-url)") is None
-    assert VideoElement.markdown_to_notion("Regular text") is None
-    assert VideoElement.markdown_to_notion("") is None
+    assert await VideoElement.markdown_to_notion("[video]()") is None
+    assert await VideoElement.markdown_to_notion("[video](not-a-url)") is None
+    assert await VideoElement.markdown_to_notion("Regular text") is None
+    assert await VideoElement.markdown_to_notion("") is None
 
 
-def test_notion_to_markdown_external():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_external():
     """Test conversion from Notion to markdown (external URL)."""
     # Create mock video block
     mock_block = Mock()
@@ -114,13 +123,14 @@ def test_notion_to_markdown_external():
     mock_block.video.external.url = "https://example.com/video.mp4"
     mock_block.video.caption = []
 
-    result = VideoElement.notion_to_markdown(mock_block)
+    result = await VideoElement.notion_to_markdown(mock_block)
 
     assert result is not None
     assert result == "[video](https://example.com/video.mp4)"
 
 
-def test_notion_to_markdown_file_type():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_file_type():
     """Test conversion with file type (not external)."""
     mock_block = Mock()
     mock_block.type = "video"
@@ -131,21 +141,22 @@ def test_notion_to_markdown_file_type():
     mock_block.video.caption = []
     mock_block.video.external = None
 
-    result = VideoElement.notion_to_markdown(mock_block)
+    result = await VideoElement.notion_to_markdown(mock_block)
 
     assert result is not None
     assert "https://example.com/uploaded.mp4" in result
 
 
-def test_notion_to_markdown_invalid():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_invalid():
     """Test that invalid blocks return None."""
     mock_block = Mock()
     mock_block.type = "paragraph"
-    assert VideoElement.notion_to_markdown(mock_block) is None
+    assert await VideoElement.notion_to_markdown(mock_block) is None
 
     mock_block.type = "video"
     mock_block.video = None
-    assert VideoElement.notion_to_markdown(mock_block) is None
+    assert await VideoElement.notion_to_markdown(mock_block) is None
 
 
 def test_get_youtube_id():
@@ -204,7 +215,8 @@ def test_youtube_patterns():
         assert not found_match, f"Should not match non-YouTube URL: {url}"
 
 
-def test_video_file_extensions():
+@pytest.mark.asyncio
+async def test_video_file_extensions():
     """Test various video file extensions."""
     extensions = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".flv"]
 
@@ -212,22 +224,24 @@ def test_video_file_extensions():
         url = f"https://example.com/video{ext}"
         markdown = f"[video]({url})"
 
-        assert VideoElement.markdown_to_notion(markdown) is not None
-        result = VideoElement.markdown_to_notion(markdown)
+        assert await VideoElement.markdown_to_notion(markdown) is not None
+        result = await VideoElement.markdown_to_notion(markdown)
         assert result is not None
 
 
-def test_whitespace_handling():
+@pytest.mark.asyncio
+async def test_whitespace_handling():
     """Test handling of whitespace."""
-    assert VideoElement.markdown_to_notion("  [video](https://example.com/video.mp4)  ")
+    assert await VideoElement.markdown_to_notion("  [video](https://example.com/video.mp4)  ")
 
-    result = VideoElement.markdown_to_notion(
+    result = await VideoElement.markdown_to_notion(
         "  [video](https://example.com/video.mp4)  "
     )
     assert result is not None
 
 
-def test_url_protocols():
+@pytest.mark.asyncio
+async def test_url_protocols():
     """Test different URL protocols."""
     # Valid protocols
     valid_urls = [
@@ -237,7 +251,7 @@ def test_url_protocols():
 
     for url in valid_urls:
         markdown = f"[video]({url})"
-        assert VideoElement.markdown_to_notion(markdown) is not None
+        assert await VideoElement.markdown_to_notion(markdown) is not None
 
     # Invalid protocols should not match the pattern
     invalid_urls = [
@@ -247,4 +261,4 @@ def test_url_protocols():
 
     for url in invalid_urls:
         markdown = f"[video]({url})"
-        assert VideoElement.markdown_to_notion(markdown) is None
+        assert await VideoElement.markdown_to_notion(markdown) is None

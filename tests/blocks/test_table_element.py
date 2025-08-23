@@ -1,5 +1,7 @@
 from unittest.mock import Mock
 
+import pytest
+
 from notionary.blocks.rich_text.rich_text_models import (
     RichTextObject,
     TextAnnotations,
@@ -20,7 +22,8 @@ def create_rich_text(content: str) -> RichTextObject:
     )
 
 
-def test_notion_to_markdown_with_data():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_with_data():
     """Test conversion with actual table data."""
     # Create real RichTextObject instances instead of dictionaries
     mock_cell_1 = [create_rich_text("John")]
@@ -41,7 +44,7 @@ def test_notion_to_markdown_with_data():
     mock_block.table.has_row_header = False
     mock_block.children = [mock_row]
 
-    result = TableElement.notion_to_markdown(mock_block)
+    result = await TableElement.notion_to_markdown(mock_block)
 
     assert result is not None
     lines = result.split("\n")

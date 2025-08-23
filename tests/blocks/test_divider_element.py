@@ -8,7 +8,6 @@ import pytest
 from notionary.blocks.divider.divider_element import DividerElement
 from notionary.blocks.divider.divider_models import CreateDividerBlock, DividerBlock
 from notionary.blocks.models import Block
-from notionary.blocks.paragraph.paragraph_models import CreateParagraphBlock
 
 
 def create_block_with_required_fields(**kwargs) -> Block:
@@ -25,20 +24,22 @@ def create_block_with_required_fields(**kwargs) -> Block:
     return Block(**defaults)
 
 
-def test_match_markdown_valid():
+@pytest.mark.asyncio
+async def test_match_markdown_valid():
     """Test recognition of valid divider syntax."""
-    assert DividerElement.markdown_to_notion("---") is not None
-    assert DividerElement.markdown_to_notion("----")  # More dashes
-    assert DividerElement.markdown_to_notion("-----") is not None
-    assert DividerElement.markdown_to_notion("  ---  ")  # With spaces
+    assert await DividerElement.markdown_to_notion("---") is not None
+    assert await DividerElement.markdown_to_notion("----")  # More dashes
+    assert await DividerElement.markdown_to_notion("-----") is not None
+    assert await DividerElement.markdown_to_notion("  ---  ")  # With spaces
 
 
-def test_match_markdown_invalid():
+@pytest.mark.asyncio
+async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not DividerElement.markdown_to_notion("--")  # Too few dashes
-    assert not DividerElement.markdown_to_notion("text ---")  # Not alone
-    assert DividerElement.markdown_to_notion("--- text") is None
-    assert DividerElement.markdown_to_notion("This is just text.") is None
+    assert not await DividerElement.markdown_to_notion("--")  # Too few dashes
+    assert not await DividerElement.markdown_to_notion("text ---")  # Not alone
+    assert await DividerElement.markdown_to_notion("--- text") is None
+    assert await DividerElement.markdown_to_notion("This is just text.") is None
 
 
 def test_match_notion():
@@ -57,47 +58,52 @@ def test_match_notion():
     assert not DividerElement.match_notion(invalid_divider)
 
 
-def test_markdown_to_notion():
+@pytest.mark.asyncio
+async def test_markdown_to_notion():
     """Test conversion of divider to Notion blocks."""
-    result = DividerElement.markdown_to_notion("---")
+    result = await DividerElement.markdown_to_notion("---")
 
     # Should return just the divider block
     assert isinstance(result, CreateDividerBlock)
     assert result.type == "divider"
 
 
-def test_markdown_to_notion_invalid():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_invalid():
     """Test invalid markdown returns None."""
-    result = DividerElement.markdown_to_notion("--")  # Too few dashes
+    result = await DividerElement.markdown_to_notion("--")  # Too few dashes
     assert result is None
 
-    result = DividerElement.markdown_to_notion("text ---")
+    result = await DividerElement.markdown_to_notion("text ---")
     assert result is None
 
 
-def test_notion_to_markdown():
+@pytest.mark.asyncio
+async def test_notion_to_markdown():
     """Test conversion of Notion divider to markdown."""
     block = create_block_with_required_fields(
         type="divider",
         divider=DividerBlock(),
     )
 
-    result = DividerElement.notion_to_markdown(block)
+    result = await DividerElement.notion_to_markdown(block)
     assert result == "---"
 
 
-def test_notion_to_markdown_invalid():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_invalid():
     """Test invalid Notion block returns None."""
     paragraph_block = create_block_with_required_fields(type="paragraph")
-    result = DividerElement.notion_to_markdown(paragraph_block)
+    result = await DividerElement.notion_to_markdown(paragraph_block)
     assert result is None
 
     # Test divider block without divider property
     invalid_divider = create_block_with_required_fields(type="divider")
-    result = DividerElement.notion_to_markdown(invalid_divider)
+    result = await DividerElement.notion_to_markdown(invalid_divider)
     assert result is None
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "markdown,should_match",
     [
@@ -111,9 +117,9 @@ def test_notion_to_markdown_invalid():
         ("", False),
     ],
 )
-def test_markdown_patterns(markdown, should_match):
+async def test_markdown_patterns(markdown, should_match):
     """Test recognition of various divider patterns."""
-    result = DividerElement.markdown_to_notion(markdown)
+    result = await DividerElement.markdown_to_notion(markdown)
     if should_match:
         assert result is not None
     else:

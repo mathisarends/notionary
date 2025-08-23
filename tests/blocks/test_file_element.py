@@ -1,20 +1,6 @@
 """
 Pytest tests for FileElement.
-Tests conversion between Markdown file@pytest.mark.parametrize(
-    "text",
-    [
-        "[doc](https://example.com/a.pdf)",  # falscher Prefix
-        "[file](not-a-url)",  # ungültige URL (aber Pattern matcht trotzdem)
-        "[file]()",  # kein Link
-        "[file]( )",
-        "[file]https://example.com/a.pdf",  # fehlende Klammern
-        "[file](ftp://site.com/file.pdf)",  # falsches Protokoll (aber Pattern matcht)
-        "",
-        "random text",
-    ],
-)
-def test_match_markdown_param_invalid(text):
-    assert FileElement.markdown_to_notion(text) is Noneon file blocks.
+Tests conversion between Markdown file blocks and Notion file blocks.
 Updated to use new caption mixin syntax.
 """
 
@@ -27,10 +13,6 @@ from notionary.blocks.file.file_element_models import (
     FileBlock,
 )
 from notionary.blocks.models import Block
-from notionary.blocks.paragraph.paragraph_models import (
-    CreateParagraphBlock,
-    ParagraphBlock,
-)
 from notionary.blocks.rich_text.rich_text_models import (
     RichTextObject,
     TextAnnotations,
@@ -62,17 +44,19 @@ def create_block_with_required_fields(**kwargs) -> Block:
     return Block(**defaults)
 
 
-def test_match_markdown_valid_files():
-    assert FileElement.markdown_to_notion("[file](https://example.com/doc.pdf)")
-    assert FileElement.markdown_to_notion(
+@pytest.mark.asyncio
+async def test_match_markdown_valid_files():
+    assert await FileElement.markdown_to_notion("[file](https://example.com/doc.pdf)")
+    assert await FileElement.markdown_to_notion(
         "[file](https://drive.google.com/file/d/123)(caption:My Report)"
     )
-    assert FileElement.markdown_to_notion("   [file](https://abc.com/x.docx)   ")
-    assert FileElement.markdown_to_notion(
+    assert await FileElement.markdown_to_notion("   [file](https://abc.com/x.docx)   ")
+    assert await FileElement.markdown_to_notion(
         "[file](https://example.com/y.xlsx)(caption:Finanzen Q4)"
     )
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "text",
     [
@@ -82,10 +66,11 @@ def test_match_markdown_valid_files():
         "[file](https://cloud.net/y.xlsx)(caption:Finanzen Q4)",
     ],
 )
-def test_match_markdown_param_valid(text):
-    assert FileElement.markdown_to_notion(text) is not None
+async def test_match_markdown_param_valid(text):
+    assert await FileElement.markdown_to_notion(text) is not None
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "text",
     [
@@ -100,10 +85,10 @@ def test_match_markdown_param_valid(text):
         "random text",
     ],
 )
-def test_match_markdown_param_invalid(text):
+async def test_match_markdown_param_invalid(text):
     # Adjust expectations based on actual FileElement behavior
     # Some of these might actually match the pattern but fail during conversion
-    result = FileElement.markdown_to_notion(text)
+    result = await FileElement.markdown_to_notion(text)
     # For most invalid cases, this should be False
     if text in ["[file](not-a-url)", "[file](ftp://site.com/file.pdf)"]:
         # These might match the pattern but fail URL validation
@@ -131,6 +116,7 @@ def test_match_notion_block():
     assert not FileElement.match_notion(image_block)
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "markdown, url, caption",
     [
@@ -146,8 +132,8 @@ def test_match_notion_block():
         ),
     ],
 )
-def test_markdown_to_notion(markdown, url, caption):
-    result = FileElement.markdown_to_notion(markdown)
+async def test_markdown_to_notion(markdown, url, caption):
+    result = await FileElement.markdown_to_notion(markdown)
     assert result is not None
     assert isinstance(result, CreateFileBlock)
 
@@ -165,14 +151,16 @@ def test_markdown_to_notion(markdown, url, caption):
         assert file_block.file.caption == []
 
 
-def test_markdown_to_notion_invalid_cases():
-    assert FileElement.markdown_to_notion("[doc](https://x.com/a.pdf)") is None
-    assert FileElement.markdown_to_notion("[file]()") is None
-    assert FileElement.markdown_to_notion("") is None
-    assert FileElement.markdown_to_notion("nur Text") is None
+@pytest.mark.asyncio
+async def test_markdown_to_notion_invalid_cases():
+    assert await FileElement.markdown_to_notion("[doc](https://x.com/a.pdf)") is None
+    assert await FileElement.markdown_to_notion("[file]()") is None
+    assert await FileElement.markdown_to_notion("") is None
+    assert await FileElement.markdown_to_notion("nur Text") is None
 
 
-def test_notion_to_markdown_with_caption():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_with_caption():
     notion_block = create_block_with_required_fields(
         type="file",
         file=FileBlock(
@@ -181,11 +169,12 @@ def test_notion_to_markdown_with_caption():
             caption=[create_rich_text_object("Mein Lebenslauf")],
         ),
     )
-    result = FileElement.notion_to_markdown(notion_block)
+    result = await FileElement.notion_to_markdown(notion_block)
     assert result == "[file](https://files.com/cv.pdf)(caption:Mein Lebenslauf)"
 
 
-def test_notion_to_markdown_without_caption():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_without_caption():
     notion_block = create_block_with_required_fields(
         type="file",
         file=FileBlock(
@@ -194,11 +183,12 @@ def test_notion_to_markdown_without_caption():
             caption=[],
         ),
     )
-    result = FileElement.notion_to_markdown(notion_block)
+    result = await FileElement.notion_to_markdown(notion_block)
     assert result == "[file](https://x.com/empty.pdf)"
 
 
-def test_notion_to_markdown_file_type():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_file_type():
     from notionary.blocks.file.file_element_models import NotionHostedFile
 
     notion_block = create_block_with_required_fields(
@@ -211,22 +201,23 @@ def test_notion_to_markdown_file_type():
             caption=[],
         ),
     )
-    result = FileElement.notion_to_markdown(notion_block)
+    result = await FileElement.notion_to_markdown(notion_block)
     assert result == "[file](https://notion.com/file.doc)"
 
 
-def test_notion_to_markdown_invalid_cases():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_invalid_cases():
     paragraph_block = create_block_with_required_fields(type="paragraph")
-    assert FileElement.notion_to_markdown(paragraph_block) is None
+    assert await FileElement.notion_to_markdown(paragraph_block) is None
 
     empty_file_block = create_block_with_required_fields(type="file")
-    assert FileElement.notion_to_markdown(empty_file_block) is None
+    assert await FileElement.notion_to_markdown(empty_file_block) is None
 
     # File block without URL
     file_block_no_url = create_block_with_required_fields(
         type="file", file=FileBlock(type="external")
     )
-    assert FileElement.notion_to_markdown(file_block_no_url) is None
+    assert await FileElement.notion_to_markdown(file_block_no_url) is None
 
 
 def test_extract_text_content():
@@ -244,6 +235,7 @@ def test_extract_text_content():
         assert FileElement._extract_text_content([]) == ""
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "markdown",
     [
@@ -252,9 +244,9 @@ def test_extract_text_content():
         "[file](https://abc.de/y.pptx)(caption:Bericht 🙂)",
     ],
 )
-def test_roundtrip_conversion(markdown):
+async def test_roundtrip_conversion(markdown):
     # Convert to Notion
-    notion_blocks = FileElement.markdown_to_notion(markdown)
+    notion_blocks = await FileElement.markdown_to_notion(markdown)
     assert notion_blocks is not None
 
     # Create Block for notion_to_markdown
@@ -264,10 +256,11 @@ def test_roundtrip_conversion(markdown):
     )
 
     # Convert back to Markdown
-    back = FileElement.notion_to_markdown(notion_block)
+    back = await FileElement.notion_to_markdown(notion_block)
     assert back == markdown
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "caption",
     [
@@ -278,10 +271,10 @@ def test_roundtrip_conversion(markdown):
         "",
     ],
 )
-def test_unicode_and_special_caption(caption):
+async def test_unicode_and_special_caption(caption):
     url = "https://host.de/x.pdf"
     markdown = f"[file]({url})(caption:{caption})" if caption else f"[file]({url})"
-    blocks = FileElement.markdown_to_notion(markdown)
+    blocks = await FileElement.markdown_to_notion(markdown)
     assert blocks is not None
 
     # Create Block for roundtrip
@@ -290,13 +283,14 @@ def test_unicode_and_special_caption(caption):
         type="file", file=file_create_block.file
     )
 
-    roundtrip = FileElement.notion_to_markdown(file_block)
+    roundtrip = await FileElement.notion_to_markdown(file_block)
     assert roundtrip == markdown
 
 
-def test_extra_whitespace_and_newlines():
+@pytest.mark.asyncio
+async def test_extra_whitespace_and_newlines():
     md = "   [file](https://x.com/d.pdf)(caption:  Caption with spaces   )   "
-    blocks = FileElement.markdown_to_notion(md)
+    blocks = await FileElement.markdown_to_notion(md)
     assert blocks is not None
 
     file_block = blocks
@@ -306,12 +300,13 @@ def test_extra_whitespace_and_newlines():
     # Create Block for roundtrip
     notion_block = create_block_with_required_fields(type="file", file=file_block.file)
 
-    back = FileElement.notion_to_markdown(notion_block)
+    back = await FileElement.notion_to_markdown(notion_block)
     # The markdown conversion should normalize whitespace around the syntax
     assert back == "[file](https://x.com/d.pdf)(caption:  Caption with spaces   )"
 
 
-def test_integration_with_other_elements():
+@pytest.mark.asyncio
+async def test_integration_with_other_elements():
     not_files = [
         "# Heading",
         "Paragraph text",
@@ -323,10 +318,11 @@ def test_integration_with_other_elements():
         "   ",
     ]
     for text in not_files:
-        assert FileElement.markdown_to_notion(text) is None
+        assert await FileElement.markdown_to_notion(text) is None
 
 
-def test_file_types_and_extensions():
+@pytest.mark.asyncio
+async def test_file_types_and_extensions():
     """Test various file types and extensions."""
     file_types = [
         "pdf",
@@ -348,12 +344,13 @@ def test_file_types_and_extensions():
         url = f"https://example.com/document.{ext}"
         markdown = f"[file]({url})"
 
-        result = FileElement.markdown_to_notion(markdown)
+        result = await FileElement.markdown_to_notion(markdown)
         assert result is not None
         assert result.file.external.url == url
 
 
-def test_complex_urls():
+@pytest.mark.asyncio
+async def test_complex_urls():
     """Test file URLs with query parameters and fragments."""
     complex_urls = [
         "https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/view?usp=sharing",
@@ -364,7 +361,7 @@ def test_complex_urls():
 
     for url in complex_urls:
         markdown = f"[file]({url})"
-        result = FileElement.markdown_to_notion(markdown)
+        result = await FileElement.markdown_to_notion(markdown)
         assert result is not None
         assert result.file.external.url == url
 
@@ -396,14 +393,15 @@ def file_block_with_caption():
     )
 
 
-def test_with_fixtures(simple_file_block, file_block_with_caption):
+@pytest.mark.asyncio
+async def test_with_fixtures(simple_file_block, file_block_with_caption):
     """Test using fixtures to reduce duplication."""
     # Test simple file block
-    result1 = FileElement.notion_to_markdown(simple_file_block)
+    result1 = await FileElement.notion_to_markdown(simple_file_block)
     assert result1 == "[file](https://example.com/document.pdf)"
 
     # Test file block with caption
-    result2 = FileElement.notion_to_markdown(file_block_with_caption)
+    result2 = await FileElement.notion_to_markdown(file_block_with_caption)
     assert (
         result2
         == "[file](https://docs.example.com/report.pdf)(caption:Annual Report 2024)"
@@ -435,10 +433,11 @@ def test_notion_block_validation():
     assert not FileElement.match_notion(no_content_block)
 
 
-def test_file_block_structure():
+@pytest.mark.asyncio
+async def test_file_block_structure():
     """Test the exact structure of converted file blocks."""
     markdown = "[file](https://example.com/test.pdf)(caption:Test Document)"
-    result = FileElement.markdown_to_notion(markdown)
+    result = await FileElement.markdown_to_notion(markdown)
 
     # Check file block structure
     file_block = result

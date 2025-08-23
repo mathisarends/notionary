@@ -4,7 +4,6 @@ Tests the essential functionality for equation block handling with $$....$$ synt
 """
 
 import pytest
-from unittest.mock import Mock
 
 from notionary.blocks.equation.equation_element import EquationElement
 from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
@@ -25,28 +24,31 @@ def create_block_with_required_fields(**kwargs) -> Block:
     return Block(**defaults)
 
 
-def test_match_markdown_valid_simple():
+@pytest.mark.asyncio
+async def test_match_markdown_valid_simple():
     """Test recognition of valid simple equation syntax."""
-    assert EquationElement.markdown_to_notion("$$E = mc^2$$")
-    assert EquationElement.markdown_to_notion("$$x + y = z$$")
-    assert EquationElement.markdown_to_notion("$$a = b$$")
-    assert EquationElement.markdown_to_notion("  $$simple$$  ")  # With spaces
+    assert await EquationElement.markdown_to_notion("$$E = mc^2$$")
+    assert await EquationElement.markdown_to_notion("$$x + y = z$$")
+    assert await EquationElement.markdown_to_notion("$$a = b$$")
+    assert await EquationElement.markdown_to_notion("  $$simple$$  ")  # With spaces
 
 
-def test_match_markdown_valid_complex():
+@pytest.mark.asyncio
+async def test_match_markdown_valid_complex():
     """Test recognition of valid complex equation syntax."""
-    assert EquationElement.markdown_to_notion("$$\\frac{a}{b}$$")
-    assert EquationElement.markdown_to_notion("$$\\sum_{i=1}^n i$$")
-    assert EquationElement.markdown_to_notion("$$\\int_0^\\infty e^{-x} dx$$")
+    assert await EquationElement.markdown_to_notion("$$\\frac{a}{b}$$")
+    assert await EquationElement.markdown_to_notion("$$\\sum_{i=1}^n i$$")
+    assert await EquationElement.markdown_to_notion("$$\\int_0^\\infty e^{-x} dx$$")
 
 
-def test_match_markdown_invalid():
+@pytest.mark.asyncio
+async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert EquationElement.markdown_to_notion("$E = mc^2$") is None  # Single $
-    assert EquationElement.markdown_to_notion("$$$$") is None  # Empty
-    assert EquationElement.markdown_to_notion("$$   $$") is None  # Only whitespace
-    assert EquationElement.markdown_to_notion("E = mc^2") is None  # No $$
-    assert EquationElement.markdown_to_notion("") is None  # Empty string
+    assert await EquationElement.markdown_to_notion("$E = mc^2$") is None  # Single $
+    assert await EquationElement.markdown_to_notion("$$$$") is None  # Empty
+    assert await EquationElement.markdown_to_notion("$$   $$") is None  # Only whitespace
+    assert await EquationElement.markdown_to_notion("E = mc^2") is None  # No $$
+    assert await EquationElement.markdown_to_notion("") is None  # Empty string
 
 
 def test_match_notion_valid():
@@ -72,93 +74,102 @@ def test_match_notion_invalid():
     assert not EquationElement.match_notion(no_equation_block)
 
 
-def test_markdown_to_notion_simple():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_simple():
     """Test conversion from simple markdown to Notion blocks."""
-    result = EquationElement.markdown_to_notion("$$E = mc^2$$")
+    result = await EquationElement.markdown_to_notion("$$E = mc^2$$")
 
     assert isinstance(result, CreateEquationBlock)
     assert isinstance(result.equation, EquationBlock)
     assert result.equation.expression == "E = mc^2"
 
 
-def test_markdown_to_notion_complex():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_complex():
     """Test conversion from complex markdown to Notion blocks."""
-    result = EquationElement.markdown_to_notion("$$\\frac{a}{b}$$")
+    result = await EquationElement.markdown_to_notion("$$\\frac{a}{b}$$")
 
     assert isinstance(result, CreateEquationBlock)
     assert isinstance(result.equation, EquationBlock)
     assert result.equation.expression == "\\frac{a}{b}"
 
 
-def test_markdown_to_notion_multiline():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_multiline():
     """Test conversion with multiline expressions."""
-    result = EquationElement.markdown_to_notion("$$a = b\nc = d$$")
+    result = await EquationElement.markdown_to_notion("$$a = b\nc = d$$")
 
     assert isinstance(result, CreateEquationBlock)
     assert isinstance(result.equation, EquationBlock)
     assert result.equation.expression == "a = b\nc = d"
 
 
-def test_markdown_to_notion_invalid():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_invalid():
     """Test that invalid markdown returns None."""
-    assert EquationElement.markdown_to_notion("$E = mc^2$") is None  # Single $
-    assert EquationElement.markdown_to_notion("$$$$") is None  # Empty
-    assert EquationElement.markdown_to_notion("E = mc^2") is None  # No $$
-    assert EquationElement.markdown_to_notion("") is None
+    assert await EquationElement.markdown_to_notion("$E = mc^2$") is None  # Single $
+    assert await EquationElement.markdown_to_notion("$$$$") is None  # Empty
+    assert await EquationElement.markdown_to_notion("E = mc^2") is None  # No $$
+    assert await EquationElement.markdown_to_notion("") is None
 
 
-def test_notion_to_markdown_simple():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_simple():
     """Test conversion from simple Notion blocks to markdown."""
     block = create_block_with_required_fields(
         type=BlockType.EQUATION, equation=EquationBlock(expression="E = mc^2")
     )
 
-    result = EquationElement.notion_to_markdown(block)
+    result = await EquationElement.notion_to_markdown(block)
     assert result == "$$E = mc^2$$"
 
 
-def test_notion_to_markdown_complex():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_complex():
     """Test conversion with complex expressions."""
     block = create_block_with_required_fields(
         type=BlockType.EQUATION, equation=EquationBlock(expression="\\frac{a}{b}")
     )
 
-    result = EquationElement.notion_to_markdown(block)
+    result = await EquationElement.notion_to_markdown(block)
     assert result == "$$\\frac{a}{b}$$"
 
 
-def test_notion_to_markdown_multiline():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_multiline():
     """Test conversion with multiline expressions."""
     block = create_block_with_required_fields(
         type=BlockType.EQUATION, equation=EquationBlock(expression="a = b\nc = d")
     )
 
-    result = EquationElement.notion_to_markdown(block)
+    result = await EquationElement.notion_to_markdown(block)
     assert result == "$$a = b\nc = d$$"
 
 
-def test_notion_to_markdown_invalid():
+@pytest.mark.asyncio
+async def test_notion_to_markdown_invalid():
     """Test that invalid blocks return None."""
     # Wrong type
     paragraph_block = create_block_with_required_fields(
         type=BlockType.PARAGRAPH, equation=EquationBlock(expression="E = mc^2")
     )
-    assert EquationElement.notion_to_markdown(paragraph_block) is None
+    assert await EquationElement.notion_to_markdown(paragraph_block) is None
 
     # Right type but no equation
     no_equation_block = create_block_with_required_fields(
         type=BlockType.EQUATION, equation=None
     )
-    assert EquationElement.notion_to_markdown(no_equation_block) is None
+    assert await EquationElement.notion_to_markdown(no_equation_block) is None
 
     # Empty expression
     empty_equation_block = create_block_with_required_fields(
         type=BlockType.EQUATION, equation=EquationBlock(expression="")
     )
-    assert EquationElement.notion_to_markdown(empty_equation_block) is None
+    assert await EquationElement.notion_to_markdown(empty_equation_block) is None
 
 
-def test_roundtrip_conversion():
+@pytest.mark.asyncio
+async def test_roundtrip_conversion():
     """Test that markdown -> notion -> markdown preserves content."""
     test_cases = [
         "$$E = mc^2$$",
@@ -169,7 +180,7 @@ def test_roundtrip_conversion():
 
     for markdown in test_cases:
         # Convert to notion
-        notion_result = EquationElement.markdown_to_notion(markdown)
+        notion_result = await EquationElement.markdown_to_notion(markdown)
         assert notion_result is not None
 
         # Create proper Block mock for roundtrip
@@ -178,10 +189,11 @@ def test_roundtrip_conversion():
         )
 
         # Convert back to markdown
-        back_to_markdown = EquationElement.notion_to_markdown(notion_block)
+        back_to_markdown = await EquationElement.notion_to_markdown(notion_block)
         assert back_to_markdown == markdown
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "expression",
     [
@@ -193,9 +205,9 @@ def test_roundtrip_conversion():
         "\\alpha + \\beta = \\gamma",
     ],
 )
-def test_various_expressions(expression):
+async def test_various_expressions(expression):
     """Test various LaTeX expressions."""
     markdown = f"$${expression}$$"
-    result = EquationElement.markdown_to_notion(markdown)
+    result = await EquationElement.markdown_to_notion(markdown)
     assert result is not None
     assert result.equation.expression == expression

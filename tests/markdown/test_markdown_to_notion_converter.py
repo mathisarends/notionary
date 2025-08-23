@@ -201,14 +201,15 @@ if response.status_code == 200:
             "expected_column_count": 2,
         }
 
-    def test_markdown_to_notion_conversion_regression(
+    @pytest.mark.asyncio
+    async def test_markdown_to_notion_conversion_regression(
         self, converter, generated_markdown, expected_block_structure
     ):
         """
         Regressionstest: Prüft, ob der generierte Markdown korrekt in Notion-Blöcke konvertiert wird.
         """
         # Konvertierung durchführen
-        actual_blocks = converter.convert(generated_markdown)
+        actual_blocks = await converter.convert(generated_markdown)
 
         # Grundlegende Struktur-Validierung
         assert len(actual_blocks) > 0, "Es sollten Blöcke generiert werden"
@@ -276,11 +277,12 @@ if response.status_code == 200:
                 actual_columns == expected_columns
             ), f"Es sollten {expected_columns} Spalten sein, aber {actual_columns} gefunden"
 
-    def test_specific_block_content_validation(self, converter, generated_markdown):
+    @pytest.mark.asyncio
+    async def test_specific_block_content_validation(self, converter, generated_markdown):
         """
         Detailliertere Validierung spezifischer Block-Inhalte.
         """
-        actual_blocks = converter.convert(generated_markdown)
+        actual_blocks = await converter.convert(generated_markdown)
 
         # Prüfe breadcrumb
         breadcrumb_blocks = [b for b in actual_blocks if b.type == "breadcrumb"]
@@ -311,11 +313,12 @@ if response.status_code == 200:
             len(toggleable_headings) >= 2
         ), "Mindestens 2 toggleable headings sollten vorhanden sein"
 
-    def test_complex_structure_integrity(self, converter, generated_markdown):
+    @pytest.mark.asyncio
+    async def test_complex_structure_integrity(self, converter, generated_markdown):
         """
         Prüft die Integrität komplexer verschachtelter Strukturen.
         """
-        actual_blocks = converter.convert(generated_markdown)
+        actual_blocks = await converter.convert(generated_markdown)
 
         # Prüfe Column-List mit Inhalten
         column_list_blocks = [b for b in actual_blocks if b.type == "column_list"]
@@ -361,7 +364,8 @@ if response.status_code == 200:
                 children = heading.heading_3.children
                 assert len(children) > 0, "Toggleable Headings sollten Inhalte haben"
 
-    def test_markdown_roundtrip_basic(self, converter, block_registry):
+    @pytest.mark.asyncio
+    async def test_markdown_roundtrip_basic(self, converter, block_registry):
         """
         Einfacher Roundtrip-Test: Markdown -> Notion -> Markdown
         """
@@ -376,7 +380,7 @@ This is a paragraph.
 [toc]"""
 
         # Markdown -> Notion
-        blocks = converter.convert(simple_markdown)
+        blocks = await converter.convert(simple_markdown)
         assert len(blocks) > 0, "Blöcke sollten generiert werden"
 
         # Grundlegende Struktur prüfen

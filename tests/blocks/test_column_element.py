@@ -24,19 +24,21 @@ def create_block_with_required_fields(**kwargs) -> Block:
     return Block(**defaults)
 
 
-def test_match_markdown_valid():
+@pytest.mark.asyncio
+async def test_match_markdown_valid():
     """Test recognition of valid column start syntax."""
-    assert ColumnElement.markdown_to_notion("::: column") is not None
-    assert ColumnElement.markdown_to_notion(":::column")  # No space
-    assert ColumnElement.markdown_to_notion("::: column ")  # Trailing space
+    assert await ColumnElement.markdown_to_notion("::: column") is not None
+    assert await ColumnElement.markdown_to_notion(":::column")  # No space
+    assert await ColumnElement.markdown_to_notion("::: column ")  # Trailing space
 
 
-def test_match_markdown_invalid():
+@pytest.mark.asyncio
+async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert ColumnElement.markdown_to_notion("This is just text.") is None
-    assert not ColumnElement.markdown_to_notion(":: column")  # Wrong marker
-    assert not ColumnElement.markdown_to_notion("::: columns")  # Plural
-    assert not ColumnElement.markdown_to_notion("text ::: column")  # Not at start
+    assert await ColumnElement.markdown_to_notion("This is just text.") is None
+    assert not await ColumnElement.markdown_to_notion(":: column")  # Wrong marker
+    assert not await ColumnElement.markdown_to_notion("::: columns")  # Plural
+    assert not await ColumnElement.markdown_to_notion("text ::: column")  # Not at start
 
 
 def test_match_notion():
@@ -51,24 +53,27 @@ def test_match_notion():
     assert not ColumnElement.match_notion(paragraph_block)
 
 
-def test_markdown_to_notion():
+@pytest.mark.asyncio
+async def test_markdown_to_notion():
     """Test conversion of column start to Notion ColumnBlock."""
-    result = ColumnElement.markdown_to_notion("::: column")
+    result = await ColumnElement.markdown_to_notion("::: column")
 
     assert isinstance(result, CreateColumnBlock)
     assert result.type == "column"
     assert result.column.width_ratio is None  # Default ratio
 
 
-def test_markdown_to_notion_invalid():
+@pytest.mark.asyncio
+async def test_markdown_to_notion_invalid():
     """Test invalid markdown returns None."""
-    result = ColumnElement.markdown_to_notion("This is just text.")
+    result = await ColumnElement.markdown_to_notion("This is just text.")
     assert result is None
 
-    result = ColumnElement.markdown_to_notion(":: column")  # Wrong syntax
+    result = await ColumnElement.markdown_to_notion(":: column")  # Wrong syntax
     assert result is None
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "markdown,should_match",
     [
@@ -81,9 +86,9 @@ def test_markdown_to_notion_invalid():
         ("", False),
     ],
 )
-def test_markdown_patterns(markdown, should_match):
+async def test_markdown_patterns(markdown, should_match):
     """Test recognition of various column patterns."""
-    result = ColumnElement.markdown_to_notion(markdown)
+    result = await ColumnElement.markdown_to_notion(markdown)
     if should_match:
         assert result is not None
     else:
