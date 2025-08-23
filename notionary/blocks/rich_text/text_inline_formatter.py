@@ -327,23 +327,23 @@ class TextInlineFormatter:
             return None
 
         mention = obj.mention
-        
+
         # Handle different mention types
         if mention.type == MentionType.PAGE and mention.page:
             return await cls._extract_page_mention_markdown(mention.page.id)
-        
+
         if mention.type == MentionType.DATABASE and mention.database:
             return await cls._extract_database_mention_markdown(mention.database.id)
-        
+
         if mention.type == MentionType.USER and mention.user:
             return await cls._extract_user_mention_markdown(mention.user.id)
-        
+
         if mention.type == MentionType.DATE and mention.date:
             return cls._extract_date_mention_markdown(mention.date)
-        
+
         if mention.type == MentionType.TEMPLATE_MENTION and mention.template_mention:
             return cls._extract_template_mention_markdown(mention.template_mention)
-        
+
         if mention.type == MentionType.LINK_PREVIEW and mention.link_preview:
             return f"[{obj.plain_text}]({mention.link_preview.url})"
 
@@ -379,7 +379,9 @@ class TextInlineFormatter:
         return date_range
 
     @classmethod
-    def _extract_template_mention_markdown(cls, template_mention: MentionTemplateMention) -> str:
+    def _extract_template_mention_markdown(
+        cls, template_mention: MentionTemplateMention
+    ) -> str:
         """Extract template mention to markdown format."""
         template_type = template_mention.type
         return (

@@ -8,6 +8,7 @@ from notionary.user.notion_user_manager import NotionUserManager
 from notionary.util import format_uuid
 from notionary.util.fuzzy import find_best_match
 
+
 class NameIdResolver:
     """
     Bidirectional resolver for Notion page and database names and IDs.
@@ -27,29 +28,6 @@ class NameIdResolver:
         self.workspace = NotionWorkspace(token=token)
         self.notion_user_manager = NotionUserManager(token=token)
         self.search_limit = search_limit
-
-    async def resolve_id(self, name: str) -> Optional[str]:
-        """
-        Convert a page or database name to its Notion ID.
-        """
-        if not name:
-            return None
-
-        cleaned_name = name.strip()
-
-        # Return if already a valid Notion ID (handles both UUID formats)
-        formatted_uuid = format_uuid(cleaned_name)
-        if formatted_uuid:
-            return formatted_uuid
-
-        # First try to find a page
-        page_id = await self._resolve_page_id(cleaned_name)
-        if page_id:
-            return page_id
-
-        # Fallback: try to find a database
-        database_id = await self._resolve_database_id(cleaned_name)
-        return database_id
 
     async def resolve_page_id(self, name: str) -> Optional[str]:
         """
@@ -79,23 +57,15 @@ class NameIdResolver:
 
         cleaned_name = name.strip()
 
-        # Return if already a valid Notion ID
         formatted_uuid = format_uuid(cleaned_name)
         if formatted_uuid:
             return formatted_uuid
 
-        # Search for database by name
         return await self._resolve_database_id(cleaned_name)
 
     async def resolve_page_name(self, page_id: str) -> Optional[str]:
         """
         Convert a Notion page ID to its human-readable title.
-
-        Args:
-            page_id: Notion page ID to resolve
-
-        Returns:
-            Page title if found, None if not found or inaccessible
         """
         if not page_id:
             return None
@@ -104,23 +74,17 @@ class NameIdResolver:
         if not formatted_id:
             return None
 
-        with self._suppress_expected_errors():
-            try:
-                from notionary import NotionPage
-                page = await NotionPage.from_page_id(formatted_id)
-                return page.title if page else None
-            except Exception:
-                return None
+        try:
+            from notionary import NotionPage
+
+            page = await NotionPage.from_page_id(formatted_id)
+            return page.title if page else None
+        except Exception:
+            return None
 
     async def resolve_database_name(self, database_id: str) -> Optional[str]:
         """
         Convert a Notion database ID to its human-readable title.
-
-        Args:
-            database_id: Notion database ID to resolve
-
-        Returns:
-            Database title if found, None if not found or inaccessible
         """
         if not database_id:
             return None
@@ -130,14 +94,13 @@ class NameIdResolver:
         if not formatted_id:
             return None
 
-        # Try to get database title
-        with self._suppress_expected_errors():
-            try:
-                from notionary.database import NotionDatabase
-                database = await NotionDatabase.from_database_id(formatted_id)
-                return database.title if database else None
-            except Exception:
-                return None
+        try:
+            from notionary.database import NotionDatabase
+
+            database = await NotionDatabase.from_database_id(formatted_id)
+            return database.title if database else None
+        except Exception:
+            return None
 
     async def resolve_user_id(self, name: str) -> Optional[str]:
         """
@@ -175,64 +138,30 @@ class NameIdResolver:
         if not formatted_id:
             return None
 
-        # Try to get user
-        with self._suppress_expected_errors():
-            try:
-                user = await self.notion_user_manager.get_user_by_id(formatted_id)
-                return user.name if user else None
-            except Exception:
-                return None
+        try:
+            user = await self.notion_user_manager.get_user_by_id(formatted_id)
+            return user.name if user else None
+        except Exception:
+            return None
 
     async def _resolve_user_id(self, name: str) -> Optional[str]:
         """Search for users matching the name."""
         try:
             users = await self.notion_user_manager.find_users_by_name(name)
-            
+
             if not users:
                 return None
-            
+
             # Use fuzzy matching to find best match
             best_match = find_best_match(
                 query=name,
                 items=users,
                 text_extractor=lambda user: user.name or "",
             )
-            
+
             return best_match.item.id if best_match else None
         except Exception:
             return None
-
-    @contextmanager
-    def _suppress_expected_errors(self):
-        """
-        Context manager to temporarily suppress expected validation error logs
-        from BaseNotionClient HTTP requests when trying wrong ID types.
-        """
-        # Get all relevant loggers that might log HTTP validation errors
-        loggers_to_suppress = [
-            logging.getLogger("NotionPageClient"),
-            logging.getLogger("NotionDatabaseClient"),
-            logging.getLogger("BaseNotionClient"),
-            logging.getLogger("notionary"),
-            logging.getLogger("notionary.base_notion_client"),
-            logging.getLogger("notionary.page"),
-            logging.getLogger("notionary.database"),
-            # Also suppress the root logger if needed
-            logging.getLogger(),
-        ]
-
-        # Store original levels and set to CRITICAL to suppress ERROR logs
-        original_levels = {}
-        for logger in loggers_to_suppress:
-            original_levels[logger] = logger.level
-            logger.setLevel(logging.CRITICAL)
-
-        try:
-            yield
-        finally:
-            # Restore original log levels
-            for logger, original_level in original_levels.items():
-                logger.setLevel(original_level)
 
     async def _resolve_page_id(self, name: str) -> Optional[str]:
         """Search for pages matching the name."""
