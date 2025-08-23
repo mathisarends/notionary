@@ -29,7 +29,7 @@ class TodoElement(BaseBlockElement):
         return block.type == BlockType.TO_DO and block.to_do
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown todo or done item to Notion to_do block."""
         m_done = cls.DONE_PATTERN.match(text)
         m_todo = None if m_done else cls.PATTERN.match(text)
@@ -54,7 +54,7 @@ class TodoElement(BaseBlockElement):
         return CreateToDoBlock(to_do=todo_content)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion to_do block to markdown todo item."""
         if block.type != BlockType.TO_DO or not block.to_do:
             return None

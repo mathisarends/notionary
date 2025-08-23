@@ -53,7 +53,9 @@ class PageContentWriter(LoggingMixin):
         processed_markdown = self._process_markdown_whitespace(final_markdown)
 
         try:
-            blocks = self._markdown_to_notion_converter.convert(processed_markdown)
+            blocks = await self._markdown_to_notion_converter.convert(
+                processed_markdown
+            )
 
             result = await self._block_client.append_block_children(
                 block_id=self.page_id, children=blocks

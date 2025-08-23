@@ -27,7 +27,7 @@ class ColumnListElement(BaseBlockElement):
         return block.type == BlockType.COLUMN_LIST and block.column_list
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert `::: columns` to Notion ColumnListBlock."""
         if not cls.COLUMNS_START.match(text.strip()):
             return None

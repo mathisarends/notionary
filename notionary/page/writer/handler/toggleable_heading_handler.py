@@ -32,17 +32,17 @@ class ToggleableHeadingHandler(LineHandler):
             or self._is_toggleable_heading_content(context)
         )
 
-    def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: LineProcessingContext) -> None:
         """Process toggleable heading start, end, or content with unified handling."""
 
-        def _handle(action):
-            action(context)
+        async def _handle(action):
+            await action(context)
             context.was_processed = True
             context.should_continue = True
             return True
 
         if self._is_toggleable_heading_start(context):
-            return _handle(self._start_toggleable_heading)
+            return await _handle(self._start_toggleable_heading)
         if self._is_toggleable_heading_end(context):
             return _handle(self._finalize_toggleable_heading)
         if self._is_toggleable_heading_content(context):
@@ -64,12 +64,12 @@ class ToggleableHeadingHandler(LineHandler):
         current_parent = context.parent_stack[-1]
         return issubclass(current_parent.element_type, ToggleableHeadingElement)
 
-    def _start_toggleable_heading(self, context: LineProcessingContext) -> None:
+    async def _start_toggleable_heading(self, context: LineProcessingContext) -> None:
         """Start a new toggleable heading block."""
         toggleable_heading_element = ToggleableHeadingElement()
 
         # Create the block
-        result = toggleable_heading_element.markdown_to_notion(context.line)
+        result = await toggleable_heading_element.markdown_to_notion(context.line)
         if not result:
             return
 

@@ -31,7 +31,7 @@ class CodeElement(BaseBlockElement):
         return block.type == BlockType.CODE and block.code
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert opening ```language to Notion code block."""
         if not (match := cls.CODE_START_PATTERN.match(text.strip())):
             return None
@@ -76,7 +76,7 @@ class CodeElement(BaseBlockElement):
         return CreateCodeBlock(code=code_block)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion code block to Markdown."""
         if block.type != BlockType.CODE:
             return None

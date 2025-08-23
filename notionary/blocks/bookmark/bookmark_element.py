@@ -28,7 +28,7 @@ class BookmarkElement(BaseBlockElement, CaptionMixin):
         return block.type == BlockType.BOOKMARK and block.bookmark
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """
         Convert a markdown bookmark into a Notion BookmarkBlock.
         """
@@ -49,7 +49,7 @@ class BookmarkElement(BaseBlockElement, CaptionMixin):
         return CreateBookmarkBlock(bookmark=bookmark_data)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type != BlockType.BOOKMARK or block.bookmark is None:
             return None
 

@@ -28,7 +28,7 @@ class ColumnElement(BaseBlockElement):
         return block.type == BlockType.COLUMN and block.column
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert `::: column [ratio]` to Notion ColumnBlock."""
         if not (match := cls.COLUMN_START.match(text.strip())):
             return None
@@ -49,7 +49,7 @@ class ColumnElement(BaseBlockElement):
         return CreateColumnBlock(column=column_content)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> str:
+    async def notion_to_markdown(cls, block: Block) -> str:
         """Convert Notion column to markdown."""
         if not cls.match_notion(block):
             return ""

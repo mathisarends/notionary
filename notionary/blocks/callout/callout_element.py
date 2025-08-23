@@ -43,7 +43,7 @@ class CalloutElement(BaseBlockElement):
         return block.type == BlockType.CALLOUT and block.callout
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert a markdown callout into a Notion CalloutBlock."""
         match = cls.PATTERN.match(text.strip())
         if not match:
@@ -66,7 +66,7 @@ class CalloutElement(BaseBlockElement):
         return CreateCalloutBlock(callout=callout_content)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type != BlockType.CALLOUT or not block.callout:
             return None
 

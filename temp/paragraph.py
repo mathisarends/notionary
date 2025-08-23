@@ -24,12 +24,11 @@ async def main():
         page = await NotionPage.from_page_name(PAGE_NAME)
 
         markdown = """
-        **Bold** mit {blue:blauem Text} und $E=mc^2$ Gleichung
         **Bold** mit (blue:blauem Text) und $E=mc^2$ Gleichung
         (red_background:**Fett mit rotem Hintergrund**)
         Normale (green:grüne Farbe) im Text
         
-        Das ist eine page @[248389d57bd38158bdadc3ed6df6550e]
+        Das ist eine page @page[248389d57bd38158bdadc3ed6df6550e]
         """
 
         # Test all media blocks with the MarkdownBuilder

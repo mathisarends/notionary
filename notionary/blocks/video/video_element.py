@@ -37,7 +37,7 @@ class VideoElement(BaseBlockElement, CaptionMixin):
         return block.type == BlockType.VIDEO and block.video
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown video syntax to a Notion VideoBlock."""
         # Use our own regex to find the video URL
         video_match = cls.VIDEO_PATTERN.search(text.strip())
@@ -63,7 +63,7 @@ class VideoElement(BaseBlockElement, CaptionMixin):
         return CreateVideoBlock(video=video_block)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type != BlockType.VIDEO or not block.video:
             return None
 

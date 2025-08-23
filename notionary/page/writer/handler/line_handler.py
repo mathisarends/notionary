@@ -17,12 +17,12 @@ class LineHandler(ABC):
         self._next_handler = handler
         return handler
 
-    def handle(self, context: LineProcessingContext) -> None:
+    async def handle(self, context: LineProcessingContext) -> None:
         """Handle the line or pass to next handler."""
         if self._can_handle(context):
-            self._process(context)
+            await self._process(context)
         elif self._next_handler:
-            self._next_handler.handle(context)
+            await self._next_handler.handle(context)
 
     @abstractmethod
     def _can_handle(self, context: LineProcessingContext) -> bool:
@@ -30,6 +30,6 @@ class LineHandler(ABC):
         pass
 
     @abstractmethod
-    def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: LineProcessingContext) -> None:
         """Process the line and update context."""
         pass

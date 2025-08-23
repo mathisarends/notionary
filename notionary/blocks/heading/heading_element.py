@@ -34,7 +34,7 @@ class HeadingElement(BaseBlockElement):
         )
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown headings (#, ##, ###) to Notion HeadingBlock."""
         match = cls.PATTERN.match(text.strip())
         if not match:
@@ -61,7 +61,7 @@ class HeadingElement(BaseBlockElement):
             return CreateHeading3Block(heading_3=heading_content)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         # Only handle heading blocks via BlockType enum
         if block.type not in (
             BlockType.HEADING_1,

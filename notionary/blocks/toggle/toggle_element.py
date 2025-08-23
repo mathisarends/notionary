@@ -28,7 +28,7 @@ class ToggleElement(BaseBlockElement):
         return block.type == BlockType.TOGGLE
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """
         Convert markdown toggle line to Notion ToggleBlock.
         Children are automatically handled by the StackBasedMarkdownConverter.
@@ -47,7 +47,7 @@ class ToggleElement(BaseBlockElement):
         return CreateToggleBlock(toggle=toggle_content)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """
         Converts a Notion toggle block into markdown using the ultra-simplified +++ syntax.
         """

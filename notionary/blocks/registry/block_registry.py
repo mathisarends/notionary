@@ -99,7 +99,7 @@ class BlockRegistry:
                 return element
         return None
 
-    def markdown_to_notion(self, text: str) -> "BlockCreateResult":
+    async def markdown_to_notion(self, text: str) -> "BlockCreateResult":
         """Convert markdown to Notion block using registered elements."""
         handler = self.find_markdown_handler(text)
 
@@ -110,10 +110,10 @@ class BlockRegistry:
                 )
             )
 
-            return handler.markdown_to_notion(text)
+            return await handler.markdown_to_notion(text)
         return None
 
-    def notion_to_markdown(self, block: "Block") -> Optional[str]:
+    async def notion_to_markdown(self, block: "Block") -> Optional[str]:
         """Convert Notion block to markdown using registered elements."""
         handler = self._find_notion_handler(block)
 
@@ -126,7 +126,7 @@ class BlockRegistry:
             )
         )
 
-        return handler.notion_to_markdown(block)
+        return await handler.notion_to_markdown(block)
 
     def get_elements(self) -> list[Type[BaseBlockElement]]:
         """Get all registered elements."""

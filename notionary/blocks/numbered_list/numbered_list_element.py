@@ -24,7 +24,7 @@ class NumberedListElement(BaseBlockElement):
         return block.type == BlockType.NUMBERED_LIST_ITEM and block.numbered_list_item
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown numbered list item to Notion NumberedListItemBlock."""
         match = cls.PATTERN.match(text.strip())
         if not match:
@@ -40,7 +40,7 @@ class NumberedListElement(BaseBlockElement):
 
     # FIX: Roundtrip conversions will never work this way here
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type != BlockType.NUMBERED_LIST_ITEM or not block.numbered_list_item:
             return None
 

@@ -25,7 +25,7 @@ class DividerElement(BaseBlockElement):
         return block.type == BlockType.DIVIDER and block.divider
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown horizontal rule to Notion divider, with preceding empty paragraph."""
         if not cls.PATTERN.match(text.strip()):
             return None
@@ -35,7 +35,7 @@ class DividerElement(BaseBlockElement):
         return CreateDividerBlock(divider=divider)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type != BlockType.DIVIDER or not block.divider:
             return None
         return "---"

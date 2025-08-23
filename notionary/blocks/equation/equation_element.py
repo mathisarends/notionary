@@ -31,7 +31,7 @@ class EquationElement(BaseBlockElement):
         return block.type == BlockType.EQUATION and block.equation
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         input_text = text.strip()
 
         equation_match = cls._EQUATION_PATTERN.match(input_text)
@@ -107,7 +107,7 @@ class EquationElement(BaseBlockElement):
         return fixed_lines
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type != BlockType.EQUATION or not block.equation:
             return None
 

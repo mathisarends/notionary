@@ -27,7 +27,7 @@ class PageContentRetriever(LoggingMixin):
         Retrieve page content and convert it to Markdown.
         Uses the chain of responsibility pattern for scalable block processing.
         """
-        return self._convert_blocks_to_markdown(blocks, indent_level=0)
+        return await self._convert_blocks_to_markdown(blocks, indent_level=0)
 
     def _setup_handler_chain(self) -> None:
         """Setup the chain of handlers in priority order."""
@@ -44,7 +44,7 @@ class PageContentRetriever(LoggingMixin):
 
         self._handler_chain = toggle_handler
 
-    def _convert_blocks_to_markdown(
+    async def _convert_blocks_to_markdown(
         self, blocks: list[Block], indent_level: int = 0
     ) -> str:
         """Convert blocks to Markdown using the handler chain."""
@@ -60,7 +60,7 @@ class PageContentRetriever(LoggingMixin):
                 block_registry=self._block_registry,
             )
 
-            self._handler_chain.handle(context)
+            await self._handler_chain.handle(context)
 
             if context.was_processed and context.markdown_result:
                 markdown_parts.append(context.markdown_result)

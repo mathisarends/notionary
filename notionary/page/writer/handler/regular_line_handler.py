@@ -9,16 +9,16 @@ class RegularLineHandler(LineHandler):
     def _can_handle(self, context: LineProcessingContext) -> bool:
         return context.line.strip()
 
-    def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: LineProcessingContext) -> None:
         if self._is_in_column_context(context):
             self._add_to_column_context(context)
             context.was_processed = True
             context.should_continue = True
             return
 
-        block_created = self._process_single_line_content(context)
+        block_created = await self._process_single_line_content(context)
         if not block_created:
-            self._process_as_paragraph(context)
+            await self._process_as_paragraph(context)
 
         context.was_processed = True
 
@@ -36,7 +36,9 @@ class RegularLineHandler(LineHandler):
         """Add line as child to the current Column context."""
         context.parent_stack[-1].add_child_line(context.line)
 
-    def _process_single_line_content(self, context: LineProcessingContext) -> bool:
+    async def _process_single_line_content(
+        self, context: LineProcessingContext
+    ) -> bool:
         """Process a regular line for simple elements (lists, etc.)."""
         specialized_elements = self._get_specialized_elements()
 
@@ -45,7 +47,7 @@ class RegularLineHandler(LineHandler):
             if issubclass(element, specialized_elements):
                 continue
 
-            result = element.markdown_to_notion(context.line)
+            result = await element.markdown_to_notion(context.line)
             if not result:
                 continue
 
@@ -55,12 +57,12 @@ class RegularLineHandler(LineHandler):
 
         return False
 
-    def _process_as_paragraph(self, context: LineProcessingContext) -> None:
+    async def _process_as_paragraph(self, context: LineProcessingContext) -> None:
         """Process a line as a paragraph."""
         from notionary.blocks.paragraph.paragraph_element import ParagraphElement
 
         paragraph_element = ParagraphElement()
-        result = paragraph_element.markdown_to_notion(context.line)
+        result = await paragraph_element.markdown_to_notion(context.line)
 
         if result:
             context.result_blocks.append(result)

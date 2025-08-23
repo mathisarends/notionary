@@ -43,7 +43,7 @@ class ToggleableHeadingElement(BaseBlockElement):
             return True
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """
         Convert markdown collapsible heading to a toggleable Notion HeadingBlock.
         Children are automatically handled by the StackBasedMarkdownConverter.
@@ -71,7 +71,7 @@ class ToggleableHeadingElement(BaseBlockElement):
             return CreateHeading3Block(heading_3=heading_content)
 
     @staticmethod
-    def notion_to_markdown(block: Block) -> Optional[str]:
+    async def notion_to_markdown(block: Block) -> Optional[str]:
         """Convert Notion toggleable heading block to markdown collapsible heading."""
         # Only handle heading blocks via BlockType enum
         if block.type not in (

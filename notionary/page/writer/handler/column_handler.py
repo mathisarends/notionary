@@ -26,9 +26,9 @@ class ColumnHandler(LineHandler):
     def _can_handle(self, context: LineProcessingContext) -> bool:
         return self._is_column_start(context) or self._is_column_end(context)
 
-    def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: LineProcessingContext) -> None:
         if self._is_column_start(context):
-            self._start_column(context)
+            await self._start_column(context)
             self._mark_processed(context)
             return
 
@@ -52,11 +52,11 @@ class ColumnHandler(LineHandler):
         current_parent = context.parent_stack[-1]
         return issubclass(current_parent.element_type, ColumnElement)
 
-    def _start_column(self, context: LineProcessingContext) -> None:
+    async def _start_column(self, context: LineProcessingContext) -> None:
         """Start a new column."""
         # Create Column block directly - much more efficient!
         column_element = ColumnElement()
-        result = column_element.markdown_to_notion(context.line)
+        result = await column_element.markdown_to_notion(context.line)
         if not result:
             return
 

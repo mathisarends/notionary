@@ -6,27 +6,29 @@ from notionary.blocks.audio.audio_element import AudioElement
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 
-def test_match_markdown_valid_audio():
+async def test_match_markdown_valid_audio():
     assert (
-        AudioElement.markdown_to_notion("[audio](https://example.com/track.mp3)")
+        await AudioElement.markdown_to_notion("[audio](https://example.com/track.mp3)")
         is not None
     )
     assert (
-        AudioElement.markdown_to_notion(
+        await AudioElement.markdown_to_notion(
             "[audio](https://audio.de/a.wav)(caption:Ein Track)"
         )
         is not None
     )
     assert (
-        AudioElement.markdown_to_notion(
+        await AudioElement.markdown_to_notion(
             "   [audio](https://x.org/b.ogg)(caption:Hallo)   "
         )
         is not None
     )
-    assert AudioElement.markdown_to_notion("[audio](https://test.com/file.m4a)")
+    assert await AudioElement.markdown_to_notion("[audio](https://test.com/file.m4a)")
     # Auch OGA und Großbuchstaben
-    assert AudioElement.markdown_to_notion("[audio](https://example.com/audio.OGA)")
-    assert AudioElement.markdown_to_notion(
+    assert await AudioElement.markdown_to_notion(
+        "[audio](https://example.com/audio.OGA)"
+    )
+    assert await AudioElement.markdown_to_notion(
         "[audio](https://audio.com/abc.mp3)(caption:Mit Caption)"
     )
 

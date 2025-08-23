@@ -34,7 +34,7 @@ class PdfElement(BaseBlockElement, CaptionMixin):
         return block.type == BlockType.PDF and block.pdf
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown PDF link to Notion FileBlock (used for PDF)."""
         # Use our own regex to find the PDF URL
         pdf_match = cls.PDF_PATTERN.search(text.strip())
@@ -57,7 +57,7 @@ class PdfElement(BaseBlockElement, CaptionMixin):
         return CreatePdfBlock(pdf=pdf_block)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type != BlockType.PDF or not block.pdf:
             return None
 

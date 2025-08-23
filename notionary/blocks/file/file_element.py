@@ -49,7 +49,7 @@ class FileElement(BaseBlockElement, CaptionMixin):
         return block.type == BlockType.FILE and block.file
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown file link to Notion FileBlock."""
         # Use our helper method to extract the URL
         url = cls._extract_file_url(text.strip())
@@ -70,7 +70,7 @@ class FileElement(BaseBlockElement, CaptionMixin):
         return CreateFileBlock(file=file_block)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type != BlockType.FILE or not block.file:
             return None
 

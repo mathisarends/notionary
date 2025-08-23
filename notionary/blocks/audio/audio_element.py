@@ -49,7 +49,7 @@ class AudioElement(BaseBlockElement, CaptionMixin):
         return block.type == BlockType.AUDIO
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown audio embed to Notion audio block."""
         # Use our helper method to extract the URL
         url = cls._extract_audio_url(text.strip())
@@ -72,7 +72,7 @@ class AudioElement(BaseBlockElement, CaptionMixin):
         return CreateAudioBlock(audio=audio_content)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion audio block to markdown audio embed."""
         if block.type != BlockType.AUDIO or block.audio is None:
             return None

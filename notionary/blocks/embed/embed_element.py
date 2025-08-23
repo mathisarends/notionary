@@ -37,7 +37,7 @@ class EmbedElement(BaseBlockElement):
         return block.type == BlockType.EMBED and block.embed
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown embed syntax to Notion EmbedBlock."""
         match = cls.PATTERN.match(text.strip())
         if not match:
@@ -54,7 +54,7 @@ class EmbedElement(BaseBlockElement):
         return CreateEmbedBlock(embed=embed_block)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type != BlockType.EMBED or not block.embed:
             return None
 

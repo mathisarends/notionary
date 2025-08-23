@@ -28,7 +28,7 @@ class QuoteElement(BaseBlockElement):
         return block.type == BlockType.QUOTE and block.quote
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown quote to Notion QuoteBlock."""
         match = cls.PATTERN.match(text.strip())
         if not match:
@@ -46,7 +46,7 @@ class QuoteElement(BaseBlockElement):
         return CreateQuoteBlock(quote=quote_content)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type != BlockType.QUOTE or not block.quote:
             return None
 

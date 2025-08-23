@@ -29,7 +29,7 @@ class ImageElement(BaseBlockElement, CaptionMixin):
         return block.type == BlockType.IMAGE and block.image
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown image syntax to Notion ImageBlock."""
         # First remove captions to get clean text for URL extraction
         clean_text = cls.remove_caption(text.strip())
@@ -53,7 +53,7 @@ class ImageElement(BaseBlockElement, CaptionMixin):
         return CreateImageBlock(image=image_block)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type != BlockType.IMAGE or not block.image:
             return None
 

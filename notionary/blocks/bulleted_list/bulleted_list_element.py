@@ -25,7 +25,7 @@ class BulletedListElement(BaseBlockElement):
         return block.type == BlockType.BULLETED_LIST_ITEM and block.bulleted_list_item
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """
         Convert a markdown bulleted list item into a Notion BulletedListItemBlock.
         """
@@ -45,7 +45,7 @@ class BulletedListElement(BaseBlockElement):
         return CreateBulletedListItemBlock(bulleted_list_item=bulleted_list_content)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion bulleted_list_item block to Markdown."""
         if block.type != BlockType.BULLETED_LIST_ITEM or not block.bulleted_list_item:
             return None

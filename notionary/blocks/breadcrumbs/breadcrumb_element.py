@@ -28,12 +28,12 @@ class BreadcrumbElement(BaseBlockElement):
         return block.type == BlockType.BREADCRUMB and block.breadcrumb
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         if not cls.PATTERN.match(text.strip()):
             return None
         return CreateBreadcrumbBlock(breadcrumb=BreadcrumbBlock())
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type == BlockType.BREADCRUMB and block.breadcrumb:
             return cls.BREADCRUMB_MARKER

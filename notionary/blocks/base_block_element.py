@@ -11,7 +11,7 @@ class BaseBlockElement(ABC):
     """Base class for elements that can be converted between Markdown and Notion."""
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """
         Convert markdown to Notion block content.
 
@@ -22,13 +22,15 @@ class BaseBlockElement(ABC):
         """
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion block to markdown."""
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if this element can handle the given Notion block."""
-        return bool(cls.notion_to_markdown(block))  # Now calls the class's version
+        # Default implementation - subclasses should override this method
+        # Cannot call async notion_to_markdown here
+        return False
 
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:

@@ -8,6 +8,7 @@ from notionary import NotionPage, NotionWorkspace, NotionDatabase
 from notionary.util import format_uuid
 from notionary.util.fuzzy import find_best_match
 
+
 class NameIdResolver:
     """
     Bidirectional resolver for Notion page and database names and IDs.
@@ -112,23 +113,23 @@ class NameIdResolver:
         """
         # Get all relevant loggers that might log HTTP validation errors
         loggers_to_suppress = [
-            logging.getLogger('NotionPageClient'),
-            logging.getLogger('NotionDatabaseClient'),
-            logging.getLogger('BaseNotionClient'),
-            logging.getLogger('notionary'),
-            logging.getLogger('notionary.base_notion_client'),
-            logging.getLogger('notionary.page'),
-            logging.getLogger('notionary.database'),
+            logging.getLogger("NotionPageClient"),
+            logging.getLogger("NotionDatabaseClient"),
+            logging.getLogger("BaseNotionClient"),
+            logging.getLogger("notionary"),
+            logging.getLogger("notionary.base_notion_client"),
+            logging.getLogger("notionary.page"),
+            logging.getLogger("notionary.database"),
             # Also suppress the root logger if needed
             logging.getLogger(),
         ]
-        
+
         # Store original levels and set to CRITICAL to suppress ERROR logs
         original_levels = {}
         for logger in loggers_to_suppress:
             original_levels[logger] = logger.level
             logger.setLevel(logging.CRITICAL)
-        
+
         try:
             yield
         finally:

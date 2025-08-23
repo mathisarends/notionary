@@ -17,12 +17,12 @@ class BlockHandler(ABC):
         self._next_handler = handler
         return handler
 
-    def handle(self, context: BlockRenderingContext) -> None:
+    async def handle(self, context: BlockRenderingContext) -> None:
         """Handle the block or pass to next handler."""
         if self._can_handle(context):
-            self._process(context)
+            await self._process(context)
         elif self._next_handler:
-            self._next_handler.handle(context)
+            await self._next_handler.handle(context)
 
     @abstractmethod
     def _can_handle(self, context: BlockRenderingContext) -> bool:
@@ -30,7 +30,7 @@ class BlockHandler(ABC):
         pass
 
     @abstractmethod
-    def _process(self, context: BlockRenderingContext) -> None:
+    async def _process(self, context: BlockRenderingContext) -> None:
         """Process the block and update context."""
         pass
 

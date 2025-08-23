@@ -51,11 +51,11 @@ class MarkdownToNotionConverter:
 
         self._handler_chain = code_handler
 
-    def convert(self, markdown_text: str) -> list[BlockCreateRequest]:
+    async def convert(self, markdown_text: str) -> list[BlockCreateRequest]:
         if not markdown_text.strip():
             return []
 
-        all_blocks = self._process_lines(markdown_text)
+        all_blocks = await self._process_lines(markdown_text)
 
         # Apply formatting post-processing (empty paragraphs)
         all_blocks = self._formatting_post_processor.process(all_blocks)
@@ -65,7 +65,7 @@ class MarkdownToNotionConverter:
 
         return all_blocks
 
-    def _process_lines(self, text: str) -> list[BlockCreateRequest]:
+    async def _process_lines(self, text: str) -> list[BlockCreateRequest]:
         lines = text.split("\n")
         result_blocks: list[BlockCreateRequest] = []
         parent_stack: list[ParentBlockContext] = []
@@ -84,7 +84,7 @@ class MarkdownToNotionConverter:
                 lines_consumed=0,
             )
 
-            self._handler_chain.handle(context)
+            await self._handler_chain.handle(context)
 
             # Skip consumed lines
             i += 1 + context.lines_consumed

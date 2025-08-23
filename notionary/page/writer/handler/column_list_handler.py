@@ -31,9 +31,9 @@ class ColumnListHandler(LineHandler):
     def _can_handle(self, context: LineProcessingContext) -> bool:
         return self._is_column_list_start(context) or self._is_column_list_end(context)
 
-    def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: LineProcessingContext) -> None:
         if self._is_column_list_start(context):
-            self._start_column_list(context)
+            await self._start_column_list(context)
             context.was_processed = True
             context.should_continue = True
             return
@@ -59,7 +59,7 @@ class ColumnListHandler(LineHandler):
         current_parent = context.parent_stack[-1]
         return issubclass(current_parent.element_type, ColumnListElement)
 
-    def _start_column_list(self, context: LineProcessingContext) -> None:
+    async def _start_column_list(self, context: LineProcessingContext) -> None:
         """Start a new column list."""
         # Create ColumnList block using the element from registry
         column_list_element = None
@@ -72,7 +72,7 @@ class ColumnListHandler(LineHandler):
             return
 
         # Create the block
-        result = column_list_element.markdown_to_notion(context.line)
+        result = await column_list_element.markdown_to_notion(context.line)
         if not result:
             return
 

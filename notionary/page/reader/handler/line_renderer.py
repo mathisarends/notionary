@@ -8,9 +8,9 @@ class LineRenderer(BlockHandler):
         # Always can handle - this is the fallback handler
         return True
 
-    def _process(self, context: BlockRenderingContext) -> None:
+    async def _process(self, context: BlockRenderingContext) -> None:
         # Convert the block itself
-        block_markdown = context.block_registry.notion_to_markdown(context.block)
+        block_markdown = await context.block_registry.notion_to_markdown(context.block)
 
         # If block has no direct markdown, either return empty or process children
         if not block_markdown:

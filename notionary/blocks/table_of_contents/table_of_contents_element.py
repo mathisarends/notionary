@@ -30,7 +30,7 @@ class TableOfContentsElement(BaseBlockElement):
         return block.type == BlockType.TABLE_OF_CONTENTS and block.table_of_contents
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         if not (input_match := cls.PATTERN.match(text.strip())):
             return None
 
@@ -40,7 +40,7 @@ class TableOfContentsElement(BaseBlockElement):
         )
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         # Fix: Use 'or' instead of 'and'
         if block.type != BlockType.TABLE_OF_CONTENTS or not block.table_of_contents:
             return None

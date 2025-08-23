@@ -23,7 +23,7 @@ class ParagraphElement(BaseBlockElement):
         return block.type == "paragraph" and block.paragraph
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown text to a Notion ParagraphBlock."""
         if not text.strip():
             return None
@@ -34,7 +34,7 @@ class ParagraphElement(BaseBlockElement):
         return CreateParagraphBlock(paragraph=paragraph_content)
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         if block.type != BlockType.PARAGRAPH or not block.paragraph:
             return None
 

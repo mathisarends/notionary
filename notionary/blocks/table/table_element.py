@@ -37,7 +37,7 @@ class TableElement(BaseBlockElement):
         return block.type == BlockType.TABLE and block.table
 
     @classmethod
-    def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert opening table row to Notion table block."""
         if not cls.ROW_PATTERN.match(text.strip()):
             return None
@@ -135,7 +135,7 @@ class TableElement(BaseBlockElement):
         return rich_text
 
     @classmethod
-    def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
         """Convert Notion table block to markdown table."""
         if block.type != BlockType.TABLE:
             return None

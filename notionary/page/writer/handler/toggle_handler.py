@@ -25,10 +25,10 @@ class ToggleHandler(LineHandler):
             or self._is_toggle_content(context)
         )
 
-    def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: LineProcessingContext) -> None:
         # Explicit, readable branches (small duplication is acceptable)
         if self._is_toggle_start(context):
-            self._start_toggle(context)
+            await self._start_toggle(context)
             context.was_processed = True
             context.should_continue = True
 
@@ -69,12 +69,12 @@ class ToggleHandler(LineHandler):
         current_parent = context.parent_stack[-1]
         return issubclass(current_parent.element_type, ToggleElement)
 
-    def _start_toggle(self, context: LineProcessingContext) -> None:
+    async def _start_toggle(self, context: LineProcessingContext) -> None:
         """Start a new toggle block."""
         toggle_element = ToggleElement()
 
         # Create the block
-        result = toggle_element.markdown_to_notion(context.line)
+        result = await toggle_element.markdown_to_notion(context.line)
         if not result:
             return
 
