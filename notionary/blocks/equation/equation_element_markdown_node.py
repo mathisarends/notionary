@@ -13,7 +13,7 @@ class EquationMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating Markdown equation blocks.
     Uses standard Markdown equation syntax with double dollar signs.
-    
+
     Examples:
     $$E = mc^2$$
     $$\\frac{a}{b} + \\sqrt{c}$$

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import textwrap
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
@@ -21,7 +22,7 @@ class EquationElement(BaseBlockElement):
     """
 
     _EQUATION_PATTERN = re.compile(
-        r'^\$\$\s*(?P<expression>.*?)\s*\$\$$',
+        r"^\$\$\s*(?P<expression>.*?)\s*\$\$$",
         re.DOTALL,
     )
 
@@ -33,16 +34,77 @@ class EquationElement(BaseBlockElement):
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         input_text = text.strip()
 
-        # Try $$...$$ pattern
-        if equation_match := cls._EQUATION_PATTERN.match(input_text):
-            expression = equation_match.group("expression").strip()
-            return (
-                CreateEquationBlock(equation=EquationBlock(expression=expression))
-                if expression
-                else None
-            )
+        equation_match = cls._EQUATION_PATTERN.match(input_text)
+        if not equation_match:
+            return None
+
+        expression = equation_match.group("expression").strip()
+        if not expression:
+            return None
+
+        return CreateEquationBlock(equation=EquationBlock(expression=expression))
+
+    @classmethod
+    def create_from_markdown_block(
+        cls, opening_line: str, equation_lines: list[str]
+    ) -> BlockCreateResult:
+        """
+        Create a complete equation block from markdown components.
+        Handles multiline equations like:
+        $$
+        some
+        inline formula here
+        $$
+
+        Automatically handles:
+        - Indentation removal from multiline strings
+        - Single backslash conversion to double backslash for LaTeX line breaks
+        """
+        # Check if opening line is just $$
+        if opening_line.strip() != "$$":
+            return None
+
+        # Process equation lines if any exist
+        if equation_lines:
+            # Remove common indentation from all lines
+            raw_content = "\n".join(equation_lines)
+            dedented_content = textwrap.dedent(raw_content)
+
+            # Fix single backslashes at line ends for LaTeX line breaks
+            fixed_lines = cls._fix_latex_line_breaks(dedented_content.splitlines())
+            expression = "\n".join(fixed_lines).strip()
+
+            if expression:
+                return CreateEquationBlock(
+                    equation=EquationBlock(expression=expression)
+                )
 
         return None
+
+    @classmethod
+    def _fix_latex_line_breaks(cls, lines: list[str]) -> list[str]:
+        """
+        Fix lines that end with single backslashes by converting them to double backslashes.
+        This makes LaTeX line breaks work correctly when users write single backslashes.
+
+        Examples:
+        - "a = b + c \" -> "a = b + c \\"
+        - "a = b + c \\\\" -> "a = b + c \\\\" (unchanged)
+        """
+        fixed_lines = []
+
+        for line in lines:
+            # Check if line ends with backslashes
+            backslash_match = re.search(r"(\\+)$", line)
+            if backslash_match:
+                backslashes = backslash_match.group(1)
+                # If odd number of backslashes, the last one needs to be doubled
+                if len(backslashes) % 2 == 1:
+                    line = line + "\\"
+
+            fixed_lines.append(line)
+
+        return fixed_lines
 
     @classmethod
     def notion_to_markdown(cls, block: Block) -> Optional[str]:

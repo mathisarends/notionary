@@ -1,9 +1,0 @@
-
-
-from typing import Optional
-
-
-class NameResolver:
-    async def resolve_user(self, name: str) -> Optional[str]: ...
-    async def resolve_page(self, name: str) -> Optional[str]: ...
-    async def resolve_database(self, name: str) -> Optional[str]: ...

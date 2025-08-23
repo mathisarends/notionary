@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Optional
+from typing import Optional
 
 from notionary import NotionDatabase, NotionPage
 from notionary.database.client import NotionDatabaseClient
@@ -24,7 +24,7 @@ class NotionWorkspace(LoggingMixin):
         self.page_client = NotionPageClient(token=token)
         self.user_manager = NotionUserManager(token=token)
 
-    async def search_pages(self, query: str, limit=100) -> List[NotionPage]:
+    async def search_pages(self, query: str, limit=100) -> list[NotionPage]:
         """
         Search for pages globally across Notion workspace.
         """
@@ -35,7 +35,7 @@ class NotionWorkspace(LoggingMixin):
 
     async def search_databases(
         self, query: str, limit: int = 100
-    ) -> List[NotionDatabase]:
+    ) -> list[NotionDatabase]:
         """
         Search for databases globally across the Notion workspace.
         """
@@ -58,7 +58,7 @@ class NotionWorkspace(LoggingMixin):
 
         return databases[0] if databases else None
 
-    async def list_all_databases(self, limit: int = 100) -> List[NotionDatabase]:
+    async def list_all_databases(self, limit: int = 100) -> list[NotionDatabase]:
         """
         List all databases in the workspace.
         Returns a list of NotionDatabase instances.

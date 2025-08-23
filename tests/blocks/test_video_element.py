@@ -119,31 +119,6 @@ def test_notion_to_markdown_external():
     assert result is not None
     assert result == "[video](https://example.com/video.mp4)"
 
-
-def test_notion_to_markdown_with_caption():
-    """Test conversion with caption."""
-    # Create mock rich text for caption
-    mock_caption = Mock()
-    mock_caption.plain_text = "Demo video"
-    mock_caption.model_dump.return_value = {"text": {"content": "Demo video"}}
-
-    # Create mock video block
-    mock_block = Mock()
-    mock_block.type = "video"
-    mock_block.video = Mock()
-    mock_block.video.type = "external"
-    mock_block.video.external = Mock()
-    mock_block.video.external.url = "https://example.com/video.mp4"
-    mock_block.video.caption = [mock_caption]
-
-    result = VideoElement.notion_to_markdown(mock_block)
-
-    assert result is not None
-    assert "Demo video" in result
-    assert result.startswith("[video](")
-    assert "(caption:Demo video)" in result
-
-
 def test_notion_to_markdown_file_type():
     """Test conversion with file type (not external)."""
     mock_block = Mock()

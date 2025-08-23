@@ -4,6 +4,7 @@ from notionary.page.writer.handler import (
     CodeHandler,
     ColumnHandler,
     ColumnListHandler,
+    EquationHandler,
     LineProcessingContext,
     ParentBlockContext,
     RegularLineHandler,
@@ -31,6 +32,7 @@ class MarkdownToNotionConverter:
 
     def _setup_handler_chain(self) -> None:
         code_handler = CodeHandler()
+        equation_handler = EquationHandler()
         table_handler = TableHandler()
         column_list_handler = ColumnListHandler()
         column_handler = ColumnHandler()
@@ -39,9 +41,11 @@ class MarkdownToNotionConverter:
         regular_handler = RegularLineHandler()
 
         # register more specific elements first
-        code_handler.set_next(table_handler).set_next(column_list_handler).set_next(
-            column_handler
-        ).set_next(toggleable_heading_handler).set_next(toggle_handler).set_next(
+        code_handler.set_next(equation_handler).set_next(table_handler).set_next(
+            column_list_handler
+        ).set_next(column_handler).set_next(toggleable_heading_handler).set_next(
+            toggle_handler
+        ).set_next(
             regular_handler
         )
 

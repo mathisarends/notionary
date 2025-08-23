@@ -31,8 +31,11 @@ class ImageElement(BaseBlockElement, CaptionMixin):
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown image syntax to Notion ImageBlock."""
+        # First remove captions to get clean text for URL extraction
+        clean_text = cls.remove_caption(text.strip())
+        
         # Use our own regex to find the image URL
-        image_match = cls.IMAGE_PATTERN.search(text.strip())
+        image_match = cls.IMAGE_PATTERN.search(clean_text)
         if not image_match:
             return None
 

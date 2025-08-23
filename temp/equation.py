@@ -24,8 +24,10 @@ async def main():
         page = await NotionPage.from_page_name(PAGE_NAME)
 
         markdown = """
-        # Sum notation
-        $$\\sum_{i=1}^n i = \\frac{n(n+1)}{2}$$
+        $$
+        a = b + c \\
+        d = e + f
+        $$
         """
 
         # Test all media blocks with the MarkdownBuilder
@@ -34,7 +36,7 @@ async def main():
         print("✅ Successfully added all caption syntax examples!")
 
         content = await page.get_text_content()
-        print(f"📄 Page content preview:\n{content[:500]}...")
+        print("content", content)
 
     except Exception as e:
         import traceback

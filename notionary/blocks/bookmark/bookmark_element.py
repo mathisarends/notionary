@@ -32,8 +32,11 @@ class BookmarkElement(BaseBlockElement, CaptionMixin):
         """
         Convert a markdown bookmark into a Notion BookmarkBlock.
         """
+        # First remove captions to get clean text for URL extraction
+        clean_text = cls.remove_caption(text.strip())
+        
         # Use our own regex to find the bookmark URL
-        bookmark_match = cls.BOOKMARK_PATTERN.search(text.strip())
+        bookmark_match = cls.BOOKMARK_PATTERN.search(clean_text)
         if not bookmark_match:
             return None
 

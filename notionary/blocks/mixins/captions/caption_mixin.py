@@ -8,25 +8,66 @@ class CaptionMixin:
     """Mixin to add caption parsing functionality to block elements."""
 
     # Generic caption pattern - finds caption anywhere in text
-    CAPTION_PATTERN = re.compile(r"\(caption:\s*(.+?)\)")
-
-    @classmethod
+    CAPTION_PATTERN = re.compile(r"\(caption:([^)]*)\)")
+    
+    @classmethod 
     def extract_caption(cls, text: str) -> Optional[str]:
         """
         Extract caption text from anywhere in the input text.
-        Returns only the caption content, not a tuple.
+        Returns only the caption content, preserving parentheses in content.
         """
-        m = cls.CAPTION_PATTERN.search(text)
-        if not m:
+        # Look for (caption: followed by content followed by )
+        # Handle cases where caption content contains parentheses
+        caption_start = text.find("(caption:")
+        if caption_start == -1:
             return None
-        return m.group(1).strip()
+            
+        # Find the matching closing parenthesis
+        # Start after "(caption:"
+        content_start = caption_start + 9  # len("(caption:")
+        paren_count = 1
+        pos = content_start
+        
+        while pos < len(text) and paren_count > 0:
+            if text[pos] == '(':
+                paren_count += 1
+            elif text[pos] == ')':
+                paren_count -= 1
+            pos += 1
+            
+        if paren_count == 0:
+            # Found matching closing parenthesis
+            return text[content_start:pos-1]
+        
+        return None
 
     @classmethod
     def remove_caption(cls, text: str) -> str:
         """
         Remove caption from text and return clean text.
-        Separate method for flexibility.
+        Uses the same balanced parentheses logic as extract_caption.
         """
+        caption_start = text.find("(caption:")
+        if caption_start == -1:
+            return text.strip()
+            
+        # Find the matching closing parenthesis
+        content_start = caption_start + 9  # len("(caption:")
+        paren_count = 1
+        pos = content_start
+        
+        while pos < len(text) and paren_count > 0:
+            if text[pos] == '(':
+                paren_count += 1
+            elif text[pos] == ')':
+                paren_count -= 1
+            pos += 1
+            
+        if paren_count == 0:
+            # Remove the entire caption including the outer parentheses
+            return (text[:caption_start] + text[pos:]).strip()
+        
+        # Fallback to regex-based removal if balanced parsing fails
         return cls.CAPTION_PATTERN.sub("", text).strip()
 
     @classmethod

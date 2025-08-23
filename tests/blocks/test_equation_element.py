@@ -1,7 +1,10 @@
 """
 Pytest tests for EquationElement.
-Tests the essential functionality for equation block handling.
+Tests the essential functionality for equation block handling with $$....$$ syntax.
 """
+
+import pytest
+from unittest.mock import Mock
 
 from notionary.blocks.equation.equation_element import EquationElement
 from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
@@ -22,45 +25,28 @@ def create_block_with_required_fields(**kwargs) -> Block:
     return Block(**defaults)
 
 
-def test_match_markdown_valid_unquoted():
-    """Test recognition of valid unquoted equation syntax."""
-    assert EquationElement.markdown_to_notion("[equation](E = mc^2)")
-    assert EquationElement.markdown_to_notion("[equation](x + y = z)")
-    assert EquationElement.markdown_to_notion("[equation](a = b)")
-    assert EquationElement.markdown_to_notion("  [equation](simple)  ")  # With spaces
+def test_match_markdown_valid_simple():
+    """Test recognition of valid simple equation syntax."""
+    assert EquationElement.markdown_to_notion("$$E = mc^2$$")
+    assert EquationElement.markdown_to_notion("$$x + y = z$$")
+    assert EquationElement.markdown_to_notion("$$a = b$$")
+    assert EquationElement.markdown_to_notion("  $$simple$$  ")  # With spaces
 
 
-def test_match_markdown_valid_quoted():
-    """Test recognition of valid quoted equation syntax."""
-    assert EquationElement.markdown_to_notion('[equation]("E = mc^2")')
-    assert EquationElement.markdown_to_notion(
-        '[equation]("f(x) = sin(x)")'
-    )  # With parentheses
-    assert EquationElement.markdown_to_notion(
-        '[equation]("x = a\\ny = b")'
-    )  # With newlines
-    assert EquationElement.markdown_to_notion(
-        '[equation]("say \\"hello\\"")'
-    )  # With escaped quotes
+def test_match_markdown_valid_complex():
+    """Test recognition of valid complex equation syntax."""
+    assert EquationElement.markdown_to_notion("$$\\frac{a}{b}$$")
+    assert EquationElement.markdown_to_notion("$$\\sum_{i=1}^n i$$")
+    assert EquationElement.markdown_to_notion("$$\\int_0^\\infty e^{-x} dx$$")
 
 
 def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not EquationElement.markdown_to_notion("[equation]")  # Missing expression
-    assert not EquationElement.markdown_to_notion(
-        "equation(E = mc^2)"
-    )  # Missing brackets
-    assert not EquationElement.markdown_to_notion(
-        "[eq](E = mc^2)"
-    )  # Wrong element name
-    assert not EquationElement.markdown_to_notion(
-        "[equation](E = mc^2"
-    )  # Missing closing paren
-    assert not EquationElement.markdown_to_notion(
-        "[equation]E = mc^2)"
-    )  # Missing opening paren
-    assert not EquationElement.markdown_to_notion("[toc](blue)")  # Different element
-    assert not EquationElement.markdown_to_notion("")  # Empty string
+    assert EquationElement.markdown_to_notion("$E = mc^2$") is None  # Single $
+    assert EquationElement.markdown_to_notion("$$$$") is None  # Empty
+    assert EquationElement.markdown_to_notion("$$   $$") is None  # Only whitespace
+    assert EquationElement.markdown_to_notion("E = mc^2") is None  # No $$
+    assert EquationElement.markdown_to_notion("") is None  # Empty string
 
 
 def test_match_notion_valid():
@@ -86,77 +72,69 @@ def test_match_notion_invalid():
     assert not EquationElement.match_notion(no_equation_block)
 
 
-def test_markdown_to_notion_unquoted():
-    """Test conversion from unquoted markdown to Notion blocks."""
-    result = EquationElement.markdown_to_notion("[equation](E = mc^2)")
+def test_markdown_to_notion_simple():
+    """Test conversion from simple markdown to Notion blocks."""
+    result = EquationElement.markdown_to_notion("$$E = mc^2$$")
 
     assert isinstance(result, CreateEquationBlock)
     assert isinstance(result.equation, EquationBlock)
     assert result.equation.expression == "E = mc^2"
 
 
-def test_markdown_to_notion_quoted():
-    """Test conversion from quoted markdown to Notion blocks."""
-    result = EquationElement.markdown_to_notion('[equation]("f(x) = sin(x)")')
+def test_markdown_to_notion_complex():
+    """Test conversion from complex markdown to Notion blocks."""
+    result = EquationElement.markdown_to_notion("$$\\frac{a}{b}$$")
 
     assert isinstance(result, CreateEquationBlock)
     assert isinstance(result.equation, EquationBlock)
-    assert result.equation.expression == "f(x) = sin(x)"
-
-
-def test_markdown_to_notion_quoted_with_escaping():
-    """Test conversion with escaped characters."""
-    result = EquationElement.markdown_to_notion('[equation]("\\\\frac{a}{b}")')
-
-    assert isinstance(result, CreateEquationBlock)
-    assert isinstance(result.equation, EquationBlock)
-    # Should be unescaped in Notion
     assert result.equation.expression == "\\frac{a}{b}"
+
+
+def test_markdown_to_notion_multiline():
+    """Test conversion with multiline expressions."""
+    result = EquationElement.markdown_to_notion("$$a = b\nc = d$$")
+
+    assert isinstance(result, CreateEquationBlock)
+    assert isinstance(result.equation, EquationBlock)
+    assert result.equation.expression == "a = b\nc = d"
 
 
 def test_markdown_to_notion_invalid():
     """Test that invalid markdown returns None."""
-    assert EquationElement.markdown_to_notion("[equation]") is None
-    assert EquationElement.markdown_to_notion("equation(E = mc^2)") is None
-    assert EquationElement.markdown_to_notion("[toc](blue)") is None
+    assert EquationElement.markdown_to_notion("$E = mc^2$") is None  # Single $
+    assert EquationElement.markdown_to_notion("$$$$") is None  # Empty
+    assert EquationElement.markdown_to_notion("E = mc^2") is None  # No $$
     assert EquationElement.markdown_to_notion("") is None
 
 
-def test_markdown_to_notion_empty_expression():
-    """Test that empty expressions return None."""
-    assert EquationElement.markdown_to_notion("[equation]()") is None
-    assert EquationElement.markdown_to_notion('[equation]("")') is None
-    assert EquationElement.markdown_to_notion('[equation]("   ")') is None
-
-
 def test_notion_to_markdown_simple():
-    """Test conversion from simple Notion blocks to unquoted markdown."""
+    """Test conversion from simple Notion blocks to markdown."""
     block = create_block_with_required_fields(
         type=BlockType.EQUATION, equation=EquationBlock(expression="E = mc^2")
     )
 
     result = EquationElement.notion_to_markdown(block)
-    assert result == "[equation](E = mc^2)"
+    assert result == "$$E = mc^2$$"
 
 
-def test_notion_to_markdown_with_parentheses():
-    """Test conversion with parentheses forces quoted form."""
+def test_notion_to_markdown_complex():
+    """Test conversion with complex expressions."""
     block = create_block_with_required_fields(
-        type=BlockType.EQUATION, equation=EquationBlock(expression="f(x) = sin(x)")
+        type=BlockType.EQUATION, equation=EquationBlock(expression="\\frac{a}{b}")
     )
 
     result = EquationElement.notion_to_markdown(block)
-    assert result == '[equation]("f(x) = sin(x)")'
+    assert result == "$$\\frac{a}{b}$$"
 
 
-def test_notion_to_markdown_with_quotes():
-    """Test conversion with quotes forces quoted form and escaping."""
+def test_notion_to_markdown_multiline():
+    """Test conversion with multiline expressions."""
     block = create_block_with_required_fields(
-        type=BlockType.EQUATION, equation=EquationBlock(expression='say "hello"')
+        type=BlockType.EQUATION, equation=EquationBlock(expression="a = b\nc = d")
     )
 
     result = EquationElement.notion_to_markdown(block)
-    assert result == '[equation]("say \\"hello\\"")'
+    assert result == "$$a = b\nc = d$$"
 
 
 def test_notion_to_markdown_invalid():
@@ -178,3 +156,46 @@ def test_notion_to_markdown_invalid():
         type=BlockType.EQUATION, equation=EquationBlock(expression="")
     )
     assert EquationElement.notion_to_markdown(empty_equation_block) is None
+
+
+def test_roundtrip_conversion():
+    """Test that markdown -> notion -> markdown preserves content."""
+    test_cases = [
+        "$$E = mc^2$$",
+        "$$\\frac{a}{b}$$",
+        "$$\\sum_{i=1}^n i = \\frac{n(n+1)}{2}$$",
+        "$$\\int_0^\\infty e^{-x^2} dx$$",
+    ]
+
+    for markdown in test_cases:
+        # Convert to notion
+        notion_result = EquationElement.markdown_to_notion(markdown)
+        assert notion_result is not None
+
+        # Create proper Block mock for roundtrip
+        notion_block = create_block_with_required_fields(
+            type=BlockType.EQUATION, equation=notion_result.equation
+        )
+
+        # Convert back to markdown
+        back_to_markdown = EquationElement.notion_to_markdown(notion_block)
+        assert back_to_markdown == markdown
+
+
+@pytest.mark.parametrize(
+    "expression",
+    [
+        "E = mc^2",
+        "\\frac{a}{b}",
+        "\\sum_{i=1}^n i",
+        "\\int_0^\\infty e^{-x} dx",
+        "x^2 + y^2 = z^2",
+        "\\alpha + \\beta = \\gamma",
+    ],
+)
+def test_various_expressions(expression):
+    """Test various LaTeX expressions."""
+    markdown = f"$${expression}$$"
+    result = EquationElement.markdown_to_notion(markdown)
+    assert result is not None
+    assert result.equation.expression == expression

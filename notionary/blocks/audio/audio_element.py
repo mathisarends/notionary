@@ -25,8 +25,21 @@ class AudioElement(BaseBlockElement, CaptionMixin):
     - Caption supports rich text formatting and is optional
     """
 
-    # Flexible pattern that can handle caption in any position
+    # Simple pattern that matches just the audio link, CaptionMixin handles caption separately
     AUDIO_PATTERN = re.compile(r"\[audio\]\((https?://[^\s\"]+)\)")
+    
+    @classmethod
+    def _extract_audio_url(cls, text: str) -> Optional[str]:
+        """Extract audio URL from text, handling caption patterns."""
+        # First remove any captions to get clean text for URL extraction
+        clean_text = cls.remove_caption(text)
+        
+        # Now extract the URL from clean text
+        match = cls.AUDIO_PATTERN.search(clean_text)
+        if match:
+            return match.group(1)
+        
+        return None
 
     SUPPORTED_EXTENSIONS = {".mp3", ".wav", ".ogg", ".oga", ".m4a"}
 
@@ -38,12 +51,10 @@ class AudioElement(BaseBlockElement, CaptionMixin):
     @classmethod
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown audio embed to Notion audio block."""
-        # Use our own regex to find the audio URL
-        audio_match = cls.AUDIO_PATTERN.search(text.strip())
-        if not audio_match:
+        # Use our helper method to extract the URL
+        url = cls._extract_audio_url(text.strip())
+        if not url:
             return None
-
-        url = audio_match.group(1)
 
         if not cls._is_likely_audio_url(url):
             return None

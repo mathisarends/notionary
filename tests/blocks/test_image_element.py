@@ -169,7 +169,7 @@ def test_notion_to_markdown_invalid():
     "markdown,should_match",
     [
         ("[image](https://example.com/pic.jpg)", True),
-        ('[image](https://test.com/img.png "Caption")', True),
+        ("[image](https://test.com/img.png)(caption:Caption)", True),  # Fixed: new caption syntax
         ("[image](http://site.org/photo.gif)", True),
         ("  [image](https://example.com/img.jpg)  ", True),  # With whitespace
         ("[img](https://example.com/pic.jpg)", False),  # Wrong prefix
@@ -189,17 +189,15 @@ def test_markdown_patterns(markdown, should_match):
 
 
 def test_pattern_matching():
-    """Test the regex pattern directly."""
-    pattern = ImageElement.PATTERN
+    """Test that the element can handle various patterns."""
+    # Valid patterns should work
+    assert ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)") is not None
+    assert ImageElement.markdown_to_notion("[image](https://test.com/img.png)(caption:Caption)") is not None
 
-    # Valid patterns
-    assert pattern.match("[image](https://example.com/pic.jpg)")
-    assert pattern.match("[image](https://test.com/img.png)(caption:Caption)")
-
-    # Invalid patterns
-    assert not pattern.match("[img](https://example.com/pic.jpg)")
-    assert not pattern.match("[image](not-a-url)")
-    assert not pattern.match("[image]()")
+    # Invalid patterns should not
+    assert ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)") is None
+    assert ImageElement.markdown_to_notion("[image](not-a-url)") is None
+    assert ImageElement.markdown_to_notion("[image]()") is None
 
 
 def test_roundtrip_conversion():
@@ -211,6 +209,18 @@ def test_roundtrip_conversion():
     ]
 
     for markdown in test_cases:
+        # Convert to notion
+        notion_result = ImageElement.markdown_to_notion(markdown)
+        assert notion_result is not None
+
+        # Create proper Block mock for roundtrip
+        notion_block = Mock()
+        notion_block.type = "image"
+        notion_block.image = notion_result.image
+
+        # Convert back to markdown
+        back_to_markdown = ImageElement.notion_to_markdown(notion_block)
+        assert back_to_markdown == markdown
         # Convert to notion
         notion_result = ImageElement.markdown_to_notion(markdown)
         assert notion_result is not None

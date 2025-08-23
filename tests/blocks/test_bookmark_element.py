@@ -159,7 +159,7 @@ def test_notion_to_markdown_with_title_and_description():
     result = BookmarkElement.notion_to_markdown(block)
     assert (
         result
-        == "[bookmark](https://example.com)(caption:Beispiel-Titel – Eine Beschreibung)"
+        == "[bookmark](https://example.com)(caption:Beispiel-Titel - Eine Beschreibung)"
     )
 
 
@@ -369,7 +369,7 @@ def test_caption_separator_behavior():
     block.bookmark = bookmark_data
 
     result = BookmarkElement.notion_to_markdown(block)
-    assert result == "[bookmark](https://example.com)(caption:Title – Description)"
+    assert result == "[bookmark](https://example.com)(caption:Title - Description)"
 
 
 def test_empty_strings_and_whitespace():
