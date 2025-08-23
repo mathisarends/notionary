@@ -1,9 +1,35 @@
 from __future__ import annotations
 
+from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel
-from typing_extensions import Literal
+
+
+class RichTextType(str, Enum):
+    """Types of rich text objects."""
+
+    TEXT = "text"
+    MENTION = "mention"
+    EQUATION = "equation"
+
+
+class MentionType(str, Enum):
+    """Types of mention objects."""
+
+    USER = "user"
+    PAGE = "page"
+    DATABASE = "database"
+    DATE = "date"
+    LINK_PREVIEW = "link_preview"
+    TEMPLATE_MENTION = "template_mention"
+
+
+class TemplateMentionType(str, Enum):
+    """Types of template mentions."""
+
+    USER = "template_mention_user"
+    DATE = "template_mention_date"
 
 
 class TextAnnotations(BaseModel):
@@ -53,13 +79,11 @@ class MentionDate(BaseModel):
 
 class MentionTemplateMention(BaseModel):
     # Notion hat zwei Template-Mention-Typen
-    type: Literal["template_mention_user", "template_mention_date"]
+    type: TemplateMentionType
 
 
 class MentionObject(BaseModel):
-    type: Literal[
-        "user", "page", "database", "date", "link_preview", "template_mention"
-    ]
+    type: MentionType
     user: Optional[MentionUserRef] = None
     page: Optional[MentionPageRef] = None
     database: Optional[MentionDatabaseRef] = None
@@ -69,7 +93,7 @@ class MentionObject(BaseModel):
 
 
 class RichTextObject(BaseModel):
-    type: Literal["text", "mention", "equation"] = "text"
+    type: RichTextType = RichTextType.TEXT
 
     text: Optional[TextContent] = None
     annotations: Optional[TextAnnotations] = None
@@ -83,7 +107,7 @@ class RichTextObject(BaseModel):
     @classmethod
     def from_plain_text(cls, content: str, **ann) -> RichTextObject:
         return cls(
-            type="text",
+            type=RichTextType.TEXT,
             text=TextContent(content=content),
             annotations=TextAnnotations(**ann) if ann else TextAnnotations(),
             plain_text=content,
@@ -92,13 +116,12 @@ class RichTextObject(BaseModel):
     @classmethod
     def for_caption(cls, content: str) -> RichTextObject:
         return cls(
-            type="text",
+            type=RichTextType.TEXT,
             text=TextContent(content=content),
             annotations=None,
             plain_text=content,
         )
 
-    # TODO: remove this when mixin is cpmplete
     @classmethod
     def for_code_block(cls, content: str) -> RichTextObject:
         # keine annotations setzen → Notion Code-Highlight bleibt an
@@ -107,7 +130,7 @@ class RichTextObject(BaseModel):
     @classmethod
     def for_link(cls, content: str, url: str, **ann) -> RichTextObject:
         return cls(
-            type="text",
+            type=RichTextType.TEXT,
             text=TextContent(content=content, link=LinkObject(url=url)),
             annotations=TextAnnotations(**ann) if ann else TextAnnotations(),
             plain_text=content,
@@ -116,25 +139,29 @@ class RichTextObject(BaseModel):
     @classmethod
     def mention_user(cls, user_id: str) -> RichTextObject:
         return cls(
-            type="mention",
-            mention=MentionObject(type="user", user=MentionUserRef(id=user_id)),
+            type=RichTextType.MENTION,
+            mention=MentionObject(
+                type=MentionType.USER, user=MentionUserRef(id=user_id)
+            ),
             annotations=TextAnnotations(),
         )
 
     @classmethod
     def mention_page(cls, page_id: str) -> RichTextObject:
         return cls(
-            type="mention",
-            mention=MentionObject(type="page", page=MentionPageRef(id=page_id)),
+            type=RichTextType.MENTION,
+            mention=MentionObject(
+                type=MentionType.PAGE, page=MentionPageRef(id=page_id)
+            ),
             annotations=TextAnnotations(),
         )
 
     @classmethod
     def mention_database(cls, database_id: str) -> RichTextObject:
         return cls(
-            type="mention",
+            type=RichTextType.MENTION,
             mention=MentionObject(
-                type="database", database=MentionDatabaseRef(id=database_id)
+                type=MentionType.DATABASE, database=MentionDatabaseRef(id=database_id)
             ),
             annotations=TextAnnotations(),
         )
@@ -142,9 +169,9 @@ class RichTextObject(BaseModel):
     @classmethod
     def mention_link_preview(cls, url: str) -> RichTextObject:
         return cls(
-            type="mention",
+            type=RichTextType.MENTION,
             mention=MentionObject(
-                type="link_preview", link_preview=MentionLinkPreview(url=url)
+                type=MentionType.LINK_PREVIEW, link_preview=MentionLinkPreview(url=url)
             ),
             annotations=TextAnnotations(),
         )
@@ -154,9 +181,10 @@ class RichTextObject(BaseModel):
         cls, start: str, end: str | None = None, time_zone: str | None = None
     ) -> RichTextObject:
         return cls(
-            type="mention",
+            type=RichTextType.MENTION,
             mention=MentionObject(
-                type="date", date=MentionDate(start=start, end=end, time_zone=time_zone)
+                type=MentionType.DATE,
+                date=MentionDate(start=start, end=end, time_zone=time_zone),
             ),
             annotations=TextAnnotations(),
         )
@@ -164,10 +192,10 @@ class RichTextObject(BaseModel):
     @classmethod
     def mention_template_user(cls) -> RichTextObject:
         return cls(
-            type="mention",
+            type=RichTextType.MENTION,
             mention=MentionObject(
-                type="template_mention",
-                template_mention=MentionTemplateMention(type="template_mention_user"),
+                type=MentionType.TEMPLATE_MENTION,
+                template_mention=MentionTemplateMention(type=TemplateMentionType.USER),
             ),
             annotations=TextAnnotations(),
         )
@@ -175,10 +203,10 @@ class RichTextObject(BaseModel):
     @classmethod
     def mention_template_date(cls) -> RichTextObject:
         return cls(
-            type="mention",
+            type=RichTextType.MENTION,
             mention=MentionObject(
-                type="template_mention",
-                template_mention=MentionTemplateMention(type="template_mention_date"),
+                type=MentionType.TEMPLATE_MENTION,
+                template_mention=MentionTemplateMention(type=TemplateMentionType.DATE),
             ),
             annotations=TextAnnotations(),
         )
@@ -186,8 +214,8 @@ class RichTextObject(BaseModel):
     @classmethod
     def equation_inline(cls, expression: str) -> RichTextObject:
         return cls(
-            type="equation",
+            type=RichTextType.EQUATION,
             equation=EquationObject(expression=expression),
             annotations=TextAnnotations(),
-            plain_text=expression,  # Notion liefert plain_text serverseitig; für Roundtrip hilfreich
+            plain_text=expression,
         )

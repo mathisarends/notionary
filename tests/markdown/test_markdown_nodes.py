@@ -47,7 +47,6 @@ def test_audio_markdown_node():
     expected = "[audio](https://example.com/audio.mp3)"
     assert audio.to_markdown() == expected
 
-    # Test mit Caption - NEUE SYNTAX: (caption:...)
     audio_with_caption = AudioMarkdownNode(
         url="https://example.com/audio.mp3", caption="My Audio File"
     )

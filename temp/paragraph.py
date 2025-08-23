@@ -25,8 +25,9 @@ async def main():
 
         markdown = """
         **Bold** mit {blue:blauem Text} und $E=mc^2$ Gleichung
-        {red_background:**Fett mit rotem Hintergrund**}
-        Normale Links und @[page-id] Mentions
+        **Bold** mit (blue:blauem Text) und $E=mc^2$ Gleichung
+        (red_background:**Fett mit rotem Hintergrund**)
+        Normale (green:grüne Farbe) im Text
         """
 
         # Test all media blocks with the MarkdownBuilder
