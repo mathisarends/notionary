@@ -31,7 +31,6 @@ class ImageElement(BaseBlockElement, CaptionMixin):
     @classmethod
     async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown image syntax to Notion ImageBlock."""
-        # First remove captions to get clean text for URL extraction
         clean_text = cls.remove_caption(text.strip())
 
         # Use our own regex to find the image URL
@@ -41,7 +40,6 @@ class ImageElement(BaseBlockElement, CaptionMixin):
 
         url = image_match.group(1)
 
-        # Use mixin to extract caption (if present anywhere in text)
         caption_text = cls.extract_caption(text.strip())
         caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 

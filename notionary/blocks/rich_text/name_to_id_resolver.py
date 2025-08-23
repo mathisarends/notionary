@@ -8,6 +8,8 @@ from notionary.util import format_uuid
 from notionary.util.fuzzy import find_best_match
 
 
+# TODO: Implement users lookup here aswell and use in @TextInlineForatter
+# Write testst then
 class NameIdResolver:
     """
     Bidirectional resolver for Notion page and database names and IDs.
@@ -18,7 +20,6 @@ class NameIdResolver:
         *,
         token: Optional[str] = None,
         search_limit: int = 10,
-        match_threshold: float = 0.72,  # 0.0 to 1.0, minimum similarity for fuzzy match
     ):
         """
         Initialize the resolver with a Notion workspace.
@@ -27,7 +28,6 @@ class NameIdResolver:
 
         self.workspace = NotionWorkspace(token=token)
         self.search_limit = search_limit
-        self.match_threshold = match_threshold
 
     async def resolve_id(self, name: str) -> Optional[str]:
         """
@@ -157,7 +157,6 @@ class NameIdResolver:
 
         return self._find_best_fuzzy_match(query=name, candidate_objects=search_results)
 
-    # all entities here have ids and titles
     def _find_best_fuzzy_match(
         self, query: str, candidate_objects: list
     ) -> Optional[str]:
@@ -179,7 +178,6 @@ class NameIdResolver:
             query=query,
             items=candidate_objects,
             text_extractor=lambda obj: obj.title,
-            min_similarity=self.match_threshold,
         )
 
         return best_match.item.id if best_match else None

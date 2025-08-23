@@ -16,6 +16,11 @@ class BlockRenderingContext:
     block_registry: BlockRegistry
     convert_children_callback: Optional[Callable[[list[Block], int], str]] = None
 
+    # For batch processing
+    all_blocks: Optional[list[Block]] = None
+    current_block_index: Optional[int] = None
+    blocks_consumed: int = 0
+
     # Result
     markdown_result: Optional[str] = None
     children_result: Optional[str] = None

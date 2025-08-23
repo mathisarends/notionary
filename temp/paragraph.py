@@ -29,6 +29,12 @@ async def main():
         Normale (green:grüne Farbe) im Text
         
         Das ist eine page @page[Wissen & Notizen]
+        
+        ---
+        
+        1. this is a test
+        2. this is a fest
+        3. this is a quest
         """
 
         # Test all media blocks with the MarkdownBuilder
@@ -37,7 +43,7 @@ async def main():
         print("✅ Successfully added all caption syntax examples!")
 
         content = await page.get_text_content()
-        print(f"📄 Page content preview:\n{content[:500]}...")
+        print(f"📄 Page content preview:\n{content}...")
 
     except Exception as e:
         import traceback

@@ -45,7 +45,7 @@ class TextInlineFormatter:
 
     • Colored text / highlight (supports nested formatting)
         (red:important)                    — sets text color to "red"
-        (blue_background:note)             — sets background to "blue_background" 
+        (blue_background:note)             — sets background to "blue_background"
         (red_background:**bold text**)     — red background with bold formatting
         → RichTextObject(plain_text="important", color="red", bold=True)
         Valid colors are any value in the BlockColor enum, e.g.:
@@ -189,7 +189,7 @@ class TextInlineFormatter:
 
         # Recursively parse the content inside the color pattern for nested formatting
         parsed_segments = await cls._split_text_into_segments(content)
-        
+
         # Apply the color to all resulting segments
         colored_segments = []
         for segment in parsed_segments:
@@ -201,11 +201,13 @@ class TextInlineFormatter:
             else:
                 # For non-text segments (equations, mentions, etc.), keep as-is
                 colored_segments.append(segment)
-        
+
         return colored_segments
 
     @classmethod
-    def _apply_color_to_text_segment(cls, segment: RichTextObject, color: str) -> RichTextObject:
+    def _apply_color_to_text_segment(
+        cls, segment: RichTextObject, color: str
+    ) -> RichTextObject:
         """Apply color to a text segment while preserving existing formatting."""
         if segment.type != RichTextType.TEXT:
             return segment
@@ -219,14 +221,14 @@ class TextInlineFormatter:
         if text_content and text_content.link:
             # For links, preserve the link while adding color and formatting
             return RichTextObject.for_link(
-                plain_text, 
+                plain_text,
                 text_content.link.url,
                 bold=annotations.bold if annotations else False,
                 italic=annotations.italic if annotations else False,
                 strikethrough=annotations.strikethrough if annotations else False,
                 underline=annotations.underline if annotations else False,
                 code=annotations.code if annotations else False,
-                color=color
+                color=color,
             )
         else:
             # For regular text, combine all formatting
@@ -237,7 +239,7 @@ class TextInlineFormatter:
                 strikethrough=annotations.strikethrough if annotations else False,
                 underline=annotations.underline if annotations else False,
                 code=annotations.code if annotations else False,
-                color=color
+                color=color,
             )
 
     @classmethod
