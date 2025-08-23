@@ -12,9 +12,12 @@ class EquationMarkdownBlockParams(BaseModel):
 class EquationMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating Markdown equation blocks.
-    Example:
-    [equation](E = mc^2)
-    [equation]("f(x) = \\sin(x) + \\cos(x)")
+    Uses standard Markdown equation syntax with double dollar signs.
+    
+    Examples:
+    $$E = mc^2$$
+    $$\\frac{a}{b} + \\sqrt{c}$$
+    $$\\int_0^\\infty e^{-x} dx = 1$$
     """
 
     def __init__(self, expression: str):
@@ -27,10 +30,6 @@ class EquationMarkdownNode(MarkdownNode):
     def to_markdown(self) -> str:
         expr = self.expression.strip()
         if not expr:
-            return "[equation]()"
+            return "$$$$"
 
-        if ("\n" in expr) or (")" in expr) or ('"' in expr):
-            escaped = expr.replace("\\", "\\\\").replace('"', r"\"")
-            return f'[equation]("{escaped}")'
-
-        return f"[equation]({expr})"
+        return f"$${expr}$$"

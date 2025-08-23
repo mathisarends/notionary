@@ -1,5 +1,5 @@
 import re
-from typing import Any, Optional, Match
+from typing import Optional, Match
 
 from notionary.blocks.rich_text.rich_text_models import (
     RichTextObject,
@@ -67,6 +67,7 @@ class TextInlineFormatter:
         COLOR = r"\((\w+):(.+?)\)"  # (blue:colored text) or (blue_background:text)
         PAGE_MENTION = r"@\[([0-9a-f-]+)\]"
 
+    # Pattern to handler mapping - cleaner approach
     @classmethod
     def _get_format_handlers(cls):
         """Get pattern to handler mapping - defined as method to access class methods."""
@@ -114,6 +115,7 @@ class TextInlineFormatter:
                 plain_text = remaining[:position]
                 segments.append(RichTextObject.from_plain_text(plain_text))
 
+            # Convert pattern to RichTextObject - direct handler call
             rich_text_obj = handler_name(match)
             if rich_text_obj:
                 segments.append(rich_text_obj)
@@ -167,6 +169,51 @@ class TextInlineFormatter:
             return handler(match)
 
         return None
+
+    # Pattern-specific handlers using existing RichTextObject factory methods
+
+    @classmethod
+    def _handle_bold_pattern(cls, match: Match) -> RichTextObject:
+        return RichTextObject.from_plain_text(match.group(1), bold=True)
+
+    @classmethod
+    def _handle_italic_pattern(cls, match: Match) -> RichTextObject:
+        return RichTextObject.from_plain_text(match.group(1), italic=True)
+
+    @classmethod
+    def _handle_underline_pattern(cls, match: Match) -> RichTextObject:
+        return RichTextObject.from_plain_text(match.group(1), underline=True)
+
+    @classmethod
+    def _handle_strikethrough_pattern(cls, match: Match) -> RichTextObject:
+        return RichTextObject.from_plain_text(match.group(1), strikethrough=True)
+
+    @classmethod
+    def _handle_code_pattern(cls, match: Match) -> RichTextObject:
+        return RichTextObject.from_plain_text(match.group(1), code=True)
+
+    @classmethod
+    def _handle_link_pattern(cls, match: Match) -> RichTextObject:
+        link_text, url = match.group(1), match.group(2)
+        return RichTextObject.for_link(link_text, url)
+
+    @classmethod
+    def _handle_equation_pattern(cls, match: Match) -> RichTextObject:
+        """Handle inline equations: $E = mc^2$"""
+        expression = match.group(1)
+        return RichTextObject.equation_inline(expression)
+
+    @classmethod
+    def _handle_color_pattern(cls, match: Match) -> RichTextObject:
+        """Handle colored text: (blue:colored text) or (red_background:highlighted text)"""
+        color, content = match.group(1).lower(), match.group(2)
+
+        # Validate color against Notion's supported colors
+        if color not in cls.VALID_COLORS:
+            # Invalid color - return as plain text
+            return RichTextObject.from_plain_text(f"({match.group(1)}:{content})")
+
+        return RichTextObject.from_plain_text(content, color=color)
 
     @classmethod
     def _handle_page_mention_pattern(cls, match: Match) -> RichTextObject:
@@ -274,46 +321,3 @@ class TextInlineFormatter:
             content = f"({annotations.color}:{content})"
 
         return content
-
-    @classmethod
-    def _handle_bold_pattern(cls, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), bold=True)
-
-    @classmethod
-    def _handle_italic_pattern(cls, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), italic=True)
-
-    @classmethod
-    def _handle_underline_pattern(cls, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), underline=True)
-
-    @classmethod
-    def _handle_strikethrough_pattern(cls, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), strikethrough=True)
-
-    @classmethod
-    def _handle_code_pattern(cls, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), code=True)
-
-    @classmethod
-    def _handle_link_pattern(cls, match: Match) -> RichTextObject:
-        link_text, url = match.group(1), match.group(2)
-        return RichTextObject.for_link(link_text, url)
-
-    @classmethod
-    def _handle_equation_pattern(cls, match: Match) -> RichTextObject:
-        """Handle inline equations: $E = mc^2$"""
-        expression = match.group(1)
-        return RichTextObject.equation_inline(expression)
-
-    @classmethod
-    def _handle_color_pattern(cls, match: Match) -> RichTextObject:
-        """Handle colored text: (blue:colored text) or (red_background:highlighted text)"""
-        color, content = match.group(1).lower(), match.group(2)
-
-        # Validate color against Notion's supported colors
-        if color not in cls.VALID_COLORS:
-            # Invalid color - return as plain text
-            return RichTextObject.from_plain_text(f"({match.group(1)}:{content})")
-
-        return RichTextObject.from_plain_text(content, color=color)

@@ -12,21 +12,17 @@ from notionary.blocks.types import BlockType
 
 class EquationElement(BaseBlockElement):
     """
-    Only supports bracket style (analog zu [video]):
+    Supports standard Markdown equation syntax:
 
-      - [equation](E = mc^2)                    # unquoted: keine ')' oder Newlines
-      - [equation]("E = mc^2 + \\frac{a}{b}")   # quoted: erlaubt ')' & Newlines & \"
+      - $$E = mc^2$$                           # simple equations
+      - $$E = mc^2 + \\frac{a}{b}$$           # complex equations with LaTeX
 
-    No $$...$$ parsing.
+    Uses $$...$$ parsing for block equations.
     """
 
-    _QUOTED_PATTERN = re.compile(
-        r'^\[equation\]\(\s*"(?P<quoted_expr>(?:[^"\\]|\\.)*)"\s*\)$',
+    _EQUATION_PATTERN = re.compile(
+        r'^\$\$\s*(?P<expression>.*?)\s*\$\$$',
         re.DOTALL,
-    )
-
-    _UNQUOTED_PATTERN = re.compile(
-        r"^\[equation\]\(\s*(?P<unquoted_expr>[^)\r\n]+?)\s*\)$"
     )
 
     @classmethod
@@ -37,28 +33,12 @@ class EquationElement(BaseBlockElement):
     def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         input_text = text.strip()
 
-        # Try quoted form first: [equation]("...")
-        if quoted_match := cls._QUOTED_PATTERN.match(input_text):
-            raw_expression = quoted_match.group("quoted_expr")
-            # Unescape \" and \\ for Notion
-            unescaped_expression = raw_expression.encode("utf-8").decode(
-                "unicode_escape"
-            )
-            unescaped_expression = unescaped_expression.replace('\\"', '"')
-            final_expression = unescaped_expression.strip()
-
+        # Try $$...$$ pattern
+        if equation_match := cls._EQUATION_PATTERN.match(input_text):
+            expression = equation_match.group("expression").strip()
             return (
-                CreateEquationBlock(equation=EquationBlock(expression=final_expression))
-                if final_expression
-                else None
-            )
-
-        # Try unquoted form: [equation](...)
-        if unquoted_match := cls._UNQUOTED_PATTERN.match(input_text):
-            raw_expression = unquoted_match.group("unquoted_expr").strip()
-            return (
-                CreateEquationBlock(equation=EquationBlock(expression=raw_expression))
-                if raw_expression
+                CreateEquationBlock(equation=EquationBlock(expression=expression))
+                if expression
                 else None
             )
 
@@ -73,24 +53,19 @@ class EquationElement(BaseBlockElement):
         if not expression:
             return None
 
-        # Use quoted form if expression contains risky characters
-        if ("\n" in expression) or (")" in expression) or ('"' in expression):
-            escaped_expression = expression.replace("\\", "\\\\").replace('"', r"\"")
-            return f'[equation]("{escaped_expression}")'
-
-        return f"[equation]({expression})"
+        return f"$${expression}$$"
 
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
         """Get system prompt information for equation blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,
-            description="Equation blocks render mathematical expressions using LaTeX syntax",
+            description="Mathematical equations using standard Markdown LaTeX syntax",
             syntax_examples=[
-                "[equation](E = mc^2)",
-                '[equation]("f(x) = sin(x)")',
-                '[equation]("\\\\frac{a}{b} + \\\\sqrt{c}")',
-                '[equation]("x^2 + y^2 = z^2")',
+                "$$E = mc^2$$",
+                "$$\\frac{a}{b} + \\sqrt{c}$$",
+                "$$\\int_0^\\infty e^{-x} dx = 1$$",
+                "$$\\sum_{i=1}^n i = \\frac{n(n+1)}{2}$$",
             ],
-            usage_guidelines="Use for mathematical expressions and formulas. Simple expressions without parentheses or quotes can be unquoted. Complex expressions with parentheses, quotes, or newlines must be quoted.",
+            usage_guidelines="Use for mathematical expressions and formulas. Supports LaTeX syntax. Wrap equations in double dollar signs ($$).",
         )
