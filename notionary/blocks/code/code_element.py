@@ -67,7 +67,7 @@ class CodeElement(BaseBlockElement):
 
         caption_list = []
         if caption:
-            caption_list = [RichTextObject.for_code_block(caption)]
+            caption_list = [RichTextObject.for_caption(caption)]
 
         code_block = CodeBlock(
             rich_text=rich_text, language=language, caption=caption_list

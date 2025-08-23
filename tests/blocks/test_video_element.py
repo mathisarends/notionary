@@ -15,7 +15,7 @@ def test_match_markdown_valid():
     """Test recognition of valid video formats."""
     assert VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
     assert VideoElement.markdown_to_notion(
-        '[video](https://example.com/video.mp4 "Caption")'
+        "[video](https://example.com/video.mp4)(caption:Caption)"
     )
     assert VideoElement.markdown_to_notion("[video](https://youtu.be/dQw4w9WgXcQ)")
     assert VideoElement.markdown_to_notion(
@@ -78,7 +78,7 @@ def test_markdown_to_notion_basic():
 def test_markdown_to_notion_with_caption():
     """Test conversion with caption."""
     result = VideoElement.markdown_to_notion(
-        '[video](https://example.com/video.mp4 "Demo video")'
+        "[video](https://example.com/video.mp4)(caption:Demo video)"
     )
 
     assert result is not None
@@ -141,7 +141,7 @@ def test_notion_to_markdown_with_caption():
     assert result is not None
     assert "Demo video" in result
     assert result.startswith("[video](")
-    assert '"Demo video")' in result
+    assert "(caption:Demo video)" in result
 
 
 def test_notion_to_markdown_file_type():
@@ -190,11 +190,11 @@ def test_get_youtube_id():
 
 def test_pattern_regex_directly():
     """Test the PATTERN regex directly."""
-    pattern = VideoElement.PATTERN
+    pattern = VideoElement.VIDEO_PATTERN
 
     # Valid patterns
     assert pattern.match("[video](https://example.com/video.mp4)")
-    assert pattern.match('[video](https://example.com/video.mp4 "Caption")')
+    assert pattern.match("[video](https://example.com/video.mp4)(caption:Caption)")
 
     # Invalid patterns
     assert not pattern.match("[video]()")

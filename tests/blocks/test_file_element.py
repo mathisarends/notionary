@@ -1,6 +1,7 @@
 """
 Pytest tests for FileElement.
 Tests conversion between Markdown file embeds and Notion file blocks.
+Updated to use new caption mixin syntax.
 """
 
 import pytest
@@ -50,11 +51,11 @@ def create_block_with_required_fields(**kwargs) -> Block:
 def test_match_markdown_valid_files():
     assert FileElement.markdown_to_notion("[file](https://example.com/doc.pdf)")
     assert FileElement.markdown_to_notion(
-        '[file](https://drive.google.com/file/d/123 "My Report")'
+        '[file](https://drive.google.com/file/d/123)(caption:My Report)'
     )
     assert FileElement.markdown_to_notion("   [file](https://abc.com/x.docx)   ")
     assert FileElement.markdown_to_notion(
-        '[file](https://example.com/y.xlsx "Finanzen Q4")'
+        '[file](https://example.com/y.xlsx)(caption:Finanzen Q4)'
     )
 
 
@@ -62,9 +63,9 @@ def test_match_markdown_valid_files():
     "text",
     [
         "[file](https://test.de/abc.pdf)",
-        '[file](https://host.com/hello.docx "Projektplan")',
+        '[file](https://host.com/hello.docx)(caption:Projektplan)',
         "  [file](https://server.net/file.pptx)  ",
-        '[file](https://cloud.net/y.xlsx "Finanzen Q4")',
+        '[file](https://cloud.net/y.xlsx)(caption:Finanzen Q4)',
     ],
 )
 def test_match_markdown_param_valid(text):
@@ -120,7 +121,7 @@ def test_match_notion_block():
     "markdown, url, caption",
     [
         (
-            '[file](https://docs.example.com/mydoc.pdf "Bericht 2024")',
+            '[file](https://docs.example.com/mydoc.pdf)(caption:Bericht 2024)',
             "https://docs.example.com/mydoc.pdf",
             "Bericht 2024",
         ),
@@ -167,7 +168,7 @@ def test_notion_to_markdown_with_caption():
         ),
     )
     result = FileElement.notion_to_markdown(notion_block)
-    assert result == '[file](https://files.com/cv.pdf "Mein Lebenslauf")'
+    assert result == '[file](https://files.com/cv.pdf)(caption:Mein Lebenslauf)'
 
 
 def test_notion_to_markdown_without_caption():
@@ -232,9 +233,9 @@ def test_extract_text_content():
 @pytest.mark.parametrize(
     "markdown",
     [
-        '[file](https://a.com/file.pdf "Roundtrip Caption")',
+        '[file](https://a.com/file.pdf)(caption:Roundtrip Caption)',
         "[file](https://example.com/x.docx)",
-        '[file](https://abc.de/y.pptx "Bericht 🙂")',
+        '[file](https://abc.de/y.pptx)(caption:Bericht 🙂)',
     ],
 )
 def test_roundtrip_conversion(markdown):
@@ -265,7 +266,7 @@ def test_roundtrip_conversion(markdown):
 )
 def test_unicode_and_special_caption(caption):
     url = "https://host.de/x.pdf"
-    markdown = f'[file]({url} "{caption}")' if caption else f"[file]({url})"
+    markdown = f'[file]({url})(caption:{caption})' if caption else f"[file]({url})"
     blocks = FileElement.markdown_to_notion(markdown)
     assert blocks is not None
 
@@ -280,7 +281,7 @@ def test_unicode_and_special_caption(caption):
 
 
 def test_extra_whitespace_and_newlines():
-    md = '   [file](https://x.com/d.pdf "  Caption with spaces   ")   '
+    md = '   [file](https://x.com/d.pdf)(caption:  Caption with spaces   )   '
     blocks = FileElement.markdown_to_notion(md)
     assert blocks is not None
 
@@ -293,7 +294,7 @@ def test_extra_whitespace_and_newlines():
 
     back = FileElement.notion_to_markdown(notion_block)
     # The markdown conversion should normalize whitespace around the syntax
-    assert back == '[file](https://x.com/d.pdf "  Caption with spaces   ")'
+    assert back == '[file](https://x.com/d.pdf)(caption:  Caption with spaces   )'
 
 
 def test_integration_with_other_elements():
@@ -389,7 +390,7 @@ def test_with_fixtures(simple_file_block, file_block_with_caption):
 
     # Test file block with caption
     result2 = FileElement.notion_to_markdown(file_block_with_caption)
-    assert result2 == '[file](https://docs.example.com/report.pdf "Annual Report 2024")'
+    assert result2 == '[file](https://docs.example.com/report.pdf)(caption:Annual Report 2024)'
 
 
 def test_notion_block_validation():
@@ -419,7 +420,7 @@ def test_notion_block_validation():
 
 def test_file_block_structure():
     """Test the exact structure of converted file blocks."""
-    markdown = '[file](https://example.com/test.pdf "Test Document")'
+    markdown = '[file](https://example.com/test.pdf)(caption:Test Document)'
     result = FileElement.markdown_to_notion(markdown)
 
     # Check file block structure

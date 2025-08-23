@@ -20,10 +20,7 @@ class BookmarkMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     """
 
     def __init__(
-        self, 
-        url: str, 
-        title: Optional[str] = None, 
-        caption: Optional[str] = None
+        self, url: str, title: Optional[str] = None, caption: Optional[str] = None
     ):
         self.url = url
         self.title = title
@@ -31,11 +28,7 @@ class BookmarkMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
 
     @classmethod
     def from_params(cls, params: BookmarkMarkdownBlockParams) -> BookmarkMarkdownNode:
-        return cls(
-            url=params.url, 
-            title=params.title, 
-            caption=params.caption
-        )
+        return cls(url=params.url, title=params.title, caption=params.caption)
 
     def to_markdown(self) -> str:
         """Return the Markdown representation.
@@ -46,6 +39,6 @@ class BookmarkMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
         """
         # Use simple bookmark syntax like BookmarkElement
         base_markdown = f"[bookmark]({self.url})"
-        
+
         # Append caption using mixin helper
         return self.append_caption_to_markdown(base_markdown, self.caption)

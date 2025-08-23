@@ -1,6 +1,6 @@
 """
 Pytest tests for BookmarkElement.
-Updated to match the actual implementation.
+Updated to match the actual implementation with new caption mixin syntax.
 """
 
 from unittest.mock import Mock
@@ -16,9 +16,9 @@ def test_match_markdown():
     """Test die Erkennung von Markdown-Bookmarks."""
     # Gültige Bookmark-Formate
     assert BookmarkElement.markdown_to_notion("[bookmark](https://example.com)")
-    assert BookmarkElement.markdown_to_notion('[bookmark](https://example.com "Titel")')
+    assert BookmarkElement.markdown_to_notion('[bookmark](https://example.com)(caption:Titel)')
     assert BookmarkElement.markdown_to_notion(
-        '[bookmark](https://example.com "Titel" "Beschreibung")'
+        '[bookmark](https://example.com)(caption:Titel – Beschreibung)'
     )
 
     # Ungültige Formate
@@ -64,7 +64,7 @@ def test_markdown_to_notion_simple():
 def test_markdown_to_notion_with_title():
     """Test Bookmark mit Titel."""
     result = BookmarkElement.markdown_to_notion(
-        '[bookmark](https://example.com "Beispiel-Titel")'
+        '[bookmark](https://example.com)(caption:Beispiel-Titel)'
     )
 
     assert result is not None
@@ -82,7 +82,7 @@ def test_markdown_to_notion_with_title():
 def test_markdown_to_notion_with_title_and_description():
     """Test Bookmark mit Titel und Beschreibung."""
     result = BookmarkElement.markdown_to_notion(
-        '[bookmark](https://example.com "Beispiel-Titel" "Eine Beschreibung")'
+        '[bookmark](https://example.com)(caption:Beispiel-Titel – Eine Beschreibung)'
     )
 
     assert result is not None
@@ -136,7 +136,7 @@ def test_notion_to_markdown_with_title():
     block.bookmark = bookmark_data
 
     result = BookmarkElement.notion_to_markdown(block)
-    assert result == '[bookmark](https://example.com "Beispiel-Titel")'
+    assert result == '[bookmark](https://example.com)(caption:Beispiel-Titel)'
 
 
 def test_notion_to_markdown_with_title_and_description():
@@ -156,7 +156,7 @@ def test_notion_to_markdown_with_title_and_description():
 
     result = BookmarkElement.notion_to_markdown(block)
     assert (
-        result == '[bookmark](https://example.com "Beispiel-Titel" "Eine Beschreibung")'
+        result == '[bookmark](https://example.com)(caption:Beispiel-Titel – Eine Beschreibung)'
     )
 
 
@@ -245,7 +245,7 @@ def test_with_fixtures(simple_bookmark_block, titled_bookmark_block):
 
     # Test Block mit Titel
     result2 = BookmarkElement.notion_to_markdown(titled_bookmark_block)
-    assert result2 == '[bookmark](https://example.com "Test Title")'
+    assert result2 == '[bookmark](https://example.com)(caption:Test Title)'
 
 
 def test_roundtrip_conversion_simple():
@@ -268,7 +268,7 @@ def test_roundtrip_conversion_simple():
 
 def test_roundtrip_conversion_with_title():
     """Test Roundtrip für Bookmarks mit Titel."""
-    original = '[bookmark](https://example.com "My Title")'
+    original = '[bookmark](https://example.com)(caption:My Title)'
 
     # Markdown -> Notion
     notion_result = BookmarkElement.markdown_to_notion(original)
@@ -287,9 +287,9 @@ def test_roundtrip_conversion_with_title():
 def test_unicode_in_captions():
     """Test Unicode-Zeichen in Captions."""
     test_cases = [
-        '[bookmark](https://example.com "Titel mit Ümlauten")',
-        '[bookmark](https://example.com "Emoji 🚀 Test")',
-        '[bookmark](https://example.com "中文标题")',
+        '[bookmark](https://example.com)(caption:Titel mit Ümlauten)',
+        '[bookmark](https://example.com)(caption:Emoji 🚀 Test)',
+        '[bookmark](https://example.com)(caption:中文标题)',
     ]
 
     for original in test_cases:
@@ -347,7 +347,7 @@ def test_caption_separator_behavior():
 
     # Test mit hyphen input
     result_hyphen = BookmarkElement.markdown_to_notion(
-        '[bookmark](https://example.com "Title" "Description")'
+        '[bookmark](https://example.com)(caption:Title – Description)'
     )
 
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
@@ -366,15 +366,15 @@ def test_caption_separator_behavior():
     block.bookmark = bookmark_data
 
     result = BookmarkElement.notion_to_markdown(block)
-    assert result == '[bookmark](https://example.com "Title" "Description")'
+    assert result == '[bookmark](https://example.com)(caption:Title – Description)'
 
 
 def test_empty_strings_and_whitespace():
     """Test Behandlung von leeren Strings und Whitespace."""
     # Leere Titel/Beschreibungen
     test_cases = [
-        '[bookmark](https://example.com "")',  # Leerer Titel
-        '[bookmark](https://example.com " ")',  # Nur Whitespace
+        '[bookmark](https://example.com)(caption:)',  # Leerer Titel
+        '[bookmark](https://example.com)(caption: )',  # Nur Whitespace
     ]
 
     for markdown in test_cases:

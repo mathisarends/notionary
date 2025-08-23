@@ -47,11 +47,11 @@ def test_audio_markdown_node():
     expected = "[audio](https://example.com/audio.mp3)"
     assert audio.to_markdown() == expected
 
-    # Test mit Caption
+    # Test mit Caption - NEUE SYNTAX: (caption:...)
     audio_with_caption = AudioMarkdownNode(
         url="https://example.com/audio.mp3", caption="My Audio File"
     )
-    expected = '[audio](https://example.com/audio.mp3 "My Audio File")'
+    expected = "[audio](https://example.com/audio.mp3)(caption:My Audio File)"
     assert audio_with_caption.to_markdown() == expected
 
 
@@ -62,19 +62,12 @@ def test_bookmark_markdown_node():
     expected = "[bookmark](https://example.com)"
     assert bookmark.to_markdown() == expected
 
-    # Test mit Title
-    bookmark_with_title = BookmarkMarkdownNode(
-        url="https://example.com", title="Example Site"
+    # Test mit Caption - NEUE SYNTAX: (caption:...)
+    bookmark_with_caption = BookmarkMarkdownNode(
+        url="https://example.com", caption="Example Site"
     )
-    expected = '[bookmark](https://example.com "Example Site")'
-    assert bookmark_with_title.to_markdown() == expected
-
-    # Test mit Title und Description
-    bookmark_full = BookmarkMarkdownNode(
-        url="https://example.com", title="Example Site", description="A great example"
-    )
-    expected = '[bookmark](https://example.com "Example Site" "A great example")'
-    assert bookmark_full.to_markdown() == expected
+    expected = "[bookmark](https://example.com)(caption:Example Site)"
+    assert bookmark_with_caption.to_markdown() == expected
 
 
 def test_bulleted_list_markdown_node():
@@ -131,11 +124,11 @@ def test_file_markdown_node():
     expected = "[file](https://example.com/doc.pdf)"
     assert file.to_markdown() == expected
 
-    # Test mit Caption
+    # Test mit Caption - NEUE SYNTAX: (caption:...)
     file_with_caption = FileMarkdownNode(
         url="https://example.com/doc.pdf", caption="Important Document"
     )
-    expected = '[file](https://example.com/doc.pdf "Important Document")'
+    expected = "[file](https://example.com/doc.pdf)(caption:Important Document)"
     assert file_with_caption.to_markdown() == expected
 
 
@@ -181,18 +174,18 @@ def test_image_markdown_node():
     expected = "[image](https://example.com/image.jpg)"
     assert image.to_markdown() == expected
 
-    # Test mit Caption - Caption MUSS im Output erscheinen!
+    # Test mit Caption - NEUE SYNTAX: (caption:...)
     image_with_caption = ImageMarkdownNode(
         url="https://example.com/image.jpg", caption="My Image"
     )
-    expected = '[image](https://example.com/image.jpg "My Image")'
+    expected = "[image](https://example.com/image.jpg)(caption:My Image)"
     assert image_with_caption.to_markdown() == expected
 
     # Test mit Caption (alt wird ignoriert)
     image_full = ImageMarkdownNode(
         url="https://example.com/image.jpg", caption="My Image", alt="Alternative text"
     )
-    expected = '[image](https://example.com/image.jpg "My Image")'
+    expected = "[image](https://example.com/image.jpg)(caption:My Image)"
     assert image_full.to_markdown() == expected
 
     # Test mit leerem Caption
@@ -308,11 +301,11 @@ def test_video_markdown_node():
     expected = "[video](https://youtube.com/watch?v=123)"
     assert video.to_markdown() == expected
 
-    # Test mit Caption
+    # Test mit Caption - NEUE SYNTAX: (caption:...)
     video_with_caption = VideoMarkdownNode(
         url="https://youtube.com/watch?v=123", caption="Tutorial Video"
     )
-    expected = '[video](https://youtube.com/watch?v=123 "Tutorial Video")'
+    expected = "[video](https://youtube.com/watch?v=123)(caption:Tutorial Video)"
     assert video_with_caption.to_markdown() == expected
 
 
@@ -390,3 +383,22 @@ def test_equation_markdown_node():
     equation_whitespace = EquationMarkdownNode(expression="   ")
     expected = "[equation]()"
     assert equation_whitespace.to_markdown() == expected
+
+
+def test_pdf_markdown_node():
+    """Test PdfMarkdownNode"""
+    from notionary.blocks.pdf.pdf_markdown_node import PdfMarkdownNode
+
+    # Test ohne Caption
+    pdf = PdfMarkdownNode(url="https://example.com/document.pdf")
+    expected = "[pdf](https://example.com/document.pdf)"
+    assert pdf.to_markdown() == expected
+
+    # Test mit Caption - NEUE SYNTAX: (caption:...)
+    pdf_with_caption = PdfMarkdownNode(
+        url="https://example.com/document.pdf", caption="Critical safety information"
+    )
+    expected = (
+        "[pdf](https://example.com/document.pdf)(caption:Critical safety information)"
+    )
+    assert pdf_with_caption.to_markdown() == expected

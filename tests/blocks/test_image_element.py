@@ -17,7 +17,7 @@ def test_match_markdown_valid():
     """Test recognition of valid image formats."""
     assert ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
     assert ImageElement.markdown_to_notion(
-        '[image](https://test.com/img.png "Caption")'
+        "[image](https://test.com/img.png)(caption:Caption)"
     )
     assert ImageElement.markdown_to_notion("[image](http://site.org/photo.gif)")
     assert ImageElement.markdown_to_notion("  [image](https://example.com/img.jpg)  ")
@@ -73,7 +73,7 @@ def test_markdown_to_notion_without_caption():
 def test_markdown_to_notion_with_caption():
     """Test conversion from markdown to Notion with caption."""
     result = ImageElement.markdown_to_notion(
-        '[image](https://example.com/pic.jpg "My Photo")'
+        "[image](https://example.com/pic.jpg)(caption:My Photo)"
     )
 
     assert result is not None
@@ -122,7 +122,7 @@ def test_notion_to_markdown_external_with_caption():
     block.image.caption = [caption_rt]
 
     result = ImageElement.notion_to_markdown(block)
-    assert result == '[image](https://example.com/photo.jpg "Beautiful sunset")'
+    assert result == "[image](https://example.com/photo.jpg)(caption:Beautiful sunset)"
 
 
 def test_notion_to_markdown_notion_hosted():
@@ -194,7 +194,7 @@ def test_pattern_matching():
 
     # Valid patterns
     assert pattern.match("[image](https://example.com/pic.jpg)")
-    assert pattern.match('[image](https://test.com/img.png "Caption")')
+    assert pattern.match("[image](https://test.com/img.png)(caption:Caption)")
 
     # Invalid patterns
     assert not pattern.match("[img](https://example.com/pic.jpg)")
@@ -206,7 +206,7 @@ def test_roundtrip_conversion():
     """Test that markdown -> notion -> markdown preserves content."""
     test_cases = [
         "[image](https://example.com/image.jpg)",
-        '[image](https://example.com/photo.png "Sunset")',
+        "[image](https://example.com/photo.png)(caption:Sunset)",
         "[image](http://site.org/diagram.gif)",
     ]
 
@@ -228,7 +228,9 @@ def test_roundtrip_conversion():
 
 def test_caption_with_special_characters():
     """Test captions with special characters."""
-    markdown = '[image](https://example.com/pic.jpg "Photo with ümlaut & emoji 🌅")'
+    markdown = (
+        "[image](https://example.com/pic.jpg)(caption:Photo with ümlaut & emoji 🌅)"
+    )
     result = ImageElement.markdown_to_notion(markdown)
 
     assert result is not None
@@ -252,4 +254,4 @@ def test_multiple_caption_parts():
     block.image.caption = [rt1, rt2]
 
     result = ImageElement.notion_to_markdown(block)
-    assert result == '[image](https://example.com/pic.jpg "Part 1 Part 2")'
+    assert result == "[image](https://example.com/pic.jpg)(caption:Part 1 Part 2)"
