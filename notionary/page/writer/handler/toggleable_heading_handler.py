@@ -44,9 +44,9 @@ class ToggleableHeadingHandler(LineHandler):
         if self._is_toggleable_heading_start(context):
             return await _handle(self._start_toggleable_heading)
         if self._is_toggleable_heading_end(context):
-            return _handle(self._finalize_toggleable_heading)
+            return await _handle(self._finalize_toggleable_heading)
         if self._is_toggleable_heading_content(context):
-            return _handle(self._add_toggleable_heading_content)
+            return await _handle(self._add_toggleable_heading_content)
 
     def _is_toggleable_heading_start(self, context: LineProcessingContext) -> bool:
         """Check if line starts a toggleable heading (+++# "Title")."""
@@ -96,16 +96,16 @@ class ToggleableHeadingHandler(LineHandler):
         line = context.line.strip()
         return not (self._start_pattern.match(line) or self._end_pattern.match(line))
 
-    def _add_toggleable_heading_content(self, context: LineProcessingContext) -> None:
+    async def _add_toggleable_heading_content(self, context: LineProcessingContext) -> None:
         """Add content to the current toggleable heading context."""
         context.parent_stack[-1].add_child_line(context.line)
 
-    def _finalize_toggleable_heading(self, context: LineProcessingContext) -> None:
+    async def _finalize_toggleable_heading(self, context: LineProcessingContext) -> None:
         """Finalize a toggleable heading block and add it to result_blocks."""
         heading_context = context.parent_stack.pop()
 
         if heading_context.has_children():
-            all_children = self._get_all_children(
+            all_children = await self._get_all_children(
                 heading_context, context.block_registry
             )
             self._assign_heading_children(heading_context.block, all_children)
@@ -123,7 +123,7 @@ class ToggleableHeadingHandler(LineHandler):
             # No parent, add to top level
             context.result_blocks.append(heading_context.block)
 
-    def _get_all_children(
+    async def _get_all_children(
         self, parent_context: ParentBlockContext, block_registry
     ) -> list:
         """Helper method to combine text-based and direct block children."""
@@ -132,7 +132,7 @@ class ToggleableHeadingHandler(LineHandler):
         # Process text lines
         if parent_context.child_lines:
             children_text = "\n".join(parent_context.child_lines)
-            text_blocks = self._convert_children_text(children_text, block_registry)
+            text_blocks = await self._convert_children_text(children_text, block_registry)
             children_blocks.extend(text_blocks)
 
         # Add direct blocks
@@ -154,7 +154,7 @@ class ToggleableHeadingHandler(LineHandler):
         elif block_type == BlockType.HEADING_3:
             parent_block.heading_3.children = children
 
-    def _convert_children_text(self, text: str, block_registry) -> list:
+    async def _convert_children_text(self, text: str, block_registry) -> list:
         """Convert children text to blocks."""
         from notionary.page.writer.markdown_to_notion_converter import (
             MarkdownToNotionConverter,
@@ -164,4 +164,4 @@ class ToggleableHeadingHandler(LineHandler):
             return []
 
         child_converter = MarkdownToNotionConverter(block_registry)
-        return child_converter._process_lines(text)
+        return await child_converter.process_lines(text)

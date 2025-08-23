@@ -33,7 +33,7 @@ class ColumnHandler(LineHandler):
             return
 
         if self._is_column_end(context):
-            self._finalize_column(context)
+            await self._finalize_column(context)
             self._mark_processed(context)
 
     def _is_column_start(self, context: LineProcessingContext) -> bool:
@@ -70,10 +70,10 @@ class ColumnHandler(LineHandler):
         )
         context.parent_stack.append(parent_context)
 
-    def _finalize_column(self, context: LineProcessingContext) -> None:
+    async def _finalize_column(self, context: LineProcessingContext) -> None:
         """Finalize a single column and add it to the column list or result."""
         column_context = context.parent_stack.pop()
-        self._assign_column_children_if_any(column_context, context)
+        await self._assign_column_children_if_any(column_context, context)
 
         if context.parent_stack:
             parent = context.parent_stack[-1]
@@ -87,7 +87,7 @@ class ColumnHandler(LineHandler):
         # Fallback: no parent or parent is not ColumnList
         context.result_blocks.append(column_context.block)
 
-    def _assign_column_children_if_any(
+    async def _assign_column_children_if_any(
         self, column_context: ParentBlockContext, context: LineProcessingContext
     ) -> None:
         """Collect and assign any children blocks inside this column."""
@@ -96,7 +96,7 @@ class ColumnHandler(LineHandler):
         # Process text lines
         if column_context.child_lines:
             children_text = "\n".join(column_context.child_lines)
-            text_blocks = self._convert_children_text(
+            text_blocks = await self._convert_children_text(
                 children_text, context.block_registry
             )
             all_children.extend(text_blocks)
@@ -123,7 +123,7 @@ class ColumnHandler(LineHandler):
         parent.block.column_list.children.append(column_context.block)
         return True
 
-    def _convert_children_text(self, text: str, block_registry) -> list:
+    async def _convert_children_text(self, text: str, block_registry) -> list:
         """Convert children text to blocks."""
         from notionary.page.writer.markdown_to_notion_converter import (
             MarkdownToNotionConverter,
@@ -133,7 +133,7 @@ class ColumnHandler(LineHandler):
             return []
 
         child_converter = MarkdownToNotionConverter(block_registry)
-        return child_converter._process_lines(text)
+        return await child_converter.process_lines(text)
 
     def _mark_processed(self, context: LineProcessingContext) -> None:
         """Mark context as processed and signal to continue."""

@@ -33,7 +33,7 @@ class ToggleHandler(LineHandler):
             context.should_continue = True
 
         if self._is_toggle_end(context):
-            self._finalize_toggle(context)
+            await self._finalize_toggle(context)
             context.was_processed = True
             context.should_continue = True
 
@@ -88,12 +88,12 @@ class ToggleHandler(LineHandler):
         )
         context.parent_stack.append(parent_context)
 
-    def _finalize_toggle(self, context: LineProcessingContext) -> None:
+    async def _finalize_toggle(self, context: LineProcessingContext) -> None:
         """Finalize a toggle block and add it to result_blocks."""
         toggle_context = context.parent_stack.pop()
 
         if toggle_context.has_children():
-            all_children = self._get_all_children(
+            all_children = await self._get_all_children(
                 toggle_context, context.block_registry
             )
             toggle_context.block.toggle.children = all_children
@@ -124,7 +124,7 @@ class ToggleHandler(LineHandler):
         """Add content to the current toggle context."""
         context.parent_stack[-1].add_child_line(context.line)
 
-    def _convert_children_text(self, text: str, block_registry) -> list:
+    async def _convert_children_text(self, text: str, block_registry) -> list:
         """Convert children text to blocks."""
         from notionary.page.writer.markdown_to_notion_converter import (
             MarkdownToNotionConverter,
@@ -134,16 +134,16 @@ class ToggleHandler(LineHandler):
             return []
 
         child_converter = MarkdownToNotionConverter(block_registry)
-        return child_converter._process_lines(text)
+        return await child_converter.process_lines(text)
 
-    def _get_all_children(self, parent_context, block_registry) -> list:
+    async def _get_all_children(self, parent_context, block_registry) -> list:
         """Helper method to combine text-based and direct block children."""
         children_blocks = []
 
         # Process text lines
         if parent_context.child_lines:
             children_text = "\n".join(parent_context.child_lines)
-            text_blocks = self._convert_children_text(children_text, block_registry)
+            text_blocks = await self._convert_children_text(children_text, block_registry)
             children_blocks.extend(text_blocks)
 
         # Add direct blocks (like processed columns)

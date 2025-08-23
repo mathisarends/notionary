@@ -28,9 +28,9 @@ class EquationHandler(LineHandler):
             return False
         return self._is_equation_start(context)
 
-    def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: LineProcessingContext) -> None:
         if self._is_equation_start(context):
-            self._process_complete_equation_block(context)
+            await self._process_complete_equation_block(context)
             self._mark_processed(context)
 
     def _is_equation_start(self, context: LineProcessingContext) -> bool:
@@ -41,7 +41,7 @@ class EquationHandler(LineHandler):
         """Check if we're currently inside any parent context (toggle, heading, etc.)."""
         return len(context.parent_stack) > 0
 
-    def _process_complete_equation_block(self, context: LineProcessingContext) -> None:
+    async def _process_complete_equation_block(self, context: LineProcessingContext) -> None:
         """Process the entire equation block in one go using EquationElement."""
         equation_lines, lines_to_consume = self._collect_equation_lines(context)
 

@@ -201,24 +201,25 @@ async def test_markdown_patterns(markdown, should_match):
         assert result is None
 
 
-def test_pattern_matching():
+@pytest.mark.asyncio
+async def test_pattern_matching():
     """Test that the element can handle various patterns."""
     # Valid patterns should work
     assert (
-        ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
+        await ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
         is not None
     )
     assert (
-        ImageElement.markdown_to_notion(
+        await ImageElement.markdown_to_notion(
             "[image](https://test.com/img.png)(caption:Caption)"
         )
         is not None
     )
 
     # Invalid patterns should not
-    assert ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)") is None
-    assert ImageElement.markdown_to_notion("[image](not-a-url)") is None
-    assert ImageElement.markdown_to_notion("[image]()") is None
+    assert await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)") is None
+    assert await ImageElement.markdown_to_notion("[image](not-a-url)") is None
+    assert await ImageElement.markdown_to_notion("[image]()") is None
 
 
 @pytest.mark.asyncio

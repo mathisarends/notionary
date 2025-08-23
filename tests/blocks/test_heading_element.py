@@ -8,6 +8,8 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.heading.heading_element import HeadingElement
+from notionary.blocks.types import BlockType
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.heading.heading_models import HeadingBlock
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.types import BlockType
@@ -91,7 +93,7 @@ async def test_notion_to_markdown():
     """Test conversion from Notion to markdown."""
     # Create mock block
     block = Mock()
-    block.type = "heading_2"
+    block.type = BlockType.HEADING_2
 
     # Mock heading content with real RichTextObject
     heading_content = Mock()

@@ -17,11 +17,11 @@ class TableHandler(LineHandler):
             return False
         return self._is_table_start(context)
 
-    def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: LineProcessingContext) -> None:
         if not self._is_table_start(context):
             return
 
-        self._process_complete_table(context)
+        await self._process_complete_table(context)
         context.was_processed = True
         context.should_continue = True
 
@@ -33,7 +33,7 @@ class TableHandler(LineHandler):
         """Check if this line starts a table."""
         return self._table_row_pattern.match(context.line.strip()) is not None
 
-    def _process_complete_table(self, context: LineProcessingContext) -> None:
+    async def _process_complete_table(self, context: LineProcessingContext) -> None:
         """Process the entire table in one go using TableElement."""
         # Collect all table lines (including the current one)
         table_lines = [context.line]
