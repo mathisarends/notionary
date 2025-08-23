@@ -63,13 +63,11 @@ class PdfElement(BaseBlockElement, CaptionMixin):
 
         pb: FileBlock = block.pdf
 
-        # Determine URL (only external and file types are valid for Markdown)
         if pb.type == FileType.EXTERNAL and pb.external:
             url = pb.external.url
         elif pb.type == FileType.FILE and pb.file:
             url = pb.file.url
         elif pb.type == FileType.FILE_UPLOAD:
-            # Uploaded PDF has no stable URL for Markdown
             return None
         else:
             return None

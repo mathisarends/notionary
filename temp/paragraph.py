@@ -28,7 +28,7 @@ async def main():
         (red_background:**Fett mit rotem Hintergrund**)
         Normale (green:grüne Farbe) im Text
         
-        Das ist eine page @page[Wissen & Notizen]
+        Das ist eine Datenbank @database[Wissen & Notizen]
 
         Das bin ich @user[Mathis Arends]
 

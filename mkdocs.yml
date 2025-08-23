@@ -22,6 +22,8 @@ theme:
 
 # Top-Level-Tabs (jede Gruppe hat ein eigenes index.md)
 nav:
+  - Home: index.md
+
   - Get Started:
       - Overview: get-started/index.md
       - Installation: get-started/installation.md
@@ -60,6 +62,12 @@ nav:
       - Media:
           - Image: blocks/image.md
           - Video: blocks/video.md
+      - Inline Formatting:
+          - Overview: blocks/inline_formatting/index.md
+          - Rich Text: blocks/inline_formatting/rich_text.md
+          - Mentions: blocks/inline_formatting/mentions.md
+          - Colors & Highlights: blocks/inline_formatting/colors_and_highlights.md
+          - Equations: blocks/inline_formatting/equations.md
 
   - Contributing:
       - Overview: contributing/index.md
