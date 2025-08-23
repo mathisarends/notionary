@@ -4,12 +4,10 @@ import logging
 from contextlib import contextmanager
 from typing import Optional
 
+from notionary.user.notion_user_manager import NotionUserManager
 from notionary.util import format_uuid
 from notionary.util.fuzzy import find_best_match
 
-
-# TODO: Implement users lookup here aswell and use in @TextInlineForatter
-# Write testst then
 class NameIdResolver:
     """
     Bidirectional resolver for Notion page and database names and IDs.
@@ -27,6 +25,7 @@ class NameIdResolver:
         from notionary import NotionWorkspace
 
         self.workspace = NotionWorkspace(token=token)
+        self.notion_user_manager = NotionUserManager(token=token)
         self.search_limit = search_limit
 
     async def resolve_id(self, name: str) -> Optional[str]:
@@ -52,46 +51,25 @@ class NameIdResolver:
         database_id = await self._resolve_database_id(cleaned_name)
         return database_id
 
-    async def resolve_name(self, id: str) -> Optional[str]:
+    async def resolve_page_id(self, name: str) -> Optional[str]:
         """
-        Convert a Notion page or database ID to its human-readable name.
-
-        Args:
-            id: Notion page or database ID to resolve
-
-        Returns:
-            Page or database title/name if found, None if not found or inaccessible
+        Convert a page name to its Notion page ID.
+        Specifically searches only pages, not databases.
         """
-        from notionary import NotionDatabase
-        from notionary import NotionPage
-
-        if not id:
+        if not name:
             return None
 
-        # Validate and format UUID
-        formatted_id = format_uuid(id)
-        if not formatted_id:
-            return None
+        cleaned_name = name.strip()
 
-        # Try page first (suppress expected validation error logs)
-        with self._suppress_expected_errors():
-            try:
-                page = await NotionPage.from_page_id(formatted_id)
-                return page.title
-            except Exception:
-                # Expected: ID might be a database, not a page
-                pass
+        # Return if already a valid Notion ID
+        formatted_uuid = format_uuid(cleaned_name)
+        if formatted_uuid:
+            return formatted_uuid
 
-        # Try database (suppress expected validation error logs)
-        with self._suppress_expected_errors():
-            try:
-                database = await NotionDatabase.from_database_id(formatted_id)
-                return database.title
-            except Exception:
-                # Expected: ID might not exist or be inaccessible
-                return None
+        # Search for page by name
+        return await self._resolve_page_id(cleaned_name)
 
-    async def resolve_database_name(self, name: str) -> Optional[str]:
+    async def resolve_database_id(self, name: str) -> Optional[str]:
         """
         Convert a database name to its Notion database ID.
         Specifically searches only databases, not pages.
@@ -101,13 +79,128 @@ class NameIdResolver:
 
         cleaned_name = name.strip()
 
-        # Return if already a valid Notion ID (handles both UUID formats)
+        # Return if already a valid Notion ID
         formatted_uuid = format_uuid(cleaned_name)
         if formatted_uuid:
             return formatted_uuid
 
-        # Search specifically for databases only
+        # Search for database by name
         return await self._resolve_database_id(cleaned_name)
+
+    async def resolve_page_name(self, page_id: str) -> Optional[str]:
+        """
+        Convert a Notion page ID to its human-readable title.
+
+        Args:
+            page_id: Notion page ID to resolve
+
+        Returns:
+            Page title if found, None if not found or inaccessible
+        """
+        if not page_id:
+            return None
+
+        formatted_id = format_uuid(page_id)
+        if not formatted_id:
+            return None
+
+        with self._suppress_expected_errors():
+            try:
+                from notionary import NotionPage
+                page = await NotionPage.from_page_id(formatted_id)
+                return page.title if page else None
+            except Exception:
+                return None
+
+    async def resolve_database_name(self, database_id: str) -> Optional[str]:
+        """
+        Convert a Notion database ID to its human-readable title.
+
+        Args:
+            database_id: Notion database ID to resolve
+
+        Returns:
+            Database title if found, None if not found or inaccessible
+        """
+        if not database_id:
+            return None
+
+        # Validate and format UUID
+        formatted_id = format_uuid(database_id)
+        if not formatted_id:
+            return None
+
+        # Try to get database title
+        with self._suppress_expected_errors():
+            try:
+                from notionary.database import NotionDatabase
+                database = await NotionDatabase.from_database_id(formatted_id)
+                return database.title if database else None
+            except Exception:
+                return None
+
+    async def resolve_user_id(self, name: str) -> Optional[str]:
+        """
+        Convert a user name to its Notion user ID.
+        Specifically searches only users.
+        """
+        if not name:
+            return None
+
+        cleaned_name = name.strip()
+
+        # Return if already a valid Notion ID
+        formatted_uuid = format_uuid(cleaned_name)
+        if formatted_uuid:
+            return formatted_uuid
+
+        # Search for user by name
+        return await self._resolve_user_id(cleaned_name)
+
+    async def resolve_user_name(self, user_id: str) -> Optional[str]:
+        """
+        Convert a Notion user ID to its human-readable name.
+
+        Args:
+            user_id: Notion user ID to resolve
+
+        Returns:
+            User name if found, None if not found or inaccessible
+        """
+        if not user_id:
+            return None
+
+        # Validate and format UUID
+        formatted_id = format_uuid(user_id)
+        if not formatted_id:
+            return None
+
+        # Try to get user
+        with self._suppress_expected_errors():
+            try:
+                user = await self.notion_user_manager.get_user_by_id(formatted_id)
+                return user.name if user else None
+            except Exception:
+                return None
+
+    async def _resolve_user_id(self, name: str) -> Optional[str]:
+        """Search for users matching the name."""
+        try:
+            users = await self.notion_user_manager.find_users_by_name(name)
+            
+            if not users:
+                return None
+            
+            # Use fuzzy matching to find best match
+            best_match = find_best_match(
+                query=name,
+                items=users,
+                text_extractor=lambda user: user.name or "",
+            )
+            
+            return best_match.item.id if best_match else None
+        except Exception:
+            return None
 
     @contextmanager
     def _suppress_expected_errors(self):

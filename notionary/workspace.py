@@ -71,16 +71,6 @@ class NotionWorkspace(LoggingMixin):
             for database in database_results.results
         ]
 
-    # User-related methods (limited due to API constraints)
-    async def get_current_bot_user(self) -> Optional[NotionUser]:
-        """
-        Get the current bot user from the API token.
-
-        Returns:
-            Optional[NotionUser]: Current bot user or None if failed
-        """
-        return await self.user_manager.get_current_bot_user()
-
     async def get_user_by_id(self, user_id: str) -> Optional[NotionUser]:
         """
         Get a specific user by their ID.
@@ -92,14 +82,3 @@ class NotionWorkspace(LoggingMixin):
             Optional[NotionUser]: The user or None if not found/failed
         """
         return await self.user_manager.get_user_by_id(user_id)
-
-    async def get_workspace_info(self) -> Optional[dict]:
-        """
-        Get available workspace information including bot details.
-
-        Returns:
-            Optional[dict]: Workspace information or None if failed to get bot user
-        """
-        return await self.user_manager.get_workspace_info()
-
-    # TODO: Create database would be nice here

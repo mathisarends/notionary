@@ -29,7 +29,9 @@ async def main():
         Normale (green:grüne Farbe) im Text
         
         Das ist eine page @page[Wissen & Notizen]
-        
+
+        Das bin ich @user[Mathis Arends]
+
         ---
         
         1. this is a test

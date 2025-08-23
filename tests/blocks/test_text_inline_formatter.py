@@ -171,6 +171,17 @@ class TestTextInlineFormatterMentions:
         assert result[0].type == RichTextType.MENTION
         assert result[0].mention.database.id == db_id
 
+    @pytest.mark.asyncio
+    async def test_user_mention(self):
+        """Test user mention parsing using the explicit @user[] syntax."""
+        user_id = "333e4567-e89b-12d3-a456-426614174222"
+        result = await TextInlineFormatter.parse_inline_formatting(
+            f"@user[{user_id}]"
+        )
+        assert len(result) == 1
+        assert result[0].type == RichTextType.MENTION
+        assert result[0].mention.user.id == user_id
+
 
 class TestTextInlineFormatterComplex:
     """Test complex mixed formatting."""

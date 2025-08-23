@@ -1,11 +1,13 @@
 import re
-from typing import Optional, Match, Union, List
+from typing import Optional, Match, List
 
 from notionary.blocks.rich_text.rich_text_models import (
     RichTextObject,
     RichTextType,
     MentionType,
     TemplateMentionType,
+    MentionDate,
+    MentionTemplateMention,
 )
 from notionary.blocks.types import BlockColor
 from notionary.blocks.rich_text.name_to_id_resolver import NameIdResolver
@@ -75,6 +77,7 @@ class TextInlineFormatter:
         COLOR = r"\((\w+):(.+?)\)"  # (blue:colored text) or (blue_background:text)
         PAGE_MENTION = r"@page\[([^\]]+)\]"  # Matches both IDs and names
         DATABASE_MENTION = r"@database\[([^\]]+)\]"  # Matches both IDs and names
+        USER_MENTION = r"@user\[([^\]]+)\]"  # Matches both IDs and names
 
     # Pattern to handler mapping - cleaner approach
     @classmethod
@@ -92,6 +95,7 @@ class TextInlineFormatter:
             (cls.Patterns.COLOR, cls._handle_color_pattern),
             (cls.Patterns.PAGE_MENTION, cls._handle_page_mention_pattern),
             (cls.Patterns.DATABASE_MENTION, cls._handle_database_mention_pattern),
+            (cls.Patterns.USER_MENTION, cls._handle_user_mention_pattern),
         ]
 
     VALID_COLORS = {color.value for color in BlockColor}
@@ -142,6 +146,7 @@ class TextInlineFormatter:
             if handler_name in [
                 cls._handle_page_mention_pattern,
                 cls._handle_database_mention_pattern,
+                cls._handle_user_mention_pattern,
                 cls._handle_color_pattern,  # Color pattern also needs async for recursive parsing
             ]:
                 result = await handler_name(match)
@@ -247,30 +252,42 @@ class TextInlineFormatter:
         """Handle page mentions: @page[page-id-or-name]"""
         page_identifier = match.group(1)
 
-        # Check if it's already a valid UUID
         resolver = cls.get_resolver()
-        page_id = await resolver.resolve_id(page_identifier)
+        page_id = await resolver.resolve_page_id(page_identifier)
 
         if page_id:
             return RichTextObject.mention_page(page_id)
         else:
             # If resolution fails, treat as plain text
-            return RichTextObject.from_plain_text(f"@page[{page_identifier}]")
+            return RichTextObject.for_caption(f"@page[{page_identifier}]")
 
     @classmethod
     async def _handle_database_mention_pattern(cls, match: Match) -> RichTextObject:
         """Handle database mentions: @database[database-id-or-name]"""
         database_identifier = match.group(1)
 
-        # Check if it's already a valid UUID
         resolver = cls.get_resolver()
-        database_id = await resolver.resolve_database_name(database_identifier)
+        database_id = await resolver.resolve_database_id(database_identifier)
 
         if database_id:
             return RichTextObject.mention_database(database_id)
         else:
             # If resolution fails, treat as plain text
-            return RichTextObject.from_plain_text(f"@database[{database_identifier}]")
+            return RichTextObject.for_caption(f"@database[{database_identifier}]")
+
+    @classmethod
+    async def _handle_user_mention_pattern(cls, match: Match) -> RichTextObject:
+        """Handle user mentions: @user[user-id-or-name]"""
+        user_identifier = match.group(1)
+
+        resolver = cls.get_resolver()
+        user_id = await resolver.resolve_user_id(user_identifier)
+
+        if user_id:
+            return RichTextObject.mention_user(user_id)
+        else:
+            # If resolution fails, treat as plain text
+            return RichTextObject.for_caption(f"@user[{user_identifier}]")
 
     @classmethod
     async def extract_text_with_formatting(cls, rich_text: list[RichTextObject]) -> str:
@@ -310,39 +327,66 @@ class TextInlineFormatter:
             return None
 
         mention = obj.mention
-        resolver = cls.get_resolver()
-
+        
+        # Handle different mention types
         if mention.type == MentionType.PAGE and mention.page:
-            # Resolve ID to human-readable name
-            page_name = await resolver.resolve_name(mention.page.id)
-            return f"@page[{page_name or mention.page.id}]"
-
+            return await cls._extract_page_mention_markdown(mention.page.id)
+        
         if mention.type == MentionType.DATABASE and mention.database:
-            # Resolve ID to human-readable name
-            database_name = await resolver.resolve_name(mention.database.id)
-            return f"@database[{database_name or mention.database.id}]"
-
+            return await cls._extract_database_mention_markdown(mention.database.id)
+        
         if mention.type == MentionType.USER and mention.user:
-            return f"@user({mention.user.id})"
-
+            return await cls._extract_user_mention_markdown(mention.user.id)
+        
         if mention.type == MentionType.DATE and mention.date:
-            date_range = mention.date.start
-            if mention.date.end:
-                date_range += f"–{mention.date.end}"
-            return date_range
-
+            return cls._extract_date_mention_markdown(mention.date)
+        
         if mention.type == MentionType.TEMPLATE_MENTION and mention.template_mention:
-            template_type = mention.template_mention.type
-            return (
-                "@template_user"
-                if template_type == TemplateMentionType.USER
-                else "@template_date"
-            )
-
+            return cls._extract_template_mention_markdown(mention.template_mention)
+        
         if mention.type == MentionType.LINK_PREVIEW and mention.link_preview:
             return f"[{obj.plain_text}]({mention.link_preview.url})"
 
         return None
+
+    @classmethod
+    async def _extract_page_mention_markdown(cls, page_id: str) -> str:
+        """Extract page mention to markdown format."""
+        resolver = cls.get_resolver()
+        page_name = await resolver.resolve_page_name(page_id)
+        return f"@page[{page_name or page_id}]"
+
+    @classmethod
+    async def _extract_database_mention_markdown(cls, database_id: str) -> str:
+        """Extract database mention to markdown format."""
+        resolver = cls.get_resolver()
+        database_name = await resolver.resolve_database_name(database_id)
+        return f"@database[{database_name or database_id}]"
+
+    @classmethod
+    async def _extract_user_mention_markdown(cls, user_id: str) -> str:
+        """Extract user mention to markdown format."""
+        resolver = cls.get_resolver()
+        user_name = await resolver.resolve_user_name(user_id)
+        return f"@user[{user_name or user_id}]"
+
+    @classmethod
+    def _extract_date_mention_markdown(cls, date_mention: MentionDate) -> str:
+        """Extract date mention to markdown format."""
+        date_range = date_mention.start
+        if date_mention.end:
+            date_range += f"–{date_mention.end}"
+        return date_range
+
+    @classmethod
+    def _extract_template_mention_markdown(cls, template_mention: MentionTemplateMention) -> str:
+        """Extract template mention to markdown format."""
+        template_type = template_mention.type
+        return (
+            "@template_user"
+            if template_type == TemplateMentionType.USER
+            else "@template_date"
+        )
 
     @classmethod
     def _apply_text_formatting_to_content(
