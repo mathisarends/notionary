@@ -77,7 +77,7 @@ class PdfElement(BaseBlockElement, CaptionMixin):
         result = f"[pdf]({url})"
 
         # Add caption if present
-        caption_markdown = cls.format_caption_for_markdown(pb.caption or [])
+        caption_markdown = await cls.format_caption_for_markdown(pb.caption or [])
         if caption_markdown:
             result += caption_markdown
 

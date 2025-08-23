@@ -39,7 +39,7 @@ class QuoteElement(BaseBlockElement):
             return None
 
         # Parse inline formatting into rich text objects
-        rich_text = TextInlineFormatter.parse_inline_formatting(content)
+        rich_text = await TextInlineFormatter.parse_inline_formatting(content)
 
         # Return a typed QuoteBlock
         quote_content = QuoteBlock(rich_text=rich_text, color=BlockColor.DEFAULT)
@@ -51,7 +51,7 @@ class QuoteElement(BaseBlockElement):
             return None
 
         rich = block.quote.rich_text
-        text = TextInlineFormatter.extract_text_with_formatting(rich)
+        text = await TextInlineFormatter.extract_text_with_formatting(rich)
 
         if not text.strip():
             return None

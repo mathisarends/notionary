@@ -56,7 +56,9 @@ class TableElement(BaseBlockElement):
         return CreateTableBlock(table=table_block)
 
     @classmethod
-    def create_from_markdown_table(cls, table_lines: list[str]) -> BlockCreateResult:
+    async def create_from_markdown_table(
+        cls, table_lines: list[str]
+    ) -> BlockCreateResult:
         """
         Create a complete table block from markdown table lines.
         """
@@ -78,7 +80,7 @@ class TableElement(BaseBlockElement):
         col_count = len(header_cells)
 
         # Process all table lines
-        table_rows, separator_found = cls._process_table_lines(table_lines)
+        table_rows, separator_found = await cls._process_table_lines(table_lines)
 
         # Create complete TableBlock
         table_block = TableBlock(
@@ -91,7 +93,7 @@ class TableElement(BaseBlockElement):
         return CreateTableBlock(table=table_block)
 
     @classmethod
-    def _process_table_lines(
+    async def _process_table_lines(
         cls, table_lines: list[str]
     ) -> tuple[list[CreateTableRowBlock], bool]:
         """Process all table lines and return rows and separator status."""
@@ -108,7 +110,7 @@ class TableElement(BaseBlockElement):
                 continue
 
             if cls.ROW_PATTERN.match(line):
-                table_row = cls._create_table_row_from_line(line)
+                table_row = await cls._create_table_row_from_line(line)
                 table_rows.append(table_row)
 
         return table_rows, separator_found
@@ -119,17 +121,20 @@ class TableElement(BaseBlockElement):
         return cls.SEPARATOR_PATTERN.match(line) is not None
 
     @classmethod
-    def _create_table_row_from_line(cls, line: str) -> CreateTableRowBlock:
+    async def _create_table_row_from_line(cls, line: str) -> CreateTableRowBlock:
         """Create a table row block from a markdown line."""
         cells = cls._parse_table_row(line)
-        rich_text_cells = [cls._convert_cell_to_rich_text(cell) for cell in cells]
+        rich_text_cells = []
+        for cell in cells:
+            rich_text_cell = await cls._convert_cell_to_rich_text(cell)
+            rich_text_cells.append(rich_text_cell)
         table_row = TableRowBlock(cells=rich_text_cells)
         return CreateTableRowBlock(table_row=table_row)
 
     @classmethod
-    def _convert_cell_to_rich_text(cls, cell: str) -> list[RichTextObject]:
+    async def _convert_cell_to_rich_text(cls, cell: str) -> list[RichTextObject]:
         """Convert cell text to rich text objects."""
-        rich_text = TextInlineFormatter.parse_inline_formatting(cell)
+        rich_text = await TextInlineFormatter.parse_inline_formatting(cell)
         if not rich_text:
             rich_text = [RichTextObject.from_plain_text(cell)]
         return rich_text
@@ -175,7 +180,7 @@ class TableElement(BaseBlockElement):
 
             row_cells = []
             for cell in cells:
-                cell_text = TextInlineFormatter.extract_text_with_formatting(cell)
+                cell_text = await TextInlineFormatter.extract_text_with_formatting(cell)
                 row_cells.append(cell_text or "")
 
             row = "| " + " | ".join(row_cells) + " |"

@@ -70,10 +70,16 @@ class EmbedElement(BaseBlockElement):
         if not fo.caption:
             return f"[embed]({url})"
 
-        text = "".join(
-            rt.plain_text or TextInlineFormatter.extract_text_with_formatting([rt])
-            for rt in fo.caption
-        )
+        text_parts = []
+        for rt in fo.caption:
+            if rt.plain_text:
+                text_parts.append(rt.plain_text)
+            else:
+                formatted_text = await TextInlineFormatter.extract_text_with_formatting(
+                    [rt]
+                )
+                text_parts.append(formatted_text)
+        text = "".join(text_parts)
 
         return f'[embed]({url} "{text}")'
 

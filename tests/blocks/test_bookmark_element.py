@@ -6,6 +6,7 @@ Updated to match the actual implementation with new caption mixin syntax.
 from unittest.mock import Mock
 
 import pytest
+import pytest_asyncio
 
 from notionary.blocks.bookmark.bookmark_element import BookmarkElement
 from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
@@ -80,7 +81,7 @@ async def test_markdown_to_notion_with_title():
     # Wir testen den Text-Inhalt über extract_text_with_formatting
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-    text = TextInlineFormatter.extract_text_with_formatting(result.bookmark.caption)
+    text = await TextInlineFormatter.extract_text_with_formatting(result.bookmark.caption)
     assert "Beispiel-Titel" in text
 
 
@@ -98,7 +99,7 @@ async def test_markdown_to_notion_with_title_and_description():
     # Caption sollte "Beispiel-Titel – Eine Beschreibung" enthalten (em dash)
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-    caption_text = TextInlineFormatter.extract_text_with_formatting(
+    caption_text = await TextInlineFormatter.extract_text_with_formatting(
         result.bookmark.caption
     )
     assert caption_text == "Beispiel-Titel – Eine Beschreibung"
@@ -136,7 +137,7 @@ async def test_notion_to_markdown_with_title():
     # Verwende TextInlineFormatter um korrekte RichText-Struktur zu erstellen
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-    caption = TextInlineFormatter.parse_inline_formatting("Beispiel-Titel")
+    caption = await TextInlineFormatter.parse_inline_formatting("Beispiel-Titel")
 
     bookmark_data = BookmarkBlock(url="https://example.com", caption=caption)
 
@@ -154,7 +155,7 @@ async def test_notion_to_markdown_with_title_and_description():
     # Verwende TextInlineFormatter mit hyphen für korrekte Trennung
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-    caption = TextInlineFormatter.parse_inline_formatting(
+    caption = await TextInlineFormatter.parse_inline_formatting(
         "Beispiel-Titel - Eine Beschreibung"
     )
 
@@ -235,12 +236,12 @@ def simple_bookmark_block():
     return block
 
 
-@pytest.fixture
-def titled_bookmark_block():
+@pytest_asyncio.fixture
+async def titled_bookmark_block():
     """Fixture für Bookmark-Block mit Titel."""
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-    caption = TextInlineFormatter.parse_inline_formatting("Test Title")
+    caption = await TextInlineFormatter.parse_inline_formatting("Test Title")
 
     bookmark_data = BookmarkBlock(url="https://example.com", caption=caption)
 
@@ -375,13 +376,13 @@ async def test_caption_separator_behavior():
 
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-    caption_text = TextInlineFormatter.extract_text_with_formatting(
+    caption_text = await TextInlineFormatter.extract_text_with_formatting(
         result_hyphen.bookmark.caption
     )
     assert caption_text == "Title – Description"  # em dash in output
 
     # Test parsing with hyphen
-    hyphen_caption = TextInlineFormatter.parse_inline_formatting("Title - Description")
+    hyphen_caption = await TextInlineFormatter.parse_inline_formatting("Title - Description")
     bookmark_data = BookmarkBlock(url="https://example.com", caption=hyphen_caption)
 
     block = Mock()

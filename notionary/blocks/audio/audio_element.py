@@ -89,7 +89,7 @@ class AudioElement(BaseBlockElement, CaptionMixin):
         result = f"[audio]({url})"
 
         # Add caption if present
-        caption_markdown = cls.format_caption_for_markdown(audio.caption or [])
+        caption_markdown = await cls.format_caption_for_markdown(audio.caption or [])
         if caption_markdown:
             result += caption_markdown
 

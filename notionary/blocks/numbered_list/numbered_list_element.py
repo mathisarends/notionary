@@ -31,7 +31,7 @@ class NumberedListElement(BaseBlockElement):
             return None
 
         content = match.group(2)
-        rich_text = TextInlineFormatter.parse_inline_formatting(content)
+        rich_text = await TextInlineFormatter.parse_inline_formatting(content)
 
         numbered_list_content = NumberedListItemBlock(
             rich_text=rich_text, color=BlockColor.DEFAULT
@@ -45,7 +45,7 @@ class NumberedListElement(BaseBlockElement):
             return None
 
         rich = block.numbered_list_item.rich_text
-        content = TextInlineFormatter.extract_text_with_formatting(rich)
+        content = await TextInlineFormatter.extract_text_with_formatting(rich)
         return f"1. {content}"
 
     @classmethod

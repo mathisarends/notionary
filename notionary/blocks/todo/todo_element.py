@@ -44,7 +44,7 @@ class TodoElement(BaseBlockElement):
             return None
 
         # build rich text
-        rich = TextInlineFormatter.parse_inline_formatting(content)
+        rich = await TextInlineFormatter.parse_inline_formatting(content)
 
         todo_content = ToDoBlock(
             rich_text=rich,
@@ -60,7 +60,7 @@ class TodoElement(BaseBlockElement):
             return None
 
         td = block.to_do
-        content = TextInlineFormatter.extract_text_with_formatting(td.rich_text)
+        content = await TextInlineFormatter.extract_text_with_formatting(td.rich_text)
         checkbox = "[x]" if td.checked else "[ ]"
         return f"- {checkbox} {content}"
 

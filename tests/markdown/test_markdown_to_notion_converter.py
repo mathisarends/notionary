@@ -278,7 +278,9 @@ if response.status_code == 200:
             ), f"Es sollten {expected_columns} Spalten sein, aber {actual_columns} gefunden"
 
     @pytest.mark.asyncio
-    async def test_specific_block_content_validation(self, converter, generated_markdown):
+    async def test_specific_block_content_validation(
+        self, converter, generated_markdown
+    ):
         """
         Detailliertere Validierung spezifischer Block-Inhalte.
         """

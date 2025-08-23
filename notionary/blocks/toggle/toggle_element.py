@@ -37,7 +37,7 @@ class ToggleElement(BaseBlockElement):
             return None
 
         title = match.group(1).strip()
-        rich_text = TextInlineFormatter.parse_inline_formatting(title)
+        rich_text = await TextInlineFormatter.parse_inline_formatting(title)
 
         # Create toggle block with empty children - they will be populated automatically
         toggle_content = ToggleBlock(

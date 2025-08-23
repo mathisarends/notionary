@@ -16,15 +16,21 @@ from notionary.blocks.video.video_element_models import CreateVideoBlock
 @pytest.mark.asyncio
 async def test_match_markdown_valid():
     """Test recognition of valid video formats."""
-    assert await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
+    assert await VideoElement.markdown_to_notion(
+        "[video](https://example.com/video.mp4)"
+    )
     assert await VideoElement.markdown_to_notion(
         "[video](https://example.com/video.mp4)(caption:Caption)"
     )
-    assert await VideoElement.markdown_to_notion("[video](https://youtu.be/dQw4w9WgXcQ)")
+    assert await VideoElement.markdown_to_notion(
+        "[video](https://youtu.be/dQw4w9WgXcQ)"
+    )
     assert await VideoElement.markdown_to_notion(
         "[video](https://youtube.com/watch?v=dQw4w9WgXcQ)"
     )
-    assert await VideoElement.markdown_to_notion("  [video](https://example.com/video.mov)  ")
+    assert await VideoElement.markdown_to_notion(
+        "  [video](https://example.com/video.mov)  "
+    )
 
 
 @pytest.mark.asyncio
@@ -73,7 +79,9 @@ def test_match_notion_invalid():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_basic():
     """Test conversion from markdown to Notion."""
-    result = await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
+    result = await VideoElement.markdown_to_notion(
+        "[video](https://example.com/video.mp4)"
+    )
 
     assert result is not None
     assert isinstance(result, CreateVideoBlock)
@@ -95,7 +103,9 @@ async def test_markdown_to_notion_with_caption():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_without_caption():
     """Test conversion without caption."""
-    result = await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
+    result = await VideoElement.markdown_to_notion(
+        "[video](https://example.com/video.mp4)"
+    )
 
     assert result is not None
     video_block = result
@@ -232,7 +242,9 @@ async def test_video_file_extensions():
 @pytest.mark.asyncio
 async def test_whitespace_handling():
     """Test handling of whitespace."""
-    assert await VideoElement.markdown_to_notion("  [video](https://example.com/video.mp4)  ")
+    assert await VideoElement.markdown_to_notion(
+        "  [video](https://example.com/video.mp4)  "
+    )
 
     result = await VideoElement.markdown_to_notion(
         "  [video](https://example.com/video.mp4)  "

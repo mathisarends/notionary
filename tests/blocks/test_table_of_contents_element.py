@@ -44,13 +44,17 @@ async def test_match_markdown_valid_with_color():
     assert await TableOfContentsElement.markdown_to_notion("[toc](gray)")
     assert await TableOfContentsElement.markdown_to_notion("[toc](blue_background)")
     assert await TableOfContentsElement.markdown_to_notion("[toc](red_background)")
-    assert await TableOfContentsElement.markdown_to_notion("[TOC](BLUE)")  # Case insensitive
+    assert await TableOfContentsElement.markdown_to_notion(
+        "[TOC](BLUE)"
+    )  # Case insensitive
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not await TableOfContentsElement.markdown_to_notion("toc")  # Missing brackets
+    assert not await TableOfContentsElement.markdown_to_notion(
+        "toc"
+    )  # Missing brackets
     assert not await TableOfContentsElement.markdown_to_notion(
         "[toc"
     )  # Missing closing bracket
@@ -60,7 +64,9 @@ async def test_match_markdown_invalid():
     assert not await TableOfContentsElement.markdown_to_notion(
         "[table_of_contents]"
     )  # Wrong name
-    assert not await TableOfContentsElement.markdown_to_notion("[toc]()")  # Empty parentheses
+    assert not await TableOfContentsElement.markdown_to_notion(
+        "[toc]()"
+    )  # Empty parentheses
     assert not await TableOfContentsElement.markdown_to_notion(
         "[breadcrumb]"
     )  # Different element
@@ -135,7 +141,9 @@ async def test_markdown_to_notion_case_insensitive():
 async def test_markdown_to_notion_invalid():
     """Test that invalid markdown returns None."""
     assert await TableOfContentsElement.markdown_to_notion("toc") is None
-    assert await TableOfContentsElement.markdown_to_notion("[table_of_contents]") is None
+    assert (
+        await TableOfContentsElement.markdown_to_notion("[table_of_contents]") is None
+    )
     assert await TableOfContentsElement.markdown_to_notion("[breadcrumb]") is None
     assert await TableOfContentsElement.markdown_to_notion("") is None
 

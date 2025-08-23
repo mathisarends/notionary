@@ -56,7 +56,7 @@ class CalloutElement(BaseBlockElement):
         if not emoji:
             emoji = cls.DEFAULT_EMOJI
 
-        rich_text = TextInlineFormatter.parse_inline_formatting(content.strip())
+        rich_text = await TextInlineFormatter.parse_inline_formatting(content.strip())
 
         callout_content = CalloutBlock(
             rich_text=rich_text,
@@ -72,7 +72,7 @@ class CalloutElement(BaseBlockElement):
 
         data = block.callout
 
-        content = TextInlineFormatter.extract_text_with_formatting(data.rich_text)
+        content = await TextInlineFormatter.extract_text_with_formatting(data.rich_text)
         if not content:
             return None
 

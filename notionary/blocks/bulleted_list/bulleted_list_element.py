@@ -36,7 +36,7 @@ class BulletedListElement(BaseBlockElement):
         content = match.group(2)
 
         # Parse inline markdown formatting into RichTextObject list
-        rich_text = TextInlineFormatter.parse_inline_formatting(content)
+        rich_text = await TextInlineFormatter.parse_inline_formatting(content)
 
         # Return a properly typed Notion block
         bulleted_list_content = BulletedListItemBlock(
@@ -54,7 +54,7 @@ class BulletedListElement(BaseBlockElement):
         if not rich_list:
             return "-"
 
-        text = TextInlineFormatter.extract_text_with_formatting(rich_list)
+        text = await TextInlineFormatter.extract_text_with_formatting(rich_list)
         return f"- {text}"
 
     @classmethod

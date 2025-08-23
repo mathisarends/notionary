@@ -46,7 +46,9 @@ async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
     assert await EquationElement.markdown_to_notion("$E = mc^2$") is None  # Single $
     assert await EquationElement.markdown_to_notion("$$$$") is None  # Empty
-    assert await EquationElement.markdown_to_notion("$$   $$") is None  # Only whitespace
+    assert (
+        await EquationElement.markdown_to_notion("$$   $$") is None
+    )  # Only whitespace
     assert await EquationElement.markdown_to_notion("E = mc^2") is None  # No $$
     assert await EquationElement.markdown_to_notion("") is None  # Empty string
 

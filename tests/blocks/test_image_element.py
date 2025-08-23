@@ -21,7 +21,9 @@ async def test_match_markdown_valid():
         "[image](https://test.com/img.png)(caption:Caption)"
     )
     assert await ImageElement.markdown_to_notion("[image](http://site.org/photo.gif)")
-    assert await ImageElement.markdown_to_notion("  [image](https://example.com/img.jpg)  ")
+    assert await ImageElement.markdown_to_notion(
+        "  [image](https://example.com/img.jpg)  "
+    )
 
 
 @pytest.mark.asyncio
@@ -30,7 +32,9 @@ async def test_match_markdown_invalid():
     assert not await ImageElement.markdown_to_notion(
         "[img](https://example.com/pic.jpg)"
     )  # Wrong prefix
-    assert not await ImageElement.markdown_to_notion("[image](not-a-url)")  # Invalid URL
+    assert not await ImageElement.markdown_to_notion(
+        "[image](not-a-url)"
+    )  # Invalid URL
     assert not await ImageElement.markdown_to_notion("[image]()")  # Empty URL
     assert await ImageElement.markdown_to_notion("Regular text") is None
     assert await ImageElement.markdown_to_notion("") is None
@@ -60,7 +64,9 @@ def test_match_notion():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_without_caption():
     """Test conversion from markdown to Notion without caption."""
-    result = await ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
+    result = await ImageElement.markdown_to_notion(
+        "[image](https://example.com/pic.jpg)"
+    )
 
     assert result is not None
 
@@ -92,7 +98,10 @@ async def test_markdown_to_notion_with_caption():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_invalid():
     """Test invalid markdown returns None."""
-    assert await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)") is None
+    assert (
+        await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)")
+        is None
+    )
     assert await ImageElement.markdown_to_notion("[image]()") is None
     assert await ImageElement.markdown_to_notion("text") is None
 
@@ -217,7 +226,10 @@ async def test_pattern_matching():
     )
 
     # Invalid patterns should not
-    assert await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)") is None
+    assert (
+        await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)")
+        is None
+    )
     assert await ImageElement.markdown_to_notion("[image](not-a-url)") is None
     assert await ImageElement.markdown_to_notion("[image]()") is None
 

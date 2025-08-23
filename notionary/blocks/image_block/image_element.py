@@ -69,7 +69,7 @@ class ImageElement(BaseBlockElement, CaptionMixin):
         result = f"[image]({url})"
 
         # Add caption if present
-        caption_markdown = cls.format_caption_for_markdown(fo.caption or [])
+        caption_markdown = await cls.format_caption_for_markdown(fo.caption or [])
         if caption_markdown:
             result += caption_markdown
 

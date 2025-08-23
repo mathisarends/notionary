@@ -31,23 +31,33 @@ def create_block_with_required_fields(**kwargs) -> Block:
 async def test_match_markdown_valid():
     """Test recognition of valid breadcrumb syntax."""
     assert await BreadcrumbElement.markdown_to_notion("[breadcrumb]") is not None
-    assert await BreadcrumbElement.markdown_to_notion("[BREADCRUMB]")  # Case insensitive
+    assert await BreadcrumbElement.markdown_to_notion(
+        "[BREADCRUMB]"
+    )  # Case insensitive
     assert await BreadcrumbElement.markdown_to_notion("  [breadcrumb]  ")  # With spaces
-    assert await BreadcrumbElement.markdown_to_notion("\t[breadcrumb]\n")  # With whitespace
+    assert await BreadcrumbElement.markdown_to_notion(
+        "\t[breadcrumb]\n"
+    )  # With whitespace
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not await BreadcrumbElement.markdown_to_notion("breadcrumb")  # Missing brackets
+    assert not await BreadcrumbElement.markdown_to_notion(
+        "breadcrumb"
+    )  # Missing brackets
     assert not await BreadcrumbElement.markdown_to_notion(
         "[breadcrumb"
     )  # Missing closing bracket
     assert not await BreadcrumbElement.markdown_to_notion(
         "breadcrumb]"
     )  # Missing opening bracket
-    assert not await BreadcrumbElement.markdown_to_notion("[bread crumb]")  # Space in name
-    assert not await BreadcrumbElement.markdown_to_notion("[breadcrumbs]")  # Wrong plural
+    assert not await BreadcrumbElement.markdown_to_notion(
+        "[bread crumb]"
+    )  # Space in name
+    assert not await BreadcrumbElement.markdown_to_notion(
+        "[breadcrumbs]"
+    )  # Wrong plural
     assert not await BreadcrumbElement.markdown_to_notion("[toc]")  # Different element
     assert not await BreadcrumbElement.markdown_to_notion("")  # Empty string
 

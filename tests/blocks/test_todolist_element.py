@@ -296,7 +296,7 @@ async def test_roundtrip_conversion():
 
         # Add mock rich text for conversion
         mock_rich_text = Mock()
-        text_content = original.split('] ', 1)[1] if '] ' in original else ""
+        text_content = original.split("] ", 1)[1] if "] " in original else ""
         mock_rich_text.model_dump.return_value = {"text": {"content": text_content}}
         mock_block.to_do.rich_text = [mock_rich_text]
 

@@ -57,7 +57,9 @@ async def test_match_markdown_not_code_start():
     assert not await CodeElement.markdown_to_notion(
         "```python\ncode content"
     )  # Not just start
-    assert not await CodeElement.markdown_to_notion("Some text ```python")  # Not at beginning
+    assert not await CodeElement.markdown_to_notion(
+        "Some text ```python"
+    )  # Not at beginning
 
 
 def test_match_notion():

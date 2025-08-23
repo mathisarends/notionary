@@ -59,7 +59,7 @@ class TableHandler(LineHandler):
         else:
             lines_to_consume = len(remaining_lines)
 
-        block = TableElement.create_from_markdown_table(table_lines)
+        block = await TableElement.create_from_markdown_table(table_lines)
 
         if block:
             context.lines_consumed = lines_to_consume

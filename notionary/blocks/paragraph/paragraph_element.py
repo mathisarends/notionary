@@ -28,7 +28,7 @@ class ParagraphElement(BaseBlockElement):
         if not text.strip():
             return None
 
-        rich = TextInlineFormatter.parse_inline_formatting(text)
+        rich = await TextInlineFormatter.parse_inline_formatting(text)
 
         paragraph_content = ParagraphBlock(rich_text=rich, color=BlockColor.DEFAULT)
         return CreateParagraphBlock(paragraph=paragraph_content)
@@ -39,7 +39,7 @@ class ParagraphElement(BaseBlockElement):
             return None
 
         rich_list = block.paragraph.rich_text
-        markdown = TextInlineFormatter.extract_text_with_formatting(rich_list)
+        markdown = await TextInlineFormatter.extract_text_with_formatting(rich_list)
         return markdown or None
 
     @classmethod

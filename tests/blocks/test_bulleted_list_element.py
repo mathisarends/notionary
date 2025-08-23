@@ -21,7 +21,9 @@ async def test_match_markdown_valid():
     assert await BulletedListElement.markdown_to_notion("* Second item") is not None
     assert await BulletedListElement.markdown_to_notion("+ Third item") is not None
     assert await BulletedListElement.markdown_to_notion("  - Indented item") is not None
-    assert await BulletedListElement.markdown_to_notion("    * Deep indented") is not None
+    assert (
+        await BulletedListElement.markdown_to_notion("    * Deep indented") is not None
+    )
 
 
 @pytest.mark.asyncio

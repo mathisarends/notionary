@@ -90,7 +90,7 @@ class FileElement(BaseBlockElement, CaptionMixin):
         result = f"[file]({url})"
 
         # Add caption if present
-        caption_markdown = cls.format_caption_for_markdown(fb.caption or [])
+        caption_markdown = await cls.format_caption_for_markdown(fb.caption or [])
         if caption_markdown:
             result += caption_markdown
 

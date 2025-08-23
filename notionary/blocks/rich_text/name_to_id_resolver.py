@@ -4,7 +4,6 @@ import logging
 from contextlib import contextmanager
 from typing import Optional
 
-from notionary import NotionPage, NotionWorkspace, NotionDatabase
 from notionary.util import format_uuid
 from notionary.util.fuzzy import find_best_match
 
@@ -24,6 +23,8 @@ class NameIdResolver:
         """
         Initialize the resolver with a Notion workspace.
         """
+        from notionary import NotionWorkspace
+
         self.workspace = NotionWorkspace(token=token)
         self.search_limit = search_limit
         self.match_threshold = match_threshold
@@ -61,6 +62,9 @@ class NameIdResolver:
         Returns:
             Page or database title/name if found, None if not found or inaccessible
         """
+        from notionary import NotionDatabase
+        from notionary import NotionPage
+
         if not id:
             return None
 

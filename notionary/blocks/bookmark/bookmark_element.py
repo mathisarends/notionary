@@ -61,7 +61,7 @@ class BookmarkElement(BaseBlockElement, CaptionMixin):
         result = f"[bookmark]({url})"
 
         # Add caption if present
-        caption_markdown = cls.format_caption_for_markdown(bm.caption or [])
+        caption_markdown = await cls.format_caption_for_markdown(bm.caption or [])
         if caption_markdown:
             result += caption_markdown
 

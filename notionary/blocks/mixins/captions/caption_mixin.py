@@ -79,10 +79,14 @@ class CaptionMixin:
         return [RichTextObject.for_caption(caption_text)]
 
     @classmethod
-    def format_caption_for_markdown(cls, caption_list: list[RichTextObject]) -> str:
+    async def format_caption_for_markdown(
+        cls, caption_list: list[RichTextObject]
+    ) -> str:
         """Convert rich text caption back to markdown format."""
         if not caption_list:
             return ""
         # Preserve markdown formatting (bold, italic, etc.)
-        caption_text = TextInlineFormatter.extract_text_with_formatting(caption_list)
+        caption_text = await TextInlineFormatter.extract_text_with_formatting(
+            caption_list
+        )
         return f"(caption:{caption_text})" if caption_text else ""

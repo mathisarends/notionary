@@ -29,7 +29,9 @@ async def test_match_markdown():
     assert await QuoteElement.markdown_to_notion("> Standard blockquote") is None
     assert not await QuoteElement.markdown_to_notion("[quote]()")  # Empty
     assert not await QuoteElement.markdown_to_notion("[quote](   )")  # Whitespace only
-    assert not await QuoteElement.markdown_to_notion("[quote](Multi\nline)")  # Multiline
+    assert not await QuoteElement.markdown_to_notion(
+        "[quote](Multi\nline)"
+    )  # Multiline
     assert await QuoteElement.markdown_to_notion("Regular text") is None
 
 

@@ -143,7 +143,9 @@ class ToggleHandler(LineHandler):
         # Process text lines
         if parent_context.child_lines:
             children_text = "\n".join(parent_context.child_lines)
-            text_blocks = await self._convert_children_text(children_text, block_registry)
+            text_blocks = await self._convert_children_text(
+                children_text, block_registry
+            )
             children_blocks.extend(text_blocks)
 
         # Add direct blocks (like processed columns)

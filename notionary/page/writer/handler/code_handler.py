@@ -39,7 +39,9 @@ class CodeHandler(LineHandler):
         """Check if we're currently inside any parent context (toggle, heading, etc.)."""
         return len(context.parent_stack) > 0
 
-    async def _process_complete_code_block(self, context: LineProcessingContext) -> None:
+    async def _process_complete_code_block(
+        self, context: LineProcessingContext
+    ) -> None:
         """Process the entire code block in one go using CodeElement."""
         code_lines, lines_to_consume = self._collect_code_lines(context)
 

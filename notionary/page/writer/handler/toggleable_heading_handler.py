@@ -96,11 +96,15 @@ class ToggleableHeadingHandler(LineHandler):
         line = context.line.strip()
         return not (self._start_pattern.match(line) or self._end_pattern.match(line))
 
-    async def _add_toggleable_heading_content(self, context: LineProcessingContext) -> None:
+    async def _add_toggleable_heading_content(
+        self, context: LineProcessingContext
+    ) -> None:
         """Add content to the current toggleable heading context."""
         context.parent_stack[-1].add_child_line(context.line)
 
-    async def _finalize_toggleable_heading(self, context: LineProcessingContext) -> None:
+    async def _finalize_toggleable_heading(
+        self, context: LineProcessingContext
+    ) -> None:
         """Finalize a toggleable heading block and add it to result_blocks."""
         heading_context = context.parent_stack.pop()
 
@@ -132,7 +136,9 @@ class ToggleableHeadingHandler(LineHandler):
         # Process text lines
         if parent_context.child_lines:
             children_text = "\n".join(parent_context.child_lines)
-            text_blocks = await self._convert_children_text(children_text, block_registry)
+            text_blocks = await self._convert_children_text(
+                children_text, block_registry
+            )
             children_blocks.extend(text_blocks)
 
         # Add direct blocks

@@ -28,7 +28,7 @@ async def main():
         (red_background:**Fett mit rotem Hintergrund**)
         Normale (green:grüne Farbe) im Text
         
-        Das ist eine page @page[248389d57bd38158bdadc3ed6df6550e]
+        Das ist eine page @page[Wissen & Notizen]
         """
 
         # Test all media blocks with the MarkdownBuilder
