@@ -68,7 +68,9 @@ class TestTextInlineFormatterLinks:
 
     def test_simple_link(self):
         """Test basic link parsing."""
-        result = TextInlineFormatter.parse_inline_formatting("[text](https://example.com)")
+        result = TextInlineFormatter.parse_inline_formatting(
+            "[text](https://example.com)"
+        )
         assert len(result) == 1
         assert result[0].plain_text == "text"
         assert result[0].text.link.url == "https://example.com"
@@ -154,8 +156,10 @@ class TestTextInlineFormatterComplex:
         """Test multiple formatting types in one text."""
         markdown = "Text with **bold** and *italic* and `code`"
         result = TextInlineFormatter.parse_inline_formatting(markdown)
-        
-        assert len(result) == 6  # "Text with ", "bold", " and ", "italic", " and ", "code"
+
+        assert (
+            len(result) == 6
+        )  # "Text with ", "bold", " and ", "italic", " and ", "code"
         assert result[0].plain_text == "Text with "
         assert result[1].plain_text == "bold"
         assert result[1].annotations.bold is True
@@ -211,21 +215,29 @@ class TestTextInlineFormatterRoundtrip:
     def test_simple_roundtrip(self, markdown):
         """Test that simple formatting survives roundtrip conversion."""
         rich_objects = TextInlineFormatter.parse_inline_formatting(markdown)
-        back_to_markdown = TextInlineFormatter.extract_text_with_formatting(rich_objects)
+        back_to_markdown = TextInlineFormatter.extract_text_with_formatting(
+            rich_objects
+        )
         assert back_to_markdown == markdown
 
     def test_complex_roundtrip(self):
         """Test complex formatting roundtrip."""
-        markdown = "Text with **bold** and *italic* and `code` and [link](https://example.com)"
+        markdown = (
+            "Text with **bold** and *italic* and `code` and [link](https://example.com)"
+        )
         rich_objects = TextInlineFormatter.parse_inline_formatting(markdown)
-        back_to_markdown = TextInlineFormatter.extract_text_with_formatting(rich_objects)
+        back_to_markdown = TextInlineFormatter.extract_text_with_formatting(
+            rich_objects
+        )
         assert back_to_markdown == markdown
 
     def test_equation_roundtrip(self):
         """Test equation roundtrip with complex LaTeX."""
         markdown = "$\\sum_{i=1}^n \\frac{i}{2}$"
         rich_objects = TextInlineFormatter.parse_inline_formatting(markdown)
-        back_to_markdown = TextInlineFormatter.extract_text_with_formatting(rich_objects)
+        back_to_markdown = TextInlineFormatter.extract_text_with_formatting(
+            rich_objects
+        )
         assert back_to_markdown == markdown
 
 
@@ -242,13 +254,15 @@ class TestTextInlineFormatterEdgeCases:
         result = TextInlineFormatter.parse_inline_formatting("just plain text")
         assert len(result) == 1
         assert result[0].plain_text == "just plain text"
-        assert not any([
-            result[0].annotations.bold,
-            result[0].annotations.italic,
-            result[0].annotations.underline,
-            result[0].annotations.strikethrough,
-            result[0].annotations.code,
-        ])
+        assert not any(
+            [
+                result[0].annotations.bold,
+                result[0].annotations.italic,
+                result[0].annotations.underline,
+                result[0].annotations.strikethrough,
+                result[0].annotations.code,
+            ]
+        )
 
     def test_incomplete_patterns(self):
         """Test incomplete formatting patterns are treated as plain text."""

@@ -29,18 +29,18 @@ class FileElement(BaseBlockElement, CaptionMixin):
 
     # Simple pattern that matches just the file link, CaptionMixin handles caption separately
     FILE_PATTERN = re.compile(r"\[file\]\((https?://[^\s\"]+)\)")
-    
+
     @classmethod
     def _extract_file_url(cls, text: str) -> Optional[str]:
         """Extract file URL from text, handling caption patterns."""
         # First remove any captions to get clean text for URL extraction
         clean_text = cls.remove_caption(text)
-        
+
         # Now extract the URL from clean text
         match = cls.FILE_PATTERN.search(clean_text)
         if match:
             return match.group(1)
-        
+
         return None
 
     @classmethod
