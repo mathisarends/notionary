@@ -51,8 +51,12 @@ class TextInlineFormatter:
         or their `_background` variants.
 
     • Page mention
-        @[123e4567-e89b-12d3-a456-426614174000]
+        @page[123e4567-e89b-12d3-a456-426614174000]
         → RichTextObject.mention_page("123e4567-e89b-12d3-a456-426614174000")
+
+    • Database mention
+        @database[123e4567-e89b-12d3-a456-426614174000]
+        → RichTextObject.mention_database("123e4567-e89b-12d3-a456-426614174000")
     """
 
     class Patterns:
@@ -65,7 +69,8 @@ class TextInlineFormatter:
         LINK = r"\[(.+?)\]\((.+?)\)"
         INLINE_EQUATION = r"\$(.+?)\$"
         COLOR = r"\((\w+):(.+?)\)"  # (blue:colored text) or (blue_background:text)
-        PAGE_MENTION = r"@\[([0-9a-f-]+)\]"
+        PAGE_MENTION = r"@page\[([0-9a-f-]+)\]"
+        DATABASE_MENTION = r"@database\[([0-9a-f-]+)\]"
 
     # Pattern to handler mapping - cleaner approach
     @classmethod
@@ -82,6 +87,7 @@ class TextInlineFormatter:
             (cls.Patterns.INLINE_EQUATION, cls._handle_equation_pattern),
             (cls.Patterns.COLOR, cls._handle_color_pattern),
             (cls.Patterns.PAGE_MENTION, cls._handle_page_mention_pattern),
+            (cls.Patterns.DATABASE_MENTION, cls._handle_database_mention_pattern),
         ]
 
     # Valid Notion colors from BlockColor enum
@@ -217,9 +223,15 @@ class TextInlineFormatter:
 
     @classmethod
     def _handle_page_mention_pattern(cls, match: Match) -> RichTextObject:
-        """Handle page mentions: @[page-id]"""
+        """Handle page mentions: @page[page-id]"""
         page_id = match.group(1)
         return RichTextObject.mention_page(page_id)
+
+    @classmethod
+    def _handle_database_mention_pattern(cls, match: Match) -> RichTextObject:
+        """Handle database mentions: @database[database-id]"""
+        database_id = match.group(1)
+        return RichTextObject.mention_database(database_id)
 
     @classmethod
     def extract_text_with_formatting(cls, rich_text: list[RichTextObject]) -> str:
@@ -261,13 +273,13 @@ class TextInlineFormatter:
         mention = obj.mention
 
         if mention.type == MentionType.PAGE and mention.page:
-            return f"@[{mention.page.id}]"
+            return f"@page[{mention.page.id}]"
 
         if mention.type == MentionType.USER and mention.user:
             return f"@user({mention.user.id})"
 
         if mention.type == MentionType.DATABASE and mention.database:
-            return f"@db({mention.database.id})"
+            return f"@database[{mention.database.id}]"
 
         if mention.type == MentionType.DATE and mention.date:
             date_range = mention.date.start

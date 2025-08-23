@@ -143,10 +143,19 @@ class TestTextInlineFormatterMentions:
     def test_page_mention(self):
         """Test page mention parsing."""
         page_id = "123e4567-e89b-12d3-a456-426614174000"
-        result = TextInlineFormatter.parse_inline_formatting(f"@[{page_id}]")
+        # Updated syntax: explicit page mention
+        result = TextInlineFormatter.parse_inline_formatting(f"@page[{page_id}]")
         assert len(result) == 1
         assert result[0].type == RichTextType.MENTION
         assert result[0].mention.page.id == page_id
+
+    def test_database_mention(self):
+        """Test database mention parsing using the explicit @database[] syntax."""
+        db_id = "223e4567-e89b-12d3-a456-426614174111"
+        result = TextInlineFormatter.parse_inline_formatting(f"@database[{db_id}]")
+        assert len(result) == 1
+        assert result[0].type == RichTextType.MENTION
+        assert result[0].mention.database.id == db_id
 
 
 class TestTextInlineFormatterComplex:
