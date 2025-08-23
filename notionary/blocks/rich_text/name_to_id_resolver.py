@@ -1,24 +1,17 @@
 from __future__ import annotations
 
-import re
-import difflib
+import logging
+from contextlib import contextmanager
 from typing import Optional
 
-from notionary import NotionPage, NotionWorkspace
+from notionary import NotionPage, NotionWorkspace, NotionDatabase
+from notionary.util import format_uuid
+from notionary.util.fuzzy import find_best_match
 
 class NameIdResolver:
     """
-    Bidirectional resolver for Notion page names and IDs.
-    
-    Supports:
-    - Name → ID: Search workspace and find best fuzzy match
-    - ID → Name: Fetch page by ID and extract title
+    Bidirectional resolver for Notion page and database names and IDs.
     """
-    
-    _NOTION_ID_RE = re.compile(
-        r"^[0-9a-f]{32}$|^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-        re.IGNORECASE,
-    )
 
     def __init__(
         self,
@@ -34,145 +27,154 @@ class NameIdResolver:
         self.search_limit = search_limit
         self.match_threshold = match_threshold
 
-    async def resolve_id(self, page_name: str) -> Optional[str]:
+    async def resolve_id(self, name: str) -> Optional[str]:
         """
-        Convert a page name to its Notion ID.
-        
-        Strategy:
-        1. Check if input is already a valid Notion ID
-        2. Search workspace for pages matching the name
-        3. Find best fuzzy match using title similarity
-        
-        Args:
-            page_name: Human-readable page name to resolve
-            
-        Returns:
-            Notion page ID if found, None otherwise
+        Convert a page or database name to its Notion ID.
         """
-        if not page_name:
+        if not name:
             return None
 
-        cleaned_name = page_name.strip()
-        
-        # Return if already a valid Notion ID
-        if self._is_notion_id(cleaned_name):
-            return cleaned_name
+        cleaned_name = name.strip()
 
-        # Search workspace for matching pages
-        search_results = await self.workspace.search_pages(
-            query=cleaned_name, 
-            limit=self.search_limit
-        )
-        
-        # Find best match using fuzzy matching on titles
-        page_titles = [self._extract_page_title(page) for page in search_results]
-        best_match_id = self._find_best_fuzzy_match(
-            query=cleaned_name, 
-            candidate_titles=page_titles, 
-            candidate_pages=search_results
-        )
-        
-        return best_match_id
+        # Return if already a valid Notion ID (handles both UUID formats)
+        formatted_uuid = format_uuid(cleaned_name)
+        if formatted_uuid:
+            return formatted_uuid
 
-    async def resolve_name(self, page_id: str) -> Optional[str]:
+        # First try to find a page
+        page_id = await self._resolve_page_id(cleaned_name)
+        if page_id:
+            return page_id
+
+        # Fallback: try to find a database
+        database_id = await self._resolve_database_id(cleaned_name)
+        return database_id
+
+    async def resolve_name(self, id: str) -> Optional[str]:
         """
-        Convert a Notion page ID to its human-readable name.
-        
+        Convert a Notion page or database ID to its human-readable name.
+
         Args:
-            page_id: Notion page ID to resolve
-            
+            id: Notion page or database ID to resolve
+
         Returns:
-            Page title/name if found, None if page doesn't exist or is inaccessible
+            Page or database title/name if found, None if not found or inaccessible
         """
-        if not page_id or not self._is_notion_id(page_id):
+        if not id:
             return None
-            
+
+        # Validate and format UUID
+        formatted_id = format_uuid(id)
+        if not formatted_id:
+            return None
+
+        # Try page first (suppress expected validation error logs)
+        with self._suppress_expected_errors():
+            try:
+                page = await NotionPage.from_page_id(formatted_id)
+                return page.title
+            except Exception:
+                # Expected: ID might be a database, not a page
+                pass
+
+        # Try database (suppress expected validation error logs)
+        with self._suppress_expected_errors():
+            try:
+                database = await NotionDatabase.from_database_id(formatted_id)
+                return database.title
+            except Exception:
+                # Expected: ID might not exist or be inaccessible
+                return None
+
+    async def resolve_database_name(self, name: str) -> Optional[str]:
+        """
+        Convert a database name to its Notion database ID.
+        Specifically searches only databases, not pages.
+        """
+        if not name:
+            return None
+
+        cleaned_name = name.strip()
+
+        # Return if already a valid Notion ID (handles both UUID formats)
+        formatted_uuid = format_uuid(cleaned_name)
+        if formatted_uuid:
+            return formatted_uuid
+
+        # Search specifically for databases only
+        return await self._resolve_database_id(cleaned_name)
+
+    @contextmanager
+    def _suppress_expected_errors(self):
+        """
+        Context manager to temporarily suppress expected validation error logs
+        from BaseNotionClient HTTP requests when trying wrong ID types.
+        """
+        # Get all relevant loggers that might log HTTP validation errors
+        loggers_to_suppress = [
+            logging.getLogger('NotionPageClient'),
+            logging.getLogger('NotionDatabaseClient'),
+            logging.getLogger('BaseNotionClient'),
+            logging.getLogger('notionary'),
+            logging.getLogger('notionary.base_notion_client'),
+            logging.getLogger('notionary.page'),
+            logging.getLogger('notionary.database'),
+            # Also suppress the root logger if needed
+            logging.getLogger(),
+        ]
+        
+        # Store original levels and set to CRITICAL to suppress ERROR logs
+        original_levels = {}
+        for logger in loggers_to_suppress:
+            original_levels[logger] = logger.level
+            logger.setLevel(logging.CRITICAL)
+        
         try:
-            page = await NotionPage.from_page_id(page_id)
-            return self._extract_page_title(page)
-        except Exception:
-            # Page not found, not accessible, or other error
-            return None
+            yield
+        finally:
+            # Restore original log levels
+            for logger, original_level in original_levels.items():
+                logger.setLevel(original_level)
 
+    async def _resolve_page_id(self, name: str) -> Optional[str]:
+        """Search for pages matching the name."""
+        search_results = await self.workspace.search_pages(
+            query=name, limit=self.search_limit
+        )
+
+        return self._find_best_fuzzy_match(query=name, candidate_objects=search_results)
+
+    async def _resolve_database_id(self, name: str) -> Optional[str]:
+        """Search for databases matching the name."""
+        search_results = await self.workspace.search_databases(
+            query=name, limit=self.search_limit
+        )
+
+        return self._find_best_fuzzy_match(query=name, candidate_objects=search_results)
+
+    # all entities here have ids and titles
     def _find_best_fuzzy_match(
-        self, 
-        query: str, 
-        candidate_titles: list[str], 
-        candidate_pages: list[NotionPage]
+        self, query: str, candidate_objects: list
     ) -> Optional[str]:
         """
-        Find the best fuzzy match among candidate page titles.
-        
-        Uses difflib.SequenceMatcher to calculate similarity scores and returns
-        the page ID of the best match if it meets the threshold.
-        
+        Find the best fuzzy match among candidate objects using existing fuzzy matching logic.
+
         Args:
             query: The search query to match against
-            candidate_titles: List of page titles to compare
-            candidate_pages: Corresponding NotionPage objects
-            
+            candidate_objects: Objects (pages or databases) with .id and .title attributes
+
         Returns:
-            Page ID of best match, or None if no match meets threshold
+            ID of best match, or None if no match meets threshold
         """
-        if not candidate_titles:
+        if not candidate_objects:
             return None
 
-        best_score = -1.0
-        best_index = None
-        normalized_query = query.casefold()
-        
-        # Find highest similarity score
-        for i, title in enumerate(candidate_titles):
-            score = difflib.SequenceMatcher(
-                a=normalized_query, 
-                b=title.casefold()
-            ).ratio()
-            
-            if score > best_score:
-                best_score = score
-                best_index = i
+        # Use existing fuzzy matching logic
+        best_match = find_best_match(
+            query=query,
+            items=candidate_objects,
+            text_extractor=lambda obj: obj.title,
+            min_similarity=self.match_threshold,
+        )
 
-        # Return best match if it meets threshold
-        if best_index is not None and best_score >= self.match_threshold:
-            return candidate_pages[best_index].id
-
-        # Fallback: try exact case-insensitive match
-        try:
-            normalized_titles = [title.casefold() for title in candidate_titles]
-            exact_index = normalized_titles.index(normalized_query)
-            return candidate_pages[exact_index].id
-        except ValueError:
-            return None
-
-    def _extract_page_title(self, page: NotionPage) -> str:
-        """
-        Extract the title from a NotionPage object.
-        
-        Uses the page's built-in title property which handles the underlying
-        title parsing from Notion's block structure.
-        
-        Args:
-            page: NotionPage instance
-            
-        Returns:
-            Page title as string, empty string if no title
-        """
-        return page.title or ""
-
-    @classmethod
-    def _is_notion_id(cls, text: str) -> bool:
-        """
-        Check if a text string matches Notion ID format.
-        
-        Supports both formats:
-        - 32 hex characters: abc123def456...
-        - UUID with dashes: abc123de-f456-7890-abcd-ef1234567890
-        
-        Args:
-            text: String to check
-            
-        Returns:
-            True if text matches Notion ID format, False otherwise
-        """
-        cleaned_text = text.replace("_", "").strip()
-        return bool(cls._NOTION_ID_RE.match(cleaned_text))
+        return best_match.item.id if best_match else None
