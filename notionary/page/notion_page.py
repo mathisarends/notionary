@@ -23,10 +23,6 @@ from notionary.util.fuzzy import find_best_match
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
-    from notionary.page.writer.markdown_to_notion_converter_context import (
-        ConverterContext,
-    )
-
 
 class NotionPage(LoggingMixin):
     """
@@ -335,6 +331,15 @@ class NotionPage(LoggingMixin):
         )
         
         return await NotionDatabase.from_database_id(id=create_database_response.id, token=self._client.token)
+    
+    async def create_child_page(self, title: str) -> NotionPage:
+        from notionary import NotionPage
+        child_page_response = await self._client.create_page(
+            parent_page_id=self._page_id,
+            title=title,
+        )
+        
+        return await NotionPage.from_page_id(page_id=child_page_response.id, token=self._client.token)
     
     async def set_external_icon(self, url: str) -> Optional[str]:
         """

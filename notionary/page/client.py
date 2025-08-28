@@ -20,19 +20,39 @@ class NotionPageClient(BaseNotionClient):
 
     async def create_page(
         self,
+        *,
         parent_database_id: Optional[str] = None,
-        properties: Optional[dict[str, Any]] = None,
+        parent_page_id: Optional[str] = None,
+        title: str,
     ) -> NotionPageResponse:
         """
-        Creates a new page in a Notion database or as a child page.
+        Creates a new page either in a database or as a child of another page.
+        Exactly one of parent_database_id or parent_page_id must be provided.
+        Only 'title' is supported here (no icon/cover/children).
         """
-        page_data = {
-            "parent": {"database_id": parent_database_id} if parent_database_id else {},
-            "properties": properties or {},
+        # Exakt einen Parent zulassen
+        if (parent_database_id is None) == (parent_page_id is None):
+            raise ValueError("Specify exactly one parent: database OR page")
+
+        # Parent bauen
+        parent = (
+            {"database_id": parent_database_id}
+            if parent_database_id
+            else {"page_id": parent_page_id}
+        )
+
+        properties: dict[str, Any] = {
+            "title": {
+                "title": [
+                    {"type": "text", "text": {"content": title}}
+                ]
+            }
         }
 
-        response = await self.post("pages", page_data)
+        payload = {"parent": parent, "properties": properties}
+        response = await self.post("pages", payload)
         return NotionPageResponse.model_validate(response)
+
 
     async def patch_page(
         self, page_id: str, data: Optional[dict[str, Any]] = None
