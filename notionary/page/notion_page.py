@@ -9,6 +9,7 @@ from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.blocks.models import DatabaseParent
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
+from notionary.database.client import NotionDatabaseClient
 from notionary.markdown.markdown_builder import MarkdownBuilder
 from notionary.page.client import NotionPageClient
 from notionary.page.models import NotionPageResponse
@@ -60,8 +61,7 @@ class NotionPage(LoggingMixin):
         self._client = NotionPageClient(token=token)
         self._block_client = NotionBlockClient(token=token)
         self._page_data = None
-
-        converter_context = self._create_conversion_context()
+        
         self.block_element_registry = BlockRegistry.create_registry()
 
         self._page_content_writer = PageContentWriter(
@@ -324,7 +324,18 @@ class NotionPage(LoggingMixin):
 
             self.logger.error(f"Error updating page emoji: {str(e)}")
             return None
-
+        
+    async def create_child_database(self, title: str) -> NotionDatabase:
+        from notionary import NotionDatabase
+        database_client = NotionDatabaseClient(token=self._client.token)
+        
+        create_database_response =  await database_client.create_database(
+            title=title,
+            parent_page_id=self._page_id,
+        )
+        
+        return await NotionDatabase.from_database_id(id=create_database_response.id, token=self._client.token)
+    
     async def set_external_icon(self, url: str) -> Optional[str]:
         """
         Sets the page icon to an external image.
@@ -621,17 +632,3 @@ class NotionPage(LoggingMixin):
         parent = page_response.parent
         if isinstance(parent, DatabaseParent):
             return parent.database_id
-
-    def _create_conversion_context(self) -> ConverterContext:
-        """
-        Create a conversion context for block operations.
-        """
-        from notionary.page.writer.markdown_to_notion_converter_context import (
-            ConverterContext,
-        )
-        from notionary.database.client import NotionDatabaseClient
-
-        return ConverterContext(
-            page_id=self._page_id,
-            database_client=NotionDatabaseClient(token=self._client.token),
-        )

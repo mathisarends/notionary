@@ -23,6 +23,9 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
+        child_database = await page.create_child_database("Jarvis 112")
+        await child_database.set_emoji("🗂️")
+
         markdown = """
         # Mein Projekt Setup
 
