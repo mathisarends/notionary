@@ -58,6 +58,7 @@ class BlockRegistry:
             .with_equation()
             .with_table_of_contents()
             .with_breadcrumbs()
+            .with_child_database()
             .with_paragraphs()  # position here is important - its a fallback!
         )
 

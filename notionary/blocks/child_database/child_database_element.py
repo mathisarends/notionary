@@ -1,19 +1,14 @@
 from __future__ import annotations
 
 import re
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockType
+from notionary.util import LoggingMixin
 
-if TYPE_CHECKING:
-    from notionary.page.writer.markdown_to_notion_converter_context import (
-        ConverterContext,
-    )
-
-
-class ChildDatabaseElement(BaseBlockElement):
+class ChildDatabaseElement(BaseBlockElement, LoggingMixin):
     """
     Handles conversion between Markdown database references and Notion child database blocks.
 
@@ -29,48 +24,14 @@ class ChildDatabaseElement(BaseBlockElement):
 
     @classmethod
     async def markdown_to_notion(
-        cls, text: str, context: Optional[ConverterContext] = None
+        cls, text: str
     ) -> Optional[str]:
         """
         Convert markdown database syntax to actual Notion database.
         Returns the database_id if successful, None otherwise.
         """
-        if context is None:
-            raise ValueError("ConversionContext required for child_database creation")
-
-        text = text.strip()
-
-        # Try bracket pattern first
-        match = cls.PATTERN_BRACKET.match(text)
-        if not match:
-            # Try emoji pattern
-            match = cls.PATTERN_EMOJI.match(text)
-
-        if not match:
-            return None
-
-        title = match.group(1).strip()
-        if not title:
-            return None
-
-        # Reject multiline titles
-        if "\n" in title or "\r" in title:
-            return None
-
-        try:
-            database_client = context.require_database_client()
-            parent_page_id = context.require_page_id()
-
-            # Create the actual database
-            database_response = await database_client.create_database(
-                title=title, parent_page_id=parent_page_id
-            )
-            return database_response.id
-
-        except Exception as e:
-            # Log error or handle appropriately
-            print(f"Failed to create database '{title}': {e}")
-            return None
+        cls.logger.warning("Creating database from markdown is not supported via the block api. Call the create_child_page method in NotionPage instead.s")
+        return None
 
     @classmethod
     async def notion_to_markdown(cls, block: Block) -> Optional[str]:
