@@ -30,9 +30,7 @@ async def test_match_markdown():
     assert await QuoteElement.markdown_to_notion("[quote](Old syntax)") is None
     assert not await QuoteElement.markdown_to_notion(">")  # Empty
     assert not await QuoteElement.markdown_to_notion("> ")  # Whitespace only
-    assert not await QuoteElement.markdown_to_notion(
-        "> Multi\nline"
-    )  # Multiline
+    assert not await QuoteElement.markdown_to_notion("> Multi\nline")  # Multiline
     assert await QuoteElement.markdown_to_notion("Regular text") is None
 
 
@@ -218,7 +216,7 @@ async def test_multiline_not_supported():
     """Test that multiline quotes are rejected."""
     multiline_cases = [
         "> Line one\nLine two",
-        "> Line one\rLine two", 
+        "> Line one\rLine two",
         "> Line one\r\nLine two",
     ]
 

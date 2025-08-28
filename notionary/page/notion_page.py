@@ -22,6 +22,9 @@ from notionary.util.fuzzy import find_best_match
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
+    from notionary.page.writer.markdown_to_notion_converter_context import (
+        ConverterContext,
+    )
 
 
 class NotionPage(LoggingMixin):
@@ -58,6 +61,7 @@ class NotionPage(LoggingMixin):
         self._block_client = NotionBlockClient(token=token)
         self._page_data = None
 
+        converter_context = self._create_conversion_context()
         self.block_element_registry = BlockRegistry.create_registry()
 
         self._page_content_writer = PageContentWriter(
@@ -617,3 +621,17 @@ class NotionPage(LoggingMixin):
         parent = page_response.parent
         if isinstance(parent, DatabaseParent):
             return parent.database_id
+
+    def _create_conversion_context(self) -> ConverterContext:
+        """
+        Create a conversion context for block operations.
+        """
+        from notionary.page.writer.markdown_to_notion_converter_context import (
+            ConverterContext,
+        )
+        from notionary.database.client import NotionDatabaseClient
+
+        return ConverterContext(
+            page_id=self._page_id,
+            database_client=NotionDatabaseClient(token=self._client.token),
+        )

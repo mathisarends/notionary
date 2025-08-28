@@ -3,11 +3,8 @@ from __future__ import annotations
 from typing import Optional, Type
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
 from notionary.telemetry import (
-    MarkdownToNotionConversionEvent,
-    NotionToMarkdownConversionEvent,
     ProductTelemetry,
 )
 
@@ -92,68 +89,6 @@ class BlockRegistry:
         """
         return element_class.__name__ in self._builder._elements
 
-    def find_markdown_handler(self, text: str) -> Optional[Type[BaseBlockElement]]:
-        """Find an element that can handle the given markdown text."""
-        for element in self._builder._elements.values():
-            if element.match_markdown(text):
-                return element
-        return None
-
-    async def markdown_to_notion(self, text: str) -> "BlockCreateResult":
-        """Convert markdown to Notion block using registered elements."""
-        handler = self.find_markdown_handler(text)
-
-        if handler:
-            self.telemetry.capture(
-                MarkdownToNotionConversionEvent(
-                    handler_element_name=handler.__name__,
-                )
-            )
-
-            return await handler.markdown_to_notion(text)
-        return None
-
-    async def notion_to_markdown(self, block: "Block") -> Optional[str]:
-        """Convert Notion block to markdown using registered elements."""
-        handler = self._find_notion_handler(block)
-
-        if not handler:
-            return None
-
-        self.telemetry.capture(
-            NotionToMarkdownConversionEvent(
-                handler_element_name=handler.__name__,
-            )
-        )
-
-        return await handler.notion_to_markdown(block)
-
     def get_elements(self) -> list[Type[BaseBlockElement]]:
         """Get all registered elements."""
         return list(self._builder._elements.values())
-
-    def _find_notion_handler(self, block: Block) -> Optional[Type[BaseBlockElement]]:
-        """Find an element that can handle the given Notion block."""
-        for element in self._builder._elements.values():
-            if element.match_notion(block):
-                return element
-        return None
-
-    def build_markdown_syntax_reference(self, concise: bool = False) -> str:
-        """
-        Build a markdown syntax reference from all registered elements.
-
-        Args:
-            concise: If True, returns a concise version suitable for system prompts
-
-        Returns:
-            A formatted string with markdown syntax documentation
-        """
-        from notionary.blocks.syntax_prompt_builder import MarkdownSyntaxBuilder
-
-        builder = MarkdownSyntaxBuilder(self)
-
-        if concise:
-            return builder.build_concise_reference()
-        else:
-            return builder.build_markdown_reference()

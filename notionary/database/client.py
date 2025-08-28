@@ -1,5 +1,7 @@
 from typing import Any, Dict, Optional
 
+from urllib3.util import response
+
 from notionary.base_notion_client import BaseNotionClient
 from notionary.database.models import (
     NotionDatabaseResponse,
@@ -17,6 +19,27 @@ class NotionDatabaseClient(BaseNotionClient):
 
     def __init__(self, token: Optional[str] = None, timeout: int = 30):
         super().__init__(token, timeout)
+
+    async def create_database(
+        self,
+        title: str,
+        parent_page_id: Optional[str],
+        properties: Optional[Dict[str, Any]] = None,
+    ) -> NotionDatabaseResponse:
+        """
+        Creates a new database as child of the specified page.
+        """
+        if properties is None:
+            properties = {"Name": {"title": {}}}
+
+        database_data = {
+            "parent": {"page_id": parent_page_id},
+            "title": [{"type": "text", "text": {"content": title}}],
+            "properties": properties,
+        }
+
+        response = await self.post("databases", database_data)
+        return NotionDatabaseResponse.model_validate(response)
 
     async def get_database(self, database_id: str) -> NotionDatabaseResponse:
         """

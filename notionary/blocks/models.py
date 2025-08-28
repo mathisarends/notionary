@@ -48,6 +48,7 @@ if TYPE_CHECKING:
     from notionary.blocks.todo import CreateToDoBlock, ToDoBlock
     from notionary.blocks.toggle import CreateToggleBlock, ToggleBlock
     from notionary.blocks.video import CreateVideoBlock
+    from notionary.blocks.child_database import ChildDatabaseBlock
 
 
 class BlockChildrenResponse(BaseModel):
@@ -131,6 +132,7 @@ class Block(BaseModel):
     video: Optional[FileBlock] = None
     pdf: Optional[FileBlock] = None
     table_of_contents: Optional[TableOfContentsBlock] = None
+    child_database: Optional[ChildDatabaseBlock] = None
 
     def get_block_content(self) -> Optional[Any]:
         """Get the content object for this block based on its type."""

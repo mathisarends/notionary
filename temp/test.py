@@ -23,34 +23,17 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        # Test all media blocks with the MarkdownBuilder
-        await page.append_markdown(
-            lambda b: (
-                b.h1("Caption Syntax Test")
-                .h2("Media Block Examples")
-                .bookmark(
-                    url="https://reddit.com",
-                    title="Reddit",
-                    caption="Popular discussion platform",
-                )
-                .image(
-                    url="https://example.com/screenshot.png",
-                    caption="Dashboard overview",
-                )
-                .video(
-                    url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                    caption="Music Video",
-                )
-                .audio(
-                    url="https://example.com/interview.mp3", caption="Live interview"
-                )
-                .file(url="https://example.com/manual.pdf", caption="User manual")
-                .pdf(
-                    url="https://example.com/manual.pdf",
-                    caption="Critical safety information",
-                )
-            )
-        )
+        markdown = """
+        # Mein Projekt Setup
+
+        Hier ist eine kurze Beschreibung meines Projekts.
+
+        [database: Project Tasks]
+
+        Die obige Database wird alle unsere Aufgaben enthalten.
+        """
+
+        await page.append_markdown(markdown)
 
         print("✅ Successfully added all caption syntax examples!")
 

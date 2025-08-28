@@ -34,6 +34,7 @@ def bootstrap_blocks() -> None:
         toggle,
         toggleable_heading,
         video,
+        child_database,
     )
 
     # Collect all exports from modules
@@ -61,6 +62,7 @@ def bootstrap_blocks() -> None:
         video,
         toggleable_heading,
         table_of_contents,
+        child_database,
     ):
         ns.update(vars(m))
 
@@ -123,6 +125,10 @@ def bootstrap_blocks() -> None:
     from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
     from notionary.blocks.types import BlockType
     from notionary.blocks.video.video_element_models import CreateVideoBlock
+    from notionary.blocks.child_database.child_database_models import (
+        CreateChildDatabaseBlock,
+        ChildDatabaseBlock,
+    )
 
     # Define the Union types that are needed for model rebuilding
     BlockCreateRequest = Union[
@@ -150,6 +156,7 @@ def bootstrap_blocks() -> None:
         CreateVideoBlock,
         CreateTableOfContentsBlock,
         CreatePdfBlock,
+        CreateChildDatabaseBlock,
     ]
 
     BlockCreateResult = Optional[BlockCreateRequest]
@@ -202,6 +209,7 @@ def bootstrap_blocks() -> None:
             "CreateVideoBlock": CreateVideoBlock,
             "TableOfContentsBlock": TableOfContentsBlock,
             "CreateTableOfContentsBlock": CreateTableOfContentsBlock,
+            "ChildDatabaseBlock": ChildDatabaseBlock,
             # Add the Union types
             "BlockCreateRequest": BlockCreateRequest,
             "BlockCreateResult": BlockCreateResult,

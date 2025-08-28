@@ -9,6 +9,7 @@ from notionary.blocks.bookmark import BookmarkElement
 from notionary.blocks.breadcrumbs import BreadcrumbElement
 from notionary.blocks.bulleted_list import BulletedListElement
 from notionary.blocks.callout import CalloutElement
+from notionary.blocks.child_database import ChildDatabaseElement
 from notionary.blocks.code import CodeElement
 from notionary.blocks.column import ColumnElement, ColumnListElement
 from notionary.blocks.divider import DividerElement
@@ -70,6 +71,7 @@ class BlockRegistryBuilder:
             .with_equation()
             .with_table_of_contents()
             .with_breadcrumbs()
+            .with_child_database()
         ).build()
 
     def remove_element(self, element_class: Type[BaseBlockElement]) -> Self:
@@ -151,6 +153,9 @@ class BlockRegistryBuilder:
     def with_breadcrumbs(self) -> Self:
         return self._add_element(BreadcrumbElement)
 
+    def with_child_database(self) -> Self:
+        return self._add_element(ChildDatabaseElement)
+
     def without_headings(self) -> Self:
         return self.remove_element(HeadingElement)
 
@@ -212,6 +217,9 @@ class BlockRegistryBuilder:
 
     def without_breadcrumbs(self) -> Self:
         return self.remove_element(BreadcrumbElement)
+
+    def without_child_database(self) -> Self:
+        return self.remove_element(ChildDatabaseElement)
 
     def build(self) -> BlockRegistry:
         """

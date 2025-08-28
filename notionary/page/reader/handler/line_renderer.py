@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Optional
+
 from notionary.page.reader.handler import BlockHandler, BlockRenderingContext
 
 
@@ -9,8 +13,8 @@ class LineRenderer(BlockHandler):
         return True
 
     async def _process(self, context: BlockRenderingContext) -> None:
-        # Convert the block itself
-        block_markdown = await context.block_registry.notion_to_markdown(context.block)
+        # Convert the block itself using direct element iteration
+        block_markdown = await self._convert_block_to_markdown(context)
 
         # If block has no direct markdown, either return empty or process children
         if not block_markdown:
@@ -58,3 +62,10 @@ class LineRenderer(BlockHandler):
             else block_markdown
         )
         context.was_processed = True
+
+    async def _convert_block_to_markdown(self, context: BlockRenderingContext) -> Optional[str]:
+        """Convert a Notion block to markdown using registered elements."""
+        for element in context.block_registry.get_elements():
+            if element.match_notion(context.block):
+                return await element.notion_to_markdown(context.block)
+        return None
