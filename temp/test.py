@@ -23,20 +23,10 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        child_page = await page.create_child_page("Jarvis 112")
-        await child_page.set_emoji_icon("🗂️")
+        comments = await page.get_comments()
 
-        markdown = """
-        # Mein Projekt Setup
-
-        Hier ist eine kurze Beschreibung meines Projekts.
-
-        [database: Project Tasks]
-
-        Die obige Database wird alle unsere Aufgaben enthalten.
-        """
-
-        await page.append_markdown(markdown)
+        for comment in comments:
+            print("comment", comment)
 
         print("✅ Successfully added all caption syntax examples!")
 

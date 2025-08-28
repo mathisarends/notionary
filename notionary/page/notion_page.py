@@ -5,6 +5,7 @@ import random
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from notionary.blocks.client import NotionBlockClient
+from notionary.comments import CommentClient, Comment
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.blocks.models import DatabaseParent
 from notionary.blocks.registry.block_registry import BlockRegistry
@@ -23,6 +24,7 @@ from notionary.util.fuzzy import find_best_match
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
+
 
 class NotionPage(LoggingMixin):
     """
@@ -56,8 +58,9 @@ class NotionPage(LoggingMixin):
 
         self._client = NotionPageClient(token=token)
         self._block_client = NotionBlockClient(token=token)
+        self._comment_client = CommentClient(token=token)
         self._page_data = None
-        
+
         self.block_element_registry = BlockRegistry.create_registry()
 
         self._page_content_writer = PageContentWriter(
@@ -213,6 +216,9 @@ class NotionPage(LoggingMixin):
         markdown_syntax_builder = SyntaxPromptBuilder()
         return markdown_syntax_builder.build_concise_reference()
 
+    async def get_comments(self) -> list[Comment]:
+        return await self._comment_client.list_all_comments_for_page(page_id=self._page_id)
+
     async def set_title(self, title: str) -> str:
         """
         Set the title of the page.
@@ -320,27 +326,33 @@ class NotionPage(LoggingMixin):
 
             self.logger.error(f"Error updating page emoji: {str(e)}")
             return None
-        
+
     async def create_child_database(self, title: str) -> NotionDatabase:
         from notionary import NotionDatabase
+
         database_client = NotionDatabaseClient(token=self._client.token)
-        
-        create_database_response =  await database_client.create_database(
+
+        create_database_response = await database_client.create_database(
             title=title,
             parent_page_id=self._page_id,
         )
-        
-        return await NotionDatabase.from_database_id(id=create_database_response.id, token=self._client.token)
-    
+
+        return await NotionDatabase.from_database_id(
+            id=create_database_response.id, token=self._client.token
+        )
+
     async def create_child_page(self, title: str) -> NotionPage:
         from notionary import NotionPage
+
         child_page_response = await self._client.create_page(
             parent_page_id=self._page_id,
             title=title,
         )
-        
-        return await NotionPage.from_page_id(page_id=child_page_response.id, token=self._client.token)
-    
+
+        return await NotionPage.from_page_id(
+            page_id=child_page_response.id, token=self._client.token
+        )
+
     async def set_external_icon(self, url: str) -> Optional[str]:
         """
         Sets the page icon to an external image.

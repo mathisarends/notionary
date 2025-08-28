@@ -8,6 +8,7 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 from notionary.blocks.models import Block, BlockType
 from notionary.util import LoggingMixin
 
+
 class ChildDatabaseElement(BaseBlockElement, LoggingMixin):
     """
     Handles conversion between Markdown database references and Notion child database blocks.
@@ -23,14 +24,14 @@ class ChildDatabaseElement(BaseBlockElement, LoggingMixin):
         return block.type == BlockType.CHILD_DATABASE and block.child_database
 
     @classmethod
-    async def markdown_to_notion(
-        cls, text: str
-    ) -> Optional[str]:
+    async def markdown_to_notion(cls, text: str) -> Optional[str]:
         """
         Convert markdown database syntax to actual Notion database.
         Returns the database_id if successful, None otherwise.
         """
-        cls.logger.warning("Creating database from markdown is not supported via the block api. Call the create_child_page method in NotionPage instead.s")
+        cls.logger.warning(
+            "Creating database from markdown is not supported via the block api. Call the create_child_page method in NotionPage instead."
+        )
         return None
 
     @classmethod

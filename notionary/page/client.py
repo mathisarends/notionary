@@ -42,17 +42,12 @@ class NotionPageClient(BaseNotionClient):
         )
 
         properties: dict[str, Any] = {
-            "title": {
-                "title": [
-                    {"type": "text", "text": {"content": title}}
-                ]
-            }
+            "title": {"title": [{"type": "text", "text": {"content": title}}]}
         }
 
         payload = {"parent": parent, "properties": properties}
         response = await self.post("pages", payload)
         return NotionPageResponse.model_validate(response)
-
 
     async def patch_page(
         self, page_id: str, data: Optional[dict[str, Any]] = None
