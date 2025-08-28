@@ -12,7 +12,7 @@ class QuoteMarkdownBlockParams(BaseModel):
 class QuoteMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating Notion-style quote blocks.
-    Example: [quote](This is a quote)
+    Example: > This is a quote
     """
 
     def __init__(self, text: str):
@@ -23,4 +23,4 @@ class QuoteMarkdownNode(MarkdownNode):
         return cls(text=params.text)
 
     def to_markdown(self) -> str:
-        return f"[quote]({self.text})"
+        return f"> {self.text}"

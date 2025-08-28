@@ -208,15 +208,15 @@ def test_paragraph_markdown_node():
 
 
 def test_quote_markdown_node():
-    """Test QuoteMarkdownNode"""
+    """Test QuoteMarkdownNode mit neuer Blockquote-Syntax"""
     # Test ohne Author
     quote = QuoteMarkdownNode(text="This is a quote")
-    expected = "[quote](This is a quote)"
+    expected = "> This is a quote"
     assert quote.to_markdown() == expected
 
-    # Test mit Author
+    # Test mit anderem Text
     quote_with_author = QuoteMarkdownNode(text="Life is beautiful")
-    expected = "[quote](Life is beautiful)"
+    expected = "> Life is beautiful"
     assert quote_with_author.to_markdown() == expected
 
 

@@ -21,16 +21,17 @@ def create_rich_text(content: str) -> RichTextObject:
 async def test_match_markdown():
     """Test Markdown pattern matching."""
     # Valid
-    assert await QuoteElement.markdown_to_notion("[quote](Simple quote text)")
-    assert await QuoteElement.markdown_to_notion("[quote](Quote with **bold** text)")
-    assert await QuoteElement.markdown_to_notion("  [quote](Quote with whitespace)  ")
+    assert await QuoteElement.markdown_to_notion("> Simple quote text")
+    assert await QuoteElement.markdown_to_notion("> Quote with **bold** text")
+    assert await QuoteElement.markdown_to_notion(">Quote with no space")
+    assert await QuoteElement.markdown_to_notion(">   Quote with multiple spaces")
 
     # Invalid
-    assert await QuoteElement.markdown_to_notion("> Standard blockquote") is None
-    assert not await QuoteElement.markdown_to_notion("[quote]()")  # Empty
-    assert not await QuoteElement.markdown_to_notion("[quote](   )")  # Whitespace only
+    assert await QuoteElement.markdown_to_notion("[quote](Old syntax)") is None
+    assert not await QuoteElement.markdown_to_notion(">")  # Empty
+    assert not await QuoteElement.markdown_to_notion("> ")  # Whitespace only
     assert not await QuoteElement.markdown_to_notion(
-        "[quote](Multi\nline)"
+        "> Multi\nline"
     )  # Multiline
     assert await QuoteElement.markdown_to_notion("Regular text") is None
 
@@ -56,7 +57,7 @@ def test_match_notion():
 @pytest.mark.asyncio
 async def test_markdown_to_notion():
     """Test Markdown -> Notion conversion."""
-    result = await QuoteElement.markdown_to_notion("[quote](Test quote)")
+    result = await QuoteElement.markdown_to_notion("> Test quote")
 
     assert result is not None
     assert result.type == "quote"
@@ -69,9 +70,9 @@ async def test_markdown_to_notion():
 async def test_markdown_to_notion_with_formatting():
     """Test conversion with inline formatting."""
     test_cases = [
-        "[quote](Quote with **bold** text)",
-        "[quote](Quote with *italic* text)",
-        "[quote](Quote with `code` text)",
+        "> Quote with **bold** text",
+        "> Quote with *italic* text",
+        "> Quote with `code` text",
     ]
 
     for text in test_cases:
@@ -84,12 +85,12 @@ async def test_markdown_to_notion_with_formatting():
 async def test_markdown_to_notion_invalid():
     """Test invalid markdown returns None."""
     invalid_cases = [
-        "> Standard quote",
-        "[quote]()",
-        "[quote](   )",
+        "[quote](Old syntax)",
+        ">",
+        "> ",
         "Regular text",
         "",
-        "[quote](Multi\nline)",
+        "> Multi\nline",
     ]
 
     for text in invalid_cases:
@@ -106,7 +107,7 @@ async def test_notion_to_markdown():
     block.quote = quote_data
 
     result = await QuoteElement.notion_to_markdown(block)
-    assert result == "[quote](Test quote)"
+    assert result == "> Test quote"
 
 
 @pytest.mark.asyncio
@@ -133,9 +134,9 @@ async def test_notion_to_markdown_invalid():
 async def test_roundtrip():
     """Test roundtrip conversion."""
     test_cases = [
-        "[quote](Simple quote)",
-        "[quote](Quote with symbols !@#)",
-        "[quote](Quote with numbers 123)",
+        "> Simple quote",
+        "> Quote with symbols !@#",
+        "> Quote with numbers 123",
     ]
 
     for original in test_cases:
@@ -158,23 +159,24 @@ def test_pattern_regex():
     pattern = QuoteElement.PATTERN
 
     # Valid
-    assert pattern.match("[quote](Simple text)")
-    assert pattern.match("[quote](Text with spaces)")
+    assert pattern.match("> Simple text")
+    assert pattern.match("> Text with spaces")
+    assert pattern.match(">Text without space")
 
     # Invalid
-    assert not pattern.match("[quote]()")
-    assert not pattern.match("[quote](Multi\nline)")
-    assert not pattern.match("> Standard quote")
+    assert not pattern.match(">")
+    assert not pattern.match("> Multi\nline")
+    assert not pattern.match("[quote](Old syntax)")
 
 
 @pytest.mark.asyncio
 async def test_special_characters():
     """Test with special characters."""
     special_cases = [
-        "[quote](Quote with äöü ß)",
-        "[quote](Quote with 😀 emojis)",
-        "[quote](Quote with symbols: !@#$%)",
-        "[quote](Quote with punctuation: .?!)",
+        "> Quote with äöü ß",
+        "> Quote with 😀 emojis",
+        "> Quote with symbols: !@#$%",
+        "> Quote with punctuation: .?!",
     ]
 
     for text in special_cases:
@@ -187,22 +189,24 @@ async def test_special_characters():
 async def test_whitespace_handling():
     """Test whitespace handling."""
     # Content whitespace should be stripped
-    result = await QuoteElement.markdown_to_notion("[quote](  text with spaces  )")
+    result = await QuoteElement.markdown_to_notion(">  text with spaces  ")
     assert result is not None
     assert result.quote.rich_text[0].plain_text == "text with spaces"
 
-    # Whitespace around quote should be handled
-    assert await QuoteElement.markdown_to_notion("  [quote](text)  ")
+    # Different spacing after >
+    assert await QuoteElement.markdown_to_notion("> text")
+    assert await QuoteElement.markdown_to_notion(">text")
+    assert await QuoteElement.markdown_to_notion(">  text")
 
 
 @pytest.mark.asyncio
 async def test_empty_content_edge_cases():
     """Test edge cases with empty content."""
     empty_cases = [
-        "[quote]()",
-        "[quote](   )",
-        "[quote](\t)",
-        "[quote](\n)",
+        ">",
+        "> ",
+        ">\t",
+        ">\n",
     ]
 
     for text in empty_cases:
@@ -213,9 +217,9 @@ async def test_empty_content_edge_cases():
 async def test_multiline_not_supported():
     """Test that multiline quotes are rejected."""
     multiline_cases = [
-        "[quote](Line one\nLine two)",
-        "[quote](Line one\rLine two)",
-        "[quote](Line one\r\nLine two)",
+        "> Line one\nLine two",
+        "> Line one\rLine two", 
+        "> Line one\r\nLine two",
     ]
 
     for text in multiline_cases:

@@ -16,12 +16,12 @@ class QuoteElement(BaseBlockElement):
     Handles conversion between Markdown quotes and Notion quote blocks.
 
     Markdown quote syntax:
-    - [quote](Simple quote text)
+    - > Simple quote text
 
     Only single-line quotes without author metadata.
     """
 
-    PATTERN = re.compile(r"^\[quote\]\(([^\n\r]+)\)$")
+    PATTERN = re.compile(r"^>\s*(.+)$")
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -38,10 +38,12 @@ class QuoteElement(BaseBlockElement):
         if not content:
             return None
 
-        # Parse inline formatting into rich text objects
+        # Reject multiline quotes
+        if "\n" in content or "\r" in content:
+            return None
+
         rich_text = await TextInlineFormatter.parse_inline_formatting(content)
 
-        # Return a typed QuoteBlock
         quote_content = QuoteBlock(rich_text=rich_text, color=BlockColor.DEFAULT)
         return CreateQuoteBlock(quote=quote_content)
 
@@ -56,7 +58,7 @@ class QuoteElement(BaseBlockElement):
         if not text.strip():
             return None
 
-        return f"[quote]({text.strip()})"
+        return f"> {text.strip()}"
 
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
@@ -65,9 +67,9 @@ class QuoteElement(BaseBlockElement):
             block_type=cls.__name__,
             description="Quote blocks display highlighted quotations or emphasized text",
             syntax_examples=[
-                "[quote](This is an important quote)",
-                "[quote](The only way to do great work is to love what you do)",
-                "[quote](Innovation distinguishes between a leader and a follower)",
+                "> This is an important quote",
+                "> The only way to do great work is to love what you do",
+                "> Innovation distinguishes between a leader and a follower",
             ],
             usage_guidelines="Use for quotations, important statements, or text that should be visually emphasized. Content should be meaningful and stand out from regular paragraphs.",
         )
