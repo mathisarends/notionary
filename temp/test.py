@@ -23,7 +23,7 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        comments = await page.get_comments()
+        comments = await page.post_comment("Ich mag dich")
 
         for comment in comments:
             print("comment", comment)

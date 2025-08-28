@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import AsyncGenerator, Optional
+from typing import Any, AsyncGenerator, Optional
 
 from notionary.base_notion_client import BaseNotionClient
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.comments.models import Comment, CommentListResponse
 
 
@@ -132,6 +133,68 @@ class CommentClient(BaseNotionClient):
             raise RuntimeError("Failed to create page comment.")
         return Comment.model_validate(resp)
 
+    async def create_comment(
+        self,
+        *,
+        page_id: Optional[str] = None,
+        discussion_id: Optional[str] = None,
+        content: Optional[str] = None,
+        rich_text: Optional[list[RichTextObject]] = None,
+        display_name: Optional[dict[str, Any]] = None,
+        attachments: Optional[list[dict[str, Any]]] = None,
+    ) -> Comment:
+        """
+        Create a comment on a page OR reply to an existing discussion.
+
+        Rules:
+        - Exactly one of page_id or discussion_id must be provided.
+        - Provide either rich_text OR content (plain text). If both given, rich_text wins.
+        - Up to 3 attachments allowed by Notion.
+        """
+        # validate parent
+        if (page_id is None) == (discussion_id is None):
+            raise ValueError("Specify exactly one parent: page_id OR discussion_id")
+
+        # build rich_text if only content is provided
+        rt = rich_text if rich_text else None
+        if rt is None:
+            if not content:
+                raise ValueError("Provide either 'rich_text' or 'content'.")
+            rt = [{"type": "text", "text": {"content": content}}]
+
+        body: dict[str, Any] = {"rich_text": rt}
+        if page_id:
+            body["parent"] = {"page_id": page_id}
+        else:
+            body["discussion_id"] = discussion_id
+
+        if display_name:
+            body["display_name"] = display_name
+        if attachments:
+            body["attachments"] = attachments
+
+        resp = await self.post("comments", data=body)
+        if resp is None:
+            raise RuntimeError("Failed to create comment.")
+        return Comment.model_validate(resp)
+
+    # ---------- Convenience wrappers ----------
+
+    async def create_comment_on_page(
+        self,
+        *,
+        page_id: str,
+        text: str,
+        display_name: Optional[dict] = None,
+        attachments: Optional[list[dict]] = None,
+    ) -> Comment:
+        return await self.create_comment(
+            page_id=page_id,
+            content=text,
+            display_name=display_name,
+            attachments=attachments,
+        )
+
     async def reply_to_discussion(
         self,
         *,
@@ -140,28 +203,9 @@ class CommentClient(BaseNotionClient):
         display_name: Optional[dict] = None,
         attachments: Optional[list[dict]] = None,
     ) -> Comment:
-        """
-        Reply to an existing discussion thread.
-
-        Args:
-            discussion_id: The discussion thread ID (obtain via list-comments or UI copy-link).
-            text: Plain text content for the reply.
-            display_name: Optional "Comment Display Name" object to override author label.
-            attachments: Optional list of "Comment Attachment" objects (max 3).
-
-        Returns:
-            The created Comment object.
-        """
-        body: dict = {
-            "discussion_id": discussion_id,
-            "rich_text": [{"type": "text", "text": {"content": text}}],
-        }
-        if display_name:
-            body["display_name"] = display_name
-        if attachments:
-            body["attachments"] = attachments
-
-        resp = await self.post("comments", data=body)
-        if resp is None:
-            raise RuntimeError("Failed to reply to discussion.")
-        return Comment.model_validate(resp)
+        return await self.create_comment(
+            discussion_id=discussion_id,
+            content=text,
+            display_name=display_name,
+            attachments=attachments,
+        )

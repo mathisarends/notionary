@@ -218,6 +218,38 @@ class NotionPage(LoggingMixin):
 
     async def get_comments(self) -> list[Comment]:
         return await self._comment_client.list_all_comments_for_page(page_id=self._page_id)
+    
+    async def post_comment(
+        self,
+        content: str,
+        *,
+        discussion_id: Optional[str] = None,
+        rich_text: Optional[list[dict[str, Any]]] = None,
+    ) -> Optional[Comment]:
+        """
+        Post a comment on this page.
+
+        Args:
+            content: The plain text content of the comment
+            discussion_id: Optional discussion ID to reply to an existing discussion
+            rich_text: Optional rich text formatting for the comment content
+
+        Returns:
+            Comment: The created comment object, or None if creation failed
+        """
+        try:
+            # Use the comment client to create the comment
+            comment = await self._comment_client.create_comment(
+                page_id=self._page_id,
+                content=content,
+                discussion_id=discussion_id,
+                rich_text=rich_text,
+            )
+            self.logger.info(f"Successfully posted comment on page '{self._title}'")
+            return comment
+        except Exception as e:
+            self.logger.error(f"Failed to post comment on page '{self._title}': {str(e)}")
+            return None
 
     async def set_title(self, title: str) -> str:
         """
