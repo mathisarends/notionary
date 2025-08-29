@@ -20,18 +20,18 @@ def create_audio_examples() -> str:
     return (
         MarkdownBuilder()
         .h2("🎵 Audio Elements")
-        .paragraph("Audio elements let you embed audio files directly in your Notion pages.")
-        .space()
-        
-        .audio(
-            url="https://storage.googleapis.com/audio_summaries/ep_ai_summary_127d02ec-ca12-4312-a5ed-cb14b185480c.mp3",
-            caption="AI in Healthcare: A comprehensive discussion on the impact of artificial intelligence in modern healthcare systems."
+        .paragraph(
+            "Audio elements let you embed audio files directly in your Notion pages."
         )
         .space()
-        
+        .audio(
+            url="https://storage.googleapis.com/audio_summaries/ep_ai_summary_127d02ec-ca12-4312-a5ed-cb14b185480c.mp3",
+            caption="AI in Healthcare: A comprehensive discussion on the impact of artificial intelligence in modern healthcare systems.",
+        )
+        .space()
         .callout(
             text="Audio elements support most common audio formats and automatically display playback controls in Notion!",
-            emoji="🎧"
+            emoji="🎧",
         )
         .build()
     )
@@ -39,27 +39,27 @@ def create_audio_examples() -> str:
 
 async def main():
     """Demo of adding audio elements to a Notion page."""
-    
+
     print("🚀 Notionary Audio Element Demo")
     print("=" * 33)
-    
+
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
-        
+
         print(f"\n{page.emoji_icon} Page Information:")
         print(f"├── Title: {page.title}")
         print(f"└── URL: {page.url}")
-        
+
         print("\n🎵 Creating audio examples...")
         content = create_audio_examples()
-        
+
         print("✨ Adding content to page...")
         await page.append_markdown(content)
-        
+
         print("\n✅ Successfully added audio examples!")
         print(f"🌐 View at: {page.url}")
-        
+
     except Exception as e:
         print(f"❌ Error: {e}")
         print("💡 Make sure the page name exists in your Notion workspace")

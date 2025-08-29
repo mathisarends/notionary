@@ -1,6 +1,14 @@
+from enum import Enum
+
 from typing import Literal, Optional
 
 from pydantic import BaseModel
+
+
+class UploadMode(str, Enum):
+    """Enum for file upload modes."""
+    SINGLE_PART = "single_part"
+    MULTI_PART = "multi_part"
 
 
 class FileUploadResponse(BaseModel):
@@ -44,7 +52,7 @@ class FileUploadCreateRequest(BaseModel):
     filename: str
     content_type: Optional[str] = None
     content_length: Optional[int] = None
-    mode: Literal["single_part", "multi_part"] = "single_part"
+    mode: UploadMode = UploadMode.SINGLE_PART
 
     def model_dump(self, **kwargs):
         """Override to exclude None values"""

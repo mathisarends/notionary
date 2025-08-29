@@ -5,7 +5,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import Optional
 
-from notionary.file_upload.models import FileUploadResponse
+from notionary.file_upload.models import FileUploadResponse, UploadMode
 from notionary.util import LoggingMixin
 
 
@@ -196,7 +196,7 @@ class NotionFileUpload(LoggingMixin):
             filename=filename,
             content_type=content_type,
             content_length=file_size,
-            mode="single_part",
+            mode=UploadMode.SINGLE_PART,
         )
 
         if not file_upload:
@@ -228,7 +228,7 @@ class NotionFileUpload(LoggingMixin):
             filename=filename,
             content_type=content_type,
             content_length=file_size,
-            mode="multi_part",
+            mode=UploadMode.MULTI_PART,
         )
 
         if not file_upload:
@@ -269,7 +269,7 @@ class NotionFileUpload(LoggingMixin):
             filename=filename,
             content_type=content_type,
             content_length=file_size,
-            mode="single_part",
+            mode=UploadMode.SINGLE_PART,
         )
 
         if not file_upload:
@@ -299,7 +299,7 @@ class NotionFileUpload(LoggingMixin):
             filename=filename,
             content_type=content_type,
             content_length=file_size,
-            mode="multi_part",
+            mode=UploadMode.MULTI_PART,
         )
 
         if not file_upload:

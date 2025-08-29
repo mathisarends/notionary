@@ -157,7 +157,7 @@ class BlockRegistryBuilder:
 
     def with_child_database(self) -> Self:
         return self._add_element(ChildDatabaseElement)
-    
+
     def with_file(self) -> Self:
         return self._add_element(FileElement)
 

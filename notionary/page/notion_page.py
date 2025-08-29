@@ -81,7 +81,7 @@ class NotionPage(LoggingMixin):
         self._page_content_retriever = PageContentRetriever(
             block_registry=self.block_element_registry,
         )
-        
+
         self.page_context_provider = self._setup_page_context_provider()
 
     @classmethod
@@ -224,8 +224,10 @@ class NotionPage(LoggingMixin):
         return markdown_syntax_builder.build_concise_reference()
 
     async def get_comments(self) -> list[Comment]:
-        return await self._comment_client.list_all_comments_for_page(page_id=self._page_id)
-    
+        return await self._comment_client.list_all_comments_for_page(
+            page_id=self._page_id
+        )
+
     async def post_comment(
         self,
         content: str,
@@ -255,7 +257,9 @@ class NotionPage(LoggingMixin):
             self.logger.info(f"Successfully posted comment on page '{self._title}'")
             return comment
         except Exception as e:
-            self.logger.error(f"Failed to post comment on page '{self._title}': {str(e)}")
+            self.logger.error(
+                f"Failed to post comment on page '{self._title}': {str(e)}"
+            )
             return None
 
     async def set_title(self, title: str) -> str:
@@ -690,10 +694,9 @@ class NotionPage(LoggingMixin):
         if isinstance(parent, DatabaseParent):
             return parent.database_id
 
-
     def _setup_page_context_provider(self) -> PageContextProvider:
         return PageContextProvider(
             page_id=self._page_id,
             database_client=NotionDatabaseClient(token=self._client.token),
-            file_upload_client=NotionFileUploadClient()
+            file_upload_client=NotionFileUploadClient(),
         )

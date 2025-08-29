@@ -33,6 +33,7 @@ def get_page_context() -> PageContextProvider:
         )
     return context
 
+
 class page_context:
     """Async-only context manager for page operations."""
 

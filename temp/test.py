@@ -22,12 +22,12 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
-            
+
         markdown = """
         ist alles gut bei dir?
         [file](./my_document.pdf)
         """
-        
+
         await page.append_markdown(markdown)
 
         print("✅ Successfully added all caption syntax examples!")

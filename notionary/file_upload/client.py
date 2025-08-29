@@ -11,6 +11,7 @@ from notionary.file_upload.models import (
     FileUploadCreateRequest,
     FileUploadListResponse,
     FileUploadResponse,
+    UploadMode,
 )
 
 
@@ -25,7 +26,7 @@ class NotionFileUploadClient(BaseNotionClient):
         filename: str,
         content_type: Optional[str] = None,
         content_length: Optional[int] = None,
-        mode: str = "single_part",
+        mode: UploadMode = UploadMode.SINGLE_PART,
     ) -> Optional[FileUploadResponse]:
         """
         Create a new file upload.
@@ -34,7 +35,7 @@ class NotionFileUploadClient(BaseNotionClient):
             filename: Name of the file (max 900 bytes)
             content_type: MIME type of the file
             content_length: Size of the file in bytes
-            mode: Upload mode ("single_part" or "multi_part")
+            mode: Upload mode (UploadMode.SINGLE_PART or UploadMode.MULTI_PART)
 
         Returns:
             FileUploadResponse or None if failed

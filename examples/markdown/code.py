@@ -20,9 +20,10 @@ def create_code_examples() -> str:
     return (
         MarkdownBuilder()
         .h2("💻 Code Block Elements")
-        .paragraph("Code blocks provide syntax highlighting for various programming languages.")
+        .paragraph(
+            "Code blocks provide syntax highlighting for various programming languages."
+        )
         .space()
-        
         .code_block(
             code='''def hello_notionary():
     """Greet the Notionary library."""
@@ -33,13 +34,12 @@ def create_code_examples() -> str:
 result = hello_notionary()
 print(f"Result: {result}")''',
             language="python",
-            caption="Basic Python function with return value"
+            caption="Basic Python function with return value",
         )
         .space()
-        
         .callout(
             text="Notion supports 40+ programming languages for syntax highlighting, including Python, JavaScript, SQL, YAML, and more!",
-            emoji="🎨"
+            emoji="🎨",
         )
         .build()
     )
@@ -47,27 +47,27 @@ print(f"Result: {result}")''',
 
 async def main():
     """Demo of adding code block elements to a Notion page."""
-    
+
     print("🚀 Notionary Code Block Demo")
     print("=" * 30)
-    
+
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
-        
+
         print(f"\n{page.emoji_icon} Page Information:")
         print(f"├── Title: {page.title}")
         print(f"└── URL: {page.url}")
-        
+
         print("\n💻 Creating code examples...")
         content = create_code_examples()
-        
+
         print("✨ Adding content to page...")
         await page.append_markdown(content)
-        
+
         print("\n✅ Successfully added code block examples!")
         print(f"🌐 View at: {page.url}")
-        
+
     except Exception as e:
         print(f"❌ Error: {e}")
         print("💡 Make sure the page name exists in your Notion workspace")
