@@ -17,14 +17,5 @@ class MarkdownNode(ABC):
         """
         pass
 
-    @classmethod
-    @abstractmethod
-    def from_params(cls, params) -> MarkdownNode:
-        """
-        Creates an instance from a params object.
-        Must be implemented by subclasses.
-        """
-        pass
-
     def __str__(self):
         return self.to_markdown()

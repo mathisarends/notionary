@@ -85,10 +85,7 @@ class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin
             return CreateAudioBlock(audio=audio_content)
 
         else:
-            # Handle external URL
-            if not cls._is_likely_audio_url(path):
-                return None
-
+            # Handle external URL - accept any URL (validation happens at API level)
             # Use mixin to extract caption (if present anywhere in text)
             caption_text = cls.extract_caption(text.strip())
             caption_rich_text = cls.build_caption_rich_text(caption_text or "")

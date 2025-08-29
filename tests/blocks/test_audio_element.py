@@ -54,20 +54,43 @@ async def test_match_markdown_param_valid(text):
     "text",
     [
         "[aud](https://test.com/track.mp3)",  # falscher Prefix
-        "[audio](not-a-url)",  # kein URL
         "[audio]()",  # leer
-        "[audio]( )",
-        "[audio](ftp://x.com/file.mp3)",  # falsches Protokoll
+        "[audio]( )",  # nur Leerzeichen
         "[audio]https://a.de/b.mp3",  # fehlende Klammern
-        "[audio](https://a.de/b)",  # keine Extension
-        "[audio](https://example.com/file.jpg)",  # kein Audio
-        # Removed: "[audio](https://example.com/file.mp3)" - this should actually work, not invalid
-        "",
-        "random text",
+        "",  # komplett leer
+        "random text",  # kein Pattern
     ],
 )
 async def test_match_markdown_param_invalid(text):
+    """Test cases that should return None due to pattern mismatch or empty content."""
     assert await AudioElement.markdown_to_notion(text) is None
+
+
+@pytest.mark.asyncio
+async def test_match_markdown_edge_cases():
+    """Test edge cases that should work with file upload support."""
+    # These will be treated as potential local files or URLs
+    # Non-HTTP protocols will create external blocks (may fail at Notion API level but element accepts them)
+    result_ftp = await AudioElement.markdown_to_notion("[audio](ftp://x.com/file.mp3)")
+    assert (
+        result_ftp is not None
+    )  # Element accepts it, even if Notion API might reject it
+
+    # Non-standard URLs without extensions are now accepted (validation happens at API level)
+    result_no_ext = await AudioElement.markdown_to_notion("[audio](https://a.de/b)")
+    assert result_no_ext is not None  # Now works - validation at API level
+
+    # Non-audio extensions are accepted (validation happens at upload/API level)
+    result_wrong_ext = await AudioElement.markdown_to_notion(
+        "[audio](https://example.com/file.jpg)"
+    )
+    assert result_wrong_ext is not None
+
+    # Local path syntax (not existing file)
+    result_local = await AudioElement.markdown_to_notion("[audio](not-a-url)")
+    assert (
+        result_local is not None
+    )  # Treated as potential local file, falls back to external URL
 
 
 def test_match_notion_block():
@@ -304,7 +327,7 @@ async def test_integration_with_other_elements():
 
 @pytest.mark.asyncio
 async def test_url_validation_via_match_markdown():
-    """Test URL validation through match_markdown (since _is_likely_audio_url is private/gone)."""
+    """Test URL validation through match_markdown (with file upload support)."""
     # Valid HTTP/HTTPS URLs with audio extensions
     valid_urls = [
         "[audio](http://example.com/file.mp3)",
@@ -316,15 +339,16 @@ async def test_url_validation_via_match_markdown():
     for url in valid_urls:
         assert await AudioElement.markdown_to_notion(url) is not None
 
-    # Invalid URLs (no proper audio extension)
-    invalid_urls = [
-        "[audio](https://example.com/file)",  # No extension
-        "[audio](https://example.com/file.txt)",  # Wrong extension
-        "[audio](https://example.com/file.jpg)",  # Wrong extension
-        "[audio](not-a-url)",  # Not a URL
+    # With file upload support, these are now accepted (validation at API level)
+    edge_case_urls = [
+        "[audio](https://example.com/file)",  # No extension - now accepted
+        "[audio](https://example.com/file.txt)",  # Wrong extension - now accepted
+        "[audio](https://example.com/file.jpg)",  # Wrong extension - now accepted
+        "[audio](not-a-url)",  # Treated as potential local file - now accepted
     ]
-    for url in invalid_urls:
-        assert await AudioElement.markdown_to_notion(url) is None
+    for url in edge_case_urls:
+        result = await AudioElement.markdown_to_notion(url)
+        assert result is not None  # Now accepted with file upload support
 
 
 @pytest.mark.asyncio

@@ -24,14 +24,17 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        file_path = Path("./my_document.pdf")
-        print(f"File exists: {file_path.exists()}")
-        print(f"Absolute path: {file_path.absolute()}")
-
         markdown = """
         ist alles gut bei dir?
 
-        [pdf](./my_document.pdf)
+        ::: columns
+        ::: column
+        Content here
+        :::
+        ::: column
+        More content
+        :::
+        :::
         """
 
         await page.append_markdown(markdown)

@@ -4,161 +4,139 @@ from typing import Literal, Optional, Union
 
 from pydantic import BaseModel, Field
 
-from notionary.blocks.bookmark.bookmark_markdown_node import BookmarkMarkdownBlockParams
-from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
-    BulletedListMarkdownBlockParams,
-)
-from notionary.blocks.callout.callout_markdown_node import CalloutMarkdownBlockParams
-from notionary.blocks.divider.divider_markdown_node import DividerMarkdownBlockParams
-from notionary.blocks.embed.embed_markdown_node import EmbedMarkdownBlockParams
-from notionary.blocks.equation.equation_element_markdown_node import (
-    EquationMarkdownBlockParams,
-)
-from notionary.blocks.file.file_element_markdown_node import FileMarkdownNodeParams
-
-# Import all the existing params models
-from notionary.blocks.heading.heading_markdown_node import HeadingMarkdownBlockParams
-from notionary.blocks.image_block.image_markdown_node import ImageMarkdownBlockParams
-from notionary.blocks.numbered_list.numbered_list_markdown_node import (
-    NumberedListMarkdownBlockParams,
-)
-from notionary.blocks.paragraph.paragraph_markdown_node import (
-    ParagraphMarkdownBlockParams,
-)
-from notionary.blocks.quote.quote_markdown_node import QuoteMarkdownBlockParams
-from notionary.blocks.table.table_markdown_node import TableMarkdownBlockParams
-from notionary.blocks.table_of_contents.table_of_contents_markdown_node import (
-    TableOfContentsMarkdownBlockParams,
-)
-from notionary.blocks.todo.todo_markdown_node import TodoMarkdownBlockParams
-from notionary.blocks.video.video_markdown_node import VideoMarkdownBlockParams
-
-
 class HeadingBlock(BaseModel):
     type: Literal["heading"] = "heading"
-    params: HeadingMarkdownBlockParams
+    text: str
+    level: int = 2
 
 
 class ParagraphBlock(BaseModel):
     type: Literal["paragraph"] = "paragraph"
-    params: ParagraphMarkdownBlockParams
+    text: str
 
 
 class QuoteBlock(BaseModel):
     type: Literal["quote"] = "quote"
-    params: QuoteMarkdownBlockParams
+    text: str
 
 
 class BulletedListBlock(BaseModel):
     type: Literal["bulleted_list"] = "bulleted_list"
-    params: BulletedListMarkdownBlockParams
+    texts: list[str]
 
 
 class NumberedListBlock(BaseModel):
     type: Literal["numbered_list"] = "numbered_list"
-    params: NumberedListMarkdownBlockParams
+    texts: list[str]
 
 
 class TodoBlock(BaseModel):
     type: Literal["todo"] = "todo"
-    params: TodoMarkdownBlockParams
+    text: str
+    checked: bool = False
 
 
 class CalloutBlock(BaseModel):
     type: Literal["callout"] = "callout"
-    params: CalloutMarkdownBlockParams
+    text: str
+    emoji: Optional[str] = None
 
 
 class CodeBlock(BaseModel):
     type: Literal["code"] = "code"
-    params: CodeBlock
+    code: str
+    language: Optional[str] = None
+    caption: Optional[str] = None
 
 
 class ImageBlock(BaseModel):
     type: Literal["image"] = "image"
-    params: ImageMarkdownBlockParams
+    url: str
+    caption: Optional[str] = None
+    alt: Optional[str] = None
 
 
 class VideoBlock(BaseModel):
     type: Literal["video"] = "video"
-    params: VideoMarkdownBlockParams
+    url: str
+    caption: Optional[str] = None
 
 
 class AudioBlock(BaseModel):
     type: Literal["audio"] = "audio"
-    params: FileMarkdownNodeParams
+    url: str
+    caption: Optional[str] = None
 
 
 class FileBlock(BaseModel):
     type: Literal["file"] = "file"
-    params: FileMarkdownNodeParams
+    url: str
+    caption: Optional[str] = None
 
 
 class PdfBlock(BaseModel):
     type: Literal["pdf"] = "pdf"
-    params: FileMarkdownNodeParams
+    url: str
+    caption: Optional[str] = None
 
 
 class BookmarkBlock(BaseModel):
     type: Literal["bookmark"] = "bookmark"
-    params: BookmarkMarkdownBlockParams
+    url: str
+    title: Optional[str] = None
+    caption: Optional[str] = None
 
 
 class EmbedBlock(BaseModel):
     type: Literal["embed"] = "embed"
-    params: EmbedMarkdownBlockParams
+    url: str
+    caption: Optional[str] = None
 
 
 class TableBlock(BaseModel):
     type: Literal["table"] = "table"
-    params: TableMarkdownBlockParams
+    headers: list[str]
+    rows: list[list[str]]
 
 
 class DividerBlock(BaseModel):
     type: Literal["divider"] = "divider"
-    params: DividerMarkdownBlockParams
 
 
 class EquationBlock(BaseModel):
     type: Literal["equation"] = "equation"
-    params: EquationMarkdownBlockParams
+    expression: str
 
 
 class TableOfContentsBlock(BaseModel):
     type: Literal["table_of_contents"] = "table_of_contents"
-    params: TableOfContentsMarkdownBlockParams
+    color: Optional[str] = None
 
 
 # Special blocks for nested content
-class ToggleBlockParams(BaseModel):
+class ToggleBlock(BaseModel):
+    type: Literal["toggle"] = "toggle"
     title: str
     children: list[MarkdownBlock] = Field(default_factory=list)
 
 
 class ToggleBlock(BaseModel):
     type: Literal["toggle"] = "toggle"
-    params: ToggleBlockParams
-
-
-class ToggleableHeadingBlockParams(BaseModel):
-    text: str
-    level: int = Field(ge=1, le=3)
+    title: str
     children: list[MarkdownBlock] = Field(default_factory=list)
 
 
 class ToggleableHeadingBlock(BaseModel):
     type: Literal["toggleable_heading"] = "toggleable_heading"
-    params: ToggleableHeadingBlockParams
-
-
-class ColumnBlockParams(BaseModel):
-    columns: list[list[MarkdownBlock]] = Field(default_factory=list)
-    width_ratios: Optional[list[float]] = None
+    text: str
+    level: int = Field(ge=1, le=3)
+    children: list[MarkdownBlock] = Field(default_factory=list)
 
 
 class ColumnBlock(BaseModel):
     type: Literal["columns"] = "columns"
-    params: ColumnBlockParams
+    columns: list[list[MarkdownBlock]] = Field(default_factory=list)
+    width_ratios: Optional[list[float]] = None
 
 
 # Union of all possible blocks
@@ -188,10 +166,10 @@ MarkdownBlock = Union[
 ]
 
 
-# Update forward references
-ToggleBlockParams.model_rebuild()
-ToggleableHeadingBlockParams.model_rebuild()
-ColumnBlockParams.model_rebuild()
+# Update forward references for nested structures
+ToggleBlock.model_rebuild()
+ToggleableHeadingBlock.model_rebuild()
+ColumnBlock.model_rebuild()
 
 
 class MarkdownDocumentModel(BaseModel):

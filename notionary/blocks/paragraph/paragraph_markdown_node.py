@@ -1,12 +1,6 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
-
 from notionary.markdown.markdown_node import MarkdownNode
-
-
-class ParagraphMarkdownBlockParams(BaseModel):
-    text: str
 
 
 class ParagraphMarkdownNode(MarkdownNode):
@@ -17,10 +11,6 @@ class ParagraphMarkdownNode(MarkdownNode):
 
     def __init__(self, text: str):
         self.text = text
-
-    @classmethod
-    def from_params(cls, params: ParagraphMarkdownBlockParams) -> ParagraphMarkdownNode:
-        return cls(text=params.text)
 
     def to_markdown(self) -> str:
         return self.text

@@ -73,15 +73,17 @@ class BlockRegistry:
         self._elements = OrderedDict()
         self._excluded_elements = excluded_elements or set()
         self.telemetry = ProductTelemetry()
-        
+
         # Initialize with default elements minus excluded ones
         self._initialize_default_elements()
 
     @classmethod
-    def create_registry(cls, excluded_elements: Set[Type[BaseBlockElement]] = None) -> 'BlockRegistry':
+    def create_registry(
+        cls, excluded_elements: Set[Type[BaseBlockElement]] = None
+    ) -> "BlockRegistry":
         """
         Create a registry with all standard elements in recommended order.
-        
+
         Args:
             excluded_elements: Set of element classes to exclude from the registry
         """
@@ -93,13 +95,15 @@ class BlockRegistry:
             if element_class not in self._excluded_elements:
                 self._elements[element_class.__name__] = element_class
 
-    def exclude_elements(self, *element_classes: Type[BaseBlockElement]) -> BlockRegistry:
+    def exclude_elements(
+        self, *element_classes: Type[BaseBlockElement]
+    ) -> BlockRegistry:
         """
         Create a new registry with additional excluded elements.
-        
+
         Args:
             element_classes: Element classes to exclude
-            
+
         Returns:
             New BlockRegistry instance with excluded elements
         """
@@ -110,16 +114,16 @@ class BlockRegistry:
     def register(self, element_class: Type[BaseBlockElement]) -> bool:
         """
         Register an element class.
-        
+
         Args:
             element_class: The element class to register
-            
+
         Returns:
             True if element was added, False if it already existed
         """
         if element_class.__name__ in self._elements:
             return False
-            
+
         self._elements[element_class.__name__] = element_class
         return True
 
@@ -138,7 +142,7 @@ class BlockRegistry:
     def get_elements(self) -> list[Type[BaseBlockElement]]:
         """Get all registered elements in order."""
         return list(self._elements.values())
-    
+
     def is_excluded(self, element_class: Type[BaseBlockElement]) -> bool:
         """
         Check if an element class is excluded.

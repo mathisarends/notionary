@@ -1,13 +1,6 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
-
 from notionary.markdown.markdown_node import MarkdownNode
-
-
-class HeadingMarkdownBlockParams(BaseModel):
-    text: str
-    level: int = 1
 
 
 class HeadingMarkdownNode(MarkdownNode):
@@ -21,10 +14,6 @@ class HeadingMarkdownNode(MarkdownNode):
             raise ValueError("Only heading levels 1-3 are supported (H1, H2, H3)")
         self.text = text
         self.level = level
-
-    @classmethod
-    def from_params(cls, params: HeadingMarkdownBlockParams) -> HeadingMarkdownNode:
-        return cls(text=params.text, level=params.level)
 
     def to_markdown(self) -> str:
         return f"{'#' * self.level} {self.text}"

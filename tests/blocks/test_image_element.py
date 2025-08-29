@@ -32,12 +32,14 @@ async def test_match_markdown_invalid():
     assert not await ImageElement.markdown_to_notion(
         "[img](https://example.com/pic.jpg)"
     )  # Wrong prefix
-    assert not await ImageElement.markdown_to_notion(
-        "[image](not-a-url)"
-    )  # Invalid URL
-    assert not await ImageElement.markdown_to_notion("[image]()")  # Empty URL
+    assert await ImageElement.markdown_to_notion("[image]()") is None  # Empty URL
     assert await ImageElement.markdown_to_notion("Regular text") is None
     assert await ImageElement.markdown_to_notion("") is None
+
+    # Note: With file upload support, "not-a-url" is treated as potential local file
+    # The element will accept it and try to process it (falling back to external URL)
+    result = await ImageElement.markdown_to_notion("[image](not-a-url)")
+    assert result is not None  # This now works with file upload support
 
 
 def test_match_notion():
@@ -195,7 +197,7 @@ async def test_notion_to_markdown_invalid():
         ("[image](http://site.org/photo.gif)", True),
         ("  [image](https://example.com/img.jpg)  ", True),  # With whitespace
         ("[img](https://example.com/pic.jpg)", False),  # Wrong prefix
-        ("[image](not-a-url)", False),  # Invalid URL
+        ("[image](not-a-url)", True),  # Now valid with file upload support
         ("[image]()", False),  # Empty URL
         ("Regular text", False),
         ("", False),
@@ -230,7 +232,9 @@ async def test_pattern_matching():
         await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)")
         is None
     )
-    assert await ImageElement.markdown_to_notion("[image](not-a-url)") is None
+    # Note: With file upload support, "not-a-url" is now accepted
+    result = await ImageElement.markdown_to_notion("[image](not-a-url)")
+    assert result is not None  # Now works with file upload support
     assert await ImageElement.markdown_to_notion("[image]()") is None
 
 

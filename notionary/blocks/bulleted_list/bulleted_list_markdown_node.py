@@ -1,12 +1,6 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
-
 from notionary.markdown.markdown_node import MarkdownNode
-
-
-class BulletedListMarkdownBlockParams(BaseModel):
-    texts: list[str]
 
 
 class BulletedListMarkdownNode(MarkdownNode):
@@ -20,12 +14,6 @@ class BulletedListMarkdownNode(MarkdownNode):
 
     def __init__(self, texts: list[str]):
         self.texts = texts
-
-    @classmethod
-    def from_params(
-        cls, params: BulletedListMarkdownBlockParams
-    ) -> BulletedListMarkdownNode:
-        return cls(texts=params.texts)
 
     def to_markdown(self) -> str:
         result = []

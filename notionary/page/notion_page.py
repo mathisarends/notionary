@@ -276,43 +276,25 @@ class NotionPage(LoggingMixin):
     async def append_markdown(
         self,
         content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder]],
-        *,
-        prepend_table_of_contents: bool = False,
-        append_divider: bool = False,
     ) -> bool:
         """
         Append markdown content to the page.
-
-        Args:
-            content: Either raw markdown text OR a callback function that receives a MarkdownBuilder
-            prepend_table_of_contents: Whether to prepend table of contents
-            append_divider: Whether to append a divider
-
-        Returns:
-            bool: True if successful, False otherwise
         """
         async with page_context(self.page_context_provider):
             result = await self._page_content_writer.append_markdown(
                 content=content,
-                append_divider=append_divider,
-                prepend_table_of_contents=prepend_table_of_contents,
             )
             return result is not None
 
     async def replace_content(
         self,
         content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder]],
-        *,
-        prepend_table_of_contents: bool = False,
-        append_divider: bool = False,
     ) -> bool:
         """
         Replace the entire page content with new markdown content.
 
         Args:
             content: Either raw markdown text OR a callback function that receives a MarkdownBuilder
-            prepend_table_of_contents: Whether to prepend table of contents
-            append_divider: Whether to append a divider
 
         Returns:
             bool: True if successful, False otherwise
@@ -323,8 +305,6 @@ class NotionPage(LoggingMixin):
 
         result = await self._page_content_writer.append_markdown(
             content=content,
-            prepend_table_of_contents=prepend_table_of_contents,
-            append_divider=append_divider,
         )
         return result is not None
 

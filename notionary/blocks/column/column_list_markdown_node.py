@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from pydantic import BaseModel
 
 from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
@@ -9,6 +11,7 @@ from notionary.markdown.markdown_node import MarkdownNode
 
 class ColumnListMarkdownBlockParams(BaseModel):
     columns: list[list[MarkdownBlock]]
+    width_ratios: Optional[list[float]] = None
     model_config = {"arbitrary_types_allowed": True}
 
 
