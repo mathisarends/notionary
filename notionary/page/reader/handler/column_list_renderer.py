@@ -8,7 +8,7 @@ class ColumnListRenderer(BlockHandler):
     def _can_handle(self, context: BlockRenderingContext) -> bool:
         return ColumnListElement.match_notion(context.block)
 
-    def _process(self, context: BlockRenderingContext) -> None:
+    async def _process(self, context: BlockRenderingContext) -> None:
         # Create column list start line
         column_list_start = "::: columns"
 
@@ -28,7 +28,7 @@ class ColumnListRenderer(BlockHandler):
 
             # Create a temporary retriever to process children
             retriever = PageContentRetriever(context.block_registry)
-            children_markdown = retriever._convert_blocks_to_markdown(
+            children_markdown = await retriever._convert_blocks_to_markdown(
                 context.get_children_blocks(),
                 indent_level=0,  # No indentation for content inside column lists
             )

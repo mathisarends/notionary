@@ -8,7 +8,7 @@ class ToggleRenderer(BlockHandler):
     def _can_handle(self, context: BlockRenderingContext) -> bool:
         return ToggleElement.match_notion(context.block)
 
-    def _process(self, context: BlockRenderingContext) -> None:
+    async def _process(self, context: BlockRenderingContext) -> None:
         # Get the toggle title from the block
         toggle_title = self._extract_toggle_title(context.block)
 
@@ -34,7 +34,7 @@ class ToggleRenderer(BlockHandler):
 
             # Create a temporary retriever to process children
             retriever = PageContentRetriever(context.block_registry)
-            children_markdown = retriever._convert_blocks_to_markdown(
+            children_markdown = await retriever._convert_blocks_to_markdown(
                 context.get_children_blocks(),
                 indent_level=0,  # No indentation for content inside toggles
             )

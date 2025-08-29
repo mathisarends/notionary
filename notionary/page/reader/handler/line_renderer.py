@@ -52,7 +52,7 @@ class LineRenderer(BlockHandler):
         from notionary.page.reader.page_content_retriever import PageContentRetriever
 
         retriever = PageContentRetriever(context.block_registry)
-        children_markdown = retriever._convert_blocks_to_markdown(
+        children_markdown = await retriever._convert_blocks_to_markdown(
             context.get_children_blocks(), indent_level=context.indent_level + 1
         )
 
