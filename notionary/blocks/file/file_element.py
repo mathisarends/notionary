@@ -19,7 +19,7 @@ from notionary.blocks.models import Block, BlockCreateResult, BlockType
 
 
 class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
-    """
+    r"""
     Handles conversion between Markdown file embeds and Notion file blocks.
 
     Supports both external URLs and local file uploads.

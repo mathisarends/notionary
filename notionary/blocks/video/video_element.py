@@ -20,7 +20,7 @@ from notionary.blocks.video.video_element_models import CreateVideoBlock
 
 
 class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
-    """
+    r"""
     Handles conversion between Markdown video embeds and Notion video blocks.
 
     Supports external URLs (YouTube, Vimeo, direct links) and local video file uploads.

@@ -12,9 +12,6 @@ from notionary.page.writer.handler import (
     ToggleableHeadingHandler,
     ToggleHandler,
 )
-from notionary.page.writer.markdown_to_notion_formatting_post_processor import (
-    MarkdownToNotionFormattingPostProcessor,
-)
 from notionary.page.writer.notion_text_length_processor import (
     NotionTextLengthProcessor,
 )
@@ -25,7 +22,6 @@ class MarkdownToNotionConverter:
 
     def __init__(self, block_registry: BlockRegistry) -> None:
         self._block_registry = block_registry
-        self._formatting_post_processor = MarkdownToNotionFormattingPostProcessor()
         self._text_length_post_processor = NotionTextLengthProcessor()
 
         self._setup_handler_chain()
@@ -56,9 +52,6 @@ class MarkdownToNotionConverter:
             return []
 
         all_blocks = await self.process_lines(markdown_text)
-
-        # Apply formatting post-processing (empty paragraphs)
-        all_blocks = self._formatting_post_processor.process(all_blocks)
 
         # Apply text length post-processing (truncation)
         all_blocks = self._text_length_post_processor.process(all_blocks)

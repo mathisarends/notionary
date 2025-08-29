@@ -18,7 +18,7 @@ from notionary.blocks.pdf.pdf_models import CreatePdfBlock
 
 
 class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
-    """
+    r"""
     Handles conversion between Markdown PDF embeds and Notion PDF blocks.
 
     Supports both external URLs and local PDF file uploads.

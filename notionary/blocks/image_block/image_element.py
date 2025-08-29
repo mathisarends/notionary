@@ -17,7 +17,7 @@ from notionary.blocks.models import Block, BlockCreateResult, BlockType
 
 
 class ImageElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
-    """
+    r"""
     Handles conversion between Markdown images and Notion image blocks.
 
     Supports both external URLs and local image file uploads.

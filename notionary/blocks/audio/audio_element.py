@@ -20,7 +20,7 @@ from notionary.util.logging_mixin import LoggingMixin
 
 
 class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin):
-    """
+    r"""
     Handles conversion between Markdown audio embeds and Notion audio blocks.
 
     Supports both external URLs and local audio file uploads.
