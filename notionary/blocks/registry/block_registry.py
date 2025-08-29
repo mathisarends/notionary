@@ -60,6 +60,7 @@ class BlockRegistry:
             .with_breadcrumbs()
             .with_child_database()
             .with_file()
+            .with_pdf()
             .with_paragraphs()  # position here is important - its a fallback!
         )
 

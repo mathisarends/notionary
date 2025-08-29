@@ -62,6 +62,8 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
     async def markdown_to_notion(cls, text: str) -> Optional[BlockCreateResult]:
         """Convert markdown PDF link to Notion PDF block."""
         pdf_path = cls._extract_pdf_path(text.strip())
+        
+        print("pdf", pdf_path)
         if not pdf_path:
             return None
 
@@ -74,7 +76,7 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         # Handle different types of PDF sources
         if pdf_path.startswith(("notion://", "upload://")):
             # Handle special Notion schemes (existing functionality)
-            cls.logger.debug(f"Using special scheme: {pdf_path}")
+            cls.logger.info(f"Using special scheme: {pdf_path}")
             pdf_block = FileBlock(
                 type=FileType.EXTERNAL,
                 external=ExternalFile(url=pdf_path),
@@ -96,7 +98,6 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
                 type=FileType.FILE_UPLOAD,
                 file_upload=FileUploadFile(id=file_upload_id),
                 caption=caption_rich_text,
-                name=Path(pdf_path).name,
             )
 
         else:

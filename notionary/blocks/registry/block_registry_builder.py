@@ -27,6 +27,7 @@ from notionary.blocks.toggle import ToggleElement
 from notionary.blocks.toggleable_heading import ToggleableHeadingElement
 from notionary.blocks.video import VideoElement
 from notionary.blocks.file import FileElement
+from notionary.blocks.pdf import PdfElement
 
 if TYPE_CHECKING:
     from notionary.blocks.registry.block_registry import BlockRegistry
@@ -160,6 +161,9 @@ class BlockRegistryBuilder:
 
     def with_file(self) -> Self:
         return self._add_element(FileElement)
+    
+    def with_pdf(self) -> Self:
+        return self._add_element(PdfElement)
 
     def without_headings(self) -> Self:
         return self.remove_element(HeadingElement)
