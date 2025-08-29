@@ -33,12 +33,6 @@ def get_page_context() -> PageContextProvider:
         )
     return context
 
-
-def get_page_context_optional() -> Optional[PageContextProvider]:
-    """Get current page context or None if not available."""
-    return _page_context.get()
-
-
 class page_context:
     """Async-only context manager for page operations."""
 

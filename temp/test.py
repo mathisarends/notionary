@@ -22,11 +22,12 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
-
-        comments = await page.post_comment("Ich mag dich")
-
-        for comment in comments:
-            print("comment", comment)
+            
+        markdown = """
+        ist alles gut bei dir?
+        """
+        
+        await page.append_markdown(markdown)
 
         print("✅ Successfully added all caption syntax examples!")
 

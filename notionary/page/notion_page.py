@@ -4,6 +4,8 @@ import asyncio
 import random
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
+from isort import file
+
 from notionary.blocks.client import NotionBlockClient
 from notionary.comments import CommentClient, Comment
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
@@ -11,11 +13,14 @@ from notionary.blocks.models import DatabaseParent
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
 from notionary.database.client import NotionDatabaseClient
+from notionary.file_upload.client import NotionFileUploadClient
 from notionary.markdown.markdown_builder import MarkdownBuilder
+from notionary.page import page_context
 from notionary.page.client import NotionPageClient
 from notionary.page.models import NotionPageResponse
 from notionary.page.page_content_deleting_service import PageContentDeletingService
 from notionary.page.page_content_writer import PageContentWriter
+from notionary.page.page_context import PageContextProvider, page_context
 from notionary.page.property_formatter import NotionPropertyFormatter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.page.utils import extract_property_value
@@ -76,6 +81,8 @@ class NotionPage(LoggingMixin):
         self._page_content_retriever = PageContentRetriever(
             block_registry=self.block_element_registry,
         )
+        
+        self.page_context_provider = self._setup_page_context_provider()
 
     @classmethod
     async def from_page_id(
@@ -288,12 +295,13 @@ class NotionPage(LoggingMixin):
         Returns:
             bool: True if successful, False otherwise
         """
-        result = await self._page_content_writer.append_markdown(
-            content=content,
-            append_divider=append_divider,
-            prepend_table_of_contents=prepend_table_of_contents,
-        )
-        return result is not None
+        async with page_context(self.page_context_provider):
+            result = await self._page_content_writer.append_markdown(
+                content=content,
+                append_divider=append_divider,
+                prepend_table_of_contents=prepend_table_of_contents,
+            )
+            return result is not None
 
     async def replace_content(
         self,
@@ -681,3 +689,11 @@ class NotionPage(LoggingMixin):
         parent = page_response.parent
         if isinstance(parent, DatabaseParent):
             return parent.database_id
+
+
+    def _setup_page_context_provider(self) -> PageContextProvider:
+        return PageContextProvider(
+            page_id=self._page_id,
+            database_client=NotionDatabaseClient(token=self._client.token),
+            file_upload_client=NotionFileUploadClient()
+        )

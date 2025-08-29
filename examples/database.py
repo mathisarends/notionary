@@ -1,9 +1,12 @@
 """
-# Notionary: Database Demo
-=========================
+# Notionary: Database Operations Demo
+====================================
 
-A quick demo showing basic database information retrieval and operations using MarkdownBuilder.
-Perfect for getting started with Notionary databases!
+Comprehensive demo showcasing Notionary's database capabilities:
+- Database discovery and information retrieval
+- Page creation with structured content
+- MarkdownBuilder for fluent content creation
+- Property management and rich formatting
 
 SETUP: Replace DATABASE_NAME with an existing database in your Notion workspace.
 """
@@ -123,11 +126,6 @@ def create_demo_page_content() -> str:
             ],
         )
         .space()
-        .callout(
-            text="Pro tip: Use MarkdownBuilder for complex content and raw strings for simple text!",
-            emoji="💡",
-        )
-        .space()
         .paragraph("Built with ❤️ for the Notion community.")
         .build()
     )
@@ -151,12 +149,6 @@ async def main():
 
         print("\n🔨 Building demo page content...")
         content = create_demo_page_content()
-
-        print("📋 Content Preview:")
-        print("-" * 50)
-        preview = content[:150] + "..." if len(content) > 150 else content
-        print(preview)
-        print("-" * 50)
 
         print("\n📄 Creating a new page...")
         page = await db.create_blank_page()

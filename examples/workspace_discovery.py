@@ -85,6 +85,4 @@ if __name__ == "__main__":
     print()
 
     asyncio.run(main())
-
-    print("\n🎉 Thanks for trying the Notionary workspace demo!")
     print("💡 Tip: Update SEARCH_QUERY to search for your own content")

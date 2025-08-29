@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import logging
-from contextlib import contextmanager
 from typing import Optional
 
 from notionary.user.notion_user_manager import NotionUserManager

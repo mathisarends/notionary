@@ -29,9 +29,6 @@ class ChildDatabaseElement(BaseBlockElement, LoggingMixin):
         Convert markdown database syntax to actual Notion database.
         Returns the database_id if successful, None otherwise.
         """
-        cls.logger.warning(
-            "Creating database from markdown is not supported via the block api. Call the create_child_page method in NotionPage instead."
-        )
         return None
 
     @classmethod

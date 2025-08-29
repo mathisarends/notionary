@@ -11,11 +11,12 @@ from notionary.blocks.file.file_element_models import (
     FileType,
 )
 from notionary.blocks.mixins.captions import CaptionMixin
+from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 
 
-class FileElement(BaseBlockElement, CaptionMixin):
+class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
     """
     Handles conversion between Markdown file embeds and Notion file blocks.
 
@@ -36,7 +37,7 @@ class FileElement(BaseBlockElement, CaptionMixin):
         # First remove any captions to get clean text for URL extraction
         clean_text = cls.remove_caption(text)
 
-        # Now extract the URL from clean text
+        # Now extract the URL from clean textw
         match = cls.FILE_PATTERN.search(clean_text)
         if match:
             return match.group(1)
@@ -51,7 +52,6 @@ class FileElement(BaseBlockElement, CaptionMixin):
     @classmethod
     async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown file link to Notion FileBlock."""
-        # Use our helper method to extract the URL
         url = cls._extract_file_url(text.strip())
         if not url:
             return None
