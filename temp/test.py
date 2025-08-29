@@ -7,6 +7,7 @@ Perfect for verifying the unified behavior!
 """
 
 import asyncio
+from pathlib import Path
 
 from notionary import NotionPage
 
@@ -22,10 +23,17 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
+        
+        file_upload_str = "[file](./my_document.pdf)"
+        
+        file_path = Path("./Viadee.png")
+        print(f"File exists: {file_path.exists()}")
+        print(f"Absolute path: {file_path.absolute()}")
 
         markdown = """
         ist alles gut bei dir?
-        [file](./my_document.pdf)
+
+        [image](./Viadee.png)
         """
 
         await page.append_markdown(markdown)

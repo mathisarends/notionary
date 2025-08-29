@@ -4,49 +4,88 @@ import re
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.file.file_element_models import ExternalFile, FileType
+from notionary.blocks.file.file_element_models import ExternalFile, FileType, FileUploadFile
 from notionary.blocks.image_block.image_models import CreateImageBlock, FileBlock
 from notionary.blocks.mixins.captions import CaptionMixin
+from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 
 
-class ImageElement(BaseBlockElement, CaptionMixin):
+class ImageElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
     """
     Handles conversion between Markdown images and Notion image blocks.
 
+    Supports both external URLs and local image file uploads.
+
     Markdown image syntax:
-    - [image](https://example.com/image.jpg) - URL only
+    - [image](https://example.com/image.jpg) - External URL
+    - [image](./local/photo.png) - Local image file (will be uploaded)
+    - [image](C:\Pictures\avatar.jpg) - Absolute local path (will be uploaded)
     - [image](https://example.com/image.jpg)(caption:This is a caption) - URL with caption
-    - (caption:Profile picture)[image](https://example.com/avatar.jpg) - caption before URL
+    - (caption:Profile picture)[image](./avatar.jpg) - Caption before URL
     """
 
-    # Flexible pattern that can handle caption in any position
-    IMAGE_PATTERN = re.compile(r"\[image\]\((https?://[^\s\"]+)\)")
+    # Pattern matches both URLs and file paths
+    IMAGE_PATTERN = re.compile(r"\[image\]\(([^)]+)\)")
+
+    @classmethod
+    def _extract_image_path(cls, text: str) -> Optional[str]:
+        """Extract image path/URL from text, handling caption patterns."""
+        clean_text = cls.remove_caption(text)
+
+        match = cls.IMAGE_PATTERN.search(clean_text)
+        if match:
+            return match.group(1).strip()
+
+        return None
+
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
+        """Check if text contains an image element pattern."""
+        return bool(cls._extract_image_path(text.strip()))
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         return block.type == BlockType.IMAGE and block.image
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> Optional[BlockCreateResult]:
         """Convert markdown image syntax to Notion ImageBlock."""
-        clean_text = cls.remove_caption(text.strip())
-
-        # Use our own regex to find the image URL
-        image_match = cls.IMAGE_PATTERN.search(clean_text)
-        if not image_match:
+        image_path = cls._extract_image_path(text.strip())
+        if not image_path:
             return None
 
-        url = image_match.group(1)
+        cls.logger.info(f"Processing image: {image_path}")
 
+        # Extract caption
         caption_text = cls.extract_caption(text.strip())
         caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 
-        # Build ImageBlock
-        image_block = FileBlock(
-            type="external", external=ExternalFile(url=url), caption=caption_rich_text
-        )
+        # Determine if it's a local file or external URL
+        if cls._is_local_file_path(image_path):
+            cls.logger.debug(f"Detected local image file: {image_path}")
+
+            # Upload the local image file using mixin method
+            file_upload_id = await cls._upload_local_file(image_path, "image")
+            if not file_upload_id:
+                cls.logger.error(f"Failed to upload image: {image_path}")
+                return None
+
+            image_block = FileBlock(
+                type=FileType.FILE_UPLOAD,
+                file_upload=FileUploadFile(id=file_upload_id),
+                caption=caption_rich_text,
+            )
+
+        else:
+            cls.logger.debug(f"Using external image URL: {image_path}")
+
+            image_block = FileBlock(
+                type=FileType.EXTERNAL,
+                external=ExternalFile(url=image_path),
+                caption=caption_rich_text,
+            )
 
         return CreateImageBlock(image=image_block)
 
@@ -57,14 +96,22 @@ class ImageElement(BaseBlockElement, CaptionMixin):
 
         fo = block.image
 
+        # Determine the source for markdown
         if fo.type == FileType.EXTERNAL and fo.external:
-            url = fo.external.url
+            source = fo.external.url
         elif fo.type == FileType.FILE and fo.file:
-            url = fo.file.url
+            source = fo.file.url
+        elif fo.type == FileType.FILE_UPLOAD and fo.file_upload:
+            # For uploaded images, we can't recreate the original path
+            # Use the filename if available, or a placeholder
+            if fo.name:
+                source = f"./uploaded/{fo.name}"
+            else:
+                source = f"./uploaded/image_{fo.file_upload.id}"
         else:
             return None
 
-        result = f"[image]({url})"
+        result = f"[image]({source})"
 
         # Add caption if present
         caption_markdown = await cls.format_caption_for_markdown(fo.caption or [])
@@ -78,12 +125,14 @@ class ImageElement(BaseBlockElement, CaptionMixin):
         """Get system prompt information for image blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,
-            description="Image blocks display images from external URLs with optional captions",
+            description="Image blocks display images from external URLs or upload local image files with optional captions",
             syntax_examples=[
                 "[image](https://example.com/photo.jpg)",
+                "[image](./local/screenshot.png)",
+                "[image](C:\\Pictures\\avatar.jpg)",
                 "[image](https://example.com/diagram.png)(caption:Architecture Diagram)",
-                "(caption:Sales Chart)[image](https://example.com/chart.svg)",
-                "[image](https://example.com/screenshot.png)(caption:Dashboard **overview**)",
+                "(caption:Sales Chart)[image](./chart.svg)",
+                "[image](./screenshot.png)(caption:Dashboard **overview**)",
             ],
-            usage_guidelines="Use for displaying images from external URLs. Supports common image formats (jpg, png, gif, svg, webp). Caption supports rich text formatting and describes the image content.",
+            usage_guidelines="Use for displaying images from external URLs or local files. Local image files will be automatically uploaded to Notion. Supports common image formats (jpg, png, gif, svg, webp, bmp, tiff, heic). Caption supports rich text formatting and describes the image content.",
         )
