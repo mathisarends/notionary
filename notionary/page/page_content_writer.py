@@ -29,7 +29,7 @@ class PageContentWriter(LoggingMixin):
         """
         Append markdown content to a Notion page using either text or builder callback.
         """
-
+        
         if isinstance(content, str):
             final_markdown = content
         elif callable(content):

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
@@ -63,7 +62,6 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         """Convert markdown PDF link to Notion PDF block."""
         pdf_path = cls._extract_pdf_path(text.strip())
         
-        print("pdf", pdf_path)
         if not pdf_path:
             return None
 
