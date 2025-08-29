@@ -26,6 +26,7 @@ from notionary.blocks.todo import TodoElement
 from notionary.blocks.toggle import ToggleElement
 from notionary.blocks.toggleable_heading import ToggleableHeadingElement
 from notionary.blocks.video import VideoElement
+from notionary.blocks.file import FileElement
 
 if TYPE_CHECKING:
     from notionary.blocks.registry.block_registry import BlockRegistry
@@ -72,6 +73,7 @@ class BlockRegistryBuilder:
             .with_table_of_contents()
             .with_breadcrumbs()
             .with_child_database()
+            .with_file()
         ).build()
 
     def remove_element(self, element_class: Type[BaseBlockElement]) -> Self:
@@ -155,6 +157,9 @@ class BlockRegistryBuilder:
 
     def with_child_database(self) -> Self:
         return self._add_element(ChildDatabaseElement)
+    
+    def with_file(self) -> Self:
+        return self._add_element(FileElement)
 
     def without_headings(self) -> Self:
         return self.remove_element(HeadingElement)

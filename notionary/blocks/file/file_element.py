@@ -28,13 +28,11 @@ class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
     Supports external file URLs with optional captions.
     """
 
-    # Simple pattern that matches just the file link, CaptionMixin handles caption separately
     FILE_PATTERN = re.compile(r"\[file\]\((https?://[^\s\"]+)\)")
 
     @classmethod
     def _extract_file_url(cls, text: str) -> Optional[str]:
         """Extract file URL from text, handling caption patterns."""
-        # First remove any captions to get clean text for URL extraction
         clean_text = cls.remove_caption(text)
 
         # Now extract the URL from clean textw
@@ -46,15 +44,17 @@ class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        # Notion file block covers files
         return block.type == BlockType.FILE and block.file
 
     @classmethod
     async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """Convert markdown file link to Notion FileBlock."""
+        print("before url")
         url = cls._extract_file_url(text.strip())
         if not url:
             return None
+        
+        context = cls._get_file_upload_client()
 
         # Use mixin to extract caption (if present anywhere in text)
         caption_text = cls.extract_caption(text.strip())
