@@ -29,7 +29,7 @@ class LineRenderer(BlockHandler):
             )
 
             retriever = PageContentRetriever(context.block_registry)
-            children_markdown = retriever._convert_blocks_to_markdown(
+            children_markdown = await retriever._convert_blocks_to_markdown(
                 context.get_children_blocks(), indent_level=context.indent_level + 1
             )
             context.markdown_result = children_markdown

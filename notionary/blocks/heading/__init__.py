@@ -16,5 +16,4 @@ __all__ = [
     "CreateHeading2Block",
     "CreateHeading3Block",
     "HeadingMarkdownNode",
-    "HeadingMarkdownBlockParams",
 ]

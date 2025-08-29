@@ -1,16 +1,7 @@
 from __future__ import annotations
 
 from typing import Optional
-
-from pydantic import BaseModel
-
 from notionary.markdown.markdown_node import MarkdownNode
-
-
-class ColumnMarkdownBlockParams(BaseModel):
-    children: list[MarkdownNode]
-    width_ratio: Optional[float] = None
-    model_config = {"arbitrary_types_allowed": True}
 
 
 class ColumnMarkdownNode(MarkdownNode):
@@ -37,10 +28,6 @@ class ColumnMarkdownNode(MarkdownNode):
     ):
         self.children = children
         self.width_ratio = width_ratio
-
-    @classmethod
-    def from_params(cls, params: ColumnMarkdownBlockParams) -> ColumnMarkdownNode:
-        return cls(children=params.children, width_ratio=params.width_ratio)
 
     def to_markdown(self) -> str:
         # Start tag with optional width ratio

@@ -23,10 +23,6 @@ class EquationMarkdownNode(MarkdownNode):
     def __init__(self, expression: str):
         self.expression = expression
 
-    @classmethod
-    def from_params(cls, params: EquationMarkdownBlockParams) -> EquationMarkdownNode:
-        return cls(expression=params.expression)
-
     def to_markdown(self) -> str:
         expr = self.expression.strip()
         if not expr:

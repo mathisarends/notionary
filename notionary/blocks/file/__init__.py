@@ -1,7 +1,6 @@
 from notionary.blocks.file.file_element import FileElement
 from notionary.blocks.file.file_element_markdown_node import (
     FileMarkdownNode,
-    FileMarkdownNodeParams,
 )
 from notionary.blocks.file.file_element_models import (
     CreateFileBlock,
@@ -21,5 +20,4 @@ __all__ = [
     "FileBlock",
     "CreateFileBlock",
     "FileMarkdownNode",
-    "FileMarkdownNodeParams",
 ]

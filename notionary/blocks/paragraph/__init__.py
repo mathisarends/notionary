@@ -12,5 +12,4 @@ __all__ = [
     "ParagraphBlock",
     "CreateParagraphBlock",
     "ParagraphMarkdownNode",
-    "ParagraphMarkdownBlockParams",
 ]

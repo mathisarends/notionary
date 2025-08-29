@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from notionary.markdown.markdown_node import MarkdownNode
 
-
 class HeadingMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating Markdown headings (H1-H3).

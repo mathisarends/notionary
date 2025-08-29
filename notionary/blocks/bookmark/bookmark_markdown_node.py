@@ -2,16 +2,10 @@ from __future__ import annotations
 
 from typing import Optional
 
-from pydantic import BaseModel
-
 from notionary.markdown.markdown_node import MarkdownNode
 from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
 
-class BookmarkMarkdownBlockParams(BaseModel):
-    url: str
-    title: Optional[str] = None
-    caption: Optional[str] = None
 
 
 class BookmarkMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
@@ -25,10 +19,6 @@ class BookmarkMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
         self.url = url
         self.title = title
         self.caption = caption
-
-    @classmethod
-    def from_params(cls, params: BookmarkMarkdownBlockParams) -> BookmarkMarkdownNode:
-        return cls(url=params.url, title=params.title, caption=params.caption)
 
     def to_markdown(self) -> str:
         """Return the Markdown representation.

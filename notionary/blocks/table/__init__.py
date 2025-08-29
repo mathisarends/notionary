@@ -1,6 +1,5 @@
 from notionary.blocks.table.table_element import TableElement
 from notionary.blocks.table.table_markdown_node import (
-    TableMarkdownBlockParams,
     TableMarkdownNode,
 )
 from notionary.blocks.table.table_models import (
@@ -17,5 +16,4 @@ __all__ = [
     "CreateTableRowBlock",
     "CreateTableBlock",
     "TableMarkdownNode",
-    "TableMarkdownBlockParams",
 ]

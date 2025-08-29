@@ -56,7 +56,7 @@ class MarkdownBuilder:
 
         builder = cls()
         processor = MarkdownModelProcessor(builder)
-        processor.process_model(model)
+        processor.process(model)
         return builder
 
     def h1(self, text: str) -> Self:

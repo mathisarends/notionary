@@ -1,14 +1,5 @@
 from __future__ import annotations
-
-from pydantic import BaseModel
-
 from notionary.markdown.markdown_node import MarkdownNode
-
-
-class ToggleMarkdownBlockParams(BaseModel):
-    title: str
-    children: list[MarkdownNode]
-    model_config = {"arbitrary_types_allowed": True}
 
 
 class ToggleMarkdownNode(MarkdownNode):
@@ -26,10 +17,6 @@ class ToggleMarkdownNode(MarkdownNode):
     def __init__(self, title: str, children: list[MarkdownNode]):
         self.title = title
         self.children = children
-
-    @classmethod
-    def from_params(cls, params: ToggleMarkdownBlockParams) -> ToggleMarkdownNode:
-        return cls(title=params.title, children=params.children)
 
     def to_markdown(self) -> str:
         result = f"+++{self.title}"

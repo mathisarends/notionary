@@ -1,15 +1,5 @@
 from __future__ import annotations
-
-from pydantic import BaseModel
-
 from notionary.markdown.markdown_node import MarkdownNode
-
-
-class ToggleableHeadingMarkdownBlockParams(BaseModel):
-    text: str
-    level: int
-    children: list[MarkdownNode]
-    model_config = {"arbitrary_types_allowed": True}
 
 
 class ToggleableHeadingMarkdownNode(MarkdownNode):
@@ -29,12 +19,6 @@ class ToggleableHeadingMarkdownNode(MarkdownNode):
         self.text = text
         self.level = level
         self.children = children
-
-    @classmethod
-    def from_params(
-        cls, params: ToggleableHeadingMarkdownBlockParams
-    ) -> ToggleableHeadingMarkdownNode:
-        return cls(text=params.text, level=params.level, children=params.children)
 
     def to_markdown(self) -> str:
         prefix = "+++" + ("#" * self.level)

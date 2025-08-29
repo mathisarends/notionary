@@ -12,5 +12,4 @@ __all__ = [
     "BulletedListItemBlock",
     "CreateBulletedListItemBlock",
     "BulletedListMarkdownNode",
-    "BulletedListMarkdownBlockParams",
 ]
