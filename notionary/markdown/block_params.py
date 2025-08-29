@@ -12,116 +12,119 @@ from pydantic import BaseModel
 if TYPE_CHECKING:
     from notionary.markdown.markdown_document_model import MarkdownBlock
 
-
-class HeadingBlockParams(BaseModel):
+# TODO: Brauche ich wirklich die hier und die in document models - kann ich mir fast nicht vorstellen hier
+class HeadingProcessorModel(BaseModel):
     text: str
     level: int = 1
 
 
-class ParagraphBlockParams(BaseModel):
+class ParagraphProcessorModel(BaseModel):
     text: str
 
 
-class QuoteBlockParams(BaseModel):
+class QuoteProcessorModel(BaseModel):
     text: str
 
 
-class BulletedListBlockParams(BaseModel):
+class BulletedListProcessorModel(BaseModel):
     texts: list[str]
 
 
-class NumberedListBlockParams(BaseModel):
+class NumberedListProcessorModel(BaseModel):
     texts: list[str]
 
 
-class TodoBlockParams(BaseModel):
+class TodoProcessorModel(BaseModel):
     text: str
     checked: bool = False
 
 
-class CalloutBlockParams(BaseModel):
+class CalloutProcessorModel(BaseModel):
     text: str
     emoji: str = "💡"
 
 
-class CodeBlockParams(BaseModel):
+class CodeProcessorModel(BaseModel):
     code: str
     language: str = ""
     caption: str = ""
 
 
-class ImageBlockParams(BaseModel):
+class ImageProcessorModel(BaseModel):
     url: str
     caption: str = ""
     alt: str = ""
 
 
-class VideoBlockParams(BaseModel):
+class VideoProcessorModel(BaseModel):
     url: str
     caption: str = ""
 
 
-class AudioBlockParams(BaseModel):
+class AudioProcessorModel(BaseModel):
     url: str
     caption: str = ""
 
 
-class FileBlockParams(BaseModel):
+class FileProcessorModel(BaseModel):
     url: str
     caption: str = ""
 
 
-class PdfBlockParams(BaseModel):
+class PdfProcessorModel(BaseModel):
     url: str
     caption: str = ""
 
 
-class BookmarkBlockParams(BaseModel):
+class BookmarkProcessorModel(BaseModel):
     url: str
     title: str = ""
     caption: str = ""
 
 
-class EmbedBlockParams(BaseModel):
+class EmbedProcessorModel(BaseModel):
     url: str
     caption: str = ""
 
 
-class TableBlockParams(BaseModel):
+class TableProcessorModel(BaseModel):
     headers: list[str]
     rows: list[list[str]]
 
 
-class DividerBlockParams(BaseModel):
+class DividerProcessorModel(BaseModel):
     pass
 
 
-class ToggleBlockParams(BaseModel):
+class ToggleProcessorModel(BaseModel):
     """Type for Toggle blocks with nested children."""
+
     title: str
     children: list[MarkdownBlock]  # Properly typed nested blocks
 
 
-class ToggleableHeadingBlockParams(BaseModel):
+class ToggleableHeadingProcessorModel(BaseModel):
     """Type for Toggleable Heading blocks with nested children."""
+
     text: str
     level: int = 1
     children: list[MarkdownBlock]  # Properly typed nested blocks
 
 
-class BreadcrumbBlockParams(BaseModel):
+class BreadcrumbProcessorModel(BaseModel):
     items: list[str]
 
 
-class TableOfContentsBlockParams(BaseModel):
+class TableOfContentsProcessorModel(BaseModel):
     color: str = ""
 
 
-class ColumnBlockParams(BaseModel):
+class ColumnProcessorModel(BaseModel):
     """Type for Column blocks - this represents the `::: columns` container."""
+
     columns: list[list[MarkdownBlock]]  # Each column contains a list of blocks
     width_ratios: list[float] | None = None
 
 
-class EquationBlockParams(BaseModel):
+class EquationProcessorModel(BaseModel):
     expression: str

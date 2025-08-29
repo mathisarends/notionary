@@ -4,7 +4,7 @@ Markdown whitespace processing utilities.
 Handles normalization of markdown text while preserving code blocks and their indentation.
 """
 
-from typing import List, Tuple
+from typing import Tuple
 
 
 class MarkdownWhitespaceProcessor:
@@ -111,7 +111,7 @@ class MarkdownWhitespaceProcessor:
         return "```" + language
 
     @staticmethod
-    def _normalize_code_block_content(code_lines: List[str]) -> List[str]:
+    def _normalize_code_block_content(code_lines: list[str]) -> list[str]:
         """Normalize code block indentation."""
         if not code_lines:
             return []

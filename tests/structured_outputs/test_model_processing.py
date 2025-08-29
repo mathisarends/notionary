@@ -51,7 +51,7 @@ def test_refactored_model_processing():
     assert "## Section 2" in markdown
     assert "Another paragraph in section 2." in markdown
     assert "- Item 1" in markdown
-    assert "⚠️" in markdown  
+    assert "⚠️" in markdown
     assert "```python" in markdown
     assert "print('Hello World')" in markdown
     assert "---" in markdown

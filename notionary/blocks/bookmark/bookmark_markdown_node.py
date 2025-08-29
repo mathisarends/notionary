@@ -6,8 +6,6 @@ from notionary.markdown.markdown_node import MarkdownNode
 from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
 
-
-
 class BookmarkMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     """
     Programmatic interface for creating Notion-style bookmark Markdown blocks.

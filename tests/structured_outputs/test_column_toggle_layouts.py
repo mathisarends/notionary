@@ -24,22 +24,27 @@ def test_column_and_toggle_layouts():
     model = MarkdownDocumentModel(
         blocks=[
             HeadingBlock(text="Advanced Layout Test", level=1),
-            
             # Test Toggle with nested content
             ToggleBlock(
                 title="📋 Project Overview",
                 children=[
                     HeadingBlock(text="Introduction", level=2),
-                    ParagraphBlock(text="This section contains detailed project information."),
-                    BulletedListBlock(texts=[
-                        "Feature 1: Advanced layouts",
-                        "Feature 2: Nested structures", 
-                        "Feature 3: Type safety"
-                    ]),
-                    CalloutBlock(text="Important: This is a nested callout inside toggle!", emoji="⚠️"),
-                ]
+                    ParagraphBlock(
+                        text="This section contains detailed project information."
+                    ),
+                    BulletedListBlock(
+                        texts=[
+                            "Feature 1: Advanced layouts",
+                            "Feature 2: Nested structures",
+                            "Feature 3: Type safety",
+                        ]
+                    ),
+                    CalloutBlock(
+                        text="Important: This is a nested callout inside toggle!",
+                        emoji="⚠️",
+                    ),
+                ],
             ),
-            
             # Test Column layout with nested content
             ColumnBlock(
                 columns=[
@@ -47,18 +52,20 @@ def test_column_and_toggle_layouts():
                     [
                         HeadingBlock(text="Left Column", level=2),
                         ParagraphBlock(text="Content in the left column."),
-                        CodeBlock(code="def left_function():\n    return 'left'", language="python"),
+                        CodeBlock(
+                            code="def left_function():\n    return 'left'",
+                            language="python",
+                        ),
                     ],
-                    # Right Column  
+                    # Right Column
                     [
                         HeadingBlock(text="Right Column", level=2),
                         ParagraphBlock(text="Content in the right column."),
                         BulletedListBlock(texts=["Right item 1", "Right item 2"]),
-                    ]
+                    ],
                 ],
-                width_ratios=[0.6, 0.4]  # 60% left, 40% right
+                width_ratios=[0.6, 0.4],  # 60% left, 40% right
             ),
-            
             # Test nested Toggle inside Column
             ColumnBlock(
                 columns=[
@@ -67,19 +74,22 @@ def test_column_and_toggle_layouts():
                         ToggleBlock(
                             title="🔧 Nested Toggle in Column",
                             children=[
-                                ParagraphBlock(text="This toggle is nested inside a column!"),
-                                CalloutBlock(text="Nested structures work!", emoji="🎉")
-                            ]
-                        )
+                                ParagraphBlock(
+                                    text="This toggle is nested inside a column!"
+                                ),
+                                CalloutBlock(
+                                    text="Nested structures work!", emoji="🎉"
+                                ),
+                            ],
+                        ),
                     ],
                     [
                         HeadingBlock(text="Regular Column", level=2),
-                        ParagraphBlock(text="Normal content in second column.")
-                    ]
+                        ParagraphBlock(text="Normal content in second column."),
+                    ],
                 ]
             ),
-            
-            ParagraphBlock(text="End of layout test.")
+            ParagraphBlock(text="End of layout test."),
         ]
     )
 
@@ -101,7 +111,7 @@ def test_column_and_toggle_layouts():
         assert "⚠️" in markdown, "Nested callout in toggle missing"
         assert "Feature 1: Advanced layouts" in markdown, "Toggle nested list missing"
 
-        # Verify Column structure  
+        # Verify Column structure
         assert "::: columns" in markdown, "Column container missing"
         assert "::: column" in markdown, "Individual columns missing"
         assert "Left Column" in markdown, "Left column content missing"
@@ -109,28 +119,39 @@ def test_column_and_toggle_layouts():
         assert "def left_function" in markdown, "Code block in column missing"
 
         # Verify nested Toggle in Column
-        assert "🔧 Nested Toggle in Column" in markdown, "Nested toggle in column missing"
-        assert "This toggle is nested inside a column!" in markdown, "Toggle content in column missing"
+        assert (
+            "🔧 Nested Toggle in Column" in markdown
+        ), "Nested toggle in column missing"
+        assert (
+            "This toggle is nested inside a column!" in markdown
+        ), "Toggle content in column missing"
 
         print("✅ Column structure test passed!")
         print("✅ Toggle structure test passed!")
         print("✅ Nested structures test passed!")
         print(f"✅ Builder has {len(builder.children)} top-level children")
-        
+
         # Count children types
-        toggle_count = sum(1 for child in builder.children if "ToggleMarkdownNode" in str(type(child)))
-        column_count = sum(1 for child in builder.children if "ColumnListMarkdownNode" in str(type(child)))
-        
+        toggle_count = sum(
+            1 for child in builder.children if "ToggleMarkdownNode" in str(type(child))
+        )
+        column_count = sum(
+            1
+            for child in builder.children
+            if "ColumnListMarkdownNode" in str(type(child))
+        )
+
         print("📊 Structure Analysis:")
         print(f"   - Toggle blocks: {toggle_count}")
         print(f"   - Column blocks: {column_count}")
         print("🎉 Hierarchical layout structures work perfectly!")
-        
+
         return True
 
     except Exception as e:
         print(f"❌ Test failed with error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 

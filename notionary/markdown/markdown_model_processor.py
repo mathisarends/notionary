@@ -15,54 +15,64 @@ from notionary.markdown.markdown_document_model import (
     MarkdownDocumentModel,
 )
 
-from notionary.blocks.bookmark.bookmark_markdown_node import BookmarkMarkdownNode
-from notionary.blocks.breadcrumbs.breadcrumb_markdown_node import BreadcrumbMarkdownNode
-from notionary.blocks.bulleted_list.bulleted_list_markdown_node import BulletedListMarkdownNode
-from notionary.blocks.callout.callout_markdown_node import CalloutMarkdownNode
-from notionary.blocks.code.code_markdown_node import CodeMarkdownNode
-from notionary.blocks.column.column_list_markdown_node import ColumnListMarkdownNode
-from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
-from notionary.blocks.divider.divider_markdown_node import DividerMarkdownNode
-from notionary.blocks.embed.embed_markdown_node import EmbedMarkdownNode
-from notionary.blocks.equation.equation_element_markdown_node import EquationMarkdownNode
-from notionary.blocks.file.file_element_markdown_node import FileMarkdownNode
-from notionary.blocks.heading.heading_markdown_node import HeadingMarkdownNode
-from notionary.blocks.image_block.image_markdown_node import ImageMarkdownNode
-from notionary.blocks.numbered_list.numbered_list_markdown_node import NumberedListMarkdownNode
-from notionary.blocks.paragraph.paragraph_markdown_node import ParagraphMarkdownNode
-from notionary.blocks.pdf.pdf_markdown_node import PdfMarkdownNode
-from notionary.blocks.quote.quote_markdown_node import QuoteMarkdownNode
-from notionary.blocks.table.table_markdown_node import TableMarkdownNode
-from notionary.blocks.table_of_contents.table_of_contents_markdown_node import TableOfContentsMarkdownNode
-from notionary.blocks.todo.todo_markdown_node import TodoMarkdownNode
-from notionary.blocks.toggle.toggle_markdown_node import ToggleMarkdownNode
-from notionary.blocks.toggleable_heading.toggleable_heading_markdown_node import ToggleableHeadingMarkdownNode
-from notionary.blocks.video.video_markdown_node import VideoMarkdownNode
-from notionary.blocks.audio.audio_markdown_node import AudioMarkdownNode
+from notionary.blocks.bookmark import BookmarkMarkdownNode
+from notionary.blocks.breadcrumbs import BreadcrumbMarkdownNode
+from notionary.blocks.bulleted_list import (
+    BulletedListMarkdownNode,
+)
+from notionary.blocks.callout import CalloutMarkdownNode
+from notionary.blocks.code import CodeMarkdownNode
+from notionary.blocks.column import ColumnListMarkdownNode
+from notionary.blocks.column import ColumnMarkdownNode
+from notionary.blocks.divider import DividerMarkdownNode
+from notionary.blocks.embed import EmbedMarkdownNode
+from notionary.blocks.equation import (
+    EquationMarkdownNode,
+)
+from notionary.blocks.file import FileMarkdownNode
+from notionary.blocks.heading import HeadingMarkdownNode
+from notionary.blocks.image_block import ImageMarkdownNode
+from notionary.blocks.numbered_list import (
+    NumberedListMarkdownNode,
+)
+from notionary.blocks.paragraph import ParagraphMarkdownNode
+from notionary.blocks.pdf import PdfMarkdownNode
+from notionary.blocks.quote import QuoteMarkdownNode
+from notionary.blocks.table import TableMarkdownNode
+from notionary.blocks.table_of_contents import (
+    TableOfContentsMarkdownNode,
+)
+from notionary.blocks.todo import TodoMarkdownNode
+from notionary.blocks.toggle import ToggleMarkdownNode
+from notionary.blocks.toggleable_heading import (
+    ToggleableHeadingMarkdownNode,
+)
+from notionary.blocks.video import VideoMarkdownNode
+from notionary.blocks.audio import AudioMarkdownNode
 from notionary.markdown.block_params import (
-    AudioBlockParams,
-    BookmarkBlockParams,
-    BreadcrumbBlockParams,
-    BulletedListBlockParams,
-    CalloutBlockParams,
-    CodeBlockParams,
-    ColumnBlockParams,
-    DividerBlockParams,
-    EmbedBlockParams,
-    EquationBlockParams,
-    FileBlockParams,
-    HeadingBlockParams,
-    ImageBlockParams,
-    NumberedListBlockParams,
-    ParagraphBlockParams,
-    PdfBlockParams,
-    QuoteBlockParams,
-    TableBlockParams,
-    TableOfContentsBlockParams,
-    TodoBlockParams,
-    ToggleBlockParams,
-    ToggleableHeadingBlockParams,
-    VideoBlockParams,
+    AudioProcessorModel,
+    BookmarkProcessorModel,
+    BreadcrumbProcessorModel,
+    BulletedListProcessorModel,
+    CalloutProcessorModel,
+    CodeProcessorModel,
+    ColumnProcessorModel,
+    DividerProcessorModel,
+    EmbedProcessorModel,
+    EquationProcessorModel,
+    FileProcessorModel,
+    HeadingProcessorModel,
+    ImageProcessorModel,
+    NumberedListProcessorModel,
+    ParagraphProcessorModel,
+    PdfProcessorModel,
+    QuoteProcessorModel,
+    TableProcessorModel,
+    TableOfContentsProcessorModel,
+    TodoProcessorModel,
+    ToggleProcessorModel,
+    ToggleableHeadingProcessorModel,
+    VideoProcessorModel,
 )
 
 
@@ -109,83 +119,111 @@ class MarkdownModelProcessor:
                 )
 
     # Block processor methods
-    def _add_heading(self, block: HeadingBlockParams) -> None:
+    def _add_heading(self, block: HeadingProcessorModel) -> None:
         """Add a heading block."""
-        self.builder.children.append(HeadingMarkdownNode(text=block.text, level=block.level))
+        self.builder.children.append(
+            HeadingMarkdownNode(text=block.text, level=block.level)
+        )
 
-    def _add_paragraph(self, block: ParagraphBlockParams) -> None:
+    def _add_paragraph(self, block: ParagraphProcessorModel) -> None:
         """Add a paragraph block."""
         self.builder.children.append(ParagraphMarkdownNode(text=block.text))
 
-    def _add_quote(self, block: QuoteBlockParams) -> None:
+    def _add_quote(self, block: QuoteProcessorModel) -> None:
         """Add a quote block."""
         self.builder.children.append(QuoteMarkdownNode(text=block.text))
 
-    def _add_bulleted_list(self, block: BulletedListBlockParams) -> None:
+    def _add_bulleted_list(self, block: BulletedListProcessorModel) -> None:
         """Add a bulleted list block."""
         self.builder.children.append(BulletedListMarkdownNode(texts=block.texts))
 
-    def _add_numbered_list(self, block: NumberedListBlockParams) -> None:
+    def _add_numbered_list(self, block: NumberedListProcessorModel) -> None:
         """Add a numbered list block."""
         self.builder.children.append(NumberedListMarkdownNode(texts=block.texts))
 
-    def _add_todo(self, block: TodoBlockParams) -> None:
+    def _add_todo(self, block: TodoProcessorModel) -> None:
         """Add a todo block."""
-        self.builder.children.append(TodoMarkdownNode(text=block.text, checked=block.checked))
+        self.builder.children.append(
+            TodoMarkdownNode(text=block.text, checked=block.checked)
+        )
 
-    def _add_callout(self, block: CalloutBlockParams) -> None:
+    def _add_callout(self, block: CalloutProcessorModel) -> None:
         """Add a callout block."""
-        self.builder.children.append(CalloutMarkdownNode(text=block.text, emoji=block.emoji))
+        self.builder.children.append(
+            CalloutMarkdownNode(text=block.text, emoji=block.emoji)
+        )
 
-    def _add_code(self, block: CodeBlockParams) -> None:
+    def _add_code(self, block: CodeProcessorModel) -> None:
         """Add a code block."""
-        self.builder.children.append(CodeMarkdownNode(code=block.code, language=block.language, caption=block.caption))
+        self.builder.children.append(
+            CodeMarkdownNode(
+                code=block.code, language=block.language, caption=block.caption
+            )
+        )
 
-    def _add_image(self, block: ImageBlockParams) -> None:
+    def _add_image(self, block: ImageProcessorModel) -> None:
         """Add an image block."""
-        self.builder.children.append(ImageMarkdownNode(url=block.url, caption=block.caption, alt=block.alt))
+        self.builder.children.append(
+            ImageMarkdownNode(url=block.url, caption=block.caption, alt=block.alt)
+        )
 
-    def _add_video(self, block: VideoBlockParams) -> None:
+    def _add_video(self, block: VideoProcessorModel) -> None:
         """Add a video block."""
-        self.builder.children.append(VideoMarkdownNode(url=block.url, caption=block.caption))
+        self.builder.children.append(
+            VideoMarkdownNode(url=block.url, caption=block.caption)
+        )
 
-    def _add_audio(self, block: AudioBlockParams) -> None:
+    def _add_audio(self, block: AudioProcessorModel) -> None:
         """Add an audio block."""
-        self.builder.children.append(AudioMarkdownNode(url=block.url, caption=block.caption))
+        self.builder.children.append(
+            AudioMarkdownNode(url=block.url, caption=block.caption)
+        )
 
-    def _add_file(self, block: FileBlockParams) -> None:
+    def _add_file(self, block: FileProcessorModel) -> None:
         """Add a file block."""
-        self.builder.children.append(FileMarkdownNode(url=block.url, caption=block.caption))
+        self.builder.children.append(
+            FileMarkdownNode(url=block.url, caption=block.caption)
+        )
 
-    def _add_pdf(self, block: PdfBlockParams) -> None:
+    def _add_pdf(self, block: PdfProcessorModel) -> None:
         """Add a PDF block."""
-        self.builder.children.append(PdfMarkdownNode(url=block.url, caption=block.caption))
+        self.builder.children.append(
+            PdfMarkdownNode(url=block.url, caption=block.caption)
+        )
 
-    def _add_bookmark(self, block: BookmarkBlockParams) -> None:
+    def _add_bookmark(self, block: BookmarkProcessorModel) -> None:
         """Add a bookmark block."""
-        self.builder.children.append(BookmarkMarkdownNode(url=block.url, title=block.title, caption=block.caption))
+        self.builder.children.append(
+            BookmarkMarkdownNode(
+                url=block.url, title=block.title, caption=block.caption
+            )
+        )
 
-    def _add_embed(self, block: EmbedBlockParams) -> None:
+    def _add_embed(self, block: EmbedProcessorModel) -> None:
         """Add an embed block."""
-        self.builder.children.append(EmbedMarkdownNode(url=block.url, caption=block.caption))
+        self.builder.children.append(
+            EmbedMarkdownNode(url=block.url, caption=block.caption)
+        )
 
-    def _add_table(self, block: TableBlockParams) -> None:
+    def _add_table(self, block: TableProcessorModel) -> None:
         """Add a table block."""
-        self.builder.children.append(TableMarkdownNode(headers=block.headers, rows=block.rows))
+        self.builder.children.append(
+            TableMarkdownNode(headers=block.headers, rows=block.rows)
+        )
 
-    def _add_divider(self, block: DividerBlockParams) -> None:
+    def _add_divider(self, block: DividerProcessorModel) -> None:
         """Add a divider block."""
         self.builder.children.append(DividerMarkdownNode())
 
-    def _add_equation(self, block: EquationBlockParams) -> None:
+    def _add_equation(self, block: EquationProcessorModel) -> None:
         """Add an equation block."""
         self.builder.children.append(EquationMarkdownNode(expression=block.expression))
 
-    def _add_table_of_contents(self, block: TableOfContentsBlockParams) -> None:
+    def _add_table_of_contents(self, block: TableOfContentsProcessorModel) -> None:
         """Add a table of contents block."""
         self.builder.children.append(TableOfContentsMarkdownNode(color=block.color))
 
-    def _add_toggle(self, block: ToggleBlockParams) -> None:
+    def _add_toggle(self, block: ToggleProcessorModel) -> None:
         """Add a toggle block."""
         from notionary.markdown.markdown_builder import MarkdownBuilder
 
@@ -197,7 +235,7 @@ class MarkdownModelProcessor:
             ToggleMarkdownNode(title=block.title, children=child_builder.children)
         )
 
-    def _add_toggleable_heading(self, block: ToggleableHeadingBlockParams) -> None:
+    def _add_toggleable_heading(self, block: ToggleableHeadingProcessorModel) -> None:
         """Add a toggleable heading block."""
         from notionary.markdown.markdown_builder import MarkdownBuilder
 
@@ -212,7 +250,7 @@ class MarkdownModelProcessor:
             )
         )
 
-    def _add_columns(self, block: ColumnBlockParams) -> None:
+    def _add_columns(self, block: ColumnProcessorModel) -> None:
         """Add a columns block."""
         from notionary.markdown.markdown_builder import MarkdownBuilder
 
@@ -230,15 +268,14 @@ class MarkdownModelProcessor:
             col_processor.process(column_blocks)
 
             column_node = ColumnMarkdownNode(
-                children=col_builder.children,
-                width_ratio=width_ratio 
+                children=col_builder.children, width_ratio=width_ratio
             )
             column_nodes.append(column_node)
 
         # Create ColumnListMarkdownNode with properly typed columns
         self.builder.children.append(ColumnListMarkdownNode(columns=column_nodes))
 
-    def _add_breadcrumb(self, block: BreadcrumbBlockParams) -> None:
+    def _add_breadcrumb(self, block: BreadcrumbProcessorModel) -> None:
         """Add a breadcrumb block."""
         self.builder.children.append(BreadcrumbMarkdownNode())
 

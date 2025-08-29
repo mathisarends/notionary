@@ -1,6 +1,7 @@
 from __future__ import annotations
 from notionary.markdown.markdown_node import MarkdownNode
 
+
 class TodoMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating Markdown todo items (checkboxes).

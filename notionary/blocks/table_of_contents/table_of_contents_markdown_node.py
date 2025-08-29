@@ -4,7 +4,6 @@ from typing import Optional
 from notionary.markdown.markdown_node import MarkdownNode
 
 
-
 class TableOfContentsMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating Markdown table of contents blocks.

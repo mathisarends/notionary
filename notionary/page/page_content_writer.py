@@ -3,7 +3,7 @@ from typing import Callable, Optional, Union
 from notionary.blocks.client import NotionBlockClient
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.markdown.markdown_builder import MarkdownBuilder
-from notionary.markdown.markdown_whitespace_processor import MarkdownWhitespaceProcessor
+from notionary.page.markdown_whitespace_processor import MarkdownWhitespaceProcessor
 from notionary.page.writer.markdown_to_notion_converter import MarkdownToNotionConverter
 from notionary.util import LoggingMixin
 

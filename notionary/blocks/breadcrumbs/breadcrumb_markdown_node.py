@@ -5,7 +5,6 @@ from pydantic import BaseModel
 from notionary.markdown.markdown_node import MarkdownNode
 
 
-
 class BreadcrumbMarkdownNode(MarkdownNode):
     """
     Programmatic interface for creating Markdown breadcrumb blocks.
