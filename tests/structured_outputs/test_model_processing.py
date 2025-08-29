@@ -7,13 +7,13 @@ Test the refactored MarkdownBuilder and MarkdownModelProcessor separation.
 from notionary.markdown.markdown_builder import MarkdownBuilder
 from notionary.markdown.markdown_document_model import (
     MarkdownDocumentModel,
-    HeadingBlock,
-    ParagraphBlock,
-    BulletedListBlock,
-    CalloutBlock,
-    CodeBlock,
-    DividerBlock,
-    TodoBlock,
+    HeadingProcessorModel,
+    ParagraphProcessorModel,
+    BulletedListProcessorModel,
+    CalloutProcessorModel,
+    CodeProcessorModel,
+    DividerProcessorModel,
+    TodoProcessorModel,
 )
 
 
@@ -23,16 +23,16 @@ def test_refactored_model_processing():
     # Create a simple document model with the new simplified API
     model = MarkdownDocumentModel(
         blocks=[
-            HeadingBlock(text="Test Document", level=1),
-            ParagraphBlock(text="This is a test paragraph."),
-            HeadingBlock(text="Section 2", level=2),
-            ParagraphBlock(text="Another paragraph in section 2."),
+            HeadingProcessorModel(text="Test Document", level=1),
+            ParagraphProcessorModel(text="This is a test paragraph."),
+            HeadingProcessorModel(text="Section 2", level=2),
+            ParagraphProcessorModel(text="Another paragraph in section 2."),
             # Test more block types with simplified API
-            BulletedListBlock(texts=["Item 1", "Item 2", "Item 3"]),
-            CalloutBlock(text="Important note!", emoji="⚠️"),
-            CodeBlock(code="print('Hello World')", language="python"),
-            DividerBlock(),
-            TodoBlock(text="Complete refactoring", checked=True),
+            BulletedListProcessorModel(texts=["Item 1", "Item 2", "Item 3"]),
+            CalloutProcessorModel(text="Important note!", emoji="⚠️"),
+            CodeProcessorModel(code="print('Hello World')", language="python"),
+            DividerProcessorModel(),
+            TodoProcessorModel(text="Complete refactoring", checked=True),
         ]
     )
 

@@ -49,7 +49,7 @@ from notionary.blocks.toggleable_heading import (
 )
 from notionary.blocks.video import VideoMarkdownNode
 from notionary.blocks.audio import AudioMarkdownNode
-from notionary.markdown.block_params import (
+from notionary.markdown.markdown_document_model import (
     AudioProcessorModel,
     BookmarkProcessorModel,
     BreadcrumbProcessorModel,

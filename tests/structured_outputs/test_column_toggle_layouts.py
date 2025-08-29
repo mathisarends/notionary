@@ -7,13 +7,13 @@ Test Column and Toggle layouts with structured output to verify hierarchical str
 from notionary.markdown.markdown_builder import MarkdownBuilder
 from notionary.markdown.markdown_document_model import (
     MarkdownDocumentModel,
-    HeadingBlock,
-    ParagraphBlock,
-    BulletedListBlock,
-    CalloutBlock,
-    CodeBlock,
-    ToggleBlock,
-    ColumnBlock,
+    HeadingProcessorModel,
+    ParagraphProcessorModel,
+    BulletedListProcessorModel,
+    CalloutProcessorModel,
+    CodeProcessorModel,
+    ToggleProcessorModel,
+    ColumnProcessorModel,
 )
 
 
@@ -23,73 +23,73 @@ def test_column_and_toggle_layouts():
     # Create a complex document with nested Column and Toggle structures
     model = MarkdownDocumentModel(
         blocks=[
-            HeadingBlock(text="Advanced Layout Test", level=1),
+            HeadingProcessorModel(text="Advanced Layout Test", level=1),
             # Test Toggle with nested content
-            ToggleBlock(
+            ToggleProcessorModel(
                 title="📋 Project Overview",
                 children=[
-                    HeadingBlock(text="Introduction", level=2),
-                    ParagraphBlock(
+                    HeadingProcessorModel(text="Introduction", level=2),
+                    ParagraphProcessorModel(
                         text="This section contains detailed project information."
                     ),
-                    BulletedListBlock(
+                    BulletedListProcessorModel(
                         texts=[
                             "Feature 1: Advanced layouts",
                             "Feature 2: Nested structures",
                             "Feature 3: Type safety",
                         ]
                     ),
-                    CalloutBlock(
+                    CalloutProcessorModel(
                         text="Important: This is a nested callout inside toggle!",
                         emoji="⚠️",
                     ),
                 ],
             ),
             # Test Column layout with nested content
-            ColumnBlock(
+            ColumnProcessorModel(
                 columns=[
                     # Left Column
                     [
-                        HeadingBlock(text="Left Column", level=2),
-                        ParagraphBlock(text="Content in the left column."),
-                        CodeBlock(
+                        HeadingProcessorModel(text="Left Column", level=2),
+                        ParagraphProcessorModel(text="Content in the left column."),
+                        CodeProcessorModel(
                             code="def left_function():\n    return 'left'",
                             language="python",
                         ),
                     ],
                     # Right Column
                     [
-                        HeadingBlock(text="Right Column", level=2),
-                        ParagraphBlock(text="Content in the right column."),
-                        BulletedListBlock(texts=["Right item 1", "Right item 2"]),
+                        HeadingProcessorModel(text="Right Column", level=2),
+                        ParagraphProcessorModel(text="Content in the right column."),
+                        BulletedListProcessorModel(texts=["Right item 1", "Right item 2"]),
                     ],
                 ],
                 width_ratios=[0.6, 0.4],  # 60% left, 40% right
             ),
             # Test nested Toggle inside Column
-            ColumnBlock(
+            ColumnProcessorModel(
                 columns=[
                     [
-                        HeadingBlock(text="Column with Toggle", level=2),
-                        ToggleBlock(
+                        HeadingProcessorModel(text="Column with Toggle", level=2),
+                        ToggleProcessorModel(
                             title="🔧 Nested Toggle in Column",
                             children=[
-                                ParagraphBlock(
+                                ParagraphProcessorModel(
                                     text="This toggle is nested inside a column!"
                                 ),
-                                CalloutBlock(
+                                CalloutProcessorModel(
                                     text="Nested structures work!", emoji="🎉"
                                 ),
                             ],
                         ),
                     ],
                     [
-                        HeadingBlock(text="Regular Column", level=2),
-                        ParagraphBlock(text="Normal content in second column."),
+                        HeadingProcessorModel(text="Regular Column", level=2),
+                        ParagraphProcessorModel(text="Normal content in second column."),
                     ],
                 ]
             ),
-            ParagraphBlock(text="End of layout test."),
+            ParagraphProcessorModel(text="End of layout test."),
         ]
     )
 
