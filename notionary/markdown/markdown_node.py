@@ -1,14 +1,20 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from pydantic import BaseModel
 
 
-class MarkdownNode(ABC):
+class MarkdownNode(BaseModel, ABC):
     """
-    Abstract base class for all Markdown block elements.
-    Enforces implementation of to_markdown().
+    Enhanced base class for all Markdown nodes with Pydantic integration.
+    
+    This class serves dual purposes:
+    1. Runtime representation for markdown generation 
+    2. Serializable model for structured output (LLM/API)
+    
+    The 'type' field acts as a discriminator for Union types and processing.
     """
-
+    
     @abstractmethod
     def to_markdown(self) -> str:
         """

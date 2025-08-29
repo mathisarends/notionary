@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+
 from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
 from notionary.markdown.markdown_node import MarkdownNode
 
 
 class ColumnListMarkdownNode(MarkdownNode):
     """
+    Enhanced Column List node with Pydantic integration.
     Programmatic interface for creating a Markdown column list container.
     This represents the `::: columns` container that holds multiple columns.
 
@@ -23,8 +25,7 @@ class ColumnListMarkdownNode(MarkdownNode):
     :::
     """
 
-    def __init__(self, columns: list[ColumnMarkdownNode]):
-        self.columns = columns
+    columns: list[ColumnMarkdownNode] = []
 
     def to_markdown(self) -> str:
         if not self.columns:

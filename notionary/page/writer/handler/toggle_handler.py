@@ -15,7 +15,8 @@ class ToggleHandler(LineHandler):
 
     def __init__(self):
         super().__init__()
-        self._start_pattern = re.compile(r"^[+]{3}\s+(.+)$", re.IGNORECASE)
+        # Updated: Support both "+++title" and "+++ title"
+        self._start_pattern = re.compile(r"^[+]{3}\s*(.+)$", re.IGNORECASE)
         self._end_pattern = re.compile(r"^[+]{3}\s*$")
 
     def _can_handle(self, context: LineProcessingContext) -> bool:
@@ -43,15 +44,16 @@ class ToggleHandler(LineHandler):
             context.should_continue = True
 
     def _is_toggle_start(self, context: LineProcessingContext) -> bool:
-        """Check if line starts a toggle (+++ Title)."""
+        """Check if line starts a toggle (+++ Title or +++Title)."""
         line = context.line.strip()
 
-        # Must match our pattern
+        # Must match our pattern (now allows optional space)
         if not self._start_pattern.match(line):
             return False
 
         # But NOT match toggleable heading pattern (has # after +++)
-        toggleable_heading_pattern = re.compile(r"^[+]{3}#{1,3}\s+.+$", re.IGNORECASE)
+        # Updated: Support both "+++#title" and "+++ # title"
+        toggleable_heading_pattern = re.compile(r"^[+]{3}\s*#{1,3}\s+.+$", re.IGNORECASE)
         if toggleable_heading_pattern.match(line):
             return False
 

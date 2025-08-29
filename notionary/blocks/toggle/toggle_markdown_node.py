@@ -1,9 +1,11 @@
 from __future__ import annotations
+
 from notionary.markdown.markdown_node import MarkdownNode
 
 
 class ToggleMarkdownNode(MarkdownNode):
     """
+    Enhanced Toggle node with Pydantic integration.
     Clean programmatic interface for creating Notion-style Markdown toggle blocks
     with the simplified +++ "Title" syntax.
 
@@ -14,12 +16,11 @@ class ToggleMarkdownNode(MarkdownNode):
         +++
     """
 
-    def __init__(self, title: str, children: list[MarkdownNode]):
-        self.title = title
-        self.children = children
+    title: str
+    children: list[MarkdownNode] = []
 
     def to_markdown(self) -> str:
-        result = f"+++{self.title}"
+        result = f"+++ {self.title}"
 
         if not self.children:
             result += "\n+++"

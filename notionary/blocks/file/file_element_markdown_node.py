@@ -8,12 +8,11 @@ from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
 class FileMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     """
+    Enhanced File node with Pydantic integration.
     Programmatic interface for creating Notion-style Markdown file embeds.
     """
-
-    def __init__(self, url: str, caption: Optional[str] = None):
-        self.url = url
-        self.caption = caption or ""
+    url: str
+    caption: Optional[str] = None
 
     def to_markdown(self) -> str:
         """Return the Markdown representation.

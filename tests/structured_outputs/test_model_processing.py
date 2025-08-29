@@ -5,16 +5,14 @@ Test the refactored MarkdownBuilder and MarkdownModelProcessor separation.
 """
 
 from notionary.markdown.markdown_builder import MarkdownBuilder
-from notionary.markdown.markdown_document_model import (
-    MarkdownDocumentModel,
-    HeadingProcessorModel,
-    ParagraphProcessorModel,
-    BulletedListProcessorModel,
-    CalloutProcessorModel,
-    CodeProcessorModel,
-    DividerProcessorModel,
-    TodoProcessorModel,
-)
+from notionary.markdown.markdown_document_model import MarkdownDocumentModel
+from notionary.blocks.heading import HeadingMarkdownNode
+from notionary.blocks.paragraph import ParagraphMarkdownNode
+from notionary.blocks.bulleted_list import BulletedListMarkdownNode
+from notionary.blocks.callout import CalloutMarkdownNode
+from notionary.blocks.code import CodeMarkdownNode
+from notionary.blocks.divider import DividerMarkdownNode
+from notionary.blocks.todo import TodoMarkdownNode
 
 
 def test_refactored_model_processing():
@@ -23,16 +21,16 @@ def test_refactored_model_processing():
     # Create a simple document model with the new simplified API
     model = MarkdownDocumentModel(
         blocks=[
-            HeadingProcessorModel(text="Test Document", level=1),
-            ParagraphProcessorModel(text="This is a test paragraph."),
-            HeadingProcessorModel(text="Section 2", level=2),
-            ParagraphProcessorModel(text="Another paragraph in section 2."),
+            HeadingMarkdownNode(text="Test Document", level=1),
+            ParagraphMarkdownNode(text="This is a test paragraph."),
+            HeadingMarkdownNode(text="Section 2", level=2),
+            ParagraphMarkdownNode(text="Another paragraph in section 2."),
             # Test more block types with simplified API
-            BulletedListProcessorModel(texts=["Item 1", "Item 2", "Item 3"]),
-            CalloutProcessorModel(text="Important note!", emoji="⚠️"),
-            CodeProcessorModel(code="print('Hello World')", language="python"),
-            DividerProcessorModel(),
-            TodoProcessorModel(text="Complete refactoring", checked=True),
+            BulletedListMarkdownNode(texts=["Item 1", "Item 2", "Item 3"]),
+            CalloutMarkdownNode(text="Important note!", emoji="⚠️"),
+            CodeMarkdownNode(code="print('Hello World')", language="python"),
+            DividerMarkdownNode(),
+            TodoMarkdownNode(text="Complete refactoring", checked=True),
         ]
     )
 

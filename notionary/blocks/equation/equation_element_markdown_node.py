@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
 
 from notionary.markdown.markdown_node import MarkdownNode
 
 
-class EquationMarkdownBlockParams(BaseModel):
-    expression: str
-
-
 class EquationMarkdownNode(MarkdownNode):
     """
+    Enhanced Equation node with Pydantic integration.
     Programmatic interface for creating Markdown equation blocks.
     Uses standard Markdown equation syntax with double dollar signs.
 
@@ -19,9 +15,7 @@ class EquationMarkdownNode(MarkdownNode):
     $$\\frac{a}{b} + \\sqrt{c}$$
     $$\\int_0^\\infty e^{-x} dx = 1$$
     """
-
-    def __init__(self, expression: str):
-        self.expression = expression
+    expression: str
 
     def to_markdown(self) -> str:
         expr = self.expression.strip()

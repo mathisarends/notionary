@@ -7,13 +7,13 @@ from notionary.markdown.markdown_node import MarkdownNode
 
 class EmbedMarkdownNode(MarkdownNode):
     """
+    Enhanced Embed node with Pydantic integration.
     Programmatic interface for creating Notion-style Markdown embed blocks.
     Example: [embed](https://example.com "Optional caption")
     """
 
-    def __init__(self, url: str, caption: Optional[str] = None):
-        self.url = url
-        self.caption = caption
+    url: str
+    caption: Optional[str] = None
 
     def to_markdown(self) -> str:
         if self.caption:

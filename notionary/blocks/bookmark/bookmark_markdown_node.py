@@ -8,15 +8,13 @@ from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
 class BookmarkMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     """
+    Enhanced Bookmark node with Pydantic integration.
     Programmatic interface for creating Notion-style bookmark Markdown blocks.
     """
 
-    def __init__(
-        self, url: str, title: Optional[str] = None, caption: Optional[str] = None
-    ):
-        self.url = url
-        self.title = title
-        self.caption = caption
+    url: str
+    title: Optional[str] = None
+    caption: Optional[str] = None
 
     def to_markdown(self) -> str:
         """Return the Markdown representation.

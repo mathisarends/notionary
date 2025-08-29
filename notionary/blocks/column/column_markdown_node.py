@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from typing import Optional
+from pydantic import Field
+
 from notionary.markdown.markdown_node import MarkdownNode
 
 
 class ColumnMarkdownNode(MarkdownNode):
     """
+    Enhanced Column node with Pydantic integration.
     Programmatic interface for creating a single Markdown column block
     with nested content and optional width ratio.
 
@@ -23,11 +26,8 @@ class ColumnMarkdownNode(MarkdownNode):
         :::
     """
 
-    def __init__(
-        self, children: list[MarkdownNode], width_ratio: Optional[float] = None
-    ):
-        self.children = children
-        self.width_ratio = width_ratio
+    children: list[MarkdownNode] = []
+    width_ratio: Optional[float] = None
 
     def to_markdown(self) -> str:
         # Start tag with optional width ratio

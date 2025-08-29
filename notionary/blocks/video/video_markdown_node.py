@@ -8,12 +8,12 @@ from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
 class VideoMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     """
+    Enhanced Video node with Pydantic integration.
     Programmatic interface for creating Notion-style video blocks.
     """
 
-    def __init__(self, url: str, caption: Optional[str] = None):
-        self.url = url
-        self.caption = caption
+    url: str
+    caption: Optional[str] = None
 
     def to_markdown(self) -> str:
         """Return the Markdown representation.

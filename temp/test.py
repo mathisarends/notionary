@@ -23,16 +23,14 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
-
+        
         markdown = """
-        ist alles gut bei dir?
-
-        ::: columns
-        ::: column
-        Content here
+        :::columns
+        :::column
+        test
         :::
-        ::: column
-        More content
+        :::column
+        fest
         :::
         :::
         """

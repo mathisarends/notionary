@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from typing import Optional
+from pydantic import Field
+
 from notionary.markdown.markdown_node import MarkdownNode
 
 
 class TableOfContentsMarkdownNode(MarkdownNode):
     """
+    Enhanced Table of Contents node with Pydantic integration.
     Programmatic interface for creating Markdown table of contents blocks.
     Example:
     [toc]
@@ -13,8 +16,7 @@ class TableOfContentsMarkdownNode(MarkdownNode):
     [toc](blue_background)
     """
 
-    def __init__(self, color: Optional[str] = "default"):
-        self.color = color or "default"
+    color: Optional[str] = 'default'
 
     def to_markdown(self) -> str:
         if self.color == "default":

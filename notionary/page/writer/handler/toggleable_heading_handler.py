@@ -19,8 +19,9 @@ class ToggleableHeadingHandler(LineHandler):
 
     def __init__(self):
         super().__init__()
+        # Updated: Support both "+++# title" and "+++#title"
         self._start_pattern = re.compile(
-            r"^[+]{3}(?P<level>#{1,3})\s+(.+)$", re.IGNORECASE
+            r"^[+]{3}\s*(?P<level>#{1,3})\s*(.+)$", re.IGNORECASE
         )
         # +++
         self._end_pattern = re.compile(r"^[+]{3}\s*$")
@@ -49,7 +50,7 @@ class ToggleableHeadingHandler(LineHandler):
             return await _handle(self._add_toggleable_heading_content)
 
     def _is_toggleable_heading_start(self, context: LineProcessingContext) -> bool:
-        """Check if line starts a toggleable heading (+++# "Title")."""
+        """Check if line starts a toggleable heading (+++# "Title" or +++#"Title")."""
         return self._start_pattern.match(context.line.strip()) is not None
 
     def _is_toggleable_heading_end(self, context: LineProcessingContext) -> bool:

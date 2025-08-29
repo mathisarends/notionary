@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Optional
+from pydantic import Field
 
 from notionary.markdown.markdown_node import MarkdownNode
 from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
@@ -8,15 +9,13 @@ from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
 class ImageMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     """
+    Enhanced Image node with Pydantic integration.
     Programmatic interface for creating Notion-style image blocks.
     """
 
-    def __init__(
-        self, url: str, caption: Optional[str] = None, alt: Optional[str] = None
-    ):
-        self.url = url
-        self.caption = caption
-        # Note: 'alt' is kept for API compatibility but not used in Notion syntax
+    url: str
+    caption: Optional[str] = None
+    alt: Optional[str] = None
 
     def to_markdown(self) -> str:
         """Return the Markdown representation.

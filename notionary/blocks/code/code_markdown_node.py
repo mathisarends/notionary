@@ -7,6 +7,7 @@ from notionary.markdown.markdown_node import MarkdownNode
 
 class CodeMarkdownNode(MarkdownNode):
     """
+    Enhanced Code node with Pydantic integration.
     Programmatic interface for creating Notion-style Markdown code blocks.
     Automatically handles indentation normalization for multiline strings.
 
@@ -15,16 +16,9 @@ class CodeMarkdownNode(MarkdownNode):
         print("Hello, world!")
         ```
     """
-
-    def __init__(
-        self,
-        code: str,
-        language: Optional[str] = None,
-        caption: Optional[str] = None,
-    ):
-        self.code = code
-        self.language = language or ""
-        self.caption = caption
+    code: str
+    language: Optional[str] = None
+    caption: Optional[str] = None
 
     def to_markdown(self) -> str:
         lang = self.language or ""

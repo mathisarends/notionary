@@ -5,6 +5,7 @@ from notionary.markdown.markdown_node import MarkdownNode
 
 class NumberedListMarkdownNode(MarkdownNode):
     """
+    Enhanced NumberedList node with Pydantic integration.
     Programmatic interface for creating Markdown numbered list items.
     Example:
     1. First step
@@ -12,8 +13,7 @@ class NumberedListMarkdownNode(MarkdownNode):
     3. Third step
     """
 
-    def __init__(self, texts: list[str]):
-        self.texts = texts
+    texts: list[str]
 
     def to_markdown(self) -> str:
         return "\n".join(f"{i + 1}. {text}" for i, text in enumerate(self.texts))

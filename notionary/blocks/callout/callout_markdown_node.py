@@ -6,13 +6,12 @@ from notionary.markdown.markdown_node import MarkdownNode
 
 class CalloutMarkdownNode(MarkdownNode):
     """
+    Enhanced Callout node with Pydantic integration.
     Programmatic interface for creating Notion-style callout Markdown blocks.
     Example: [callout](This is important "⚠️")
     """
-
-    def __init__(self, text: str, emoji: Optional[str] = None):
-        self.text = text
-        self.emoji = emoji
+    text: str
+    emoji: Optional[str] = None
 
     def to_markdown(self) -> str:
         if self.emoji and self.emoji != "💡":

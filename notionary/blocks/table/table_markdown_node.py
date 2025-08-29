@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from pydantic import field_validator
+
 from notionary.markdown.markdown_node import MarkdownNode
 
 
 class TableMarkdownNode(MarkdownNode):
     """
+    Enhanced Table node with Pydantic integration.
     Programmatic interface for creating Markdown tables.
     Example:
         | Header 1 | Header 2 | Header 3 |
@@ -13,11 +16,22 @@ class TableMarkdownNode(MarkdownNode):
         | Cell 4   | Cell 5   | Cell 6   |
     """
 
-    def __init__(self, headers: list[str], rows: list[list[str]]):
-        if not headers or not all(isinstance(row, list) for row in rows):
-            raise ValueError("headers must be a list and rows must be a list of lists")
-        self.headers = headers
-        self.rows = rows
+    headers: list[str]
+    rows: list[list[str]]
+
+    @field_validator('headers')
+    @classmethod
+    def validate_headers(cls, v):
+        if not v:
+            raise ValueError("headers must not be empty")
+        return v
+
+    @field_validator('rows')
+    @classmethod
+    def validate_rows(cls, v):
+        if not all(isinstance(row, list) for row in v):
+            raise ValueError("rows must be a list of lists")
+        return v
 
     def to_markdown(self) -> str:
         col_count = len(self.headers)
