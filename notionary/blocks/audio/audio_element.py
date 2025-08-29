@@ -30,28 +30,9 @@ class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin
     - [audio](./local/song.mp3) - Local audio file (will be uploaded)
     - [audio](C:\Music\podcast.wav) - Absolute local path (will be uploaded)
     - [audio](https://example.com/audio.mp3)(caption:Episode 1) - URL with caption
-    - (caption:Background music)[audio](./song.mp3) - Caption before URL
     """
 
-    # Pattern matches both URLs and file paths
     AUDIO_PATTERN = re.compile(r"\[audio\]\(([^)]+)\)")
-
-    @classmethod
-    def _extract_audio_path(cls, text: str) -> Optional[str]:
-        """Extract audio path/URL from text, handling caption patterns."""
-        clean_text = cls.remove_caption(text)
-
-        match = cls.AUDIO_PATTERN.search(clean_text)
-        if match:
-            return match.group(1).strip()
-
-        return None
-
-    @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        """Check if text contains an audio element pattern."""
-        return bool(cls._extract_audio_path(text.strip()))
-
     SUPPORTED_EXTENSIONS = {".mp3", ".wav", ".ogg", ".oga", ".m4a"}
 
     @classmethod
@@ -167,3 +148,14 @@ class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin
     @classmethod
     def _is_likely_audio_url(cls, url: str) -> bool:
         return any(url.lower().endswith(ext) for ext in cls.SUPPORTED_EXTENSIONS)
+
+    @classmethod
+    def _extract_audio_path(cls, text: str) -> Optional[str]:
+        """Extract audio path/URL from text, handling caption patterns."""
+        clean_text = cls.remove_caption(text)
+
+        match = cls.AUDIO_PATTERN.search(clean_text)
+        if match:
+            return match.group(1).strip()
+
+        return None

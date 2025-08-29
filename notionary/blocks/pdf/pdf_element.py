@@ -28,29 +28,11 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
     - [pdf](./local/document.pdf) - Local PDF file (will be uploaded)
     - [pdf](C:\Documents\report.pdf) - Absolute local path (will be uploaded)
     - [pdf](https://example.com/document.pdf)(caption:Annual Report 2024) - With caption
-    - (caption:User Manual)[pdf](./manual.pdf) - Caption before URL
     - [pdf](notion://file_id_here)(caption:Notion hosted file) - Notion hosted file
     - [pdf](upload://upload_id_here)(caption:File upload) - File upload
     """
 
-    # Pattern matches URLs, local paths, and special Notion/upload schemes
     PDF_PATTERN = re.compile(r"\[pdf\]\(([^)]+)\)")
-
-    @classmethod
-    def _extract_pdf_path(cls, text: str) -> Optional[str]:
-        """Extract PDF path/URL from text, handling caption patterns."""
-        clean_text = cls.remove_caption(text)
-
-        match = cls.PDF_PATTERN.search(clean_text)
-        if match:
-            return match.group(1).strip()
-
-        return None
-
-    @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        """Check if text contains a PDF element pattern."""
-        return bool(cls._extract_pdf_path(text.strip()))
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -61,7 +43,7 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
     async def markdown_to_notion(cls, text: str) -> Optional[BlockCreateResult]:
         """Convert markdown PDF link to Notion PDF block."""
         pdf_path = cls._extract_pdf_path(text.strip())
-        
+
         if not pdf_path:
             return None
 
@@ -123,13 +105,6 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
             source = pb.external.url
         elif pb.type == FileType.FILE and pb.file:
             source = pb.file.url
-        elif pb.type == FileType.FILE_UPLOAD and pb.file_upload:
-            # For uploaded PDFs, we can't recreate the original path
-            # Use the filename if available, or a placeholder
-            if pb.name:
-                source = f"./uploaded/{pb.name}"
-            else:
-                source = f"./uploaded/pdf_{pb.file_upload.id}.pdf"
         else:
             return None
 
@@ -158,3 +133,14 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
             ],
             usage_guidelines="Use for embedding PDF documents that can be viewed inline. Supports both external URLs and local PDF file uploads. Local PDF files will be automatically uploaded to Notion. Caption supports rich text formatting and should describe the PDF content.",
         )
+
+    @classmethod
+    def _extract_pdf_path(cls, text: str) -> Optional[str]:
+        """Extract PDF path/URL from text, handling caption patterns."""
+        clean_text = cls.remove_caption(text)
+
+        match = cls.PDF_PATTERN.search(clean_text)
+        if match:
+            return match.group(1).strip()
+
+        return None

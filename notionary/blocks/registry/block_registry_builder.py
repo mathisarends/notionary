@@ -161,7 +161,7 @@ class BlockRegistryBuilder:
 
     def with_file(self) -> Self:
         return self._add_element(FileElement)
-    
+
     def with_pdf(self) -> Self:
         return self._add_element(PdfElement)
 

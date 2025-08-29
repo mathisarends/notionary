@@ -32,24 +32,7 @@ class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
     - (caption:Important document)[file](./doc.pdf) - Caption before URL
     """
 
-    # Pattern matches both URLs and file paths
     FILE_PATTERN = re.compile(r"\[file\]\(([^)]+)\)")
-
-    @classmethod
-    def _extract_file_path(cls, text: str) -> Optional[str]:
-        """Extract file path/URL from text, handling caption patterns."""
-        clean_text = cls.remove_caption(text)
-
-        match = cls.FILE_PATTERN.search(clean_text)
-        if match:
-            return match.group(1).strip()
-
-        return None
-
-    @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        """Check if text contains a file element pattern."""
-        return bool(cls._extract_file_path(text.strip()))
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -89,7 +72,6 @@ class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         else:
             cls.logger.debug(f"Using external URL: {file_path}")
 
-            # Create EXTERNAL block for URLs
             file_block = FileBlock(
                 type=FileType.EXTERNAL,
                 external=ExternalFile(url=file_path),
@@ -110,13 +92,6 @@ class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
             source = fb.external.url
         elif fb.type == FileType.FILE and fb.file:
             source = fb.file.url
-        elif fb.type == FileType.FILE_UPLOAD and fb.file_upload:
-            # For uploaded files, we can't recreate the original path
-            # Use the filename if available, or a placeholder
-            if fb.name:
-                source = f"./uploaded/{fb.name}"
-            else:
-                source = f"./uploaded/file_{fb.file_upload.id}"
         else:
             return None
 
@@ -145,3 +120,14 @@ class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
             ],
             usage_guidelines="Use for both external URLs and local files. Local files will be automatically uploaded to Notion. Supports various file formats including PDFs, documents, spreadsheets, images. Caption supports rich text formatting and should describe the file content or purpose.",
         )
+
+    @classmethod
+    def _extract_file_path(cls, text: str) -> Optional[str]:
+        """Extract file path/URL from text, handling caption patterns."""
+        clean_text = cls.remove_caption(text)
+
+        match = cls.FILE_PATTERN.search(clean_text)
+        if match:
+            return match.group(1).strip()
+
+        return None

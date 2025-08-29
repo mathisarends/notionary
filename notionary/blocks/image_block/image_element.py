@@ -34,22 +34,6 @@ class ImageElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
     IMAGE_PATTERN = re.compile(r"\[image\]\(([^)]+)\)")
 
     @classmethod
-    def _extract_image_path(cls, text: str) -> Optional[str]:
-        """Extract image path/URL from text, handling caption patterns."""
-        clean_text = cls.remove_caption(text)
-
-        match = cls.IMAGE_PATTERN.search(clean_text)
-        if match:
-            return match.group(1).strip()
-
-        return None
-
-    @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        """Check if text contains an image element pattern."""
-        return bool(cls._extract_image_path(text.strip()))
-
-    @classmethod
     def match_notion(cls, block: Block) -> bool:
         return block.type == BlockType.IMAGE and block.image
 
@@ -105,13 +89,6 @@ class ImageElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
             source = fo.external.url
         elif fo.type == FileType.FILE and fo.file:
             source = fo.file.url
-        elif fo.type == FileType.FILE_UPLOAD and fo.file_upload:
-            # For uploaded images, we can't recreate the original path
-            # Use the filename if available, or a placeholder
-            if fo.name:
-                source = f"./uploaded/{fo.name}"
-            else:
-                source = f"./uploaded/image_{fo.file_upload.id}"
         else:
             return None
 
@@ -140,3 +117,14 @@ class ImageElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
             ],
             usage_guidelines="Use for displaying images from external URLs or local files. Local image files will be automatically uploaded to Notion. Supports common image formats (jpg, png, gif, svg, webp, bmp, tiff, heic). Caption supports rich text formatting and describes the image content.",
         )
+
+    @classmethod
+    def _extract_image_path(cls, text: str) -> Optional[str]:
+        """Extract image path/URL from text, handling caption patterns."""
+        clean_text = cls.remove_caption(text)
+
+        match = cls.IMAGE_PATTERN.search(clean_text)
+        if match:
+            return match.group(1).strip()
+
+        return None

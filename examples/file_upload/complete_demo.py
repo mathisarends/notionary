@@ -18,10 +18,8 @@ async def main():
     print("=" * 40)
 
     try:
-        # Load the page
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        # Comprehensive markdown with all file types
         markdown = """
         # File Upload Demo 🚀
 
@@ -53,6 +51,7 @@ async def main():
     except Exception as e:
         print(f"❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
 
 

@@ -5,7 +5,12 @@ from pathlib import Path
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.file.file_element_models import ExternalFile, FileBlock, FileType, FileUploadFile
+from notionary.blocks.file.file_element_models import (
+    ExternalFile,
+    FileBlock,
+    FileType,
+    FileUploadFile,
+)
 from notionary.blocks.mixins.captions import CaptionMixin
 from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
@@ -36,25 +41,17 @@ class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         re.compile(r"(?:https?://)?(?:www\.)?youtu\.be/([\w-]{11})"),
     ]
 
-    @classmethod
-    def _extract_video_path(cls, text: str) -> Optional[str]:
-        """Extract video path/URL from text, handling caption patterns."""
-        # First remove any captions to get clean text for path extraction
-        clean_text = cls.remove_caption(text)
-
-        # Now extract the path/URL from clean text
-        match = cls.VIDEO_PATTERN.search(clean_text)
-        if match:
-            return match.group(1).strip()
-
-        return None
-
-    @classmethod
-    def match_markdown(cls, text: str) -> bool:
-        """Check if text contains a video element pattern."""
-        return bool(cls._extract_video_path(text.strip()))
-
-    SUPPORTED_EXTENSIONS = {".mp4", ".avi", ".mov", ".wmv", ".flv", ".webm", ".mkv", ".m4v", ".3gp"}
+    SUPPORTED_EXTENSIONS = {
+        ".mp4",
+        ".avi",
+        ".mov",
+        ".wmv",
+        ".flv",
+        ".webm",
+        ".mkv",
+        ".m4v",
+        ".3gp",
+    }
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -88,7 +85,9 @@ class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
                 cls.logger.error(f"Failed to upload video file: {path}")
                 return None
 
-            cls.logger.info(f"Successfully uploaded video file with ID: {file_upload_id}")
+            cls.logger.info(
+                f"Successfully uploaded video file with ID: {file_upload_id}"
+            )
 
             # Use mixin to extract caption (if present anywhere in text)
             caption_text = cls.extract_caption(text.strip())
@@ -136,14 +135,7 @@ class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
             url = fo.external.url
         elif fo.type == FileType.FILE and fo.file:
             url = fo.file.url
-        elif fo.type == FileType.FILE_UPLOAD and fo.file_upload:
-            # For uploaded videos, we can't recreate the original path
-            # Use the filename if available, or a placeholder
-            if fo.name:
-                url = f"./uploaded/{fo.name}"
-            else:
-                url = f"./uploaded/video_{fo.file_upload.id}"
-        
+
         if not url:
             return None
 
@@ -181,3 +173,15 @@ class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
             ],
             usage_guidelines="Use for embedding videos from supported platforms or local video files. Supports YouTube, Vimeo, direct video URLs, and local file uploads. Supports common video formats (mp4, avi, mov, wmv, flv, webm, mkv, m4v, 3gp). Caption supports rich text formatting and describes the video content.",
         )
+
+    @classmethod
+    def _extract_video_path(cls, text: str) -> Optional[str]:
+        """Extract video path/URL from text, handling caption patterns."""
+        clean_text = cls.remove_caption(text)
+
+        # Now extract the path/URL from clean text
+        match = cls.VIDEO_PATTERN.search(clean_text)
+        if match:
+            return match.group(1).strip()
+
+        return None
