@@ -11,7 +11,6 @@ from notionary.comments import CommentClient, Comment
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.blocks.models import DatabaseParent
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
 from notionary.database.client import NotionDatabaseClient
 from notionary.file_upload.client import NotionFileUploadClient
 from notionary.markdown.markdown_builder import MarkdownBuilder
@@ -211,13 +210,6 @@ class NotionPage(LoggingMixin):
     @property
     def is_in_trash(self) -> bool:
         return self._is_in_trash
-
-    @property
-    def block_registry_builder(self) -> BlockRegistryBuilder:
-        """
-        Returns the block registry builder for this page.
-        """
-        return self.block_element_registry.builder
 
     def get_prompt_information(self) -> str:
         markdown_syntax_builder = SyntaxPromptBuilder()

@@ -1,97 +1,146 @@
 from __future__ import annotations
 
-from typing import Optional, Type
+from collections import OrderedDict
+from typing import Type, Set
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.registry.block_registry_builder import BlockRegistryBuilder
-from notionary.telemetry import (
-    ProductTelemetry,
-)
+from notionary.telemetry import ProductTelemetry
+
+from notionary.blocks.audio import AudioElement
+from notionary.blocks.bookmark import BookmarkElement
+from notionary.blocks.breadcrumbs import BreadcrumbElement
+from notionary.blocks.bulleted_list import BulletedListElement
+from notionary.blocks.callout import CalloutElement
+from notionary.blocks.child_database import ChildDatabaseElement
+from notionary.blocks.code import CodeElement
+from notionary.blocks.column import ColumnElement, ColumnListElement
+from notionary.blocks.divider import DividerElement
+from notionary.blocks.embed import EmbedElement
+from notionary.blocks.equation import EquationElement
+from notionary.blocks.file import FileElement
+from notionary.blocks.heading import HeadingElement
+from notionary.blocks.image_block import ImageElement
+from notionary.blocks.numbered_list import NumberedListElement
+from notionary.blocks.paragraph import ParagraphElement
+from notionary.blocks.pdf import PdfElement
+from notionary.blocks.quote import QuoteElement
+from notionary.blocks.table import TableElement
+from notionary.blocks.table_of_contents import TableOfContentsElement
+from notionary.blocks.todo import TodoElement
+from notionary.blocks.toggle import ToggleElement
+from notionary.blocks.toggleable_heading import ToggleableHeadingElement
+from notionary.blocks.video import VideoElement
 
 
 class BlockRegistry:
     """Registry of elements that can convert between Markdown and Notion."""
 
-    def __init__(self, builder: Optional[BlockRegistryBuilder] = None):
+    _DEFAULT_ELEMENTS = [
+        HeadingElement,
+        CalloutElement,
+        CodeElement,
+        DividerElement,
+        TableElement,
+        BulletedListElement,
+        NumberedListElement,
+        ToggleElement,
+        ToggleableHeadingElement,
+        QuoteElement,
+        TodoElement,
+        BookmarkElement,
+        ImageElement,
+        VideoElement,
+        EmbedElement,
+        AudioElement,
+        ColumnListElement,
+        ColumnElement,
+        EquationElement,
+        TableOfContentsElement,
+        BreadcrumbElement,
+        ChildDatabaseElement,
+        FileElement,
+        PdfElement,
+        ParagraphElement,  # Must be last as fallback!
+    ]
+
+    def __init__(self, excluded_elements: Set[Type[BaseBlockElement]] = None):
         """
         Initialize a new registry instance.
 
         Args:
-            builder: BlockRegistryBuilder instance to delegate operations to
+            excluded_elements: Set of element classes to exclude from the registry
         """
-        # Import here to avoid circular imports
-        from notionary.blocks.registry.block_registry_builder import (
-            BlockRegistryBuilder,
-        )
-
-        self._builder: BlockRegistryBuilder = builder or BlockRegistryBuilder()
+        self._elements = OrderedDict()
+        self._excluded_elements = excluded_elements or set()
         self.telemetry = ProductTelemetry()
+        
+        # Initialize with default elements minus excluded ones
+        self._initialize_default_elements()
 
     @classmethod
-    def create_registry(cls) -> BlockRegistry:
+    def create_registry(cls, excluded_elements: Set[Type[BaseBlockElement]] = None) -> 'BlockRegistry':
         """
         Create a registry with all standard elements in recommended order.
+        
+        Args:
+            excluded_elements: Set of element classes to exclude from the registry
         """
-        from notionary.blocks.registry.block_registry_builder import (
-            BlockRegistryBuilder,
-        )
+        return cls(excluded_elements=excluded_elements)
 
-        builder = BlockRegistryBuilder()
-        builder = (
-            builder.with_headings()
-            .with_callouts()
-            .with_code()
-            .with_dividers()
-            .with_tables()
-            .with_bulleted_list()
-            .with_numbered_list()
-            .with_toggles()
-            .with_toggleable_heading_element()
-            .with_quotes()
-            .with_todos()
-            .with_bookmarks()
-            .with_images()
-            .with_videos()
-            .with_embeds()
-            .with_audio()
-            .with_columns()
-            .with_equation()
-            .with_table_of_contents()
-            .with_breadcrumbs()
-            .with_child_database()
-            .with_file()
-            .with_pdf()
-            .with_paragraphs()  # position here is important - its a fallback!
-        )
+    def _initialize_default_elements(self) -> None:
+        """Initialize registry with default elements minus excluded ones."""
+        for element_class in self._DEFAULT_ELEMENTS:
+            if element_class not in self._excluded_elements:
+                self._elements[element_class.__name__] = element_class
 
-        return cls(builder=builder)
-
-    @property
-    def builder(self) -> BlockRegistryBuilder:
-        return self._builder
+    def exclude_elements(self, *element_classes: Type[BaseBlockElement]) -> BlockRegistry:
+        """
+        Create a new registry with additional excluded elements.
+        
+        Args:
+            element_classes: Element classes to exclude
+            
+        Returns:
+            New BlockRegistry instance with excluded elements
+        """
+        new_excluded = self._excluded_elements.copy()
+        new_excluded.update(element_classes)
+        return BlockRegistry(excluded_elements=new_excluded)
 
     def register(self, element_class: Type[BaseBlockElement]) -> bool:
         """
-        Register an element class via builder.
+        Register an element class.
+        
+        Args:
+            element_class: The element class to register
+            
+        Returns:
+            True if element was added, False if it already existed
         """
-        initial_count = len(self._builder._elements)
-        self._builder._add_element(element_class)
-        return len(self._builder._elements) > initial_count
+        if element_class.__name__ in self._elements:
+            return False
+            
+        self._elements[element_class.__name__] = element_class
+        return True
 
-    def deregister(self, element_class: Type[BaseBlockElement]) -> bool:
+    def remove(self, element_class: Type[BaseBlockElement]) -> bool:
         """
-        Deregister an element class via builder.
+        Remove an element class.
         """
-        initial_count = len(self._builder._elements)
-        self._builder.remove_element(element_class)
-        return len(self._builder._elements) < initial_count
+        return self._elements.pop(element_class.__name__, None) is not None
 
     def contains(self, element_class: Type[BaseBlockElement]) -> bool:
         """
         Checks if a specific element is contained in the registry.
         """
-        return element_class.__name__ in self._builder._elements
+        return element_class.__name__ in self._elements
 
     def get_elements(self) -> list[Type[BaseBlockElement]]:
-        """Get all registered elements."""
-        return list(self._builder._elements.values())
+        """Get all registered elements in order."""
+        return list(self._elements.values())
+    
+    def is_excluded(self, element_class: Type[BaseBlockElement]) -> bool:
+        """
+        Check if an element class is excluded.
+        """
+        return element_class in self._excluded_elements
