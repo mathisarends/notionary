@@ -4,7 +4,11 @@ import re
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.file.file_element_models import ExternalFile, FileType, FileUploadFile
+from notionary.blocks.file.file_element_models import (
+    ExternalFile,
+    FileType,
+    FileUploadFile,
+)
 from notionary.blocks.image_block.image_models import CreateImageBlock, FileBlock
 from notionary.blocks.mixins.captions import CaptionMixin
 from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin

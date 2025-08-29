@@ -21,7 +21,7 @@ from notionary.blocks.pdf.pdf_models import CreatePdfBlock
 class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
     """
     Handles conversion between Markdown PDF embeds and Notion PDF blocks.
-    
+
     Supports both external URLs and local PDF file uploads.
 
     Markdown PDF syntax:
@@ -41,11 +41,11 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
     def _extract_pdf_path(cls, text: str) -> Optional[str]:
         """Extract PDF path/URL from text, handling caption patterns."""
         clean_text = cls.remove_caption(text)
-        
+
         match = cls.PDF_PATTERN.search(clean_text)
         if match:
             return match.group(1).strip()
-        
+
         return None
 
     @classmethod
@@ -80,29 +80,29 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
                 external=ExternalFile(url=pdf_path),
                 caption=caption_rich_text,
             )
-            
+
         elif cls._is_local_file_path(pdf_path):
             # Handle local PDF file upload using mixin
             cls.logger.debug(f"Detected local PDF file: {pdf_path}")
-            
+
             # Upload the local PDF file with PDF category validation
             file_upload_id = await cls._upload_local_file(pdf_path, "pdf")
             if not file_upload_id:
                 cls.logger.error(f"Failed to upload PDF: {pdf_path}")
                 return None
-            
+
             # Create FILE_UPLOAD block
             pdf_block = FileBlock(
                 type=FileType.FILE_UPLOAD,
                 file_upload=FileUploadFile(id=file_upload_id),
                 caption=caption_rich_text,
-                name=Path(pdf_path).name
+                name=Path(pdf_path).name,
             )
-            
+
         else:
             # Handle external URL
             cls.logger.debug(f"Using external PDF URL: {pdf_path}")
-            
+
             pdf_block = FileBlock(
                 type=FileType.EXTERNAL,
                 external=ExternalFile(url=pdf_path),

@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 class UploadMode(str, Enum):
     """Enum for file upload modes."""
+
     SINGLE_PART = "single_part"
     MULTI_PART = "multi_part"
 

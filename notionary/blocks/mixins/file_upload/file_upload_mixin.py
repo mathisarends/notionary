@@ -6,6 +6,7 @@ from notionary.file_upload.models import UploadMode
 from notionary.page.page_context import get_page_context
 from notionary.util.logging_mixin import LoggingMixin
 
+
 # TOOD: Hier überlegen wirklich nur was common ist hier in den mixin ansonstne dediziert handeln.
 class FileUploadMixin(LoggingMixin):
     """
@@ -13,12 +14,12 @@ class FileUploadMixin(LoggingMixin):
 
     Supports uploading local files for:
     - file blocks
-    - image blocks  
+    - image blocks
     - pdf blocks
     - audio blocks
     - video blocks
     """
-    
+
     @classmethod
     def _get_file_upload_client(cls) -> NotionFileUploadClient:
         """Get the file upload client from the current page context."""
@@ -129,30 +130,52 @@ class FileUploadMixin(LoggingMixin):
         # Define extension sets for each category
         extension_categories = {
             "image": {
-                ".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", 
-                ".tiff", ".tif", ".svg", ".ico", ".heic", ".heif"
+                ".png",
+                ".jpg",
+                ".jpeg",
+                ".gif",
+                ".webp",
+                ".bmp",
+                ".tiff",
+                ".tif",
+                ".svg",
+                ".ico",
+                ".heic",
+                ".heif",
             },
-            "audio": {
-                ".mp3", ".wav", ".ogg", ".m4a", ".aac", 
-                ".flac", ".wma", ".opus"
-            },
+            "audio": {".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac", ".wma", ".opus"},
             "video": {
-                ".mp4", ".avi", ".mov", ".wmv", ".flv", 
-                ".webm", ".mkv", ".m4v", ".3gp"
+                ".mp4",
+                ".avi",
+                ".mov",
+                ".wmv",
+                ".flv",
+                ".webm",
+                ".mkv",
+                ".m4v",
+                ".3gp",
             },
             "pdf": {".pdf"},
             "document": {
-                ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", 
-                ".txt", ".csv", ".json", ".xml"
+                ".doc",
+                ".docx",
+                ".xls",
+                ".xlsx",
+                ".ppt",
+                ".pptx",
+                ".txt",
+                ".csv",
+                ".json",
+                ".xml",
             },
-            "archive": {".zip", ".rar", ".7z"}
+            "archive": {".zip", ".rar", ".7z"},
         }
 
         # Find matching category
         for category, extensions in extension_categories.items():
             if suffix in extensions:
                 return category
-        
+
         return "other"
 
     @classmethod
@@ -170,7 +193,7 @@ class FileUploadMixin(LoggingMixin):
         # 'file' category accepts any file type
         if expected_category == "file":
             return True
-            
+
         actual_category = cls._get_file_category(file_path)
         return actual_category == expected_category
 
@@ -209,12 +232,12 @@ class FileUploadMixin(LoggingMixin):
             upload_id = await cls._execute_upload(
                 file_upload_client, file_path, content_type, file_size
             )
-            
+
             if upload_id:
                 cls.logger.info(
                     f"File upload completed: {upload_id} ({file_path.name})"
                 )
-            
+
             return upload_id
 
         except Exception as e:
@@ -225,9 +248,7 @@ class FileUploadMixin(LoggingMixin):
             return None
 
     @classmethod
-    def _validate_file_for_upload(
-        cls, file_path: Path, expected_category: str
-    ) -> bool:
+    def _validate_file_for_upload(cls, file_path: Path, expected_category: str) -> bool:
         """Validate file exists and type matches expected category."""
         # Check if file exists
         if not file_path.exists():

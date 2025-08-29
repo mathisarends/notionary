@@ -1,45 +1,56 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 from typing import Optional
 
 from notionary.blocks.audio.audio_models import CreateAudioBlock
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.file.file_element_models import ExternalFile, FileBlock, FileType
+from notionary.blocks.file.file_element_models import (
+    ExternalFile,
+    FileBlock,
+    FileType,
+    FileUploadFile,
+)
 from notionary.blocks.mixins.captions import CaptionMixin
+from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
+from notionary.util.logging_mixin import LoggingMixin
 
 
-class AudioElement(BaseBlockElement, CaptionMixin):
+class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin):
     """
     Handles conversion between Markdown audio embeds and Notion audio blocks.
 
-    Markdown audio syntax:
-    - [audio](https://example.com/audio.mp3) - Simple audio embed
-    - [audio](https://example.com/audio.mp3)(caption:Episode 1) - Audio with caption
-    - (caption:Background music)[audio](https://example.com/song.mp3) - caption before URL
+    Supports both external URLs and local audio file uploads.
 
-    Where:
-    - URL is the required audio file URL
-    - Caption supports rich text formatting and is optional
+    Markdown audio syntax:
+    - [audio](https://example.com/audio.mp3) - External URL
+    - [audio](./local/song.mp3) - Local audio file (will be uploaded)
+    - [audio](C:\Music\podcast.wav) - Absolute local path (will be uploaded)
+    - [audio](https://example.com/audio.mp3)(caption:Episode 1) - URL with caption
+    - (caption:Background music)[audio](./song.mp3) - Caption before URL
     """
 
-    # Simple pattern that matches just the audio link, CaptionMixin handles caption separately
-    AUDIO_PATTERN = re.compile(r"\[audio\]\((https?://[^\s\"]+)\)")
+    # Pattern matches both URLs and file paths
+    AUDIO_PATTERN = re.compile(r"\[audio\]\(([^)]+)\)")
 
     @classmethod
-    def _extract_audio_url(cls, text: str) -> Optional[str]:
-        """Extract audio URL from text, handling caption patterns."""
-        # First remove any captions to get clean text for URL extraction
+    def _extract_audio_path(cls, text: str) -> Optional[str]:
+        """Extract audio path/URL from text, handling caption patterns."""
         clean_text = cls.remove_caption(text)
 
-        # Now extract the URL from clean text
         match = cls.AUDIO_PATTERN.search(clean_text)
         if match:
-            return match.group(1)
+            return match.group(1).strip()
 
         return None
+
+    @classmethod
+    def match_markdown(cls, text: str) -> bool:
+        """Check if text contains an audio element pattern."""
+        return bool(cls._extract_audio_path(text.strip()))
 
     SUPPORTED_EXTENSIONS = {".mp3", ".wav", ".ogg", ".oga", ".m4a"}
 
@@ -49,27 +60,65 @@ class AudioElement(BaseBlockElement, CaptionMixin):
         return block.type == BlockType.AUDIO
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> Optional[BlockCreateResult]:
         """Convert markdown audio embed to Notion audio block."""
-        # Use our helper method to extract the URL
-        url = cls._extract_audio_url(text.strip())
-        if not url:
+        # Extract the path/URL
+        path = cls._extract_audio_path(text.strip())
+        if not path:
             return None
 
-        if not cls._is_likely_audio_url(url):
-            return None
+        # Check if it's a local file path
+        if cls._is_local_file_path(path):
+            # Verify file exists and has supported extension
+            audio_path = Path(path)
+            if not audio_path.exists():
+                cls.logger.warning(f"Audio file not found: {path}")
+                return None
 
-        # Use mixin to extract caption (if present anywhere in text)
-        caption_text = cls.extract_caption(text.strip())
-        caption_rich_text = cls.build_caption_rich_text(caption_text or "")
+            if audio_path.suffix.lower() not in cls.SUPPORTED_EXTENSIONS:
+                cls.logger.warning(f"Unsupported audio format: {audio_path.suffix}")
+                return None
 
-        audio_content = FileBlock(
-            type=FileType.EXTERNAL,
-            external=ExternalFile(url=url),
-            caption=caption_rich_text,
-        )
+            cls.logger.info(f"Uploading local audio file: {path}")
 
-        return CreateAudioBlock(audio=audio_content)
+            # Upload the local audio file
+            file_upload_id = await cls._upload_local_file(path, "audio")
+            if not file_upload_id:
+                cls.logger.error(f"Failed to upload audio file: {path}")
+                return None
+
+            cls.logger.info(
+                f"Successfully uploaded audio file with ID: {file_upload_id}"
+            )
+
+            # Use mixin to extract caption (if present anywhere in text)
+            caption_text = cls.extract_caption(text.strip())
+            caption_rich_text = cls.build_caption_rich_text(caption_text or "")
+
+            audio_content = FileBlock(
+                type=FileType.FILE_UPLOAD,
+                file_upload=FileUploadFile(id=file_upload_id),
+                caption=caption_rich_text,
+            )
+
+            return CreateAudioBlock(audio=audio_content)
+
+        else:
+            # Handle external URL
+            if not cls._is_likely_audio_url(path):
+                return None
+
+            # Use mixin to extract caption (if present anywhere in text)
+            caption_text = cls.extract_caption(text.strip())
+            caption_rich_text = cls.build_caption_rich_text(caption_text or "")
+
+            audio_content = FileBlock(
+                type=FileType.EXTERNAL,
+                external=ExternalFile(url=path),
+                caption=caption_rich_text,
+            )
+
+            return CreateAudioBlock(audio=audio_content)
 
     @classmethod
     async def notion_to_markdown(cls, block: Block) -> Optional[str]:
@@ -78,11 +127,14 @@ class AudioElement(BaseBlockElement, CaptionMixin):
             return None
 
         audio = block.audio
+        url = None
 
-        # Only handle external audio
-        if audio.type != FileType.EXTERNAL or audio.external is None:
-            return None
-        url = audio.external.url
+        # Handle both external URLs and uploaded files
+        if audio.type == FileType.EXTERNAL and audio.external is not None:
+            url = audio.external.url
+        elif audio.type == FileType.FILE_UPLOAD and audio.file_upload is not None:
+            url = audio.file_upload.url
+
         if not url:
             return None
 
@@ -100,14 +152,16 @@ class AudioElement(BaseBlockElement, CaptionMixin):
         """Get system prompt information for audio blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,
-            description="Audio blocks embed audio files from external URLs with optional captions",
+            description="Audio blocks embed audio files from external URLs or local files with optional captions",
             syntax_examples=[
                 "[audio](https://example.com/song.mp3)",
+                "[audio](./local/podcast.wav)",
+                "[audio](C:\\Music\\interview.mp3)",
                 "[audio](https://example.com/podcast.wav)(caption:Episode 1)",
-                "(caption:Background music)[audio](https://soundcloud.com/track/123)",
-                "[audio](https://example.com/interview.mp3)(caption:**Live** interview)",
+                "(caption:Background music)[audio](./song.mp3)",
+                "[audio](./interview.mp3)(caption:**Live** interview)",
             ],
-            usage_guidelines="Use for embedding audio files like music, podcasts, or sound effects. Supports common audio formats (mp3, wav, ogg, m4a). Caption supports rich text formatting and is optional.",
+            usage_guidelines="Use for embedding audio files like music, podcasts, or sound effects. Supports both external URLs and local file uploads. Supports common audio formats (mp3, wav, ogg, m4a). Caption supports rich text formatting and is optional.",
         )
 
     @classmethod
