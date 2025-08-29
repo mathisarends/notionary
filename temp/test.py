@@ -25,7 +25,7 @@ async def main():
             
         markdown = """
         ist alles gut bei dir?
-        [file](https://example.com/document.pdf)
+        [file](./my_document.pdf)
         """
         
         await page.append_markdown(markdown)
