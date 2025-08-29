@@ -24,16 +24,14 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        file_upload_str = "[file](./my_document.pdf)"
-
-        file_path = Path("./Viadee.png")
+        file_path = Path("./video.mp4")
         print(f"File exists: {file_path.exists()}")
         print(f"Absolute path: {file_path.absolute()}")
 
         markdown = """
         ist alles gut bei dir?
 
-        [audio](./test.mp3)
+        [video](./video.mp4)
         """
 
         await page.append_markdown(markdown)
