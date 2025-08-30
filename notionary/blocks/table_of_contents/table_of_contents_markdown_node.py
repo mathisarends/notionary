@@ -1,9 +1,6 @@
-from __future__ import annotations
-
 from typing import Optional
-from pydantic import Field
 
-from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
 class TableOfContentsMarkdownNode(MarkdownNode):
@@ -16,7 +13,7 @@ class TableOfContentsMarkdownNode(MarkdownNode):
     [toc](blue_background)
     """
 
-    color: Optional[str] = 'default'
+    color: Optional[str] = "default"
 
     def to_markdown(self) -> str:
         if self.color == "default":

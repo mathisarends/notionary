@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 from typing import Optional
 
-from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
 class CodeMarkdownNode(MarkdownNode):
@@ -16,6 +14,7 @@ class CodeMarkdownNode(MarkdownNode):
         print("Hello, world!")
         ```
     """
+
     code: str
     language: Optional[str] = None
     caption: Optional[str] = None

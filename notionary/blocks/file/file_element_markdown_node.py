@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 from typing import Optional
 
-from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.markdown.markdown_node import MarkdownNode
 from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
 
@@ -11,6 +9,7 @@ class FileMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     Enhanced File node with Pydantic integration.
     Programmatic interface for creating Notion-style Markdown file embeds.
     """
+
     url: str
     caption: Optional[str] = None
 

@@ -53,7 +53,9 @@ class ToggleHandler(LineHandler):
 
         # But NOT match toggleable heading pattern (has # after +++)
         # Updated: Support both "+++#title" and "+++ # title"
-        toggleable_heading_pattern = re.compile(r"^[+]{3}\s*#{1,3}\s+.+$", re.IGNORECASE)
+        toggleable_heading_pattern = re.compile(
+            r"^[+]{3}\s*#{1,3}\s+.+$", re.IGNORECASE
+        )
         if toggleable_heading_pattern.match(line):
             return False
 

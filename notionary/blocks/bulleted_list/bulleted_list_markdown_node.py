@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
 class BulletedListMarkdownNode(MarkdownNode):
@@ -12,6 +10,7 @@ class BulletedListMarkdownNode(MarkdownNode):
     - Second item
     - Third item
     """
+
     texts: list[str]
 
     def to_markdown(self) -> str:

@@ -53,7 +53,9 @@ class TestColumnToggleLayouts:
                         ColumnMarkdownNode(
                             children=[
                                 HeadingMarkdownNode(text="Left Column", level=2),
-                                ParagraphMarkdownNode(text="Content in the left column."),
+                                ParagraphMarkdownNode(
+                                    text="Content in the left column."
+                                ),
                                 CodeMarkdownNode(
                                     code="def left_function():\n    return 'left'",
                                     language="python",
@@ -65,8 +67,12 @@ class TestColumnToggleLayouts:
                         ColumnMarkdownNode(
                             children=[
                                 HeadingMarkdownNode(text="Right Column", level=2),
-                                ParagraphMarkdownNode(text="Content in the right column."),
-                                BulletedListMarkdownNode(texts=["Right item 1", "Right item 2"]),
+                                ParagraphMarkdownNode(
+                                    text="Content in the right column."
+                                ),
+                                BulletedListMarkdownNode(
+                                    texts=["Right item 1", "Right item 2"]
+                                ),
                             ],
                             width_ratio=0.4,
                         ),
@@ -94,7 +100,9 @@ class TestColumnToggleLayouts:
                         ColumnMarkdownNode(
                             children=[
                                 HeadingMarkdownNode(text="Regular Column", level=2),
-                                ParagraphMarkdownNode(text="Normal content in second column."),
+                                ParagraphMarkdownNode(
+                                    text="Normal content in second column."
+                                ),
                             ]
                         ),
                     ]
@@ -112,7 +120,10 @@ class TestColumnToggleLayouts:
         assert "+++ 📋 Project Overview" in markdown, "Main toggle title missing"
         assert "## Introduction" in markdown, "Toggle heading missing"
         assert "Feature 1: Advanced layouts" in markdown, "Toggle list item missing"
-        assert '[callout](Important: This is a nested callout inside toggle! "⚠️")' in markdown, "Toggle callout missing"
+        assert (
+            '[callout](Important: This is a nested callout inside toggle! "⚠️")'
+            in markdown
+        ), "Toggle callout missing"
 
     def test_column_structure(self, complex_model):
         """Test that column blocks are generated correctly."""
@@ -136,9 +147,15 @@ class TestColumnToggleLayouts:
         markdown = builder.build()
 
         # Check nested toggle
-        assert "+++ 🔧 Nested Toggle in Column" in markdown, "Nested toggle title missing"
-        assert "This toggle is nested inside a column!" in markdown, "Nested toggle content missing"
-        assert '[callout](Nested structures work! "🎉")' in markdown, "Nested callout missing"
+        assert (
+            "+++ 🔧 Nested Toggle in Column" in markdown
+        ), "Nested toggle title missing"
+        assert (
+            "This toggle is nested inside a column!" in markdown
+        ), "Nested toggle content missing"
+        assert (
+            '[callout](Nested structures work! "🎉")' in markdown
+        ), "Nested callout missing"
 
     def test_builder_structure_analysis(self, complex_model):
         """Test the structure analysis of the builder."""
@@ -156,7 +173,9 @@ class TestColumnToggleLayouts:
 
         assert toggle_count == 1, f"Expected 1 toggle, got {toggle_count}"
         assert column_count == 2, f"Expected 2 column lists, got {column_count}"
-        assert len(builder.children) == 5, f"Expected 5 top-level children, got {len(builder.children)}"
+        assert (
+            len(builder.children) == 5
+        ), f"Expected 5 top-level children, got {len(builder.children)}"
 
     def test_overall_markdown_generation(self, complex_model):
         """Test the complete markdown generation."""
@@ -168,7 +187,7 @@ class TestColumnToggleLayouts:
         assert "End of layout test." in markdown, "Final paragraph missing"
 
         # Ensure proper markdown formatting
-        lines = markdown.split('\n')
+        lines = markdown.split("\n")
         assert lines[0] == "# Advanced Layout Test", "First line should be main heading"
         assert lines[-1] == "End of layout test.", "Last line should be final paragraph"
 
@@ -179,17 +198,25 @@ class TestColumnToggleLayouts:
 
         # Count opening and closing markers correctly
         toggle_openings = markdown.count("+++ ")
-        toggle_closings = markdown.count("+++") - toggle_openings  # Total +++ minus openings
+        toggle_closings = (
+            markdown.count("+++") - toggle_openings
+        )  # Total +++ minus openings
 
         column_openings = markdown.count("::: columns")
-        column_closings = markdown.count(":::") - column_openings - markdown.count("::: column")  # Total ::: minus openings and column starts
+        column_closings = (
+            markdown.count(":::") - column_openings - markdown.count("::: column")
+        )  # Total ::: minus openings and column starts
 
         # Each toggle should have opening and closing
-        assert toggle_openings == toggle_closings, f"Toggle markers unbalanced: {toggle_openings} open, {toggle_closings} close"
+        assert (
+            toggle_openings == toggle_closings
+        ), f"Toggle markers unbalanced: {toggle_openings} open, {toggle_closings} close"
 
         # Each column list should have proper structure
         assert column_openings == 2, f"Expected 2 column lists, got {column_openings}"
 
         # Each column list has 2 closings: one for each column + one for the list itself
         expected_closings = column_openings * 2
-        assert column_closings == expected_closings, f"Column markers unbalanced: {column_openings} open, {column_closings} close (expected {expected_closings})"
+        assert (
+            column_closings == expected_closings
+        ), f"Column markers unbalanced: {column_openings} open, {column_closings} close (expected {expected_closings})"

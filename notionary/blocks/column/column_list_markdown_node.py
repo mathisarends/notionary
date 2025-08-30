@@ -1,8 +1,5 @@
-from __future__ import annotations
-
-
 from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
-from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
 class ColumnListMarkdownNode(MarkdownNode):

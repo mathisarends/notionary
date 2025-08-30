@@ -4,8 +4,6 @@ import asyncio
 import random
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
-from isort import file
-
 from notionary.blocks.client import NotionBlockClient
 from notionary.comments import CommentClient, Comment
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
@@ -13,7 +11,7 @@ from notionary.blocks.models import DatabaseParent
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.database.client import NotionDatabaseClient
 from notionary.file_upload.client import NotionFileUploadClient
-from notionary.markdown.markdown_builder import MarkdownBuilder
+from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.page import page_context
 from notionary.page.client import NotionPageClient
 from notionary.page.models import NotionPageResponse

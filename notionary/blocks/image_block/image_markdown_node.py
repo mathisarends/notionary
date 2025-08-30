@@ -1,9 +1,6 @@
-from __future__ import annotations
-
 from typing import Optional
-from pydantic import Field
 
-from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.markdown.markdown_node import MarkdownNode
 from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
 

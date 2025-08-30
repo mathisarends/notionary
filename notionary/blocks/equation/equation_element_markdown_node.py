@@ -1,7 +1,4 @@
-from __future__ import annotations
-
-
-from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
 class EquationMarkdownNode(MarkdownNode):
@@ -15,6 +12,7 @@ class EquationMarkdownNode(MarkdownNode):
     $$\\frac{a}{b} + \\sqrt{c}$$
     $$\\int_0^\\infty e^{-x} dx = 1$$
     """
+
     expression: str
 
     def to_markdown(self) -> str:

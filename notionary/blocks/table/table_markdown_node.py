@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 from pydantic import field_validator
 
-from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
 class TableMarkdownNode(MarkdownNode):
@@ -19,14 +17,14 @@ class TableMarkdownNode(MarkdownNode):
     headers: list[str]
     rows: list[list[str]]
 
-    @field_validator('headers')
+    @field_validator("headers")
     @classmethod
     def validate_headers(cls, v):
         if not v:
             raise ValueError("headers must not be empty")
         return v
 
-    @field_validator('rows')
+    @field_validator("rows")
     @classmethod
     def validate_rows(cls, v):
         if not all(isinstance(row, list) for row in v):

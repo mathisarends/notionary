@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 from typing import Optional
-from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
 class CalloutMarkdownNode(MarkdownNode):
@@ -10,6 +8,7 @@ class CalloutMarkdownNode(MarkdownNode):
     Programmatic interface for creating Notion-style callout Markdown blocks.
     Example: [callout](This is important "⚠️")
     """
+
     text: str
     emoji: Optional[str] = None
 

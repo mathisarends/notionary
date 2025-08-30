@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
 class ParagraphMarkdownNode(MarkdownNode):
@@ -9,6 +9,7 @@ class ParagraphMarkdownNode(MarkdownNode):
     Programmatic interface for creating Markdown paragraphs.
     Paragraphs are standard text without special block formatting.
     """
+
     text: str
 
     def to_markdown(self) -> str:

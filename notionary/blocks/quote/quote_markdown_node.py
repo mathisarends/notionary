@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
 class QuoteMarkdownNode(MarkdownNode):

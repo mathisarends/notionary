@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 from pydantic import Field
-from notionary.markdown.markdown_node import MarkdownNode
+from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
 class HeadingMarkdownNode(MarkdownNode):
@@ -10,6 +8,7 @@ class HeadingMarkdownNode(MarkdownNode):
     Programmatic interface for creating Markdown headings (H1-H3).
     Example: # Heading 1, ## Heading 2, ### Heading 3
     """
+
     text: str
     level: int = Field(default=1, ge=1, le=3)
 
