@@ -42,13 +42,6 @@ NOTION_SECRET=your_integration_key
 
 ### Simple Flow: Find → Create → Update
 
-<video width="100%" controls>
-  <source src="./static/demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
-_Demo: Converting markdown to structured Notion content with callouts, columns, and tables_
-
 ```python
 import asyncio
 from notionary import NotionPage, NotionDatabase
@@ -96,10 +89,7 @@ asyncio.run(main())
 
 ### Create Rich Database Entries
 
-<video width="100%" controls>
-  <source src="./static/create_page_in_database_demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+[![Demo: Creating a styled project page in a Notion database](https://img.youtube.com/vi/yTlGcordVmU/maxresdefault.jpg)](https://www.youtube.com/watch?v=yTlGcordVmU)
 
 _Demo: Creating a styled project page in a Notion database with properties, content, and rich formatting_
 
