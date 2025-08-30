@@ -1,5 +1,6 @@
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 
+
 class ToggleMarkdownNode(MarkdownNode):
     """
     Enhanced Toggle node with Pydantic integration.

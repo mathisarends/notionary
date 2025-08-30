@@ -24,6 +24,8 @@ from notionary.blocks.toggleable_heading import ToggleableHeadingMarkdownNode
 from notionary.blocks.column import ColumnListMarkdownNode, ColumnMarkdownNode
 from notionary.blocks.breadcrumbs import BreadcrumbMarkdownNode
 
+from notionary.blocks.markdown.markdown_document_model import MarkdownDocumentModel
+
 __all__ = [
     "bootstrap_blocks",
     "HeadingMarkdownNode",
@@ -50,4 +52,6 @@ __all__ = [
     "ColumnListMarkdownNode",
     "ColumnMarkdownNode",
     "BreadcrumbMarkdownNode",
+    # Markdown Document Model
+    "MarkdownDocumentModel",
 ]

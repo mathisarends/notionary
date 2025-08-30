@@ -54,12 +54,12 @@ class MarkdownBuilder:
     def from_model(cls, model: MarkdownDocumentModel) -> Self:
         """Create MarkdownBuilder from a Pydantic model."""
         builder = cls()
-        
+
         blocks = model.blocks if isinstance(model, MarkdownDocumentModel) else model
-        
+
         for block in blocks:
             builder.children.append(block)
-        
+
         return builder
 
     def h1(self, text: str) -> Self:

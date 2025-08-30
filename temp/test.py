@@ -8,12 +8,35 @@ Perfect for verifying the unified behavior!
 
 import asyncio
 
+from pydantic import Field
+
 from notionary import NotionPage
-from notionary.blocks.markdown.markdown_document_model import MarkdownDocumentModel
-from notionary.blocks import ColumnMarkdownNode, ColumnListMarkdownNode, ParagraphMarkdownNode
+
+from notionary.schemas import NotionContentSchema
+from notionary.blocks import (
+    MarkdownDocumentModel,
+    ParagraphMarkdownNode,
+    HeadingMarkdownNode,
+    BulletedListMarkdownNode
+)
 
 PAGE_NAME = "Jarvis Clipboard"
 
+class SimpleReport(NotionContentSchema):
+    """Einfacher Bericht mit Titel, Beschreibung und Punkten - hartverdrahtet für Tests"""
+    
+    title: str = Field(description="Report title")
+    description: str = Field(description="Brief description of what this report covers")
+    key_points: list[str] = Field(description="3-5 main findings or points")
+    
+    def to_notion_content(self) -> MarkdownDocumentModel:
+        blocks = [
+            HeadingMarkdownNode(text=self.title, level=1),
+            ParagraphMarkdownNode(text=self.description),
+            HeadingMarkdownNode(text="Key Points", level=2),
+            BulletedListMarkdownNode(texts=self.key_points)
+        ]
+        return MarkdownDocumentModel(blocks=blocks)
 
 async def main():
     """Test the new caption syntax across different media blocks."""
@@ -24,29 +47,19 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
-
-        # Create a MarkdownDocumentModel instead of raw markdown string
-        document_model = MarkdownDocumentModel(
-            blocks=[
-                ColumnListMarkdownNode(
-                    columns=[
-                        ColumnMarkdownNode(
-                            children=[
-                                ParagraphMarkdownNode(text="test")
-                            ]
-                        ),
-                        ColumnMarkdownNode(
-                            children=[
-                                ParagraphMarkdownNode(text="fest")
-                            ]
-                        )
-                    ]
-                )
+        
+        simple_report = SimpleReport(
+            title="Test Report: Python Performance",
+            description="This report covers key optimization techniques for Python applications.",
+            key_points=[
+                "Use list comprehensions instead of loops",
+                "Profile your code with cProfile", 
+                "Leverage NumPy for numerical computations",
+                "Cache expensive function calls",
+                "Use generators for memory efficiency"
             ]
         )
-
-        # Pass the MarkdownDocumentModel directly
-        await page.append_markdown(document_model)
+        await page.append_markdown(simple_report)
 
         print("✅ Successfully added all caption syntax examples!")
 

@@ -5,6 +5,7 @@ from typing import Union
 from pydantic import BaseModel, Field
 
 from notionary.blocks.heading import HeadingMarkdownNode
+from notionary.blocks.paragraph import ParagraphMarkdownNode
 
 from notionary.blocks import (
     HeadingMarkdownNode,

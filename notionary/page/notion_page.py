@@ -13,6 +13,7 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.database.client import NotionDatabaseClient
 from notionary.file_upload.client import NotionFileUploadClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
+from notionary.schemas import NotionContentSchema
 from notionary.page import page_context
 from notionary.page.client import NotionPageClient
 from notionary.page.models import NotionPageResponse
@@ -274,10 +275,15 @@ class NotionPage(LoggingMixin):
 
     async def append_markdown(
         self,
-        content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder], MarkdownDocumentModel],
+        content: Union[
+            str, 
+            Callable[[MarkdownBuilder], MarkdownBuilder], 
+            MarkdownDocumentModel,
+            NotionContentSchema
+        ],
     ) -> bool:
         """
-        Append markdown content to the page.
+        Append markdown content to the page using text, builder callback, MarkdownDocumentModel, or NotionContentSchema.
         """
         async with page_context(self.page_context_provider):
             result = await self._page_content_writer.append_markdown(
@@ -287,13 +293,19 @@ class NotionPage(LoggingMixin):
 
     async def replace_content(
         self,
-        content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder]],
+        content: Union[
+            str, 
+            Callable[[MarkdownBuilder], MarkdownBuilder],
+            MarkdownDocumentModel,
+            NotionContentSchema
+        ],
     ) -> bool:
         """
         Replace the entire page content with new markdown content.
 
         Args:
-            content: Either raw markdown text OR a callback function that receives a MarkdownBuilder
+            content: Either raw markdown text, a callback function that receives a MarkdownBuilder, 
+                    a MarkdownDocumentModel, or a NotionContentSchema
 
         Returns:
             bool: True if successful, False otherwise

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from pydantic import BaseModel
-    
+
+
 class MarkdownNode(BaseModel, ABC):
     """
     Enhanced base class for all Markdown nodes with Pydantic integration.

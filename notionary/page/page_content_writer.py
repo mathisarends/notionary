@@ -4,6 +4,7 @@ from notionary.blocks.client import NotionBlockClient
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.blocks.markdown.markdown_document_model import MarkdownDocumentModel
+from notionary.schemas.base import NotionContentSchema
 from notionary.page.markdown_whitespace_processor import MarkdownWhitespaceProcessor
 from notionary.page.writer.markdown_to_notion_converter import MarkdownToNotionConverter
 from notionary.util import LoggingMixin
@@ -21,10 +22,15 @@ class PageContentWriter(LoggingMixin):
 
     async def append_markdown(
         self,
-        content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder], MarkdownDocumentModel],
+        content: Union[
+            str, 
+            Callable[[MarkdownBuilder], MarkdownBuilder], 
+            MarkdownDocumentModel,
+            NotionContentSchema
+        ],
     ) -> Optional[str]:
         """
-        Append markdown content to a Notion page using text, builder callback, or MarkdownDocumentModel.
+        Append markdown content to a Notion page using text, builder callback, MarkdownDocumentModel, or NotionContentSchema.
         """
         markdown = self._extract_markdown_from_param(content)
 
@@ -53,13 +59,24 @@ class PageContentWriter(LoggingMixin):
             return None
 
     def _extract_markdown_from_param(
-        self, content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder], MarkdownDocumentModel]
+        self,
+        content: Union[
+            str, 
+            Callable[[MarkdownBuilder], MarkdownBuilder], 
+            MarkdownDocumentModel,
+            NotionContentSchema
+        ],
     ) -> str:
         """
-        Prepare markdown content from string, builder callback, or MarkdownDocumentModel.
+        Prepare markdown content from string, builder callback, MarkdownDocumentModel, or NotionContentSchema.
         """
         if isinstance(content, str):
             return content
+        elif isinstance(content, NotionContentSchema):
+            # Convert NotionContentSchema to MarkdownDocumentModel, then to markdown
+            document_model = content.to_notion_content()
+            builder = MarkdownBuilder.from_model(document_model)
+            return builder.build()
         elif isinstance(content, MarkdownDocumentModel):
             builder = MarkdownBuilder.from_model(content)
             return builder.build()
@@ -69,5 +86,5 @@ class PageContentWriter(LoggingMixin):
             return builder.build()
         else:
             raise ValueError(
-                "content must be either a string, a MarkdownDocumentModel, or a callable that takes a MarkdownBuilder"
+                "content must be either a string, a NotionContentSchema, a MarkdownDocumentModel, or a callable that takes a MarkdownBuilder"
             )
