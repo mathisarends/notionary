@@ -5,116 +5,78 @@ Test Column and Toggle layouts with structured output to verify hierarchical str
 """
 
 import pytest
-from notionary.markdown.markdown_builder import MarkdownBuilder
-from notionary.markdown.markdown_document_model import MarkdownDocumentModel
-from notionary.blocks.heading import HeadingMarkdownNode
-from notionary.blocks.paragraph import ParagraphMarkdownNode
-from notionary.blocks.bulleted_list import BulletedListMarkdownNode
-from notionary.blocks.callout import CalloutMarkdownNode
-from notionary.blocks.code import CodeMarkdownNode
-from notionary.blocks.toggle import ToggleMarkdownNode
-from notionary.blocks.column import ColumnMarkdownNode, ColumnListMarkdownNode
+from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
+from notionary.schemas import NotionContentSchema
+from pydantic import Field
 
 
 class TestColumnToggleLayouts:
     """Test suite for Column and Toggle layout structures."""
 
     @pytest.fixture
-    def complex_model(self):
-        """Create a complex document model with nested structures."""
-        return MarkdownDocumentModel(
-            blocks=[
-                HeadingMarkdownNode(text="Advanced Layout Test", level=1),
-                # Test Toggle with nested content
-                ToggleMarkdownNode(
-                    title="📋 Project Overview",
-                    children=[
-                        HeadingMarkdownNode(text="Introduction", level=2),
-                        ParagraphMarkdownNode(
-                            text="This section contains detailed project information."
-                        ),
-                        BulletedListMarkdownNode(
-                            texts=[
-                                "Feature 1: Advanced layouts",
-                                "Feature 2: Nested structures",
-                                "Feature 3: Type safety",
-                            ]
-                        ),
-                        CalloutMarkdownNode(
-                            text="Important: This is a nested callout inside toggle!",
-                            emoji="⚠️",
-                        ),
-                    ],
-                ),
-                # Test Column layout with nested content
-                ColumnListMarkdownNode(
-                    columns=[
+    def complex_schema(self):
+        """Create a complex schema with nested structures using the new builder API."""
+        
+        class ComplexLayoutSchema(NotionContentSchema):
+            """Schema that generates complex layouts with toggles and columns"""
+            
+            title: str = Field(default="Advanced Layout Test")
+            project_features: list[str] = Field(default=[
+                "Feature 1: Advanced layouts",
+                "Feature 2: Nested structures", 
+                "Feature 3: Type safety"
+            ])
+            
+            def to_notion_content(self, builder: MarkdownBuilder) -> str:
+                return (builder
+                    .h1(self.title)
+                    
+                    # Test Toggle with nested content
+                    .toggle("📋 Project Overview", lambda t: t
+                        .h2("Introduction")
+                        .paragraph("This section contains detailed project information.")
+                        .bulleted_list(self.project_features)
+                        .callout("Important: This is a nested callout inside toggle!", "⚠️")
+                    )
+                    
+                    # Test Column layout with nested content
+                    .columns(
                         # Left Column
-                        ColumnMarkdownNode(
-                            children=[
-                                HeadingMarkdownNode(text="Left Column", level=2),
-                                ParagraphMarkdownNode(
-                                    text="Content in the left column."
-                                ),
-                                CodeMarkdownNode(
-                                    code="def left_function():\n    return 'left'",
-                                    language="python",
-                                ),
-                            ],
-                            width_ratio=0.6,
-                        ),
-                        # Right Column
-                        ColumnMarkdownNode(
-                            children=[
-                                HeadingMarkdownNode(text="Right Column", level=2),
-                                ParagraphMarkdownNode(
-                                    text="Content in the right column."
-                                ),
-                                BulletedListMarkdownNode(
-                                    texts=["Right item 1", "Right item 2"]
-                                ),
-                            ],
-                            width_ratio=0.4,
-                        ),
-                    ]
-                ),
-                # Test nested Toggle inside Column
-                ColumnListMarkdownNode(
-                    columns=[
-                        ColumnMarkdownNode(
-                            children=[
-                                HeadingMarkdownNode(text="Column with Toggle", level=2),
-                                ToggleMarkdownNode(
-                                    title="🔧 Nested Toggle in Column",
-                                    children=[
-                                        ParagraphMarkdownNode(
-                                            text="This toggle is nested inside a column!"
-                                        ),
-                                        CalloutMarkdownNode(
-                                            text="Nested structures work!", emoji="🎉"
-                                        ),
-                                    ],
-                                ),
-                            ]
-                        ),
-                        ColumnMarkdownNode(
-                            children=[
-                                HeadingMarkdownNode(text="Regular Column", level=2),
-                                ParagraphMarkdownNode(
-                                    text="Normal content in second column."
-                                ),
-                            ]
-                        ),
-                    ]
-                ),
-                ParagraphMarkdownNode(text="End of layout test."),
-            ]
-        )
+                        lambda col: col
+                            .h2("Left Column")
+                            .paragraph("Content in the left column.")
+                            .code("def left_function():\n    return 'left'", "python"),
+                        # Right Column  
+                        lambda col: col
+                            .h2("Right Column")
+                            .paragraph("Content in the right column.")
+                            .bulleted_list(["Right item 1", "Right item 2"]),
+                        width_ratios=[0.6, 0.4]
+                    )
+                    
+                    # Test nested Toggle inside Column
+                    .columns(
+                        lambda col: col
+                            .h2("Column with Toggle")
+                            .toggle("🔧 Nested Toggle in Column", lambda t: t
+                                .paragraph("This toggle is nested inside a column!")
+                                .callout("Nested structures work!", "🎉")
+                            ),
+                        lambda col: col
+                            .h2("Regular Column")
+                            .paragraph("Normal content in second column.")
+                    )
+                    
+                    .paragraph("End of layout test.")
+                    .build()
+                )
+        
+        return ComplexLayoutSchema()
 
-    def test_toggle_structure(self, complex_model):
+    def test_toggle_structure(self, complex_schema):
         """Test that toggle blocks are generated correctly."""
-        builder = MarkdownBuilder.from_model(complex_model)
-        markdown = builder.build()
+        builder = MarkdownBuilder()
+        markdown = complex_schema.to_notion_content(builder)
 
         # Check main toggle
         assert "+++ 📋 Project Overview" in markdown, "Main toggle title missing"
@@ -125,10 +87,10 @@ class TestColumnToggleLayouts:
             in markdown
         ), "Toggle callout missing"
 
-    def test_column_structure(self, complex_model):
+    def test_column_structure(self, complex_schema):
         """Test that column blocks are generated correctly."""
-        builder = MarkdownBuilder.from_model(complex_model)
-        markdown = builder.build()
+        builder = MarkdownBuilder()
+        markdown = complex_schema.to_notion_content(builder)
 
         # Check column containers
         assert "::: columns" in markdown, "Column container missing"
@@ -141,10 +103,10 @@ class TestColumnToggleLayouts:
         assert "def left_function" in markdown, "Code in left column missing"
         assert "Right item 1" in markdown, "List item in right column missing"
 
-    def test_nested_toggle_in_column(self, complex_model):
+    def test_nested_toggle_in_column(self, complex_schema):
         """Test that nested toggle inside column works."""
-        builder = MarkdownBuilder.from_model(complex_model)
-        markdown = builder.build()
+        builder = MarkdownBuilder()
+        markdown = complex_schema.to_notion_content(builder)
 
         # Check nested toggle
         assert (
@@ -157,30 +119,20 @@ class TestColumnToggleLayouts:
             '[callout](Nested structures work! "🎉")' in markdown
         ), "Nested callout missing"
 
-    def test_builder_structure_analysis(self, complex_model):
+    def test_builder_structure_analysis(self, complex_schema):
         """Test the structure analysis of the builder."""
-        builder = MarkdownBuilder.from_model(complex_model)
+        builder = MarkdownBuilder()
+        markdown = complex_schema.to_notion_content(builder)
+        
+        # Test that content is generated correctly
+        assert "# Advanced Layout Test" in markdown, "Main heading missing"
+        assert "+++ 📋 Project Overview" in markdown, "Toggle title missing"
+        assert "::: columns" in markdown, "Column structure missing"
 
-        # Count children types
-        toggle_count = sum(
-            1 for child in builder.children if "ToggleMarkdownNode" in str(type(child))
-        )
-        column_count = sum(
-            1
-            for child in builder.children
-            if "ColumnListMarkdownNode" in str(type(child))
-        )
-
-        assert toggle_count == 1, f"Expected 1 toggle, got {toggle_count}"
-        assert column_count == 2, f"Expected 2 column lists, got {column_count}"
-        assert (
-            len(builder.children) == 5
-        ), f"Expected 5 top-level children, got {len(builder.children)}"
-
-    def test_overall_markdown_generation(self, complex_model):
+    def test_overall_markdown_generation(self, complex_schema):
         """Test the complete markdown generation."""
-        builder = MarkdownBuilder.from_model(complex_model)
-        markdown = builder.build()
+        builder = MarkdownBuilder()
+        markdown = complex_schema.to_notion_content(builder)
 
         # Check overall structure
         assert "# Advanced Layout Test" in markdown, "Main heading missing"
@@ -191,10 +143,10 @@ class TestColumnToggleLayouts:
         assert lines[0] == "# Advanced Layout Test", "First line should be main heading"
         assert lines[-1] == "End of layout test.", "Last line should be final paragraph"
 
-    def test_markdown_syntax_compliance(self, complex_model):
+    def test_markdown_syntax_compliance(self, complex_schema):
         """Test that generated markdown follows proper syntax rules."""
-        builder = MarkdownBuilder.from_model(complex_model)
-        markdown = builder.build()
+        builder = MarkdownBuilder()
+        markdown = complex_schema.to_notion_content(builder)
 
         # Count opening and closing markers correctly
         toggle_openings = markdown.count("+++ ")

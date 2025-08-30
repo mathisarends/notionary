@@ -1,42 +1,42 @@
 #!/usr/bin/env python3
 
 """
-Test the refactored MarkdownBuilder and MarkdownModelProcessor separation.
+Test the refactored MarkdownBuilder with NotionContentSchema.
 """
 
-from notionary.markdown.markdown_builder import MarkdownBuilder
-from notionary.markdown.markdown_document_model import MarkdownDocumentModel
-from notionary.blocks.heading import HeadingMarkdownNode
-from notionary.blocks.paragraph import ParagraphMarkdownNode
-from notionary.blocks.bulleted_list import BulletedListMarkdownNode
-from notionary.blocks.callout import CalloutMarkdownNode
-from notionary.blocks.code import CodeMarkdownNode
-from notionary.blocks.divider import DividerMarkdownNode
-from notionary.blocks.todo import TodoMarkdownNode
+from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
+from notionary.schemas import NotionContentSchema
+from pydantic import Field
 
 
 def test_refactored_model_processing():
-    """Test that the model processing still works after refactoring."""
+    """Test that the schema processing works with the new builder injection API."""
 
-    # Create a simple document model with the new simplified API
-    model = MarkdownDocumentModel(
-        blocks=[
-            HeadingMarkdownNode(text="Test Document", level=1),
-            ParagraphMarkdownNode(text="This is a test paragraph."),
-            HeadingMarkdownNode(text="Section 2", level=2),
-            ParagraphMarkdownNode(text="Another paragraph in section 2."),
-            # Test more block types with simplified API
-            BulletedListMarkdownNode(texts=["Item 1", "Item 2", "Item 3"]),
-            CalloutMarkdownNode(text="Important note!", emoji="⚠️"),
-            CodeMarkdownNode(code="print('Hello World')", language="python"),
-            DividerMarkdownNode(),
-            TodoMarkdownNode(text="Complete refactoring", checked=True),
-        ]
-    )
+    class TestDocument(NotionContentSchema):
+        """Test schema with various block types."""
+        
+        title: str = Field(default="Test Document")
+        section_title: str = Field(default="Section 2")
+        list_items: list[str] = Field(default=["Item 1", "Item 2", "Item 3"])
+        
+        def to_notion_content(self, builder: MarkdownBuilder) -> str:
+            return (builder
+                .h1(self.title)
+                .paragraph("This is a test paragraph.")
+                .h2(self.section_title)
+                .paragraph("Another paragraph in section 2.")
+                .bulleted_list(self.list_items)
+                .callout("Important note!", "⚠️")
+                .code("print('Hello World')", "python")
+                .divider()
+                .todo("Complete refactoring", checked=True)
+                .build()
+            )
 
-    # Test the from_model class method
-    builder = MarkdownBuilder.from_model(model)
-    markdown = builder.build()
+    # Create and test the schema
+    document = TestDocument()
+    builder = MarkdownBuilder()
+    markdown = document.to_notion_content(builder)
 
     print("Generated Markdown:")
     print("=" * 50)
@@ -55,10 +55,10 @@ def test_refactored_model_processing():
     assert "---" in markdown
     assert "[x] Complete refactoring" in markdown
 
-    print("✅ Simplified API refactoring successful!")
-    print(f"✅ Builder has {len(builder.children)} children")
+    print("✅ Schema-based API refactoring successful!")
+    print(f"✅ Generated markdown with {len(markdown.split('\\n'))} lines")
     print("✅ All assertions passed!")
-    print("🎉 No more params wrapper needed!")
+    print("🎉 Builder injection pattern working perfectly!")
 
 
 if __name__ == "__main__":

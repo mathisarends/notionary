@@ -4,7 +4,7 @@ Testet realistische Anwendungsfälle mit mehrstufiger Verschachtelung.
 FIXED for new caption syntax!
 """
 
-from notionary.markdown.markdown_builder import MarkdownBuilder
+from notionary import MarkdownBuilder
 
 
 def test_nested_columns_with_mixed_content():
