@@ -3,7 +3,6 @@ from typing import Callable, Optional, Union
 from notionary.blocks.client import NotionBlockClient
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
-from notionary.blocks.markdown.markdown_document_model import MarkdownDocumentModel
 from notionary.schemas.base import NotionContentSchema
 from notionary.page.markdown_whitespace_processor import MarkdownWhitespaceProcessor
 from notionary.page.writer.markdown_to_notion_converter import MarkdownToNotionConverter
@@ -23,10 +22,7 @@ class PageContentWriter(LoggingMixin):
     async def append_markdown(
         self,
         content: Union[
-            str, 
-            Callable[[MarkdownBuilder], MarkdownBuilder], 
-            MarkdownDocumentModel,
-            NotionContentSchema
+            str, Callable[[MarkdownBuilder], MarkdownBuilder], NotionContentSchema
         ],
     ) -> Optional[str]:
         """
@@ -61,10 +57,7 @@ class PageContentWriter(LoggingMixin):
     def _extract_markdown_from_param(
         self,
         content: Union[
-            str, 
-            Callable[[MarkdownBuilder], MarkdownBuilder], 
-            MarkdownDocumentModel,
-            NotionContentSchema
+            str, Callable[[MarkdownBuilder], MarkdownBuilder], NotionContentSchema
         ],
     ) -> str:
         """
@@ -73,13 +66,10 @@ class PageContentWriter(LoggingMixin):
         if isinstance(content, str):
             return content
         elif isinstance(content, NotionContentSchema):
-            # Convert NotionContentSchema to MarkdownDocumentModel, then to markdown
-            document_model = content.to_notion_content()
-            builder = MarkdownBuilder.from_model(document_model)
-            return builder.build()
-        elif isinstance(content, MarkdownDocumentModel):
-            builder = MarkdownBuilder.from_model(content)
-            return builder.build()
+            # Use new injection-based API
+            builder = MarkdownBuilder()
+            return content.to_notion_content(builder)
+
         elif callable(content):
             builder = MarkdownBuilder()
             content(builder)

@@ -2,11 +2,12 @@
 NotionContentSchema Base Class
 =============================
 
-Base class for all Notion structured output schemas with consistent naming
+Base class for all Notion structured output schemas with injected MarkdownBuilder
 """
 
 from pydantic import BaseModel
-from notionary.blocks.markdown.markdown_document_model import MarkdownDocumentModel
+from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
+
 
 class NotionContentSchema(BaseModel):
     """
@@ -23,20 +24,16 @@ class NotionContentSchema(BaseModel):
             main_points: List[str] = Field(description="3-5 key takeaways")
             conclusion: str = Field(description="Summary and call-to-action")
 
-            def to_notion_content(self) -> MarkdownDocumentModel:
-                from notionary.blocks.heading import HeadingMarkdownNode
-                from notionary.blocks.paragraph import ParagraphMarkdownNode
-                from notionary.blocks.bulleted_list import BulletedListMarkdownNode
-
-                blocks = [
-                    HeadingMarkdownNode(text=self.title, level=1),
-                    ParagraphMarkdownNode(text=self.introduction),
-                    HeadingMarkdownNode(text="Key Points", level=2),
-                    BulletedListMarkdownNode(texts=self.main_points),
-                    HeadingMarkdownNode(text="Conclusion", level=2),
-                    ParagraphMarkdownNode(text=self.conclusion)
-                ]
-                return MarkdownDocumentModel(blocks=blocks)
+            def to_notion_content(self, builder: MarkdownBuilder) -> str:
+                return (builder
+                    .h1(self.title)
+                    .paragraph(self.introduction)
+                    .h2("Key Points")
+                    .bulleted_list(self.main_points)
+                    .h2("Conclusion")
+                    .paragraph(self.conclusion)
+                    .build()
+                )
 
         # Usage with LLM:
         llm = ChatOpenAI(model="gpt-4o")
@@ -47,18 +44,30 @@ class NotionContentSchema(BaseModel):
         await blog.append_to_page("My Blog")
     """
 
-    def to_notion_content(self) -> MarkdownDocumentModel:
+    def to_notion_content(self, builder: MarkdownBuilder) -> str:
         """
-        Convert this schema instance to Notion content.
+        Build Notion content using the provided MarkdownBuilder.
+
+        Args:
+            builder: Empty MarkdownBuilder instance to build content with
+
+        Returns:
+            str: The final markdown string (user should call build() on the builder)
         """
         raise NotImplementedError("Subclasses must implement to_notion_content()")
 
     async def append_to_page(self, page_name: str):
         """
         Upload this content directly to a Notion page.
+
+        Args:
+            page_name: Name of the target Notion page
         """
         from notionary import NotionPage
 
+        # Create fresh builder and let subclass build content
+        builder = MarkdownBuilder()
+        markdown = self.to_notion_content(builder)
+
         page = await NotionPage.from_page_name(page_name)
-        content = self.to_notion_content()
-        await page.append_markdown(content)
+        await page.append_markdown(markdown)

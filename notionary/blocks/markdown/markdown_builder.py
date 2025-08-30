@@ -34,7 +34,6 @@ from notionary.blocks.toggleable_heading import ToggleableHeadingMarkdownNode
 from notionary.blocks.video import VideoMarkdownNode
 from notionary.blocks.audio import AudioMarkdownNode
 
-from notionary.blocks.markdown.markdown_document_model import MarkdownDocumentModel
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
@@ -49,18 +48,6 @@ class MarkdownBuilder:
     def __init__(self) -> None:
         """Initialize builder with empty children list."""
         self.children: list[MarkdownNode] = []
-
-    @classmethod
-    def from_model(cls, model: MarkdownDocumentModel) -> Self:
-        """Create MarkdownBuilder from a Pydantic model."""
-        builder = cls()
-
-        blocks = model.blocks if isinstance(model, MarkdownDocumentModel) else model
-
-        for block in blocks:
-            builder.children.append(block)
-
-        return builder
 
     def h1(self, text: str) -> Self:
         """

@@ -11,32 +11,28 @@ import asyncio
 from pydantic import Field
 
 from notionary import NotionPage
-
 from notionary.schemas import NotionContentSchema
-from notionary.blocks import (
-    MarkdownDocumentModel,
-    ParagraphMarkdownNode,
-    HeadingMarkdownNode,
-    BulletedListMarkdownNode
-)
 
 PAGE_NAME = "Jarvis Clipboard"
 
+
 class SimpleReport(NotionContentSchema):
     """Einfacher Bericht mit Titel, Beschreibung und Punkten - hartverdrahtet für Tests"""
-    
+
     title: str = Field(description="Report title")
     description: str = Field(description="Brief description of what this report covers")
     key_points: list[str] = Field(description="3-5 main findings or points")
-    
-    def to_notion_content(self) -> MarkdownDocumentModel:
-        blocks = [
-            HeadingMarkdownNode(text=self.title, level=1),
-            ParagraphMarkdownNode(text=self.description),
-            HeadingMarkdownNode(text="Key Points", level=2),
-            BulletedListMarkdownNode(texts=self.key_points)
-        ]
-        return MarkdownDocumentModel(blocks=blocks)
+
+    def to_notion_content(self, builder) -> str:
+        """Verwendet den MarkdownBuilder für fluente API"""
+        return (
+            builder.h1(self.title)
+            .paragraph(self.description)
+            .h2("Key Points")
+            .bulleted_list(self.key_points)
+            .build()
+        )
+
 
 async def main():
     """Test the new caption syntax across different media blocks."""
@@ -47,17 +43,17 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
-        
+
         simple_report = SimpleReport(
             title="Test Report: Python Performance",
             description="This report covers key optimization techniques for Python applications.",
             key_points=[
                 "Use list comprehensions instead of loops",
-                "Profile your code with cProfile", 
+                "Profile your code with cProfile",
                 "Leverage NumPy for numerical computations",
                 "Cache expensive function calls",
-                "Use generators for memory efficiency"
-            ]
+                "Use generators for memory efficiency",
+            ],
         )
         await page.append_markdown(simple_report)
 

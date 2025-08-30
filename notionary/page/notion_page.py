@@ -5,7 +5,6 @@ import random
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from notionary.blocks.client import NotionBlockClient
-from notionary.blocks.markdown.markdown_document_model import MarkdownDocumentModel
 from notionary.comments import CommentClient, Comment
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.blocks.models import DatabaseParent
@@ -276,10 +275,7 @@ class NotionPage(LoggingMixin):
     async def append_markdown(
         self,
         content: Union[
-            str, 
-            Callable[[MarkdownBuilder], MarkdownBuilder], 
-            MarkdownDocumentModel,
-            NotionContentSchema
+            str, Callable[[MarkdownBuilder], MarkdownBuilder], NotionContentSchema
         ],
     ) -> bool:
         """
@@ -294,17 +290,14 @@ class NotionPage(LoggingMixin):
     async def replace_content(
         self,
         content: Union[
-            str, 
-            Callable[[MarkdownBuilder], MarkdownBuilder],
-            MarkdownDocumentModel,
-            NotionContentSchema
+            str, Callable[[MarkdownBuilder], MarkdownBuilder], NotionContentSchema
         ],
     ) -> bool:
         """
         Replace the entire page content with new markdown content.
 
         Args:
-            content: Either raw markdown text, a callback function that receives a MarkdownBuilder, 
+            content: Either raw markdown text, a callback function that receives a MarkdownBuilder,
                     a MarkdownDocumentModel, or a NotionContentSchema
 
         Returns:
