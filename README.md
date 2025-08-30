@@ -89,7 +89,7 @@ asyncio.run(main())
 
 ### Create Rich Database Entries
 
-[![Demo: Creating a styled project page in a Notion database](https://img.youtube.com/vi/yTlGcordVmU/maxresdefault.jpg)](https://www.youtube.com/watch?v=yTlGcordVmU)
+https://github.com/user-attachments/assets/da8b4691-bee4-4b0f-801e-dccacb630398
 
 _Demo: Creating a styled project page in a Notion database with properties, content, and rich formatting_
 
@@ -142,6 +142,12 @@ await project.replace_content(lambda builder: (
 
 print(f"✅ Created styled project: {project.url}")
 ```
+
+### Upload Videos and Images
+
+https://github.com/user-attachments/assets/a079ec01-bb56-4c65-8260-7b1fca42ac68
+
+_Demo: Upload videos and images using local file URLs through markdown syntax_
 
 ### Extended Markdown Syntax
 
