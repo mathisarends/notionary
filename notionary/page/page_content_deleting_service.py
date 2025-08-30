@@ -27,7 +27,7 @@ class PageContentDeletingService(LoggingMixin):
                 return None
 
             # Use PageContentRetriever for sophisticated markdown conversion
-            deleted_content = self._content_retriever._convert_blocks_to_markdown(
+            deleted_content = await self._content_retriever._convert_blocks_to_markdown(
                 children_response.results, indent_level=0
             )
 

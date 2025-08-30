@@ -122,9 +122,6 @@ class NotionBlockClient(BaseNotionClient):
 
         # Convert Pydantic models to dictionaries for API
         children_dicts = [block.model_dump(exclude_none=True) for block in children]
-        
-        """ import json 
-        print(json.dumps(children_dicts, indent=2)) """
 
         # If 100 or fewer blocks, use single request
         if len(children_dicts) <= 100:
