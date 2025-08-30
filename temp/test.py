@@ -7,9 +7,10 @@ Perfect for verifying the unified behavior!
 """
 
 import asyncio
-from pathlib import Path
 
 from notionary import NotionPage
+from notionary.blocks.markdown.markdown_document_model import MarkdownDocumentModel
+from notionary.blocks import ColumnMarkdownNode, ColumnListMarkdownNode, ParagraphMarkdownNode
 
 PAGE_NAME = "Jarvis Clipboard"
 
@@ -24,18 +25,28 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        markdown = """
-        :::columns
-        :::column
-        test
-        :::
-        :::column
-        fest
-        :::
-        :::
-        """
+        # Create a MarkdownDocumentModel instead of raw markdown string
+        document_model = MarkdownDocumentModel(
+            blocks=[
+                ColumnListMarkdownNode(
+                    columns=[
+                        ColumnMarkdownNode(
+                            children=[
+                                ParagraphMarkdownNode(text="test")
+                            ]
+                        ),
+                        ColumnMarkdownNode(
+                            children=[
+                                ParagraphMarkdownNode(text="fest")
+                            ]
+                        )
+                    ]
+                )
+            ]
+        )
 
-        await page.append_markdown(markdown)
+        # Pass the MarkdownDocumentModel directly
+        await page.append_markdown(document_model)
 
         print("✅ Successfully added all caption syntax examples!")
 

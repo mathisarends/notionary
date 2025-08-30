@@ -3,6 +3,7 @@ from typing import Callable, Optional, Union
 from notionary.blocks.client import NotionBlockClient
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
+from notionary.blocks.markdown.markdown_document_model import MarkdownDocumentModel
 from notionary.page.markdown_whitespace_processor import MarkdownWhitespaceProcessor
 from notionary.page.writer.markdown_to_notion_converter import MarkdownToNotionConverter
 from notionary.util import LoggingMixin
@@ -20,10 +21,10 @@ class PageContentWriter(LoggingMixin):
 
     async def append_markdown(
         self,
-        content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder]],
+        content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder], MarkdownDocumentModel],
     ) -> Optional[str]:
         """
-        Append markdown content to a Notion page using either text or builder callback.
+        Append markdown content to a Notion page using text, builder callback, or MarkdownDocumentModel.
         """
         markdown = self._extract_markdown_from_param(content)
 
@@ -52,18 +53,21 @@ class PageContentWriter(LoggingMixin):
             return None
 
     def _extract_markdown_from_param(
-        self, content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder]]
+        self, content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder], MarkdownDocumentModel]
     ) -> str:
         """
-        Prepare markdown content from either string or builder callback.
+        Prepare markdown content from string, builder callback, or MarkdownDocumentModel.
         """
         if isinstance(content, str):
             return content
+        elif isinstance(content, MarkdownDocumentModel):
+            builder = MarkdownBuilder.from_model(content)
+            return builder.build()
         elif callable(content):
             builder = MarkdownBuilder()
             content(builder)
             return builder.build()
         else:
             raise ValueError(
-                "content must be either a string or a callable that takes a MarkdownBuilder"
+                "content must be either a string, a MarkdownDocumentModel, or a callable that takes a MarkdownBuilder"
             )

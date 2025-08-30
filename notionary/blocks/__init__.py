@@ -21,7 +21,7 @@ from notionary.blocks.equation import EquationMarkdownNode
 from notionary.blocks.table_of_contents import TableOfContentsMarkdownNode
 from notionary.blocks.toggle import ToggleMarkdownNode
 from notionary.blocks.toggleable_heading import ToggleableHeadingMarkdownNode
-from notionary.blocks.column import ColumnListMarkdownNode
+from notionary.blocks.column import ColumnListMarkdownNode, ColumnMarkdownNode
 from notionary.blocks.breadcrumbs import BreadcrumbMarkdownNode
 
 __all__ = [
@@ -48,5 +48,6 @@ __all__ = [
     "ToggleMarkdownNode",
     "ToggleableHeadingMarkdownNode",
     "ColumnListMarkdownNode",
+    "ColumnMarkdownNode",
     "BreadcrumbMarkdownNode",
 ]

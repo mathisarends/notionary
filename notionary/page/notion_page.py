@@ -5,6 +5,7 @@ import random
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from notionary.blocks.client import NotionBlockClient
+from notionary.blocks.markdown.markdown_document_model import MarkdownDocumentModel
 from notionary.comments import CommentClient, Comment
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.blocks.models import DatabaseParent
@@ -273,7 +274,7 @@ class NotionPage(LoggingMixin):
 
     async def append_markdown(
         self,
-        content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder]],
+        content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder], MarkdownDocumentModel],
     ) -> bool:
         """
         Append markdown content to the page.
