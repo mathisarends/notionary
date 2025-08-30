@@ -10,7 +10,6 @@ from notionary.blocks.types import BlockColor
 class BulletedListItemBlock(BaseModel):
     rich_text: list[RichTextObject]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[Block] = Field(default_factory=list)
 
 
 class CreateBulletedListItemBlock(BaseModel):

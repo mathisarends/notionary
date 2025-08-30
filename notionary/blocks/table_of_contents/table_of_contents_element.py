@@ -10,7 +10,7 @@ from notionary.blocks.table_of_contents.table_of_contents_models import (
     CreateTableOfContentsBlock,
     TableOfContentsBlock,
 )
-from notionary.blocks.types import BlockType
+from notionary.blocks.types import BlockType, BlockColor
 
 
 class TableOfContentsElement(BaseBlockElement):
@@ -18,7 +18,7 @@ class TableOfContentsElement(BaseBlockElement):
     Handles conversion between Markdown [toc] syntax and Notion table_of_contents blocks.
 
     Markdown syntax:
-    - [toc]                        → default color
+    - [toc]                        → default color (enum default)
     - [toc](blue)                  → custom color
     - [toc](blue_background)       → custom background color
     """
@@ -34,35 +34,47 @@ class TableOfContentsElement(BaseBlockElement):
         if not (input_match := cls.PATTERN.match(text.strip())):
             return None
 
-        color = (input_match.group("color") or "default").lower()
-        return CreateTableOfContentsBlock(
-            table_of_contents=TableOfContentsBlock(color=color)
-        )
+        color_str = input_match.group("color")
+        if color_str:
+            # Validate against the enum; fallback to default if unknown
+            try:
+                color = BlockColor(color_str.lower())
+                toc_payload = TableOfContentsBlock(color=color)
+            except ValueError:
+                # Unknown color → omit to use enum default
+                toc_payload = TableOfContentsBlock()
+        else:
+            # No color provided → omit to let enum default apply
+            toc_payload = TableOfContentsBlock()
+
+        return CreateTableOfContentsBlock(table_of_contents=toc_payload)
 
     @classmethod
     async def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        # Fix: Use 'or' instead of 'and'
+        # Correct guard: if not a TOC or missing payload → no match
         if block.type != BlockType.TABLE_OF_CONTENTS or not block.table_of_contents:
             return None
 
-        color = block.table_of_contents.color.value
-
-        if color == "default":
+        color = block.table_of_contents.color
+        # If None or default → plain [toc]
+        if color is None or color == BlockColor.DEFAULT:
             return "[toc]"
-        return f"[toc]({color})"
+        return f"[toc]({color.value})"
 
-    @classmethod
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
-        """Get system prompt information for table of contents blocks."""
+        """System prompt info for table of contents blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,
-            description="Table of contents blocks automatically generate navigation for page headings",
+            description="Table of contents blocks automatically generate navigation for page headings.",
             syntax_examples=[
                 "[toc]",
                 "[toc](blue)",
                 "[toc](blue_background)",
                 "[toc](gray_background)",
             ],
-            usage_guidelines="Use to automatically generate a clickable table of contents from page headings. Optional color parameter changes the appearance. Default color is gray.",
+            usage_guidelines=(
+                "Use to auto-generate a clickable table of contents from page headings. "
+                "The color parameter is optional; if omitted, the default enum color is used."
+            ),
         )

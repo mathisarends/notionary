@@ -1,6 +1,6 @@
-from typing import Literal
+from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from notionary.blocks.models import Block
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
@@ -11,7 +11,6 @@ class ToDoBlock(BaseModel):
     rich_text: list[RichTextObject]
     checked: bool = False
     color: BlockColor = BlockColor.DEFAULT
-    children: list[Block] = Field(default_factory=list)
 
 
 class CreateToDoBlock(BaseModel):

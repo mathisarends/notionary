@@ -1,6 +1,6 @@
 from typing import Literal, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_serializer
 
 from notionary.blocks.file.file_element_models import FileBlock
 from notionary.blocks.models import Block
@@ -23,10 +23,9 @@ IconObject = Union[EmojiIcon, FileIcon]
 
 class CalloutBlock(BaseModel):
     rich_text: list[RichTextObject]
-    icon: Optional[IconObject] = None
     color: BlockColor = BlockColor.DEFAULT
-    children: list[Block] = Field(default_factory=list)
-
+    icon: Optional[IconObject] = None
+    children: Optional[list[Block]] = None
 
 class CreateCalloutBlock(BaseModel):
     type: Literal["callout"] = "callout"

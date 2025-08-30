@@ -17,7 +17,7 @@ class ToggleableHeadingMarkdownNode(MarkdownNode):
 
     text: str
     level: int = Field(ge=1, le=3)
-    children: list[MarkdownNode] = Field(default_factory=list)
+    children: list[MarkdownNode] = []
 
     def to_markdown(self) -> str:
         prefix = "+++" + ("#" * self.level)
