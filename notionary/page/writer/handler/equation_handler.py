@@ -8,7 +8,7 @@ from notionary.page.writer.handler.line_handler import (
 
 
 class EquationHandler(LineHandler):
-    """Handles equation block specific logic with batching.
+    r"""Handles equation block specific logic with batching.
 
     Markdown syntax:
     $$
