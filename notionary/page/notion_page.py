@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from ast import Dict
 import asyncio
 import random
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+
+from yaml import Token
 
 from notionary.blocks.client import NotionBlockClient
 from notionary.comments import CommentClient, Comment
@@ -61,6 +64,7 @@ class NotionPage(LoggingMixin):
 
         self._client = NotionPageClient(token=token)
         self._block_client = NotionBlockClient(token=token)
+        self._database_client = NotionDatabaseClient(token=token)
         self._comment_client = CommentClient(token=token)
         self._page_data = None
 
@@ -439,14 +443,14 @@ class NotionPage(LoggingMixin):
             )
             return None
 
-        property_schema = self._properties.get(property_name)
+        property_schema: dict = self._properties.get(property_name)
 
         property_type = property_schema.get("type")
 
         if property_type == "relation":
             return await self._get_relation_property_values_by_name(property_name)
-        else:
-            return extract_property_value(property_schema)
+
+        return extract_property_value(property_schema)
 
     async def _get_relation_property_values_by_name(
         self, property_name: str
@@ -454,7 +458,7 @@ class NotionPage(LoggingMixin):
         """
         Retrieve the titles of all related pages for a relation property.
         """
-        page_property_schema = self.properties.get(property_name)
+        page_property_schema = self._properties.get(property_name)
         relation_page_ids = [
             rel.get("id") for rel in page_property_schema.get("relation", [])
         ]
@@ -467,22 +471,23 @@ class NotionPage(LoggingMixin):
         """
         Get the available options for a property (select, multi_select, status, relation).
         """
-        if not self._parent_database:
-            self.logger.error(
-                "Parent database not set. Cannot get options for property: %s",
-                property_name,
+        if property_name not in self.properties:
+            self.logger.warning(
+                "Property '%s' not found in page properties", property_name
             )
             return []
 
-        try:
-            return await self._parent_database.get_options_by_property_name(
-                property_name=property_name
-            )
-        except Exception as e:
-            self.logger.error(
-                "Error getting options for property '%s': %s", property_name, str(e)
-            )
-            return []
+        property_schema: dict = self.properties.get(property_name)
+        property_type = property_schema.get("type")
+
+        if property_type in ["select", "multi_select", "status"]:
+            options = property_schema.get(property_type, {}).get("options", [])
+            return [option.get("name", "") for option in options]
+
+        if property_type == "relation" and self._parent_database:
+            return await self._parent_database._get_relation_options(property_name)
+
+        return []
 
     # Fix this for pages that do not ah
     async def set_property_value_by_name(self, property_name: str, value: Any) -> Any:
@@ -602,8 +607,6 @@ class NotionPage(LoggingMixin):
             if parent_database_id
             else None
         )
-        print("parent_database_id", parent_database_id)
-        print("parent_database", parent_database)
 
         instance = cls(
             page_id=page_response.id,

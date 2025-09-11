@@ -1,7 +1,5 @@
 from typing import Any, Dict, Optional
 
-from urllib3.util import response
-
 from notionary.base_notion_client import BaseNotionClient
 from notionary.database.models import (
     NotionDatabaseResponse,

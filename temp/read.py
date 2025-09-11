@@ -21,7 +21,7 @@ async def main():
             "https://www.notion.so/How-to-Set-Achieve-Massive-Goals-Alex-Honnold-269389d57bd3813aa5fdef5040d00748?v=1af389d57bd3812ea9b6000cd63ced14&source=copy_link"
         )
 
-        episode_link = await page.get_property_value_by_name("Episode Link")
+        episode_link = await page.get_options_for_property_by_name("Thema")
         print("episode_link", episode_link)
 
     except Exception as e:

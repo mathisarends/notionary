@@ -242,6 +242,7 @@ class NotionCover(BaseModel):
     type: str  # 'external', 'file'
     external: Optional[ExternalCover] = None
 
+
 # User type for Pydantic
 class NotionUser(BaseModel):
     object: str  # 'user'
