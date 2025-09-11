@@ -2,6 +2,8 @@ from typing import Any, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict
 
+from notionary.blocks.models import ParentObject
+
 
 class TextContent(BaseModel):
     content: str
@@ -240,14 +242,6 @@ class NotionCover(BaseModel):
     type: str  # 'external', 'file'
     external: Optional[ExternalCover] = None
 
-
-# Parent types for Pydantic
-class NotionParent(BaseModel):
-    type: str  # 'database_id', 'page_id', 'workspace'
-    database_id: Optional[str] = None
-    page_id: Optional[str] = None
-
-
 # User type for Pydantic
 class NotionUser(BaseModel):
     object: str  # 'user'
@@ -274,7 +268,7 @@ class NotionDatabaseResponse(BaseModel):
     properties: dict[
         str, Any
     ]  # Using Any for flexibility with different property schemas
-    parent: NotionParent
+    parent: ParentObject
     url: str
     public_url: Optional[str] = None
     archived: bool
@@ -290,7 +284,7 @@ class NotionPageResponse(BaseModel):
     last_edited_by: NotionUser
     cover: Optional[NotionCover] = None
     icon: Optional[Icon] = None
-    parent: NotionParent
+    parent: ParentObject
     archived: bool
     in_trash: bool
     properties: dict[str, Any]

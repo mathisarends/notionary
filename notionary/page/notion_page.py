@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 from notionary.blocks.client import NotionBlockClient
 from notionary.comments import CommentClient, Comment
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
-from notionary.blocks.models import DatabaseParent
+from notionary.blocks.models import DatabaseParent, ParentObject
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.database.client import NotionDatabaseClient
 from notionary.file_upload.client import NotionFileUploadClient
@@ -602,6 +602,8 @@ class NotionPage(LoggingMixin):
             if parent_database_id
             else None
         )
+        print("parent_database_id", parent_database_id)
+        print("parent_database", parent_database)
 
         instance = cls(
             page_id=page_response.id,
