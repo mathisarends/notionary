@@ -46,6 +46,7 @@ class NotionPage(LoggingMixin):
         archived: bool,
         in_trash: bool,
         emoji_icon: Optional[str] = None,
+        external_icon_url: Optional[str] = None,
         properties: Optional[dict[str, Any]] = None,
         parent_database: Optional[NotionDatabase] = None,
         token: Optional[str] = None,
@@ -59,6 +60,7 @@ class NotionPage(LoggingMixin):
         self._is_archived = archived
         self._is_in_trash = in_trash
         self._emoji_icon = emoji_icon
+        self._external_icon_url = external_icon_url
         self._properties = properties
         self._parent_database = parent_database
 
@@ -191,6 +193,13 @@ class NotionPage(LoggingMixin):
         If not set, generate it from the title and ID.
         """
         return self._url
+
+    @property
+    def external_icon_url(self) -> Optional[str]:
+        """
+        Get the icon of the page.
+        """
+        return self._external_icon_url
 
     @property
     def emoji_icon(self) -> Optional[str]:
@@ -345,10 +354,30 @@ class NotionPage(LoggingMixin):
             )
 
             self._emoji = page_response.icon.emoji
+            self._external_icon_url = None
             return page_response.icon.emoji
         except Exception as e:
 
             self.logger.error(f"Error updating page emoji: {str(e)}")
+            return None
+
+    async def set_external_icon(self, url: str) -> Optional[str]:
+        """
+        Sets the page icon to an external image.
+        """
+        try:
+            icon = {"type": "external", "external": {"url": url}}
+            page_response = await self._client.patch_page(
+                page_id=self._page_id, data={"icon": icon}
+            )
+
+            self._icon = url
+            self._emoji = None
+            self.logger.info(f"Successfully updated page external icon to: {url}")
+            return page_response.icon.external.url
+
+        except Exception as e:
+            self.logger.error(f"Error updating page external icon: {str(e)}")
             return None
 
     async def create_child_database(self, title: str) -> NotionDatabase:
@@ -599,7 +628,8 @@ class NotionPage(LoggingMixin):
         from notionary.database.database import NotionDatabase
 
         title = cls._extract_title(page_response)
-        emoji = cls._extract_emoji(page_response)
+        emoji_icon = cls._extract_page_emoji_icon(page_response)
+        external_icon_url = cls._extract_external_icon_url(page_response)
         parent_database_id = cls._extract_parent_database_id(page_response)
 
         parent_database = (
@@ -612,7 +642,8 @@ class NotionPage(LoggingMixin):
             page_id=page_response.id,
             title=title,
             url=page_response.url,
-            emoji_icon=emoji,
+            emoji_icon=emoji_icon,
+            external_icon_url=external_icon_url,
             archived=page_response.archived,
             in_trash=page_response.in_trash,
             properties=page_response.properties,
@@ -649,15 +680,22 @@ class NotionPage(LoggingMixin):
             return ""
 
     @staticmethod
-    def _extract_emoji(page_response: NotionPageResponse) -> Optional[str]:
-        """Extract emoji from database response."""
+    def _extract_page_emoji_icon(page_response: NotionPageResponse) -> Optional[str]:
+        """Extract external icon URL from page response."""
         if not page_response.icon:
             return None
 
         if page_response.icon.type == "emoji":
             return page_response.icon.emoji
 
-        return None
+    @staticmethod
+    def _extract_external_icon_url(page_response: NotionPageResponse) -> Optional[str]:
+        """Extract emoji from database response."""
+        if not page_response.icon:
+            return None
+
+        if page_response.icon.type == "external":
+            return page_response.icon.external.url
 
     @staticmethod
     def _extract_parent_database_id(page_response: NotionPageResponse) -> Optional[str]:
