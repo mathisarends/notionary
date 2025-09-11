@@ -16,61 +16,62 @@ class TestColumnToggleLayouts:
     @pytest.fixture
     def complex_schema(self):
         """Create a complex schema with nested structures using the new builder API."""
-        
+
         class ComplexLayoutSchema(NotionContentSchema):
             """Schema that generates complex layouts with toggles and columns"""
-            
+
             title: str = Field(default="Advanced Layout Test")
-            project_features: list[str] = Field(default=[
-                "Feature 1: Advanced layouts",
-                "Feature 2: Nested structures", 
-                "Feature 3: Type safety"
-            ])
-            
+            project_features: list[str] = Field(
+                default=[
+                    "Feature 1: Advanced layouts",
+                    "Feature 2: Nested structures",
+                    "Feature 3: Type safety",
+                ]
+            )
+
             def to_notion_content(self, builder: MarkdownBuilder) -> str:
-                return (builder
-                    .h1(self.title)
-                    
+                return (
+                    builder.h1(self.title)
                     # Test Toggle with nested content
-                    .toggle("📋 Project Overview", lambda t: t
-                        .h2("Introduction")
-                        .paragraph("This section contains detailed project information.")
+                    .toggle(
+                        "📋 Project Overview",
+                        lambda t: t.h2("Introduction")
+                        .paragraph(
+                            "This section contains detailed project information."
+                        )
                         .bulleted_list(self.project_features)
-                        .callout("Important: This is a nested callout inside toggle!", "⚠️")
+                        .callout(
+                            "Important: This is a nested callout inside toggle!", "⚠️"
+                        ),
                     )
-                    
                     # Test Column layout with nested content
                     .columns(
                         # Left Column
-                        lambda col: col
-                            .h2("Left Column")
-                            .paragraph("Content in the left column.")
-                            .code("def left_function():\n    return 'left'", "python"),
-                        # Right Column  
-                        lambda col: col
-                            .h2("Right Column")
-                            .paragraph("Content in the right column.")
-                            .bulleted_list(["Right item 1", "Right item 2"]),
-                        width_ratios=[0.6, 0.4]
+                        lambda col: col.h2("Left Column")
+                        .paragraph("Content in the left column.")
+                        .code("def left_function():\n    return 'left'", "python"),
+                        # Right Column
+                        lambda col: col.h2("Right Column")
+                        .paragraph("Content in the right column.")
+                        .bulleted_list(["Right item 1", "Right item 2"]),
+                        width_ratios=[0.6, 0.4],
                     )
-                    
                     # Test nested Toggle inside Column
                     .columns(
-                        lambda col: col
-                            .h2("Column with Toggle")
-                            .toggle("🔧 Nested Toggle in Column", lambda t: t
-                                .paragraph("This toggle is nested inside a column!")
-                                .callout("Nested structures work!", "🎉")
-                            ),
-                        lambda col: col
-                            .h2("Regular Column")
-                            .paragraph("Normal content in second column.")
+                        lambda col: col.h2("Column with Toggle").toggle(
+                            "🔧 Nested Toggle in Column",
+                            lambda t: t.paragraph(
+                                "This toggle is nested inside a column!"
+                            ).callout("Nested structures work!", "🎉"),
+                        ),
+                        lambda col: col.h2("Regular Column").paragraph(
+                            "Normal content in second column."
+                        ),
                     )
-                    
                     .paragraph("End of layout test.")
                     .build()
                 )
-        
+
         return ComplexLayoutSchema()
 
     def test_toggle_structure(self, complex_schema):
@@ -123,7 +124,7 @@ class TestColumnToggleLayouts:
         """Test the structure analysis of the builder."""
         builder = MarkdownBuilder()
         markdown = complex_schema.to_notion_content(builder)
-        
+
         # Test that content is generated correctly
         assert "# Advanced Layout Test" in markdown, "Main heading missing"
         assert "+++ 📋 Project Overview" in markdown, "Toggle title missing"

@@ -27,6 +27,7 @@ class CalloutBlock(BaseModel):
     icon: Optional[IconObject] = None
     children: Optional[list[Block]] = None
 
+
 class CreateCalloutBlock(BaseModel):
     type: Literal["callout"] = "callout"
     callout: CalloutBlock

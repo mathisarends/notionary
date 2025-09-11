@@ -12,9 +12,9 @@ PAGE_NAME = "Notionary Demo"
 
 def create_demo_page_content():
     """Creates demo page content using the fluent MarkdownBuilder interface from database.py example."""
-    
+
     from notionary import MarkdownBuilder
-    
+
     return (
         MarkdownBuilder()
         .callout(
@@ -128,10 +128,10 @@ async def main():
     page = await NotionPage.from_page_name(PAGE_NAME)
 
     print("🧱 Appending blocks via Builder API …")
-    
+
     # Use the comprehensive content from database.py example
     content = create_demo_page_content()
-    
+
     await page.append_markdown(content)
 
     print("✅ Done! Enjoy your very serious, extremely professional docs.")

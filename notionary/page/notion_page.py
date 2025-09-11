@@ -433,30 +433,20 @@ class NotionPage(LoggingMixin):
         """
         Get the value of a specific property.
         """
-        if not self._parent_database:
-            return None
-
-        database_property_schema = self._parent_database.properties.get(property_name)
-
-        if not database_property_schema:
-            self.logger.warning(
-                "Property '%s' not found in database schema", property_name
-            )
-            return None
-
-        property_type = database_property_schema.get("type")
-
-        if property_type == "relation":
-            return await self._get_relation_property_values_by_name(property_name)
-
         if property_name not in self._properties:
             self.logger.warning(
                 "Property '%s' not found in page properties", property_name
             )
             return None
 
-        property_data = self._properties.get(property_name)
-        return extract_property_value(property_data)
+        property_schema = self._properties.get(property_name)
+
+        property_type = property_schema.get("type")
+
+        if property_type == "relation":
+            return await self._get_relation_property_values_by_name(property_name)
+        else:
+            return extract_property_value(property_schema)
 
     async def _get_relation_property_values_by_name(
         self, property_name: str
@@ -494,6 +484,7 @@ class NotionPage(LoggingMixin):
             )
             return []
 
+    # Fix this for pages that do not ah
     async def set_property_value_by_name(self, property_name: str, value: Any) -> Any:
         """
         Set the value of a specific property by its name.

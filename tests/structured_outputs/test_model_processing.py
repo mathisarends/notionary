@@ -14,14 +14,14 @@ def test_refactored_model_processing():
 
     class TestDocument(NotionContentSchema):
         """Test schema with various block types."""
-        
+
         title: str = Field(default="Test Document")
         section_title: str = Field(default="Section 2")
         list_items: list[str] = Field(default=["Item 1", "Item 2", "Item 3"])
-        
+
         def to_notion_content(self, builder: MarkdownBuilder) -> str:
-            return (builder
-                .h1(self.title)
+            return (
+                builder.h1(self.title)
                 .paragraph("This is a test paragraph.")
                 .h2(self.section_title)
                 .paragraph("Another paragraph in section 2.")
