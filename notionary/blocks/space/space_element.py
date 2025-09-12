@@ -12,47 +12,55 @@ from notionary.blocks.paragraph.paragraph_models import (
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.types import BlockColor, BlockType
 
+from notionary.blocks.space.space_models import SPACE_MARKER
 
-class ParagraphElement(BaseBlockElement):
+
+class SpaceElement(BaseBlockElement):
     """
-    Handles conversion between Markdown paragraphs and Notion paragraph blocks.
+    Handles conversion between Markdown space markers ([space]) and Notion space blocks.
     """
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        return block.type == BlockType.PARAGRAPH and block.paragraph
+        if block.type != BlockType.PARAGRAPH:
+            return False
+
+        if not block.paragraph:
+            return False
+
+        rich_list = block.paragraph.rich_text
+        if len(rich_list) != 1:
+            return False
+
+        return rich_list[0].plain_text == SPACE_MARKER
 
     @classmethod
     async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
-        """Convert markdown text to a Notion ParagraphBlock."""
-        if not text.strip():
+        """Convert markdown [space] to a Notion space block."""
+        if text.strip() != SPACE_MARKER:
             return None
 
-        rich = await TextInlineFormatter.parse_inline_formatting(text)
-
+        rich = await TextInlineFormatter.parse_inline_formatting(
+            ""
+        )  # create_empty paragraph
         paragraph_content = ParagraphBlock(rich_text=rich, color=BlockColor.DEFAULT)
         return CreateParagraphBlock(paragraph=paragraph_content)
 
     @classmethod
     async def notion_to_markdown(cls, block: Block) -> Optional[str]:
-        if block.type != BlockType.PARAGRAPH or not block.paragraph:
+        if not cls.match_notion(block):
             return None
 
-        rich_list = block.paragraph.rich_text
-        markdown = await TextInlineFormatter.extract_text_with_formatting(rich_list)
-        return markdown or None
+        return SPACE_MARKER
 
     @classmethod
     def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
-        """Get system prompt information for paragraph blocks."""
+        """Get system prompt information for space blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,
-            description="Paragraph blocks contain regular text content with optional inline formatting",
+            description="Space blocks create visual spacing between content",
             syntax_examples=[
-                "This is a simple paragraph.",
-                "Paragraph with **bold text** and *italic text*.",
-                "Paragraph with [link](https://example.com) and `code`.",
-                "Multiple sentences in one paragraph. Each sentence flows naturally.",
+                SPACE_MARKER,
             ],
-            usage_guidelines="Use for regular text content. Supports inline formatting: **bold**, *italic*, `code`, [links](url). Default block type for plain text.",
+            usage_guidelines=f"Use {SPACE_MARKER} to create visual spacing between paragraphs or other content blocks.",
         )

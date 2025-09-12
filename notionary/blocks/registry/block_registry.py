@@ -30,6 +30,7 @@ from notionary.blocks.todo import TodoElement
 from notionary.blocks.toggle import ToggleElement
 from notionary.blocks.toggleable_heading import ToggleableHeadingElement
 from notionary.blocks.video import VideoElement
+from notionary.blocks.space import SpaceElement
 
 
 class BlockRegistry:
@@ -60,6 +61,7 @@ class BlockRegistry:
         ChildDatabaseElement,
         FileElement,
         PdfElement,
+        SpaceElement,
         ParagraphElement,  # Must be last as fallback!
     ]
 

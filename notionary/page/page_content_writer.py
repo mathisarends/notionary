@@ -65,16 +65,16 @@ class PageContentWriter(LoggingMixin):
         """
         if isinstance(content, str):
             return content
-        elif isinstance(content, NotionContentSchema):
+        if isinstance(content, NotionContentSchema):
             # Use new injection-based API
             builder = MarkdownBuilder()
             return content.to_notion_content(builder)
 
-        elif callable(content):
+        if callable(content):
             builder = MarkdownBuilder()
             content(builder)
             return builder.build()
-        else:
-            raise ValueError(
-                "content must be either a string, a NotionContentSchema, a MarkdownDocumentModel, or a callable that takes a MarkdownBuilder"
-            )
+
+        raise ValueError(
+            "content must be either a string, a NotionContentSchema, a MarkdownDocumentModel, or a callable that takes a MarkdownBuilder"
+        )

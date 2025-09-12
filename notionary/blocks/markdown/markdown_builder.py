@@ -33,6 +33,7 @@ from notionary.blocks.toggle import ToggleMarkdownNode
 from notionary.blocks.toggleable_heading import ToggleableHeadingMarkdownNode
 from notionary.blocks.video import VideoMarkdownNode
 from notionary.blocks.audio import AudioMarkdownNode
+from notionary.blocks.space import SpaceMarkdownNode
 
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 
@@ -100,6 +101,14 @@ class MarkdownBuilder:
         self.children.append(ParagraphMarkdownNode(text=text))
         return self
 
+    def space(self) -> Self:
+        """
+        Add a space block.
+
+        """
+        self.children.append(SpaceMarkdownNode())
+        return self
+
     def text(self, content: str) -> Self:
         """
         Add a text paragraph (alias for paragraph).
@@ -112,10 +121,6 @@ class MarkdownBuilder:
     def quote(self, text: str) -> Self:
         """
         Add a blockquote.
-
-        Args:
-            text: Quote text content
-            author: Optional quote author/attribution
         """
         self.children.append(QuoteMarkdownNode(text=text))
         return self
@@ -513,10 +518,6 @@ class MarkdownBuilder:
         col_builder = MarkdownBuilder()
         builder_func(col_builder)
         return ColumnMarkdownNode(children=col_builder.children)
-
-    def space(self) -> Self:
-        """Add vertical spacing."""
-        return self.paragraph("")
 
     def build(self) -> str:
         """Build and return the final markdown string."""

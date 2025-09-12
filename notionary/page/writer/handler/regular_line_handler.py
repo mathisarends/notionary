@@ -63,14 +63,11 @@ class RegularLineHandler(LineHandler):
 
         paragraph_element = ParagraphElement()
         result = await paragraph_element.markdown_to_notion(context.line)
-
-        if result:
-            context.result_blocks.append(result)
+        context.result_blocks.append(result)
 
     def _get_specialized_elements(self):
         """Get tuple of elements that have specialized handlers."""
         from notionary.blocks.code import CodeElement
-        from notionary.blocks.paragraph import ParagraphElement
         from notionary.blocks.table import TableElement
         from notionary.blocks.toggle import ToggleElement
         from notionary.blocks.toggleable_heading import ToggleableHeadingElement
@@ -82,5 +79,4 @@ class RegularLineHandler(LineHandler):
             ToggleableHeadingElement,
             TableElement,
             CodeElement,
-            ParagraphElement,
         )
