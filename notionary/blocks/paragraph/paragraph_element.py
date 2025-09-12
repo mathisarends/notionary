@@ -40,6 +40,7 @@ class ParagraphElement(BaseBlockElement):
 
         rich_list = block.paragraph.rich_text
         markdown = await TextInlineFormatter.extract_text_with_formatting(rich_list)
+        
         return markdown or None
 
     @classmethod

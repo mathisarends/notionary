@@ -19,16 +19,6 @@ async def main():
 
     try:
         page = await NotionPage.from_page_name(NAME)
-
-        markdown = (
-            MarkdownBuilder()
-            .paragraph("This is a test paragraph.")
-            .space()
-            .paragraph("Another paragraph after a space.")
-            .build()
-        )
-        
-        await page.append_markdown(markdown)
         
         text_content = await page.get_text_content()
         print("Current page content:", text_content)

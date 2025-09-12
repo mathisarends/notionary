@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.paragraph.paragraph_models import (
@@ -28,11 +29,9 @@ class SpaceElement(BaseBlockElement):
         if not block.paragraph:
             return False
 
-        rich_list = block.paragraph.rich_text
-        if len(rich_list) != 1:
-            return False
-
-        return rich_list[0].plain_text == SPACE_MARKER
+        # check for empty paragraph because only space element can produce such a block in this conversion logic
+        if cls._is_empty_paragraph(block.paragraph.rich_text):
+            return True
 
     @classmethod
     async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
@@ -64,3 +63,7 @@ class SpaceElement(BaseBlockElement):
             ],
             usage_guidelines=f"Use {SPACE_MARKER} to create visual spacing between paragraphs or other content blocks.",
         )
+
+    @classmethod
+    def _is_empty_paragraph(cls, rich_text: list[RichTextObject]) -> bool:
+        return not len(rich_text)

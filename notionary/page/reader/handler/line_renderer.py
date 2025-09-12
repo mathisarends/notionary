@@ -69,5 +69,6 @@ class LineRenderer(BlockHandler):
         """Convert a Notion block to markdown using registered elements."""
         for element in context.block_registry.get_elements():
             if element.match_notion(context.block):
+                print("element", element)
                 return await element.notion_to_markdown(context.block)
         return None
