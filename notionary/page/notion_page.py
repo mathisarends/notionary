@@ -26,6 +26,7 @@ from notionary.page.property_formatter import NotionPropertyFormatter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.page.utils import extract_property_value
 from notionary.util import LoggingMixin, extract_uuid, factory_only, format_uuid
+from notionary.util.deprecated_decorator import deprecated
 from notionary.util.fuzzy import find_best_match
 
 if TYPE_CHECKING:
@@ -45,11 +46,12 @@ class NotionPage(LoggingMixin):
         url: str,
         archived: bool,
         in_trash: bool,
-        emoji_icon: Optional[str] = None,
-        external_icon_url: Optional[str] = None,
-        properties: Optional[dict[str, Any]] = None,
-        parent_database: Optional[NotionDatabase] = None,
-        token: Optional[str] = None,
+        emoji_icon: str | None = None,
+        external_icon_url: str | None = None,
+        cover_image_url: str | None = None,
+        properties: dict[str, Any] | None = None,
+        parent_database: NotionDatabase | None = None,
+        token: str | None = None,
     ):
         """
         Initialize the page manager with all metadata.
@@ -61,6 +63,7 @@ class NotionPage(LoggingMixin):
         self._is_in_trash = in_trash
         self._emoji_icon = emoji_icon
         self._external_icon_url = external_icon_url
+        self._cover_image_url = cover_image_url
         self._properties = properties
         self._parent_database = parent_database
 
@@ -207,6 +210,13 @@ class NotionPage(LoggingMixin):
         Get the emoji icon of the page.
         """
         return self._emoji_icon
+
+    @property
+    def cover_image_url(self) -> Optional[str]:
+        """
+        Get the cover image URL of the page.
+        """
+        return self._cover_image_url
 
     @property
     def properties(self) -> Optional[dict[str, Any]]:
@@ -425,20 +435,6 @@ class NotionPage(LoggingMixin):
             self.logger.error(f"Error updating page external icon: {str(e)}")
             return None
 
-    async def get_cover_url(self) -> Optional[str]:
-        """
-        Get the URL of the page cover image.
-        """
-        try:
-            page_data = await self._client.get_page(self.id)
-            if not page_data or not page_data.cover:
-                return None
-            if page_data.cover.type == "external":
-                return page_data.cover.external.url
-        except Exception as e:
-            self.logger.error(f"Error fetching cover URL: {str(e)}")
-            return None
-
     async def set_cover(self, external_url: str) -> Optional[str]:
         """
         Set the cover image for the page using an external URL.
@@ -446,6 +442,7 @@ class NotionPage(LoggingMixin):
         data = {"cover": {"type": "external", "external": {"url": external_url}}}
         try:
             updated_page = await self._client.patch_page(self.id, data=data)
+            self._cover_image_url = updated_page.cover.external.url
             return updated_page.cover.external.url
         except Exception as e:
             self.logger.error("Failed to set cover image: %s", str(e))
@@ -630,6 +627,7 @@ class NotionPage(LoggingMixin):
         title = cls._extract_title(page_response)
         emoji_icon = cls._extract_page_emoji_icon(page_response)
         external_icon_url = cls._extract_external_icon_url(page_response)
+        cover_image_url = cls._extract_cover_image_url(page_response)
         parent_database_id = cls._extract_parent_database_id(page_response)
 
         parent_database = (
@@ -644,6 +642,7 @@ class NotionPage(LoggingMixin):
             url=page_response.url,
             emoji_icon=emoji_icon,
             external_icon_url=external_icon_url,
+            cover_image_url=cover_image_url,
             archived=page_response.archived,
             in_trash=page_response.in_trash,
             properties=page_response.properties,
@@ -704,9 +703,25 @@ class NotionPage(LoggingMixin):
         if isinstance(parent, DatabaseParent):
             return parent.database_id
 
+    @staticmethod
+    def _extract_cover_image_url(page_response: NotionPageResponse) -> Optional[str]:
+        """Extract cover image URL from page response."""
+        if not page_response.cover:
+            return None
+
+        if page_response.cover.type == "external":
+            return page_response.cover.external.url
+
     def _setup_page_context_provider(self) -> PageContextProvider:
         return PageContextProvider(
             page_id=self._page_id,
             database_client=NotionDatabaseClient(token=self._client.token),
             file_upload_client=NotionFileUploadClient(),
         )
+
+    @deprecated("self.cover_image_url instead, will be removed in V3")
+    async def get_cover_url(self) -> Optional[str]:
+        """
+        Get the URL of the page cover image.
+        """
+        return self._cover_image_url

@@ -7,21 +7,21 @@ Perfect for verifying the unified behavior!
 """
 
 import asyncio
-from notionary import NotionPage, MarkdownBuilder
-
-PAGE = "Protocols: An Operating Manual for the Human Body"
-
+from notionary import NotionPage
 
 async def main():
     """Test the new caption syntax across different media blocks."""
 
-    NAME = "Jarvis Clipboard"
+    PAGE_NAME = "Jarvis Clipboard"
 
     try:
-        page = await NotionPage.from_page_name(NAME)
+        page = await NotionPage.from_page_name(PAGE_NAME)
 
-        text_content = await page.get_text_content()
-        print("Current page content:", text_content)
+        cover_url = await page.get_cover_url()
+        print("cover_url (deprecated):", cover_url)
+        
+        cover_url_new = page.cover_image_url
+        print("cover_url_new (property):", cover_url_new)
 
     except Exception as e:
         import traceback
