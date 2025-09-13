@@ -114,7 +114,8 @@ def _extract_title(page_response: NotionPageDto) -> str:
     # find the first title property no matter its name
     title_property = next(
         (
-            prop for prop in page_response.properties.values()
+            prop
+            for prop in page_response.properties.values()
             if isinstance(prop, TitleProperty)
         ),
         None,
@@ -134,7 +135,7 @@ def _extract_page_emoji_icon(page_response: NotionPageDto) -> str | None:
 
     if page_response.icon.type == IconType.EMOJI:
         return page_response.icon.emoji
-    
+
     return None
 
 
@@ -145,7 +146,7 @@ def _extract_external_icon_url(page_response: NotionPageDto) -> str | None:
 
     if page_response.icon.type == IconType.EXTERNAL:
         return page_response.icon.external.url if page_response.icon.external else None
-    
+
     return None
 
 
@@ -158,7 +159,7 @@ def _extract_parent_database_id(page_response: NotionPageDto) -> str | None:
 
     if parent.type == ParentType.DATABASE_ID:
         return parent.database_id
-    
+
     return None
 
 
@@ -168,8 +169,10 @@ def _extract_cover_image_url(page_response: NotionPageDto) -> str | None:
         return None
 
     if page_response.cover.type == CoverType.EXTERNAL:
-        return page_response.cover.external.url if page_response.cover.external else None
-    
+        return (
+            page_response.cover.external.url if page_response.cover.external else None
+        )
+
     return None
 
 

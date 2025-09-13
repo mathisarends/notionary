@@ -22,7 +22,8 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        print("page", page.title)
+        url = await page.get_property_value_by_name("URL")
+        print("url", url)
 
     except Exception as e:
         import traceback

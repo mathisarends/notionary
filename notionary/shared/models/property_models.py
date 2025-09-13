@@ -23,6 +23,7 @@ class PropertyType(StrEnum):
     CHECKBOX = "checkbox"
     URL = "url"
     EMAIL = "email"
+    PHONE_NUMBER = "phone_number"
 
 
 class SelectOption(BaseModel):
@@ -133,6 +134,13 @@ class EmailProperty(BaseModel):
     id: str
     type: PropertyType = PropertyType.EMAIL
     email: str | None = None
+    
+class PhoneNumberProperty(BaseModel):
+    """Phone number property."""
+
+    id: str
+    type: PropertyType = PropertyType.PHONE_NUMBER
+    phone_number: str | None = None
 
 
 NotionProperty = Union[
@@ -146,10 +154,12 @@ NotionProperty = Union[
     NumberProperty,
     CheckboxProperty,
     EmailProperty,
+    PhoneNumberProperty,
     dict[str, Any],  # Fallback
 ]
 
-PropertyT = TypeVar('PropertyT', bound=NotionProperty)
+PropertyT = TypeVar("PropertyT", bound=NotionProperty)
+
 
 class NotionObjectWithProperties(BaseModel, ABC):
     """
@@ -189,6 +199,7 @@ class NotionObjectWithProperties(BaseModel, ABC):
             PropertyType.NUMBER: NumberProperty,
             PropertyType.CHECKBOX: CheckboxProperty,
             PropertyType.EMAIL: EmailProperty,
+            PropertyType.PHONE_NUMBER: PhoneNumberProperty, 
         }
 
         property_class = property_classes.get(prop_type)

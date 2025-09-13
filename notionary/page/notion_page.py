@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
+from pydantic.fields import PropertyT
+
 from notionary.blocks.client import NotionBlockClient
 from notionary.comments import CommentClient, Comment
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
@@ -10,7 +12,6 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.database.client import NotionDatabaseClient
 from notionary.file_upload.client import NotionFileUploadClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
-from notionary.notion_client import NotionClient
 from notionary.page.page_models import NotionPageUpdateDto
 from notionary.schemas import NotionContentSchema
 from notionary.page import page_context
@@ -18,10 +19,22 @@ from notionary.page.page_client import NotionPageClient
 from notionary.page.page_content_deleting_service import PageContentDeletingService
 from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.page_context import PageContextProvider, page_context
-from notionary.page.property_formatter import NotionPropertyFormatter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
-from notionary.page.utils import extract_property_value
-from notionary.shared.models.property_models import NotionProperty, PropertyType
+from notionary.shared.models.property_models import (
+    NotionProperty,
+    PropertyType,
+    TitleProperty,
+    StatusProperty,
+    RelationProperty,
+    MultiSelectProperty,
+    URLProperty,
+    NumberProperty,
+    CheckboxProperty,
+    DateProperty,
+    RichTextProperty,
+    EmailProperty,
+    PhoneNumberProperty
+)
 from notionary.util import LoggingMixin
 
 from notionary.page.page_factory import (
@@ -69,7 +82,7 @@ class NotionPage(LoggingMixin):
         self._emoji_icon = emoji_icon
         self._external_icon_url = external_icon_url
         self._cover_image_url = cover_image_url
-        self._properties = properties
+        self._properties = properties or {}
         self._parent_database = parent_database
         self.token = token
 
@@ -105,7 +118,6 @@ class NotionPage(LoggingMixin):
         """
         Create a NotionPage from a page ID.
         """
-        # Lazy import to avoid potential circular dependencies
         return await load_page_from_id(page_id, token)
 
     @classmethod
@@ -208,33 +220,24 @@ class NotionPage(LoggingMixin):
         content: Union[
             str, Callable[[MarkdownBuilder], MarkdownBuilder], NotionContentSchema
         ],
-    ) -> bool:
+    ) -> None:
         """
         Append markdown content to the page.
         """
         async with page_context(self.page_context_provider):
-            result = await self._page_content_writer.append_markdown(content=content)
-            return result is not None
+            _ = await self._page_content_writer.append_markdown(content=content)
 
     async def replace_content(
         self,
         content: Union[
             str, Callable[[MarkdownBuilder], MarkdownBuilder], NotionContentSchema
         ],
-    ) -> bool:
+    ) -> None:
         """
         Replace the entire page content with new markdown content.
-
-        Args:
-            content: Either raw markdown text, a callback function that receives a MarkdownBuilder,
-                    a MarkdownDocumentModel, or a NotionContentSchema
         """
-        # Clear existing content first
         await self._page_content_deleting_service.clear_page_content()
-
-        # Add new content
-        result = await self._page_content_writer.append_markdown(content=content)
-        return result is not None
+        _ = await self._page_content_writer.append_markdown(content=content)
 
     async def clear_page_content(self) -> str:
         """
@@ -284,7 +287,6 @@ class NotionPage(LoggingMixin):
         Create a child database within this page.
         """
         from notionary import NotionDatabase
-
         database_client = NotionDatabaseClient(token=self._page_client.token)
 
         create_database_response = await database_client.create_database(
@@ -329,62 +331,145 @@ class NotionPage(LoggingMixin):
         Unarchive the page by restoring it from the trash.
         """
         _ = await self._page_client.unarchive_page()
+        
+        
+    def get_value_of_status_property(self, name: str) -> str | None:
+        """Get the status value by property name."""
+        status_property = self._get_property(name, StatusProperty)
+        if not status_property or not status_property.status: 
+            return None
+        return status_property.status.name
+
+    async def get_values_of_relation_property(self, name: str) -> list[str]:
+        """Get relation page titles by property name."""
+        relation_property = self._get_property(name, RelationProperty)
+        if not relation_property:
+            return []
+        return await self._get_relation_property_values_from_typed(relation_property)
+
+    def get_values_of_multiselect_property(self, name: str) -> list[str]:
+        """Get multiselect option names by property name."""
+        multiselect_property = self._get_property(name, MultiSelectProperty)
+        if not multiselect_property:
+            return []
+        return [option.name for option in multiselect_property.multi_select]
+
+    def get_value_of_url_property(self, name: str) -> str | None:
+        """Get URL value by property name."""
+        url_property = self._get_property(name, URLProperty)
+        return url_property.url if url_property else None
+
+    def get_value_of_number_property(self, name: str) -> float | None:
+        """Get number value by property name."""
+        number_property = self._get_property(name, NumberProperty)
+        return number_property.number if number_property else None
+
+    def get_value_of_checkbox_property(self, name: str) -> bool:
+        """Get checkbox value by property name."""
+        checkbox_property = self._get_property(name, CheckboxProperty)
+        return checkbox_property.checkbox if checkbox_property else False
+
+    def get_value_of_date_property(self, name: str) -> str | None:
+        """Get date start value by property name."""
+        date_property = self._get_property(name, DateProperty)
+        if not date_property or not date_property.date:
+            return None
+        return date_property.date.start
+
+    async def get_value_of_rich_text_property(self, name: str) -> str:
+        """Get formatted rich text value by property name."""
+        from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+        
+        rich_text_property = self._get_property(name, RichTextProperty)
+        if not rich_text_property:
+            return ""
+        return await TextInlineFormatter.extract_text_with_formatting(rich_text_property)
+
+    def get_value_of_email_property(self, name: str) -> str | None:
+        """Get email value by property name."""
+        email_property = self._get_property(name, EmailProperty)
+        return email_property.email if email_property else None
+
+    def get_value_of_phone_number_property(self, name: str) -> str | None:
+        """Get phone number value by property name."""
+        phone_property = self._get_property(name, PhoneNumberProperty)
+        return phone_property.phone_number if phone_property else None
+
+    def get_value_of_status_property(self, property_name: str) -> str | None:
+        """Get the name of a status property."""
+        status_prop = self._get_property(property_name, StatusProperty)
+        return status_prop.status.name if status_prop and status_prop.status else None
+
+    def get_value_of_mulitselect_property(self, property_name: str) -> list[str]:
+        """Get the names of selected options in a multiselect property."""
+        multiselect_prop = self._get_property(property_name, MultiSelectProperty)
+        if multiselect_prop:
+            return [option.name for option in multiselect_prop.multi_select]
+        return []
+
+    async def get_rich_text_plain(self, property_name: str) -> str:
+        """Get the plain text of a rich text property."""
+        from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+
+        rich_text_prop = self._get_property(property_name, RichTextProperty)
+        return await TextInlineFormatter.extract_text_with_formatting(rich_text_prop)
 
     async def get_property_value_by_name(self, property_name: str) -> Any:
-        """
-        Get the value of a specific property.
-
-        Returns None if property doesn't exist.
-        """
-        if property_name not in self._properties:
+        """Get the value of a specific property using typed properties."""
+        prop = self._properties.get(property_name)
+        if not prop:
             return None
+        
+        # check for unknown types first
+        if isinstance(prop, dict):
+            return self._extract_property_value_fallback(prop)
 
-        property_schema: dict = self._properties.get(property_name)
-        property_type = property_schema.get("type")
-
-        if property_type == PropertyType.RELATION:
-            return await self._get_relation_property_values_by_name(property_name)
-
-        return extract_property_value(property_schema)
-
-    async def _get_relation_property_values_by_name(
-        self, property_name: str
-    ) -> list[str]:
-        """
-        Retrieve the titles of all related pages for a relation property.
-        """
-        page_property_schema = self._properties.get(property_name)
-        relation_page_ids = [
-            rel.get("id") for rel in page_property_schema.get("relation", [])
-        ]
-
-        # Use factory function instead of direct instantiation
-        notion_pages = [
-            await load_page_from_id(page_id) for page_id in relation_page_ids
-        ]
-        return [page.title for page in notion_pages if page]
-
+        prop_type = prop.type
+        
+        if prop_type == PropertyType.STATUS:
+            return self.get_value_of_status_property(property_name)
+        
+        elif prop_type == PropertyType.RELATION:
+            return await self.get_values_of_relation_property(property_name)
+        
+        elif prop_type == PropertyType.MULTI_SELECT:
+            return self.get_values_of_multiselect_property(property_name)
+        
+        elif prop_type == PropertyType.URL:
+            return self.get_value_of_url_property(property_name)
+        
+        elif prop_type == PropertyType.NUMBER:
+            return self.get_value_of_number_property(property_name)
+        
+        elif prop_type == PropertyType.CHECKBOX:
+            return self.get_value_of_checkbox_property(property_name)
+        
+        elif prop_type == PropertyType.DATE:
+            return self.get_value_of_date_property(property_name)
+        
+        elif prop_type == PropertyType.RICH_TEXT:
+            return await self.get_value_of_rich_text_property(property_name)
+        
+        elif prop_type == PropertyType.EMAIL:
+            return self.get_value_of_email_property(property_name)
+        
+        elif prop_type == PropertyType.PHONE_NUMBER:
+            return self.get_value_of_phone_number_property(property_name)
+        
+        
     async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
         """
         Get the available options for a property (select, multi_select, status, relation).
         Returns empty list if property doesn't exist or has no options.
         """
+        # TODO: Update this when parent_database is properly typed
+        # For now, return empty list as parent_database logic needs to be updated
         if property_name not in self.properties:
             return []
 
-        property_schema: dict = self.properties.get(property_name)
-        property_type = property_schema.get("type")
-
-        if property_type in [
-            PropertyType.SELECT,
-            PropertyType.MULTI_SELECT,
-            PropertyType.STATUS,
-        ]:
-            options = property_schema.get(property_type, {}).get("options", [])
-            return [option.get("name", "") for option in options]
-
-        if property_type == PropertyType.RELATION and self._parent_database:
-            return await self._parent_database._get_relation_options(property_name)
+        # Commented out until parent_database is properly typed
+        # if self._parent_database:
+        #     return await self._parent_database.get_property_options(property_name)
 
         return []
 
@@ -392,30 +477,17 @@ class NotionPage(LoggingMixin):
         """
         Set the value of a specific property by its name.
         Returns None if page has no parent database or property doesn't exist.
+        
+        TODO: Update this method when parent_database is properly typed
         """
         if not self._parent_database:
             return None
 
-        property_type = self._parent_database.properties.get(property_name).get("type")
-
-        if not property_type:
-            return None
-
-        if property_type == PropertyType.RELATION:
-            return await self.set_relation_property_values_by_name(
-                property_name=property_name, page_titles=value
-            )
-
-        property_formatter = NotionPropertyFormatter()
-        update_data = property_formatter.format_value(
-            property_name=property_name, property_type=property_type, value=value
-        )
-
-        updated_page_response = await self._page_client.patch_page(
-            page_id=self._page_id, data=update_data
-        )
-        self._properties = updated_page_response.properties
-        return extract_property_value(self._properties.get(property_name))
+        # TODO: This needs to be updated when parent_database properties are typed
+        # property_type = self._parent_database.properties.get(property_name).get("type")
+        
+        # For now, return None until parent_database is properly typed
+        return None
 
     async def set_relation_property_values_by_name(
         self, property_name: str, page_titles: list[str]
@@ -423,37 +495,32 @@ class NotionPage(LoggingMixin):
         """
         Add one or more relations to a relation property.
         Returns empty list if page has no parent database or property is not a relation.
+        
+        TODO: Update this method when parent_database is properly typed
         """
         if not self._parent_database:
             return []
 
-        property_type = self._parent_database.properties.get(property_name).get("type")
+        # TODO: This needs to be updated when parent_database properties are typed
+        # property_type = self._parent_database.properties.get(property_name).get("type")
+        
+        # For now, return empty list until parent_database is properly typed
+        return []
+        
 
-        if property_type != PropertyType.RELATION:
-            return []
+    async def _get_relation_property_values_from_typed(self, relation_prop: RelationProperty) -> list[str]:
+        """Get relation values from typed RelationProperty."""
+        relation_page_ids = [rel.id for rel in relation_prop.relation]
+        
+        notion_pages = [
+            await load_page_from_id(page_id) for page_id in relation_page_ids
+        ]
+        return [page.title for page in notion_pages if page]
 
-        relation_pages = await asyncio.gather(
-            *(
-                self._load_page_from_name_helper(page_title)
-                for page_title in page_titles
-            )
-        )
-
-        relation_page_ids = [page.id for page in relation_pages]
-
-        property_formatter = NotionPropertyFormatter()
-
-        update_data = property_formatter.format_value(
-            property_name=property_name,
-            property_type=PropertyType.RELATION,
-            value=relation_page_ids,
-        )
-
-        updated_page_response = await self._page_client.patch_page(
-            page_id=self._page_id, data=update_data
-        )
-        self._properties = updated_page_response.properties
-        return page_titles
+    def _extract_property_value_fallback(self, property_dict: dict) -> Any:
+        """Fallback für unbekannte Property-Typen."""
+        property_type = property_dict.get("type")
+        return property_dict.get(property_type)
 
     async def _load_page_from_name_helper(self, page_title: str) -> NotionPage:
         """Helper method to avoid direct factory import in gather."""
@@ -474,3 +541,10 @@ class NotionPage(LoggingMixin):
             for i in range(1, 10)
         ]
         return random.choice(default_notion_covers)
+    
+    def _get_property(self, name: str, property_type: type[PropertyT]) -> PropertyT | None:
+        """Get a property by name and type with type safety."""
+        prop = self._properties.get(name)
+        if isinstance(prop, property_type):
+            return prop
+        return None

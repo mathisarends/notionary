@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from typing import Type, Set
+from typing import Type, Set, Self
 
 from notionary.blocks.base_block_element import BaseBlockElement
 
@@ -80,7 +80,7 @@ class BlockRegistry:
     @classmethod
     def create_registry(
         cls, excluded_elements: Set[Type[BaseBlockElement]] = None
-    ) -> "BlockRegistry":
+    ) -> Self:
         """
         Create a registry with all standard elements in recommended order.
 
