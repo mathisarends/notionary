@@ -1,5 +1,5 @@
 import re
-from typing import Optional, Match, List
+from typing import Optional, Match
 
 from notionary.blocks.rich_text.rich_text_models import (
     RichTextObject,
@@ -185,7 +185,7 @@ class TextInlineFormatter:
         return None
 
     @classmethod
-    async def _handle_color_pattern(cls, match: Match) -> List[RichTextObject]:
+    async def _handle_color_pattern(cls, match: Match) -> list[RichTextObject]:
         """Handle colored text with support for nested formatting: (blue:**bold text**)"""
         color, content = match.group(1).lower(), match.group(2)
 

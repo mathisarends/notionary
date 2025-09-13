@@ -10,6 +10,7 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.database.client import NotionDatabaseClient
 from notionary.file_upload.client import NotionFileUploadClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
+from notionary.page.page_models import NotionPageUpdateDto
 from notionary.schemas import NotionContentSchema
 from notionary.page import page_context
 from notionary.page.page_client import NotionPageClient
@@ -44,6 +45,7 @@ class NotionPage(LoggingMixin):
         url: str,
         archived: bool,
         in_trash: bool,
+        initial_page_schema: NotionPageUpdateDto,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
@@ -68,7 +70,9 @@ class NotionPage(LoggingMixin):
         self._properties = properties
         self._parent_database = parent_database
 
-        self._client = NotionPageClient(page_id=page_id, token=token)
+        self._client = NotionPageClient(
+            page_id=page_id, initial_page_schema=initial_page_schema, token=token
+        )
         self._block_client = NotionBlockClient(token=token)
         self._database_client = NotionDatabaseClient(token=token)
         self._comment_client = CommentClient(token=token)

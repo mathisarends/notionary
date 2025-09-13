@@ -3,9 +3,10 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel
 
 from notionary.notion_client import NotionClient
-from notionary.page.page_models import NotionPageDto
-from notionary.shared.models.cover_models import UpdateCoverDto
-from notionary.shared.models.icon_models import UpdateIconDto
+from notionary.page.page_models import NotionPageDto, NotionPageUpdateDto
+from notionary.shared.models.icon_models import EmojiIcon, ExternalIcon
+from notionary.shared.models.cover_models import NotionCover
+from notionary.shared.models.file_models import ExternalFile
 
 
 class NotionPageClient(NotionClient):
@@ -14,52 +15,18 @@ class NotionPageClient(NotionClient):
     Inherits base HTTP functionality from NotionClient.
     """
 
-    def __init__(self, page_id: Optional[str] = None, token: Optional[str] = None):
+    def __init__(
+        self,
+        page_id: str,
+        initial_page_schema: NotionPageUpdateDto,
+        token: Optional[str] = None,
+    ):
         """Initialize with optional page_id for methods that operate on a specific page."""
         super().__init__(token=token)
         self.page_id = page_id
+        self._page_schema = initial_page_schema
 
-    async def get_page(self, page_id: str) -> NotionPageDto:
-        """
-        Gets metadata for a Notion page by its ID.
-        """
-        response = await self.get(f"pages/{page_id}")
-        return NotionPageDto.model_validate(response)
-
-    async def create_page(
-        self,
-        *,
-        parent_database_id: Optional[str] = None,
-        parent_page_id: Optional[str] = None,
-        title: str,
-    ) -> NotionPageDto:
-        """
-        Creates a new page either in a database or as a child of another page.
-        Exactly one of parent_database_id or parent_page_id must be provided.
-        Only 'title' is supported here (no icon/cover/children).
-        """
-        # Exakt einen Parent zulassen
-        if (parent_database_id is None) == (parent_page_id is None):
-            raise ValueError("Specify exactly one parent: database OR page")
-
-        # Parent bauen
-        parent = (
-            {"database_id": parent_database_id}
-            if parent_database_id
-            else {"page_id": parent_page_id}
-        )
-
-        properties: dict[str, Any] = {
-            "title": {"title": [{"type": "text", "text": {"content": title}}]}
-        }
-
-        payload = {"parent": parent, "properties": properties}
-        response = await self.post("pages", payload)
-        return NotionPageDto.model_validate(response)
-
-    async def patch_page(
-        self, data: Union[dict[str, Any], BaseModel]
-    ) -> NotionPageDto:
+    async def patch_page(self, data: Union[dict[str, Any], BaseModel]) -> NotionPageDto:
         """
         Updates this page with the provided data.
         """
@@ -67,64 +34,65 @@ class NotionPageClient(NotionClient):
             data = data.model_dump(exclude_unset=True, exclude_none=True)
 
         response = await self.patch(f"pages/{self.page_id}", data=data)
-        return NotionPageDto.model_validate(response)
+        result = NotionPageDto.model_validate(response)
+        self._update_page_schema(result)
+        return result
 
     async def patch_emoji_icon(self, emoji: str) -> NotionPageDto:
-        """
-        Updates this page's icon to an emoji.
-        """
-        update_emoji_icon_dto = UpdateIconDto.from_emoji(emoji)
-        return await self.patch_page(update_emoji_icon_dto)
-
-    async def remove_icon(self) -> NotionPageDto:
-        """
-        Removes the icon from this page.
-        """
-        update_icon_dto = UpdateIconDto(icon=None)
-        return await self.patch_page(update_icon_dto)
+        """Updates this page's icon to an emoji using the schema approach."""
+        icon = EmojiIcon(emoji=emoji)
+        update_dto = NotionPageUpdateDto(icon=icon)
+        
+        return await self.patch_page(update_dto)
 
     async def patch_external_icon(self, icon_url: str) -> NotionPageDto:
-        """
-        Updates this page's icon to an external image.
-        """
-        update_external_icon_dto = UpdateIconDto.from_url(icon_url)
-        return await self.patch_page(update_external_icon_dto)
+        """Updates this page's icon to an external image using the schema approach."""
+        external_file = ExternalFile(url=icon_url)
+        icon = ExternalIcon(external=external_file)
+        update_dto = NotionPageUpdateDto(icon=icon)
+        
+        return await self.patch_page(update_dto)
+
+    async def remove_icon(self) -> NotionPageDto:
+        """Removes the icon using the schema approach."""
+        update_dto = NotionPageUpdateDto(icon=None)
+        
+        return await self.patch_page(update_dto)
 
     async def patch_external_cover(self, cover_url: str) -> NotionPageDto:
-        """
-        Updates this page's cover to an external image.
-        """
-        update_external_cover_dto = UpdateCoverDto.from_url(cover_url)
-        return await self.patch_page(update_external_cover_dto)
+        """Updates this page's cover using the schema approach."""
+        cover = NotionCover.from_url(cover_url)
+        update_dto = NotionPageUpdateDto(cover=cover)
+        
+        return await self.patch_page(update_dto)
 
     async def remove_cover(self) -> NotionPageDto:
-        """
-        Removes the cover from this page.
-        """
-        update_external_cover_dto = UpdateCoverDto(cover=None)
-        return await self.patch_page(update_external_cover_dto)
+        """Removes the cover using the schema approach."""
+        update_dto = NotionPageUpdateDto(cover=None)
+        
+        return await self.patch_page(update_dto)
 
     async def patch_title(self, title: str) -> NotionPageDto:
-        """
-        Updates this page's title.
-        """
-        data = {
-            "properties": {
-                "title": {"title": [{"type": "text", "text": {"content": title}}]}
-            }
+        """Updates this page's title using the schema approach."""
+        properties = {
+            "title": {"title": [{"type": "text", "text": {"content": title}}]}
         }
-        return await self.patch_page(data)
+        update_dto = NotionPageUpdateDto(properties=properties)
+        
+        return await self.patch_page(update_dto)
 
     async def archive_page(self) -> NotionPageDto:
-        """
-        Archives this page.
-        """
-        data = {"archived": True}
-        return await self.patch_page(data)
+        """Archives this page using the schema approach."""
+        update_dto = NotionPageUpdateDto(archived=True)
+        
+        return await self.patch_page(update_dto)
 
     async def unarchive_page(self) -> NotionPageDto:
-        """
-        Unarchives this page.
-        """
-        data = {"archived": False}
-        return await self.patch_page(data)
+        """Unarchives this page using the schema approach."""
+        update_dto = NotionPageUpdateDto(archived=False)
+        
+        return await self.patch_page(update_dto)
+
+    def _update_page_schema(self, updated: NotionPageDto) -> None:
+        """Update internal schema with response from API."""
+        self._page_schema = NotionPageUpdateDto.from_notion_page_dto(updated)

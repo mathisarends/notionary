@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from notionary.page.page_client import NotionPageClient
-from notionary.page.page_models import NotionPageDto
+from notionary.notion_client import NotionClient
+from notionary.page.page_models import NotionPageDto, NotionPageUpdateDto
+from notionary.shared.models.cover_models import CoverType
+from notionary.shared.models.icon_models import IconType
 from notionary.util import extract_uuid, format_uuid
 from notionary.util.fuzzy import find_best_match
 
@@ -15,7 +17,7 @@ async def load_page_from_id(page_id: str, token: str | None = None) -> NotionPag
     """Load a NotionPage from a page ID."""
     formatted_id = format_uuid(page_id) or page_id
 
-    async with NotionPageClient(token=token) as client:
+    async with NotionClient(token=token) as client:
         page_response = await client.get_page(formatted_id)
         return await _load_page_from_response(page_response, token)
 
@@ -48,7 +50,7 @@ async def load_page_from_name(
             f"Available: {available_titles}"
         )
 
-    async with NotionPageClient(token=token) as client:
+    async with NotionClient(token=token) as client:
         page_response = await client.get_page(page_id=best_match.item.id)
         return await _load_page_from_response(page_response=page_response, token=token)
 
@@ -61,7 +63,7 @@ async def load_page_from_url(url: str, token: str | None = None) -> NotionPage:
 
     formatted_id = format_uuid(page_id) or page_id
 
-    async with NotionPageClient(token=token) as client:
+    async with NotionClient(token=token) as client:
         page_response = await client.get_page(formatted_id)
         return await _load_page_from_response(page_response, token)
 
@@ -80,6 +82,7 @@ async def _load_page_from_response(
     external_icon_url = _extract_external_icon_url(page_response)
     cover_image_url = _extract_cover_image_url(page_response)
     parent_database_id = _extract_parent_database_id(page_response)
+    initial_page_schema = _extract_initial_page_schema(page_response)
 
     parent_database = (
         await NotionDatabase.from_database_id(id=parent_database_id, token=token)
@@ -96,6 +99,7 @@ async def _load_page_from_response(
         cover_image_url=cover_image_url,
         archived=page_response.archived,
         in_trash=page_response.in_trash,
+        initial_page_schema=initial_page_schema,
         properties=page_response.properties,
         parent_database=parent_database,
         token=token,
@@ -129,18 +133,18 @@ def _extract_title(page_response: NotionPageDto) -> str:
 def _extract_page_emoji_icon(page_response: NotionPageDto) -> str | None:
     """Extract emoji icon from page response."""
     if not page_response.icon:
-        return None
+        return
 
-    if page_response.icon.type == "emoji":
+    if page_response.icon.type == IconType.EMOJI:
         return page_response.icon.emoji
 
 
 def _extract_external_icon_url(page_response: NotionPageDto) -> str | None:
     """Extract external icon URL from page response."""
     if not page_response.icon:
-        return None
+        return
 
-    if page_response.icon.type == "external":
+    if page_response.icon.type == IconType.EXTERNAL:
         return page_response.icon.external.url
 
 
@@ -158,7 +162,17 @@ def _extract_parent_database_id(page_response: NotionPageDto) -> str | None:
 def _extract_cover_image_url(page_response: NotionPageDto) -> str | None:
     """Extract cover image URL from page response."""
     if not page_response.cover:
+        return
+
+    if page_response.cover.type == CoverType.EXTERNAL:
+        return page_response.cover.external.url
+
+
+def _extract_initial_page_schema(
+    page_response: NotionPageDto,
+) -> NotionPageUpdateDto | None:
+    """Extract initial page schema from page response."""
+    if not page_response:
         return None
 
-    if page_response.cover.type == "external":
-        return page_response.cover.external.url
+    return NotionPageUpdateDto.from_notion_page_dto(page_response)

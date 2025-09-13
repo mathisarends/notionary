@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -20,11 +20,27 @@ class NotionPageDto(BaseModel):
     last_edited_time: str
     created_by: NotionUser
     last_edited_by: NotionUser
-    cover: Optional[NotionCover] = None
-    icon: Optional[Icon] = None
+    cover: NotionCover | None = None
+    icon: Icon | None = None
     parent: ParentObject
     archived: bool
     in_trash: bool
     properties: dict[str, Any]
     url: str
-    public_url: Optional[str] = None
+    public_url: str | None = None
+
+
+class NotionPageUpdateDto(BaseModel):
+    cover: NotionCover | None = None
+    icon: Icon | None = None
+    properties: dict[str, Any] | None = None
+    archived: bool | None = None
+
+    @classmethod
+    def from_notion_page_dto(cls, page: NotionPageDto) -> NotionPageUpdateDto:
+        return cls(
+            cover=page.cover,
+            icon=page.icon,
+            properties=page.properties,
+            archived=page.archived,
+        )

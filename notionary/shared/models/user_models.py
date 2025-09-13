@@ -3,6 +3,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel
 
+
 class UserObjectType(StrEnum):
     USER = "user"
 

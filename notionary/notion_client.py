@@ -16,6 +16,7 @@ from notionary.http.exceptions import (
     NotionServerError,
     NotionValidationError,
 )
+from notionary.page.page_models import NotionPageDto
 from notionary.util import LoggingMixin
 
 load_dotenv()
@@ -149,6 +150,13 @@ class NotionClient(LoggingMixin):
         """
         result = await self._make_request(HttpMethod.DELETE, endpoint)
         return result is not None
+
+    async def get_page(self, page_id: str) -> NotionPageDto:
+        """
+        Gets metadata for a Notion page by its ID.
+        """
+        response = await self.get(f"pages/{page_id}")
+        return NotionPageDto.model_validate(response)
 
     def _find_token(self) -> Optional[str]:
         """
