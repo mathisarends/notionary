@@ -7,6 +7,7 @@ from notionary.page.page_models import NotionPageDto, NotionPageUpdateDto
 from notionary.shared.models.cover_models import CoverType
 from notionary.shared.models.icon_models import IconType
 from notionary.shared.models.parent_models import ParentType
+from notionary.shared.models.property_models import TitleProperty
 from notionary.util import extract_uuid, format_uuid
 from notionary.util.fuzzy import find_best_match
 
@@ -31,8 +32,7 @@ async def load_page_from_name(
     from notionary.workspace import NotionWorkspace
 
     workspace = NotionWorkspace()
-
-    search_results: list[NotionPage] = await workspace.search_pages(page_name, limit=5)
+    search_results: list[NotionPage] = await workspace.search_pages(page_name, limit=10)
 
     if not search_results:
         raise ValueError(f"No pages found for name: {page_name}")
@@ -100,52 +100,53 @@ async def _load_page_from_response(
         archived=page_response.archived,
         in_trash=page_response.in_trash,
         initial_page_schema=initial_page_schema,
-        properties=page_response.properties,
+        properties=page_response.properties,  # Jetzt bereits typisiert!
         parent_database=parent_database,
         token=token,
     )
 
 
 def _extract_title(page_response: NotionPageDto) -> str:
-    """Extract title from page response. Returns empty string if not found."""
+    """Extract title from page response using typed properties."""
     if not page_response.properties:
         return ""
 
+    # find the first title property no matter its name
     title_property = next(
         (
-            prop
-            for prop in page_response.properties.values()
-            if isinstance(prop, dict) and prop.get("type") == "title"
+            prop for prop in page_response.properties.values()
+            if isinstance(prop, TitleProperty)
         ),
         None,
     )
 
-    if not title_property or "title" not in title_property:
+    if not title_property:
         return ""
 
-    try:
-        title_parts = title_property["title"]
-        return "".join(part.get("plain_text", "") for part in title_parts)
-    except (KeyError, TypeError, AttributeError):
-        return ""
+    # Verwende die typisierte TitleProperty
+    return "".join(item.plain_text for item in title_property.title)
 
 
 def _extract_page_emoji_icon(page_response: NotionPageDto) -> str | None:
     """Extract emoji icon from page response."""
     if not page_response.icon:
-        return
+        return None
 
     if page_response.icon.type == IconType.EMOJI:
         return page_response.icon.emoji
+    
+    return None
 
 
 def _extract_external_icon_url(page_response: NotionPageDto) -> str | None:
     """Extract external icon URL from page response."""
     if not page_response.icon:
-        return
+        return None
 
     if page_response.icon.type == IconType.EXTERNAL:
-        return page_response.icon.external.url
+        return page_response.icon.external.url if page_response.icon.external else None
+    
+    return None
 
 
 def _extract_parent_database_id(page_response: NotionPageDto) -> str | None:
@@ -153,19 +154,23 @@ def _extract_parent_database_id(page_response: NotionPageDto) -> str | None:
     parent = page_response.parent
 
     if not parent:
-        return
+        return None
 
     if parent.type == ParentType.DATABASE_ID:
         return parent.database_id
+    
+    return None
 
 
 def _extract_cover_image_url(page_response: NotionPageDto) -> str | None:
     """Extract cover image URL from page response."""
     if not page_response.cover:
-        return
+        return None
 
     if page_response.cover.type == CoverType.EXTERNAL:
-        return page_response.cover.external.url
+        return page_response.cover.external.url if page_response.cover.external else None
+    
+    return None
 
 
 def _extract_initial_page_schema(

@@ -132,10 +132,6 @@ class NotionClient(LoggingMixin):
         Gets metadata for a Notion page by its ID.
         """
         response = await self.get(f"pages/{page_id}")
-        
-        import json
-        print(json.dumps(response, indent=2))
-        
         return NotionPageDto.model_validate(response)
 
     async def _make_request(

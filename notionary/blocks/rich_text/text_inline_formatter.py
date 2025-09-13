@@ -10,7 +10,7 @@ from notionary.blocks.rich_text.rich_text_models import (
     MentionTemplateMention,
 )
 from notionary.blocks.types import BlockColor
-from notionary.shared import NameIdResolver
+from notionary.shared.name_to_id_resolver import NameIdResolver
 
 
 class TextInlineFormatter:

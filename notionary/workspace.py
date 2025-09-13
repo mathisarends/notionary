@@ -3,7 +3,7 @@ from typing import Optional
 
 from notionary import NotionDatabase, NotionPage
 from notionary.database.client import NotionDatabaseClient
-from notionary.database.models import NotionQueryDatabaseResponse
+from notionary.database.database_models import NotionQueryDatabaseResponse
 from notionary.notion_client import NotionClient
 from notionary.page.search_filter_builder import SearchFilterBuilder
 from notionary.user import NotionUser, NotionUserManager

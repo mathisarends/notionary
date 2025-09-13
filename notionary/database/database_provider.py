@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional
 
 from notionary.database.client import NotionDatabaseClient
 from notionary.database.exceptions import DatabaseNotFoundException
-from notionary.database.models import NotionDatabaseResponse
+from notionary.database.database_models import NotionDatabaseResponse
 from notionary.util import LoggingMixin, SingletonMetaClass, format_uuid
 from notionary.util.fuzzy import find_best_match
 

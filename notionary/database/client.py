@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional
 
 from notionary.notion_client import NotionClient
-from notionary.database.models import (
+from notionary.database.database_models import (
     NotionDatabaseResponse,
     NotionDatabaseSearchResponse,
     NotionQueryDatabaseResponse,

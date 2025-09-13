@@ -7,7 +7,7 @@ from typing import Any, AsyncGenerator, Optional
 from notionary.database.client import NotionDatabaseClient
 from notionary.database.database_filter_builder import DatabaseFilterBuilder
 from notionary.database.database_provider import NotionDatabaseProvider
-from notionary.database.models import (
+from notionary.database.database_models import (
     NotionDatabaseResponse,
     NotionQueryDatabaseResponse,
 )

@@ -21,7 +21,7 @@ from notionary.page.page_context import PageContextProvider, page_context
 from notionary.page.property_formatter import NotionPropertyFormatter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.page.utils import extract_property_value
-from notionary.shared.models.property_models import PropertyType
+from notionary.shared.models.property_models import NotionProperty, PropertyType
 from notionary.util import LoggingMixin
 
 from notionary.page.page_factory import (
@@ -51,7 +51,7 @@ class NotionPage(LoggingMixin):
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
-        properties: dict[str, Any] | None = None,
+        properties: dict[str, NotionProperty] | None = None,
         parent_database: NotionDatabase | None = None,
         token: str | None = None,
     ):
@@ -156,8 +156,8 @@ class NotionPage(LoggingMixin):
         return self._cover_image_url
 
     @property
-    def properties(self) -> Optional[dict[str, Any]]:
-        """Get the properties of the page."""
+    def properties(self) -> dict[str, NotionProperty]:
+        """Get the typed properties of the page."""
         return self._properties
 
     @property
@@ -375,7 +375,11 @@ class NotionPage(LoggingMixin):
         property_schema: dict = self.properties.get(property_name)
         property_type = property_schema.get("type")
 
-        if property_type in [PropertyType.SELECT, PropertyType.MULTI_SELECT, PropertyType.STATUS]:
+        if property_type in [
+            PropertyType.SELECT,
+            PropertyType.MULTI_SELECT,
+            PropertyType.STATUS,
+        ]:
             options = property_schema.get(property_type, {}).get("options", [])
             return [option.get("name", "") for option in options]
 

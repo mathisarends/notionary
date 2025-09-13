@@ -7,10 +7,11 @@ from notionary.page.page_models import NotionPageDto
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.icon_models import Icon
 from notionary.shared.models.parent_models import NotionParent
+from notionary.shared.models.property_models import NotionObjectWithProperties
 from notionary.shared.models.user_models import NotionUser
 
 
-class NotionDatabaseResponse(BaseModel):
+class NotionDatabaseResponse(NotionObjectWithProperties):
     """
     Represents the response from the Notion API when retrieving a database.
     """
@@ -27,9 +28,6 @@ class NotionDatabaseResponse(BaseModel):
     title: list[RichTextObject]
     description: list[Any]
     is_inline: bool
-    properties: dict[
-        str, Any
-    ]  # Using Any for flexibility with different property schemas
     parent: NotionParent
     url: str
     public_url: Optional[str] = None
