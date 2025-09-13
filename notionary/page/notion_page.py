@@ -32,7 +32,6 @@ from notionary.page.page_factory import (
 if TYPE_CHECKING:
     from notionary import NotionDatabase
 
-
 class NotionPage(LoggingMixin):
     """
     Managing content and metadata of a Notion page.
@@ -226,9 +225,6 @@ class NotionPage(LoggingMixin):
         Args:
             content: Either raw markdown text, a callback function that receives a MarkdownBuilder,
                     a MarkdownDocumentModel, or a NotionContentSchema
-
-        Returns:
-            bool: True if successful, False otherwise
         """
         # Clear existing content first
         await self._page_content_deleting_service.clear_page_content()
@@ -272,14 +268,13 @@ class NotionPage(LoggingMixin):
         self._external_icon_url = page_response.icon.external.url
         return page_response.icon.external.url
 
-    async def remove_icon(self) -> bool:
+    async def remove_icon(self) -> None:
         """
         Removes the icon from the page.
         """
-        page_response = await self._client.remove_icon()
+        _  = await self._client.remove_icon()
         self._emoji_icon = None
         self._external_icon_url = None
-        return page_response is not None
 
     async def create_child_database(self, title: str) -> NotionDatabase:
         """
@@ -320,13 +315,12 @@ class NotionPage(LoggingMixin):
         self._cover_image_url = updated_page.cover.external.url
         return updated_page.cover.external.url
 
-    async def remove_cover(self) -> bool:
+    async def remove_cover(self) -> None:
         """
         Removes the cover image from the page.
         """
-        page_response = await self._client.remove_cover()
+        _ = await self._client.remove_cover()
         self._cover_image_url = None
-        return page_response is not None
 
     async def set_random_gradient_cover(self) -> str:
         """
@@ -335,19 +329,17 @@ class NotionPage(LoggingMixin):
         random_cover_url = self._get_random_gradient_cover()
         return await self.set_cover(random_cover_url)
 
-    async def archive(self) -> bool:
+    async def archive(self) -> None:
         """
         Archive the page by moving it to the trash.
         """
-        result = await self._client.archive_page()
-        return result is not None
+        _ = await self._client.archive_page()
 
-    async def unarchive(self) -> bool:
+    async def unarchive(self) -> None:
         """
         Unarchive the page by restoring it from the trash.
         """
-        result = await self._client.unarchive_page()
-        return result is not None
+        _ = await self._client.unarchive_page()
 
     async def get_property_value_by_name(self, property_name: str) -> Any:
         """
