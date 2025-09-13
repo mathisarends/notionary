@@ -1,20 +1,17 @@
 from __future__ import annotations
 
-from ast import Dict
 import asyncio
 import random
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
-from yaml import Token
-
 from notionary.blocks.client import NotionBlockClient
 from notionary.comments import CommentClient, Comment
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
-from notionary.blocks.models import DatabaseParent, ParentObject
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.database.client import NotionDatabaseClient
 from notionary.file_upload.client import NotionFileUploadClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.schemas import NotionContentSchema
 from notionary.page import page_context
 from notionary.page.client import NotionPageClient
@@ -28,6 +25,8 @@ from notionary.page.utils import extract_property_value
 from notionary.util import LoggingMixin, extract_uuid, factory_only, format_uuid
 from notionary.util.deprecated_decorator import deprecated
 from notionary.util.fuzzy import find_best_match
+
+
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
@@ -244,35 +243,27 @@ class NotionPage(LoggingMixin):
 
     async def post_comment(
         self,
-        content: str,
+        comment: str,
         *,
         discussion_id: Optional[str] = None,
-        rich_text: Optional[list[dict[str, Any]]] = None,
     ) -> Optional[Comment]:
         """
         Post a comment on this page.
-
-        Args:
-            content: The plain text content of the comment
-            discussion_id: Optional discussion ID to reply to an existing discussion
-            rich_text: Optional rich text formatting for the comment content
-
-        Returns:
-            Comment: The created comment object, or None if creation failed
         """
+        comment_rich_text = await TextInlineFormatter.parse_inline_formatting(comment)
+
         try:
             # Use the comment client to create the comment
             comment = await self._comment_client.create_comment(
                 page_id=self._page_id,
-                content=content,
+                rich_text=comment_rich_text,
                 discussion_id=discussion_id,
-                rich_text=rich_text,
             )
             self.logger.info(f"Successfully posted comment on page '{self._title}'")
             return comment
         except Exception as e:
             self.logger.error(
-                f"Failed to post comment on page '{self._title}': {str(e)}"
+                f"Failed to post comment on page '{self._title}'", exc_info=True
             )
             return None
 
@@ -700,7 +691,11 @@ class NotionPage(LoggingMixin):
     def _extract_parent_database_id(page_response: NotionPageResponse) -> Optional[str]:
         """Extract parent database ID from page response."""
         parent = page_response.parent
-        if isinstance(parent, DatabaseParent):
+
+        if not parent:
+            return
+
+        if parent.type == "database_id":
             return parent.database_id
 
     @staticmethod

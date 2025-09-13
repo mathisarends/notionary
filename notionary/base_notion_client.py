@@ -143,7 +143,7 @@ class BaseNotionClient(LoggingMixin, ABC):
 
     async def _make_request(
         self,
-        method: Union[HttpMethod, str],
+        method: HttpMethod,
         endpoint: str,
         data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
@@ -160,12 +160,8 @@ class BaseNotionClient(LoggingMixin, ABC):
         await self.ensure_initialized()
 
         url = f"{self.BASE_URL}/{endpoint.lstrip('/')}"
-        method_str = (
-            method.value if isinstance(method, HttpMethod) else str(method).lower()
-        )
-
         try:
-            self.logger.debug("Sending %s request to %s", method_str.upper(), url)
+            self.logger.debug("Sending %s request to %s", method.value.upper(), url)
 
             request_kwargs = {}
 
@@ -174,12 +170,12 @@ class BaseNotionClient(LoggingMixin, ABC):
                 request_kwargs["params"] = params
 
             if (
-                method_str in [HttpMethod.POST.value, HttpMethod.PATCH.value]
+                method.value in [HttpMethod.POST.value, HttpMethod.PATCH.value]
                 and data is not None
             ):
                 request_kwargs["json"] = data
 
-            response: httpx.Response = await getattr(self.client, method_str)(
+            response: httpx.Response = await getattr(self.client, method.value)(
                 url, **request_kwargs
             )
 
@@ -192,7 +188,12 @@ class BaseNotionClient(LoggingMixin, ABC):
             error_msg = (
                 f"HTTP status error: {e.response.status_code} - {e.response.text}"
             )
-            self.logger.error("Request failed (%s): %s", url, error_msg)
+            if e.response.status_code == 403:
+                self.logger.warning(
+                    "403 Forbidden: The API key is not set correctly or the integration does not have permissions for this API. Please check your integration settings at https://www.notion.so/profile/integrations"
+                )
+            else:
+                self.logger.error("Request failed (%s): %s", url, error_msg)
             return None
 
         except httpx.RequestError as e:
