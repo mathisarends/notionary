@@ -113,113 +113,86 @@ class NotionPage(LoggingMixin):
 
         workspace = NotionWorkspace()
 
-        try:
-            search_results: list[NotionPage] = await workspace.search_pages(
-                page_name, limit=5
+        search_results: list[NotionPage] = await workspace.search_pages(
+            page_name, limit=5
+        )
+
+        if not search_results:
+            raise ValueError(f"No pages found for name: {page_name}")
+
+        best_match = find_best_match(
+            query=page_name,
+            items=search_results,
+            text_extractor=lambda page: page.title,
+            min_similarity=min_similarity,
+        )
+
+        if not best_match:
+            available_titles = [result.title for result in search_results[:5]]
+            raise ValueError(
+                f"No sufficiently similar page found for '{page_name}'. "
+                f"Available: {available_titles}"
             )
 
-            if not search_results:
-                cls.logger.warning("No pages found for name: %s", page_name)
-                raise ValueError(f"No pages found for name: {page_name}")
-
-            best_match = find_best_match(
-                query=page_name,
-                items=search_results,
-                text_extractor=lambda page: page.title,
-                min_similarity=min_similarity,
+        async with NotionPageClient(token=token) as client:
+            page_response = await client.get_page(page_id=best_match.item.id)
+            return await cls._create_from_response(
+                page_response=page_response, token=token
             )
-
-            if not best_match:
-                available_titles = [result.title for result in search_results[:5]]
-                cls.logger.warning(
-                    "No sufficiently similar page found for '%s' (min: %.3f). Available: %s",
-                    page_name,
-                    min_similarity,
-                    available_titles,
-                )
-                raise ValueError(
-                    f"No sufficiently similar page found for '{page_name}'"
-                )
-
-            async with NotionPageClient(token=token) as client:
-                page_response = await client.get_page(page_id=best_match.item.id)
-                instance = await cls._create_from_response(
-                    page_response=page_response, token=token
-                )
-                return instance
-
-        except Exception as e:
-            cls.logger.error("Error finding page by name: %s", str(e))
-            raise
 
     @classmethod
     async def from_url(cls, url: str, token: Optional[str] = None) -> NotionPage:
         """
         Create a NotionPage from a Notion page URL.
+
+        Raises:
+            ValueError: When URL format is invalid
+            NotionResourceNotFoundError: When page doesn't exist
+            NotionAuthenticationError: When API key is invalid
         """
-        try:
-            page_id = extract_uuid(url)
-            if not page_id:
-                raise ValueError(f"Could not extract page ID from URL: {url}")
+        page_id = extract_uuid(url)
+        if not page_id:
+            raise ValueError(f"Could not extract page ID from URL: {url}")
 
-            formatted_id = format_uuid(page_id) or page_id
+        formatted_id = format_uuid(page_id) or page_id
 
-            async with NotionPageClient(token=token) as client:
-                page_response = await client.get_page(formatted_id)
-                return await cls._create_from_response(page_response, token)
-
-        except Exception as e:
-            cls.logger.error("Error creating page from URL '%s': %s", url, str(e))
-            raise
+        async with NotionPageClient(token=token) as client:
+            page_response = await client.get_page(formatted_id)
+            return await cls._create_from_response(page_response, token)
 
     @property
     def id(self) -> str:
-        """
-        Get the ID of the page.
-        """
+        """Get the ID of the page."""
         return self._page_id
 
     @property
     def title(self) -> str:
-        """
-        Get the title of the page.
-        """
+        """Get the title of the page."""
         return self._title
 
     @property
     def url(self) -> str:
-        """
-        Get the URL of the page.
-        If not set, generate it from the title and ID.
-        """
+        """Get the URL of the page."""
         return self._url
 
     @property
     def external_icon_url(self) -> Optional[str]:
-        """
-        Get the icon of the page.
-        """
+        """Get the external icon URL of the page."""
         return self._external_icon_url
 
     @property
     def emoji_icon(self) -> Optional[str]:
-        """
-        Get the emoji icon of the page.
-        """
+        """Get the emoji icon of the page."""
         return self._emoji_icon
 
     @property
     def cover_image_url(self) -> Optional[str]:
-        """
-        Get the cover image URL of the page.
-        """
+        """Get the cover image URL of the page."""
         return self._cover_image_url
 
     @property
     def properties(self) -> Optional[dict[str, Any]]:
-        """
-        Get the properties of the page.
-        """
+        """Get the properties of the page."""
         return self._properties
 
     @property
@@ -235,6 +208,9 @@ class NotionPage(LoggingMixin):
         return markdown_syntax_builder.build_concise_reference()
 
     async def get_comments(self) -> list[Comment]:
+        """
+        Get all comments for this page.
+        """
         return await self._comment_client.list_all_comments_for_page(
             page_id=self._page_id
         )
@@ -244,42 +220,29 @@ class NotionPage(LoggingMixin):
         rich_text_str: str,
         *,
         discussion_id: Optional[str] = None,
-    ) -> Optional[Comment]:
+    ) -> Comment:
         """
         Post a comment on this page.
         """
-        try:
-            comment = await self._comment_client.create_comment(
-                rich_text_str=rich_text_str,
-                page_id=self._page_id,
-                discussion_id=discussion_id,
-            )
-            self.logger.info(f"Successfully posted comment on page '{self._title}'")
-            return comment
-        except Exception as e:
-            self.logger.error(
-                f"Failed to post comment on page '{self._title}'", exc_info=True
-            )
-            return None
+        return await self._comment_client.create_comment(
+            rich_text_str=rich_text_str,
+            page_id=self._page_id,
+            discussion_id=discussion_id,
+        )
 
     async def set_title(self, title: str) -> str:
         """
         Set the title of the page.
         """
-        try:
-            data = {
-                "properties": {
-                    "title": {"title": [{"type": "text", "text": {"content": title}}]}
-                }
+        data = {
+            "properties": {
+                "title": {"title": [{"type": "text", "text": {"content": title}}]}
             }
+        }
 
-            await self._client.patch_page(self._page_id, data)
-
-            self._title = title
-            return title
-
-        except Exception as e:
-            self.logger.error("Error setting page title: %s", str(e))
+        await self._client.patch_page(self._page_id, data)
+        self._title = title
+        return title
 
     async def append_markdown(
         self,
@@ -288,12 +251,10 @@ class NotionPage(LoggingMixin):
         ],
     ) -> bool:
         """
-        Append markdown content to the page using text, builder callback, MarkdownDocumentModel, or NotionContentSchema.
+        Append markdown content to the page.
         """
         async with page_context(self.page_context_provider):
-            result = await self._page_content_writer.append_markdown(
-                content=content,
-            )
+            result = await self._page_content_writer.append_markdown(content=content)
             return result is not None
 
     async def replace_content(
@@ -312,13 +273,11 @@ class NotionPage(LoggingMixin):
         Returns:
             bool: True if successful, False otherwise
         """
-        clear_result = await self._page_content_deleting_service.clear_page_content()
-        if not clear_result:
-            self.logger.error("Failed to clear page content before replacement")
+        # Clear existing content first
+        await self._page_content_deleting_service.clear_page_content()
 
-        result = await self._page_content_writer.append_markdown(
-            content=content,
-        )
+        # Add new content
+        result = await self._page_content_writer.append_markdown(content=content)
         return result is not None
 
     async def clear_page_content(self) -> str:
@@ -330,9 +289,6 @@ class NotionPage(LoggingMixin):
     async def get_text_content(self) -> str:
         """
         Get the text content of the page.
-
-        Returns:
-            str: The text content of the page.
         """
         blocks = await self._block_client.get_blocks_by_page_id_recursively(
             page_id=self._page_id
@@ -364,13 +320,14 @@ class NotionPage(LoggingMixin):
             page_id=self._page_id, data={"icon": external_icon_dict}
         )
 
-        # For external icons, we clear the emoji since we now have external icon
         self._emoji_icon = None
         self._external_icon_url = page_response.icon.external.url
-        self.logger.info(f"Successfully updated page external icon to: {url}")
         return page_response.icon.external.url
 
     async def create_child_database(self, title: str) -> NotionDatabase:
+        """
+        Create a child database within this page.
+        """
         from notionary import NotionDatabase
 
         database_client = NotionDatabaseClient(token=self._client.token)
@@ -385,8 +342,9 @@ class NotionPage(LoggingMixin):
         )
 
     async def create_child_page(self, title: str) -> NotionPage:
-        from notionary import NotionPage
-
+        """
+        Create a child page within this page.
+        """
         child_page_response = await self._client.create_page(
             parent_page_id=self._page_id,
             title=title,
@@ -406,7 +364,7 @@ class NotionPage(LoggingMixin):
         self._cover_image_url = updated_page.cover.external.url
         return updated_page.cover.external.url
 
-    async def set_random_gradient_cover(self) -> Optional[str]:
+    async def set_random_gradient_cover(self) -> str:
         """
         Set a random gradient as the page cover.
         """
@@ -420,15 +378,13 @@ class NotionPage(LoggingMixin):
     async def get_property_value_by_name(self, property_name: str) -> Any:
         """
         Get the value of a specific property.
+
+        Returns None if property doesn't exist.
         """
         if property_name not in self._properties:
-            self.logger.warning(
-                "Property '%s' not found in page properties", property_name
-            )
             return None
 
         property_schema: dict = self._properties.get(property_name)
-
         property_type = property_schema.get("type")
 
         if property_type == "relation":
@@ -454,11 +410,9 @@ class NotionPage(LoggingMixin):
     async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
         """
         Get the available options for a property (select, multi_select, status, relation).
+        Returns empty list if property doesn't exist or has no options.
         """
         if property_name not in self.properties:
-            self.logger.warning(
-                "Property '%s' not found in page properties", property_name
-            )
             return []
 
         property_schema: dict = self.properties.get(property_name)
@@ -473,10 +427,10 @@ class NotionPage(LoggingMixin):
 
         return []
 
-    # Fix this for pages that do not ah
     async def set_property_value_by_name(self, property_name: str, value: Any) -> Any:
         """
         Set the value of a specific property by its name.
+        Returns None if page has no parent database or property doesn't exist.
         """
         if not self._parent_database:
             return None
@@ -507,13 +461,13 @@ class NotionPage(LoggingMixin):
     ) -> list[str]:
         """
         Add one or more relations to a relation property.
+        Returns empty list if page has no parent database or property is not a relation.
         """
         if not self._parent_database:
             return []
 
         property_type = self._parent_database.properties.get(property_name).get("type")
 
-        # for direct calls
         if property_type != "relation":
             return []
 
@@ -572,7 +526,7 @@ class NotionPage(LoggingMixin):
             else None
         )
 
-        instance = cls(
+        return cls(
             page_id=page_response.id,
             title=title,
             url=page_response.url,
@@ -586,13 +540,9 @@ class NotionPage(LoggingMixin):
             token=token,
         )
 
-        cls.logger.info("Created page manager: '%s' (ID: %s)", title, page_response.id)
-        return instance
-
     @staticmethod
     def _extract_title(page_response: NotionPageResponse) -> str:
         """Extract title from page response. Returns empty string if not found."""
-
         if not page_response.properties:
             return ""
 
@@ -616,7 +566,7 @@ class NotionPage(LoggingMixin):
 
     @staticmethod
     def _extract_page_emoji_icon(page_response: NotionPageResponse) -> Optional[str]:
-        """Extract external icon URL from page response."""
+        """Extract emoji icon from page response."""
         if not page_response.icon:
             return None
 
@@ -625,7 +575,7 @@ class NotionPage(LoggingMixin):
 
     @staticmethod
     def _extract_external_icon_url(page_response: NotionPageResponse) -> Optional[str]:
-        """Extract emoji from database response."""
+        """Extract external icon URL from page response."""
         if not page_response.icon:
             return None
 
@@ -659,9 +609,7 @@ class NotionPage(LoggingMixin):
             file_upload_client=NotionFileUploadClient(),
         )
 
-    @deprecated("self.cover_image_url instead, will be removed in V3")
+    @deprecated("Use self.cover_image_url instead, will be removed in V3")
     async def get_cover_url(self) -> Optional[str]:
-        """
-        Get the URL of the page cover image.
-        """
+        """Get the URL of the page cover image."""
         return self._cover_image_url

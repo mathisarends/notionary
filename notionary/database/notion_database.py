@@ -8,15 +8,10 @@ from notionary import NotionPage
 from notionary.database.client import NotionDatabaseClient
 from notionary.database.database_filter_builder import DatabaseFilterBuilder
 from notionary.database.database_provider import NotionDatabaseProvider
-from notionary.models.notion_database_response import (
+from notionary.database.models import (
     NotionDatabaseResponse,
     NotionPageResponse,
     NotionQueryDatabaseResponse,
-)
-from notionary.telemetry import (
-    DatabaseFactoryUsedEvent,
-    ProductTelemetry,
-    QueryOperationEvent,
 )
 from notionary.util import LoggingMixin, factory_only
 
@@ -27,8 +22,6 @@ class NotionDatabase(LoggingMixin):
     Focused exclusively on creating basic pages and retrieving page managers
     for further page operations.
     """
-
-    telemetry = ProductTelemetry()
 
     @factory_only("from_database_id", "from_database_name")
     def __init__(
@@ -59,9 +52,6 @@ class NotionDatabase(LoggingMixin):
         Create a NotionDatabase from a database ID using NotionDatabaseProvider.
         """
         provider = cls.get_database_provider()
-        cls.telemetry.capture(
-            DatabaseFactoryUsedEvent(factory_method="from_database_id")
-        )
 
         return await provider.get_database_by_id(id, token)
 
@@ -76,9 +66,6 @@ class NotionDatabase(LoggingMixin):
         Create a NotionDatabase by finding a database with fuzzy matching on the title using NotionDatabaseProvider.
         """
         provider = cls.get_database_provider()
-        cls.telemetry.capture(
-            DatabaseFactoryUsedEvent(factory_method="from_database_name")
-        )
         return await provider.get_database_by_name(database_name, token, min_similarity)
 
     @property
@@ -117,77 +104,56 @@ class NotionDatabase(LoggingMixin):
         """Return a NotionDatabaseProvider instance for class-level usage."""
         return NotionDatabaseProvider.get_instance()
 
-    async def create_blank_page(self) -> Optional[NotionPage]:
+    async def create_blank_page(self) -> NotionPage:
         """
         Create a new blank page in the database with minimal properties.
         """
-        try:
-            create_page_response: NotionPageResponse = await self.client.create_page(
-                parent_database_id=self.id
-            )
+        create_page_response: NotionPageResponse = await self.client.create_page(
+            parent_database_id=self.id
+        )
 
-            return await NotionPage.from_page_id(page_id=create_page_response.id)
+        return await NotionPage.from_page_id(page_id=create_page_response.id)
 
-        except Exception as e:
-            self.logger.error("Error creating blank page: %s", str(e))
-            return None
-
-    async def set_title(self, new_title: str) -> bool:
+    async def set_title(self, new_title: str) -> str:
         """
         Update the database title.
         """
-        try:
-            result = await self.client.update_database_title(
-                database_id=self.id, title=new_title
-            )
+        result = await self.client.update_database_title(
+            database_id=self.id, title=new_title
+        )
 
-            self._title = result.title[0].plain_text
-            self.logger.info(f"Successfully updated database title to: {new_title}")
-            self.database_provider.invalidate_database_cache(database_id=self.id)
-            return True
+        self._title = result.title[0].plain_text
+        self.database_provider.invalidate_database_cache(database_id=self.id)
+        return self._title
 
-        except Exception as e:
-            self.logger.error(f"Error updating database title: {str(e)}")
-            return False
-
-    async def set_emoji(self, new_emoji: str) -> bool:
+    async def set_emoji(self, new_emoji: str) -> str:
         """
         Update the database emoji.
         """
-        try:
-            result = await self.client.update_database_emoji(
-                database_id=self.id, emoji=new_emoji
-            )
+        result = await self.client.update_database_emoji(
+            database_id=self.id, emoji=new_emoji
+        )
 
-            self._emoji_icon = result.icon.emoji if result.icon else None
-            self.logger.info(f"Successfully updated database emoji to: {new_emoji}")
-            self.database_provider.invalidate_database_cache(database_id=self.id)
-            return True
+        self._emoji_icon = result.icon.emoji if result.icon else None
+        self.database_provider.invalidate_database_cache(database_id=self.id)
+        return self._emoji_icon
 
-        except Exception as e:
-            self.logger.error(f"Error updating database emoji: {str(e)}")
-            return False
-
-    async def set_cover_image(self, image_url: str) -> Optional[str]:
+    async def set_cover_image(self, image_url: str) -> str:
         """
         Update the database cover image.
         """
-        try:
-            result = await self.client.update_database_cover_image(
-                database_id=self.id, image_url=image_url
-            )
+        result = await self.client.update_database_cover_image(
+            database_id=self.id, image_url=image_url
+        )
 
-            if result.cover and result.cover.external:
-                self.database_provider.invalidate_database_cache(database_id=self.id)
-                return result.cover.external.url
-            return None
+        if not result.cover or not result.cover.external:
+            raise ValueError(f"Failed to set cover image to {image_url}")
+            
+        self.database_provider.invalidate_database_cache(database_id=self.id)
+        return result.cover.external.url
 
-        except Exception as e:
-            self.logger.error(f"Error updating database cover image: {str(e)}")
-            return None
-
-    async def set_random_gradient_cover(self) -> Optional[str]:
-        """Sets a random gradient cover from Notion's default gradient covers (always jpg)."""
+    async def set_random_gradient_cover(self) -> str:
+        """Sets a random gradient cover from Notion's default gradient covers."""
         default_notion_covers = [
             f"https://www.notion.so/images/page-cover/gradients_{i}.png"
             for i in range(1, 10)
@@ -195,23 +161,19 @@ class NotionDatabase(LoggingMixin):
         random_cover_url = random.choice(default_notion_covers)
         return await self.set_cover_image(random_cover_url)
 
-    async def set_external_icon(self, external_icon_url: str) -> Optional[str]:
+    async def set_external_icon(self, external_icon_url: str) -> str:
         """
         Update the database icon with an external image URL.
         """
-        try:
-            result = await self.client.update_database_external_icon(
-                database_id=self.id, icon_url=external_icon_url
-            )
+        result = await self.client.update_database_external_icon(
+            database_id=self.id, icon_url=external_icon_url
+        )
 
-            if result.icon and result.icon.external:
-                self.database_provider.invalidate_database_cache(database_id=self.id)
-                return result.icon.external.url
-            return None
-
-        except Exception as e:
-            self.logger.error(f"Error updating database external icon: {str(e)}")
-            return None
+        if not result.icon or not result.icon.external:
+            raise ValueError(f"Failed to set external icon to {external_icon_url}")
+            
+        self.database_provider.invalidate_database_cache(database_id=self.id)
+        return result.icon.external.url
 
     async def get_options_by_property_name(self, property_name: str) -> list[str]:
         """
@@ -261,10 +223,6 @@ class NotionDatabase(LoggingMixin):
                 page_id=page.id, token=self.client.token
             )
             page_results.append(page)
-
-        self.telemetry.capture(
-            QueryOperationEvent(query_type="query_database_by_title")
-        )
 
         return page_results
 
@@ -319,25 +277,15 @@ class NotionDatabase(LoggingMixin):
 
         return pages
 
-    async def get_last_edited_time(self) -> Optional[str]:
+    async def get_last_edited_time(self) -> str:
         """
         Retrieve the last edited time of the database.
 
         Returns:
-            ISO 8601 timestamp string of the last database edit, or None if request fails.
+            ISO 8601 timestamp string of the last database edit.
         """
-        try:
-            db = await self.client.get_database(self.id)
-
-            return db.last_edited_time
-
-        except Exception as e:
-            self.logger.error(
-                "Error fetching last_edited_time for database %s: %s",
-                self.id,
-                str(e),
-            )
-            return None
+        db = await self.client.get_database(self.id)
+        return db.last_edited_time
 
     def create_filter(self) -> DatabaseFilterBuilder:
         """Create a new filter builder for this database."""
@@ -348,7 +296,6 @@ class NotionDatabase(LoggingMixin):
     ):
         """Iterate pages using a filter builder."""
         filter_config = filter_builder.build()
-        self.logger.debug("Using filter: %s", filter_config)
         async for page in self._iter_pages(
             page_size=page_size, filter_conditions=filter_config
         ):
@@ -363,12 +310,6 @@ class NotionDatabase(LoggingMixin):
         Asynchronous generator that yields pages from the database.
         Directly queries the Notion API without using the schema.
         """
-        self.logger.debug(
-            "Iterating pages with page_size: %d, filter: %s",
-            page_size,
-            filter_conditions,
-        )
-
         start_cursor: Optional[str] = None
         has_more = True
 
@@ -407,7 +348,7 @@ class NotionDatabase(LoggingMixin):
         title = cls._extract_title(db_response)
         emoji_icon = cls._extract_emoji_icon(db_response)
 
-        instance = cls(
+        return cls(
             id=db_response.id,
             title=title,
             url=db_response.url,
@@ -415,12 +356,6 @@ class NotionDatabase(LoggingMixin):
             properties=db_response.properties,
             token=token,
         )
-
-        cls.logger.info(
-            "Created database manager: '%s' (ID: %s)", title, db_response.id
-        )
-
-        return instance
 
     @staticmethod
     def _extract_title(db_response: NotionDatabaseResponse) -> str:
@@ -466,7 +401,7 @@ class NotionDatabase(LoggingMixin):
         except (KeyError, TypeError, AttributeError):
             return None
 
-    async def _get_relation_options(self, property_name: str) -> list[Dict[str, Any]]:
+    async def _get_relation_options(self, property_name: str) -> list[str]:
         """
         Retrieve the titles of all pages related to a relation property.
 

@@ -13,11 +13,6 @@ from notionary.database.models import (
     NotionQueryDatabaseResponse,
 )
 from notionary.page.notion_page import NotionPage
-from notionary.telemetry import (
-    DatabaseFactoryUsedEvent,
-    ProductTelemetry,
-    QueryOperationEvent,
-)
 from notionary.util import LoggingMixin, factory_only
 
 
@@ -27,8 +22,6 @@ class NotionDatabase(LoggingMixin):
     Focused exclusively on creating basic pages and retrieving page managers
     for further page operations.
     """
-
-    telemetry = ProductTelemetry()
 
     @factory_only("from_database_id", "from_database_name")
     def __init__(
@@ -59,9 +52,6 @@ class NotionDatabase(LoggingMixin):
         Create a NotionDatabase from a database ID using NotionDatabaseProvider.
         """
         provider = cls.get_database_provider()
-        cls.telemetry.capture(
-            DatabaseFactoryUsedEvent(factory_method="from_database_id")
-        )
 
         return await provider.get_database_by_id(id, token)
 
@@ -76,9 +66,6 @@ class NotionDatabase(LoggingMixin):
         Create a NotionDatabase by finding a database with fuzzy matching on the title using NotionDatabaseProvider.
         """
         provider = cls.get_database_provider()
-        cls.telemetry.capture(
-            DatabaseFactoryUsedEvent(factory_method="from_database_name")
-        )
         return await provider.get_database_by_name(database_name, token, min_similarity)
 
     @property
@@ -264,10 +251,6 @@ class NotionDatabase(LoggingMixin):
                 for page_response in search_results.results
             ]
             page_results = await asyncio.gather(*page_tasks)
-
-        self.telemetry.capture(
-            QueryOperationEvent(query_type="query_database_by_title")
-        )
 
         return page_results
 

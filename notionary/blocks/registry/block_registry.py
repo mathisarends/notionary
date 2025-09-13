@@ -4,7 +4,6 @@ from collections import OrderedDict
 from typing import Type, Set
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.telemetry import ProductTelemetry
 
 from notionary.blocks.audio import AudioElement
 from notionary.blocks.bookmark import BookmarkElement
@@ -74,7 +73,6 @@ class BlockRegistry:
         """
         self._elements = OrderedDict()
         self._excluded_elements = excluded_elements or set()
-        self.telemetry = ProductTelemetry()
 
         # Initialize with default elements minus excluded ones
         self._initialize_default_elements()
