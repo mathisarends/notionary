@@ -3,14 +3,10 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
-from notionary.blocks.models import ParentObject
 from notionary.shared.models.icon_models import Icon
 from notionary.shared.models.cover_models import NotionCover
-
-
-class NotionUser(BaseModel):
-    object: str  # 'user'
-    id: str
+from notionary.shared.models.parent_models import NotionParent
+from notionary.shared.models.user_models import NotionUser
 
 
 class NotionPageDto(BaseModel):
@@ -22,7 +18,7 @@ class NotionPageDto(BaseModel):
     last_edited_by: NotionUser
     cover: NotionCover | None = None
     icon: Icon | None = None
-    parent: ParentObject
+    parent: NotionParent
     archived: bool
     in_trash: bool
     properties: dict[str, Any]

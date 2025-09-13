@@ -1,11 +1,7 @@
-# TODO: Test this file here which would be nice:
-from unittest.mock import Mock
-
 import pytest
 
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-from notionary.blocks.rich_text.rich_text_models import RichTextObject, RichTextType
-from notionary.blocks.types import BlockColor
+from notionary.blocks.rich_text.rich_text_models import RichTextType
 
 
 class TestTextInlineFormatterBasics:

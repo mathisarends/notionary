@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal, Union
 
 from pydantic import BaseModel
 
 from notionary.blocks.types import BlockType
+from notionary.shared.models.parent_models import NotionParent
+from notionary.shared.models.user_models import NotionUser
 
 if TYPE_CHECKING:
     from notionary.blocks.bookmark import BookmarkBlock, CreateBookmarkBlock
@@ -54,89 +56,57 @@ if TYPE_CHECKING:
 class BlockChildrenResponse(BaseModel):
     object: Literal["list"]
     results: list["Block"]
-    next_cursor: Optional[str] = None
+    next_cursor: str | None = None
     has_more: bool
     type: Literal["block"]
     block: dict = {}
     request_id: str
 
 
-class PageParent(BaseModel):
-    type: Literal["page_id"]
-    page_id: str
-
-
-class DatabaseParent(BaseModel):
-    type: Literal["database_id"]
-    database_id: str
-
-
-class BlockParent(BaseModel):
-    type: Literal["block_id"]
-    block_id: str
-
-
-class WorkspaceParent(BaseModel):
-    type: Literal["workspace"]
-    workspace: bool = True
-
-
-ParentObject = Union[PageParent, DatabaseParent, BlockParent, WorkspaceParent]
-
-
-class PartialUser(BaseModel):
-    object: Literal["user"]
-    id: str
-
-
 class Block(BaseModel):
     object: Literal["block"]
     id: str
-    parent: Optional[ParentObject] = None
+    parent: NotionParent | None = None
     type: BlockType
     created_time: str
     last_edited_time: str
-    created_by: PartialUser
-    last_edited_by: PartialUser
+    created_by: NotionUser
+    last_edited_by: NotionUser
     archived: bool = False
     in_trash: bool = False
     has_children: bool = False
 
-    children: Optional[list[Block]] = None
+    children: list[Block] | None = None
 
     # Block type-specific content (only one will be populated based on type)
-    audio: Optional[FileBlock] = None
-    bookmark: Optional[BookmarkBlock] = None
-    breadcrumb: Optional[BreadcrumbBlock] = None
-    bulleted_list_item: Optional[BulletedListItemBlock] = None
-    callout: Optional[CalloutBlock] = None
-    child_page: Optional[ChildPageBlock] = None
-    code: Optional[CodeBlock] = None
-    column_list: Optional[ColumnListBlock] = None
-    column: Optional[ColumnBlock] = None
-    divider: Optional[DividerBlock] = None
-    embed: Optional[EmbedBlock] = None
-    equation: Optional[EquationBlock] = None
-    file: Optional[FileBlock] = None
-    heading_1: Optional[HeadingBlock] = None
-    heading_2: Optional[HeadingBlock] = None
-    heading_3: Optional[HeadingBlock] = None
-    image: Optional[FileBlock] = None
-    numbered_list_item: Optional[NumberedListItemBlock] = None
-    paragraph: Optional[ParagraphBlock] = None
-    quote: Optional[QuoteBlock] = None
-    table: Optional[TableBlock] = None
-    table_row: Optional[TableRowBlock] = None
-    to_do: Optional[ToDoBlock] = None
-    toggle: Optional[ToggleBlock] = None
-    video: Optional[FileBlock] = None
-    pdf: Optional[FileBlock] = None
-    table_of_contents: Optional[TableOfContentsBlock] = None
-    child_database: Optional[ChildDatabaseBlock] = None
-
-    def get_block_content(self) -> Optional[Any]:
-        """Get the content object for this block based on its type."""
-        return getattr(self, self.type, None)
+    audio: FileBlock | None = None
+    bookmark: BookmarkBlock | None = None
+    breadcrumb: BreadcrumbBlock | None = None
+    bulleted_list_item: BulletedListItemBlock | None = None
+    callout: CalloutBlock | None = None
+    child_page: ChildPageBlock | None = None
+    code: CodeBlock | None = None
+    column_list: ColumnListBlock | None = None
+    column: ColumnBlock | None = None
+    divider: DividerBlock | None = None
+    embed: EmbedBlock | None = None
+    equation: EquationBlock | None = None
+    file: FileBlock | None = None
+    heading_1: HeadingBlock | None = None
+    heading_2: HeadingBlock | None = None
+    heading_3: HeadingBlock | None = None
+    image: FileBlock | None = None
+    numbered_list_item: NumberedListItemBlock | None = None
+    paragraph: ParagraphBlock | None = None
+    quote: QuoteBlock | None = None
+    table: TableBlock | None = None
+    table_row: TableRowBlock | None = None
+    to_do: ToDoBlock | None = None
+    toggle: ToggleBlock | None = None
+    video: FileBlock | None = None
+    pdf: FileBlock | None = None
+    table_of_contents: TableOfContentsBlock | None = None
+    child_database: ChildDatabaseBlock | None = None
 
 
 if TYPE_CHECKING:

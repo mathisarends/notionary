@@ -42,7 +42,7 @@ class NotionPageClient(NotionClient):
         """Updates this page's icon to an emoji using the schema approach."""
         icon = EmojiIcon(emoji=emoji)
         update_dto = NotionPageUpdateDto(icon=icon)
-        
+
         return await self.patch_page(update_dto)
 
     async def patch_external_icon(self, icon_url: str) -> NotionPageDto:
@@ -50,26 +50,26 @@ class NotionPageClient(NotionClient):
         external_file = ExternalFile(url=icon_url)
         icon = ExternalIcon(external=external_file)
         update_dto = NotionPageUpdateDto(icon=icon)
-        
+
         return await self.patch_page(update_dto)
 
     async def remove_icon(self) -> NotionPageDto:
         """Removes the icon using the schema approach."""
         update_dto = NotionPageUpdateDto(icon=None)
-        
+
         return await self.patch_page(update_dto)
 
     async def patch_external_cover(self, cover_url: str) -> NotionPageDto:
         """Updates this page's cover using the schema approach."""
         cover = NotionCover.from_url(cover_url)
         update_dto = NotionPageUpdateDto(cover=cover)
-        
+
         return await self.patch_page(update_dto)
 
     async def remove_cover(self) -> NotionPageDto:
         """Removes the cover using the schema approach."""
         update_dto = NotionPageUpdateDto(cover=None)
-        
+
         return await self.patch_page(update_dto)
 
     async def patch_title(self, title: str) -> NotionPageDto:
@@ -78,19 +78,19 @@ class NotionPageClient(NotionClient):
             "title": {"title": [{"type": "text", "text": {"content": title}}]}
         }
         update_dto = NotionPageUpdateDto(properties=properties)
-        
+
         return await self.patch_page(update_dto)
 
     async def archive_page(self) -> NotionPageDto:
         """Archives this page using the schema approach."""
         update_dto = NotionPageUpdateDto(archived=True)
-        
+
         return await self.patch_page(update_dto)
 
     async def unarchive_page(self) -> NotionPageDto:
         """Unarchives this page using the schema approach."""
         update_dto = NotionPageUpdateDto(archived=False)
-        
+
         return await self.patch_page(update_dto)
 
     def _update_page_schema(self, updated: NotionPageDto) -> None:

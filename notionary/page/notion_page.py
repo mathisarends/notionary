@@ -32,6 +32,7 @@ from notionary.page.page_factory import (
 if TYPE_CHECKING:
     from notionary import NotionDatabase
 
+
 class NotionPage(LoggingMixin):
     """
     Managing content and metadata of a Notion page.
@@ -272,7 +273,7 @@ class NotionPage(LoggingMixin):
         """
         Removes the icon from the page.
         """
-        _  = await self._client.remove_icon()
+        _ = await self._client.remove_icon()
         self._emoji_icon = None
         self._external_icon_url = None
 

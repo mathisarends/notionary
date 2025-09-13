@@ -6,6 +6,7 @@ from notionary.notion_client import NotionClient
 from notionary.page.page_models import NotionPageDto, NotionPageUpdateDto
 from notionary.shared.models.cover_models import CoverType
 from notionary.shared.models.icon_models import IconType
+from notionary.shared.models.parent_models import ParentType
 from notionary.util import extract_uuid, format_uuid
 from notionary.util.fuzzy import find_best_match
 
@@ -155,7 +156,7 @@ def _extract_parent_database_id(page_response: NotionPageDto) -> str | None:
     if not parent:
         return
 
-    if parent.type == "database_id":
+    if parent.type == ParentType.DATABASE_ID:
         return parent.database_id
 
 
