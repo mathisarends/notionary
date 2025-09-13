@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from notionary.page.page_client import NotionPageClient
-from notionary.page.page_models import NotionPageResponse
+from notionary.page.page_models import NotionPageDto
 from notionary.util import extract_uuid, format_uuid
 from notionary.util.fuzzy import find_best_match
 
@@ -67,7 +67,7 @@ async def load_page_from_url(url: str, token: str | None = None) -> NotionPage:
 
 
 async def _load_page_from_response(
-    page_response: NotionPageResponse,
+    page_response: NotionPageDto,
     token: str | None,
 ) -> NotionPage:
     """Create NotionPage instance from API response."""
@@ -102,7 +102,7 @@ async def _load_page_from_response(
     )
 
 
-def _extract_title(page_response: NotionPageResponse) -> str:
+def _extract_title(page_response: NotionPageDto) -> str:
     """Extract title from page response. Returns empty string if not found."""
     if not page_response.properties:
         return ""
@@ -126,7 +126,7 @@ def _extract_title(page_response: NotionPageResponse) -> str:
         return ""
 
 
-def _extract_page_emoji_icon(page_response: NotionPageResponse) -> str | None:
+def _extract_page_emoji_icon(page_response: NotionPageDto) -> str | None:
     """Extract emoji icon from page response."""
     if not page_response.icon:
         return None
@@ -135,7 +135,7 @@ def _extract_page_emoji_icon(page_response: NotionPageResponse) -> str | None:
         return page_response.icon.emoji
 
 
-def _extract_external_icon_url(page_response: NotionPageResponse) -> str | None:
+def _extract_external_icon_url(page_response: NotionPageDto) -> str | None:
     """Extract external icon URL from page response."""
     if not page_response.icon:
         return None
@@ -144,7 +144,7 @@ def _extract_external_icon_url(page_response: NotionPageResponse) -> str | None:
         return page_response.icon.external.url
 
 
-def _extract_parent_database_id(page_response: NotionPageResponse) -> str | None:
+def _extract_parent_database_id(page_response: NotionPageDto) -> str | None:
     """Extract parent database ID from page response."""
     parent = page_response.parent
 
@@ -155,7 +155,7 @@ def _extract_parent_database_id(page_response: NotionPageResponse) -> str | None
         return parent.database_id
 
 
-def _extract_cover_image_url(page_response: NotionPageResponse) -> str | None:
+def _extract_cover_image_url(page_response: NotionPageDto) -> str | None:
     """Extract cover image URL from page response."""
     if not page_response.cover:
         return None

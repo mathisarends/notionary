@@ -1,240 +1,15 @@
-from dataclasses import dataclass
-from typing import Any,  Literal, Optional, Union
+from __future__ import annotations
+from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.page.page_models import NotionPageDto
+from notionary.shared.models.cover_models import NotionCover
+from notionary.shared.models.icon_models import Icon
+from notionary.shared.models.parent_models import NotionParent
+from notionary.shared.models.user_models import NotionUser
 
-from notionary.page.page_models import ExternalRessource, Icon
 
-
-@dataclass
-class TextContent:
-    content: str
-    link: Optional[str] = None
-
-
-@dataclass
-class RichText:
-    type: str
-    text: TextContent
-    plain_text: str
-    href: Optional[str]
-
-
-@dataclass
-class User:
-    object: str
-    id: str
-
-
-@dataclass
-class Parent:
-    type: Literal["page_id", "workspace", "block_id", "database_id"]
-    page_id: Optional[str] = None
-    block_id: Optional[str] = None
-    database_id: Optional[str] = None
-
-
-# Rich text types for Pydantic models
-class TextContentPydantic(BaseModel):
-    content: str
-    link: Optional[dict[str, str]] = None
-
-
-class Annotations(BaseModel):
-    bold: bool
-    italic: bool
-    strikethrough: bool
-    underline: bool
-    code: bool
-    color: str
-
-
-class RichTextItemPydantic(BaseModel):
-    type: str  # 'text', 'mention', 'equation'
-    text: Optional[TextContentPydantic] = None
-    annotations: Annotations
-    plain_text: str
-    href: Optional[str] = None
-
-
-# Database property schema types (these are schema definitions, not values)
-class StatusOption(BaseModel):
-    id: str
-    name: str
-    color: str
-    description: Optional[str] = None
-
-
-class StatusGroup(BaseModel):
-    id: str
-    name: str
-    color: str
-    option_ids: list[str]
-
-
-class StatusPropertySchema(BaseModel):
-    options: list[StatusOption]
-    groups: list[StatusGroup]
-
-
-class DatabaseStatusProperty(BaseModel):
-    id: str
-    name: str
-    type: Literal["status"]
-    status: StatusPropertySchema
-
-
-class RelationPropertySchema(BaseModel):
-    database_id: str
-    type: str  # "single_property"
-    single_property: dict[str, Any]
-
-
-class DatabaseRelationProperty(BaseModel):
-    id: str
-    name: str
-    type: Literal["relation"]
-    relation: RelationPropertySchema
-
-
-class DatabaseUrlProperty(BaseModel):
-    id: str
-    name: str
-    type: Literal["url"]
-    url: dict[str, Any]  # Usually empty dict
-
-
-class DatabaseRichTextProperty(BaseModel):
-    id: str
-    name: str
-    type: Literal["rich_text"]
-    rich_text: dict[str, Any]  # Usually empty dict
-
-
-class MultiSelectOption(BaseModel):
-    id: str
-    name: str
-    color: str
-    description: Optional[str] = None
-
-
-class MultiSelectPropertySchema(BaseModel):
-    options: list[MultiSelectOption]
-
-
-class DatabaseMultiSelectProperty(BaseModel):
-    id: str
-    name: str
-    type: Literal["multi_select"]
-    multi_select: MultiSelectPropertySchema
-
-
-class DatabaseTitleProperty(BaseModel):
-    id: str
-    name: str
-    type: Literal["title"]
-    title: dict[str, Any]  # Usually empty dict
-
-
-# Generic database property for unknown types
-class GenericDatabaseProperty(BaseModel):
-    id: str
-    name: str
-    type: str
-
-    model_config = ConfigDict(extra="allow")
-
-
-# Union of all database property types
-DatabaseProperty = Union[
-    DatabaseStatusProperty,
-    DatabaseRelationProperty,
-    DatabaseUrlProperty,
-    DatabaseRichTextProperty,
-    DatabaseMultiSelectProperty,
-    DatabaseTitleProperty,
-    GenericDatabaseProperty,
-]
-
-
-# Page property value types (these are actual values, not schemas)
-class StatusValue(BaseModel):
-    id: str
-    name: str
-    color: str
-
-
-class StatusProperty(BaseModel):
-    id: str
-    type: str  # 'status'
-    status: Optional[StatusValue] = None
-
-
-class RelationItem(BaseModel):
-    id: str
-
-
-class RelationProperty(BaseModel):
-    id: str
-    type: str  # 'relation'
-    relation: list[RelationItem]
-    has_more: bool
-
-
-class UrlProperty(BaseModel):
-    id: str
-    type: str  # 'url'
-    url: Optional[str] = None
-
-
-class RichTextProperty(BaseModel):
-    id: str
-    type: str  # 'rich_text'
-    rich_text: list[RichTextItemPydantic]
-
-
-class MultiSelectItem(BaseModel):
-    id: str
-    name: str
-    color: str
-
-
-class MultiSelectProperty(BaseModel):
-    id: str
-    type: str  # 'multi_select'
-    multi_select: list[MultiSelectItem]
-
-
-class TitleProperty(BaseModel):
-    id: str
-    type: str  # 'title'
-    title: list[RichTextItemPydantic]
-
-
-# Cover types
-class ExternalCover(BaseModel):
-    url: str
-
-
-class NotionCover(BaseModel):
-    type: str  # 'external', 'file'
-    external: Optional[ExternalCover] = None
-
-
-# Parent types for Pydantic
-class NotionParent(BaseModel):
-    type: str  # 'database_id', 'page_id', 'workspace'
-    database_id: Optional[str] = None
-    page_id: Optional[str] = None
-
-
-# User type for Pydantic
-class NotionUser(BaseModel):
-    object: str  # 'user'
-    id: str
-
-
-# Database object
 class NotionDatabaseResponse(BaseModel):
     """
     Represents the response from the Notion API when retrieving a database.
@@ -244,12 +19,12 @@ class NotionDatabaseResponse(BaseModel):
     id: str
     cover: Optional[Any] = None
     icon: Optional[Icon] = None
-    cover: Optional[ExternalRessource] = None
+    cover: Optional[NotionCover] = None
     created_time: str
     last_edited_time: str
     created_by: NotionUser
     last_edited_by: NotionUser
-    title: list[RichTextItemPydantic]
+    title: list[RichTextObject]
     description: list[Any]
     is_inline: bool
     properties: dict[
@@ -262,60 +37,13 @@ class NotionDatabaseResponse(BaseModel):
     in_trash: bool
 
 
-class NotionPageResponse(BaseModel):
-    object: Literal["page"]
-    id: str
-    created_time: str
-    last_edited_time: str
-    created_by: NotionUser
-    last_edited_by: NotionUser
-    cover: Optional[NotionCover] = None
-    icon: Optional[Icon] = None
-    parent: NotionParent
-    archived: bool
-    in_trash: bool
-    properties: dict[str, Any]
-    url: str
-    public_url: Optional[str] = None
-
-
-class NotionQueryResponse(BaseModel):
-    """
-    Complete Notion search/query response model that can contain both pages and databases.
-    """
-
-    object: Literal["list"]
-    results: list[Union[NotionPageResponse, NotionDatabaseResponse]]
-    next_cursor: Optional[str] = None
-    has_more: bool
-    type: Literal["page_or_database"]
-    page_or_database: dict[str, Any]
-    request_id: str
-
-
-# Specific response type for database queries (pages only)
 class NotionQueryDatabaseResponse(BaseModel):
     """
     Notion database query response model for querying pages within a database.
     """
 
     object: Literal["list"]
-    results: list[NotionPageResponse]
-    next_cursor: Optional[str] = None
-    has_more: bool
-    type: Literal["page_or_database"]
-    page_or_database: dict[str, Any]
-    request_id: str
-
-
-# Specific response type for search results (can be mixed)
-class NotionSearchResponse(BaseModel):
-    """
-    Notion search response model that can return both pages and databases.
-    """
-
-    object: Literal["list"]
-    results: list[Union[NotionPageResponse, NotionDatabaseResponse]]
+    results: list[NotionPageDto]
     next_cursor: Optional[str] = None
     has_more: bool
     type: Literal["page_or_database"]

@@ -4,9 +4,9 @@ from notionary.notion_client import NotionClient
 from notionary.database.models import (
     NotionDatabaseResponse,
     NotionDatabaseSearchResponse,
-    NotionPageResponse,
     NotionQueryDatabaseResponse,
 )
+from notionary.page.page_models import NotionPageDto
 
 
 class NotionDatabaseClient(NotionClient):
@@ -100,7 +100,7 @@ class NotionDatabaseClient(NotionClient):
         response = await self.post("search", search_data)
         return NotionDatabaseSearchResponse.model_validate(response)
 
-    async def create_page(self, parent_database_id: str) -> NotionPageResponse:
+    async def create_page(self, parent_database_id: str) -> NotionPageDto:
         """
         Creates a new blank page in the given database with minimal properties.
         """
@@ -109,7 +109,7 @@ class NotionDatabaseClient(NotionClient):
             "properties": {},
         }
         response = await self.post("pages", page_data)
-        return NotionPageResponse.model_validate(response)
+        return NotionPageDto.model_validate(response)
 
     async def update_database_title(
         self, database_id: str, title: str

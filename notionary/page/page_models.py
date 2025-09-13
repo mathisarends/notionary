@@ -7,11 +7,13 @@ from notionary.blocks.models import ParentObject
 from notionary.shared.models.icon_models import Icon
 from notionary.shared.models.cover_models import NotionCover
 
+
 class NotionUser(BaseModel):
     object: str  # 'user'
     id: str
 
-class NotionPageResponse(BaseModel):
+
+class NotionPageDto(BaseModel):
     object: Literal["page"]
     id: str
     created_time: str

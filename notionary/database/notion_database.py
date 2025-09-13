@@ -10,9 +10,9 @@ from notionary.database.database_filter_builder import DatabaseFilterBuilder
 from notionary.database.database_provider import NotionDatabaseProvider
 from notionary.database.models import (
     NotionDatabaseResponse,
-    NotionPageResponse,
     NotionQueryDatabaseResponse,
 )
+from notionary.page.page_models import NotionPageDto
 from notionary.util import LoggingMixin, factory_only
 
 
@@ -108,7 +108,7 @@ class NotionDatabase(LoggingMixin):
         """
         Create a new blank page in the database with minimal properties.
         """
-        create_page_response: NotionPageResponse = await self.client.create_page(
+        create_page_response: NotionPageDto = await self.client.create_page(
             parent_database_id=self.id
         )
 
@@ -375,9 +375,9 @@ class NotionDatabase(LoggingMixin):
 
         return None
 
-    def _extract_title_from_page(self, page: NotionPageResponse) -> Optional[str]:
+    def _extract_title_from_page(self, page: NotionPageDto) -> Optional[str]:
         """
-        Extracts the title from a NotionPageResponse object.
+        Extracts the title from a NotionPageDto object.
         """
         if not page.properties:
             return None

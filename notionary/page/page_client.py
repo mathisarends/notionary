@@ -3,8 +3,9 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel
 
 from notionary.notion_client import NotionClient
-from notionary.blocks.callout.callout_models import EmojiIcon
-from notionary.page.page_models import ExternalRessource, NotionPageResponse
+from notionary.page.page_models import NotionPageDto
+from notionary.shared.models.cover_models import UpdateCoverDto
+from notionary.shared.models.icon_models import UpdateIconDto
 
 
 class NotionPageClient(NotionClient):
@@ -18,12 +19,12 @@ class NotionPageClient(NotionClient):
         super().__init__(token=token)
         self.page_id = page_id
 
-    async def get_page(self, page_id: str) -> NotionPageResponse:
+    async def get_page(self, page_id: str) -> NotionPageDto:
         """
         Gets metadata for a Notion page by its ID.
         """
         response = await self.get(f"pages/{page_id}")
-        return NotionPageResponse.model_validate(response)
+        return NotionPageDto.model_validate(response)
 
     async def create_page(
         self,
@@ -31,7 +32,7 @@ class NotionPageClient(NotionClient):
         parent_database_id: Optional[str] = None,
         parent_page_id: Optional[str] = None,
         title: str,
-    ) -> NotionPageResponse:
+    ) -> NotionPageDto:
         """
         Creates a new page either in a database or as a child of another page.
         Exactly one of parent_database_id or parent_page_id must be provided.
@@ -54,11 +55,11 @@ class NotionPageClient(NotionClient):
 
         payload = {"parent": parent, "properties": properties}
         response = await self.post("pages", payload)
-        return NotionPageResponse.model_validate(response)
+        return NotionPageDto.model_validate(response)
 
     async def patch_page(
         self, data: Union[dict[str, Any], BaseModel]
-    ) -> NotionPageResponse:
+    ) -> NotionPageDto:
         """
         Updates this page with the provided data.
         """
@@ -66,52 +67,44 @@ class NotionPageClient(NotionClient):
             data = data.model_dump(exclude_unset=True, exclude_none=True)
 
         response = await self.patch(f"pages/{self.page_id}", data=data)
-        return NotionPageResponse.model_validate(response)
+        return NotionPageDto.model_validate(response)
 
-    async def patch_emoji_icon(self, emoji: str) -> NotionPageResponse:
+    async def patch_emoji_icon(self, emoji: str) -> NotionPageDto:
         """
         Updates this page's icon to an emoji.
         """
-        emoji_icon = EmojiIcon(emoji=emoji)
-        data = {"icon": emoji_icon.model_dump()}
-        response = await self.patch(f"pages/{self.page_id}", data=data)
-        return NotionPageResponse.model_validate(response)
+        update_emoji_icon_dto = UpdateIconDto.from_emoji(emoji)
+        return await self.patch_page(update_emoji_icon_dto)
 
-    async def patch_external_icon(self, icon_url: str) -> NotionPageResponse:
-        """
-        Updates this page's icon to an external image.
-        """
-        external_icon = ExternalRessource.from_url(icon_url)
-        data = {"icon": external_icon.model_dump()}
-        response = await self.patch(f"pages/{self.page_id}", data=data)
-        return NotionPageResponse.model_validate(response)
-
-    async def patch_external_cover(self, cover_url: str) -> NotionPageResponse:
-        """
-        Updates this page's cover to an external image.
-        """
-        external_cover = ExternalRessource.from_url(cover_url)
-        data = {"cover": external_cover.model_dump()}
-        response = await self.patch(f"pages/{self.page_id}", data=data)
-        return NotionPageResponse.model_validate(response)
-
-    async def remove_icon(self) -> NotionPageResponse:
+    async def remove_icon(self) -> NotionPageDto:
         """
         Removes the icon from this page.
         """
-        data = {"icon": None}
-        response = await self.patch(f"pages/{self.page_id}", data=data)
-        return NotionPageResponse.model_validate(response)
+        update_icon_dto = UpdateIconDto(icon=None)
+        return await self.patch_page(update_icon_dto)
 
-    async def remove_cover(self) -> NotionPageResponse:
+    async def patch_external_icon(self, icon_url: str) -> NotionPageDto:
+        """
+        Updates this page's icon to an external image.
+        """
+        update_external_icon_dto = UpdateIconDto.from_url(icon_url)
+        return await self.patch_page(update_external_icon_dto)
+
+    async def patch_external_cover(self, cover_url: str) -> NotionPageDto:
+        """
+        Updates this page's cover to an external image.
+        """
+        update_external_cover_dto = UpdateCoverDto.from_url(cover_url)
+        return await self.patch_page(update_external_cover_dto)
+
+    async def remove_cover(self) -> NotionPageDto:
         """
         Removes the cover from this page.
         """
-        data = {"cover": None}
-        response = await self.patch(f"pages/{self.page_id}", data=data)
-        return NotionPageResponse.model_validate(response)
+        update_external_cover_dto = UpdateCoverDto(cover=None)
+        return await self.patch_page(update_external_cover_dto)
 
-    async def patch_title(self, title: str) -> NotionPageResponse:
+    async def patch_title(self, title: str) -> NotionPageDto:
         """
         Updates this page's title.
         """
@@ -120,21 +113,18 @@ class NotionPageClient(NotionClient):
                 "title": {"title": [{"type": "text", "text": {"content": title}}]}
             }
         }
-        response = await self.patch(f"pages/{self.page_id}", data=data)
-        return NotionPageResponse.model_validate(response)
+        return await self.patch_page(data)
 
-    async def archive_page(self) -> NotionPageResponse:
+    async def archive_page(self) -> NotionPageDto:
         """
         Archives this page.
         """
         data = {"archived": True}
-        response = await self.patch(f"pages/{self.page_id}", data=data)
-        return NotionPageResponse.model_validate(response)
+        return await self.patch_page(data)
 
-    async def unarchive_page(self) -> NotionPageResponse:
+    async def unarchive_page(self) -> NotionPageDto:
         """
         Unarchives this page.
         """
         data = {"archived": False}
-        response = await self.patch(f"pages/{self.page_id}", data=data)
-        return NotionPageResponse.model_validate(response)
+        return await self.patch_page(data)

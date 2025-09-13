@@ -9,9 +9,9 @@ from notionary.database.database_filter_builder import DatabaseFilterBuilder
 from notionary.database.database_provider import NotionDatabaseProvider
 from notionary.database.models import (
     NotionDatabaseResponse,
-    NotionPageResponse,
     NotionQueryDatabaseResponse,
 )
+from notionary.page.page_models import NotionPageDto
 from notionary.page.notion_page import NotionPage
 from notionary.util import LoggingMixin, factory_only
 
@@ -109,7 +109,7 @@ class NotionDatabase(LoggingMixin):
         Create a new blank page in the database with minimal properties.
         """
         try:
-            create_page_response: NotionPageResponse = await self.client.create_page(
+            create_page_response: NotionPageDto = await self.client.create_page(
                 parent_database_id=self.id
             )
 
@@ -378,9 +378,9 @@ class NotionDatabase(LoggingMixin):
 
         return None
 
-    def _extract_title_from_page(self, page: NotionPageResponse) -> Optional[str]:
+    def _extract_title_from_page(self, page: NotionPageDto) -> Optional[str]:
         """
-        Extracts the title from a NotionPageResponse object.
+        Extracts the title from a NotionPageDto object.
         """
         if not page.properties:
             return None
@@ -428,7 +428,7 @@ class NotionDatabase(LoggingMixin):
         self,
         page_size: int = 100,
         filter_conditions: Optional[dict[str, Any]] = None,
-    ) -> AsyncGenerator[list[NotionPageResponse], None]:
+    ) -> AsyncGenerator[list[NotionPageDto], None]:
         """
         Central pagination logic for Notion Database queries.
 
@@ -437,7 +437,7 @@ class NotionDatabase(LoggingMixin):
             filter_conditions: Optional filter conditions for the query
 
         Yields:
-            Batches of NotionPageResponse objects
+            Batches of NotionPageDto objects
         """
         start_cursor: Optional[str] = None
         has_more = True

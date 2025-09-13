@@ -7,12 +7,11 @@ from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.callout.callout_models import (
     CalloutBlock,
     CreateCalloutBlock,
-    EmojiIcon,
-    IconObject,
 )
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.shared.models.icon_models import EmojiIcon, Icon
 
 
 class CalloutElement(BaseBlockElement):
@@ -76,7 +75,7 @@ class CalloutElement(BaseBlockElement):
         if not content:
             return None
 
-        icon: Optional[IconObject] = block.callout.icon
+        icon: Optional[Icon] = block.callout.icon
         emoji_char = icon.emoji if isinstance(icon, EmojiIcon) else cls.DEFAULT_EMOJI
 
         if emoji_char and emoji_char != cls.DEFAULT_EMOJI:
