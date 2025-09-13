@@ -11,11 +11,10 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.database.client import NotionDatabaseClient
 from notionary.file_upload.client import NotionFileUploadClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.schemas import NotionContentSchema
 from notionary.page import page_context
 from notionary.page.client import NotionPageClient
-from notionary.page.models import NotionPageResponse
+from notionary.page.models import EmojiIcon, ExternalRessource, NotionPageResponse
 from notionary.page.page_content_deleting_service import PageContentDeletingService
 from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.page_context import PageContextProvider, page_context
@@ -25,7 +24,6 @@ from notionary.page.utils import extract_property_value
 from notionary.util import LoggingMixin, extract_uuid, factory_only, format_uuid
 from notionary.util.deprecated_decorator import deprecated
 from notionary.util.fuzzy import find_best_match
-
 
 
 if TYPE_CHECKING:
@@ -243,20 +241,17 @@ class NotionPage(LoggingMixin):
 
     async def post_comment(
         self,
-        comment: str,
+        rich_text_str: str,
         *,
         discussion_id: Optional[str] = None,
     ) -> Optional[Comment]:
         """
         Post a comment on this page.
         """
-        comment_rich_text = await TextInlineFormatter.parse_inline_formatting(comment)
-
         try:
-            # Use the comment client to create the comment
             comment = await self._comment_client.create_comment(
+                rich_text_str=rich_text_str,
                 page_id=self._page_id,
-                rich_text=comment_rich_text,
                 discussion_id=discussion_id,
             )
             self.logger.info(f"Successfully posted comment on page '{self._title}'")
@@ -349,9 +344,10 @@ class NotionPage(LoggingMixin):
         Sets the page icon to an emoji.
         """
         try:
-            icon = {"type": "emoji", "emoji": emoji}
+            emoji_icon = EmojiIcon(emoji=emoji)
+            emoji_icon_dict = emoji_icon.model_dump()
             page_response = await self._client.patch_page(
-                page_id=self._page_id, data={"icon": icon}
+                page_id=self._page_id, data={"icon": emoji_icon_dict}
             )
 
             self._emoji = page_response.icon.emoji
@@ -361,18 +357,20 @@ class NotionPage(LoggingMixin):
 
             self.logger.error(f"Error updating page emoji: {str(e)}")
             return None
-
+        
     async def set_external_icon(self, url: str) -> Optional[str]:
         """
         Sets the page icon to an external image.
         """
         try:
-            icon = {"type": "external", "external": {"url": url}}
+            external_icon = ExternalRessource.from_url(url)
+            external_icon_dict = external_icon.model_dump()
+            
             page_response = await self._client.patch_page(
-                page_id=self._page_id, data={"icon": icon}
+                page_id=self._page_id, data={"icon": external_icon_dict}
             )
 
-            self._icon = url
+            # For external icons, we clear the emoji since we now have external icon
             self._emoji = None
             self.logger.info(f"Successfully updated page external icon to: {url}")
             return page_response.icon.external.url
@@ -407,30 +405,12 @@ class NotionPage(LoggingMixin):
             page_id=child_page_response.id, token=self._client.token
         )
 
-    async def set_external_icon(self, url: str) -> Optional[str]:
-        """
-        Sets the page icon to an external image.
-        """
-        try:
-            icon = {"type": "external", "external": {"url": url}}
-            page_response = await self._client.patch_page(
-                page_id=self._page_id, data={"icon": icon}
-            )
-
-            # For external icons, we clear the emoji since we now have external icon
-            self._emoji = None
-            self.logger.info(f"Successfully updated page external icon to: {url}")
-            return page_response.icon.external.url
-
-        except Exception as e:
-            self.logger.error(f"Error updating page external icon: {str(e)}")
-            return None
-
     async def set_cover(self, external_url: str) -> Optional[str]:
         """
         Set the cover image for the page using an external URL.
         """
-        data = {"cover": {"type": "external", "external": {"url": external_url}}}
+        external_cover = ExternalRessource.from_url(external_url)
+        data = {"cover": external_cover.model_dump()}
         try:
             updated_page = await self._client.patch_page(self.id, data=data)
             self._cover_image_url = updated_page.cover.external.url

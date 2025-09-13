@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Any, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict
@@ -59,24 +60,21 @@ class ExternalFile(BaseModel):
     url: str
 
 
-class Cover(BaseModel):
-    """Cover image for a Notion page."""
-
-    type: str
-    external: ExternalFile
-
-
 class EmojiIcon(BaseModel):
-    type: Literal["emoji"]
+    type: Literal["emoji"] = "emoji"
     emoji: str
 
 
-class ExternalIcon(BaseModel):
-    type: Literal["external"]
+class ExternalRessource(BaseModel):
+    type: Literal["external"] = "external"
     external: ExternalFile
+    
+    @classmethod
+    def from_url(cls, url: str) -> ExternalRessource:
+        return cls(external=ExternalFile(url=url))
 
 
-Icon = Union[EmojiIcon, ExternalIcon]
+Icon = Union[EmojiIcon, ExternalRessource]
 
 
 # Database property schema types (these are schema definitions, not values)
@@ -239,7 +237,7 @@ class ExternalCover(BaseModel):
 
 
 class NotionCover(BaseModel):
-    type: str  # 'external', 'file'
+    type: Literal["external", "file"]  = "external"
     external: Optional[ExternalCover] = None
 
 
@@ -257,7 +255,7 @@ class NotionDatabaseResponse(BaseModel):
 
     object: Literal["database"]
     id: str
-    cover: Optional[Cover] = None
+    cover: Optional[ExternalRessource] = None
     icon: Optional[Icon] = None
     created_time: str
     last_edited_time: str

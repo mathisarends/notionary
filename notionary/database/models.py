@@ -3,8 +3,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict
 
-from notionary.page.models import Cover, Icon
-
+from notionary.page.models import ExternalRessource, Icon
 
 @dataclass
 class TextContent:
@@ -244,7 +243,7 @@ class NotionDatabaseResponse(BaseModel):
     id: str
     cover: Optional[Any] = None
     icon: Optional[Icon] = None
-    cover: Optional[Cover]
+    cover: Optional[ExternalRessource] = None
     created_time: str
     last_edited_time: str
     created_by: NotionUser

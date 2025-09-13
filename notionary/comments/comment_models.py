@@ -1,4 +1,3 @@
-# notionary/comments/models.py
 from __future__ import annotations
 
 from datetime import datetime
@@ -70,8 +69,88 @@ class CommentDisplayName(BaseModel):
     """
 
     model_config = ConfigDict(extra="ignore")
-    type: str
+    type: Literal["integration"] = "integration"
     resolved_name: Optional[str] = None
+
+    @classmethod
+    def for_integration(cls, name: Optional[str] = None) -> CommentDisplayName:
+        """
+        Create a CommentDisplayName for an integration with a custom name.
+        """
+        return cls(type="integration", resolved_name=name)
+
+
+# ---------------------------
+# Request models for creating comments
+# ---------------------------
+
+
+class CommentCreateRequest(BaseModel):
+    """
+    Request model for creating a comment.
+    Handles both page comments and discussion replies.
+    """
+
+    model_config = ConfigDict(extra="ignore")
+
+    rich_text: list[RichTextObject]
+    parent: Optional[CommentParent] = None
+    discussion_id: Optional[str] = None
+    display_name: Optional[CommentDisplayName] = None
+    attachments: Optional[list[CommentAttachment]] = None
+
+    @classmethod
+    def for_page(
+        cls,
+        page_id: str,
+        rich_text: list[RichTextObject],
+        display_name: Optional[CommentDisplayName] = None,
+        attachments: Optional[list[CommentAttachment]] = None,
+    ) -> CommentCreateRequest:
+        """Create a request for a page comment."""
+        return cls(
+            rich_text=rich_text,
+            parent=CommentParent(type="page_id", page_id=page_id),
+            display_name=display_name,
+            attachments=attachments,
+        )
+
+    @classmethod
+    def for_discussion(
+        cls,
+        discussion_id: str,
+        rich_text: list[RichTextObject],
+        display_name: Optional[CommentDisplayName] = None,
+        attachments: Optional[list[CommentAttachment]] = None,
+    ) -> CommentCreateRequest:
+        """Create a request for a discussion reply."""
+        return cls(
+            rich_text=rich_text,
+            discussion_id=discussion_id,
+            display_name=display_name,
+            attachments=attachments,
+        )
+
+
+class CommentListRequest(BaseModel):
+    """
+    Request model for listing comments.
+    """
+
+    model_config = ConfigDict(extra="ignore")
+
+    block_id: str
+    start_cursor: Optional[str] = None
+    page_size: Optional[int] = None
+
+    def to_params(self) -> dict[str, str | int]:
+        """Convert to query parameters for the API request."""
+        params: dict[str, str | int] = {"block_id": self.block_id}
+        if self.start_cursor:
+            params["start_cursor"] = self.start_cursor
+        if self.page_size:
+            params["page_size"] = self.page_size
+        return params
 
 
 # ---------------------------
