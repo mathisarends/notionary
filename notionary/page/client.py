@@ -86,15 +86,6 @@ class NotionPageClient(BaseNotionClient):
         result = await self.post("search", search_filter.build())
         return NotionQueryDatabaseResponse.model_validate(result)
 
-    async def update_page_properties(
-        self, page_id: str, properties: dict[str, Any]
-    ) -> NotionPageResponse:
-        """
-        Updates only the properties of a Notion page.
-        """
-        data = {"properties": properties}
-        return await self.patch_page(page_id, data)
-
     async def archive_page(self, page_id: str) -> NotionPageResponse:
         """
         Archives a Notion page (soft delete).

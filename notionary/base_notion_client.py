@@ -2,11 +2,21 @@ import asyncio
 import os
 from abc import ABC
 from enum import Enum
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 import httpx
 from dotenv import load_dotenv
 
+from notionary.http.exceptions import (
+    NotionApiError,
+    NotionAuthenticationError,
+    NotionConnectionError,
+    NotionPermissionError,
+    NotionRateLimitError,
+    NotionResourceNotFoundError,
+    NotionServerError,
+    NotionValidationError,
+)
 from notionary.util import LoggingMixin
 
 load_dotenv()
@@ -141,6 +151,24 @@ class BaseNotionClient(LoggingMixin, ABC):
         result = await self._make_request(HttpMethod.DELETE, endpoint)
         return result is not None
 
+    def _find_token(self) -> Optional[str]:
+        """
+        Finds the Notion API token from environment variables.
+        """
+        token = next(
+            (
+                os.getenv(var)
+                for var in ("NOTION_SECRET", "NOTION_INTEGRATION_KEY", "NOTION_TOKEN")
+                if os.getenv(var)
+            ),
+            None,
+        )
+        if token:
+            self.logger.debug("Found token in environment variable.")
+            return token
+        self.logger.warning("No Notion API token found in environment variables")
+        return None
+
     async def _make_request(
         self,
         method: HttpMethod,
@@ -185,36 +213,65 @@ class BaseNotionClient(LoggingMixin, ABC):
             return result_data
 
         except httpx.HTTPStatusError as e:
-            error_msg = (
-                f"HTTP status error: {e.response.status_code} - {e.response.text}"
-            )
-            if e.response.status_code == 403:
-                self.logger.warning(
-                    "403 Forbidden: The API key is not set correctly or the integration does not have permissions for this API. Please check your integration settings at https://www.notion.so/profile/integrations"
-                )
-            else:
-                self.logger.error("Request failed (%s): %s", url, error_msg)
-            return None
-
+            self._handle_http_status_error(e)
         except httpx.RequestError as e:
-            error_msg = f"Request error: {str(e)}"
-            self.logger.error("Request error (%s): %s", url, error_msg)
-            return None
+            raise NotionConnectionError(
+                f"Failed to connect to Notion API: {str(e)}. "
+                "Please check your internet connection and try again."
+            )
 
-    def _find_token(self) -> Optional[str]:
+    def _handle_http_status_error(self, e: httpx.HTTPStatusError) -> None:
         """
-        Finds the Notion API token from environment variables.
+        Handles HTTP status errors by raising appropriate Notion exceptions.
+
+        Args:
+            e: The HTTPStatusError exception
         """
-        token = next(
-            (
-                os.getenv(var)
-                for var in ("NOTION_SECRET", "NOTION_INTEGRATION_KEY", "NOTION_TOKEN")
-                if os.getenv(var)
-            ),
-            None,
+        status_code = e.response.status_code
+        response_text = e.response.text
+
+        # Map HTTP status codes to specific business exceptions
+        if status_code == 401:
+            raise NotionAuthenticationError(
+                "Invalid or missing API key. Please check your Notion integration token.",
+                status_code=status_code,
+                response_text=response_text,
+            )
+        if status_code == 403:
+            raise NotionPermissionError(
+                "Insufficient permissions. Please check your integration settings at "
+                "https://www.notion.so/profile/integrations and ensure the integration "
+                "has access to the required pages/databases.",
+                status_code=status_code,
+                response_text=response_text,
+            )
+        if status_code == 404:
+            raise NotionResourceNotFoundError(
+                "The requested resource was not found. Please verify the page/database ID.",
+                status_code=status_code,
+                response_text=response_text,
+            )
+        if status_code == 400:
+            raise NotionValidationError(
+                f"Invalid request data. Please check your input parameters: {response_text}",
+                status_code=status_code,
+                response_text=response_text,
+            )
+        if status_code == 429:
+            raise NotionRateLimitError(
+                "Rate limit exceeded. Please wait before making more requests.",
+                status_code=status_code,
+                response_text=response_text,
+            )
+        if 500 <= status_code < 600:
+            raise NotionServerError(
+                "Notion API server error. Please try again later.",
+                status_code=status_code,
+                response_text=response_text,
+            )
+
+        raise NotionApiError(
+            f"API request failed with status {status_code}: {response_text}",
+            status_code=status_code,
+            response_text=response_text,
         )
-        if token:
-            self.logger.debug("Found token in environment variable.")
-            return token
-        self.logger.warning("No Notion API token found in environment variables")
-        return None

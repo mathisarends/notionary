@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict
 
 from notionary.page.models import ExternalRessource, Icon
 
+
 @dataclass
 class TextContent:
     content: str

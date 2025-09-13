@@ -339,45 +339,36 @@ class NotionPage(LoggingMixin):
         )
         return await self._page_content_retriever.convert_to_markdown(blocks=blocks)
 
-    async def set_emoji_icon(self, emoji: str) -> Optional[str]:
+    async def set_emoji_icon(self, emoji: str) -> str:
         """
         Sets the page icon to an emoji.
         """
-        try:
-            emoji_icon = EmojiIcon(emoji=emoji)
-            emoji_icon_dict = emoji_icon.model_dump()
-            page_response = await self._client.patch_page(
-                page_id=self._page_id, data={"icon": emoji_icon_dict}
-            )
+        emoji_icon = EmojiIcon(emoji=emoji)
+        emoji_icon_dict = emoji_icon.model_dump()
+        page_response = await self._client.patch_page(
+            page_id=self._page_id, data={"icon": emoji_icon_dict}
+        )
 
-            self._emoji = page_response.icon.emoji
-            self._external_icon_url = None
-            return page_response.icon.emoji
-        except Exception as e:
+        self._emoji_icon = page_response.icon.emoji
+        self._external_icon_url = None
+        return page_response.icon.emoji
 
-            self.logger.error(f"Error updating page emoji: {str(e)}")
-            return None
-        
-    async def set_external_icon(self, url: str) -> Optional[str]:
+    async def set_external_icon(self, url: str) -> str:
         """
         Sets the page icon to an external image.
         """
-        try:
-            external_icon = ExternalRessource.from_url(url)
-            external_icon_dict = external_icon.model_dump()
-            
-            page_response = await self._client.patch_page(
-                page_id=self._page_id, data={"icon": external_icon_dict}
-            )
+        external_icon = ExternalRessource.from_url(url)
+        external_icon_dict = external_icon.model_dump()
 
-            # For external icons, we clear the emoji since we now have external icon
-            self._emoji = None
-            self.logger.info(f"Successfully updated page external icon to: {url}")
-            return page_response.icon.external.url
+        page_response = await self._client.patch_page(
+            page_id=self._page_id, data={"icon": external_icon_dict}
+        )
 
-        except Exception as e:
-            self.logger.error(f"Error updating page external icon: {str(e)}")
-            return None
+        # For external icons, we clear the emoji since we now have external icon
+        self._emoji_icon = None
+        self._external_icon_url = page_response.icon.external.url
+        self.logger.info(f"Successfully updated page external icon to: {url}")
+        return page_response.icon.external.url
 
     async def create_child_database(self, title: str) -> NotionDatabase:
         from notionary import NotionDatabase
@@ -405,19 +396,15 @@ class NotionPage(LoggingMixin):
             page_id=child_page_response.id, token=self._client.token
         )
 
-    async def set_cover(self, external_url: str) -> Optional[str]:
+    async def set_cover(self, external_url: str) -> str:
         """
         Set the cover image for the page using an external URL.
         """
         external_cover = ExternalRessource.from_url(external_url)
         data = {"cover": external_cover.model_dump()}
-        try:
-            updated_page = await self._client.patch_page(self.id, data=data)
-            self._cover_image_url = updated_page.cover.external.url
-            return updated_page.cover.external.url
-        except Exception as e:
-            self.logger.error("Failed to set cover image: %s", str(e))
-            return None
+        updated_page = await self._client.patch_page(self.id, data=data)
+        self._cover_image_url = updated_page.cover.external.url
+        return updated_page.cover.external.url
 
     async def set_random_gradient_cover(self) -> Optional[str]:
         """
@@ -509,20 +496,11 @@ class NotionPage(LoggingMixin):
             property_name=property_name, property_type=property_type, value=value
         )
 
-        try:
-            updated_page_response = await self._client.patch_page(
-                page_id=self._page_id, data=update_data
-            )
-            self._properties = updated_page_response.properties
-            return extract_property_value(self._properties.get(property_name))
-        except Exception as e:
-            self.logger.error(
-                "Error setting property '%s' to value '%s': %s",
-                property_name,
-                value,
-                str(e),
-            )
-            return None
+        updated_page_response = await self._client.patch_page(
+            page_id=self._page_id, data=update_data
+        )
+        self._properties = updated_page_response.properties
+        return extract_property_value(self._properties.get(property_name))
 
     async def set_relation_property_values_by_name(
         self, property_name: str, page_titles: list[str]
@@ -556,33 +534,20 @@ class NotionPage(LoggingMixin):
             value=relation_page_ids,
         )
 
-        try:
-            updated_page_response = await self._client.patch_page(
-                page_id=self._page_id, data=update_data
-            )
-            self._properties = updated_page_response.properties
-            return page_titles
-        except Exception as e:
-            self.logger.error(
-                "Error setting property '%s' to value '%s': %s",
-                property_name,
-                page_titles,
-                str(e),
-            )
-            return []
+        updated_page_response = await self._client.patch_page(
+            page_id=self._page_id, data=update_data
+        )
+        self._properties = updated_page_response.properties
+        return page_titles
 
     async def archive(self) -> bool:
         """
         Archive the page by moving it to the trash.
         """
-        try:
-            result = await self._client.patch_page(
-                page_id=self._page_id, data={"archived": True}
-            )
-            return result is not None
-        except Exception as e:
-            self.logger.error("Error archiving page %s: %s", self._page_id, str(e))
-            return False
+        result = await self._client.patch_page(
+            page_id=self._page_id, data={"archived": True}
+        )
+        return result is not None
 
     @classmethod
     async def _create_from_response(

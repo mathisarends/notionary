@@ -68,7 +68,7 @@ class EmojiIcon(BaseModel):
 class ExternalRessource(BaseModel):
     type: Literal["external"] = "external"
     external: ExternalFile
-    
+
     @classmethod
     def from_url(cls, url: str) -> ExternalRessource:
         return cls(external=ExternalFile(url=url))
@@ -237,7 +237,7 @@ class ExternalCover(BaseModel):
 
 
 class NotionCover(BaseModel):
-    type: Literal["external", "file"]  = "external"
+    type: Literal["external", "file"] = "external"
     external: Optional[ExternalCover] = None
 
 
