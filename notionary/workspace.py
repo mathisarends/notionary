@@ -32,9 +32,11 @@ class NotionWorkspace(LoggingMixin):
         """
         Searches for pages in Notion using the search endpoint.
         """
+        search_query = self._truncate_query_if_needed(query)
+
         search_filter = (
             SearchFilterBuilder()
-            .with_query(query)
+            .with_query(search_query)
             .with_pages_only()
             .with_sort_direction("ascending" if sort_ascending else "descending")
             .with_page_size(limit)
@@ -53,7 +55,11 @@ class NotionWorkspace(LoggingMixin):
         """
         Search for databases globally across the Notion workspace.
         """
-        response = await self.database_client.search_databases(query=query, limit=limit)
+        search_query = self._truncate_query_if_needed(query)
+
+        response = await self.database_client.search_databases(
+            query=search_query, limit=limit
+        )
         return await asyncio.gather(
             *(
                 NotionDatabase.from_database_id(database.id)
@@ -116,4 +122,17 @@ class NotionWorkspace(LoggingMixin):
         """
         return await self.user_manager.get_workspace_info()
 
-    # TODO: Create database would be nice here
+    def _truncate_query_if_needed(self, query: str) -> str:
+        """
+        Truncates search queries to first 4 words to avoid Notion API issues with long queries.
+        """
+        MAX_WORDS = 4
+
+        words = query.split()
+
+        if len(words) > MAX_WORDS:
+            truncated = " ".join(words[:MAX_WORDS])
+            self.logger.debug(f"Query truncated from '{query}' to '{truncated}'")
+            return truncated
+
+        return query

@@ -9,20 +9,20 @@ Perfect for verifying the unified behavior!
 import asyncio
 from notionary import NotionPage
 
+PAGE_NAME = "Protocols: An Operating Manual for the Human Body"
+
 
 async def main():
     """Test the new caption syntax across different media blocks."""
 
-    PAGE_NAME = "Jarvis Clipboard"
+    print("🚀 Notionary Caption Syntax Test")
+    print("=" * 40)
 
     try:
+        print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        cover_url = await page.get_cover_url()
-        print("cover_url (deprecated):", cover_url)
-
-        cover_url_new = page.cover_image_url
-        print("cover_url_new (property):", cover_url_new)
+        print("page", page.title)
 
     except Exception as e:
         import traceback

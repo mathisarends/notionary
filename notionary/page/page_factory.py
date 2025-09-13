@@ -74,7 +74,6 @@ async def _load_page_from_response(
     token: str | None,
 ) -> NotionPage:
     """Create NotionPage instance from API response."""
-    # Lazy import to avoid circular imports
     from notionary import NotionPage
     from notionary.database.database import NotionDatabase
 

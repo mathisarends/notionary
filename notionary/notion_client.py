@@ -110,10 +110,6 @@ class NotionClient(LoggingMixin):
     ) -> Optional[dict[str, Any]]:
         """
         Sends a GET request to the specified Notion API endpoint.
-
-        Args:
-            endpoint: The API endpoint (without base URL)
-            params: Query parameters to include in the request
         """
         return await self._make_request(HttpMethod.GET, endpoint, params=params)
 
@@ -122,10 +118,6 @@ class NotionClient(LoggingMixin):
     ) -> Optional[dict[str, Any]]:
         """
         Sends a POST request to the specified Notion API endpoint.
-
-        Args:
-            endpoint: The API endpoint (without base URL)
-            data: Request body data
         """
         return await self._make_request(HttpMethod.POST, endpoint, data)
 
@@ -134,19 +126,12 @@ class NotionClient(LoggingMixin):
     ) -> Optional[dict[str, Any]]:
         """
         Sends a PATCH request to the specified Notion API endpoint.
-
-        Args:
-            endpoint: The API endpoint (without base URL)
-            data: Request body data
         """
         return await self._make_request(HttpMethod.PATCH, endpoint, data)
 
     async def delete(self, endpoint: str) -> bool:
         """
         Sends a DELETE request to the specified Notion API endpoint.
-
-        Args:
-            endpoint: The API endpoint (without base URL)
         """
         result = await self._make_request(HttpMethod.DELETE, endpoint)
         return result is not None
