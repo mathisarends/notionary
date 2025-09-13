@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Literal, Optional, Union
+from typing import Any,  Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict
 

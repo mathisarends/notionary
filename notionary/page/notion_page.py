@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import random
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from notionary.blocks.client import NotionBlockClient
@@ -22,7 +21,11 @@ from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.page.utils import extract_property_value
 from notionary.util import LoggingMixin
 
-from notionary.page.page_factory import load_page_from_id, load_page_from_name, load_page_from_url
+from notionary.page.page_factory import (
+    load_page_from_id,
+    load_page_from_name,
+    load_page_from_url,
+)
 
 
 if TYPE_CHECKING:
@@ -50,8 +53,8 @@ class NotionPage(LoggingMixin):
     ):
         """
         Initialize the page manager with all metadata.
-        
-        Note: Use factory methods (from_page_id, from_page_name, from_url) 
+
+        Note: Use factory methods (from_page_id, from_page_name, from_url)
         instead of direct instantiation.
         """
         self._page_id = page_id
@@ -325,13 +328,9 @@ class NotionPage(LoggingMixin):
         """
         Set a random gradient as the page cover.
         """
-        default_notion_covers = [
-            f"https://www.notion.so/images/page-cover/gradients_{i}.png"
-            for i in range(1, 10)
-        ]
-        random_cover_url = random.choice(default_notion_covers)
+        random_cover_url = self._get_random_gradient_cover()
         return await self.set_cover(random_cover_url)
-    
+
     async def archive(self) -> bool:
         """
         Archive the page by moving it to the trash.
@@ -373,7 +372,7 @@ class NotionPage(LoggingMixin):
         relation_page_ids = [
             rel.get("id") for rel in page_property_schema.get("relation", [])
         ]
-        
+
         # Use factory function instead of direct instantiation
         notion_pages = [
             await load_page_from_id(page_id) for page_id in relation_page_ids
@@ -477,3 +476,12 @@ class NotionPage(LoggingMixin):
             database_client=NotionDatabaseClient(token=self._client.token),
             file_upload_client=NotionFileUploadClient(),
         )
+
+    def _get_random_gradient_cover(self) -> str:
+        import random
+
+        default_notion_covers = [
+            f"https://www.notion.so/images/page-cover/gradients_{i}.png"
+            for i in range(1, 10)
+        ]
+        return random.choice(default_notion_covers)

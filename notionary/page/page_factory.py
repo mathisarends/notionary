@@ -29,9 +29,7 @@ async def load_page_from_name(
 
     workspace = NotionWorkspace()
 
-    search_results: list[NotionPage] = await workspace.search_pages(
-        page_name, limit=5
-    )
+    search_results: list[NotionPage] = await workspace.search_pages(page_name, limit=5)
 
     if not search_results:
         raise ValueError(f"No pages found for name: {page_name}")
@@ -52,9 +50,7 @@ async def load_page_from_name(
 
     async with NotionPageClient(token=token) as client:
         page_response = await client.get_page(page_id=best_match.item.id)
-        return await _load_page_from_response(
-            page_response=page_response, token=token
-        )
+        return await _load_page_from_response(page_response=page_response, token=token)
 
 
 async def load_page_from_url(url: str, token: str | None = None) -> NotionPage:
