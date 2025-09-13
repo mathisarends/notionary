@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, AsyncGenerator, Optional
+from typing import AsyncGenerator, Optional
 
-from notionary.base_notion_client import BaseNotionClient
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.notion_client import NotionClient
 from notionary.comments.comment_models import (
     Comment,
     CommentListResponse,
@@ -15,7 +14,7 @@ from notionary.comments.comment_models import (
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-class CommentClient(BaseNotionClient):
+class CommentClient(NotionClient):
     """
     Client for Notion comment operations.
     """

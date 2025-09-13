@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from notionary.base_notion_client import BaseNotionClient
+from notionary.notion_client import NotionClient
 from notionary.user.models import (
     NotionBotUserResponse,
     NotionUserResponse,
@@ -8,10 +8,10 @@ from notionary.user.models import (
 )
 
 
-class NotionUserClient(BaseNotionClient):
+class NotionUserClient(NotionClient):
     """
     Client for Notion user-specific operations.
-    Inherits base HTTP functionality from BaseNotionClient.
+    Inherits base HTTP functionality from NotionClient.
 
     Note: The Notion API only supports individual user queries and bot user info.
     List users endpoint is available but only returns workspace members (no guests).

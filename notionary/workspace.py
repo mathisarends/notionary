@@ -3,7 +3,9 @@ from typing import Optional
 
 from notionary import NotionDatabase, NotionPage
 from notionary.database.client import NotionDatabaseClient
-from notionary.page.client import NotionPageClient
+from notionary.database.models import NotionQueryDatabaseResponse
+from notionary.notion_client import NotionClient
+from notionary.page.search_filter_builder import SearchFilterBuilder
 from notionary.user import NotionUser, NotionUserManager
 from notionary.util import LoggingMixin
 
@@ -21,14 +23,26 @@ class NotionWorkspace(LoggingMixin):
         Initialize the workspace with Notion clients.
         """
         self.database_client = NotionDatabaseClient(token=token)
-        self.page_client = NotionPageClient(token=token)
+        self.notion_client = NotionClient(token=token)
         self.user_manager = NotionUserManager(token=token)
 
-    async def search_pages(self, query: str, limit=100) -> list[NotionPage]:
+    async def search_pages(
+        self, query: str, sort_ascending: bool = True, limit: int = 100
+    ) -> list[NotionPage]:
         """
-        Search for pages globally across Notion workspace.
+        Searches for pages in Notion using the search endpoint.
         """
-        response = await self.page_client.search_pages(query, limit=limit)
+        search_filter = (
+            SearchFilterBuilder()
+            .with_query(query)
+            .with_pages_only()
+            .with_sort_direction("ascending" if sort_ascending else "descending")
+            .with_page_size(limit)
+        )
+
+        result = await self.notion_client.post("search", search_filter.build())
+        response = NotionQueryDatabaseResponse.model_validate(result)
+
         return await asyncio.gather(
             *(NotionPage.from_page_id(page.id) for page in response.results)
         )

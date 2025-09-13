@@ -148,7 +148,7 @@ class NotionDatabase(LoggingMixin):
 
         if not result.cover or not result.cover.external:
             raise ValueError(f"Failed to set cover image to {image_url}")
-            
+
         self.database_provider.invalidate_database_cache(database_id=self.id)
         return result.cover.external.url
 
@@ -171,7 +171,7 @@ class NotionDatabase(LoggingMixin):
 
         if not result.icon or not result.icon.external:
             raise ValueError(f"Failed to set external icon to {external_icon_url}")
-            
+
         self.database_provider.invalidate_database_cache(database_id=self.id)
         return result.icon.external.url
 

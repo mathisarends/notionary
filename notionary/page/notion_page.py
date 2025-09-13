@@ -13,8 +13,8 @@ from notionary.file_upload.client import NotionFileUploadClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.schemas import NotionContentSchema
 from notionary.page import page_context
-from notionary.page.client import NotionPageClient
-from notionary.page.models import EmojiIcon, ExternalRessource, NotionPageResponse
+from notionary.page.page_client import NotionPageClient
+from notionary.page.page_models import EmojiIcon, ExternalRessource, NotionPageResponse
 from notionary.page.page_content_deleting_service import PageContentDeletingService
 from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.page_context import PageContextProvider, page_context
@@ -64,7 +64,7 @@ class NotionPage(LoggingMixin):
         self._properties = properties
         self._parent_database = parent_database
 
-        self._client = NotionPageClient(token=token)
+        self._client = NotionPageClient(page_id=page_id, token=token)
         self._block_client = NotionBlockClient(token=token)
         self._database_client = NotionDatabaseClient(token=token)
         self._comment_client = CommentClient(token=token)
@@ -234,13 +234,7 @@ class NotionPage(LoggingMixin):
         """
         Set the title of the page.
         """
-        data = {
-            "properties": {
-                "title": {"title": [{"type": "text", "text": {"content": title}}]}
-            }
-        }
-
-        await self._client.patch_page(self._page_id, data)
+        await self._client.patch_title(title)
         self._title = title
         return title
 
@@ -300,10 +294,7 @@ class NotionPage(LoggingMixin):
         Sets the page icon to an emoji.
         """
         emoji_icon = EmojiIcon(emoji=emoji)
-        emoji_icon_dict = emoji_icon.model_dump()
-        page_response = await self._client.patch_page(
-            page_id=self._page_id, data={"icon": emoji_icon_dict}
-        )
+        page_response = await self._client.patch_emoji_icon(emoji_icon)
 
         self._emoji_icon = page_response.icon.emoji
         self._external_icon_url = None
@@ -314,11 +305,7 @@ class NotionPage(LoggingMixin):
         Sets the page icon to an external image.
         """
         external_icon = ExternalRessource.from_url(url)
-        external_icon_dict = external_icon.model_dump()
-
-        page_response = await self._client.patch_page(
-            page_id=self._page_id, data={"icon": external_icon_dict}
-        )
+        page_response = await self._client.patch_external_icon(external_icon)
 
         self._emoji_icon = None
         self._external_icon_url = page_response.icon.external.url
@@ -359,8 +346,7 @@ class NotionPage(LoggingMixin):
         Set the cover image for the page using an external URL.
         """
         external_cover = ExternalRessource.from_url(external_url)
-        data = {"cover": external_cover.model_dump()}
-        updated_page = await self._client.patch_page(self.id, data=data)
+        updated_page = await self._client.patch_external_cover(external_cover)
         self._cover_image_url = updated_page.cover.external.url
         return updated_page.cover.external.url
 
@@ -374,6 +360,20 @@ class NotionPage(LoggingMixin):
         ]
         random_cover_url = random.choice(default_notion_covers)
         return await self.set_cover(random_cover_url)
+    
+    async def archive(self) -> bool:
+        """
+        Archive the page by moving it to the trash.
+        """
+        result = await self._client.archive_page()
+        return result is not None
+
+    async def unarchive(self) -> bool:
+        """
+        Unarchive the page by restoring it from the trash.
+        """
+        result = await self._client.unarchive_page()
+        return result is not None
 
     async def get_property_value_by_name(self, property_name: str) -> Any:
         """
@@ -493,15 +493,6 @@ class NotionPage(LoggingMixin):
         )
         self._properties = updated_page_response.properties
         return page_titles
-
-    async def archive(self) -> bool:
-        """
-        Archive the page by moving it to the trash.
-        """
-        result = await self._client.patch_page(
-            page_id=self._page_id, data={"archived": True}
-        )
-        return result is not None
 
     @classmethod
     async def _create_from_response(

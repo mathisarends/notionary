@@ -1,8 +1,7 @@
 import asyncio
 import os
-from abc import ABC
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import httpx
 from dotenv import load_dotenv
@@ -33,7 +32,7 @@ class HttpMethod(Enum):
     DELETE = "delete"
 
 
-class BaseNotionClient(LoggingMixin, ABC):
+class NotionClient(LoggingMixin):
     """
     Base client for Notion API operations.
     Handles connection management and generic HTTP requests.
@@ -106,8 +105,8 @@ class BaseNotionClient(LoggingMixin, ABC):
         self.logger.debug("NotionClient closed")
 
     async def get(
-        self, endpoint: str, params: Optional[Dict[str, Any]] = None
-    ) -> Optional[Dict[str, Any]]:
+        self, endpoint: str, params: Optional[dict[str, Any]] = None
+    ) -> Optional[dict[str, Any]]:
         """
         Sends a GET request to the specified Notion API endpoint.
 
@@ -118,8 +117,8 @@ class BaseNotionClient(LoggingMixin, ABC):
         return await self._make_request(HttpMethod.GET, endpoint, params=params)
 
     async def post(
-        self, endpoint: str, data: Optional[Dict[str, Any]] = None
-    ) -> Optional[Dict[str, Any]]:
+        self, endpoint: str, data: Optional[dict[str, Any]] = None
+    ) -> Optional[dict[str, Any]]:
         """
         Sends a POST request to the specified Notion API endpoint.
 
@@ -130,8 +129,8 @@ class BaseNotionClient(LoggingMixin, ABC):
         return await self._make_request(HttpMethod.POST, endpoint, data)
 
     async def patch(
-        self, endpoint: str, data: Optional[Dict[str, Any]] = None
-    ) -> Optional[Dict[str, Any]]:
+        self, endpoint: str, data: Optional[dict[str, Any]] = None
+    ) -> Optional[dict[str, Any]]:
         """
         Sends a PATCH request to the specified Notion API endpoint.
 
@@ -173,9 +172,9 @@ class BaseNotionClient(LoggingMixin, ABC):
         self,
         method: HttpMethod,
         endpoint: str,
-        data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
-    ) -> Optional[Dict[str, Any]]:
+        data: Optional[dict[str, Any]] = None,
+        params: Optional[dict[str, Any]] = None,
+    ) -> Optional[dict[str, Any]]:
         """
         Executes an HTTP request and returns the data or None on error.
 
