@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from notionary.notion_client import NotionClient
 from notionary.blocks.callout.callout_models import EmojiIcon
-from notionary.page.models import ExternalRessource, NotionPageResponse
+from notionary.page.page_models import ExternalRessource, NotionPageResponse
 
 
 class NotionPageClient(NotionClient):
@@ -68,30 +68,29 @@ class NotionPageClient(NotionClient):
         response = await self.patch(f"pages/{self.page_id}", data=data)
         return NotionPageResponse.model_validate(response)
 
-    async def patch_emoji_icon(self, emoji_icon: EmojiIcon) -> NotionPageResponse:
+    async def patch_emoji_icon(self, emoji: str) -> NotionPageResponse:
         """
-        Updates this page's icon to an emoji using EmojiIcon model.
+        Updates this page's icon to an emoji.
         """
+        emoji_icon = EmojiIcon(emoji=emoji)
         data = {"icon": emoji_icon.model_dump()}
         response = await self.patch(f"pages/{self.page_id}", data=data)
         return NotionPageResponse.model_validate(response)
 
-    async def patch_external_icon(
-        self, external_icon: ExternalRessource
-    ) -> NotionPageResponse:
+    async def patch_external_icon(self, icon_url: str) -> NotionPageResponse:
         """
-        Updates this page's icon to an external image using ExternalRessource model.
+        Updates this page's icon to an external image.
         """
+        external_icon = ExternalRessource.from_url(icon_url)
         data = {"icon": external_icon.model_dump()}
         response = await self.patch(f"pages/{self.page_id}", data=data)
         return NotionPageResponse.model_validate(response)
 
-    async def patch_external_cover(
-        self, external_cover: ExternalRessource
-    ) -> NotionPageResponse:
+    async def patch_external_cover(self, cover_url: str) -> NotionPageResponse:
         """
-        Updates this page's cover to an external image using ExternalRessource model.
+        Updates this page's cover to an external image.
         """
+        external_cover = ExternalRessource.from_url(cover_url)
         data = {"cover": external_cover.model_dump()}
         response = await self.patch(f"pages/{self.page_id}", data=data)
         return NotionPageResponse.model_validate(response)

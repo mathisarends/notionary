@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict
 
-from notionary.page.models import ExternalRessource, Icon
+from notionary.page.page_models import ExternalRessource, Icon
 
 
 @dataclass
@@ -37,7 +37,7 @@ class Parent:
 # Rich text types for Pydantic models
 class TextContentPydantic(BaseModel):
     content: str
-    link: Optional[Dict[str, str]] = None
+    link: Optional[dict[str, str]] = None
 
 
 class Annotations(BaseModel):
@@ -69,12 +69,12 @@ class StatusGroup(BaseModel):
     id: str
     name: str
     color: str
-    option_ids: List[str]
+    option_ids: list[str]
 
 
 class StatusPropertySchema(BaseModel):
-    options: List[StatusOption]
-    groups: List[StatusGroup]
+    options: list[StatusOption]
+    groups: list[StatusGroup]
 
 
 class DatabaseStatusProperty(BaseModel):
@@ -87,7 +87,7 @@ class DatabaseStatusProperty(BaseModel):
 class RelationPropertySchema(BaseModel):
     database_id: str
     type: str  # "single_property"
-    single_property: Dict[str, Any]
+    single_property: dict[str, Any]
 
 
 class DatabaseRelationProperty(BaseModel):
@@ -101,14 +101,14 @@ class DatabaseUrlProperty(BaseModel):
     id: str
     name: str
     type: Literal["url"]
-    url: Dict[str, Any]  # Usually empty dict
+    url: dict[str, Any]  # Usually empty dict
 
 
 class DatabaseRichTextProperty(BaseModel):
     id: str
     name: str
     type: Literal["rich_text"]
-    rich_text: Dict[str, Any]  # Usually empty dict
+    rich_text: dict[str, Any]  # Usually empty dict
 
 
 class MultiSelectOption(BaseModel):
@@ -119,7 +119,7 @@ class MultiSelectOption(BaseModel):
 
 
 class MultiSelectPropertySchema(BaseModel):
-    options: List[MultiSelectOption]
+    options: list[MultiSelectOption]
 
 
 class DatabaseMultiSelectProperty(BaseModel):
@@ -133,7 +133,7 @@ class DatabaseTitleProperty(BaseModel):
     id: str
     name: str
     type: Literal["title"]
-    title: Dict[str, Any]  # Usually empty dict
+    title: dict[str, Any]  # Usually empty dict
 
 
 # Generic database property for unknown types
@@ -177,7 +177,7 @@ class RelationItem(BaseModel):
 class RelationProperty(BaseModel):
     id: str
     type: str  # 'relation'
-    relation: List[RelationItem]
+    relation: list[RelationItem]
     has_more: bool
 
 
@@ -190,7 +190,7 @@ class UrlProperty(BaseModel):
 class RichTextProperty(BaseModel):
     id: str
     type: str  # 'rich_text'
-    rich_text: List[RichTextItemPydantic]
+    rich_text: list[RichTextItemPydantic]
 
 
 class MultiSelectItem(BaseModel):
@@ -202,13 +202,13 @@ class MultiSelectItem(BaseModel):
 class MultiSelectProperty(BaseModel):
     id: str
     type: str  # 'multi_select'
-    multi_select: List[MultiSelectItem]
+    multi_select: list[MultiSelectItem]
 
 
 class TitleProperty(BaseModel):
     id: str
     type: str  # 'title'
-    title: List[RichTextItemPydantic]
+    title: list[RichTextItemPydantic]
 
 
 # Cover types
@@ -249,10 +249,10 @@ class NotionDatabaseResponse(BaseModel):
     last_edited_time: str
     created_by: NotionUser
     last_edited_by: NotionUser
-    title: List[RichTextItemPydantic]
-    description: List[Any]
+    title: list[RichTextItemPydantic]
+    description: list[Any]
     is_inline: bool
-    properties: Dict[
+    properties: dict[
         str, Any
     ]  # Using Any for flexibility with different property schemas
     parent: NotionParent
@@ -274,7 +274,7 @@ class NotionPageResponse(BaseModel):
     parent: NotionParent
     archived: bool
     in_trash: bool
-    properties: Dict[str, Any]
+    properties: dict[str, Any]
     url: str
     public_url: Optional[str] = None
 
@@ -285,11 +285,11 @@ class NotionQueryResponse(BaseModel):
     """
 
     object: Literal["list"]
-    results: List[Union[NotionPageResponse, NotionDatabaseResponse]]
+    results: list[Union[NotionPageResponse, NotionDatabaseResponse]]
     next_cursor: Optional[str] = None
     has_more: bool
     type: Literal["page_or_database"]
-    page_or_database: Dict[str, Any]
+    page_or_database: dict[str, Any]
     request_id: str
 
 
@@ -300,11 +300,11 @@ class NotionQueryDatabaseResponse(BaseModel):
     """
 
     object: Literal["list"]
-    results: List[NotionPageResponse]
+    results: list[NotionPageResponse]
     next_cursor: Optional[str] = None
     has_more: bool
     type: Literal["page_or_database"]
-    page_or_database: Dict[str, Any]
+    page_or_database: dict[str, Any]
     request_id: str
 
 
@@ -315,11 +315,11 @@ class NotionSearchResponse(BaseModel):
     """
 
     object: Literal["list"]
-    results: List[Union[NotionPageResponse, NotionDatabaseResponse]]
+    results: list[Union[NotionPageResponse, NotionDatabaseResponse]]
     next_cursor: Optional[str] = None
     has_more: bool
     type: Literal["page_or_database"]
-    page_or_database: Dict[str, Any]
+    page_or_database: dict[str, Any]
     request_id: str
 
 
@@ -329,9 +329,9 @@ class NotionDatabaseSearchResponse(BaseModel):
     """
 
     object: Literal["list"]
-    results: List[NotionDatabaseResponse]
+    results: list[NotionDatabaseResponse]
     next_cursor: Optional[str] = None
     has_more: bool
     type: Literal["page_or_database"]
-    page_or_database: Dict[str, Any]
+    page_or_database: dict[str, Any]
     request_id: str
