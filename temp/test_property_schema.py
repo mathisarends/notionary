@@ -9,8 +9,7 @@ Perfect for verifying the unified behavior!
 import asyncio
 from notionary import NotionPage
 
-PAGE_NAME = "Protocols: An Operating Manual for the Human Body"
-
+PAGE_NAME = "Gradientenabstiegsverfahren für das Lernen"
 
 async def main():
     """Test the new caption syntax across different media blocks."""

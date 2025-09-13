@@ -77,21 +77,12 @@ class NotionClient(LoggingMixin):
 
     async def __aenter__(self):
         """Async context manager entry."""
-        await self.ensure_initialized()
+        await self._ensure_initialized()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async context manager exit."""
         await self.close()
-
-    async def ensure_initialized(self) -> None:
-        """
-        Ensures the HTTP client is initialized.
-        """
-        if not self._is_initialized or not self.client:
-            self.client = httpx.AsyncClient(headers=self.headers, timeout=self.timeout)
-            self._is_initialized = True
-            self.logger.debug("NotionClient initialized")
 
     async def close(self) -> None:
         """
@@ -141,25 +132,11 @@ class NotionClient(LoggingMixin):
         Gets metadata for a Notion page by its ID.
         """
         response = await self.get(f"pages/{page_id}")
+        
+        import json
+        print(json.dumps(response, indent=2))
+        
         return NotionPageDto.model_validate(response)
-
-    def _find_token(self) -> Optional[str]:
-        """
-        Finds the Notion API token from environment variables.
-        """
-        token = next(
-            (
-                os.getenv(var)
-                for var in ("NOTION_SECRET", "NOTION_INTEGRATION_KEY", "NOTION_TOKEN")
-                if os.getenv(var)
-            ),
-            None,
-        )
-        if token:
-            self.logger.debug("Found token in environment variable.")
-            return token
-        self.logger.warning("No Notion API token found in environment variables")
-        return None
 
     async def _make_request(
         self,
@@ -177,7 +154,7 @@ class NotionClient(LoggingMixin):
             data: Request body data (for POST/PATCH)
             params: Query parameters (for GET requests)
         """
-        await self.ensure_initialized()
+        await self._ensure_initialized()
 
         url = f"{self.BASE_URL}/{endpoint.lstrip('/')}"
         try:
@@ -267,3 +244,30 @@ class NotionClient(LoggingMixin):
             status_code=status_code,
             response_text=response_text,
         )
+
+    def _find_token(self) -> Optional[str]:
+        """
+        Finds the Notion API token from environment variables.
+        """
+        token = next(
+            (
+                os.getenv(var)
+                for var in ("NOTION_SECRET", "NOTION_INTEGRATION_KEY", "NOTION_TOKEN")
+                if os.getenv(var)
+            ),
+            None,
+        )
+        if token:
+            self.logger.debug("Found token in environment variable.")
+            return token
+        self.logger.warning("No Notion API token found in environment variables")
+        return None
+
+    async def _ensure_initialized(self) -> None:
+        """
+        Ensures the HTTP client is initialized.
+        """
+        if not self._is_initialized or not self.client:
+            self.client = httpx.AsyncClient(headers=self.headers, timeout=self.timeout)
+            self._is_initialized = True
+            self.logger.debug("NotionClient initialized")

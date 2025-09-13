@@ -67,17 +67,6 @@ class NotionWorkspace(LoggingMixin):
             )
         )
 
-    async def get_database_by_name(
-        self, database_name: str
-    ) -> Optional[NotionDatabase]:
-        """
-        Get a Notion database by its name.
-        Uses Notion's search API and returns the first matching database.
-        """
-        databases = await self.search_databases(query=database_name, limit=1)
-
-        return databases[0] if databases else None
-
     async def list_all_databases(self, limit: int = 100) -> list[NotionDatabase]:
         """
         List all databases in the workspace.
@@ -95,21 +84,12 @@ class NotionWorkspace(LoggingMixin):
     async def get_current_bot_user(self) -> Optional[NotionUser]:
         """
         Get the current bot user from the API token.
-
-        Returns:
-            Optional[NotionUser]: Current bot user or None if failed
         """
         return await self.user_manager.get_current_bot_user()
 
     async def get_user_by_id(self, user_id: str) -> Optional[NotionUser]:
         """
         Get a specific user by their ID.
-
-        Args:
-            user_id: The ID of the user to retrieve
-
-        Returns:
-            Optional[NotionUser]: The user or None if not found/failed
         """
         return await self.user_manager.get_user_by_id(user_id)
 

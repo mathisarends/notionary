@@ -10,6 +10,7 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.database.client import NotionDatabaseClient
 from notionary.file_upload.client import NotionFileUploadClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
+from notionary.notion_client import NotionClient
 from notionary.page.page_models import NotionPageUpdateDto
 from notionary.schemas import NotionContentSchema
 from notionary.page import page_context
@@ -20,6 +21,7 @@ from notionary.page.page_context import PageContextProvider, page_context
 from notionary.page.property_formatter import NotionPropertyFormatter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.page.utils import extract_property_value
+from notionary.shared.models.property_models import PropertyType
 from notionary.util import LoggingMixin
 
 from notionary.page.page_factory import (
@@ -69,12 +71,12 @@ class NotionPage(LoggingMixin):
         self._cover_image_url = cover_image_url
         self._properties = properties
         self._parent_database = parent_database
+        self.token = token
 
-        self._client = NotionPageClient(
+        self._page_client = NotionPageClient(
             page_id=page_id, initial_page_schema=initial_page_schema, token=token
         )
         self._block_client = NotionBlockClient(token=token)
-        self._database_client = NotionDatabaseClient(token=token)
         self._comment_client = CommentClient(token=token)
         self._page_data = None
 
@@ -197,7 +199,7 @@ class NotionPage(LoggingMixin):
         """
         Set the title of the page.
         """
-        await self._client.patch_title(title)
+        await self._page_client.patch_title(title)
         self._title = title
         return title
 
@@ -253,7 +255,7 @@ class NotionPage(LoggingMixin):
         """
         Sets the page icon to an emoji.
         """
-        page_response = await self._client.patch_emoji_icon(emoji)
+        page_response = await self._page_client.patch_emoji_icon(emoji)
 
         self._emoji_icon = page_response.icon.emoji
         self._external_icon_url = None
@@ -263,7 +265,7 @@ class NotionPage(LoggingMixin):
         """
         Sets the page icon to an external image.
         """
-        page_response = await self._client.patch_external_icon(url)
+        page_response = await self._page_client.patch_external_icon(url)
 
         self._emoji_icon = None
         self._external_icon_url = page_response.icon.external.url
@@ -273,7 +275,7 @@ class NotionPage(LoggingMixin):
         """
         Removes the icon from the page.
         """
-        _ = await self._client.remove_icon()
+        _ = await self._page_client.remove_icon()
         self._emoji_icon = None
         self._external_icon_url = None
 
@@ -283,7 +285,7 @@ class NotionPage(LoggingMixin):
         """
         from notionary import NotionDatabase
 
-        database_client = NotionDatabaseClient(token=self._client.token)
+        database_client = NotionDatabaseClient(token=self._page_client.token)
 
         create_database_response = await database_client.create_database(
             title=title,
@@ -291,28 +293,14 @@ class NotionPage(LoggingMixin):
         )
 
         return await NotionDatabase.from_database_id(
-            id=create_database_response.id, token=self._client.token
-        )
-
-    async def create_child_page(self, title: str) -> NotionPage:
-        """
-        Create a child page within this page.
-        """
-        child_page_response = await self._client.create_page(
-            parent_page_id=self._page_id,
-            title=title,
-        )
-
-        # Use factory function instead of direct instantiation
-        return await load_page_from_id(
-            page_id=child_page_response.id, token=self._client.token
+            id=create_database_response.id, token=self._page_client.token
         )
 
     async def set_cover(self, external_url: str) -> str:
         """
         Set the cover image for the page using an external URL.
         """
-        updated_page = await self._client.patch_external_cover(external_url)
+        updated_page = await self._page_client.patch_external_cover(external_url)
         self._cover_image_url = updated_page.cover.external.url
         return updated_page.cover.external.url
 
@@ -320,7 +308,7 @@ class NotionPage(LoggingMixin):
         """
         Removes the cover image from the page.
         """
-        _ = await self._client.remove_cover()
+        _ = await self._page_client.remove_cover()
         self._cover_image_url = None
 
     async def set_random_gradient_cover(self) -> str:
@@ -334,13 +322,13 @@ class NotionPage(LoggingMixin):
         """
         Archive the page by moving it to the trash.
         """
-        _ = await self._client.archive_page()
+        _ = await self._page_client.archive_page()
 
     async def unarchive(self) -> None:
         """
         Unarchive the page by restoring it from the trash.
         """
-        _ = await self._client.unarchive_page()
+        _ = await self._page_client.unarchive_page()
 
     async def get_property_value_by_name(self, property_name: str) -> Any:
         """
@@ -354,7 +342,7 @@ class NotionPage(LoggingMixin):
         property_schema: dict = self._properties.get(property_name)
         property_type = property_schema.get("type")
 
-        if property_type == "relation":
+        if property_type == PropertyType.RELATION:
             return await self._get_relation_property_values_by_name(property_name)
 
         return extract_property_value(property_schema)
@@ -387,11 +375,11 @@ class NotionPage(LoggingMixin):
         property_schema: dict = self.properties.get(property_name)
         property_type = property_schema.get("type")
 
-        if property_type in ["select", "multi_select", "status"]:
+        if property_type in [PropertyType.SELECT, PropertyType.MULTI_SELECT, PropertyType.STATUS]:
             options = property_schema.get(property_type, {}).get("options", [])
             return [option.get("name", "") for option in options]
 
-        if property_type == "relation" and self._parent_database:
+        if property_type == PropertyType.RELATION and self._parent_database:
             return await self._parent_database._get_relation_options(property_name)
 
         return []
@@ -409,7 +397,7 @@ class NotionPage(LoggingMixin):
         if not property_type:
             return None
 
-        if property_type == "relation":
+        if property_type == PropertyType.RELATION:
             return await self.set_relation_property_values_by_name(
                 property_name=property_name, page_titles=value
             )
@@ -419,7 +407,7 @@ class NotionPage(LoggingMixin):
             property_name=property_name, property_type=property_type, value=value
         )
 
-        updated_page_response = await self._client.patch_page(
+        updated_page_response = await self._page_client.patch_page(
             page_id=self._page_id, data=update_data
         )
         self._properties = updated_page_response.properties
@@ -437,7 +425,7 @@ class NotionPage(LoggingMixin):
 
         property_type = self._parent_database.properties.get(property_name).get("type")
 
-        if property_type != "relation":
+        if property_type != PropertyType.RELATION:
             return []
 
         relation_pages = await asyncio.gather(
@@ -453,11 +441,11 @@ class NotionPage(LoggingMixin):
 
         update_data = property_formatter.format_value(
             property_name=property_name,
-            property_type="relation",
+            property_type=PropertyType.RELATION,
             value=relation_page_ids,
         )
 
-        updated_page_response = await self._client.patch_page(
+        updated_page_response = await self._page_client.patch_page(
             page_id=self._page_id, data=update_data
         )
         self._properties = updated_page_response.properties
@@ -470,7 +458,7 @@ class NotionPage(LoggingMixin):
     def _setup_page_context_provider(self) -> PageContextProvider:
         return PageContextProvider(
             page_id=self._page_id,
-            database_client=NotionDatabaseClient(token=self._client.token),
+            database_client=NotionDatabaseClient(token=self._page_client.token),
             file_upload_client=NotionFileUploadClient(),
         )
 

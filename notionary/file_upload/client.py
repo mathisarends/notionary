@@ -76,8 +76,6 @@ class NotionFileUploadClient(NotionClient):
         Returns:
             True if successful, False otherwise
         """
-        await self.ensure_initialized()
-
         if not self.client:
             self.logger.error("HTTP client not initialized")
             return False
