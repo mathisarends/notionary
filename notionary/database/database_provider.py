@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from notionary.database.exceptions import DatabaseNotFoundException
 from notionary.database.database_factory import (
     load_database_from_id,
     load_database_from_name,
@@ -53,13 +52,7 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
         if self._should_use_cache(name_cache_key, force_refresh):
             return self._database_cache[name_cache_key]
 
-        try:
-            database = await load_database_from_name(
-                database_name, token, min_similarity
-            )
-        except ValueError as e:
-            # Convert ValueError to DatabaseNotFoundException for consistency
-            raise DatabaseNotFoundException(database_name) from e
+        database = await load_database_from_name(database_name, token, min_similarity)
 
         id_cache_key = self._create_id_cache_key(database.id)
         if not force_refresh and id_cache_key in self._database_cache:

@@ -12,7 +12,7 @@ from notionary.database.database_models import (
     NotionQueryDatabaseResponse,
 )
 from notionary.page.page_models import NotionPageDto
-from notionary.page.notion_page import NotionPage
+from notionary.page.page import NotionPage
 from notionary.shared.models.icon_models import IconType
 from notionary.shared.models.database_property_models import (
     DatabaseNotionProperty,

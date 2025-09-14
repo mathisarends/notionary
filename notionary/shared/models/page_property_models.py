@@ -8,6 +8,7 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.shared.models.database_property_models import (
     PropertyType,
 )
+from notionary.shared.models.user_models import NotionUser
 
 
 class SelectOption(BaseModel):
@@ -124,7 +125,7 @@ class PagePeopleProperty(BaseModel):
 
     id: str
     type: PropertyType = PropertyType.PEOPLE
-    people: list[dict[str, Any]] = Field(default_factory=list)
+    people: list[NotionUser] = Field(default_factory=list)
 
 
 class PageDateProperty(BaseModel):

@@ -93,7 +93,7 @@ class NameIdResolver:
             return None
 
         try:
-            from notionary.database import NotionDatabase
+            from notionary import NotionDatabase
 
             database = await NotionDatabase.from_database_id(formatted_id)
             return database.title if database else None

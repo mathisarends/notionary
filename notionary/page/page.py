@@ -24,16 +24,16 @@ from notionary.shared.models.page_property_models import (
     PageStatusProperty,
     PageRelationProperty,
     PageMultiSelectProperty,
-    PageSelectProperty,  # Added
+    PageSelectProperty,
+    PageTitleProperty,
+    PagePeopleProperty,
     PageURLProperty,
     PageNumberProperty,
     PageCheckboxProperty,
     PageDateProperty,
-    PageTitleProperty,  # Added
     PageRichTextProperty,
     PageEmailProperty,
     PagePhoneNumberProperty,
-    PagePeopleProperty,  # Added
     PagePropertyT,
 )
 from notionary.util import LoggingMixin
@@ -337,11 +337,7 @@ class NotionPage(LoggingMixin):
         """Get the value of a specific property using typed properties."""
         prop = self._properties.get(property_name)
         if not prop:
-            return
-
-        # check for unknown types first
-        if isinstance(prop, dict):
-            return self._extract_property_value_fallback(prop)
+            return None
 
         prop_type = prop.type
 
@@ -353,9 +349,6 @@ class NotionPage(LoggingMixin):
 
         elif prop_type == PropertyType.MULTI_SELECT:
             return self.get_values_of_multiselect_property(property_name)
-
-        elif prop_type == PropertyType.SELECT:
-            return self.get_value_of_select_property(property_name)
 
         elif prop_type == PropertyType.URL:
             return self.get_value_of_url_property(property_name)
@@ -369,9 +362,6 @@ class NotionPage(LoggingMixin):
         elif prop_type == PropertyType.DATE:
             return self.get_value_of_date_property(property_name)
 
-        elif prop_type == PropertyType.TITLE:
-            return await self.get_value_of_title_property(property_name)
-
         elif prop_type == PropertyType.RICH_TEXT:
             return await self.get_value_of_rich_text_property(property_name)
 
@@ -381,11 +371,19 @@ class NotionPage(LoggingMixin):
         elif prop_type == PropertyType.PHONE_NUMBER:
             return self.get_value_of_phone_number_property(property_name)
 
+        elif prop_type == PropertyType.SELECT:
+            return self.get_value_of_select_property(property_name)
+
+        elif prop_type == PropertyType.TITLE:
+            return await self.get_value_of_title_property(property_name)
+
         elif prop_type == PropertyType.PEOPLE:
             return await self.get_values_of_people_property(property_name)
 
         elif prop_type == PropertyType.CREATED_TIME:
             return self.get_value_of_created_time_property(property_name)
+
+        return None
 
     def get_value_of_status_property(self, name: str) -> str | None:
         """Get the status value by property name."""
@@ -393,39 +391,6 @@ class NotionPage(LoggingMixin):
         if not status_property or not status_property.status:
             return None
         return status_property.status.name
-
-    def get_value_of_select_property(self, name: str) -> str | None:
-        """Get the select value by property name."""
-        select_property = self._get_property(name, PageSelectProperty)
-        if not select_property or not select_property.select:
-            return None
-        return select_property.select.name
-
-    async def get_value_of_title_property(self, name: str) -> str:
-        """Get formatted title value by property name."""
-        from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
-
-        title_property = self._get_property(name, PageTitleProperty)
-        if not title_property:
-            return ""
-        return await TextInlineFormatter.extract_text_with_formatting(title_property)
-
-    async def get_values_of_people_property(self, name: str) -> list[dict[str, Any]]:
-        """Get people values by property name."""
-        people_property = self._get_property(name, PagePeopleProperty)
-        if not people_property:
-            return []
-        return people_property.people
-
-    def get_value_of_created_time_property(self, name: str) -> str | None:
-        """Get created time value by property name."""
-        prop = self._properties.get(name)
-        if not prop:
-            return None
-        if isinstance(prop, dict):
-            return prop.get("created_time")
-        # For CREATED_TIME there might not be a specific property class yet
-        return getattr(prop, "created_time", None)
 
     async def get_values_of_relation_property(self, name: str) -> list[str]:
         """Get relation page titles by property name."""
@@ -496,14 +461,50 @@ class NotionPage(LoggingMixin):
             return [option.name for option in multiselect_prop.multi_select]
         return []
 
+    def get_value_of_select_property(self, property_name: str) -> str | None:
+        """Get the name of a select property option."""
+        select_prop = self._get_property(property_name, PageSelectProperty)
+        return select_prop.select.name if select_prop and select_prop.select else None
+
+    async def get_value_of_title_property(self, property_name: str) -> str:
+        """Get the formatted title text value."""
+        from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+
+        title_prop = self._get_property(property_name, PageTitleProperty)
+        if not title_prop:
+            return ""
+        
+        return (
+            await TextInlineFormatter.extract_text_with_formatting(
+                title_prop.title
+            )
+        )
+
+    async def get_values_of_people_property(self, property_name: str) -> list[str]:
+        """Get the names of people in a people property."""
+        people_prop = self._get_property(property_name, PagePeopleProperty)
+        if not people_prop:
+            return []
+
+        names = [person.name for person in people_prop.people if person.name]
+
+        return names
+
+    def get_value_of_created_time_property(self, property_name: str) -> str | None:
+        """Get the created time value."""
+        # Note: Created time properties are usually handled automatically by Notion
+        # and might not be in the page properties as a regular property
+        prop = self._properties.get(property_name)
+        if isinstance(prop, dict) and prop.get("type") == "created_time":
+            return prop.get("created_time")
+        return None
+
     async def get_rich_text_plain(self, property_name: str) -> str:
         """Get the plain text of a rich text property."""
         from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
         rich_text_prop = self._get_property(property_name, PageRichTextProperty)
         return await TextInlineFormatter.extract_text_with_formatting(rich_text_prop)
-
-    # ===== PROPERTY SETTER METHODS =====
 
     async def set_title_property_by_name(self, title: str) -> str:
         """Set the page title property."""
@@ -611,11 +612,7 @@ class NotionPage(LoggingMixin):
         if not prop:
             return None
 
-        # Handle dict properties (fallback)
-        if isinstance(prop, dict):
-            prop_type = prop.get("type")
-        else:
-            prop_type = prop.type
+        prop_type = prop.type
 
         # Route to specific typed setter methods
         if prop_type == PropertyType.TITLE:
@@ -696,11 +693,6 @@ class NotionPage(LoggingMixin):
             await load_page_from_id(page_id) for page_id in relation_page_ids
         ]
         return [page.title for page in notion_pages if page]
-
-    def _extract_property_value_fallback(self, property_dict: dict) -> Any:
-        """Fallback für unbekannte Property-Typen."""
-        property_type = property_dict.get("type")
-        return property_dict.get(property_type)
 
     def _setup_page_context_provider(self) -> PageContextProvider:
         return PageContextProvider(

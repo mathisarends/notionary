@@ -74,8 +74,7 @@ async def _load_page_from_response(
     token: str | None,
 ) -> NotionPage:
     """Create NotionPage instance from API response."""
-    from notionary import NotionPage
-    from notionary.database.notion_database import NotionDatabase
+    from notionary import NotionPage, NotionDatabase
 
     title = _extract_title(page_response)
     emoji_icon = _extract_page_emoji_icon(page_response)
