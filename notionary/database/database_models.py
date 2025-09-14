@@ -11,7 +11,7 @@ from notionary.shared.models.property_models import NotionObjectWithProperties
 from notionary.shared.models.user_models import NotionUser
 
 
-class NotionDatabaseResponse(NotionObjectWithProperties):
+class NoionDatabaseDto(NotionObjectWithProperties):
     """
     Represents the response from the Notion API when retrieving a database.
     """
@@ -55,7 +55,7 @@ class NotionDatabaseSearchResponse(BaseModel):
     """
 
     object: Literal["list"]
-    results: list[NotionDatabaseResponse]
+    results: list[NoionDatabaseDto]
     next_cursor: Optional[str] = None
     has_more: bool
     type: Literal["page_or_database"]

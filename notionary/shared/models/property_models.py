@@ -61,6 +61,12 @@ class StatusProperty(BaseModel):
     id: str
     type: PropertyType = PropertyType.STATUS
     status: StatusOption | None = None
+    options: list[StatusOption] = Field(default_factory=list)
+
+    @property
+    def option_names(self) -> list[str]:
+        """Get available status option names from schema."""
+        return [option.name for option in self.options]
 
 
 class RelationProperty(BaseModel):
@@ -94,6 +100,12 @@ class MultiSelectProperty(BaseModel):
     id: str
     type: PropertyType = PropertyType.MULTI_SELECT
     multi_select: list[SelectOption] = Field(default_factory=list)
+    options: list[SelectOption] = Field(default_factory=list)
+
+    @property
+    def option_names(self) -> list[str]:
+        """Get available multi-select option names from schema."""
+        return [option.name for option in self.options]
 
 
 class DateProperty(BaseModel):
@@ -134,7 +146,8 @@ class EmailProperty(BaseModel):
     id: str
     type: PropertyType = PropertyType.EMAIL
     email: str | None = None
-    
+
+
 class PhoneNumberProperty(BaseModel):
     """Phone number property."""
 
@@ -199,7 +212,7 @@ class NotionObjectWithProperties(BaseModel, ABC):
             PropertyType.NUMBER: NumberProperty,
             PropertyType.CHECKBOX: CheckboxProperty,
             PropertyType.EMAIL: EmailProperty,
-            PropertyType.PHONE_NUMBER: PhoneNumberProperty, 
+            PropertyType.PHONE_NUMBER: PhoneNumberProperty,
         }
 
         property_class = property_classes.get(prop_type)

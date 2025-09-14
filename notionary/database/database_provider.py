@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
-from notionary.database.client import NotionDatabaseClient
 from notionary.database.exceptions import DatabaseNotFoundException
-from notionary.database.database_models import NotionDatabaseResponse
-from notionary.util import LoggingMixin, SingletonMetaClass, format_uuid
-from notionary.util.fuzzy import find_best_match
+from notionary.database.database_factory import (
+    load_database_from_id,
+    load_database_from_name,
+)
+from notionary.util import LoggingMixin, SingletonMetaClass
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
@@ -26,7 +27,7 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
         self._database_cache: dict[str, NotionDatabase] = {}
 
     async def get_database_by_id(
-        self, database_id: str, token: Optional[str] = None, force_refresh: bool = False
+        self, database_id: str, token: str | None = None, force_refresh: bool = False
     ) -> NotionDatabase:
         """Get a NotionDatabase by ID with caching."""
         cache_key = self._create_id_cache_key(database_id)
@@ -35,14 +36,14 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
             self.logger.debug(f"Using cached database for ID: {database_id}")
             return self._database_cache[cache_key]
 
-        database = await self._create_from_database_id(database_id, token)
+        database = await load_database_from_id(database_id, token)
         self._cache_database(database, token)
         return database
 
     async def get_database_by_name(
         self,
         database_name: str,
-        token: Optional[str] = None,
+        token: str | None = None,
         min_similarity: float = 0.6,
         force_refresh: bool = False,
     ) -> NotionDatabase:
@@ -52,9 +53,13 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
         if self._should_use_cache(name_cache_key, force_refresh):
             return self._database_cache[name_cache_key]
 
-        database = await self._create_from_database_name(
-            database_name, token, min_similarity
-        )
+        try:
+            database = await load_database_from_name(
+                database_name, token, min_similarity
+            )
+        except ValueError as e:
+            # Convert ValueError to DatabaseNotFoundException for consistency
+            raise DatabaseNotFoundException(database_name) from e
 
         id_cache_key = self._create_id_cache_key(database.id)
         if not force_refresh and id_cache_key in self._database_cache:
@@ -79,7 +84,6 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
         Returns:
             True if cache entries were found and removed, False otherwise
         """
-
         id_cache_key = self._create_id_cache_key(database_id)
         was_cached = id_cache_key in self._database_cache
 
@@ -102,62 +106,6 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
 
         return was_cached
 
-    async def _create_from_database_id(
-        self, database_id: str, token: Optional[str]
-    ) -> NotionDatabase:
-        """Create a NotionDatabase from database ID via API."""
-        formatted_id = format_uuid(database_id) or database_id
-
-        async with NotionDatabaseClient(token=token) as client:
-            db_response = await client.get_database(formatted_id)
-            return self._create_from_response(db_response, token)
-
-    async def _create_from_database_name(
-        self,
-        database_name: str,
-        token: Optional[str] = None,
-        min_similarity: float = 0.6,
-    ) -> NotionDatabase:
-        """Create a NotionDatabase by finding it via name with fuzzy matching."""
-        async with NotionDatabaseClient(token=token) as client:
-            search_result = await client.search_databases(database_name, limit=10)
-
-            if not search_result.results:
-                self.logger.warning("No databases found for name: %s", database_name)
-                raise DatabaseNotFoundException(database_name)
-
-            best_match = find_best_match(
-                query=database_name,
-                items=search_result.results,
-                text_extractor=lambda db: self._extract_title(db),
-                min_similarity=min_similarity,
-            )
-
-            if not best_match:
-                available_titles = [
-                    self._extract_title(db) for db in search_result.results[:5]
-                ]
-                self.logger.warning(
-                    "No sufficiently similar database found for '%s' (min: %.3f). Available: %s",
-                    database_name,
-                    min_similarity,
-                    available_titles,
-                )
-                raise DatabaseNotFoundException(database_name)
-
-            database_id = best_match.item.id
-            db_response = await client.get_database(database_id=database_id)
-            instance = self._create_from_response(db_response, token)
-
-            self.logger.info(
-                "Created database: '%s' (ID: %s, similarity: %.3f)",
-                instance.title,
-                database_id,
-                best_match.similarity,
-            )
-
-            return instance
-
     def _should_use_cache(self, cache_key: str, force_refresh: bool) -> bool:
         """Returns True if the cache should be used for the given cache_key."""
         return not force_refresh and cache_key in self._database_cache
@@ -165,8 +113,8 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
     def _cache_database(
         self,
         database: NotionDatabase,
-        token: Optional[str],
-        original_name: Optional[str] = None,
+        token: str | None,
+        original_name: str | None = None,
     ) -> None:
         """Cache a database by both ID and name (if provided)."""
         # Always cache by ID
@@ -181,47 +129,7 @@ class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
         """Create cache key for database ID."""
         return f"id:{database_id}"
 
-    def _create_name_cache_key(self, database_name: str, token: Optional[str]) -> str:
+    def _create_name_cache_key(self, database_name: str, token: str | None) -> str:
         """Create cache key for database name."""
         token_suffix = f":{hash(token)}" if token else ":default"
         return f"name:{database_name.lower().strip()}{token_suffix}"
-
-    def _create_from_response(
-        self, db_response: NotionDatabaseResponse, token: Optional[str]
-    ) -> NotionDatabase:
-        """Create NotionDatabase instance from API response."""
-        from notionary import NotionDatabase
-
-        title = self._extract_title(db_response)
-        emoji_icon = self._extract_emoji_icon(db_response)
-
-        instance = NotionDatabase(
-            id=db_response.id,
-            title=title,
-            url=db_response.url,
-            emoji_icon=emoji_icon,
-            properties=db_response.properties,
-            token=token,
-        )
-
-        self.logger.info(
-            "Created database manager: '%s' (ID: %s)", title, db_response.id
-        )
-
-        return instance
-
-    def _extract_title(self, db_response: NotionDatabaseResponse) -> str:
-        """Extract title from database response."""
-        if db_response.title and len(db_response.title) > 0:
-            return db_response.title[0].plain_text
-        return "Untitled Database"
-
-    def _extract_emoji_icon(self, db_response: NotionDatabaseResponse) -> Optional[str]:
-        """Extract emoji from database response."""
-        if not db_response.icon:
-            return None
-
-        if db_response.icon.type == "emoji":
-            return db_response.icon.emoji
-
-        return None

@@ -4,7 +4,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel
 
-from notionary.shared.models.file_models import ExternalFile, ExternalRessource
+from notionary.shared.models.file_models import ExternalFile
 
 
 class IconType(StrEnum):

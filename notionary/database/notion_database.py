@@ -2,25 +2,32 @@ from __future__ import annotations
 
 import asyncio
 import random
-from typing import Any, AsyncGenerator, Dict, Optional
+from typing import Any, AsyncGenerator, Optional
 
-from notionary import NotionPage
-from notionary.database.client import NotionDatabaseClient
+from notionary.database.database_client import NotionDatabaseClient
 from notionary.database.database_filter_builder import DatabaseFilterBuilder
 from notionary.database.database_provider import NotionDatabaseProvider
 from notionary.database.database_models import (
-    NotionDatabaseResponse,
+    NoionDatabaseDto,
     NotionQueryDatabaseResponse,
 )
 from notionary.page.page_models import NotionPageDto
+from notionary.page.notion_page import NotionPage
+from notionary.shared.models.icon_models import IconType
+from notionary.shared.models.property_models import (
+    NotionProperty,
+    StatusProperty,
+    MultiSelectProperty,
+    RelationProperty,
+    TitleProperty,
+)
 from notionary.util import LoggingMixin, factory_only
 
 
 class NotionDatabase(LoggingMixin):
     """
-    Minimal manager for Notion databases.
-    Focused exclusively on creating basic pages and retrieving page managers
-    for further page operations.
+    Manager for Notion databases with typed properties.
+    Focused on creating pages, retrieving property options, and database operations.
     """
 
     @factory_only("from_database_id", "from_database_name")
@@ -30,17 +37,18 @@ class NotionDatabase(LoggingMixin):
         title: str,
         url: str,
         emoji_icon: Optional[str] = None,
-        properties: Optional[Dict[str, Any]] = None,
+        properties: Optional[dict[str, NotionProperty]] = None,
         token: Optional[str] = None,
     ):
         """
-        Initialize the minimal database manager.
+        Initialize the database manager with all metadata.
         """
         self._id = id
         self._title = title
         self._url = url
         self._emoji_icon = emoji_icon
-        self._properties = properties
+        self._properties = properties or {}
+        self.token = token
 
         self.client = NotionDatabaseClient(token=token)
 
@@ -52,7 +60,6 @@ class NotionDatabase(LoggingMixin):
         Create a NotionDatabase from a database ID using NotionDatabaseProvider.
         """
         provider = cls.get_database_provider()
-
         return await provider.get_database_by_id(id, token)
 
     @classmethod
@@ -70,30 +77,29 @@ class NotionDatabase(LoggingMixin):
 
     @property
     def id(self) -> str:
-        """Get the database ID (readonly)."""
+        """Get the database ID."""
         return self._id
 
     @property
     def title(self) -> str:
-        """Get the database title (readonly)."""
+        """Get the database title."""
         return self._title
 
     @property
     def url(self) -> str:
-        """Get the database URL (readonly)."""
+        """Get the database URL."""
         return self._url
 
     @property
     def emoji(self) -> Optional[str]:
-        """Get the database emoji (readonly)."""
+        """Get the database emoji."""
         return self._emoji_icon
 
     @property
-    def properties(self) -> Optional[Dict[str, Any]]:
-        """Get the database properties (readonly)."""
+    def properties(self) -> dict[str, NotionProperty]:
+        """Get the typed database properties."""
         return self._properties
 
-    # Database Provider is a singleton so we can instantiate it here with no worries
     @property
     def database_provider(self):
         """Return a NotionDatabaseProvider instance for this database."""
@@ -112,7 +118,9 @@ class NotionDatabase(LoggingMixin):
             parent_database_id=self.id
         )
 
-        return await NotionPage.from_page_id(page_id=create_page_response.id)
+        return await NotionPage.from_page_id(
+            page_id=create_page_response.id, token=self.token
+        )
 
     async def set_title(self, new_title: str) -> str:
         """
@@ -146,19 +154,16 @@ class NotionDatabase(LoggingMixin):
             database_id=self.id, image_url=image_url
         )
 
-        if not result.cover or not result.cover.external:
-            raise ValueError(f"Failed to set cover image to {image_url}")
-
         self.database_provider.invalidate_database_cache(database_id=self.id)
-        return result.cover.external.url
+        return (
+            result.cover.external.url
+            if result.cover and result.cover.external
+            else image_url
+        )
 
     async def set_random_gradient_cover(self) -> str:
         """Sets a random gradient cover from Notion's default gradient covers."""
-        default_notion_covers = [
-            f"https://www.notion.so/images/page-cover/gradients_{i}.png"
-            for i in range(1, 10)
-        ]
-        random_cover_url = random.choice(default_notion_covers)
+        random_cover_url = self._get_random_gradient_cover()
         return await self.set_cover_image(random_cover_url)
 
     async def set_external_icon(self, external_icon_url: str) -> str:
@@ -169,42 +174,58 @@ class NotionDatabase(LoggingMixin):
             database_id=self.id, icon_url=external_icon_url
         )
 
-        if not result.icon or not result.icon.external:
-            raise ValueError(f"Failed to set external icon to {external_icon_url}")
-
         self.database_provider.invalidate_database_cache(database_id=self.id)
-        return result.icon.external.url
+        return (
+            result.icon.external.url
+            if result.icon and result.icon.external
+            else external_icon_url
+        )
 
+    async def get_property_options(self, property_name: str) -> list[str]:
+        """
+        Get the available options for a property (select, multi_select, status, relation).
+        Returns empty list if property doesn't exist or has no options.
+        """
+        prop = self._properties.get(property_name)
+        if not prop:
+            return []
+
+        # Check for unknown types first
+        if isinstance(prop, dict):
+            print("its a dict")
+            return self._extract_property_options_fallback(prop)
+
+        # Use the options property from extended property models
+        if isinstance(prop, (StatusProperty, MultiSelectProperty)):
+            return prop.option_names
+
+        # Handle relation properties
+        if isinstance(prop, RelationProperty):
+            print("it is though")
+            return await self._get_relation_options(prop)
+
+        return []
+
+    # Keep the old method name for backward compatibility
     async def get_options_by_property_name(self, property_name: str) -> list[str]:
         """
         Retrieve all option names for a select, multi_select, status, or relation property.
-
-        Args:
-            property_name: The name of the property in the database schema.
-
-        Returns:
-            A list of option names for the given property. For select, multi_select, or status,
-            returns the option names directly. For relation properties, returns the titles of related pages.
+        (Backward compatibility method - use get_property_options instead)
         """
-        property_schema = self.properties.get(property_name)
-
-        property_type = property_schema.get("type")
-
-        if property_type in ["select", "multi_select", "status"]:
-            options = property_schema.get(property_type, {}).get("options", [])
-            return [option.get("name", "") for option in options]
-
-        if property_type == "relation":
-            return await self._get_relation_options(property_name)
-
-        return []
+        return await self.get_property_options(property_name)
 
     def get_property_type(self, property_name: str) -> Optional[str]:
         """
         Get the type of a property by its name.
         """
-        property_schema = self.properties.get(property_name)
-        return property_schema.get("type") if property_schema else None
+        prop = self._properties.get(property_name)
+        if not prop:
+            return None
+
+        if isinstance(prop, dict):
+            return prop.get("type")
+
+        return prop.type
 
     async def query_database_by_title(self, page_title: str) -> list[NotionPage]:
         """
@@ -218,11 +239,14 @@ class NotionDatabase(LoggingMixin):
 
         page_results: list[NotionPage] = []
 
-        for page in search_results.results:
-            page = await NotionPage.from_page_id(
-                page_id=page.id, token=self.client.token
-            )
-            page_results.append(page)
+        if search_results.results:
+            page_tasks = [
+                NotionPage.from_page_id(
+                    page_id=page_response.id, token=self.client.token
+                )
+                for page_response in search_results.results
+            ]
+            page_results = await asyncio.gather(*page_tasks)
 
         return page_results
 
@@ -232,152 +256,86 @@ class NotionDatabase(LoggingMixin):
         """
         Iterate through pages edited in the last N hours using DatabaseFilterBuilder.
         """
-
         filter_builder = DatabaseFilterBuilder()
-        filter_builder.with_updated_last_n_hours(hours).with_page_size(page_size)
+        filter_builder.with_updated_last_n_hours(hours)
         filter_conditions = filter_builder.build()
 
-        async for page in self._iter_pages(
-            page_size=page_size, filter_conditions=filter_conditions
-        ):
+        async for page in self._iter_pages(page_size, filter_conditions):
             yield page
 
     async def get_all_pages(self) -> list[NotionPage]:
         """
         Get all pages in the database (use with caution for large databases).
-        Uses asyncio.gather to parallelize NotionPage creation per API page.
+        Uses asyncio.gather to parallelize NotionPage creation per API batch.
         """
         pages: list[NotionPage] = []
-        start_cursor: Optional[str] = None
-        has_more = True
-        body: Dict[str, Any] = {"page_size": 100}
 
-        while has_more:
-            current_body = body.copy()
-            if start_cursor:
-                current_body["start_cursor"] = start_cursor
-
-            result = await self.client.query_database(
-                database_id=self.id, query_data=current_body
-            )
-
-            if not result or not result.results:
-                break
-
-            # Parallelize NotionPage creation for this batch
+        async for batch in self._paginate_database(page_size=100):
             page_tasks = [
-                NotionPage.from_page_id(page_id=page.id, token=self.client.token)
-                for page in result.results
+                NotionPage.from_page_id(
+                    page_id=page_response.id, token=self.client.token
+                )
+                for page_response in batch
             ]
             batch_pages = await asyncio.gather(*page_tasks)
             pages.extend(batch_pages)
-
-            has_more = result.has_more
-            start_cursor = result.next_cursor if has_more else None
 
         return pages
 
     async def get_last_edited_time(self) -> str:
         """
         Retrieve the last edited time of the database.
-
-        Returns:
-            ISO 8601 timestamp string of the last database edit.
+        Returns ISO 8601 timestamp string of the last database edit.
         """
         db = await self.client.get_database(self.id)
         return db.last_edited_time
 
-    def create_filter(self) -> DatabaseFilterBuilder:
-        """Create a new filter builder for this database."""
-        return DatabaseFilterBuilder()
-
-    async def iter_pages_with_filter(
-        self, filter_builder: DatabaseFilterBuilder, page_size: int = 100
-    ):
-        """Iterate pages using a filter builder."""
-        filter_config = filter_builder.build()
-        async for page in self._iter_pages(
-            page_size=page_size, filter_conditions=filter_config
-        ):
-            yield page
-
     async def _iter_pages(
         self,
         page_size: int = 100,
-        filter_conditions: Optional[Dict[str, Any]] = None,
+        filter_conditions: Optional[dict[str, Any]] = None,
     ) -> AsyncGenerator[NotionPage, None]:
         """
-        Asynchronous generator that yields pages from the database.
-        Directly queries the Notion API without using the schema.
+        Asynchronous generator that yields NotionPage objects from the database.
         """
-        start_cursor: Optional[str] = None
-        has_more = True
-
-        body: Dict[str, Any] = {"page_size": page_size}
-
-        if filter_conditions:
-            body["filter"] = filter_conditions
-
-        while has_more:
-            current_body = body.copy()
-            if start_cursor:
-                current_body["start_cursor"] = start_cursor
-
-            result = await self.client.query_database(
-                database_id=self.id, query_data=current_body
-            )
-
-            if not result or not result.results:
-                return
-
-            for page in result.results:
+        async for batch in self._paginate_database(page_size, filter_conditions):
+            for page_response in batch:
                 yield await NotionPage.from_page_id(
-                    page_id=page.id, token=self.client.token
+                    page_id=page_response.id, token=self.client.token
                 )
 
-            has_more = result.has_more
-            start_cursor = result.next_cursor if has_more else None
-
-    @classmethod
-    def _create_from_response(
-        cls, db_response: NotionDatabaseResponse, token: Optional[str]
-    ) -> NotionDatabase:
+    async def _get_relation_options(self, relation_prop: RelationProperty) -> list[str]:
         """
-        Create NotionDatabase instance from API response.
+        Get the titles of all pages related to a relation property.
         """
-        title = cls._extract_title(db_response)
-        emoji_icon = cls._extract_emoji_icon(db_response)
+        if not relation_prop.database_id:
+            return []
 
-        return cls(
-            id=db_response.id,
-            title=title,
-            url=db_response.url,
-            emoji_icon=emoji_icon,
-            properties=db_response.properties,
-            token=token,
+        search_results = await self.client.query_database(
+            database_id=relation_prop.database_id
         )
 
-    @staticmethod
-    def _extract_title(db_response: NotionDatabaseResponse) -> str:
-        """Extract title from database response."""
-        if db_response.title and len(db_response.title) > 0:
-            return db_response.title[0].plain_text
-        return "Untitled Database"
+        page_titles = []
+        for page_response in search_results.results:
+            title = self._extract_title_from_page(page_response)
+            if title:
+                page_titles.append(title)
 
-    @staticmethod
-    def _extract_emoji_icon(db_response: NotionDatabaseResponse) -> Optional[str]:
-        """Extract emoji from database response."""
-        if not db_response.icon:
-            return None
+        return page_titles
 
-        if db_response.icon.type == "emoji":
-            return db_response.icon.emoji
+    def _extract_property_options_fallback(self, property_dict: dict) -> list[str]:
+        """Fallback for unknown property types to extract options."""
+        property_type = property_dict.get("type")
 
-        return None
+        if property_type in ["select", "multi_select", "status"]:
+            options = property_dict.get(property_type, {}).get("options", [])
+            return [option.get("name", "") for option in options]
+
+        return []
 
     def _extract_title_from_page(self, page: NotionPageDto) -> Optional[str]:
         """
-        Extracts the title from a NotionPageDto object.
+        Extract the title from a NotionPageDto object using typed properties.
         """
         if not page.properties:
             return None
@@ -386,37 +344,111 @@ class NotionDatabase(LoggingMixin):
             (
                 prop
                 for prop in page.properties.values()
-                if isinstance(prop, dict) and prop.get("type") == "title"
+                if isinstance(prop, TitleProperty)
             ),
             None,
         )
 
-        if not title_property or "title" not in title_property:
-            return None
+        if not title_property:
+            # Fallback to old method for backward compatibility
+            title_property = next(
+                (
+                    prop
+                    for prop in page.properties.values()
+                    if isinstance(prop, dict) and prop.get("type") == "title"
+                ),
+                None,
+            )
 
-        try:
-            title_parts = title_property["title"]
-            return "".join(part.get("plain_text", "") for part in title_parts)
+            if not title_property or "title" not in title_property:
+                return None
 
-        except (KeyError, TypeError, AttributeError):
-            return None
+            try:
+                title_parts = title_property["title"]
+                return "".join(part.get("plain_text", "") for part in title_parts)
+            except (KeyError, TypeError, AttributeError):
+                return None
 
-    async def _get_relation_options(self, property_name: str) -> list[str]:
+        return "".join(item.plain_text for item in title_property.title)
+
+    def _get_random_gradient_cover(self) -> str:
+        """Generate a random Notion gradient cover URL."""
+        default_notion_covers = [
+            f"https://www.notion.so/images/page-cover/gradients_{i}.png"
+            for i in range(1, 10)
+        ]
+        return random.choice(default_notion_covers)
+
+    @classmethod
+    def _create_from_response(
+        cls, db_response: NoionDatabaseDto, token: Optional[str]
+    ) -> NotionDatabase:
         """
-        Retrieve the titles of all pages related to a relation property.
-
-        Args:
-            property_name: The name of the relation property in the database schema.
-
-        Returns:
-            A list of titles for all related pages. Returns an empty list if no related pages are found.
+        Create NotionDatabase instance from API response.
         """
-        property_schema = self.properties.get(property_name)
+        title = cls._extract_title(db_response)
+        emoji_icon = cls._extract_emoji_icon(db_response)
 
-        relation_database_id = property_schema.get("relation", {}).get("database_id")
-
-        search_results = await self.client.query_database(
-            database_id=relation_database_id
+        instance = cls(
+            id=db_response.id,
+            title=title,
+            url=db_response.url,
+            emoji_icon=emoji_icon,
+            properties=db_response.properties,
+            token=token,
         )
 
-        return [self._extract_title_from_page(page) for page in search_results.results]
+        cls.logger.info(
+            "Created database manager: '%s' (ID: %s)", title, db_response.id
+        )
+
+        return instance
+
+    @staticmethod
+    def _extract_title(db_response: NoionDatabaseDto) -> str:
+        """Extract title from database response."""
+        if db_response.title and len(db_response.title) > 0:
+            return db_response.title[0].plain_text
+        return "Untitled Database"
+
+    @staticmethod
+    def _extract_emoji_icon(db_response: NoionDatabaseDto) -> Optional[str]:
+        """Extract emoji from database response."""
+        if not db_response.icon:
+            return None
+
+        if db_response.icon.type == IconType.EMOJI:
+            return db_response.icon.emoji
+
+        return None
+
+    async def _paginate_database(
+        self,
+        page_size: int = 100,
+        filter_conditions: Optional[dict[str, Any]] = None,
+    ) -> AsyncGenerator[list[NotionPageDto], None]:
+        """
+        Central pagination logic for Notion Database queries.
+        """
+        start_cursor: Optional[str] = None
+        has_more = True
+
+        while has_more:
+            query_data: dict[str, Any] = {"page_size": page_size}
+
+            if start_cursor:
+                query_data["start_cursor"] = start_cursor
+            if filter_conditions:
+                query_data["filter"] = filter_conditions
+
+            result: NotionQueryDatabaseResponse = await self.client.query_database(
+                database_id=self.id, query_data=query_data
+            )
+
+            if not result or not result.results:
+                return
+
+            yield result.results
+
+            has_more = result.has_more
+            start_cursor = result.next_cursor if has_more else None

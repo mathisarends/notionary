@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional
 
 from notionary.notion_client import NotionClient
 from notionary.database.database_models import (
-    NotionDatabaseResponse,
+    NoionDatabaseDto,
     NotionDatabaseSearchResponse,
     NotionQueryDatabaseResponse,
 )
@@ -23,7 +23,7 @@ class NotionDatabaseClient(NotionClient):
         title: str,
         parent_page_id: Optional[str],
         properties: Optional[Dict[str, Any]] = None,
-    ) -> NotionDatabaseResponse:
+    ) -> NoionDatabaseDto:
         """
         Creates a new database as child of the specified page.
         """
@@ -37,23 +37,23 @@ class NotionDatabaseClient(NotionClient):
         }
 
         response = await self.post("databases", database_data)
-        return NotionDatabaseResponse.model_validate(response)
+        return NoionDatabaseDto.model_validate(response)
 
-    async def get_database(self, database_id: str) -> NotionDatabaseResponse:
+    async def get_database(self, database_id: str) -> NoionDatabaseDto:
         """
         Gets metadata for a Notion database by its ID.
         """
         response = await self.get(f"databases/{database_id}")
-        return NotionDatabaseResponse.model_validate(response)
+        return NoionDatabaseDto.model_validate(response)
 
     async def patch_database(
         self, database_id: str, data: Dict[str, Any]
-    ) -> NotionDatabaseResponse:
+    ) -> NoionDatabaseDto:
         """
         Updates a Notion database with the provided data.
         """
         response = await self.patch(f"databases/{database_id}", data=data)
-        return NotionDatabaseResponse.model_validate(response)
+        return NoionDatabaseDto.model_validate(response)
 
     async def query_database(
         self, database_id: str, query_data: Dict[str, Any] = None
@@ -113,7 +113,7 @@ class NotionDatabaseClient(NotionClient):
 
     async def update_database_title(
         self, database_id: str, title: str
-    ) -> NotionDatabaseResponse:
+    ) -> NoionDatabaseDto:
         """
         Updates the title of a database.
         """
@@ -122,7 +122,7 @@ class NotionDatabaseClient(NotionClient):
 
     async def update_database_emoji(
         self, database_id: str, emoji: str
-    ) -> NotionDatabaseResponse:
+    ) -> NoionDatabaseDto:
         """
         Updates the emoji/icon of a database.
         """
@@ -131,7 +131,7 @@ class NotionDatabaseClient(NotionClient):
 
     async def update_database_cover_image(
         self, database_id: str, image_url: str
-    ) -> NotionDatabaseResponse:
+    ) -> NoionDatabaseDto:
         """
         Updates the cover image of a database.
         """
@@ -140,7 +140,7 @@ class NotionDatabaseClient(NotionClient):
 
     async def update_database_external_icon(
         self, database_id: str, icon_url: str
-    ) -> NotionDatabaseResponse:
+    ) -> NoionDatabaseDto:
         """
         Updates the database icon with an external image URL.
         """

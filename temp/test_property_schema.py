@@ -22,8 +22,14 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        url = await page.get_property_value_by_name("URL")
-        print("url", url)
+        # working
+        tags = await page.get_options_for_property_by_name("Tags")
+        print("tags", tags)
+
+        print("---")
+
+        themes = await page.get_options_for_property_by_name("Thema")
+        print("themes", themes)
 
     except Exception as e:
         import traceback
