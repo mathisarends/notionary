@@ -4,7 +4,7 @@ from typing import Optional
 from notionary import NotionDatabase, NotionPage
 from notionary.database.database_client import NotionDatabaseClient
 from notionary.database.database_models import NotionQueryDatabaseResponse
-from notionary.notion_client import NotionClient
+from notionary.client import NotionClient
 from notionary.page.search_filter_builder import SearchFilterBuilder
 from notionary.user import NotionUser, NotionUserManager
 from notionary.util import LoggingMixin

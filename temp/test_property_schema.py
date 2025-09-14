@@ -22,8 +22,8 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        people = await page.get_values_of_people_property("People")
-        print("people", people)
+        created_time = await page.get_property_value_by_name("Erstellt")
+        print("created", created_time)
 
     except Exception as e:
         import traceback

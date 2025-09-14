@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from notionary.notion_client import NotionClient
+from notionary.client import NotionClient
 from notionary.blocks.models import Block, BlockChildrenResponse, BlockCreateRequest
 
 

@@ -188,6 +188,16 @@ class PagePhoneNumberProperty(BaseModel):
     phone_number: str | None = None
 
 
+class PageCreatedTimeProperty(BaseModel):
+    """Created time property."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    id: str
+    type: PropertyType = PropertyType.CREATED_TIME
+    created_time: str | None = None
+
+
 # ===== TYPE UNIONS =====
 PageProperty = Union[
     PageStatusProperty,
@@ -203,6 +213,7 @@ PageProperty = Union[
     PageCheckboxProperty,
     PageEmailProperty,
     PagePhoneNumberProperty,
+    PageCreatedTimeProperty,
     dict[str, Any],  # Fallback
 ]
 
@@ -251,6 +262,7 @@ class NotionObjectWithProperties(BaseModel, ABC):
             PropertyType.CHECKBOX: PageCheckboxProperty,
             PropertyType.EMAIL: PageEmailProperty,
             PropertyType.PHONE_NUMBER: PagePhoneNumberProperty,
+            PropertyType.CREATED_TIME: PageCreatedTimeProperty,
         }
 
         property_class = property_classes.get(prop_type)

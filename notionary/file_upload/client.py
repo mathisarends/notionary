@@ -5,7 +5,7 @@ from typing import BinaryIO, Optional
 import aiofiles
 import httpx
 
-from notionary.notion_client import NotionClient
+from notionary.client import NotionClient
 from notionary.file_upload.models import (
     FileUploadCompleteRequest,
     FileUploadCreateRequest,

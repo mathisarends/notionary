@@ -2,7 +2,7 @@ from typing import Any, Optional, Union
 
 from pydantic import BaseModel
 
-from notionary.notion_client import NotionClient
+from notionary.client import NotionClient
 from notionary.page.page_models import NotionPageDto, NotionPageUpdateDto
 from notionary.shared.models.icon_models import EmojiIcon, ExternalIcon
 from notionary.shared.models.cover_models import NotionCover
@@ -26,7 +26,6 @@ from notionary.shared.models.page_property_models import (
     RelationItem,
     DateValue,
 )
-from notionary.shared.models.database_property_models import PropertyType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 

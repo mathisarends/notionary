@@ -1,6 +1,6 @@
 from typing import Any
 
-from notionary.notion_client import NotionClient
+from notionary.client import NotionClient
 from notionary.database.database_models import (
     NoionDatabaseDto,
     NotionDatabaseSearchResponse,

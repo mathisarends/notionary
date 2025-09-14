@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from notionary.notion_client import NotionClient
+from notionary.client import NotionClient
 from notionary.user.models import (
     NotionBotUserResponse,
     NotionUserResponse,
