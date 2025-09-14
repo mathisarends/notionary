@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
-from pydantic.fields import PropertyT
-
 from notionary.blocks.client import NotionBlockClient
 from notionary.comments import CommentClient, Comment
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
@@ -19,19 +17,20 @@ from notionary.page.page_content_deleting_service import PageContentDeletingServ
 from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.page_context import PageContextProvider, page_context
 from notionary.page.reader.page_content_retriever import PageContentRetriever
-from notionary.shared.models.property_models import (
-    NotionProperty,
+from notionary.shared.models.page_property_models import (
+    PageProperty,
     PropertyType,
-    StatusProperty,
-    RelationProperty,
-    MultiSelectProperty,
-    URLProperty,
-    NumberProperty,
-    CheckboxProperty,
-    DateProperty,
-    RichTextProperty,
-    EmailProperty,
-    PhoneNumberProperty,
+    PageStatusProperty,
+    PageRelationProperty,
+    PageMultiSelectProperty,
+    PageURLProperty,
+    PageNumberProperty,
+    PageCheckboxProperty,
+    PageDateProperty,
+    PageRichTextProperty,
+    PageEmailProperty,
+    PagePhoneNumberProperty,
+    PagePropertyT
 )
 from notionary.util import LoggingMixin
 
@@ -61,7 +60,7 @@ class NotionPage(LoggingMixin):
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
-        properties: dict[str, NotionProperty] | None = None,
+        properties: dict[str, PageProperty] | None = None,
         parent_database: NotionDatabase | None = None,
         token: str | None = None,
     ):
@@ -165,7 +164,7 @@ class NotionPage(LoggingMixin):
         return self._cover_image_url
 
     @property
-    def properties(self) -> dict[str, NotionProperty]:
+    def properties(self) -> dict[str, PageProperty]:
         """Get the typed properties of the page."""
         return self._properties
 
@@ -374,43 +373,43 @@ class NotionPage(LoggingMixin):
 
     def get_value_of_status_property(self, name: str) -> str | None:
         """Get the status value by property name."""
-        status_property = self._get_property(name, StatusProperty)
+        status_property = self._get_property(name, PageStatusProperty)
         if not status_property or not status_property.status:
             return None
         return status_property.status.name
 
     async def get_values_of_relation_property(self, name: str) -> list[str]:
         """Get relation page titles by property name."""
-        relation_property = self._get_property(name, RelationProperty)
+        relation_property = self._get_property(name, PageRelationProperty)
         if not relation_property:
             return []
         return await self._get_relation_property_values_from_typed(relation_property)
 
     def get_values_of_multiselect_property(self, name: str) -> list[str]:
         """Get multiselect option names by property name."""
-        multiselect_property = self._get_property(name, MultiSelectProperty)
+        multiselect_property = self._get_property(name, PageMultiSelectProperty)
         if not multiselect_property:
             return []
         return [option.name for option in multiselect_property.multi_select]
 
     def get_value_of_url_property(self, name: str) -> str | None:
         """Get URL value by property name."""
-        url_property = self._get_property(name, URLProperty)
+        url_property = self._get_property(name, PageURLProperty)
         return url_property.url if url_property else None
 
     def get_value_of_number_property(self, name: str) -> float | None:
         """Get number value by property name."""
-        number_property = self._get_property(name, NumberProperty)
+        number_property = self._get_property(name, PageNumberProperty)
         return number_property.number if number_property else None
 
     def get_value_of_checkbox_property(self, name: str) -> bool:
         """Get checkbox value by property name."""
-        checkbox_property = self._get_property(name, CheckboxProperty)
+        checkbox_property = self._get_property(name, PageCheckboxProperty)
         return checkbox_property.checkbox if checkbox_property else False
 
     def get_value_of_date_property(self, name: str) -> str | None:
         """Get date start value by property name."""
-        date_property = self._get_property(name, DateProperty)
+        date_property = self._get_property(name, PageDateProperty)
         if not date_property or not date_property.date:
             return None
         return date_property.date.start
@@ -419,7 +418,7 @@ class NotionPage(LoggingMixin):
         """Get formatted rich text value by property name."""
         from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-        rich_text_property = self._get_property(name, RichTextProperty)
+        rich_text_property = self._get_property(name, PageRichTextProperty)
         if not rich_text_property:
             return ""
         return await TextInlineFormatter.extract_text_with_formatting(
@@ -428,22 +427,22 @@ class NotionPage(LoggingMixin):
 
     def get_value_of_email_property(self, name: str) -> str | None:
         """Get email value by property name."""
-        email_property = self._get_property(name, EmailProperty)
+        email_property = self._get_property(name, PageEmailProperty)
         return email_property.email if email_property else None
 
     def get_value_of_phone_number_property(self, name: str) -> str | None:
         """Get phone number value by property name."""
-        phone_property = self._get_property(name, PhoneNumberProperty)
+        phone_property = self._get_property(name, PagePhoneNumberProperty)
         return phone_property.phone_number if phone_property else None
 
     def get_value_of_status_property(self, property_name: str) -> str | None:
         """Get the name of a status property."""
-        status_prop = self._get_property(property_name, StatusProperty)
+        status_prop = self._get_property(property_name, PageStatusProperty)
         return status_prop.status.name if status_prop and status_prop.status else None
 
     def get_value_of_mulitselect_property(self, property_name: str) -> list[str]:
         """Get the names of selected options in a multiselect property."""
-        multiselect_prop = self._get_property(property_name, MultiSelectProperty)
+        multiselect_prop = self._get_property(property_name, PageMultiSelectProperty)
         if multiselect_prop:
             return [option.name for option in multiselect_prop.multi_select]
         return []
@@ -452,7 +451,7 @@ class NotionPage(LoggingMixin):
         """Get the plain text of a rich text property."""
         from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-        rich_text_prop = self._get_property(property_name, RichTextProperty)
+        rich_text_prop = self._get_property(property_name, PageRichTextProperty)
         return await TextInlineFormatter.extract_text_with_formatting(rich_text_prop)
 
     async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
@@ -512,7 +511,7 @@ class NotionPage(LoggingMixin):
         ) """
 
     async def _get_relation_property_values_from_typed(
-        self, relation_prop: RelationProperty
+        self, relation_prop: PageRelationProperty
     ) -> list[str]:
         """Get relation values from typed RelationProperty."""
         relation_page_ids = [rel.id for rel in relation_prop.relation]
@@ -539,17 +538,17 @@ class NotionPage(LoggingMixin):
         )
 
     def _get_random_gradient_cover(self) -> str:
-        import random
+        from random import choice
 
         default_notion_covers = [
             f"https://www.notion.so/images/page-cover/gradients_{i}.png"
             for i in range(1, 10)
         ]
-        return random.choice(default_notion_covers)
+        return choice(default_notion_covers)
 
     def _get_property(
-        self, name: str, property_type: type[PropertyT]
-    ) -> PropertyT | None:
+        self, name: str, property_type: type[PagePropertyT]
+    ) -> PagePropertyT | None:
         """Get a property by name and type with type safety."""
         prop = self._properties.get(name)
         if isinstance(prop, property_type):

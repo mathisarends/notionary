@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 from notionary.notion_client import NotionClient
 from notionary.database.database_models import (
@@ -15,25 +15,20 @@ class NotionDatabaseClient(NotionClient):
     Inherits connection management and HTTP methods from NotionClient.
     """
 
-    def __init__(self, token: Optional[str] = None, timeout: int = 30):
+    def __init__(self, token: str | None = None, timeout: int = 30):
         super().__init__(token, timeout)
 
     async def create_database(
         self,
         title: str,
-        parent_page_id: Optional[str],
-        properties: Optional[Dict[str, Any]] = None,
+        parent_page_id: str | None,
     ) -> NoionDatabaseDto:
         """
         Creates a new database as child of the specified page.
         """
-        if properties is None:
-            properties = {"Name": {"title": {}}}
-
         database_data = {
             "parent": {"page_id": parent_page_id},
             "title": [{"type": "text", "text": {"content": title}}],
-            "properties": properties,
         }
 
         response = await self.post("databases", database_data)
@@ -47,7 +42,7 @@ class NotionDatabaseClient(NotionClient):
         return NoionDatabaseDto.model_validate(response)
 
     async def patch_database(
-        self, database_id: str, data: Dict[str, Any]
+        self, database_id: str, data: dict[str, Any]
     ) -> NoionDatabaseDto:
         """
         Updates a Notion database with the provided data.
@@ -56,7 +51,7 @@ class NotionDatabaseClient(NotionClient):
         return NoionDatabaseDto.model_validate(response)
 
     async def query_database(
-        self, database_id: str, query_data: Dict[str, Any] = None
+        self, database_id: str, query_data: dict[str, Any] = None
     ) -> NotionQueryDatabaseResponse:
         """
         Queries a Notion database with the provided filter and sorts.

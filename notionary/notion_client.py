@@ -1,7 +1,7 @@
 import asyncio
 import os
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from dotenv import load_dotenv
@@ -42,7 +42,7 @@ class NotionClient(LoggingMixin):
     BASE_URL = "https://api.notion.com/v1"
     NOTION_VERSION = "2022-06-28"
 
-    def __init__(self, token: Optional[str] = None, timeout: int = 30):
+    def __init__(self, token: str | None = None, timeout: int = 30):
         self.token = token or self._find_token()
         if not self.token:
             raise ValueError("Notion API token is required")
@@ -53,7 +53,7 @@ class NotionClient(LoggingMixin):
             "Notion-Version": self.NOTION_VERSION,
         }
 
-        self.client: Optional[httpx.AsyncClient] = None
+        self.client: httpx.AsyncClient | None = None
         self.timeout = timeout
         self._is_initialized = False
 
@@ -97,24 +97,24 @@ class NotionClient(LoggingMixin):
         self.logger.debug("NotionClient closed")
 
     async def get(
-        self, endpoint: str, params: Optional[dict[str, Any]] = None
-    ) -> Optional[dict[str, Any]]:
+        self, endpoint: str, params: dict[str, Any] | None = None
+    ) -> dict[str, Any] | None:
         """
         Sends a GET request to the specified Notion API endpoint.
         """
         return await self._make_request(HttpMethod.GET, endpoint, params=params)
 
     async def post(
-        self, endpoint: str, data: Optional[dict[str, Any]] = None
-    ) -> Optional[dict[str, Any]]:
+        self, endpoint: str, data: dict[str, Any] | None = None
+    ) -> dict[str, Any] | None:
         """
         Sends a POST request to the specified Notion API endpoint.
         """
         return await self._make_request(HttpMethod.POST, endpoint, data)
 
     async def patch(
-        self, endpoint: str, data: Optional[dict[str, Any]] = None
-    ) -> Optional[dict[str, Any]]:
+        self, endpoint: str, data: dict[str, Any] | None = None
+    ) -> dict[str, Any] | None:
         """
         Sends a PATCH request to the specified Notion API endpoint.
         """
@@ -138,9 +138,9 @@ class NotionClient(LoggingMixin):
         self,
         method: HttpMethod,
         endpoint: str,
-        data: Optional[dict[str, Any]] = None,
-        params: Optional[dict[str, Any]] = None,
-    ) -> Optional[dict[str, Any]]:
+        data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+    ) -> dict[str, Any] | None:
         """
         Executes an HTTP request and returns the data or None on error.
 
@@ -241,7 +241,7 @@ class NotionClient(LoggingMixin):
             response_text=response_text,
         )
 
-    def _find_token(self) -> Optional[str]:
+    def _find_token(self) -> str | None:
         """
         Finds the Notion API token from environment variables.
         """

@@ -5,7 +5,7 @@ from typing import Optional, TYPE_CHECKING
 from dataclasses import dataclass
 
 if TYPE_CHECKING:
-    from notionary.database.client import NotionDatabaseClient
+    from notionary.database.database_client import NotionDatabaseClient
 
 
 @dataclass

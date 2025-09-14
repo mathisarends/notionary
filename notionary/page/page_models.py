@@ -5,9 +5,9 @@ from typing import Literal
 from notionary.shared.models.icon_models import Icon
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.parent_models import NotionParent
-from notionary.shared.models.property_models import (
+from notionary.shared.models.page_property_models import (
     NotionObjectWithProperties,
-    NotionProperty,
+    PageProperty,
 )
 from notionary.shared.models.user_models import NotionUser
 
@@ -32,7 +32,7 @@ class NotionPageUpdateDto(NotionObjectWithProperties):
     cover: NotionCover | None = None
     icon: Icon | None = None
     archived: bool | None = None
-    properties: dict[str, NotionProperty] | None = (
+    properties: dict[str, PageProperty] | None = (
         None  # Überschreibt das Feld aus der Basisklasse
     )
 

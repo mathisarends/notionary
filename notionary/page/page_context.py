@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from contextvars import ContextVar
 
 if TYPE_CHECKING:
-    from notionary.database.client import NotionDatabaseClient
+    from notionary.database.database_client import NotionDatabaseClient
     from notionary.file_upload import NotionFileUploadClient
 
 

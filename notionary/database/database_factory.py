@@ -62,14 +62,12 @@ def _load_database_from_response(
     title = _extract_title(db_response)
     emoji_icon = _extract_emoji_icon(db_response)
 
-    typed_properties = db_response.properties or {}
-
     return NotionDatabase(
         id=db_response.id,
         title=title,
         url=db_response.url,
         emoji_icon=emoji_icon,
-        properties=typed_properties,
+        properties=db_response.properties,
         token=token,
     )
 

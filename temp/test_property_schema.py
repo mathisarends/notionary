@@ -9,7 +9,7 @@ Perfect for verifying the unified behavior!
 import asyncio
 from notionary import NotionPage
 
-PAGE_NAME = "Gradientenabstiegsverfahren für das Lernen"
+PAGE_NAME = "Henningway Bridge"
 
 
 async def main():
@@ -21,6 +21,9 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
+
+        values_for_thema = await page.get_property_value_by_name("Thema")
+        print("Values for 'Thema':", values_for_thema)
 
         # working
         tags = await page.get_options_for_property_by_name("Tags")
