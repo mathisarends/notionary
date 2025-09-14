@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from notionary.blocks.client import NotionBlockClient
@@ -30,7 +31,7 @@ from notionary.shared.models.page_property_models import (
     PageRichTextProperty,
     PageEmailProperty,
     PagePhoneNumberProperty,
-    PagePropertyT
+    PagePropertyT,
 )
 from notionary.util import LoggingMixin
 
@@ -333,7 +334,7 @@ class NotionPage(LoggingMixin):
         """Get the value of a specific property using typed properties."""
         prop = self._properties.get(property_name)
         if not prop:
-            return None
+            return
 
         # check for unknown types first
         if isinstance(prop, dict):
@@ -454,6 +455,87 @@ class NotionPage(LoggingMixin):
         rich_text_prop = self._get_property(property_name, PageRichTextProperty)
         return await TextInlineFormatter.extract_text_with_formatting(rich_text_prop)
 
+    # ===== PROPERTY SETTER METHODS =====
+
+    async def set_title_property_by_name(self, title: str) -> str:
+        """Set the page title property."""
+        await self._page_client.patch_title(title)
+        self._title = title
+        return title
+
+    async def set_rich_text_property_by_name(
+        self, property_name: str, text: str
+    ) -> str:
+        """Set a rich text property value by property name."""
+        await self._page_client.patch_rich_text_property(property_name, text)
+        return text
+
+    async def set_url_property_by_name(self, property_name: str, url: str) -> str:
+        """Set a URL property value by property name."""
+        await self._page_client.patch_url_property(property_name, url)
+        return url
+
+    async def set_email_property_by_name(self, property_name: str, email: str) -> str:
+        """Set an email property value by property name."""
+        await self._page_client.patch_email_property(property_name, email)
+        return email
+
+    async def set_phone_number_property_by_name(
+        self, property_name: str, phone: str
+    ) -> str:
+        """Set a phone number property value by property name."""
+        await self._page_client.patch_phone_property(property_name, phone)
+        return phone
+
+    async def set_number_property_by_name(
+        self, property_name: str, number: Union[int, float]
+    ) -> Union[int, float]:
+        """Set a number property value by property name."""
+        await self._page_client.patch_number_property(property_name, number)
+        return number
+
+    async def set_checkbox_property_by_name(
+        self, property_name: str, checked: bool
+    ) -> bool:
+        """Set a checkbox property value by property name."""
+        await self._page_client.patch_checkbox_property(property_name, checked)
+        return checked
+
+    async def set_select_property_by_name(
+        self, property_name: str, option_name: str
+    ) -> str:
+        """Set a select property value by property name."""
+        await self._page_client.patch_select_property(property_name, option_name)
+        return option_name
+
+    async def set_multi_select_property_by_name(
+        self, property_name: str, option_names: list[str]
+    ) -> list[str]:
+        """Set a multi-select property value by property name."""
+        await self._page_client.patch_multi_select_property(property_name, option_names)
+        return option_names
+
+    async def set_date_property_by_name(
+        self, property_name: str, date_value: Union[str, dict]
+    ) -> Union[str, dict]:
+        """Set a date property value by property name."""
+        await self._page_client.patch_date_property(property_name, date_value)
+        return date_value
+
+    async def set_status_property_by_name(
+        self, property_name: str, status_name: str
+    ) -> str:
+        """Set a status property value by property name."""
+        await self._page_client.patch_status_property(property_name, status_name)
+        return status_name
+
+    async def set_relation_property_by_name(
+        self, property_name: str, relation_ids: Union[str, list[str]]
+    ) -> Union[str, list[str]]:
+        """Set a relation property value by property name."""
+        await self._page_client.patch_relation_property(property_name, relation_ids)
+        return relation_ids
+
     async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
         """
         Get the available options for a property (select, multi_select, status, relation).
@@ -471,30 +553,60 @@ class NotionPage(LoggingMixin):
 
     async def set_property_value_by_name(self, property_name: str, value: Any) -> Any:
         """
-        Set the value of a specific property by its name.
-        Returns None if page has no parent database or property doesn't exist.
+        Set the value of a specific property by its name using typed methods.
+        Returns the set value or None if property doesn't exist.
         """
-        if not self._parent_database:
+        if property_name not in self._properties:
             return None
 
-        property_type = self._parent_database.get_property_type(property_name)
-        if not property_type:
+        prop = self._properties.get(property_name)
+        if not prop:
             return None
 
-        # Implementation depends on your page client's update methods
-        # This is a placeholder - you'll need to implement the actual update logic
-        # based on your NotionPageClient methods
+        # Handle dict properties (fallback)
+        if isinstance(prop, dict):
+            prop_type = prop.get("type")
+        else:
+            prop_type = prop.type
 
-        """ return await self._page_client.update_property(
-            property_name, value, property_type
-        ) """
+        # Route to specific typed setter methods
+        if prop_type == PropertyType.TITLE:
+            return await self.set_title_property_by_name(str(value))
+        elif prop_type == PropertyType.RICH_TEXT:
+            return await self.set_rich_text_property_by_name(property_name, str(value))
+        elif prop_type == PropertyType.URL:
+            return await self.set_url_property_by_name(property_name, str(value))
+        elif prop_type == PropertyType.EMAIL:
+            return await self.set_email_property_by_name(property_name, str(value))
+        elif prop_type == PropertyType.PHONE_NUMBER:
+            return await self.set_phone_number_property_by_name(
+                property_name, str(value)
+            )
+        elif prop_type == PropertyType.NUMBER:
+            return await self.set_number_property_by_name(property_name, float(value))
+        elif prop_type == PropertyType.CHECKBOX:
+            return await self.set_checkbox_property_by_name(property_name, bool(value))
+        elif prop_type == PropertyType.SELECT:
+            return await self.set_select_property_by_name(property_name, str(value))
+        elif prop_type == PropertyType.MULTI_SELECT:
+            return await self.set_multi_select_property_by_name(
+                property_name, list(value)
+            )
+        elif prop_type == PropertyType.DATE:
+            return await self.set_date_property_by_name(property_name, value)
+        elif prop_type == PropertyType.STATUS:
+            return await self.set_status_property_by_name(property_name, str(value))
+        elif prop_type == PropertyType.RELATION:
+            return await self.set_relation_property_by_name(property_name, value)
+
+        return None
 
     async def set_relation_property_values_by_name(
         self, property_name: str, page_titles: list[str]
     ) -> list[str]:
         """
-        Add one or more relations to a relation property.
-        Returns empty list if page has no parent database or property is not a relation.
+        Add one or more relations to a relation property using page titles.
+        Returns the relation IDs if successful, empty list otherwise.
         """
         if not self._parent_database:
             return []
@@ -503,12 +615,28 @@ class NotionPage(LoggingMixin):
         if property_type != PropertyType.RELATION:
             return []
 
-        # Implementation depends on your page client's update methods
-        # This is a placeholder - you'll need to implement the actual update logic
+        page_ids = await self.convert_page_titles_to_ids(page_titles)
+        return await self.set_relation_property_by_name(property_name, page_ids)
 
-        """ return await self._page_client.update_relation_property(
-            property_name, page_titles
-        ) """
+    async def convert_page_titles_to_ids(self, page_titles: list[str]) -> list[str]:
+        """
+        Convert a list of page titles to page IDs using parallel processing.
+        """
+        if not page_titles:
+            return []
+
+        pages = await asyncio.gather(
+            *[
+                load_page_from_name(
+                    page_name=title,
+                    token=self.token,
+                )
+                for title in page_titles
+            ]
+        )
+
+        page_ids = [page.id for page in pages]
+        return page_ids
 
     async def _get_relation_property_values_from_typed(
         self, relation_prop: PageRelationProperty
@@ -525,10 +653,6 @@ class NotionPage(LoggingMixin):
         """Fallback für unbekannte Property-Typen."""
         property_type = property_dict.get("type")
         return property_dict.get(property_type)
-
-    async def _load_page_from_name_helper(self, page_title: str) -> NotionPage:
-        """Helper method to avoid direct factory import in gather."""
-        return await load_page_from_name(page_name=page_title)
 
     def _setup_page_context_provider(self) -> PageContextProvider:
         return PageContextProvider(

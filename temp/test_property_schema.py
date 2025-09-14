@@ -22,16 +22,10 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        values_for_thema = await page.get_property_value_by_name("Thema")
-        print("Values for 'Thema':", values_for_thema)
-
-        # working
-        tags = await page.get_options_for_property_by_name("Tags")
-        print("tags", tags)
-
-        print("---")
-
-        themes = await page.get_options_for_property_by_name("Thema")
+        await page.set_property_value_by_name("URL", "https://example.com")
+        themes = await page.set_relation_property_values_by_name(
+            "Thema", ["Produktivität", "Second Brain", "Smart Home"]
+        )
         print("themes", themes)
 
     except Exception as e:

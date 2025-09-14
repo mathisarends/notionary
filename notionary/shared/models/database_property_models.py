@@ -61,17 +61,10 @@ class DatabaseRelationConfig(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
 
-    database_id: str
+    database_id: str | None = None
     data_source_id: str | None = None
     type: str = "single_property"
     single_property: dict[str, Any] = Field(default_factory=dict)
-
-    @field_validator("database_id")
-    @classmethod
-    def validate_database_id(cls, v: str) -> str:
-        if not v:
-            raise ValueError("database_id is required for relation properties")
-        return v
 
 
 class DatabaseDateConfig(BaseModel):
