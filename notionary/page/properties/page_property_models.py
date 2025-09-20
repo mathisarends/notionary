@@ -51,7 +51,6 @@ class PageStatusProperty(BaseModel):
 
     @property
     def option_names(self) -> list[str]:
-        """Get available status option names from schema."""
         return [option.name for option in self.options]
 
 

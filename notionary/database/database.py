@@ -22,7 +22,7 @@ from notionary.shared.models.database_property_models import (
     DatabaseSelectProperty,
     DatabaseRelationProperty,
 )
-from notionary.shared.models.page_property_models import (
+from notionary.page.properties.page_property_models import (
     PageTitleProperty,
 )
 from notionary.shared.models.shared_property_models import PropertyType

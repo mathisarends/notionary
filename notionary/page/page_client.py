@@ -7,7 +7,7 @@ from notionary.page.page_models import NotionPageDto, NotionPageUpdateDto
 from notionary.shared.models.icon_models import EmojiIcon, ExternalIcon
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.file_models import ExternalFile
-from notionary.shared.models.page_property_models import (
+from notionary.page.properties.page_property_models import (
     PagePropertyT,
     PageTitleProperty,
     PageRichTextProperty,

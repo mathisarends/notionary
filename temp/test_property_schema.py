@@ -22,9 +22,8 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        URL = await page.set_property_value_by_name("URL", "youtube.com")
-        print("URK", URL)
-
+        themes = await page.get_property_value_by_name("Thema")
+        print(f"🗂️  Themes: {themes}")
     except Exception as e:
         import traceback
 

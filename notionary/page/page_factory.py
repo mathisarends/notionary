@@ -7,7 +7,7 @@ from notionary.page.page_models import NotionPageDto, NotionPageUpdateDto
 from notionary.shared.models.cover_models import CoverType
 from notionary.shared.models.icon_models import IconType
 from notionary.shared.models.parent_models import ParentType
-from notionary.shared.models.page_property_models import PageTitleProperty
+from notionary.page.properties.page_property_models import PageTitleProperty
 from notionary.util import extract_uuid, format_uuid
 from notionary.util.fuzzy import find_best_match
 

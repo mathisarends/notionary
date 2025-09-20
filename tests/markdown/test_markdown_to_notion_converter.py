@@ -11,7 +11,7 @@ class TestMarkdownToNotionConverter:
     @pytest.fixture
     def block_registry(self):
         """Erstellt eine vollständige BlockRegistry für den Test."""
-        return BlockRegistry.create_registry()
+        return BlockRegistry()
 
     @pytest.fixture
     def converter(self, block_registry):

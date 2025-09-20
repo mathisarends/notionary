@@ -5,7 +5,7 @@ from typing import Literal
 from notionary.shared.models.icon_models import Icon
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.parent_models import NotionParent
-from notionary.shared.models.page_property_models import (
+from notionary.page.properties.page_property_models import (
     NotionObjectWithProperties,
     PageProperty,
 )

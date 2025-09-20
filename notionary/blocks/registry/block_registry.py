@@ -74,20 +74,7 @@ class BlockRegistry:
         self._elements = OrderedDict()
         self._excluded_elements = excluded_elements or set()
 
-        # Initialize with default elements minus excluded ones
         self._initialize_default_elements()
-
-    @classmethod
-    def create_registry(
-        cls, excluded_elements: Set[Type[BaseBlockElement]] = None
-    ) -> Self:
-        """
-        Create a registry with all standard elements in recommended order.
-
-        Args:
-            excluded_elements: Set of element classes to exclude from the registry
-        """
-        return cls(excluded_elements=excluded_elements)
 
     def _initialize_default_elements(self) -> None:
         """Initialize registry with default elements minus excluded ones."""

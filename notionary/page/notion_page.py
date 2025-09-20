@@ -18,7 +18,7 @@ from notionary.page.page_content_deleting_service import PageContentDeletingServ
 from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.page_context import PageContextProvider, page_context
 from notionary.page.reader.page_content_retriever import PageContentRetriever
-from notionary.shared.models.page_property_models import (
+from notionary.page.properties.page_property_models import (
     PageProperty,
     PropertyType,
     PageStatusProperty,
@@ -93,7 +93,7 @@ class NotionPage(LoggingMixin):
         self._comment_client = CommentClient(token=token)
         self._page_data = None
 
-        self.block_element_registry = BlockRegistry.create_registry()
+        self.block_element_registry = BlockRegistry()
 
         self._page_content_writer = PageContentWriter(
             page_id=self._page_id,
