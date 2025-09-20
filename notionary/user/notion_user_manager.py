@@ -1,6 +1,6 @@
 from typing import Optional
 
-from notionary.user.client import NotionUserClient
+from notionary.user.user_http_client import UserHttpClient
 from notionary.user.notion_user import NotionUser
 from notionary.util import LoggingMixin
 
@@ -15,7 +15,7 @@ class NotionUserManager(LoggingMixin):
 
     def __init__(self, token: Optional[str] = None):
         """Initialize the user manager."""
-        self.client = NotionUserClient(token=token)
+        self.client = UserHttpClient(token=token)
 
     async def get_user_by_id(self, user_id: str) -> Optional[NotionUser]:
         """

@@ -6,7 +6,7 @@ from contextvars import ContextVar
 
 if TYPE_CHECKING:
     from notionary.database.database_http_client import NotionDatabseHttpClient
-    from notionary.file_upload import NotionFileUploadClient
+    from notionary.file_upload import FileUploadHttpClient
 
 
 @dataclass(frozen=True)
@@ -15,7 +15,7 @@ class PageContextProvider:
 
     page_id: str
     database_client: NotionDatabseHttpClient
-    file_upload_client: NotionFileUploadClient
+    file_upload_client: FileUploadHttpClient
 
 
 # Context variable

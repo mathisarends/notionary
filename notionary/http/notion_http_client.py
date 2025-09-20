@@ -1,10 +1,8 @@
 import asyncio
 import os
-from enum import Enum
 from typing import Any
 
 import httpx
-from dotenv import load_dotenv
 
 from notionary.http.exceptions import (
     NotionApiError,
@@ -16,17 +14,13 @@ from notionary.http.exceptions import (
     NotionServerError,
     NotionValidationError,
 )
+from notionary.http.http_methods import HttpMethod
 from notionary.page.page_models import NotionPageDto
 from notionary.util import LoggingMixin
 
+from dotenv import load_dotenv
+
 load_dotenv()
-
-
-class HttpMethod(Enum):
-    GET = "get"
-    POST = "post"
-    PATCH = "patch"
-    DELETE = "delete"
 
 
 class NotionHttpClient(LoggingMixin):

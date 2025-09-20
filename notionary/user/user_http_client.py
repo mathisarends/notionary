@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from notionary.http_client import NotionHttpClient
+from notionary.http.notion_http_client import NotionHttpClient
 from notionary.user.models import (
     NotionBotUserResponse,
     NotionUserResponse,
@@ -8,7 +8,7 @@ from notionary.user.models import (
 )
 
 
-class NotionUserClient(NotionHttpClient):
+class UserHttpClient(NotionHttpClient):
     """
     Client for Notion user-specific operations.
     Inherits base HTTP functionality from NotionHttpClient.

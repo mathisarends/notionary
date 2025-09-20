@@ -8,7 +8,7 @@ from notionary.comments import CommentClient, Comment
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.database.database_http_client import NotionDatabseHttpClient
-from notionary.file_upload.client import NotionFileUploadClient
+from notionary.file_upload.client import FileUploadHttpClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.page.page_models import NotionPageUpdateDto
 from notionary.schemas import NotionContentSchema
@@ -706,7 +706,7 @@ class NotionPage(LoggingMixin):
         return PageContextProvider(
             page_id=self._page_id,
             database_client=NotionDatabseHttpClient(token=self._page_client.token),
-            file_upload_client=NotionFileUploadClient(),
+            file_upload_client=FileUploadHttpClient(),
         )
 
     def _get_random_gradient_cover(self) -> str:

@@ -2,7 +2,7 @@ from typing import Any, Union
 
 from pydantic import BaseModel
 
-from notionary.http_client import NotionHttpClient
+from notionary.http.notion_http_client import NotionHttpClient
 from notionary.page.page_models import NotionPageDto, NotionPageUpdateDto
 from notionary.shared.models.icon_models import EmojiIcon, ExternalIcon
 from notionary.shared.models.cover_models import NotionCover

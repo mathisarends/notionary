@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
 from pathlib import Path
 from typing import Optional
-from notionary.file_upload import NotionFileUploadClient
+from notionary.file_upload import FileUploadHttpClient
 from notionary.file_upload.models import UploadMode
 from notionary.page.page_context import get_page_context
 from notionary.util.logging_mixin import LoggingMixin
@@ -21,7 +21,7 @@ class FileUploadMixin(LoggingMixin):
     """
 
     @classmethod
-    def _get_file_upload_client(cls) -> NotionFileUploadClient:
+    def _get_file_upload_client(cls) -> FileUploadHttpClient:
         """Get the file upload client from the current page context."""
         context = get_page_context()
         return context.file_upload_client
@@ -268,7 +268,7 @@ class FileUploadMixin(LoggingMixin):
     @classmethod
     async def _execute_upload(
         cls,
-        file_upload_client: NotionFileUploadClient,
+        file_upload_client: FileUploadHttpClient,
         file_path: Path,
         content_type: str,
         file_size: int,

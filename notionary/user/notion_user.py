@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Optional
 
 from notionary.user.base_notion_user import BaseNotionUser
-from notionary.user.client import NotionUserClient
+from notionary.user.user_http_client import UserHttpClient
 from notionary.user.models import NotionUserResponse
 from notionary.util import factory_only
 from notionary.util.fuzzy import find_best_matches
@@ -38,7 +38,7 @@ class NotionUser(BaseNotionUser):
         """
         Create a NotionUser from a user ID.
         """
-        client = NotionUserClient(token=token)
+        client = UserHttpClient(token=token)
         user_response = await client.get_user(user_id)
 
         if user_response is None:
@@ -63,7 +63,7 @@ class NotionUser(BaseNotionUser):
         """
         from notionary.util import find_best_match
 
-        client = NotionUserClient(token=token)
+        client = UserHttpClient(token=token)
 
         try:
             # Get all users from workspace
@@ -155,7 +155,7 @@ class NotionUser(BaseNotionUser):
         Returns:
             List[NotionUser]: List of matching users sorted by similarity (best first)
         """
-        client = NotionUserClient(token=token)
+        client = UserHttpClient(token=token)
 
         try:
             # Get all users from workspace

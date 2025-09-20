@@ -2,11 +2,6 @@ import logging
 import os
 from typing import ClassVar, Optional
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
-
 def setup_logging():
     """
     Sets up logging configuration for the application.

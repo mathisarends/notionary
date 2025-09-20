@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC
 from typing import Optional
 
-from notionary.user.client import NotionUserClient
+from notionary.user.user_http_client import UserHttpClient
 from notionary.util import LoggingMixin
 
 
@@ -23,7 +23,7 @@ class BaseNotionUser(LoggingMixin, ABC):
         self._user_id = user_id
         self._name = name
         self._avatar_url = avatar_url
-        self.client = NotionUserClient(token=token)
+        self.client = UserHttpClient(token=token)
 
     @property
     def id(self) -> str:

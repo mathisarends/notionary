@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Optional
 
 from notionary.user.base_notion_user import BaseNotionUser
-from notionary.user.client import NotionUserClient
+from notionary.user.user_http_client import UserHttpClient
 from notionary.user.models import NotionBotUserResponse, WorkspaceLimits
 from notionary.util import factory_only
 from notionary.util.fuzzy import find_best_match
@@ -48,7 +48,7 @@ class NotionBotUser(BaseNotionUser):
         Returns:
             Optional[NotionBotUser]: Bot user instance or None if failed
         """
-        client = NotionUserClient(token=token)
+        client = UserHttpClient(token=token)
         bot_response = await client.get_bot_user()
 
         if bot_response is None:
@@ -65,7 +65,7 @@ class NotionBotUser(BaseNotionUser):
         Create a NotionBotUser by finding a bot user with fuzzy matching on the name.
         Uses Notion's list users API and fuzzy matching to find the best result.
         """
-        client = NotionUserClient(token=token)
+        client = UserHttpClient(token=token)
 
         try:
             # Get all users from workspace

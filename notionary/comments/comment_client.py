@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import AsyncGenerator, Optional
 
-from notionary.http_client import NotionHttpClient
+from notionary.http.notion_http_client import NotionHttpClient
 from notionary.comments.comment_models import (
     Comment,
     CommentListResponse,
