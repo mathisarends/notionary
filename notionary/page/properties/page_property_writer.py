@@ -112,8 +112,10 @@ class PagePropertyWriter:
             f"Property '{property_name}' expects string or dict for date, "
             f"got {type(value).__name__}: {value!r}"
         )
-        
-    def _validate_relation(self, value: Any, property_name: str) -> Union[str, list[str]]:
+
+    def _validate_relation(
+        self, value: Any, property_name: str
+    ) -> Union[str, list[str]]:
         if isinstance(value, str):
             return value
         if isinstance(value, list):

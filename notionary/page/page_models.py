@@ -29,9 +29,6 @@ class NotionPageDto(NotionObjectWithProperties):
 
 
 class NotionPageUpdateDto(NotionObjectWithProperties):
-    cover: NotionCover | None = None
-    icon: Icon | None = None
-    archived: bool | None = None
     properties: dict[str, PageProperty] | None = (
         None  # Überschreibt das Feld aus der Basisklasse
     )

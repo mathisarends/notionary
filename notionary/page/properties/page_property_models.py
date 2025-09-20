@@ -113,7 +113,6 @@ class PageSelectProperty(BaseModel):
 
     @property
     def option_names(self) -> list[str]:
-        """Get available select option names from schema."""
         return [option.name for option in self.options]
 
 

@@ -81,7 +81,6 @@ async def _load_page_from_response(
     external_icon_url = _extract_external_icon_url(page_response)
     cover_image_url = _extract_cover_image_url(page_response)
     parent_database_id = _extract_parent_database_id(page_response)
-    initial_page_schema = _extract_initial_page_schema(page_response)
 
     parent_database = (
         await NotionDatabase.from_database_id(id=parent_database_id, token=token)
@@ -98,7 +97,6 @@ async def _load_page_from_response(
         cover_image_url=cover_image_url,
         archived=page_response.archived,
         in_trash=page_response.in_trash,
-        initial_page_schema=initial_page_schema,
         properties=page_response.properties,  # Jetzt bereits typisiert!
         parent_database=parent_database,
         token=token,
@@ -173,13 +171,3 @@ def _extract_cover_image_url(page_response: NotionPageDto) -> str | None:
         )
 
     return None
-
-
-def _extract_initial_page_schema(
-    page_response: NotionPageDto,
-) -> NotionPageUpdateDto | None:
-    """Extract initial page schema from page response."""
-    if not page_response:
-        return None
-
-    return NotionPageUpdateDto.from_notion_page_dto(page_response)

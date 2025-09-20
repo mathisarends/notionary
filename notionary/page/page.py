@@ -23,7 +23,6 @@ from notionary.page.properties.page_property_writer import PagePropertyWriter
 from notionary.page.properties.page_property_models import (
     PageProperty,
     PropertyType,
-    PagePropertyT,
 )
 from notionary.util import LoggingMixin
 
@@ -45,7 +44,6 @@ class NotionPage(LoggingMixin):
         url: str,
         archived: bool,
         in_trash: bool,
-        initial_page_schema: NotionPageUpdateDto,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
@@ -66,7 +64,7 @@ class NotionPage(LoggingMixin):
         self.token = token
 
         self._page_client = NotionPageClient(
-            page_id=page_id, initial_page_schema=initial_page_schema, token=token
+            page_id=page_id, properties=properties, token=token
         )
         self._block_client = NotionBlockClient(token=token)
         self._comment_client = CommentClient(token=token)
@@ -189,7 +187,7 @@ class NotionPage(LoggingMixin):
         ],
     ) -> None:
         await self._page_content_deleting_service.clear_page_content()
-        _ = await self._page_content_writer.append_markdown(content=content)
+        await self._page_content_writer.append_markdown(content=content)
 
     async def clear_page_content(self) -> None:
         await self._page_content_deleting_service.clear_page_content()
@@ -216,6 +214,24 @@ class NotionPage(LoggingMixin):
         await self._page_client.remove_icon()
         self._emoji_icon = None
         self._external_icon_url = None
+        
+    async def archive(self) -> None:
+        if self._is_archived:
+            self.logger.info("Page is already archived.")
+            return
+
+        page_response = await self._page_client.archive_page()
+        self._is_archived = page_response.archived
+        self.logger.info(f"Page {self._page_id} archived.")
+        
+    async def unarchive(self) -> None:
+        if not self._is_archived:
+            self.logger.info("Page is not archived.")
+            return
+
+        page_response = await self._page_client.unarchive_page()
+        self._is_archived = page_response.archived
+        self.logger.info(f"Page {self._page_id} unarchived.")
 
     async def create_child_database(self, title: str) -> NotionDatabase:
         from notionary import NotionDatabase
@@ -242,12 +258,6 @@ class NotionPage(LoggingMixin):
     async def set_random_gradient_cover(self) -> None:
         random_cover_url = self._get_random_gradient_cover()
         await self.set_cover(random_cover_url)
-
-    async def archive(self) -> None:
-        await self._page_client.archive_page()
-
-    async def unarchive(self) -> None:
-        await self._page_client.unarchive_page()
 
     async def get_property_value_by_name(self, property_name: str) -> Any:
         return await self.property_reader.get_property_value_by_name(property_name)

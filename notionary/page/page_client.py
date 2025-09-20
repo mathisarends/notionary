@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 from pydantic import BaseModel
 
@@ -8,6 +8,7 @@ from notionary.shared.models.icon_models import EmojiIcon, ExternalIcon
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.file_models import ExternalFile
 from notionary.page.properties.page_property_models import (
+    PageProperty,
     PagePropertyT,
     PageTitleProperty,
     PageRichTextProperty,
@@ -30,70 +31,53 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 
 class NotionPageClient(NotionClient):
-    """
-    Client for Notion page-specific operations.
-    Inherits base HTTP functionality from NotionClient.
-    """
-
     def __init__(
         self,
         page_id: str,
-        initial_page_schema: NotionPageUpdateDto,
-        token: Optional[str] = None,
+        properties: dict[str, PageProperty] | None = None,
+        token: str | None = None,
     ):
-        """Initialize with optional page_id for methods that operate on a specific page."""
         super().__init__(token=token)
-        self.page_id = page_id
-        self._page_schema = initial_page_schema
+        self._page_id = page_id
+        self._page_properties = properties
 
     async def patch_page(self, data: BaseModel) -> NotionPageDto:
-        """
-        Updates this page with the provided data.
-        Only accepts Pydantic BaseModel instances.
-        """
         data_dict = data.model_dump(exclude_unset=True, exclude_none=True)
 
-        response = await self.patch(f"pages/{self.page_id}", data=data_dict)
-        result = NotionPageDto.model_validate(response)
-        self._update_page_schema(result)
-        return result
+        result_dict = await self.patch(f"pages/{self._page_id}", data=data_dict)
+        page_update_result = NotionPageDto.model_validate(result_dict)
+        self._page_properties = page_update_result.properties
+        return page_update_result
 
     async def patch_emoji_icon(self, emoji: str) -> NotionPageDto:
-        """Updates this page's icon to an emoji using the schema approach."""
         icon = EmojiIcon(emoji=emoji)
         update_dto = NotionPageUpdateDto(icon=icon)
         return await self.patch_page(update_dto)
 
     async def patch_external_icon(self, icon_url: str) -> NotionPageDto:
-        """Updates this page's icon to an external image using the schema approach."""
         external_file = ExternalFile(url=icon_url)
         icon = ExternalIcon(external=external_file)
         update_dto = NotionPageUpdateDto(icon=icon)
         return await self.patch_page(update_dto)
 
     async def remove_icon(self) -> NotionPageDto:
-        """Removes the icon using the schema approach."""
         update_dto = NotionPageUpdateDto(icon=None)
         return await self.patch_page(update_dto)
 
     async def patch_external_cover(self, cover_url: str) -> NotionPageDto:
-        """Updates this page's cover using the schema approach."""
         cover = NotionCover.from_url(cover_url)
         update_dto = NotionPageUpdateDto(cover=cover)
         return await self.patch_page(update_dto)
 
     async def remove_cover(self) -> NotionPageDto:
-        """Removes the cover using the schema approach."""
         update_dto = NotionPageUpdateDto(cover=None)
         return await self.patch_page(update_dto)
 
     async def archive_page(self) -> NotionPageDto:
-        """Archives this page using the schema approach."""
         update_dto = NotionPageUpdateDto(archived=True)
         return await self.patch_page(update_dto)
-
+    
     async def unarchive_page(self) -> NotionPageDto:
-        """Unarchives this page using the schema approach."""
         update_dto = NotionPageUpdateDto(archived=False)
         return await self.patch_page(update_dto)
 
@@ -107,71 +91,60 @@ class NotionPageClient(NotionClient):
         current_property = self._get_typed_property(property_name, property_type)
 
         # Update the internal schema with the new value
-        if not self._page_schema.properties:
-            self._page_schema.properties = {}
+        if not self._page_properties:
+            self._page_properties = {}
 
         # Create a new property instance with the updated value
         updated_property = self._create_updated_property(
             property_type, current_property, value
         )
 
-        # Update the internal schema
-        self._page_schema.properties[property_name] = updated_property
+        self._page_properties[property_name] = updated_property
 
-        # Create update DTO with only the changed property
         properties = {property_name: updated_property}
         update_dto = NotionPageUpdateDto(properties=properties)
 
         return await self.patch_page(update_dto)
 
     async def patch_title(self, title: str) -> NotionPageDto:
-        """Updates this page's title using Pydantic models."""
         return await self.patch_property("title", title, PageTitleProperty)
 
     async def patch_rich_text_property(
         self, property_name: str, text: str
     ) -> NotionPageDto:
-        """Updates a rich text property using Pydantic models."""
         return await self.patch_property(property_name, text, PageRichTextProperty)
 
     async def patch_url_property(self, property_name: str, url: str) -> NotionPageDto:
-        """Updates a URL property using Pydantic models."""
         return await self.patch_property(property_name, url, PageURLProperty)
 
     async def patch_email_property(
         self, property_name: str, email: str
     ) -> NotionPageDto:
-        """Updates an email property using Pydantic models."""
         return await self.patch_property(property_name, email, PageEmailProperty)
 
     async def patch_phone_property(
         self, property_name: str, phone: str
     ) -> NotionPageDto:
-        """Updates a phone number property using Pydantic models."""
         return await self.patch_property(property_name, phone, PagePhoneNumberProperty)
 
     async def patch_number_property(
         self, property_name: str, number: Union[int, float]
     ) -> NotionPageDto:
-        """Updates a number property using Pydantic models."""
         return await self.patch_property(property_name, number, PageNumberProperty)
 
     async def patch_checkbox_property(
         self, property_name: str, checked: bool
     ) -> NotionPageDto:
-        """Updates a checkbox property using Pydantic models."""
         return await self.patch_property(property_name, checked, PageCheckboxProperty)
 
     async def patch_select_property(
         self, property_name: str, option_name: str
     ) -> NotionPageDto:
-        """Updates a select property using Pydantic models."""
         return await self.patch_property(property_name, option_name, PageSelectProperty)
 
     async def patch_multi_select_property(
         self, property_name: str, option_names: list[str]
     ) -> NotionPageDto:
-        """Updates a multi-select property using Pydantic models."""
         return await self.patch_property(
             property_name, option_names, PageMultiSelectProperty
         )
@@ -179,30 +152,26 @@ class NotionPageClient(NotionClient):
     async def patch_date_property(
         self, property_name: str, date_value: Union[str, dict]
     ) -> NotionPageDto:
-        """Updates a date property using Pydantic models."""
         return await self.patch_property(property_name, date_value, PageDateProperty)
 
     async def patch_status_property(
         self, property_name: str, status_name: str
     ) -> NotionPageDto:
-        """Updates a status property using Pydantic models."""
         return await self.patch_property(property_name, status_name, PageStatusProperty)
 
     async def patch_relation_property(
         self, property_name: str, relation_ids: Union[str, list[str]]
     ) -> NotionPageDto:
-        """Updates a relation property using Pydantic models."""
         if isinstance(relation_ids, str):
             relation_ids = [relation_ids]
         return await self.patch_property(
             property_name, relation_ids, PageRelationProperty
         )
 
-    # ===== PROPERTY CREATION HELPERS =====
     def _create_updated_property(
         self,
         property_type: type[PagePropertyT],
-        current_property: Optional[PagePropertyT],
+        current_property: PagePropertyT | None,
         value: Any,
     ) -> PagePropertyT:
         """
@@ -256,18 +225,14 @@ class NotionPageClient(NotionClient):
         else:
             raise ValueError(f"Unsupported property type: {property_type}")
 
-    def _update_page_schema(self, updated: NotionPageDto) -> None:
-        """Update internal schema with response from API."""
-        self._page_schema = NotionPageUpdateDto.from_notion_page_dto(updated)
-
     def _get_typed_property(
         self, name: str, property_type: type[PagePropertyT]
     ) -> PagePropertyT | None:
         """Get a property by name and type with type safety."""
-        if not self._page_schema.properties:
+        if not self._page_properties:
             return None
 
-        prop = self._page_schema.properties.get(name)
+        prop = self._page_properties.get(name)
 
         if isinstance(prop, property_type):
             return prop
@@ -276,5 +241,4 @@ class NotionPageClient(NotionClient):
     def get_typed_property(
         self, property_name: str, property_type: type[PagePropertyT]
     ) -> PagePropertyT | None:
-        """Public method to get a typed property."""
         return self._get_typed_property(property_name, property_type)
