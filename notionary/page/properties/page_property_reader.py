@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 
 Extractor = Callable[[str], Awaitable[Any]]
 
+
 class PagePropertyReader:
     def __init__(self, notion_page: NotionPage):
         self._notion_page = notion_page
@@ -73,12 +74,8 @@ class PagePropertyReader:
 
     @staticmethod
     def _await(value: Any) -> Awaitable[Any]:
-        """
-        Wrap sync results so they can always be awaited.
-
-        Some getters return a coroutine, others return a plain value.
-        This ensures the caller can always use `await` without checks.
-        """
+        # Wrap sync results so they can always be awaited.
+        # This ensures the caller can always use `await` without checks.
         return value if asyncio.iscoroutine(value) else asyncio.sleep(0, result=value)
 
     async def get_property_value_by_name(self, property_name: str) -> Any:

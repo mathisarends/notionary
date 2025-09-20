@@ -23,7 +23,6 @@ from notionary.page.properties.page_property_writer import PagePropertyWriter
 from notionary.page.properties.page_property_models import (
     PageProperty,
     PropertyType,
-    PageRelationProperty,
     PagePropertyT,
 )
 from notionary.util import LoggingMixin
@@ -36,6 +35,7 @@ from notionary.page.page_factory import (
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
+
 
 class NotionPage(LoggingMixin):
     def __init__(
@@ -90,9 +90,8 @@ class NotionPage(LoggingMixin):
 
         self.page_context_provider = self._setup_page_context_provider()
 
-        # Initialize property reader and writer for consistent property handling
-        self._property_reader = PagePropertyReader(self)
-        self._property_writer = PagePropertyWriter(self)
+        self.property_reader = PagePropertyReader(self)
+        self.property_writer = PagePropertyWriter(self)
 
     @classmethod
     async def from_page_id(
@@ -172,7 +171,7 @@ class NotionPage(LoggingMixin):
         )
 
     async def set_title(self, title: str) -> None:
-        await self._property_writer.set_title_property(title)
+        await self.property_writer.set_title_property(title)
 
     async def append_markdown(
         self,
@@ -251,104 +250,7 @@ class NotionPage(LoggingMixin):
         await self._page_client.unarchive_page()
 
     async def get_property_value_by_name(self, property_name: str) -> Any:
-        return await self._property_reader.get_property_value_by_name(property_name)
-
-    # Maybe even remove these and only allow over property reader itself (api is too much here)
-    def get_value_of_status_property(self, name: str) -> str | None:
-        return self._property_reader.get_value_of_status_property(name)
-
-    def get_value_of_select_property(self, name: str) -> str | None:
-        return self._property_reader.get_value_of_select_property(name)
-
-    async def get_value_of_title_property(self, name: str) -> str:
-        return await self._property_reader.get_value_of_title_property(name)
-
-    async def get_values_of_people_property(self, property_name: str) -> list[str]:
-        return self._property_reader.get_values_of_people_property(property_name)
-
-    def get_value_of_created_time_property(self, name: str) -> str | None:
-        return self._property_reader.get_value_of_created_time_property(name)
-
-    async def get_values_of_relation_property(self, name: str) -> list[str]:
-        return await self._property_reader.get_values_of_relation_property(name)
-
-    def get_values_of_multiselect_property(self, name: str) -> list[str]:
-        return self._property_reader.get_values_of_multiselect_property(name)
-
-    def get_value_of_url_property(self, name: str) -> str | None:
-        return self._property_reader.get_value_of_url_property(name)
-
-    def get_value_of_number_property(self, name: str) -> float | None:
-        return self._property_reader.get_value_of_number_property(name)
-
-    def get_value_of_checkbox_property(self, name: str) -> bool:
-        return self._property_reader.get_value_of_checkbox_property(name)
-
-    def get_value_of_date_property(self, name: str) -> str | None:
-        return self._property_reader.get_value_of_date_property(name)
-
-    async def get_value_of_rich_text_property(self, name: str) -> str:
-        return await self._property_reader.get_value_of_rich_text_property(name)
-
-    def get_value_of_email_property(self, name: str) -> str | None:
-        return self._property_reader.get_value_of_email_property(name)
-
-    def get_value_of_phone_number_property(self, name: str) -> str | None:
-        return self._property_reader.get_value_of_phone_number_property(name)
-
-    async def get_rich_text_plain(self, property_name: str) -> str:
-        return await self._property_reader.get_value_of_rich_text_property(property_name)
-
-    async def set_rich_text_property_by_name(
-        self, property_name: str, text: str
-    ) -> None:
-        await self._property_writer.set_rich_text_property(property_name, text)
-
-    async def set_url_property_by_name(self, property_name: str, url: str) -> None:
-        await self._property_writer.set_url_property(property_name, url)
-
-    async def set_email_property_by_name(self, property_name: str, email: str) -> None:
-        await self._property_writer.set_email_property(property_name, email)
-
-    async def set_phone_number_property_by_name(
-        self, property_name: str, phone: str
-    ) -> None:
-        await self._property_writer.set_phone_number_property(property_name, phone)
-
-    async def set_number_property_by_name(
-        self, property_name: str, number: Union[int, float]
-    ) -> None:
-        await self._property_writer.set_number_property(property_name, number)
-
-    async def set_checkbox_property_by_name(
-        self, property_name: str, checked: bool
-    ) -> None:
-        await self._property_writer.set_checkbox_property(property_name, checked)
-
-    async def set_select_property_by_name(
-        self, property_name: str, option_name: str
-    ) -> None:
-        await self._property_writer.set_select_property(property_name, option_name)
-
-    async def set_multi_select_property_by_name(
-        self, property_name: str, option_names: list[str]
-    ) -> None:
-        await self._property_writer.set_multi_select_property(property_name, option_names)
-
-    async def set_date_property_by_name(
-        self, property_name: str, date_value: Union[str, dict]
-    ) -> None:
-        await self._property_writer.set_date_property(property_name, date_value)
-
-    async def set_status_property_by_name(
-        self, property_name: str, status_name: str
-    ) -> None:
-        await self._property_writer.set_status_property(property_name, status_name)
-
-    async def set_relation_property_by_name(
-        self, property_name: str, relation_ids: Union[str, list[str]]
-    ) -> None:
-        await self._property_writer.set_relation_property(property_name, relation_ids)
+        return await self.property_reader.get_property_value_by_name(property_name)
 
     async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
         if property_name not in self._properties:
@@ -360,10 +262,12 @@ class NotionPage(LoggingMixin):
         return await self._parent_database.get_options_by_property_name(property_name)
 
     async def set_property_value_by_name(self, property_name: str, value: Any) -> Any:
-        return await self._property_writer.set_property_value_by_name(property_name, value)
+        return await self.property_writer.set_property_value_by_name(
+            property_name, value
+        )
 
-    async def set_relation_property_values_by_name(
-        self, property_name: str, page_titles: list[str]
+    async def set_relation_property_by_relation_values(
+        self, property_name: str, relation_values: list[str]
     ) -> None:
         if not self._parent_database:
             return
@@ -372,39 +276,9 @@ class NotionPage(LoggingMixin):
         if property_type != PropertyType.RELATION:
             return
 
-        page_ids = await self._convert_page_titles_to_ids(page_titles)
-        await self.set_relation_property_by_name(property_name, page_ids)
-
-    async def _convert_page_titles_to_ids(self, page_titles: list[str]) -> list[str]:
-        if not page_titles:
-            return []
-
-        pages = await asyncio.gather(
-            *[
-                load_page_from_name(
-                    page_name=title,
-                    token=self.token,
-                )
-                for title in page_titles
-            ]
+        await self.property_writer.set_relation_property_by_relation_values(
+            property_name, relation_values
         )
-
-        page_ids = [page.id for page in pages]
-        return page_ids
-
-    async def _get_relation_property_values_from_typed(
-        self, relation_prop: PageRelationProperty
-    ) -> list[str]:
-        relation_page_ids = [rel.id for rel in relation_prop.relation]
-
-        notion_pages = [
-            await load_page_from_id(page_id) for page_id in relation_page_ids
-        ]
-        return [page.title for page in notion_pages if page]
-
-    def _extract_property_value_fallback(self, property_dict: dict) -> Any:
-        property_type = property_dict.get("type")
-        return property_dict.get(property_type)
 
     def _setup_page_context_provider(self) -> PageContextProvider:
         return PageContextProvider(
@@ -421,13 +295,3 @@ class NotionPage(LoggingMixin):
             for i in range(1, 10)
         ]
         return choice(default_notion_covers)
-
-    def _get_property(
-        self, name: str, property_type: type[PagePropertyT]
-    ) -> PagePropertyT | None:
-        """Get a property by name and type with type safety."""
-        prop = self._properties.get(name)
-        if isinstance(prop, property_type):
-            return prop
-        return None
-
