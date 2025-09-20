@@ -47,16 +47,13 @@ from notionary.page.page_factory import (
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
-    
-    
+
+
 Extractor = Callable[[str], Awaitable[Any]]
 Setter = Callable[[str, Any], Awaitable[Any]]
 
-class NotionPage(LoggingMixin):
-    """
-    Managing content and metadata of a Notion page.
-    """
 
+class NotionPage(LoggingMixin):
     def __init__(
         self,
         page_id: str,
@@ -72,12 +69,6 @@ class NotionPage(LoggingMixin):
         parent_database: NotionDatabase | None = None,
         token: str | None = None,
     ):
-        """
-        Initialize the page manager with all metadata.
-
-        Note: Use factory methods (from_page_id, from_page_name, from_url)
-        instead of direct instantiation.
-        """
         self._page_id = page_id
         self._title = title
         self._url = url
@@ -118,14 +109,10 @@ class NotionPage(LoggingMixin):
         self._property_extractors = self._build_property_extractors()
         self._property_setters = self._build_property_setters()
 
-
     @classmethod
     async def from_page_id(
         cls, page_id: str, token: Optional[str] = None
     ) -> NotionPage:
-        """
-        Create a NotionPage from a page ID.
-        """
         return await load_page_from_id(page_id, token)
 
     @classmethod
@@ -140,44 +127,34 @@ class NotionPage(LoggingMixin):
 
     @classmethod
     async def from_url(cls, url: str, token: Optional[str] = None) -> NotionPage:
-        """
-        Create a NotionPage from a Notion page URL.
-        """
         return await load_page_from_url(url, token)
 
     @property
     def id(self) -> str:
-        """Get the ID of the page."""
         return self._page_id
 
     @property
     def title(self) -> str:
-        """Get the title of the page."""
         return self._title
 
     @property
     def url(self) -> str:
-        """Get the URL of the page."""
         return self._url
 
     @property
-    def external_icon_url(self) -> Optional[str]:
-        """Get the external icon URL of the page."""
+    def external_icon_url(self) -> str | None:
         return self._external_icon_url
 
     @property
-    def emoji_icon(self) -> Optional[str]:
-        """Get the emoji icon of the page."""
+    def emoji_icon(self) -> str | None:
         return self._emoji_icon
 
     @property
-    def cover_image_url(self) -> Optional[str]:
-        """Get the cover image URL of the page."""
+    def cover_image_url(self) -> str | None:
         return self._cover_image_url
 
     @property
     def properties(self) -> dict[str, PageProperty]:
-        """Get the typed properties of the page."""
         return self._properties
 
     @property
@@ -258,9 +235,6 @@ class NotionPage(LoggingMixin):
         self._external_icon_url = None
 
     async def create_child_database(self, title: str) -> NotionDatabase:
-        """
-        Create a child database within this page.
-        """
         from notionary import NotionDatabase
 
         database_client = NotionDatabaseClient(token=self._page_client.token)
@@ -307,21 +281,18 @@ class NotionPage(LoggingMixin):
         return await extractor(property_name)
 
     def get_value_of_status_property(self, name: str) -> str | None:
-        """Get the status value by property name."""
         status_property = self._get_property(name, PageStatusProperty)
         if not status_property or not status_property.status:
             return None
         return status_property.status.name
 
     def get_value_of_select_property(self, name: str) -> str | None:
-        """Get the select value by property name."""
         select_property = self._get_property(name, PageSelectProperty)
         if not select_property or not select_property.select:
             return None
         return select_property.select.name
 
     async def get_value_of_title_property(self, name: str) -> str:
-        """Get formatted title value by property name."""
         from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
         title_property = self._get_property(name, PageTitleProperty)
@@ -330,7 +301,6 @@ class NotionPage(LoggingMixin):
         return await TextInlineFormatter.extract_text_with_formatting(title_property)
 
     async def get_values_of_people_property(self, property_name: str) -> list[str]:
-        """Get the names of people in a people property."""
         people_prop = self._get_property(property_name, PagePeopleProperty)
         if not people_prop:
             return []
@@ -340,181 +310,136 @@ class NotionPage(LoggingMixin):
         return names
 
     def get_value_of_created_time_property(self, name: str) -> str | None:
-        """Get created time value by property name."""
         created_time_property = self._get_property(name, PageCreatedTimeProperty)
         return created_time_property.created_time if created_time_property else None
 
     async def get_values_of_relation_property(self, name: str) -> list[str]:
-        """Get relation page titles by property name."""
         relation_property = self._get_property(name, PageRelationProperty)
         if not relation_property:
             return []
         return await self._get_relation_property_values_from_typed(relation_property)
 
     def get_values_of_multiselect_property(self, name: str) -> list[str]:
-        """Get multiselect option names by property name."""
         multiselect_property = self._get_property(name, PageMultiSelectProperty)
         if not multiselect_property:
             return []
         return [option.name for option in multiselect_property.multi_select]
 
     def get_value_of_url_property(self, name: str) -> str | None:
-        """Get URL value by property name."""
         url_property = self._get_property(name, PageURLProperty)
         return url_property.url if url_property else None
 
     def get_value_of_number_property(self, name: str) -> float | None:
-        """Get number value by property name."""
         number_property = self._get_property(name, PageNumberProperty)
         return number_property.number if number_property else None
 
     def get_value_of_checkbox_property(self, name: str) -> bool:
-        """Get checkbox value by property name."""
         checkbox_property = self._get_property(name, PageCheckboxProperty)
         return checkbox_property.checkbox if checkbox_property else False
 
     def get_value_of_date_property(self, name: str) -> str | None:
-        """Get date start value by property name."""
         date_property = self._get_property(name, PageDateProperty)
         if not date_property or not date_property.date:
             return None
         return date_property.date.start
 
     async def get_value_of_rich_text_property(self, name: str) -> str:
-        """Get formatted rich text value by property name."""
         from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
         rich_text_property = self._get_property(name, PageRichTextProperty)
         if not rich_text_property:
             return ""
+        
         return await TextInlineFormatter.extract_text_with_formatting(
             rich_text_property
         )
 
     def get_value_of_email_property(self, name: str) -> str | None:
-        """Get email value by property name."""
         email_property = self._get_property(name, PageEmailProperty)
         return email_property.email if email_property else None
 
     def get_value_of_phone_number_property(self, name: str) -> str | None:
-        """Get phone number value by property name."""
         phone_property = self._get_property(name, PagePhoneNumberProperty)
         return phone_property.phone_number if phone_property else None
 
     def get_value_of_status_property(self, property_name: str) -> str | None:
-        """Get the name of a status property."""
         status_prop = self._get_property(property_name, PageStatusProperty)
         return status_prop.status.name if status_prop and status_prop.status else None
 
     def get_value_of_mulitselect_property(self, property_name: str) -> list[str]:
-        """Get the names of selected options in a multiselect property."""
         multiselect_prop = self._get_property(property_name, PageMultiSelectProperty)
-        if multiselect_prop:
-            return [option.name for option in multiselect_prop.multi_select]
-        return []
+        
+        if not multiselect_prop:
+            return []
+        
+        return [option.name for option in multiselect_prop.multi_select]
 
     async def get_rich_text_plain(self, property_name: str) -> str:
-        """Get the plain text of a rich text property."""
         from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
         rich_text_prop = self._get_property(property_name, PageRichTextProperty)
         return await TextInlineFormatter.extract_text_with_formatting(rich_text_prop)
 
-    # ===== PROPERTY SETTER METHODS =====
-
-    async def set_title_property_by_name(self, title: str) -> str:
-        """Set the page title property."""
-        await self._page_client.patch_title(title)
-        self._title = title
-        return title
-
     async def set_rich_text_property_by_name(
         self, property_name: str, text: str
-    ) -> str:
-        """Set a rich text property value by property name."""
+    ) -> None:
         await self._page_client.patch_rich_text_property(property_name, text)
-        return text
 
-    async def set_url_property_by_name(self, property_name: str, url: str) -> str:
-        """Set a URL property value by property name."""
+    async def set_url_property_by_name(self, property_name: str, url: str) -> None:
         await self._page_client.patch_url_property(property_name, url)
-        return url
 
-    async def set_email_property_by_name(self, property_name: str, email: str) -> str:
-        """Set an email property value by property name."""
+    async def set_email_property_by_name(self, property_name: str, email: str) -> None:
         await self._page_client.patch_email_property(property_name, email)
-        return email
 
     async def set_phone_number_property_by_name(
         self, property_name: str, phone: str
-    ) -> str:
-        """Set a phone number property value by property name."""
+    ) -> None:
         await self._page_client.patch_phone_property(property_name, phone)
-        return phone
 
     async def set_number_property_by_name(
         self, property_name: str, number: Union[int, float]
-    ) -> Union[int, float]:
-        """Set a number property value by property name."""
+    ) -> None:
         await self._page_client.patch_number_property(property_name, number)
-        return number
 
     async def set_checkbox_property_by_name(
         self, property_name: str, checked: bool
-    ) -> bool:
-        """Set a checkbox property value by property name."""
+    ) -> None:
         await self._page_client.patch_checkbox_property(property_name, checked)
-        return checked
 
     async def set_select_property_by_name(
         self, property_name: str, option_name: str
-    ) -> str:
-        """Set a select property value by property name."""
+    ) -> None:
         await self._page_client.patch_select_property(property_name, option_name)
-        return option_name
 
     async def set_multi_select_property_by_name(
         self, property_name: str, option_names: list[str]
-    ) -> list[str]:
-        """Set a multi-select property value by property name."""
+    ) -> None:
         await self._page_client.patch_multi_select_property(property_name, option_names)
-        return option_names
 
     async def set_date_property_by_name(
         self, property_name: str, date_value: Union[str, dict]
-    ) -> Union[str, dict]:
-        """Set a date property value by property name."""
+    ) -> None:
         await self._page_client.patch_date_property(property_name, date_value)
-        return date_value
 
     async def set_status_property_by_name(
         self, property_name: str, status_name: str
-    ) -> str:
-        """Set a status property value by property name."""
+    ) -> None:
         await self._page_client.patch_status_property(property_name, status_name)
-        return status_name
 
     async def set_relation_property_by_name(
         self, property_name: str, relation_ids: Union[str, list[str]]
     ) -> Union[str, list[str]]:
-        """Set a relation property value by property name."""
         await self._page_client.patch_relation_property(property_name, relation_ids)
         return relation_ids
 
     async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
-        """
-        Get the available options for a property (select, multi_select, status, relation).
-        Returns empty list if property doesn't exist or has no options.
-        """
         if property_name not in self._properties:
             return []
 
-        if self._parent_database:
-            return await self._parent_database.get_options_by_property_name(
-                property_name
-            )
+        if not self._parent_database:
+            return []
 
-        return []
+        return await self._parent_database.get_options_by_property_name(property_name)
 
     async def set_property_value_by_name(self, property_name: str, value: Any) -> Any:
         prop = self._properties.get(property_name)
@@ -529,11 +454,7 @@ class NotionPage(LoggingMixin):
 
     async def set_relation_property_values_by_name(
         self, property_name: str, page_titles: list[str]
-    ) -> list[str]:
-        """
-        Add one or more relations to a relation property using page titles.
-        Returns the relation IDs if successful, empty list otherwise.
-        """
+    ) -> None:
         if not self._parent_database:
             return []
 
@@ -541,13 +462,10 @@ class NotionPage(LoggingMixin):
         if property_type != PropertyType.RELATION:
             return []
 
-        page_ids = await self.convert_page_titles_to_ids(page_titles)
-        return await self.set_relation_property_by_name(property_name, page_ids)
+        page_ids = await self._convert_page_titles_to_ids(page_titles)
+        await self.set_relation_property_by_name(property_name, page_ids)
 
-    async def convert_page_titles_to_ids(self, page_titles: list[str]) -> list[str]:
-        """
-        Convert a list of page titles to page IDs using parallel processing.
-        """
+    async def _convert_page_titles_to_ids(self, page_titles: list[str]) -> list[str]:
         if not page_titles:
             return []
 
@@ -567,7 +485,6 @@ class NotionPage(LoggingMixin):
     async def _get_relation_property_values_from_typed(
         self, relation_prop: PageRelationProperty
     ) -> list[str]:
-        """Get relation values from typed RelationProperty."""
         relation_page_ids = [rel.id for rel in relation_prop.relation]
 
         notion_pages = [
@@ -576,7 +493,6 @@ class NotionPage(LoggingMixin):
         return [page.title for page in notion_pages if page]
 
     def _extract_property_value_fallback(self, property_dict: dict) -> Any:
-        """Fallback für unbekannte Property-Typen."""
         property_type = property_dict.get("type")
         return property_dict.get(property_type)
 
@@ -604,44 +520,87 @@ class NotionPage(LoggingMixin):
         if isinstance(prop, property_type):
             return prop
         return None
-        
+
     def _build_property_setters(self) -> dict[PropertyType, Setter]:
         return {
-            PropertyType.TITLE: lambda _prop_name, prop_value: self.set_title_property_by_name(str(prop_value)),
-            PropertyType.RICH_TEXT: lambda prop_name, prop_value: self.set_rich_text_property_by_name(prop_name, str(prop_value)),
-            PropertyType.URL: lambda prop_name, prop_value: self.set_url_property_by_name(prop_name, str(prop_value)),
-            PropertyType.EMAIL: lambda prop_name, prop_value: self.set_email_property_by_name(prop_name, str(prop_value)),
-            PropertyType.PHONE_NUMBER: lambda prop_name, prop_value: self.set_phone_number_property_by_name(prop_name, str(prop_value)),
-            PropertyType.NUMBER: lambda prop_name, prop_value: self.set_number_property_by_name(prop_name, float(prop_value)),
-            PropertyType.CHECKBOX: lambda prop_name, prop_value: self.set_checkbox_property_by_name(prop_name, bool(prop_value)),
-            PropertyType.SELECT: lambda prop_name, prop_value: self.set_select_property_by_name(prop_name, str(prop_value)),
-            PropertyType.MULTI_SELECT: lambda prop_name, prop_value: self.set_multi_select_property_by_name(
-                prop_name, list(prop_value) if not isinstance(prop_value, str) else [prop_value]
+            PropertyType.TITLE: lambda _prop_name, prop_value: self.set_title(
+                str(prop_value)
             ),
-            PropertyType.DATE: lambda prop_name, prop_value: self.set_date_property_by_name(prop_name, prop_value),
-            PropertyType.STATUS: lambda prop_name, prop_value: self.set_status_property_by_name(prop_name, str(prop_value)),
-            PropertyType.RELATION: lambda prop_name, prop_value: self.set_relation_property_by_name(prop_name, prop_value),
+            PropertyType.RICH_TEXT: lambda prop_name, prop_value: self.set_rich_text_property_by_name(
+                prop_name, str(prop_value)
+            ),
+            PropertyType.URL: lambda prop_name, prop_value: self.set_url_property_by_name(
+                prop_name, str(prop_value)
+            ),
+            PropertyType.EMAIL: lambda prop_name, prop_value: self.set_email_property_by_name(
+                prop_name, str(prop_value)
+            ),
+            PropertyType.PHONE_NUMBER: lambda prop_name, prop_value: self.set_phone_number_property_by_name(
+                prop_name, str(prop_value)
+            ),
+            PropertyType.NUMBER: lambda prop_name, prop_value: self.set_number_property_by_name(
+                prop_name, float(prop_value)
+            ),
+            PropertyType.CHECKBOX: lambda prop_name, prop_value: self.set_checkbox_property_by_name(
+                prop_name, bool(prop_value)
+            ),
+            PropertyType.SELECT: lambda prop_name, prop_value: self.set_select_property_by_name(
+                prop_name, str(prop_value)
+            ),
+            PropertyType.MULTI_SELECT: lambda prop_name, prop_value: self.set_multi_select_property_by_name(
+                prop_name,
+                list(prop_value) if not isinstance(prop_value, str) else [prop_value],
+            ),
+            PropertyType.DATE: lambda prop_name, prop_value: self.set_date_property_by_name(
+                prop_name, prop_value
+            ),
+            PropertyType.STATUS: lambda prop_name, prop_value: self.set_status_property_by_name(
+                prop_name, str(prop_value)
+            ),
+            PropertyType.RELATION: lambda prop_name, prop_value: self.set_relation_property_by_name(
+                prop_name, prop_value
+            ),
         }
 
     def _build_property_extractors(self) -> dict[PropertyType, Extractor]:
         cls = self.__class__
         return {
-            PropertyType.STATUS: lambda prop_name: cls._await(self.get_value_of_status_property(prop_name)),
+            PropertyType.STATUS: lambda prop_name: cls._await(
+                self.get_value_of_status_property(prop_name)
+            ),
             PropertyType.RELATION: self.get_values_of_relation_property,
-            PropertyType.MULTI_SELECT: lambda prop_name: cls._await(self.get_values_of_multiselect_property(prop_name)),
-            PropertyType.SELECT: lambda prop_name: cls._await(self.get_value_of_select_property(prop_name)),
-            PropertyType.URL: lambda prop_name: cls._await(self.get_value_of_url_property(prop_name)),
-            PropertyType.NUMBER: lambda prop_name: cls._await(self.get_value_of_number_property(prop_name)),
-            PropertyType.CHECKBOX: lambda prop_name: cls._await(self.get_value_of_checkbox_property(prop_name)),
-            PropertyType.DATE: lambda prop_name: cls._await(self.get_value_of_date_property(prop_name)),
+            PropertyType.MULTI_SELECT: lambda prop_name: cls._await(
+                self.get_values_of_multiselect_property(prop_name)
+            ),
+            PropertyType.SELECT: lambda prop_name: cls._await(
+                self.get_value_of_select_property(prop_name)
+            ),
+            PropertyType.URL: lambda prop_name: cls._await(
+                self.get_value_of_url_property(prop_name)
+            ),
+            PropertyType.NUMBER: lambda prop_name: cls._await(
+                self.get_value_of_number_property(prop_name)
+            ),
+            PropertyType.CHECKBOX: lambda prop_name: cls._await(
+                self.get_value_of_checkbox_property(prop_name)
+            ),
+            PropertyType.DATE: lambda prop_name: cls._await(
+                self.get_value_of_date_property(prop_name)
+            ),
             PropertyType.TITLE: self.get_value_of_title_property,
             PropertyType.RICH_TEXT: self.get_value_of_rich_text_property,
-            PropertyType.EMAIL: lambda prop_name: cls._await(self.get_value_of_email_property(prop_name)),
-            PropertyType.PHONE_NUMBER: lambda prop_name: cls._await(self.get_value_of_phone_number_property(prop_name)),
+            PropertyType.EMAIL: lambda prop_name: cls._await(
+                self.get_value_of_email_property(prop_name)
+            ),
+            PropertyType.PHONE_NUMBER: lambda prop_name: cls._await(
+                self.get_value_of_phone_number_property(prop_name)
+            ),
             PropertyType.PEOPLE: self.get_values_of_people_property,
-            PropertyType.CREATED_TIME: lambda prop_name: cls._await(self.get_value_of_created_time_property(prop_name)),
+            PropertyType.CREATED_TIME: lambda prop_name: cls._await(
+                self.get_value_of_created_time_property(prop_name)
+            ),
         }
-        
+
     @staticmethod
     def _await(value: Union[Any, Awaitable[Any]]) -> Awaitable[Any]:
         """
