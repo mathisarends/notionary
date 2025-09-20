@@ -32,12 +32,3 @@ class NotionPageUpdateDto(NotionObjectWithProperties):
     properties: dict[str, PageProperty] | None = (
         None  # Überschreibt das Feld aus der Basisklasse
     )
-
-    @classmethod
-    def from_notion_page_dto(cls, page: NotionPageDto) -> NotionPageUpdateDto:
-        return cls(
-            cover=page.cover,
-            icon=page.icon,
-            properties=page.properties,
-            archived=page.archived,
-        )

@@ -10,7 +10,6 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.database.database_client import NotionDatabaseClient
 from notionary.file_upload.client import NotionFileUploadClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
-from notionary.page.page_models import NotionPageUpdateDto
 from notionary.schemas import NotionContentSchema
 from notionary.page import page_context
 from notionary.page.page_client import NotionPageClient
@@ -68,7 +67,6 @@ class NotionPage(LoggingMixin):
         )
         self._block_client = NotionBlockClient(token=token)
         self._comment_client = CommentClient(token=token)
-        self._page_data = None
 
         self.block_element_registry = BlockRegistry()
 

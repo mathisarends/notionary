@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from notionary.client import NotionClient
-from notionary.page.page_models import NotionPageDto, NotionPageUpdateDto
+from notionary.page.page_models import NotionPageDto
 from notionary.shared.models.cover_models import CoverType
 from notionary.shared.models.icon_models import IconType
 from notionary.shared.models.parent_models import ParentType
