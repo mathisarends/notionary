@@ -5,7 +5,7 @@ from typing import BinaryIO, Optional
 import aiofiles
 import httpx
 
-from notionary.client import NotionClient
+from notionary.http_client import NotionHttpClient
 from notionary.file_upload.models import (
     FileUploadCompleteRequest,
     FileUploadCreateRequest,
@@ -15,10 +15,10 @@ from notionary.file_upload.models import (
 )
 
 
-class NotionFileUploadClient(NotionClient):
+class NotionFileUploadClient(NotionHttpClient):
     """
     Client for Notion file upload operations.
-    Inherits base HTTP functionality from NotionClient.
+    Inherits base HTTP functionality from NotionHttpClient.
     """
 
     async def create_file_upload(

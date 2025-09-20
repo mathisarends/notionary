@@ -1,6 +1,4 @@
-from typing import Optional
-
-from notionary.blocks.client import NotionBlockClient
+from notionary.blocks.block_http_client import NotionBlockHttpClient
 from notionary.blocks.models import Block
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.reader.page_content_retriever import PageContentRetriever
@@ -13,10 +11,10 @@ class PageContentDeletingService(LoggingMixin):
     def __init__(self, page_id: str, block_registry: BlockRegistry):
         self.page_id = page_id
         self.block_registry = block_registry
-        self._block_client = NotionBlockClient()
+        self._block_client = NotionBlockHttpClient()
         self._content_retriever = PageContentRetriever(block_registry=block_registry)
 
-    async def clear_page_content(self) -> Optional[str]:
+    async def clear_page_content(self) -> str | None:
         """Clear all content of the page and return deleted content as markdown."""
         try:
             children_response = await self._block_client.get_block_children(
@@ -103,7 +101,7 @@ class PageContentDeletingService(LoggingMixin):
 
     async def _delete_single_block(self, block: Block) -> bool:
         """Delete a single block."""
-        deleted_block: Optional[Block] = await self._block_client.delete_block(block.id)
+        deleted_block: Block | None = await self._block_client.delete_block(block.id)
 
         if deleted_block is None:
             self.logger.error("Failed to delete block: %s", block.id)

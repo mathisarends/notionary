@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import AsyncGenerator, Optional
 
-from notionary.client import NotionClient
+from notionary.http_client import NotionHttpClient
 from notionary.comments.comment_models import (
     Comment,
     CommentListResponse,
@@ -14,7 +14,7 @@ from notionary.comments.comment_models import (
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
-class CommentClient(NotionClient):
+class CommentClient(NotionHttpClient):
     """
     Client for Notion comment operations.
     """

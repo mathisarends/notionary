@@ -2,9 +2,9 @@ import asyncio
 from typing import Optional
 
 from notionary import NotionDatabase, NotionPage
-from notionary.database.database_client import NotionDatabaseClient
+from notionary.database.database_http_client import NotionDatabseHttpClient
 from notionary.database.database_models import NotionQueryDatabaseResponse
-from notionary.client import NotionClient
+from notionary.http_client import NotionHttpClient
 from notionary.page.search_filter_builder import SearchFilterBuilder
 from notionary.user import NotionUser, NotionUserManager
 from notionary.util import LoggingMixin
@@ -22,8 +22,8 @@ class NotionWorkspace(LoggingMixin):
         """
         Initialize the workspace with Notion clients.
         """
-        self.database_client = NotionDatabaseClient(token=token)
-        self.notion_client = NotionClient(token=token)
+        self.database_client = NotionDatabseHttpClient(token=token)
+        self.notion_client = NotionHttpClient(token=token)
         self.user_manager = NotionUserManager(token=token)
 
     async def search_pages(

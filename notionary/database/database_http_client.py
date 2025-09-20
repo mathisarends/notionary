@@ -1,6 +1,6 @@
 from typing import Any
 
-from notionary.client import NotionClient
+from notionary.http_client import NotionHttpClient
 from notionary.database.database_models import (
     NoionDatabaseDto,
     NotionDatabaseSearchResponse,
@@ -9,10 +9,10 @@ from notionary.database.database_models import (
 from notionary.page.page_models import NotionPageDto
 
 
-class NotionDatabaseClient(NotionClient):
+class NotionDatabseHttpClient(NotionHttpClient):
     """
     Specialized Notion client for database operations.
-    Inherits connection management and HTTP methods from NotionClient.
+    Inherits connection management and HTTP methods from NotionHttpClient.
     """
 
     def __init__(self, token: str | None = None, timeout: int = 30):

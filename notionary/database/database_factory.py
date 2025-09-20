@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from notionary.database.database_client import NotionDatabaseClient
+from notionary.database.database_http_client import NotionDatabseHttpClient
 from notionary.database.database_models import NoionDatabaseDto
 from notionary.shared.models.icon_models import IconType
 from notionary.util import format_uuid
@@ -18,7 +18,7 @@ async def load_database_from_id(
     """Load a NotionDatabase from a database ID."""
     formatted_id = format_uuid(database_id) or database_id
 
-    async with NotionDatabaseClient(token=token) as client:
+    async with NotionDatabseHttpClient(token=token) as client:
         db_response = await client.get_database(formatted_id)
         return _load_database_from_response(db_response, token)
 
@@ -27,7 +27,7 @@ async def load_database_from_name(
     database_name: str, token: str | None = None, min_similarity: float = 0.6
 ) -> NotionDatabase:
     """Load a NotionDatabase by finding a database with fuzzy matching on the title."""
-    async with NotionDatabaseClient(token=token) as client:
+    async with NotionDatabseHttpClient(token=token) as client:
         search_result = await client.search_databases(database_name, limit=10)
 
         if not search_result.results:

@@ -3,17 +3,17 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
-from notionary.blocks.client import NotionBlockClient
+from notionary.blocks.block_http_client import NotionBlockHttpClient
 from notionary.comments import CommentClient, Comment
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.database.database_client import NotionDatabaseClient
+from notionary.database.database_http_client import NotionDatabseHttpClient
 from notionary.file_upload.client import NotionFileUploadClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.page.page_models import NotionPageUpdateDto
 from notionary.schemas import NotionContentSchema
 from notionary.page import page_context
-from notionary.page.page_client import NotionPageClient
+from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_content_deleting_service import PageContentDeletingService
 from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.page_context import PageContextProvider, page_context
@@ -86,10 +86,10 @@ class NotionPage(LoggingMixin):
         self._parent_database = parent_database
         self.token = token
 
-        self._page_client = NotionPageClient(
+        self._page_client = NotionPageHttpClient(
             page_id=page_id, initial_page_schema=initial_page_schema, token=token
         )
-        self._block_client = NotionBlockClient(token=token)
+        self._block_client = NotionBlockHttpClient(token=token)
         self._comment_client = CommentClient(token=token)
         self._page_data = None
 
@@ -288,7 +288,7 @@ class NotionPage(LoggingMixin):
         """
         from notionary import NotionDatabase
 
-        database_client = NotionDatabaseClient(token=self._page_client.token)
+        database_client = NotionDatabseHttpClient(token=self._page_client.token)
 
         create_database_response = await database_client.create_database(
             title=title,
@@ -705,7 +705,7 @@ class NotionPage(LoggingMixin):
     def _setup_page_context_provider(self) -> PageContextProvider:
         return PageContextProvider(
             page_id=self._page_id,
-            database_client=NotionDatabaseClient(token=self._page_client.token),
+            database_client=NotionDatabseHttpClient(token=self._page_client.token),
             file_upload_client=NotionFileUploadClient(),
         )
 

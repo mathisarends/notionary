@@ -4,7 +4,7 @@ import asyncio
 import random
 from typing import Any, AsyncGenerator
 
-from notionary.database.database_client import NotionDatabaseClient
+from notionary.database.database_http_client import NotionDatabseHttpClient
 from notionary.database.database_filter_builder import DatabaseFilterBuilder
 from notionary.database.database_provider import NotionDatabaseProvider
 from notionary.database.database_models import (
@@ -47,7 +47,7 @@ class NotionDatabase(LoggingMixin):
         self._properties = properties or {}
         self.token = token
 
-        self.client = NotionDatabaseClient(token=token)
+        self.client = NotionDatabseHttpClient(token=token)
 
     @classmethod
     async def from_database_id(

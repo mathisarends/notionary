@@ -2,7 +2,7 @@ from typing import Any, Union
 
 from pydantic import BaseModel
 
-from notionary.client import NotionClient
+from notionary.http_client import NotionHttpClient
 from notionary.page.page_models import NotionPageDto, NotionPageUpdateDto
 from notionary.shared.models.icon_models import EmojiIcon, ExternalIcon
 from notionary.shared.models.cover_models import NotionCover
@@ -30,7 +30,7 @@ from notionary.page.properties.page_property_models import (
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 
-class NotionPageClient(NotionClient):
+class NotionPageHttpClient(NotionHttpClient):
     def __init__(
         self,
         page_id: str,

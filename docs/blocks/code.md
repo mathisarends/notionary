@@ -36,9 +36,9 @@ pip install notionary
 ````markdown
 ```python "Authentication example"
 import os
-from notionary import NotionClient
+from notionary import NotionHttpClient
 
-client = NotionClient(token=os.getenv("NOTION_TOKEN"))
+client = NotionHttpClient(token=os.getenv("NOTION_TOKEN"))
 ```
 ````
 

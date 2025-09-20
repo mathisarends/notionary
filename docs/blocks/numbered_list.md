@@ -55,7 +55,7 @@ Numbered lists present information in ordered, sequential steps. Ideal for instr
 ## API Client Setup
 
 1. Install the SDK: `pip install notionary-client`
-2. Import modules: `from notionary import NotionClient`
+2. Import modules: `from notionary import NotionHttpClient`
 3. Initialize the client
 4. Test the connection
 ```

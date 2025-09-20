@@ -23,17 +23,13 @@ load_dotenv()
 
 
 class HttpMethod(Enum):
-    """
-    Enumeration of supported HTTP methods for API requests.
-    """
-
     GET = "get"
     POST = "post"
     PATCH = "patch"
     DELETE = "delete"
 
 
-class NotionClient(LoggingMixin):
+class NotionHttpClient(LoggingMixin):
     """
     Base client for Notion API operations.
     Handles connection management and generic HTTP requests.
@@ -66,14 +62,14 @@ class NotionClient(LoggingMixin):
             loop = asyncio.get_event_loop()
             if not loop.is_running():
                 self.logger.warning(
-                    "Event loop not running, could not auto-close NotionClient"
+                    "Event loop not running, could not auto-close NotionHttpClient"
                 )
                 return
 
             loop.create_task(self.close())
-            self.logger.debug("Created cleanup task for NotionClient")
+            self.logger.debug("Created cleanup task for NotionHttpClient")
         except RuntimeError:
-            self.logger.warning("No event loop available for auto-closing NotionClient")
+            self.logger.warning("No event loop available for auto-closing NotionHttpClient")
 
     async def __aenter__(self):
         """Async context manager entry."""
@@ -94,43 +90,28 @@ class NotionClient(LoggingMixin):
         await self.client.aclose()
         self.client = None
         self._is_initialized = False
-        self.logger.debug("NotionClient closed")
+        self.logger.debug("NotionHttpClient closed")
 
     async def get(
         self, endpoint: str, params: dict[str, Any] | None = None
     ) -> dict[str, Any] | None:
-        """
-        Sends a GET request to the specified Notion API endpoint.
-        """
         return await self._make_request(HttpMethod.GET, endpoint, params=params)
 
     async def post(
         self, endpoint: str, data: dict[str, Any] | None = None
     ) -> dict[str, Any] | None:
-        """
-        Sends a POST request to the specified Notion API endpoint.
-        """
         return await self._make_request(HttpMethod.POST, endpoint, data)
 
     async def patch(
         self, endpoint: str, data: dict[str, Any] | None = None
     ) -> dict[str, Any] | None:
-        """
-        Sends a PATCH request to the specified Notion API endpoint.
-        """
         return await self._make_request(HttpMethod.PATCH, endpoint, data)
 
     async def delete(self, endpoint: str) -> bool:
-        """
-        Sends a DELETE request to the specified Notion API endpoint.
-        """
         result = await self._make_request(HttpMethod.DELETE, endpoint)
         return result is not None
 
     async def get_page(self, page_id: str) -> NotionPageDto:
-        """
-        Gets metadata for a Notion page by its ID.
-        """
         response = await self.get(f"pages/{page_id}")
         return NotionPageDto.model_validate(response)
 
@@ -242,9 +223,6 @@ class NotionClient(LoggingMixin):
         )
 
     def _find_token(self) -> str | None:
-        """
-        Finds the Notion API token from environment variables.
-        """
         token = next(
             (
                 os.getenv(var)
@@ -260,10 +238,7 @@ class NotionClient(LoggingMixin):
         return None
 
     async def _ensure_initialized(self) -> None:
-        """
-        Ensures the HTTP client is initialized.
-        """
         if not self._is_initialized or not self.client:
             self.client = httpx.AsyncClient(headers=self.headers, timeout=self.timeout)
             self._is_initialized = True
-            self.logger.debug("NotionClient initialized")
+            self.logger.debug("NotionHttpClient initialized")

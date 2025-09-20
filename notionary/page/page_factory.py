@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from notionary.client import NotionClient
+from notionary.http_client import NotionHttpClient
 from notionary.page.page_models import NotionPageDto
 from notionary.shared.models.cover_models import CoverType
 from notionary.shared.models.icon_models import IconType
@@ -19,7 +19,7 @@ async def load_page_from_id(page_id: str, token: str | None = None) -> NotionPag
     """Load a NotionPage from a page ID."""
     formatted_id = format_uuid(page_id) or page_id
 
-    async with NotionClient(token=token) as client:
+    async with NotionHttpClient(token=token) as client:
         page_response = await client.get_page(formatted_id)
         return await _load_page_from_response(page_response, token)
 
@@ -51,7 +51,7 @@ async def load_page_from_name(
             f"Available: {available_titles}"
         )
 
-    async with NotionClient(token=token) as client:
+    async with NotionHttpClient(token=token) as client:
         page_response = await client.get_page(page_id=best_match.item.id)
         return await _load_page_from_response(page_response=page_response, token=token)
 
@@ -64,7 +64,7 @@ async def load_page_from_url(url: str, token: str | None = None) -> NotionPage:
 
     formatted_id = format_uuid(page_id) or page_id
 
-    async with NotionClient(token=token) as client:
+    async with NotionHttpClient(token=token) as client:
         page_response = await client.get_page(formatted_id)
         return await _load_page_from_response(page_response, token)
 

@@ -1,6 +1,6 @@
 from typing import Callable, Union
 
-from notionary.blocks.block_client import NotionBlockClient
+from notionary.blocks.block_http_client import NotionBlockHttpClient
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.schemas.base import NotionContentSchema
@@ -13,7 +13,7 @@ class PageContentWriter(LoggingMixin):
     def __init__(self, page_id: str, block_registry: BlockRegistry):
         self.page_id = page_id
         self.block_registry = block_registry
-        self._block_client = NotionBlockClient()
+        self._block_client = NotionBlockHttpClient()
 
         self._markdown_to_notion_converter = MarkdownToNotionConverter(
             block_registry=block_registry
