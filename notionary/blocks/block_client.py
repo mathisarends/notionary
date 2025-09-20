@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from notionary.client import NotionClient
 from notionary.blocks.models import Block, BlockChildrenResponse, BlockCreateRequest
@@ -8,8 +8,7 @@ class NotionBlockClient(NotionClient):
     """
     Client for Notion Block API operations.
     """
-
-    async def get_block(self, block_id: str) -> Optional[Block]:
+    async def get_block(self, block_id: str) -> Block | None:
         """
         Retrieves a single block by its ID.
         """
@@ -25,7 +24,7 @@ class NotionBlockClient(NotionClient):
         return None
 
     async def get_blocks_by_page_id_recursively(
-        self, page_id: str, parent_id: Optional[str] = None
+        self, page_id: str, parent_id: str | None = None
     ) -> list[Block]:
         response = (
             await self.get_block_children(block_id=page_id)
@@ -55,8 +54,8 @@ class NotionBlockClient(NotionClient):
         return blocks
 
     async def get_block_children(
-        self, block_id: str, start_cursor: Optional[str] = None, page_size: int = 100
-    ) -> Optional[BlockChildrenResponse]:
+        self, block_id: str, start_cursor: str | None = None, page_size: int = 100
+    ) -> BlockChildrenResponse | None:
         """
         Retrieves the children of a block with pagination support.
         """
@@ -108,8 +107,8 @@ class NotionBlockClient(NotionClient):
         self,
         block_id: str,
         children: list[BlockCreateRequest],
-        after: Optional[str] = None,
-    ) -> Optional[BlockChildrenResponse]:
+        after: str | None = None,
+    ) -> BlockChildrenResponse | None:
         """
         Appends new child blocks to a parent block.
         Automatically handles batching for more than 100 blocks.
@@ -131,8 +130,8 @@ class NotionBlockClient(NotionClient):
         return await self._append_multiple_batches(block_id, children_dicts, after)
 
     async def _append_single_batch(
-        self, block_id: str, children: list[dict[str, Any]], after: Optional[str] = None
-    ) -> Optional[BlockChildrenResponse]:
+        self, block_id: str, children: list[dict[str, Any]], after: str | None = None
+    ) -> BlockChildrenResponse | None:
         """
         Appends a single batch of blocks (≤100).
         """
@@ -150,8 +149,8 @@ class NotionBlockClient(NotionClient):
         return None
 
     async def _append_multiple_batches(
-        self, block_id: str, children: list[dict[str, Any]], after: Optional[str] = None
-    ) -> Optional[BlockChildrenResponse]:
+        self, block_id: str, children: list[dict[str, Any]], after: str | None = None
+    ) -> BlockChildrenResponse | None:
         """
         Appends multiple batches of blocks, handling pagination.
         """
@@ -243,7 +242,7 @@ class NotionBlockClient(NotionClient):
             request_id=responses[-1].request_id,  # Use last request ID
         )
 
-    async def delete_block(self, block_id: str) -> Optional[Block]:
+    async def delete_block(self, block_id: str) -> Block | None:
         """
         Deletes (archives) a block.
         """

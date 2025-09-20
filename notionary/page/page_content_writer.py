@@ -1,6 +1,6 @@
 from typing import Callable, Union
 
-from notionary.blocks.client import NotionBlockClient
+from notionary.blocks.block_client import NotionBlockClient
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.schemas.base import NotionContentSchema

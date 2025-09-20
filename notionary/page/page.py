@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import asyncio
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Union
 
-from notionary.blocks.client import NotionBlockClient
+from notionary.blocks.block_client import NotionBlockClient
 from notionary.comments import CommentClient, Comment
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.blocks.registry.block_registry import BlockRegistry
@@ -30,6 +29,7 @@ from notionary.page.page_factory import (
     load_page_from_name,
     load_page_from_url,
 )
+from notionary.util.covers import get_random_gradient_cover
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
@@ -91,13 +91,13 @@ class NotionPage(LoggingMixin):
 
     @classmethod
     async def from_page_id(
-        cls, page_id: str, token: Optional[str] = None
+        cls, page_id: str, token: str | None = None
     ) -> NotionPage:
         return await load_page_from_id(page_id, token)
 
     @classmethod
     async def from_page_name(
-        cls, page_name: str, token: Optional[str] = None, min_similarity: float = 0.6
+        cls, page_name: str, token: str | None = None, min_similarity: float = 0.6
     ) -> NotionPage:
         """
         Create a NotionPage by finding a page with fuzzy matching on the title.
@@ -106,7 +106,7 @@ class NotionPage(LoggingMixin):
         return await load_page_from_name(page_name, token, min_similarity)
 
     @classmethod
-    async def from_url(cls, url: str, token: Optional[str] = None) -> NotionPage:
+    async def from_url(cls, url: str, token: str | None= None) -> NotionPage:
         return await load_page_from_url(url, token)
 
     @property
@@ -158,7 +158,7 @@ class NotionPage(LoggingMixin):
         self,
         rich_text_str: str,
         *,
-        discussion_id: Optional[str] = None,
+        discussion_id: str | None = None,
     ) -> Comment:
         return await self._comment_client.create_comment(
             rich_text_str=rich_text_str,
@@ -254,7 +254,7 @@ class NotionPage(LoggingMixin):
         self._cover_image_url = None
 
     async def set_random_gradient_cover(self) -> None:
-        random_cover_url = self._get_random_gradient_cover()
+        random_cover_url = get_random_gradient_cover()
         await self.set_cover(random_cover_url)
 
     async def get_property_value_by_name(self, property_name: str) -> Any:
@@ -294,12 +294,3 @@ class NotionPage(LoggingMixin):
             database_client=NotionDatabaseClient(token=self._page_client.token),
             file_upload_client=NotionFileUploadClient(),
         )
-
-    def _get_random_gradient_cover(self) -> str:
-        from random import choice
-
-        default_notion_covers = [
-            f"https://www.notion.so/images/page-cover/gradients_{i}.png"
-            for i in range(1, 10)
-        ]
-        return choice(default_notion_covers)

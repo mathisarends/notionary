@@ -1,22 +1,17 @@
 from __future__ import annotations
 
-from enum import Enum
-from typing import Optional
+from enum import StrEnum
 
 from pydantic import BaseModel
 
 
-class RichTextType(str, Enum):
-    """Types of rich text objects."""
-
+class RichTextType(StrEnum):
     TEXT = "text"
     MENTION = "mention"
     EQUATION = "equation"
 
 
-class MentionType(str, Enum):
-    """Types of mention objects."""
-
+class MentionType(StrEnum):
     USER = "user"
     PAGE = "page"
     DATABASE = "database"
@@ -25,9 +20,7 @@ class MentionType(str, Enum):
     TEMPLATE_MENTION = "template_mention"
 
 
-class TemplateMentionType(str, Enum):
-    """Types of template mentions."""
-
+class TemplateMentionType(StrEnum):
     USER = "template_mention_user"
     DATE = "template_mention_date"
 
@@ -47,7 +40,7 @@ class LinkObject(BaseModel):
 
 class TextContent(BaseModel):
     content: str
-    link: Optional[LinkObject] = None
+    link: LinkObject | None = None
 
 
 class EquationObject(BaseModel):
@@ -73,8 +66,8 @@ class MentionLinkPreview(BaseModel):
 class MentionDate(BaseModel):
     # entspricht Notion date object (start Pflicht, end/time_zone optional)
     start: str  # ISO 8601 date or datetime
-    end: Optional[str] = None
-    time_zone: Optional[str] = None
+    end: str | None = None
+    time_zone: str | None = None
 
 
 class MentionTemplateMention(BaseModel):
@@ -84,25 +77,25 @@ class MentionTemplateMention(BaseModel):
 
 class MentionObject(BaseModel):
     type: MentionType
-    user: Optional[MentionUserRef] = None
-    page: Optional[MentionPageRef] = None
-    database: Optional[MentionDatabaseRef] = None
-    date: Optional[MentionDate] = None
-    link_preview: Optional[MentionLinkPreview] = None
-    template_mention: Optional[MentionTemplateMention] = None
+    user: MentionUserRef | None = None
+    page: MentionPageRef | None = None
+    database: MentionDatabaseRef | None = None
+    date: MentionDate | None = None
+    link_preview: MentionLinkPreview | None = None
+    template_mention: MentionTemplateMention | None = None
 
 
 class RichTextObject(BaseModel):
     type: RichTextType = RichTextType.TEXT
 
-    text: Optional[TextContent] = None
-    annotations: Optional[TextAnnotations] = None
+    text: TextContent | None = None
+    annotations: TextAnnotations | None = None
     plain_text: str = ""
-    href: Optional[str] = None
+    href: str | None = None
 
-    mention: Optional[MentionObject] = None
+    mention: MentionObject | None = None
 
-    equation: Optional[EquationObject] = None
+    equation: EquationObject | None = None
 
     @classmethod
     def from_plain_text(cls, content: str, **ann) -> RichTextObject:

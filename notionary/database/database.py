@@ -27,14 +27,10 @@ from notionary.page.properties.page_property_models import (
 )
 from notionary.shared.models.shared_property_models import PropertyType
 from notionary.util import LoggingMixin
+from notionary.util.covers import get_random_gradient_cover
 
 
 class NotionDatabase(LoggingMixin):
-    """
-    Manager for Notion databases with typed properties.
-    Focused on creating pages, retrieving property options, and database operations.
-    """
-
     def __init__(
         self,
         id: str,
@@ -44,9 +40,6 @@ class NotionDatabase(LoggingMixin):
         properties: dict[str, DatabaseNotionProperty] | None = None,
         token: str | None = None,
     ):
-        """
-        Initialize the database manager with all metadata.
-        """
         self._id = id
         self._title = title
         self._url = url
@@ -60,9 +53,6 @@ class NotionDatabase(LoggingMixin):
     async def from_database_id(
         cls, id: str, token: str | None = None
     ) -> NotionDatabase:
-        """
-        Create a NotionDatabase from a database ID using NotionDatabaseProvider.
-        """
         provider = cls.get_database_provider()
         return await provider.get_database_by_id(id, token)
 
@@ -73,45 +63,35 @@ class NotionDatabase(LoggingMixin):
         token: str | None = None,
         min_similarity: float = 0.6,
     ) -> NotionDatabase:
-        """
-        Create a NotionDatabase by finding a database with fuzzy matching on the title using NotionDatabaseProvider.
-        """
         provider = cls.get_database_provider()
         return await provider.get_database_by_name(database_name, token, min_similarity)
 
     @property
     def id(self) -> str:
-        """Get the database ID."""
         return self._id
 
     @property
     def title(self) -> str:
-        """Get the database title."""
         return self._title
 
     @property
     def url(self) -> str:
-        """Get the database URL."""
         return self._url
 
     @property
     def emoji(self) -> str | None:
-        """Get the database emoji."""
         return self._emoji_icon
 
     @property
     def properties(self) -> dict[str, DatabaseNotionProperty]:
-        """Get the typed database properties."""
         return self._properties
 
     @property
     def database_provider(self) -> NotionDatabaseProvider:
-        """Return a NotionDatabaseProvider instance for this database."""
         return NotionDatabaseProvider.get_instance()
 
     @classmethod
     def get_database_provider(cls) -> NotionDatabaseProvider:
-        """Return a NotionDatabaseProvider instance for class-level usage."""
         return NotionDatabaseProvider.get_instance()
 
     async def create_blank_page(self) -> NotionPage:
@@ -127,9 +107,6 @@ class NotionDatabase(LoggingMixin):
         )
 
     async def set_title(self, new_title: str) -> str:
-        """
-        Update the database title.
-        """
         result = await self.client.update_database_title(
             database_id=self.id, title=new_title
         )
@@ -151,9 +128,6 @@ class NotionDatabase(LoggingMixin):
         return self._emoji_icon
 
     async def set_cover_image(self, image_url: str) -> str:
-        """
-        Update the database cover image.
-        """
         result = await self.client.update_database_cover_image(
             database_id=self.id, image_url=image_url
         )
@@ -166,14 +140,10 @@ class NotionDatabase(LoggingMixin):
         )
 
     async def set_random_gradient_cover(self) -> str:
-        """Sets a random gradient cover from Notion's default gradient covers."""
-        random_cover_url = self._get_random_gradient_cover()
+        random_cover_url = get_random_gradient_cover()
         return await self.set_cover_image(random_cover_url)
 
     async def set_external_icon(self, external_icon_url: str) -> str:
-        """
-        Update the database icon with an external image URL.
-        """
         result = await self.client.update_database_external_icon(
             database_id=self.id, icon_url=external_icon_url
         )
@@ -381,14 +351,6 @@ class NotionDatabase(LoggingMixin):
                 return None
 
         return "".join(item.plain_text for item in title_property.title)
-
-    def _get_random_gradient_cover(self) -> str:
-        """Generate a random Notion gradient cover URL."""
-        default_notion_covers = [
-            f"https://www.notion.so/images/page-cover/gradients_{i}.png"
-            for i in range(1, 10)
-        ]
-        return random.choice(default_notion_covers)
 
     def _get_database_property(
         self, name: str, property_type: type[DatabasePropertyT]
