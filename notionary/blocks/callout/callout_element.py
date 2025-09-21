@@ -9,6 +9,7 @@ from notionary.blocks.callout.callout_models import (
 )
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.shared.models.icon_models import EmojiIcon, Icon
 
@@ -71,7 +72,8 @@ class CalloutElement(BaseBlockElement):
 
         data = block.callout
 
-        content = await MarkdownRichTextConverter.to_markdown(data.rich_text)
+        converter = RichTextToMarkdownConverter()
+        content = await converter.to_markdown(data.rich_text)
         if not content:
             return None
 

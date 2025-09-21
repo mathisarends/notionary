@@ -5,7 +5,6 @@ from notionary.util import format_uuid
 from notionary.util.fuzzy import find_best_match
 
 
-# TODO: Refactor this here
 class NameIdResolver:
     """
     Bidirectional resolver for Notion page and database names and IDs.
