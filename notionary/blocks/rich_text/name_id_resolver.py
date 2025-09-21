@@ -9,6 +9,7 @@ class NameIdResolver:
     def __init__(
         self,
         *,
+        token: str | None = None,
         search_limit: int = 10,
     ):
         from notionary import NotionWorkspace

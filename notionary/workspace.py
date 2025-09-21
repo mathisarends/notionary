@@ -53,6 +53,16 @@ class NotionWorkspace(LoggingMixin):
         response = await self.database_client.search_databases(query=search_query, limit=limit)
         return await asyncio.gather(*(NotionDatabase.from_database_id(database.id) for database in response.results))
 
+    async def search_users(self, query: str, limit: int = 100) -> list[NotionUser]:
+        """
+        Search for users in the Notion workspace using fuzzy matching.
+        Only returns person users, excludes bots and integrations.
+        """
+        search_query = self._truncate_query_if_needed(query)
+        users = await self.user_manager.find_users_by_name(search_query)
+
+        return users[:limit] if limit > 0 else users
+
     async def list_all_databases(self, limit: int = 100) -> list[NotionDatabase]:
         """
         List all databases in the workspace.
