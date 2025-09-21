@@ -23,9 +23,7 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        themes = await page.set_property_value_by_name(
-            "Thema", ["Second Brain", "Lernen"]
-        )
+        themes = await page.set_property_value_by_name("Thema", ["Second Brain", "Lernen"])
         print(f"🗂️  Themes: {themes}")
     except Exception as e:
         import traceback

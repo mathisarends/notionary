@@ -59,9 +59,7 @@ def create_basic_markdown_content() -> str:
         .h3("Inline Code and Links")
         .paragraph("Use `NotionPage.from_page_name()` to find pages by name.")
         .paragraph("The `append_markdown()` method adds content to existing pages.")
-        .paragraph(
-            "Variables like `DATABASE_NAME` should be set in your configuration."
-        )
+        .paragraph("Variables like `DATABASE_NAME` should be set in your configuration.")
         .divider()
         # Important Notes Section
         .h3("Important Notes")
@@ -115,9 +113,7 @@ async def main():
 
         print("📋 Content Preview:")
         print("-" * 50)
-        preview = (
-            basic_content[:150] + "..." if len(basic_content) > 150 else basic_content
-        )
+        preview = basic_content[:150] + "..." if len(basic_content) > 150 else basic_content
         print(preview)
         print("-" * 50)
 

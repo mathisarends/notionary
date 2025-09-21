@@ -14,9 +14,7 @@ class ColumnRenderer(BlockHandler):
 
         # Apply indentation if needed
         if context.indent_level > 0:
-            column_start = self._indent_text(
-                column_start, spaces=context.indent_level * 4
-            )
+            column_start = self._indent_text(column_start, spaces=context.indent_level * 4)
 
         # Process children if they exist
         children_markdown = ""
@@ -40,9 +38,7 @@ class ColumnRenderer(BlockHandler):
 
         # Combine column with children content
         if children_markdown:
-            context.markdown_result = (
-                f"{column_start}\n{children_markdown}\n{column_end}"
-            )
+            context.markdown_result = f"{column_start}\n{children_markdown}\n{column_end}"
         else:
             context.markdown_result = f"{column_start}\n{column_end}"
 

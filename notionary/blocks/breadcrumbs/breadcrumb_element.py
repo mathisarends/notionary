@@ -23,7 +23,6 @@ class BreadcrumbElement(BaseBlockElement):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        # Kein extra Payload – nur Typ prüfen
         return block.type == BlockType.BREADCRUMB and block.breadcrumb
 
     @classmethod

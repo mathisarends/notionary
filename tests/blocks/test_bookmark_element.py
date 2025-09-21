@@ -18,20 +18,14 @@ async def test_match_markdown():
     """Test die Erkennung von Markdown-Bookmarks."""
     # Gültige Bookmark-Formate
     assert await BookmarkElement.markdown_to_notion("[bookmark](https://example.com)")
-    assert await BookmarkElement.markdown_to_notion(
-        "[bookmark](https://example.com)(caption:Titel)"
-    )
-    assert await BookmarkElement.markdown_to_notion(
-        "[bookmark](https://example.com)(caption:Titel – Beschreibung)"
-    )
+    assert await BookmarkElement.markdown_to_notion("[bookmark](https://example.com)(caption:Titel)")
+    assert await BookmarkElement.markdown_to_notion("[bookmark](https://example.com)(caption:Titel – Beschreibung)")
 
     # Ungültige Formate
     assert not await BookmarkElement.markdown_to_notion("[link](https://example.com)")
     assert await BookmarkElement.markdown_to_notion("Dies ist kein Bookmark") is None
     assert not await BookmarkElement.markdown_to_notion("[bookmark](nicht-url)")
-    assert not await BookmarkElement.markdown_to_notion(
-        "[bookmark](ftp://example.com)"
-    )  # Nur http/https
+    assert not await BookmarkElement.markdown_to_notion("[bookmark](ftp://example.com)")  # Nur http/https
 
 
 def test_match_notion():
@@ -69,9 +63,7 @@ async def test_markdown_to_notion_simple():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_with_title():
     """Test Bookmark mit Titel."""
-    result = await BookmarkElement.markdown_to_notion(
-        "[bookmark](https://example.com)(caption:Beispiel-Titel)"
-    )
+    result = await BookmarkElement.markdown_to_notion("[bookmark](https://example.com)(caption:Beispiel-Titel)")
 
     assert result is not None
     assert isinstance(result, CreateBookmarkBlock)
@@ -81,9 +73,7 @@ async def test_markdown_to_notion_with_title():
     # Wir testen den Text-Inhalt über extract_text_with_formatting
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-    text = await TextInlineFormatter.extract_text_with_formatting(
-        result.bookmark.caption
-    )
+    text = await TextInlineFormatter.extract_text_with_formatting(result.bookmark.caption)
     assert "Beispiel-Titel" in text
 
 
@@ -98,12 +88,10 @@ async def test_markdown_to_notion_with_title_and_description():
     assert isinstance(result, CreateBookmarkBlock)
     assert result.bookmark.url == "https://example.com"
 
-    # Caption sollte "Beispiel-Titel – Eine Beschreibung" enthalten (em dash)
+    # Caption sollte "Beispiel-Titel - Eine Beschreibung" enthalten (em dash)
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-    caption_text = await TextInlineFormatter.extract_text_with_formatting(
-        result.bookmark.caption
-    )
+    caption_text = await TextInlineFormatter.extract_text_with_formatting(result.bookmark.caption)
     assert caption_text == "Beispiel-Titel – Eine Beschreibung"
 
 
@@ -157,9 +145,7 @@ async def test_notion_to_markdown_with_title_and_description():
     # Verwende TextInlineFormatter mit hyphen für korrekte Trennung
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-    caption = await TextInlineFormatter.parse_inline_formatting(
-        "Beispiel-Titel - Eine Beschreibung"
-    )
+    caption = await TextInlineFormatter.parse_inline_formatting("Beispiel-Titel - Eine Beschreibung")
 
     bookmark_data = BookmarkBlock(url="https://example.com", caption=caption)
 
@@ -168,10 +154,7 @@ async def test_notion_to_markdown_with_title_and_description():
     block.bookmark = bookmark_data
 
     result = await BookmarkElement.notion_to_markdown(block)
-    assert (
-        result
-        == "[bookmark](https://example.com)(caption:Beispiel-Titel - Eine Beschreibung)"
-    )
+    assert result == "[bookmark](https://example.com)(caption:Beispiel-Titel - Eine Beschreibung)"
 
 
 @pytest.mark.asyncio
@@ -356,10 +339,7 @@ async def test_edge_cases():
     assert await BookmarkElement.markdown_to_notion(f"[bookmark]({deep_url})")
 
     # Bookmark ohne schließende Klammer
-    assert (
-        await BookmarkElement.markdown_to_notion("[bookmark](https://example.com")
-        is None
-    )
+    assert await BookmarkElement.markdown_to_notion("[bookmark](https://example.com") is None
 
     # Bookmark ohne URL
     assert not await BookmarkElement.markdown_to_notion("[bookmark]()")
@@ -368,8 +348,6 @@ async def test_edge_cases():
 @pytest.mark.asyncio
 async def test_caption_separator_behavior():
     """Test das Verhalten mit verschiedenen Separatoren."""
-    # Die Implementation verwendet em dash (–) beim Erstellen,
-    # aber erkennt hyphen (-) beim Parsen
 
     # Test mit hyphen input
     result_hyphen = await BookmarkElement.markdown_to_notion(
@@ -378,15 +356,11 @@ async def test_caption_separator_behavior():
 
     from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
-    caption_text = await TextInlineFormatter.extract_text_with_formatting(
-        result_hyphen.bookmark.caption
-    )
+    caption_text = await TextInlineFormatter.extract_text_with_formatting(result_hyphen.bookmark.caption)
     assert caption_text == "Title – Description"  # em dash in output
 
     # Test parsing with hyphen
-    hyphen_caption = await TextInlineFormatter.parse_inline_formatting(
-        "Title - Description"
-    )
+    hyphen_caption = await TextInlineFormatter.parse_inline_formatting("Title - Description")
     bookmark_data = BookmarkBlock(url="https://example.com", caption=hyphen_caption)
 
     block = Mock()

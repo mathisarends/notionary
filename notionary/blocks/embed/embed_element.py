@@ -74,9 +74,7 @@ class EmbedElement(BaseBlockElement):
             if rt.plain_text:
                 text_parts.append(rt.plain_text)
             else:
-                formatted_text = await TextInlineFormatter.extract_text_with_formatting(
-                    [rt]
-                )
+                formatted_text = await TextInlineFormatter.extract_text_with_formatting([rt])
                 text_parts.append(formatted_text)
         text = "".join(text_parts)
 

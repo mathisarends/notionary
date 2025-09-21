@@ -37,33 +37,19 @@ class PagePropertyReader:
 
     def _build_property_extractors(self) -> dict[PropertyType, Extractor]:
         return {
-            PropertyType.STATUS: lambda prop_name: self._await(
-                self.get_value_of_status_property(prop_name)
-            ),
+            PropertyType.STATUS: lambda prop_name: self._await(self.get_value_of_status_property(prop_name)),
             PropertyType.RELATION: self.get_values_of_relation_property,
             PropertyType.MULTI_SELECT: lambda prop_name: self._await(
                 self.get_values_of_multiselect_property(prop_name)
             ),
-            PropertyType.SELECT: lambda prop_name: self._await(
-                self.get_value_of_select_property(prop_name)
-            ),
-            PropertyType.URL: lambda prop_name: self._await(
-                self.get_value_of_url_property(prop_name)
-            ),
-            PropertyType.NUMBER: lambda prop_name: self._await(
-                self.get_value_of_number_property(prop_name)
-            ),
-            PropertyType.CHECKBOX: lambda prop_name: self._await(
-                self.get_value_of_checkbox_property(prop_name)
-            ),
-            PropertyType.DATE: lambda prop_name: self._await(
-                self.get_value_of_date_property(prop_name)
-            ),
+            PropertyType.SELECT: lambda prop_name: self._await(self.get_value_of_select_property(prop_name)),
+            PropertyType.URL: lambda prop_name: self._await(self.get_value_of_url_property(prop_name)),
+            PropertyType.NUMBER: lambda prop_name: self._await(self.get_value_of_number_property(prop_name)),
+            PropertyType.CHECKBOX: lambda prop_name: self._await(self.get_value_of_checkbox_property(prop_name)),
+            PropertyType.DATE: lambda prop_name: self._await(self.get_value_of_date_property(prop_name)),
             PropertyType.TITLE: self.get_value_of_title_property,
             PropertyType.RICH_TEXT: self.get_value_of_rich_text_property,
-            PropertyType.EMAIL: lambda prop_name: self._await(
-                self.get_value_of_email_property(prop_name)
-            ),
+            PropertyType.EMAIL: lambda prop_name: self._await(self.get_value_of_email_property(prop_name)),
             PropertyType.PHONE_NUMBER: lambda prop_name: self._await(
                 self.get_value_of_phone_number_property(prop_name)
             ),
@@ -134,9 +120,7 @@ class PagePropertyReader:
             return []
 
         relation_page_ids = [rel.id for rel in relation_property.relation]
-        notion_pages = [
-            await load_page_from_id(page_id) for page_id in relation_page_ids
-        ]
+        notion_pages = [await load_page_from_id(page_id) for page_id in relation_page_ids]
         return [page.title for page in notion_pages if page]
 
     def get_values_of_multiselect_property(self, name: str) -> list[str]:
@@ -170,9 +154,7 @@ class PagePropertyReader:
         if not rich_text_property:
             return ""
 
-        return await TextInlineFormatter.extract_text_with_formatting(
-            rich_text_property
-        )
+        return await TextInlineFormatter.extract_text_with_formatting(rich_text_property)
 
     def get_value_of_email_property(self, name: str) -> str | None:
         email_property = self._get_property(name, PageEmailProperty)
@@ -186,9 +168,7 @@ class PagePropertyReader:
         property_type = property_dict.get("type")
         return property_dict.get(property_type)
 
-    def _get_property(
-        self, name: str, property_type: type[PagePropertyT]
-    ) -> PagePropertyT | None:
+    def _get_property(self, name: str, property_type: type[PagePropertyT]) -> PagePropertyT | None:
         prop = self._notion_page.properties.get(name)
         if isinstance(prop, property_type):
             return prop

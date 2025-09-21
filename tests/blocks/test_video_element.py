@@ -15,21 +15,11 @@ from notionary.blocks.video.video_element_models import CreateVideoBlock
 @pytest.mark.asyncio
 async def test_match_markdown_valid():
     """Test recognition of valid video formats."""
-    assert await VideoElement.markdown_to_notion(
-        "[video](https://example.com/video.mp4)"
-    )
-    assert await VideoElement.markdown_to_notion(
-        "[video](https://example.com/video.mp4)(caption:Caption)"
-    )
-    assert await VideoElement.markdown_to_notion(
-        "[video](https://youtu.be/dQw4w9WgXcQ)"
-    )
-    assert await VideoElement.markdown_to_notion(
-        "[video](https://youtube.com/watch?v=dQw4w9WgXcQ)"
-    )
-    assert await VideoElement.markdown_to_notion(
-        "  [video](https://example.com/video.mov)  "
-    )
+    assert await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
+    assert await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)(caption:Caption)")
+    assert await VideoElement.markdown_to_notion("[video](https://youtu.be/dQw4w9WgXcQ)")
+    assert await VideoElement.markdown_to_notion("[video](https://youtube.com/watch?v=dQw4w9WgXcQ)")
+    assert await VideoElement.markdown_to_notion("  [video](https://example.com/video.mov)  ")
 
 
 @pytest.mark.asyncio
@@ -42,17 +32,11 @@ async def test_match_markdown_invalid():
     assert result is not None  # Now works with file upload support
 
     # FTP URLs are now accepted as external URLs (validation happens at API level)
-    result_ftp = await VideoElement.markdown_to_notion(
-        "[video](ftp://example.com/video.mp4)"
-    )
+    result_ftp = await VideoElement.markdown_to_notion("[video](ftp://example.com/video.mp4)")
     assert result_ftp is not None  # Now works with file upload support
 
-    assert not await VideoElement.markdown_to_notion(
-        "video(https://example.com/video.mp4)"
-    )  # Missing brackets
-    assert not await VideoElement.markdown_to_notion(
-        "[embed](https://example.com/video.mp4)"
-    )  # Wrong tag
+    assert not await VideoElement.markdown_to_notion("video(https://example.com/video.mp4)")  # Missing brackets
+    assert not await VideoElement.markdown_to_notion("[embed](https://example.com/video.mp4)")  # Wrong tag
     assert await VideoElement.markdown_to_notion("") is None
     assert await VideoElement.markdown_to_notion("Regular text") is None
 
@@ -84,9 +68,7 @@ def test_match_notion_invalid():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_basic():
     """Test conversion from markdown to Notion."""
-    result = await VideoElement.markdown_to_notion(
-        "[video](https://example.com/video.mp4)"
-    )
+    result = await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
 
     assert result is not None
     assert isinstance(result, CreateVideoBlock)
@@ -96,9 +78,7 @@ async def test_markdown_to_notion_basic():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_with_caption():
     """Test conversion with caption."""
-    result = await VideoElement.markdown_to_notion(
-        "[video](https://example.com/video.mp4)(caption:Demo video)"
-    )
+    result = await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)(caption:Demo video)")
 
     assert result is not None
     assert isinstance(result, CreateVideoBlock)
@@ -108,9 +88,7 @@ async def test_markdown_to_notion_with_caption():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_without_caption():
     """Test conversion without caption."""
-    result = await VideoElement.markdown_to_notion(
-        "[video](https://example.com/video.mp4)"
-    )
+    result = await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
 
     assert result is not None
     video_block = result
@@ -204,9 +182,7 @@ def test_pattern_regex_directly():
     assert not pattern.match("[video]()")
     # Note: The regex itself matches any non-empty content inside parentheses
     # The "not-a-url" case matches the pattern but validation happens later
-    assert pattern.match(
-        "[video](not-a-url)"
-    )  # Pattern matches, validation is separate
+    assert pattern.match("[video](not-a-url)")  # Pattern matches, validation is separate
     assert not pattern.match("video(https://example.com)")
 
 
@@ -253,13 +229,9 @@ async def test_video_file_extensions():
 @pytest.mark.asyncio
 async def test_whitespace_handling():
     """Test handling of whitespace."""
-    assert await VideoElement.markdown_to_notion(
-        "  [video](https://example.com/video.mp4)  "
-    )
+    assert await VideoElement.markdown_to_notion("  [video](https://example.com/video.mp4)  ")
 
-    result = await VideoElement.markdown_to_notion(
-        "  [video](https://example.com/video.mp4)  "
-    )
+    result = await VideoElement.markdown_to_notion("  [video](https://example.com/video.mp4)  ")
     assert result is not None
 
 
@@ -277,12 +249,8 @@ async def test_url_protocols():
         assert await VideoElement.markdown_to_notion(markdown) is not None
 
     # With file upload support, FTP is now accepted as external URL
-    result_ftp = await VideoElement.markdown_to_notion(
-        "[video](ftp://example.com/video.mp4)"
-    )
-    assert (
-        result_ftp is not None
-    )  # Element accepts FTP, validation happens at API level
+    result_ftp = await VideoElement.markdown_to_notion("[video](ftp://example.com/video.mp4)")
+    assert result_ftp is not None  # Element accepts FTP, validation happens at API level
 
     # Note: file:// URLs cause issues because they're treated as local paths that don't exist
     # This is expected behavior - if you specify a local file, it should exist

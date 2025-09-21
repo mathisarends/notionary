@@ -32,10 +32,8 @@ class MarkdownWhitespaceProcessor:
         current_code_block = []
 
         for line in lines:
-            processed_lines, in_code_block, current_code_block = (
-                MarkdownWhitespaceProcessor._process_single_line(
-                    line, processed_lines, in_code_block, current_code_block
-                )
+            processed_lines, in_code_block, current_code_block = MarkdownWhitespaceProcessor._process_single_line(
+                line, processed_lines, in_code_block, current_code_block
             )
 
         return "\n".join(processed_lines)
@@ -70,30 +68,18 @@ class MarkdownWhitespaceProcessor:
         if not in_code_block:
             return MarkdownWhitespaceProcessor._start_code_block(line, processed_lines)
         else:
-            return MarkdownWhitespaceProcessor._end_code_block(
-                processed_lines, current_code_block
-            )
+            return MarkdownWhitespaceProcessor._end_code_block(processed_lines, current_code_block)
 
     @staticmethod
-    def _start_code_block(
-        line: str, processed_lines: list[str]
-    ) -> tuple[list[str], bool, list[str]]:
+    def _start_code_block(line: str, processed_lines: list[str]) -> tuple[list[str], bool, list[str]]:
         """Start a new code block."""
-        processed_lines.append(
-            MarkdownWhitespaceProcessor._normalize_code_block_start(line)
-        )
+        processed_lines.append(MarkdownWhitespaceProcessor._normalize_code_block_start(line))
         return processed_lines, True, []
 
     @staticmethod
-    def _end_code_block(
-        processed_lines: list[str], current_code_block: list[str]
-    ) -> tuple[list[str], bool, list[str]]:
+    def _end_code_block(processed_lines: list[str], current_code_block: list[str]) -> tuple[list[str], bool, list[str]]:
         """End the current code block."""
-        processed_lines.extend(
-            MarkdownWhitespaceProcessor._normalize_code_block_content(
-                current_code_block
-            )
-        )
+        processed_lines.extend(MarkdownWhitespaceProcessor._normalize_code_block_content(current_code_block))
         processed_lines.append("```")
         return processed_lines, False, []
 

@@ -48,9 +48,7 @@ class TableHandler(LineHandler):
                 table_lines.append(line)
                 continue
 
-            if self._table_row_pattern.match(
-                line_stripped
-            ) or self._separator_pattern.match(line_stripped):
+            if self._table_row_pattern.match(line_stripped) or self._separator_pattern.match(line_stripped):
                 table_lines.append(line)
             else:
                 # Not a table line - stop here

@@ -24,9 +24,7 @@ class ToggleableHeadingRenderer(BlockHandler):
 
         # Apply indentation if needed
         if context.indent_level > 0:
-            heading_start = self._indent_text(
-                heading_start, spaces=context.indent_level * 4
-            )
+            heading_start = self._indent_text(heading_start, spaces=context.indent_level * 4)
 
         # Process children if they exist
         children_markdown = ""
@@ -46,15 +44,11 @@ class ToggleableHeadingRenderer(BlockHandler):
         # Create toggleable heading end line
         heading_end = "+++"
         if context.indent_level > 0:
-            heading_end = self._indent_text(
-                heading_end, spaces=context.indent_level * 4
-            )
+            heading_end = self._indent_text(heading_end, spaces=context.indent_level * 4)
 
         # Combine heading with children content
         if children_markdown:
-            context.markdown_result = (
-                f"{heading_start}\n{children_markdown}\n{heading_end}"
-            )
+            context.markdown_result = f"{heading_start}\n{children_markdown}\n{heading_end}"
         else:
             context.markdown_result = f"{heading_start}\n{heading_end}"
 

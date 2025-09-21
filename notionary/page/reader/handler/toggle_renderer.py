@@ -20,9 +20,7 @@ class ToggleRenderer(BlockHandler):
 
         # Apply indentation if needed
         if context.indent_level > 0:
-            toggle_start = self._indent_text(
-                toggle_start, spaces=context.indent_level * 4
-            )
+            toggle_start = self._indent_text(toggle_start, spaces=context.indent_level * 4)
 
         # Process children if they exist
         children_markdown = ""
@@ -46,9 +44,7 @@ class ToggleRenderer(BlockHandler):
 
         # Combine toggle with children content
         if children_markdown:
-            context.markdown_result = (
-                f"{toggle_start}\n{children_markdown}\n{toggle_end}"
-            )
+            context.markdown_result = f"{toggle_start}\n{children_markdown}\n{toggle_end}"
         else:
             context.markdown_result = f"{toggle_start}\n{toggle_end}"
 

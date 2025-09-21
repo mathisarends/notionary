@@ -29,7 +29,7 @@ async def main():
         ## 📄 PDF Document
         [pdf](./examples/file_upload/res/test.pdf)(caption:PDF Document - Automatically uploaded)
 
-        ## 🎵 Audio File  
+        ## 🎵 Audio File
         [audio](./examples/file_upload/res/test.mp3)(caption:Audio Track - Local MP3 file)
 
         ## 🎬 Video File

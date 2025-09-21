@@ -6,8 +6,8 @@ We'd love your help making Notionary even better! 🚀
 
 ### Prerequisites
 
-- Python 3.8+
-- Poetry (install from [python-poetry.org](https://python-poetry.org/docs/#installation))
+- Python 3.9+
+- uv (install from [docs.astral.sh/uv](https://docs.astral.sh/uv/getting-started/installation/))
 
 ### Development Setup
 
@@ -18,21 +18,21 @@ We'd love your help making Notionary even better! 🚀
    cd notionary
    ```
 
-2. **Install dependencies with Poetry**
+2. **Install dependencies with uv**
 
    ```bash
-   poetry install
+   uv sync --all-extras
    ```
 
-3. **Activate the virtual environment**
+3. **Install pre-commit hooks**
 
    ```bash
-   poetry shell
+   uv run pre-commit install
    ```
 
 4. **Run tests to verify setup**
    ```bash
-   poetry run pytest
+   uv run pytest
    ```
 
 ### Making Changes
@@ -47,11 +47,14 @@ We'd love your help making Notionary even better! 🚀
 
    ```bash
    # Run tests
-   poetry run pytest
+   uv run pytest
 
-   # Run linting
-   poetry run black .
-   poetry run isort .
+   # Run linting and formatting (or let pre-commit handle it)
+   uv run ruff check .
+   uv run ruff format .
+
+   # Type checking
+   uv run mypy notionary
    ```
 
 3. **Commit and push**
@@ -59,10 +62,18 @@ We'd love your help making Notionary even better! 🚀
    ```bash
    git add .
    git commit -m "Add your feature description"
+   # Pre-commit hooks will automatically run and fix formatting
    git push origin feature/your-feature-name
    ```
 
 4. **Open a Pull Request**
+
+## Development Tools
+
+- **Ruff** handles linting and code formatting
+- **MyPy** for type checking
+- **Pre-commit** automatically runs checks before each commit
+- **Pytest** for testing
 
 ## What We're Looking For
 
@@ -77,8 +88,25 @@ We'd love your help making Notionary even better! 🚀
 - Keep changes focused and atomic
 - Add tests for new functionality
 - Update documentation as needed
-- Follow existing code style (Black + isort)
+- Follow existing code style (enforced by Ruff and pre-commit)
 - Be descriptive in commit messages
+- Let pre-commit handle formatting - don't worry about manual formatting
+
+## Code Quality
+
+The project uses:
+
+- **Ruff** for fast linting and formatting
+- **MyPy** for type checking
+- **Pre-commit hooks** that automatically run before commits
+- **Pytest** for comprehensive testing
+
+When you commit, pre-commit will automatically:
+
+- Format your code with Ruff
+- Fix common linting issues
+- Run type checking
+- Perform security checks
 
 **All contributions are very welcome!** No contribution is too small - from fixing typos to adding major features, we appreciate it all.
 

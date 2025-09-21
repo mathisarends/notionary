@@ -41,9 +41,7 @@ class NotionDatabseHttpClient(NotionHttpClient):
         response = await self.get(f"databases/{database_id}")
         return NoionDatabaseDto.model_validate(response)
 
-    async def patch_database(
-        self, database_id: str, data: dict[str, Any]
-    ) -> NoionDatabaseDto:
+    async def patch_database(self, database_id: str, data: dict[str, Any]) -> NoionDatabaseDto:
         """
         Updates a Notion database with the provided data.
         """
@@ -59,15 +57,11 @@ class NotionDatabseHttpClient(NotionHttpClient):
         response = await self.post(f"databases/{database_id}/query", data=query_data)
         return NotionQueryDatabaseResponse.model_validate(response)
 
-    async def query_database_by_title(
-        self, database_id: str, page_title: str
-    ) -> NotionQueryDatabaseResponse:
+    async def query_database_by_title(self, database_id: str, page_title: str) -> NotionQueryDatabaseResponse:
         """
         Queries a Notion database by title.
         """
-        query_data = {
-            "filter": {"property": "title", "title": {"contains": page_title}}
-        }
+        query_data = {"filter": {"property": "title", "title": {"contains": page_title}}}
 
         return await self.query_database(database_id=database_id, query_data=query_data)
 
@@ -106,36 +100,28 @@ class NotionDatabseHttpClient(NotionHttpClient):
         response = await self.post("pages", page_data)
         return NotionPageDto.model_validate(response)
 
-    async def update_database_title(
-        self, database_id: str, title: str
-    ) -> NoionDatabaseDto:
+    async def update_database_title(self, database_id: str, title: str) -> NoionDatabaseDto:
         """
         Updates the title of a database.
         """
         data = {"title": [{"text": {"content": title}}]}
         return await self.patch_database(database_id, data)
 
-    async def update_database_emoji(
-        self, database_id: str, emoji: str
-    ) -> NoionDatabaseDto:
+    async def update_database_emoji(self, database_id: str, emoji: str) -> NoionDatabaseDto:
         """
         Updates the emoji/icon of a database.
         """
         data = {"icon": {"type": "emoji", "emoji": emoji}}
         return await self.patch_database(database_id, data)
 
-    async def update_database_cover_image(
-        self, database_id: str, image_url: str
-    ) -> NoionDatabaseDto:
+    async def update_database_cover_image(self, database_id: str, image_url: str) -> NoionDatabaseDto:
         """
         Updates the cover image of a database.
         """
         data = {"cover": {"type": "external", "external": {"url": image_url}}}
         return await self.patch_database(database_id, data)
 
-    async def update_database_external_icon(
-        self, database_id: str, icon_url: str
-    ) -> NoionDatabaseDto:
+    async def update_database_external_icon(self, database_id: str, icon_url: str) -> NoionDatabaseDto:
         """
         Updates the database icon with an external image URL.
         """

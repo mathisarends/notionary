@@ -38,9 +38,7 @@ class BulletedListElement(BaseBlockElement):
         rich_text = await TextInlineFormatter.parse_inline_formatting(content)
 
         # Return a properly typed Notion block
-        bulleted_list_content = BulletedListItemBlock(
-            rich_text=rich_text, color="default"
-        )
+        bulleted_list_content = BulletedListItemBlock(rich_text=rich_text, color="default")
         return CreateBulletedListItemBlock(bulleted_list_item=bulleted_list_content)
 
     @classmethod

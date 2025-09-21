@@ -72,7 +72,7 @@ Reference databases for data organization and workflow connections.
 ### Syntax
 
 ```markdown
-@database[Database Name]  
+@database[Database Name]
 @database[database-id-here]
 ```
 
@@ -165,7 +165,7 @@ Use consistent, descriptive names for better mention resolution:
 @database[Customer Support Tickets]
 @user[Sarah Johnson - Design Lead]
 
-❌ Vague or ambiguous  
+❌ Vague or ambiguous
 @page[Plan]
 @database[Stuff]
 @user[Sarah]
@@ -204,7 +204,7 @@ Check @page[Schedule]. Talk to @user[PM].
 
 # Verify page exists and is accessible
 
-❌ @page[Deleted Document]  
+❌ @page[Deleted Document]
 ✅ @page[Current Document]
 ```
 

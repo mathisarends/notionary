@@ -49,17 +49,13 @@ class NotionHttpClient(LoggingMixin):
         try:
             loop = asyncio.get_event_loop()
             if not loop.is_running():
-                self.logger.warning(
-                    "Event loop not running, could not auto-close NotionHttpClient"
-                )
+                self.logger.warning("Event loop not running, could not auto-close NotionHttpClient")
                 return
 
             loop.create_task(self.close())
             self.logger.debug("Created cleanup task for NotionHttpClient")
         except RuntimeError:
-            self.logger.warning(
-                "No event loop available for auto-closing NotionHttpClient"
-            )
+            self.logger.warning("No event loop available for auto-closing NotionHttpClient")
 
     async def __aenter__(self):
         """Async context manager entry."""
@@ -82,19 +78,13 @@ class NotionHttpClient(LoggingMixin):
         self._is_initialized = False
         self.logger.debug("NotionHttpClient closed")
 
-    async def get(
-        self, endpoint: str, params: dict[str, Any] | None = None
-    ) -> dict[str, Any] | None:
+    async def get(self, endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any] | None:
         return await self._make_request(HttpMethod.GET, endpoint, params=params)
 
-    async def post(
-        self, endpoint: str, data: dict[str, Any] | None = None
-    ) -> dict[str, Any] | None:
+    async def post(self, endpoint: str, data: dict[str, Any] | None = None) -> dict[str, Any] | None:
         return await self._make_request(HttpMethod.POST, endpoint, data)
 
-    async def patch(
-        self, endpoint: str, data: dict[str, Any] | None = None
-    ) -> dict[str, Any] | None:
+    async def patch(self, endpoint: str, data: dict[str, Any] | None = None) -> dict[str, Any] | None:
         return await self._make_request(HttpMethod.PATCH, endpoint, data)
 
     async def delete(self, endpoint: str) -> bool:
@@ -133,15 +123,10 @@ class NotionHttpClient(LoggingMixin):
             if params:
                 request_kwargs["params"] = params
 
-            if (
-                method.value in [HttpMethod.POST.value, HttpMethod.PATCH.value]
-                and data is not None
-            ):
+            if method.value in [HttpMethod.POST.value, HttpMethod.PATCH.value] and data is not None:
                 request_kwargs["json"] = data
 
-            response: httpx.Response = await getattr(self.client, method.value)(
-                url, **request_kwargs
-            )
+            response: httpx.Response = await getattr(self.client, method.value)(url, **request_kwargs)
 
             response.raise_for_status()
             result_data = response.json()
@@ -152,9 +137,8 @@ class NotionHttpClient(LoggingMixin):
             self._handle_http_status_error(e)
         except httpx.RequestError as e:
             raise NotionConnectionError(
-                f"Failed to connect to Notion API: {e!s}. "
-                "Please check your internet connection and try again."
-            )
+                f"Failed to connect to Notion API: {e!s}. Please check your internet connection and try again."
+            ) from e
 
     def _handle_http_status_error(self, e: httpx.HTTPStatusError) -> None:
         status_code = e.response.status_code
@@ -208,11 +192,7 @@ class NotionHttpClient(LoggingMixin):
 
     def _find_token(self) -> str | None:
         token = next(
-            (
-                os.getenv(var)
-                for var in ("NOTION_SECRET", "NOTION_INTEGRATION_KEY", "NOTION_TOKEN")
-                if os.getenv(var)
-            ),
+            (os.getenv(var) for var in ("NOTION_SECRET", "NOTION_INTEGRATION_KEY", "NOTION_TOKEN") if os.getenv(var)),
             None,
         )
         if token:

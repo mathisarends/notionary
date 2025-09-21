@@ -19,18 +19,14 @@ class PageContextProvider:
 
 
 # Context variable
-_page_context: ContextVar[PageContextProvider | None] = ContextVar(
-    "page_context", default=None
-)
+_page_context: ContextVar[PageContextProvider | None] = ContextVar("page_context", default=None)
 
 
 def get_page_context() -> PageContextProvider:
     """Get current page context or raise if not available."""
     context = _page_context.get()
     if context is None:
-        raise RuntimeError(
-            "No page context available. Use 'async with page_context(...)'"
-        )
+        raise RuntimeError("No page context available. Use 'async with page_context(...)'")
     return context
 
 

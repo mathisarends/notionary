@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
@@ -10,6 +10,7 @@ class BaseBlockElement(ABC):
     """Base class for elements that can be converted between Markdown and Notion."""
 
     @classmethod
+    @abstractmethod
     async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         """
         Convert markdown to Notion block content.
@@ -19,10 +20,13 @@ class BaseBlockElement(ABC):
             - list[BlockContent]: Multiple block contents
             - None: Cannot convert this markdown
         """
+        pass
 
     @classmethod
+    @abstractmethod
     async def notion_to_markdown(cls, block: Block) -> str | None:
         """Convert Notion block to markdown."""
+        pass
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:

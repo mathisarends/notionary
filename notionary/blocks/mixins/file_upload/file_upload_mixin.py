@@ -32,11 +32,7 @@ class FileUploadMixin(LoggingMixin):
             return False
 
         return (
-            "/" in path
-            or "\\" in path
-            or path.startswith("./")
-            or path.startswith("../")
-            or ":" in path[:3]
+            "/" in path or "\\" in path or path.startswith("./") or path.startswith("../") or ":" in path[:3]
         )  # Windows drive letters like C:
 
     @classmethod
@@ -194,9 +190,7 @@ class FileUploadMixin(LoggingMixin):
         return actual_category == expected_category
 
     @classmethod
-    async def _upload_local_file(
-        cls, file_path_str: str, expected_category: str = "file"
-    ) -> str | None:
+    async def _upload_local_file(cls, file_path_str: str, expected_category: str = "file") -> str | None:
         """
         Upload a local file and return the file upload ID.
 
@@ -219,27 +213,18 @@ class FileUploadMixin(LoggingMixin):
             file_size = file_path.stat().st_size
             content_type = cls._get_content_type(file_path)
 
-            cls.logger.info(
-                f"Uploading {expected_category} file: {file_path.name} "
-                f"({file_size} bytes, {content_type})"
-            )
+            cls.logger.info(f"Uploading {expected_category} file: {file_path.name} ({file_size} bytes, {content_type})")
 
             # Create and execute upload
-            upload_id = await cls._execute_upload(
-                file_upload_client, file_path, content_type, file_size
-            )
+            upload_id = await cls._execute_upload(file_upload_client, file_path, content_type, file_size)
 
             if upload_id:
-                cls.logger.info(
-                    f"File upload completed: {upload_id} ({file_path.name})"
-                )
+                cls.logger.info(f"File upload completed: {upload_id} ({file_path.name})")
 
             return upload_id
 
         except Exception as e:
-            cls.logger.error(
-                f"Error uploading {expected_category} file {file_path_str}: {e}"
-            )
+            cls.logger.error(f"Error uploading {expected_category} file {file_path_str}: {e}")
             cls.logger.debug("Upload error traceback:", exc_info=True)
             return None
 
@@ -285,9 +270,7 @@ class FileUploadMixin(LoggingMixin):
         cls.logger.debug(f"Created file upload with ID: {upload_response.id}")
 
         # Step 2: Send file content
-        success = await file_upload_client.send_file_from_path(
-            file_upload_id=upload_response.id, file_path=file_path
-        )
+        success = await file_upload_client.send_file_from_path(file_upload_id=upload_response.id, file_path=file_path)
 
         if not success:
             cls.logger.error(f"Failed to send file content for {file_path.name}")
@@ -297,9 +280,7 @@ class FileUploadMixin(LoggingMixin):
         return upload_response.id
 
     @classmethod
-    def _get_upload_error_message(
-        cls, file_path_str: str, expected_category: str
-    ) -> str:
+    def _get_upload_error_message(cls, file_path_str: str, expected_category: str) -> str:
         """Get a user-friendly error message for upload failures."""
         file_path = Path(file_path_str)
 
@@ -309,8 +290,7 @@ class FileUploadMixin(LoggingMixin):
         actual_category = cls._get_file_category(file_path)
         if expected_category not in (actual_category, "file"):
             return (
-                f"Invalid file type for {expected_category} block: "
-                f"{file_path.suffix} (detected as {actual_category})"
+                f"Invalid file type for {expected_category} block: {file_path.suffix} (detected as {actual_category})"
             )
 
         return f"Failed to upload {expected_category} file: {file_path_str}"

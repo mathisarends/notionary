@@ -21,11 +21,7 @@ class BlockProcessingContext:
 
     def has_children(self) -> bool:
         """Check if block has children that need processing."""
-        return (
-            self.block.has_children
-            and self.block.children is not None
-            and len(self.block.children) > 0
-        )
+        return self.block.has_children and self.block.children is not None and len(self.block.children) > 0
 
     def get_children_blocks(self) -> list[Block]:
         """Get the children blocks safely."""

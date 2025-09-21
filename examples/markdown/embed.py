@@ -20,9 +20,7 @@ def create_embed_examples() -> str:
     return (
         MarkdownBuilder()
         .h2("🌐 Embed Elements")
-        .paragraph(
-            "Embeds let you include external content directly in your Notion pages."
-        )
+        .paragraph("Embeds let you include external content directly in your Notion pages.")
         .space()
         .embed(
             url="https://www.youtube.com/watch?v=x7X9w_GIm1s&ab_channel=Fireship",

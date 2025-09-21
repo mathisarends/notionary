@@ -44,28 +44,19 @@ extend-exclude = [".venv", "dist", "build"]
 [tool.ruff.lint]
 select = ["E","F","I","UP","B","SIM","PL","RUF","C90"]
 ignore = [
-  "E501",     # Zeile zu lang
-  "E402",     # Imports nicht am Dateianfang
-  "PLC0415",  # Import should be at top-level  <- HINZUFÜGEN
-  "PLR2004",  # Magic values
-  "PLR0911",  # Too many return statements
-  "PLR0912",  # Too many branches
-  "PLR0913",  # Too many arguments
-  "PLR0915",  # Too many statements
-  "C901",     # Function too complex
-  "B024",     # ABC ohne abstrakte Methoden
-  "B027",     # ABC leere Methoden ohne @abstractmethod
-  "B904",     # raise ... from e
-  "E722",     # bare except
-  "RUF012",   # Mutable class attribute -> ClassVar
-  "RUF006",   # create_task Returnwert nicht gespeichert
-  "SIM108",   # Ternary-Simplify
+  "E501",     # line too long
+  "E402",     # imports not at top of file
+  "PLC0415",  # import should be at top-level
+  "PLR2004",  # magic values
+  "PLR0911",  # too many return statements
+  "PLR0912",  # too many branches
+  "PLR0913",  # too many arguments
+  "PLR0915",  # too many statements
+  "C901",     # function too complex
+  "RUF006",   # create_task return value not stored
   "PLW0603",  # global statement
-  "PLW2901",  # Loop-Variable überschrieben
-  "RUF001",   # En Dash etc.
-  "RUF003",   # Comment contains ambiguous character  <- Wenn Sie wollen
-  "UP045",    # Use X | None for type annotations      <- Wenn Sie wollen
-  "F811",     # Redefinition of unused variable        <- Wenn Sie wollen
+  "PLW2901",  # loop variable overwritten
+  "RUF001",   # en dash, etc.
 ]
 
 [tool.ruff.format]

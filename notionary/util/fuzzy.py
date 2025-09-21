@@ -19,9 +19,7 @@ class MatchResult:
 
 def calculate_similarity(query: str, target: str) -> float:
     """Calculate similarity between two strings using difflib."""
-    return difflib.SequenceMatcher(
-        None, query.lower().strip(), target.lower().strip()
-    ).ratio()
+    return difflib.SequenceMatcher(None, query.lower().strip(), target.lower().strip()).ratio()
 
 
 def find_best_matches(
@@ -51,9 +49,7 @@ def find_best_matches(
         similarity = calculate_similarity(query, text)
 
         if similarity >= min_similarity:
-            results.append(
-                MatchResult(item=item, similarity=similarity, matched_text=text)
-            )
+            results.append(MatchResult(item=item, similarity=similarity, matched_text=text))
 
     # Sort by similarity (highest first)
     results.sort(key=lambda x: x.similarity, reverse=True)

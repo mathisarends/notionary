@@ -16,21 +16,15 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 async def test_match_markdown_valid():
     """Test recognition of valid image formats."""
     assert await ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
-    assert await ImageElement.markdown_to_notion(
-        "[image](https://test.com/img.png)(caption:Caption)"
-    )
+    assert await ImageElement.markdown_to_notion("[image](https://test.com/img.png)(caption:Caption)")
     assert await ImageElement.markdown_to_notion("[image](http://site.org/photo.gif)")
-    assert await ImageElement.markdown_to_notion(
-        "  [image](https://example.com/img.jpg)  "
-    )
+    assert await ImageElement.markdown_to_notion("  [image](https://example.com/img.jpg)  ")
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not await ImageElement.markdown_to_notion(
-        "[img](https://example.com/pic.jpg)"
-    )  # Wrong prefix
+    assert not await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)")  # Wrong prefix
     assert await ImageElement.markdown_to_notion("[image]()") is None  # Empty URL
     assert await ImageElement.markdown_to_notion("Regular text") is None
     assert await ImageElement.markdown_to_notion("") is None
@@ -65,9 +59,7 @@ def test_match_notion():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_without_caption():
     """Test conversion from markdown to Notion without caption."""
-    result = await ImageElement.markdown_to_notion(
-        "[image](https://example.com/pic.jpg)"
-    )
+    result = await ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
 
     assert result is not None
 
@@ -83,9 +75,7 @@ async def test_markdown_to_notion_without_caption():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_with_caption():
     """Test conversion from markdown to Notion with caption."""
-    result = await ImageElement.markdown_to_notion(
-        "[image](https://example.com/pic.jpg)(caption:My Photo)"
-    )
+    result = await ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)(caption:My Photo)")
 
     assert result is not None
     image_block = result
@@ -99,10 +89,7 @@ async def test_markdown_to_notion_with_caption():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_invalid():
     """Test invalid markdown returns None."""
-    assert (
-        await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)")
-        is None
-    )
+    assert await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)") is None
     assert await ImageElement.markdown_to_notion("[image]()") is None
     assert await ImageElement.markdown_to_notion("text") is None
 
@@ -215,22 +202,11 @@ async def test_markdown_patterns(markdown, should_match):
 async def test_pattern_matching():
     """Test that the element can handle various patterns."""
     # Valid patterns should work
-    assert (
-        await ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
-        is not None
-    )
-    assert (
-        await ImageElement.markdown_to_notion(
-            "[image](https://test.com/img.png)(caption:Caption)"
-        )
-        is not None
-    )
+    assert await ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)") is not None
+    assert await ImageElement.markdown_to_notion("[image](https://test.com/img.png)(caption:Caption)") is not None
 
     # Invalid patterns should not
-    assert (
-        await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)")
-        is None
-    )
+    assert await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)") is None
     # Note: With file upload support, "not-a-url" is now accepted
     result = await ImageElement.markdown_to_notion("[image](not-a-url)")
     assert result is not None  # Now works with file upload support
@@ -264,9 +240,7 @@ async def test_roundtrip_conversion():
 @pytest.mark.asyncio
 async def test_caption_with_special_characters():
     """Test captions with special characters."""
-    markdown = (
-        "[image](https://example.com/pic.jpg)(caption:Photo with ümlaut & emoji 🌅)"
-    )
+    markdown = "[image](https://example.com/pic.jpg)(caption:Photo with ümlaut & emoji 🌅)"
     result = await ImageElement.markdown_to_notion(markdown)
 
     assert result is not None

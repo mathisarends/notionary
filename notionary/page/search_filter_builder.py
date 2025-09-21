@@ -61,9 +61,7 @@ class SearchFilterBuilder:
         self.config.object_type = "database"
         return self
 
-    def with_sort_direction(
-        self, direction: Literal["ascending", "descending"]
-    ) -> SearchFilterBuilder:
+    def with_sort_direction(self, direction: Literal["ascending", "descending"]) -> SearchFilterBuilder:
         """Set sort direction (ascending or descending)."""
         self.config.sort_direction = direction
         return self
@@ -76,9 +74,7 @@ class SearchFilterBuilder:
         """Sort results in descending order."""
         return self.with_sort_direction("descending")
 
-    def with_sort_timestamp(
-        self, timestamp: Literal["last_edited_time", "created_time"]
-    ) -> SearchFilterBuilder:
+    def with_sort_timestamp(self, timestamp: Literal["last_edited_time", "created_time"]) -> SearchFilterBuilder:
         """Set the timestamp field to sort by."""
         self.config.sort_timestamp = timestamp
         return self

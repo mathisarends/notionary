@@ -73,10 +73,7 @@ class NotionTextLengthProcessor(LoggingMixin):
         content = getattr(block, block.type, None)
 
         # Verify it's a valid content object (has rich_text or children)
-        if content and (
-            self._is_rich_text_container(content)
-            or self._is_children_container(content)
-        ):
+        if content and (self._is_rich_text_container(content) or self._is_children_container(content)):
             return content
 
         return None
@@ -114,9 +111,7 @@ class NotionTextLengthProcessor(LoggingMixin):
                 # Truncate the content
                 rich_text_obj.text.content = content[: self.max_text_length]
 
-    def _flatten_block_list(
-        self, blocks: list[BlockCreateRequest | list]
-    ) -> list[BlockCreateRequest]:
+    def _flatten_block_list(self, blocks: list[BlockCreateRequest | list]) -> list[BlockCreateRequest]:
         """
         Flatten a potentially nested list of blocks.
         """
@@ -140,12 +135,8 @@ class NotionTextLengthProcessor(LoggingMixin):
         """Type guard to check if an object has children attribute."""
         return hasattr(obj, "children") and isinstance(obj.children, list)
 
-    def _is_text_rich_text_object(
-        self, rich_text_obj: RichTextObject
-    ) -> TypeGuard[RichTextObject]:
+    def _is_text_rich_text_object(self, rich_text_obj: RichTextObject) -> TypeGuard[RichTextObject]:
         """Type guard to check if a RichTextObject is of type 'text' with content."""
         return (
-            rich_text_obj.type == "text"
-            and rich_text_obj.text is not None
-            and rich_text_obj.text.content is not None
+            rich_text_obj.type == "text" and rich_text_obj.text is not None and rich_text_obj.text.content is not None
         )

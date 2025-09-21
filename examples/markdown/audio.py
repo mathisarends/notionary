@@ -20,9 +20,7 @@ def create_audio_examples() -> str:
     return (
         MarkdownBuilder()
         .h2("🎵 Audio Elements")
-        .paragraph(
-            "Audio elements let you embed audio files directly in your Notion pages."
-        )
+        .paragraph("Audio elements let you embed audio files directly in your Notion pages.")
         .space()
         .audio(
             url="https://storage.googleapis.com/audio_summaries/ep_ai_summary_127d02ec-ca12-4312-a5ed-cb14b185480c.mp3",

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import ClassVar
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import (
@@ -35,12 +36,12 @@ class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
     # Pattern matches both URLs and file paths
     VIDEO_PATTERN = re.compile(r"\[video\]\(([^)]+)\)")
 
-    YOUTUBE_PATTERNS = [
+    YOUTUBE_PATTERNS: ClassVar[list[re.Pattern[str]]] = [
         re.compile(r"(?:https?://)?(?:www\.)?youtube\.com/watch\?v=([\w-]{11})"),
         re.compile(r"(?:https?://)?(?:www\.)?youtu\.be/([\w-]{11})"),
     ]
 
-    SUPPORTED_EXTENSIONS = {
+    SUPPORTED_EXTENSIONS: ClassVar[set[str]] = {
         ".mp4",
         ".avi",
         ".mov",
@@ -84,9 +85,7 @@ class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
                 cls.logger.error(f"Failed to upload video file: {path}")
                 return None
 
-            cls.logger.info(
-                f"Successfully uploaded video file with ID: {file_upload_id}"
-            )
+            cls.logger.info(f"Successfully uploaded video file with ID: {file_upload_id}")
 
             # Use mixin to extract caption (if present anywhere in text)
             caption_text = cls.extract_caption(text.strip())

@@ -188,9 +188,7 @@ class MarkdownBuilder:
         self.children.append(CalloutMarkdownNode(text=text, emoji=emoji))
         return self
 
-    def toggle(
-        self, title: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder]
-    ) -> Self:
+    def toggle(self, title: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder]) -> Self:
         """
         Add a toggle block with content built using the builder API.
 
@@ -208,9 +206,7 @@ class MarkdownBuilder:
         """
         toggle_builder = MarkdownBuilder()
         builder_func(toggle_builder)
-        self.children.append(
-            ToggleMarkdownNode(title=title, children=toggle_builder.children)
-        )
+        self.children.append(ToggleMarkdownNode(title=title, children=toggle_builder.children))
         return self
 
     def toggleable_heading(
@@ -237,16 +233,10 @@ class MarkdownBuilder:
         """
         toggle_builder = MarkdownBuilder()
         builder_func(toggle_builder)
-        self.children.append(
-            ToggleableHeadingMarkdownNode(
-                text=text, level=level, children=toggle_builder.children
-            )
-        )
+        self.children.append(ToggleableHeadingMarkdownNode(text=text, level=level, children=toggle_builder.children))
         return self
 
-    def image(
-        self, url: str, caption: str | None = None, alt: str | None = None
-    ) -> Self:
+    def image(self, url: str, caption: str | None = None, alt: str | None = None) -> Self:
         """
         Add an image.
 
@@ -302,9 +292,7 @@ class MarkdownBuilder:
         self.children.append(PdfMarkdownNode(url=url, caption=caption))
         return self
 
-    def bookmark(
-        self, url: str, title: str | None = None, caption: str | None = None
-    ) -> Self:
+    def bookmark(self, url: str, title: str | None = None, caption: str | None = None) -> Self:
         """
         Add a bookmark.
 
@@ -313,9 +301,7 @@ class MarkdownBuilder:
             title: Optional bookmark title
             description: Optional bookmark description text
         """
-        self.children.append(
-            BookmarkMarkdownNode(url=url, title=title, caption=caption)
-        )
+        self.children.append(BookmarkMarkdownNode(url=url, title=title, caption=caption))
         return self
 
     def embed(self, url: str, caption: str | None = None) -> Self:
@@ -329,9 +315,7 @@ class MarkdownBuilder:
         self.children.append(EmbedMarkdownNode(url=url, caption=caption))
         return self
 
-    def code(
-        self, code: str, language: str | None = None, caption: str | None = None
-    ) -> Self:
+    def code(self, code: str, language: str | None = None, caption: str | None = None) -> Self:
         """
         Add a code block.
 
@@ -340,9 +324,7 @@ class MarkdownBuilder:
             language: Optional programming language for syntax highlighting
             caption: Optional code block caption text
         """
-        self.children.append(
-            CodeMarkdownNode(code=code, language=language, caption=caption)
-        )
+        self.children.append(CodeMarkdownNode(code=code, language=language, caption=caption))
         return self
 
     def mermaid(self, diagram: str, caption: str | None = None) -> Self:
@@ -353,11 +335,7 @@ class MarkdownBuilder:
             diagram: The Mermaid diagram source code
             caption: Optional diagram caption text
         """
-        self.children.append(
-            CodeMarkdownNode(
-                code=diagram, language=CodeLanguage.MERMAID.value, caption=caption
-            )
-        )
+        self.children.append(CodeMarkdownNode(code=diagram, language=CodeLanguage.MERMAID.value, caption=caption))
         return self
 
     def table(self, headers: list[str], rows: list[list[str]]) -> Self:
@@ -468,17 +446,13 @@ class MarkdownBuilder:
             col_builder = MarkdownBuilder()
             builder_func(col_builder)
 
-            column_node = ColumnMarkdownNode(
-                children=col_builder.children, width_ratio=width_ratio
-            )
+            column_node = ColumnMarkdownNode(children=col_builder.children, width_ratio=width_ratio)
             columns.append(column_node)
 
         self.children.append(ColumnListMarkdownNode(columns=columns))
         return self
 
-    def column_with_nodes(
-        self, *nodes: MarkdownNode, width_ratio: float | None = None
-    ) -> Self:
+    def column_with_nodes(self, *nodes: MarkdownNode, width_ratio: float | None = None) -> Self:
         """
         Add a column with pre-built MarkdownNode objects.
 
@@ -506,9 +480,7 @@ class MarkdownBuilder:
         self.children.append(column_node)
         return self
 
-    def _column(
-        self, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder]
-    ) -> ColumnMarkdownNode:
+    def _column(self, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder]) -> ColumnMarkdownNode:
         """
         Internal helper to create a single column.
         Use columns() instead for public API.
@@ -519,6 +491,4 @@ class MarkdownBuilder:
 
     def build(self) -> str:
         """Build and return the final markdown string."""
-        return "\n\n".join(
-            child.to_markdown() for child in self.children if child is not None
-        )
+        return "\n\n".join(child.to_markdown() for child in self.children if child is not None)

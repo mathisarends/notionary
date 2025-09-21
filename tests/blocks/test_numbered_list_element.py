@@ -19,17 +19,9 @@ async def test_match_markdown_valid():
     """Test recognition of valid numbered list formats."""
     assert await NumberedListElement.markdown_to_notion("1. First item") is not None
     assert await NumberedListElement.markdown_to_notion("2. Second item") is not None
-    assert (
-        await NumberedListElement.markdown_to_notion("123. Item with big number")
-        is not None
-    )
-    assert (
-        await NumberedListElement.markdown_to_notion("  1. Indented item") is not None
-    )
-    assert (
-        await NumberedListElement.markdown_to_notion("    10. Deep indented")
-        is not None
-    )
+    assert await NumberedListElement.markdown_to_notion("123. Item with big number") is not None
+    assert await NumberedListElement.markdown_to_notion("  1. Indented item") is not None
+    assert await NumberedListElement.markdown_to_notion("    10. Deep indented") is not None
 
 
 @pytest.mark.asyncio
@@ -39,10 +31,7 @@ async def test_match_markdown_invalid():
     assert await NumberedListElement.markdown_to_notion("* Another bullet") is None
     assert await NumberedListElement.markdown_to_notion("1 Missing dot") is None
     assert await NumberedListElement.markdown_to_notion("1.Missing space") is None
-    assert (
-        await NumberedListElement.markdown_to_notion("a. Letter instead of number")
-        is None
-    )
+    assert await NumberedListElement.markdown_to_notion("a. Letter instead of number") is None
     assert await NumberedListElement.markdown_to_notion("Regular text") is None
     assert await NumberedListElement.markdown_to_notion("") is None
 
@@ -251,9 +240,7 @@ async def test_roundtrip_conversion():
 
         # Add mock rich text for conversion
         mock_rich_text = Mock()
-        mock_rich_text.model_dump.return_value = {
-            "text": {"content": original.split(". ", 1)[1]}
-        }
+        mock_rich_text.model_dump.return_value = {"text": {"content": original.split(". ", 1)[1]}}
         mock_block.numbered_list_item.rich_text = [mock_rich_text]
 
         # Notion -> Markdown

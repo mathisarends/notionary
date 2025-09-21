@@ -81,9 +81,7 @@ class NotionPageHttpClient(NotionHttpClient):
         update_dto = NotionPageUpdateDto(archived=False)
         return await self.patch_page(update_dto)
 
-    async def patch_property(
-        self, property_name: str, value: Any, property_type: type[PagePropertyT]
-    ) -> NotionPageDto:
+    async def patch_property(self, property_name: str, value: Any, property_type: type[PagePropertyT]) -> NotionPageDto:
         """
         Updates a single property using the property type and internal schema.
         """
@@ -95,9 +93,7 @@ class NotionPageHttpClient(NotionHttpClient):
             self._page_properties = {}
 
         # Create a new property instance with the updated value
-        updated_property = self._create_updated_property(
-            property_type, current_property, value
-        )
+        updated_property = self._create_updated_property(property_type, current_property, value)
 
         self._page_properties[property_name] = updated_property
 
@@ -109,64 +105,40 @@ class NotionPageHttpClient(NotionHttpClient):
     async def patch_title(self, title: str) -> NotionPageDto:
         return await self.patch_property("title", title, PageTitleProperty)
 
-    async def patch_rich_text_property(
-        self, property_name: str, text: str
-    ) -> NotionPageDto:
+    async def patch_rich_text_property(self, property_name: str, text: str) -> NotionPageDto:
         return await self.patch_property(property_name, text, PageRichTextProperty)
 
     async def patch_url_property(self, property_name: str, url: str) -> NotionPageDto:
         return await self.patch_property(property_name, url, PageURLProperty)
 
-    async def patch_email_property(
-        self, property_name: str, email: str
-    ) -> NotionPageDto:
+    async def patch_email_property(self, property_name: str, email: str) -> NotionPageDto:
         return await self.patch_property(property_name, email, PageEmailProperty)
 
-    async def patch_phone_property(
-        self, property_name: str, phone: str
-    ) -> NotionPageDto:
+    async def patch_phone_property(self, property_name: str, phone: str) -> NotionPageDto:
         return await self.patch_property(property_name, phone, PagePhoneNumberProperty)
 
-    async def patch_number_property(
-        self, property_name: str, number: int | float
-    ) -> NotionPageDto:
+    async def patch_number_property(self, property_name: str, number: int | float) -> NotionPageDto:
         return await self.patch_property(property_name, number, PageNumberProperty)
 
-    async def patch_checkbox_property(
-        self, property_name: str, checked: bool
-    ) -> NotionPageDto:
+    async def patch_checkbox_property(self, property_name: str, checked: bool) -> NotionPageDto:
         return await self.patch_property(property_name, checked, PageCheckboxProperty)
 
-    async def patch_select_property(
-        self, property_name: str, option_name: str
-    ) -> NotionPageDto:
+    async def patch_select_property(self, property_name: str, option_name: str) -> NotionPageDto:
         return await self.patch_property(property_name, option_name, PageSelectProperty)
 
-    async def patch_multi_select_property(
-        self, property_name: str, option_names: list[str]
-    ) -> NotionPageDto:
-        return await self.patch_property(
-            property_name, option_names, PageMultiSelectProperty
-        )
+    async def patch_multi_select_property(self, property_name: str, option_names: list[str]) -> NotionPageDto:
+        return await self.patch_property(property_name, option_names, PageMultiSelectProperty)
 
-    async def patch_date_property(
-        self, property_name: str, date_value: str | dict
-    ) -> NotionPageDto:
+    async def patch_date_property(self, property_name: str, date_value: str | dict) -> NotionPageDto:
         return await self.patch_property(property_name, date_value, PageDateProperty)
 
-    async def patch_status_property(
-        self, property_name: str, status_name: str
-    ) -> NotionPageDto:
+    async def patch_status_property(self, property_name: str, status_name: str) -> NotionPageDto:
         return await self.patch_property(property_name, status_name, PageStatusProperty)
 
-    async def patch_relation_property(
-        self, property_name: str, relation_ids: str | list[str]
-    ) -> NotionPageDto:
+    async def patch_relation_property(self, property_name: str, relation_ids: str | list[str]) -> NotionPageDto:
         if isinstance(relation_ids, str):
             relation_ids = [relation_ids]
-        return await self.patch_property(
-            property_name, relation_ids, PageRelationProperty
-        )
+        return await self.patch_property(property_name, relation_ids, PageRelationProperty)
 
     def _create_updated_property(
         self,
@@ -204,12 +176,8 @@ class NotionPageHttpClient(NotionHttpClient):
             select_option = SelectOption(id="", name=str(value))
             return PageSelectProperty(id=property_id, select=select_option)
         elif property_type == PageMultiSelectProperty:
-            multi_select_options = [
-                SelectOption(id="", name=str(item)) for item in value
-            ]
-            return PageMultiSelectProperty(
-                id=property_id, multi_select=multi_select_options
-            )
+            multi_select_options = [SelectOption(id="", name=str(item)) for item in value]
+            return PageMultiSelectProperty(id=property_id, multi_select=multi_select_options)
         elif property_type == PageDateProperty:
             if isinstance(value, dict) and "start" in value:
                 date_value = DateValue(**value)
@@ -225,9 +193,7 @@ class NotionPageHttpClient(NotionHttpClient):
         else:
             raise ValueError(f"Unsupported property type: {property_type}")
 
-    def _get_typed_property(
-        self, name: str, property_type: type[PagePropertyT]
-    ) -> PagePropertyT | None:
+    def _get_typed_property(self, name: str, property_type: type[PagePropertyT]) -> PagePropertyT | None:
         """Get a property by name and type with type safety."""
         if not self._page_properties:
             return None
@@ -238,7 +204,5 @@ class NotionPageHttpClient(NotionHttpClient):
             return prop
         return None
 
-    def get_typed_property(
-        self, property_name: str, property_type: type[PagePropertyT]
-    ) -> PagePropertyT | None:
+    def get_typed_property(self, property_name: str, property_type: type[PagePropertyT]) -> PagePropertyT | None:
         return self._get_typed_property(property_name, property_type)

@@ -26,11 +26,7 @@ class SimpleReport(NotionContentSchema):
     def to_notion_content(self, builder) -> str:
         """Verwendet den MarkdownBuilder für fluente API"""
         return (
-            builder.h1(self.title)
-            .paragraph(self.description)
-            .h2("Key Points")
-            .bulleted_list(self.key_points)
-            .build()
+            builder.h1(self.title).paragraph(self.description).h2("Key Points").bulleted_list(self.key_points).build()
         )
 
 

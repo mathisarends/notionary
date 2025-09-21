@@ -30,9 +30,7 @@ class NotionUser(BaseNotionUser):
         self._email = email
 
     @classmethod
-    async def from_user_id(
-        cls, user_id: str, token: str | None = None
-    ) -> NotionUser | None:
+    async def from_user_id(cls, user_id: str, token: str | None = None) -> NotionUser | None:
         """
         Create a NotionUser from a user ID.
         """
@@ -45,17 +43,13 @@ class NotionUser(BaseNotionUser):
 
         # Ensure this is actually a person user
         if user_response.type != "person":
-            cls.logger.error(
-                "User %s is not a person user (type: %s)", user_id, user_response.type
-            )
+            cls.logger.error("User %s is not a person user (type: %s)", user_id, user_response.type)
             return None
 
         return cls._create_from_response(user_response, token)
 
     @classmethod
-    async def from_name(
-        cls, name: str, token: str | None = None, min_similarity: float = 0.6
-    ) -> NotionUser | None:
+    async def from_name(cls, name: str, token: str | None = None, min_similarity: float = 0.6) -> NotionUser | None:
         """
         Create a NotionUser by finding a person user with fuzzy matching on the name.
         """
@@ -71,11 +65,7 @@ class NotionUser(BaseNotionUser):
                 cls.logger.warning(cls.NO_USERS_FOUND_MSG)
                 raise ValueError(cls.NO_USERS_FOUND_MSG)
 
-            person_users = [
-                user
-                for user in all_users_response
-                if user.type == "person" and user.name
-            ]
+            person_users = [user for user in all_users_response if user.type == "person" and user.name]
 
             if not person_users:
                 cls.logger.warning(cls.NO_PERSON_USERS_FOUND_MSG)
@@ -103,9 +93,7 @@ class NotionUser(BaseNotionUser):
                     min_similarity,
                     available_names,
                 )
-                raise ValueError(
-                    f"No sufficiently similar person user found for '{name}'"
-                )
+                raise ValueError(f"No sufficiently similar person user found for '{name}'")
 
             cls.logger.info(
                 "Found best match: '%s' with similarity %.3f for query '%s'",
@@ -122,9 +110,7 @@ class NotionUser(BaseNotionUser):
             raise
 
     @classmethod
-    def from_user_response(
-        cls, user_response: NotionUserResponse, token: str | None = None
-    ) -> NotionUser:
+    def from_user_response(cls, user_response: NotionUserResponse, token: str | None = None) -> NotionUser:
         """
         Create a NotionUser from an existing API response.
         """
@@ -164,11 +150,7 @@ class NotionUser(BaseNotionUser):
                 return []
 
             # Filter to only person users (not bots)
-            person_users = [
-                user
-                for user in all_users_response
-                if user.type == "person" and user.name
-            ]
+            person_users = [user for user in all_users_response if user.type == "person" and user.name]
 
             if not person_users:
                 cls.logger.warning(cls.NO_PERSON_USERS_FOUND_MSG)
@@ -183,9 +165,7 @@ class NotionUser(BaseNotionUser):
                 limit=limit,
             )
 
-            cls.logger.info(
-                "Found %d matching users for query '%s'", len(matches), name
-            )
+            cls.logger.info("Found %d matching users for query '%s'", len(matches), name)
 
             # Convert to NotionUser instances
             result_users = []
@@ -230,9 +210,7 @@ class NotionUser(BaseNotionUser):
         return False
 
     @classmethod
-    def _create_from_response(
-        cls, user_response: NotionUserResponse, token: str | None
-    ) -> NotionUser:
+    def _create_from_response(cls, user_response: NotionUserResponse, token: str | None) -> NotionUser:
         """Create NotionUser instance from API response."""
         email = user_response.person.email if user_response.person else None
 

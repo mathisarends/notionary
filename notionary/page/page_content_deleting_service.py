@@ -17,9 +17,7 @@ class PageContentDeletingService(LoggingMixin):
     async def clear_page_content(self) -> str | None:
         """Clear all content of the page and return deleted content as markdown."""
         try:
-            children_response = await self._block_client.get_block_children(
-                block_id=self.page_id
-            )
+            children_response = await self._block_client.get_block_children(block_id=self.page_id)
 
             if not children_response or not children_response.results:
                 return None
@@ -83,20 +81,14 @@ class PageContentDeletingService(LoggingMixin):
             # Delete all children recursively
             for child_block in children_blocks:
                 if not await self._delete_block_with_children(child_block):
-                    self.logger.error(
-                        "Failed to delete child block: %s", child_block.id
-                    )
+                    self.logger.error("Failed to delete child block: %s", child_block.id)
                     return False
 
-            self.logger.debug(
-                "Successfully deleted all children of block: %s", block.id
-            )
+            self.logger.debug("Successfully deleted all children of block: %s", block.id)
             return True
 
         except Exception as e:
-            self.logger.error(
-                "Failed to delete children of block %s: %s", block.id, str(e)
-            )
+            self.logger.error("Failed to delete children of block %s: %s", block.id, str(e))
             return False
 
     async def _delete_single_block(self, block: Block) -> bool:

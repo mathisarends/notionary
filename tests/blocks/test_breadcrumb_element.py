@@ -31,57 +31,37 @@ def create_block_with_required_fields(**kwargs) -> Block:
 async def test_match_markdown_valid():
     """Test recognition of valid breadcrumb syntax."""
     assert await BreadcrumbElement.markdown_to_notion("[breadcrumb]") is not None
-    assert await BreadcrumbElement.markdown_to_notion(
-        "[BREADCRUMB]"
-    )  # Case insensitive
+    assert await BreadcrumbElement.markdown_to_notion("[BREADCRUMB]")  # Case insensitive
     assert await BreadcrumbElement.markdown_to_notion("  [breadcrumb]  ")  # With spaces
-    assert await BreadcrumbElement.markdown_to_notion(
-        "\t[breadcrumb]\n"
-    )  # With whitespace
+    assert await BreadcrumbElement.markdown_to_notion("\t[breadcrumb]\n")  # With whitespace
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not await BreadcrumbElement.markdown_to_notion(
-        "breadcrumb"
-    )  # Missing brackets
-    assert not await BreadcrumbElement.markdown_to_notion(
-        "[breadcrumb"
-    )  # Missing closing bracket
-    assert not await BreadcrumbElement.markdown_to_notion(
-        "breadcrumb]"
-    )  # Missing opening bracket
-    assert not await BreadcrumbElement.markdown_to_notion(
-        "[bread crumb]"
-    )  # Space in name
-    assert not await BreadcrumbElement.markdown_to_notion(
-        "[breadcrumbs]"
-    )  # Wrong plural
+    assert not await BreadcrumbElement.markdown_to_notion("breadcrumb")  # Missing brackets
+    assert not await BreadcrumbElement.markdown_to_notion("[breadcrumb")  # Missing closing bracket
+    assert not await BreadcrumbElement.markdown_to_notion("breadcrumb]")  # Missing opening bracket
+    assert not await BreadcrumbElement.markdown_to_notion("[bread crumb]")  # Space in name
+    assert not await BreadcrumbElement.markdown_to_notion("[breadcrumbs]")  # Wrong plural
     assert not await BreadcrumbElement.markdown_to_notion("[toc]")  # Different element
     assert not await BreadcrumbElement.markdown_to_notion("")  # Empty string
 
 
 def test_match_notion_valid():
     """Test recognition of valid breadcrumb blocks."""
-    block = create_block_with_required_fields(
-        type=BlockType.BREADCRUMB, breadcrumb=BreadcrumbBlock()
-    )
+    block = create_block_with_required_fields(type=BlockType.BREADCRUMB, breadcrumb=BreadcrumbBlock())
     assert BreadcrumbElement.match_notion(block)
 
 
 def test_match_notion_invalid():
     """Test rejection of invalid blocks."""
     # Wrong type
-    paragraph_block = create_block_with_required_fields(
-        type=BlockType.PARAGRAPH, breadcrumb=BreadcrumbBlock()
-    )
+    paragraph_block = create_block_with_required_fields(type=BlockType.PARAGRAPH, breadcrumb=BreadcrumbBlock())
     assert not BreadcrumbElement.match_notion(paragraph_block)
 
     # Right type but no breadcrumb
-    no_breadcrumb_block = create_block_with_required_fields(
-        type=BlockType.BREADCRUMB, breadcrumb=None
-    )
+    no_breadcrumb_block = create_block_with_required_fields(type=BlockType.BREADCRUMB, breadcrumb=None)
     assert not BreadcrumbElement.match_notion(no_breadcrumb_block)
 
 
@@ -106,9 +86,7 @@ async def test_markdown_to_notion_invalid():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_valid():
     """Test conversion from valid Notion blocks to markdown."""
-    block = create_block_with_required_fields(
-        type=BlockType.BREADCRUMB, breadcrumb=BreadcrumbBlock()
-    )
+    block = create_block_with_required_fields(type=BlockType.BREADCRUMB, breadcrumb=BreadcrumbBlock())
 
     result = await BreadcrumbElement.notion_to_markdown(block)
     assert result == "[breadcrumb]"
@@ -118,13 +96,9 @@ async def test_notion_to_markdown_valid():
 async def test_notion_to_markdown_invalid():
     """Test that invalid blocks return None."""
     # Wrong type
-    paragraph_block = create_block_with_required_fields(
-        type=BlockType.PARAGRAPH, breadcrumb=BreadcrumbBlock()
-    )
+    paragraph_block = create_block_with_required_fields(type=BlockType.PARAGRAPH, breadcrumb=BreadcrumbBlock())
     assert await BreadcrumbElement.notion_to_markdown(paragraph_block) is None
 
     # Right type but no breadcrumb
-    no_breadcrumb_block = create_block_with_required_fields(
-        type=BlockType.BREADCRUMB, breadcrumb=None
-    )
+    no_breadcrumb_block = create_block_with_required_fields(type=BlockType.BREADCRUMB, breadcrumb=None)
     assert await BreadcrumbElement.notion_to_markdown(no_breadcrumb_block) is None

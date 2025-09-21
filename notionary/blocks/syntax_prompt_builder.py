@@ -45,9 +45,7 @@ class SyntaxPromptBuilder:
         lines = ["# Notionary Markdown Syntax"]
 
         for element_class in self.block_registry.get_elements():
-            info: BlockElementMarkdownInformation | None = (
-                element_class.get_system_prompt_information()
-            )
+            info: BlockElementMarkdownInformation | None = element_class.get_system_prompt_information()
             if info and info.syntax_examples:
                 # Just show the first example for conciseness
                 example = info.syntax_examples[0]
@@ -60,9 +58,7 @@ class SyntaxPromptBuilder:
         blocks = []
 
         for element_class in self.block_registry.get_elements():
-            info: BlockElementMarkdownInformation | None = (
-                element_class.get_system_prompt_information()
-            )
+            info: BlockElementMarkdownInformation | None = element_class.get_system_prompt_information()
             if info:
                 blocks.append(info.block_type)
 
@@ -75,7 +71,7 @@ class SyntaxPromptBuilder:
             # Notionary Markdown Syntax Reference
 
             This comprehensive reference documents all supported markdown syntax for converting between Markdown and Notion blocks.
-            
+
             Each block type includes:
             - **Description:** What the block does
             - **When to use:** Guidelines for appropriate usage

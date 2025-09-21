@@ -58,9 +58,7 @@ async def generate_many_blocks(num_blocks=250):
             markdown += f"```{lang}\n# Block {i}: Code sample\nprint('Testing batch processing')\n```\n\n"
 
         elif block_type == "bulleted_list":
-            markdown += (
-                f"- Bullet point {i}.1\n- Bullet point {i}.2\n- Bullet point {i}.3\n\n"
-            )
+            markdown += f"- Bullet point {i}.1\n- Bullet point {i}.2\n- Bullet point {i}.3\n\n"
 
         elif block_type == "numbered_list":
             markdown += f"1. Numbered item {i}.1\n2. Numbered item {i}.2\n3. Numbered item {i}.3\n\n"
@@ -94,9 +92,7 @@ async def main():
         # Time the operation to see batch processing in action
         start_time = time.time()
 
-        print(
-            f"Appending {num_blocks} blocks to the page (will be processed in batches of 100)..."
-        )
+        print(f"Appending {num_blocks} blocks to the page (will be processed in batches of 100)...")
         result = await page.append_markdown(markdown_content, append_divider=True)
 
         end_time = time.time()

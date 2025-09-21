@@ -25,9 +25,7 @@ class NotionWorkspace(LoggingMixin):
         self.notion_client = NotionHttpClient(token=token)
         self.user_manager = NotionUserManager(token=token)
 
-    async def search_pages(
-        self, query: str, sort_ascending: bool = True, limit: int = 100
-    ) -> list[NotionPage]:
+    async def search_pages(self, query: str, sort_ascending: bool = True, limit: int = 100) -> list[NotionPage]:
         """
         Searches for pages in Notion using the search endpoint.
         """
@@ -44,40 +42,24 @@ class NotionWorkspace(LoggingMixin):
         result = await self.notion_client.post("search", search_filter.build())
         response = NotionQueryDatabaseResponse.model_validate(result)
 
-        return await asyncio.gather(
-            *(NotionPage.from_page_id(page.id) for page in response.results)
-        )
+        return await asyncio.gather(*(NotionPage.from_page_id(page.id) for page in response.results))
 
-    async def search_databases(
-        self, query: str, limit: int = 100
-    ) -> list[NotionDatabase]:
+    async def search_databases(self, query: str, limit: int = 100) -> list[NotionDatabase]:
         """
         Search for databases globally across the Notion workspace.
         """
         search_query = self._truncate_query_if_needed(query)
 
-        response = await self.database_client.search_databases(
-            query=search_query, limit=limit
-        )
-        return await asyncio.gather(
-            *(
-                NotionDatabase.from_database_id(database.id)
-                for database in response.results
-            )
-        )
+        response = await self.database_client.search_databases(query=search_query, limit=limit)
+        return await asyncio.gather(*(NotionDatabase.from_database_id(database.id) for database in response.results))
 
     async def list_all_databases(self, limit: int = 100) -> list[NotionDatabase]:
         """
         List all databases in the workspace.
         Returns a list of NotionDatabase instances.
         """
-        database_results = await self.database_client.search_databases(
-            query="", limit=limit
-        )
-        return [
-            await NotionDatabase.from_database_id(database.id)
-            for database in database_results.results
-        ]
+        database_results = await self.database_client.search_databases(query="", limit=limit)
+        return [await NotionDatabase.from_database_id(database.id) for database in database_results.results]
 
     # User-related methods (limited due to API constraints)
     async def get_current_bot_user(self) -> NotionUser | None:

@@ -9,7 +9,7 @@ Column blocks enable multi-column layouts for organizing content side-by-side. P
 ::: column
 Left column content
 :::
-::: column  
+::: column
 Right column content
 :::
 :::
@@ -220,7 +220,7 @@ builder = (MarkdownBuilder()
 $10/month
 :::
 ::: column
-### Premium  
+### Premium
 $25/month
 :::
 :::

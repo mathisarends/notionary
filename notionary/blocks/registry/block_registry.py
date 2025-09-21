@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import OrderedDict
+from typing import ClassVar
 
 from notionary.blocks.audio import AudioElement
 from notionary.blocks.base_block_element import BaseBlockElement
@@ -33,7 +34,7 @@ from notionary.blocks.video import VideoElement
 class BlockRegistry:
     """Registry of elements that can convert between Markdown and Notion."""
 
-    _DEFAULT_ELEMENTS = [
+    _DEFAULT_ELEMENTS: ClassVar[list[type[BaseBlockElement]]] = [
         HeadingElement,
         CalloutElement,
         CodeElement,
@@ -80,9 +81,7 @@ class BlockRegistry:
             if element_class not in self._excluded_elements:
                 self._elements[element_class.__name__] = element_class
 
-    def exclude_elements(
-        self, *element_classes: type[BaseBlockElement]
-    ) -> BlockRegistry:
+    def exclude_elements(self, *element_classes: type[BaseBlockElement]) -> BlockRegistry:
         """
         Create a new registry with additional excluded elements.
 

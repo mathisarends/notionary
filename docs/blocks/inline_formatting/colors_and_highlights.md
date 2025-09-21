@@ -14,7 +14,7 @@ Apply colors to text without changing the background:
 
 ```markdown
 (red:urgent task)
-(blue:information)  
+(blue:information)
 (green:completed)
 ```
 

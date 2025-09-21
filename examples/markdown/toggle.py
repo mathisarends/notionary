@@ -25,9 +25,7 @@ def create_toggle_examples() -> str:
         # Simple toggle
         .toggle(
             "Click to expand project details",
-            lambda t: t.paragraph(
-                "This project focuses on building a modern web application."
-            ).bulleted_list(
+            lambda t: t.paragraph("This project focuses on building a modern web application.").bulleted_list(
                 [
                     "React frontend with TypeScript",
                     "Node.js backend with Express",
@@ -49,9 +47,7 @@ def create_toggle_examples() -> str:
                     "*Alex* - DevOps Engineer",
                 ]
             )
-            .callout(
-                "All team members work remotely across different time zones.", "🌍"
-            ),
+            .callout("All team members work remotely across different time zones.", "🌍"),
         )
         .space()
         # Nested toggles

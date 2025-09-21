@@ -20,11 +20,7 @@ class ToggleHandler(LineHandler):
         self._end_pattern = re.compile(r"^[+]{3}\s*$")
 
     def _can_handle(self, context: LineProcessingContext) -> bool:
-        return (
-            self._is_toggle_start(context)
-            or self._is_toggle_end(context)
-            or self._is_toggle_content(context)
-        )
+        return self._is_toggle_start(context) or self._is_toggle_end(context) or self._is_toggle_content(context)
 
     async def _process(self, context: LineProcessingContext) -> None:
         # Explicit, readable branches (small duplication is acceptable)
@@ -53,9 +49,7 @@ class ToggleHandler(LineHandler):
 
         # But NOT match toggleable heading pattern (has # after +++)
         # Updated: Support both "+++#title" and "+++ # title"
-        toggleable_heading_pattern = re.compile(
-            r"^[+]{3}\s*#{1,3}\s+.+$", re.IGNORECASE
-        )
+        toggleable_heading_pattern = re.compile(r"^[+]{3}\s*#{1,3}\s+.+$", re.IGNORECASE)
         return not toggleable_heading_pattern.match(line)
 
     def _is_toggle_end(self, context: LineProcessingContext) -> bool:
@@ -94,9 +88,7 @@ class ToggleHandler(LineHandler):
         toggle_context = context.parent_stack.pop()
 
         if toggle_context.has_children():
-            all_children = await self._get_all_children(
-                toggle_context, context.block_registry
-            )
+            all_children = await self._get_all_children(toggle_context, context.block_registry)
             toggle_context.block.toggle.children = all_children
 
         # Check if we have a parent context to add this toggle to
@@ -144,9 +136,7 @@ class ToggleHandler(LineHandler):
         # Process text lines
         if parent_context.child_lines:
             children_text = "\n".join(parent_context.child_lines)
-            text_blocks = await self._convert_children_text(
-                children_text, block_registry
-            )
+            text_blocks = await self._convert_children_text(children_text, block_registry)
             children_blocks.extend(text_blocks)
 
         # Add direct blocks (like processed columns)

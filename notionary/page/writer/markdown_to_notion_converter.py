@@ -83,13 +83,9 @@ class MarkdownToNotionConverter(LoggingMixin):
         regular_handler = RegularLineHandler()
 
         # Create handler chain
-        code_handler.set_next(equation_handler).set_next(table_handler).set_next(
-            column_handler
-        ).set_next(column_list_handler).set_next(toggleable_heading_handler).set_next(
-            toggle_handler
-        ).set_next(
-            regular_handler
-        )
+        code_handler.set_next(equation_handler).set_next(table_handler).set_next(column_handler).set_next(
+            column_list_handler
+        ).set_next(toggleable_heading_handler).set_next(toggle_handler).set_next(regular_handler)
 
         self._handler_chain = code_handler
 

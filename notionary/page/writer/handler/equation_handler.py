@@ -41,23 +41,17 @@ class EquationHandler(LineHandler):
         """Check if we're currently inside any parent context (toggle, heading, etc.)."""
         return len(context.parent_stack) > 0
 
-    async def _process_complete_equation_block(
-        self, context: LineProcessingContext
-    ) -> None:
+    async def _process_complete_equation_block(self, context: LineProcessingContext) -> None:
         """Process the entire equation block in one go using EquationElement."""
         equation_lines, lines_to_consume = self._collect_equation_lines(context)
 
-        block = EquationElement.create_from_markdown_block(
-            opening_line=context.line, equation_lines=equation_lines
-        )
+        block = EquationElement.create_from_markdown_block(opening_line=context.line, equation_lines=equation_lines)
 
         if block:
             context.lines_consumed = lines_to_consume
             context.result_blocks.append(block)
 
-    def _collect_equation_lines(
-        self, context: LineProcessingContext
-    ) -> tuple[list[str], int]:
+    def _collect_equation_lines(self, context: LineProcessingContext) -> tuple[list[str], int]:
         """Collect lines until closing $$ fence and return (lines, count_to_consume)."""
         lines = []
         for idx, ln in enumerate(context.get_remaining_lines()):

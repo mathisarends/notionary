@@ -39,23 +39,17 @@ class CodeHandler(LineHandler):
         """Check if we're currently inside any parent context (toggle, heading, etc.)."""
         return len(context.parent_stack) > 0
 
-    async def _process_complete_code_block(
-        self, context: LineProcessingContext
-    ) -> None:
+    async def _process_complete_code_block(self, context: LineProcessingContext) -> None:
         """Process the entire code block in one go using CodeElement."""
         code_lines, lines_to_consume = self._collect_code_lines(context)
 
-        block = CodeElement.create_from_markdown_block(
-            opening_line=context.line, code_lines=code_lines
-        )
+        block = CodeElement.create_from_markdown_block(opening_line=context.line, code_lines=code_lines)
 
         if block:
             context.lines_consumed = lines_to_consume
             context.result_blocks.append(block)
 
-    def _collect_code_lines(
-        self, context: LineProcessingContext
-    ) -> tuple[list[str], int]:
+    def _collect_code_lines(self, context: LineProcessingContext) -> tuple[list[str], int]:
         """Collect lines until closing fence and return (lines, count_to_consume)."""
         lines = []
         for idx, ln in enumerate(context.get_remaining_lines()):

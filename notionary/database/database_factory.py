@@ -12,9 +12,7 @@ if TYPE_CHECKING:
     from notionary import NotionDatabase
 
 
-async def load_database_from_id(
-    database_id: str, token: str | None = None
-) -> NotionDatabase:
+async def load_database_from_id(database_id: str, token: str | None = None) -> NotionDatabase:
     """Load a NotionDatabase from a database ID."""
     formatted_id = format_uuid(database_id) or database_id
 
@@ -43,8 +41,7 @@ async def load_database_from_name(
         if not best_match:
             available_titles = [_extract_title(db) for db in search_result.results[:5]]
             raise ValueError(
-                f"No sufficiently similar database found for '{database_name}'. "
-                f"Available: {available_titles}"
+                f"No sufficiently similar database found for '{database_name}'. Available: {available_titles}"
             )
 
         database_id = best_match.item.id

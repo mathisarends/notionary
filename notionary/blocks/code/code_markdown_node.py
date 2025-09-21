@@ -55,9 +55,7 @@ class CodeMarkdownNode(MarkdownNode):
         if not non_empty_lines_after_first:
             return 0
 
-        return min(
-            len(line) - len(line.lstrip()) for line in non_empty_lines_after_first
-        )
+        return min(len(line) - len(line.lstrip()) for line in non_empty_lines_after_first)
 
     def _remove_common_indentation(self, lines: list[str], min_indentation: int) -> str:
         normalized_lines = [lines[0].strip()]

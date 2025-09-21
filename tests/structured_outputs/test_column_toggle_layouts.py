@@ -37,13 +37,9 @@ class TestColumnToggleLayouts:
                     .toggle(
                         "📋 Project Overview",
                         lambda t: t.h2("Introduction")
-                        .paragraph(
-                            "This section contains detailed project information."
-                        )
+                        .paragraph("This section contains detailed project information.")
                         .bulleted_list(self.project_features)
-                        .callout(
-                            "Important: This is a nested callout inside toggle!", "⚠️"
-                        ),
+                        .callout("Important: This is a nested callout inside toggle!", "⚠️"),
                     )
                     # Test Column layout with nested content
                     .columns(
@@ -61,13 +57,11 @@ class TestColumnToggleLayouts:
                     .columns(
                         lambda col: col.h2("Column with Toggle").toggle(
                             "🔧 Nested Toggle in Column",
-                            lambda t: t.paragraph(
-                                "This toggle is nested inside a column!"
-                            ).callout("Nested structures work!", "🎉"),
+                            lambda t: t.paragraph("This toggle is nested inside a column!").callout(
+                                "Nested structures work!", "🎉"
+                            ),
                         ),
-                        lambda col: col.h2("Regular Column").paragraph(
-                            "Normal content in second column."
-                        ),
+                        lambda col: col.h2("Regular Column").paragraph("Normal content in second column."),
                     )
                     .paragraph("End of layout test.")
                     .build()
@@ -84,10 +78,7 @@ class TestColumnToggleLayouts:
         assert "+++ 📋 Project Overview" in markdown, "Main toggle title missing"
         assert "## Introduction" in markdown, "Toggle heading missing"
         assert "Feature 1: Advanced layouts" in markdown, "Toggle list item missing"
-        assert (
-            '[callout](Important: This is a nested callout inside toggle! "⚠️")'
-            in markdown
-        ), "Toggle callout missing"
+        assert '[callout](Important: This is a nested callout inside toggle! "⚠️")' in markdown, "Toggle callout missing"
 
     def test_column_structure(self, complex_schema):
         """Test that column blocks are generated correctly."""
@@ -111,15 +102,9 @@ class TestColumnToggleLayouts:
         markdown = complex_schema.to_notion_content(builder)
 
         # Check nested toggle
-        assert (
-            "+++ 🔧 Nested Toggle in Column" in markdown
-        ), "Nested toggle title missing"
-        assert (
-            "This toggle is nested inside a column!" in markdown
-        ), "Nested toggle content missing"
-        assert (
-            '[callout](Nested structures work! "🎉")' in markdown
-        ), "Nested callout missing"
+        assert "+++ 🔧 Nested Toggle in Column" in markdown, "Nested toggle title missing"
+        assert "This toggle is nested inside a column!" in markdown, "Nested toggle content missing"
+        assert '[callout](Nested structures work! "🎉")' in markdown, "Nested callout missing"
 
     def test_builder_structure_analysis(self, complex_schema):
         """Test the structure analysis of the builder."""
@@ -152,9 +137,7 @@ class TestColumnToggleLayouts:
 
         # Count opening and closing markers correctly
         toggle_openings = markdown.count("+++ ")
-        toggle_closings = (
-            markdown.count("+++") - toggle_openings
-        )  # Total +++ minus openings
+        toggle_closings = markdown.count("+++") - toggle_openings  # Total +++ minus openings
 
         column_openings = markdown.count("::: columns")
         column_closings = (
@@ -162,15 +145,15 @@ class TestColumnToggleLayouts:
         )  # Total ::: minus openings and column starts
 
         # Each toggle should have opening and closing
-        assert (
-            toggle_openings == toggle_closings
-        ), f"Toggle markers unbalanced: {toggle_openings} open, {toggle_closings} close"
+        assert toggle_openings == toggle_closings, (
+            f"Toggle markers unbalanced: {toggle_openings} open, {toggle_closings} close"
+        )
 
         # Each column list should have proper structure
         assert column_openings == 2, f"Expected 2 column lists, got {column_openings}"
 
         # Each column list has 2 closings: one for each column + one for the list itself
         expected_closings = column_openings * 2
-        assert (
-            column_closings == expected_closings
-        ), f"Column markers unbalanced: {column_openings} open, {column_closings} close (expected {expected_closings})"
+        assert column_closings == expected_closings, (
+            f"Column markers unbalanced: {column_openings} open, {column_closings} close (expected {expected_closings})"
+        )

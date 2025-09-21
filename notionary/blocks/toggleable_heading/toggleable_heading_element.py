@@ -58,9 +58,7 @@ class ToggleableHeadingElement(BaseBlockElement):
 
         rich_text = await TextInlineFormatter.parse_inline_formatting(content)
 
-        heading_content = HeadingBlock(
-            rich_text=rich_text, color="default", is_toggleable=True, children=[]
-        )
+        heading_content = HeadingBlock(rich_text=rich_text, color="default", is_toggleable=True, children=[])
 
         if level == 1:
             return CreateHeading1Block(heading_1=heading_content)
@@ -92,9 +90,7 @@ class ToggleableHeadingElement(BaseBlockElement):
         if not isinstance(heading_content, HeadingBlock):
             return None
 
-        text = await TextInlineFormatter.extract_text_with_formatting(
-            heading_content.rich_text
-        )
+        text = await TextInlineFormatter.extract_text_with_formatting(heading_content.rich_text)
         prefix = "#" * level
 
         return f"+++{prefix} {text or ''}"

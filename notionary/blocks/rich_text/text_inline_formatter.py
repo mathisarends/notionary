@@ -1,5 +1,6 @@
 import re
 from re import Match
+from typing import ClassVar
 
 from notionary.blocks.rich_text.rich_text_models import (
     MentionDate,
@@ -98,7 +99,7 @@ class TextInlineFormatter:
             (cls.Patterns.USER_MENTION, cls._handle_user_mention_pattern),
         ]
 
-    VALID_COLORS = {color.value for color in BlockColor}
+    VALID_COLORS: ClassVar[set[str]] = {color.value for color in BlockColor}
 
     _resolver: NameIdResolver | None = None
 
@@ -165,9 +166,7 @@ class TextInlineFormatter:
         return segments
 
     @classmethod
-    def _find_earliest_pattern_match(
-        cls, text: str
-    ) -> tuple[Match, callable, int] | None:
+    def _find_earliest_pattern_match(cls, text: str) -> tuple[Match, callable, int] | None:
         """Find the pattern that appears earliest in the text."""
         earliest_match = None
         earliest_position = len(text)
@@ -210,9 +209,7 @@ class TextInlineFormatter:
         return colored_segments
 
     @classmethod
-    def _apply_color_to_text_segment(
-        cls, segment: RichTextObject, color: str
-    ) -> RichTextObject:
+    def _apply_color_to_text_segment(cls, segment: RichTextObject, color: str) -> RichTextObject:
         """Apply color to a text segment while preserving existing formatting."""
         if segment.type != RichTextType.TEXT:
             return segment
@@ -379,21 +376,13 @@ class TextInlineFormatter:
         return date_range
 
     @classmethod
-    def _extract_template_mention_markdown(
-        cls, template_mention: MentionTemplateMention
-    ) -> str:
+    def _extract_template_mention_markdown(cls, template_mention: MentionTemplateMention) -> str:
         """Extract template mention to markdown format."""
         template_type = template_mention.type
-        return (
-            "@template_user"
-            if template_type == TemplateMentionType.USER
-            else "@template_date"
-        )
+        return "@template_user" if template_type == TemplateMentionType.USER else "@template_date"
 
     @classmethod
-    def _apply_text_formatting_to_content(
-        cls, obj: RichTextObject, content: str
-    ) -> str:
+    def _apply_text_formatting_to_content(cls, obj: RichTextObject, content: str) -> str:
         """Apply text formatting annotations to content in correct order."""
 
         # Handle links first (they wrap the content)

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 _bootstrapped = False
 
 
@@ -159,7 +157,7 @@ def bootstrap_blocks() -> None:
         | CreateChildDatabaseBlock
     )
 
-    BlockCreateResult = Optional[BlockCreateRequest]
+    BlockCreateResult = BlockCreateRequest | None
 
     # Add all block types to namespace
     ns.update(

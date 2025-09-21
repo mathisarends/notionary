@@ -45,9 +45,7 @@ class NotionUserManager(LoggingMixin):
 
                 try:
                     # Use the internal creation method to convert response to NotionUser
-                    notion_user = NotionUser.from_user_response(
-                        user_response, self.client.token
-                    )
+                    notion_user = NotionUser.from_user_response(user_response, self.client.token)
                     notion_users.append(notion_user)
                 except Exception as e:
                     self.logger.warning(
@@ -81,11 +79,7 @@ class NotionUserManager(LoggingMixin):
             all_users = await self.get_all_users()
             pattern_lower = name_pattern.lower()
 
-            matching_users = [
-                user
-                for user in all_users
-                if user.name and pattern_lower in user.name.lower()
-            ]
+            matching_users = [user for user in all_users if user.name and pattern_lower in user.name.lower()]
 
             self.logger.info(
                 "Found %d person users matching pattern '%s'",

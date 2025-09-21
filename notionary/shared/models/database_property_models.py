@@ -182,9 +182,7 @@ class DatabaseMultiSelectProperty(BaseModel):
     name: str
     description: str | None = None
     type: PropertyType = PropertyType.MULTI_SELECT
-    multi_select: DatabaseMultiSelectConfig = Field(
-        default_factory=DatabaseMultiSelectConfig
-    )
+    multi_select: DatabaseMultiSelectConfig = Field(default_factory=DatabaseMultiSelectConfig)
 
     @property
     def option_names(self) -> list[str]:
@@ -336,9 +334,7 @@ class DatabasePhoneNumberProperty(BaseModel):
     name: str
     description: str | None = None
     type: PropertyType = PropertyType.PHONE_NUMBER
-    phone_number: DatabasePhoneNumberConfig = Field(
-        default_factory=DatabasePhoneNumberConfig
-    )
+    phone_number: DatabasePhoneNumberConfig = Field(default_factory=DatabasePhoneNumberConfig)
 
 
 class DatabaseCreatedTimeProperty(BaseModel):
@@ -350,9 +346,7 @@ class DatabaseCreatedTimeProperty(BaseModel):
     name: str
     description: str | None = None
     type: PropertyType = PropertyType.CREATED_TIME
-    created_time: DatabaseCreatedTimeConfig = Field(
-        default_factory=DatabaseCreatedTimeConfig
-    )
+    created_time: DatabaseCreatedTimeConfig = Field(default_factory=DatabaseCreatedTimeConfig)
 
 
 # ===== TYPE UNION =====
@@ -388,9 +382,7 @@ class NotionObjectWithDatabaseProperties(BaseModel, ABC):
 
     @field_validator("properties", mode="before")
     @classmethod
-    def parse_database_properties(
-        cls, v: dict[str, Any]
-    ) -> dict[str, DatabaseNotionProperty]:
+    def parse_database_properties(cls, v: dict[str, Any]) -> dict[str, DatabaseNotionProperty]:
         """
         Parse database schema properties dictionary and create typed DatabaseNotionProperty objects.
         Falls back to dict[str, Any] for unknown property types.
@@ -398,10 +390,7 @@ class NotionObjectWithDatabaseProperties(BaseModel, ABC):
         if not v:
             return {}
 
-        return {
-            key: cls._create_database_property(prop_data)
-            for key, prop_data in v.items()
-        }
+        return {key: cls._create_database_property(prop_data) for key, prop_data in v.items()}
 
     @classmethod
     def _create_database_property(cls, prop_data: Any) -> DatabaseNotionProperty:

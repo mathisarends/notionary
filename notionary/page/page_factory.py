@@ -24,9 +24,7 @@ async def load_page_from_id(page_id: str, token: str | None = None) -> NotionPag
         return await _load_page_from_response(page_response, token)
 
 
-async def load_page_from_name(
-    page_name: str, token: str | None = None, min_similarity: float = 0.6
-) -> NotionPage:
+async def load_page_from_name(page_name: str, token: str | None = None, min_similarity: float = 0.6) -> NotionPage:
     """Load a NotionPage by finding a page with fuzzy matching on the title."""
     # Lazy import to avoid circular imports
     from notionary.workspace import NotionWorkspace
@@ -46,9 +44,7 @@ async def load_page_from_name(
 
     if not best_match:
         available_titles = [result.title for result in search_results[:5]]
-        raise ValueError(
-            f"No sufficiently similar page found for '{page_name}'. Available: {available_titles}"
-        )
+        raise ValueError(f"No sufficiently similar page found for '{page_name}'. Available: {available_titles}")
 
     async with NotionHttpClient(token=token) as client:
         page_response = await client.get_page(page_id=best_match.item.id)
@@ -82,9 +78,7 @@ async def _load_page_from_response(
     parent_database_id = _extract_parent_database_id(page_response)
 
     parent_database = (
-        await NotionDatabase.from_database_id(id=parent_database_id, token=token)
-        if parent_database_id
-        else None
+        await NotionDatabase.from_database_id(id=parent_database_id, token=token) if parent_database_id else None
     )
 
     return NotionPage(
@@ -109,11 +103,7 @@ def _extract_title(page_response: NotionPageDto) -> str:
 
     # find the first title property no matter its name
     title_property = next(
-        (
-            prop
-            for prop in page_response.properties.values()
-            if isinstance(prop, PageTitleProperty)
-        ),
+        (prop for prop in page_response.properties.values() if isinstance(prop, PageTitleProperty)),
         None,
     )
 
@@ -165,8 +155,6 @@ def _extract_cover_image_url(page_response: NotionPageDto) -> str | None:
         return None
 
     if page_response.cover.type == CoverType.EXTERNAL:
-        return (
-            page_response.cover.external.url if page_response.cover.external else None
-        )
+        return page_response.cover.external.url if page_response.cover.external else None
 
     return None

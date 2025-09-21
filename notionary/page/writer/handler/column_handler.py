@@ -96,9 +96,7 @@ class ColumnHandler(LineHandler):
         # Process text lines
         if column_context.child_lines:
             children_text = "\n".join(column_context.child_lines)
-            text_blocks = await self._convert_children_text(
-                children_text, context.block_registry
-            )
+            text_blocks = await self._convert_children_text(children_text, context.block_registry)
             all_children.extend(text_blocks)
 
         # Add direct child blocks (like processed toggles)

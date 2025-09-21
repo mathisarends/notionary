@@ -39,9 +39,7 @@ class ToggleElement(BaseBlockElement):
         rich_text = await TextInlineFormatter.parse_inline_formatting(title)
 
         # Create toggle block with empty children - they will be populated automatically
-        toggle_content = ToggleBlock(
-            rich_text=rich_text, color=BlockColor.DEFAULT, children=[]
-        )
+        toggle_content = ToggleBlock(rich_text=rich_text, color=BlockColor.DEFAULT, children=[])
 
         return CreateToggleBlock(toggle=toggle_content)
 
@@ -81,11 +79,7 @@ class ToggleElement(BaseBlockElement):
         for text_obj in rich_text:
             if hasattr(text_obj, "plain_text"):
                 result += text_obj.plain_text or ""
-            elif (
-                hasattr(text_obj, "type")
-                and text_obj.type == "text"
-                and hasattr(text_obj, "text")
-            ):
+            elif hasattr(text_obj, "type") and text_obj.type == "text" and hasattr(text_obj, "text"):
                 result += text_obj.text.content or ""
             # Fallback for dict-style access (backward compatibility)
             elif isinstance(text_obj, dict):

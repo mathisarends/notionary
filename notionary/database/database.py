@@ -48,9 +48,7 @@ class NotionDatabase(LoggingMixin):
         self.client = NotionDatabseHttpClient(token=token)
 
     @classmethod
-    async def from_database_id(
-        cls, id: str, token: str | None = None
-    ) -> NotionDatabase:
+    async def from_database_id(cls, id: str, token: str | None = None) -> NotionDatabase:
         provider = cls.get_database_provider()
         return await provider.get_database_by_id(id, token)
 
@@ -96,18 +94,12 @@ class NotionDatabase(LoggingMixin):
         """
         Create a new blank page in the database with minimal properties.
         """
-        create_page_response: NotionPageDto = await self.client.create_page(
-            parent_database_id=self.id
-        )
+        create_page_response: NotionPageDto = await self.client.create_page(parent_database_id=self.id)
 
-        return await NotionPage.from_page_id(
-            page_id=create_page_response.id, token=self.token
-        )
+        return await NotionPage.from_page_id(page_id=create_page_response.id, token=self.token)
 
     async def set_title(self, new_title: str) -> str:
-        result = await self.client.update_database_title(
-            database_id=self.id, title=new_title
-        )
+        result = await self.client.update_database_title(database_id=self.id, title=new_title)
 
         self._title = result.title[0].plain_text
         self.database_provider.invalidate_database_cache(database_id=self.id)
@@ -117,41 +109,27 @@ class NotionDatabase(LoggingMixin):
         """
         Update the database emoji.
         """
-        result = await self.client.update_database_emoji(
-            database_id=self.id, emoji=new_emoji
-        )
+        result = await self.client.update_database_emoji(database_id=self.id, emoji=new_emoji)
 
         self._emoji_icon = result.icon.emoji if result.icon else None
         self.database_provider.invalidate_database_cache(database_id=self.id)
         return self._emoji_icon
 
     async def set_cover_image(self, image_url: str) -> str:
-        result = await self.client.update_database_cover_image(
-            database_id=self.id, image_url=image_url
-        )
+        result = await self.client.update_database_cover_image(database_id=self.id, image_url=image_url)
 
         self.database_provider.invalidate_database_cache(database_id=self.id)
-        return (
-            result.cover.external.url
-            if result.cover and result.cover.external
-            else image_url
-        )
+        return result.cover.external.url if result.cover and result.cover.external else image_url
 
     async def set_random_gradient_cover(self) -> str:
         random_cover_url = get_random_gradient_cover()
         return await self.set_cover_image(random_cover_url)
 
     async def set_external_icon(self, external_icon_url: str) -> str:
-        result = await self.client.update_database_external_icon(
-            database_id=self.id, icon_url=external_icon_url
-        )
+        result = await self.client.update_database_external_icon(database_id=self.id, icon_url=external_icon_url)
 
         self.database_provider.invalidate_database_cache(database_id=self.id)
-        return (
-            result.icon.external.url
-            if result.icon and result.icon.external
-            else external_icon_url
-        )
+        return result.icon.external.url if result.icon and result.icon.external else external_icon_url
 
     async def get_property_options(self, property_name: str) -> list[str]:
         """
@@ -203,15 +181,11 @@ class NotionDatabase(LoggingMixin):
         """Get a select property by name with type safety."""
         return self._get_database_property(property_name, DatabaseSelectProperty)
 
-    def get_multi_select_property(
-        self, property_name: str
-    ) -> DatabaseMultiSelectProperty | None:
+    def get_multi_select_property(self, property_name: str) -> DatabaseMultiSelectProperty | None:
         """Get a multi-select property by name with type safety."""
         return self._get_database_property(property_name, DatabaseMultiSelectProperty)
 
-    def get_relation_property(
-        self, property_name: str
-    ) -> DatabaseRelationProperty | None:
+    def get_relation_property(self, property_name: str) -> DatabaseRelationProperty | None:
         """Get a relation property by name with type safety."""
         return self._get_database_property(property_name, DatabaseRelationProperty)
 
@@ -219,28 +193,22 @@ class NotionDatabase(LoggingMixin):
         """
         Query the database for pages with a specific title.
         """
-        search_results: NotionQueryDatabaseResponse = (
-            await self.client.query_database_by_title(
-                database_id=self.id, page_title=page_title
-            )
+        search_results: NotionQueryDatabaseResponse = await self.client.query_database_by_title(
+            database_id=self.id, page_title=page_title
         )
 
         page_results: list[NotionPage] = []
 
         if search_results.results:
             page_tasks = [
-                NotionPage.from_page_id(
-                    page_id=page_response.id, token=self.client.token
-                )
+                NotionPage.from_page_id(page_id=page_response.id, token=self.client.token)
                 for page_response in search_results.results
             ]
             page_results = await asyncio.gather(*page_tasks)
 
         return page_results
 
-    async def iter_pages_updated_within(
-        self, hours: int = 24, page_size: int = 100
-    ) -> AsyncGenerator[NotionPage]:
+    async def iter_pages_updated_within(self, hours: int = 24, page_size: int = 100) -> AsyncGenerator[NotionPage]:
         """
         Iterate through pages edited in the last N hours using DatabaseFilterBuilder.
         """
@@ -260,10 +228,7 @@ class NotionDatabase(LoggingMixin):
 
         async for batch in self._paginate_database(page_size=100):
             page_tasks = [
-                NotionPage.from_page_id(
-                    page_id=page_response.id, token=self.client.token
-                )
-                for page_response in batch
+                NotionPage.from_page_id(page_id=page_response.id, token=self.client.token) for page_response in batch
             ]
             batch_pages = await asyncio.gather(*page_tasks)
             pages.extend(batch_pages)
@@ -288,13 +253,9 @@ class NotionDatabase(LoggingMixin):
         """
         async for batch in self._paginate_database(page_size, filter_conditions):
             for page_response in batch:
-                yield await NotionPage.from_page_id(
-                    page_id=page_response.id, token=self.client.token
-                )
+                yield await NotionPage.from_page_id(page_id=page_response.id, token=self.client.token)
 
-    async def _get_relation_options(
-        self, relation_prop: DatabaseRelationProperty
-    ) -> list[str]:
+    async def _get_relation_options(self, relation_prop: DatabaseRelationProperty) -> list[str]:
         """
         Get the titles of all pages related to a relation property.
         """
@@ -320,22 +281,14 @@ class NotionDatabase(LoggingMixin):
             return None
 
         title_property = next(
-            (
-                prop
-                for prop in page.properties.values()
-                if isinstance(prop, PageTitleProperty)
-            ),
+            (prop for prop in page.properties.values() if isinstance(prop, PageTitleProperty)),
             None,
         )
 
         if not title_property:
             # Fallback to old method for backward compatibility
             title_property = next(
-                (
-                    prop
-                    for prop in page.properties.values()
-                    if isinstance(prop, dict) and prop.get("type") == "title"
-                ),
+                (prop for prop in page.properties.values() if isinstance(prop, dict) and prop.get("type") == "title"),
                 None,
             )
 
@@ -350,9 +303,7 @@ class NotionDatabase(LoggingMixin):
 
         return "".join(item.plain_text for item in title_property.title)
 
-    def _get_database_property(
-        self, name: str, property_type: type[DatabasePropertyT]
-    ) -> DatabasePropertyT | None:
+    def _get_database_property(self, name: str, property_type: type[DatabasePropertyT]) -> DatabasePropertyT | None:
         """Get a database property by name and type with type safety."""
         prop = self._properties.get(name)
         if isinstance(prop, property_type):

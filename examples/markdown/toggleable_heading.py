@@ -20,17 +20,13 @@ def create_toggleable_heading_examples() -> str:
     return (
         MarkdownBuilder()
         .h2("📚 Toggleable Headings")
-        .paragraph(
-            "Toggleable headings create collapsible sections with proper heading hierarchy:"
-        )
+        .paragraph("Toggleable headings create collapsible sections with proper heading hierarchy:")
         .space()
         # H2 Toggleable heading
         .toggleable_heading(
             "Project Overview",
             2,
-            lambda t: t.paragraph(
-                "This section contains high-level project information."
-            )
+            lambda t: t.paragraph("This section contains high-level project information.")
             .bulleted_list(
                 [
                     "**Goal**: Build a scalable web application",

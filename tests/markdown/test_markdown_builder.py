@@ -22,9 +22,7 @@ def test_nested_columns_with_mixed_content():
                     headers=["Endpoint", "Method", "Status"],
                     rows=[["/users", "GET", "Active"], ["/auth", "POST", "Beta"]],
                 )
-                .bulleted_list(
-                    ["Authentication required", "Rate limited", "JSON responses"]
-                )
+                .bulleted_list(["Authentication required", "Rate limited", "JSON responses"])
             ),
             # Rechte Spalte: Code + Callout
             lambda col: (
@@ -108,9 +106,7 @@ def test_complex_documentation_structure():
 
     result = (
         builder.h1("API Documentation & Implementation Guide")
-        .paragraph(
-            "Diese Dokumentation zeigt sowohl die API-Endpunkte als auch deren Implementierung."
-        )
+        .paragraph("Diese Dokumentation zeigt sowohl die API-Endpunkte als auch deren Implementierung.")
         .divider()
         .columns(
             # Linke Spalte: Tabelle mit API-Endpunkten
@@ -157,7 +153,7 @@ class APIClient:
             'Authorization': f'Bearer {api_key}',
             'Content-Type': 'application/json'
         })
-    
+
     def get_users(self):
         response = self.session.get(f'{self.base_url}/api/users')
         response.raise_for_status()
@@ -188,9 +184,7 @@ class APIClient:
                         ["/api/auth/login", "180ms", "200", "450ms"],
                     ],
                 )
-                .callout(
-                    "Tests durchgeführt mit 1000 concurrent users über 5 Minuten", "📈"
-                )
+                .callout("Tests durchgeführt mit 1000 concurrent users über 5 Minuten", "📈")
             ),
         )
         .build()
@@ -198,10 +192,7 @@ class APIClient:
 
     # Hauptstruktur
     assert "# API Documentation & Implementation Guide" in result
-    assert (
-        "Diese Dokumentation zeigt sowohl die API-Endpunkte als auch deren Implementierung."
-        in result
-    )
+    assert "Diese Dokumentation zeigt sowohl die API-Endpunkte als auch deren Implementierung." in result
     assert "---" in result  # Divider
 
     # Spalten-Content
@@ -216,17 +207,11 @@ class APIClient:
     assert '```python "Python API Client Implementation"' in result
 
     # Callouts und Listen
-    assert (
-        '[callout](💡 Alle Endpunkte erfordern eine gültige API-Authentifizierung "🔐")'
-        in result
-    )
+    assert '[callout](💡 Alle Endpunkte erfordern eine gültige API-Authentifizierung "🔐")' in result
     assert "- API-Key über Umgebungsvariablen laden" in result
 
     # Toggle mit Benchmarks - FIXED: Korrekte Syntax MIT Leerzeichen
     assert "+++ 📊 Performance Benchmarks" in result
     assert "### Benchmark Results" in result
     assert "| /api/users | 45ms | 850 | 120ms |" in result
-    assert (
-        '[callout](Tests durchgeführt mit 1000 concurrent users über 5 Minuten "📈")'
-        in result
-    )
+    assert '[callout](Tests durchgeführt mit 1000 concurrent users über 5 Minuten "📈")' in result

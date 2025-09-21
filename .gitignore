@@ -88,3 +88,6 @@ desktop.ini
 .env.*
 
 docs/node_modules/
+
+.ruff_cache/
+bandit-report.json

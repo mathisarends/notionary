@@ -29,6 +29,4 @@ class NotionPageDto(NotionObjectWithProperties):
 
 
 class NotionPageUpdateDto(NotionObjectWithProperties):
-    properties: dict[str, PageProperty] | None = (
-        None  # Überschreibt das Feld aus der Basisklasse
-    )
+    properties: dict[str, PageProperty] | None = None  # Überschreibt das Feld aus der Basisklasse

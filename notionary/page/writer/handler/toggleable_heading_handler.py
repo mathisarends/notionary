@@ -20,9 +20,7 @@ class ToggleableHeadingHandler(LineHandler):
     def __init__(self):
         super().__init__()
         # Updated: Support both "+++# title" and "+++#title"
-        self._start_pattern = re.compile(
-            r"^[+]{3}\s*(?P<level>#{1,3})\s*(.+)$", re.IGNORECASE
-        )
+        self._start_pattern = re.compile(r"^[+]{3}\s*(?P<level>#{1,3})\s*(.+)$", re.IGNORECASE)
         # +++
         self._end_pattern = re.compile(r"^[+]{3}\s*$")
 
@@ -97,22 +95,16 @@ class ToggleableHeadingHandler(LineHandler):
         line = context.line.strip()
         return not (self._start_pattern.match(line) or self._end_pattern.match(line))
 
-    async def _add_toggleable_heading_content(
-        self, context: LineProcessingContext
-    ) -> None:
+    async def _add_toggleable_heading_content(self, context: LineProcessingContext) -> None:
         """Add content to the current toggleable heading context."""
         context.parent_stack[-1].add_child_line(context.line)
 
-    async def _finalize_toggleable_heading(
-        self, context: LineProcessingContext
-    ) -> None:
+    async def _finalize_toggleable_heading(self, context: LineProcessingContext) -> None:
         """Finalize a toggleable heading block and add it to result_blocks."""
         heading_context = context.parent_stack.pop()
 
         if heading_context.has_children():
-            all_children = await self._get_all_children(
-                heading_context, context.block_registry
-            )
+            all_children = await self._get_all_children(heading_context, context.block_registry)
             self._assign_heading_children(heading_context.block, all_children)
 
         # Check if we have a parent context to add this heading to
@@ -128,18 +120,14 @@ class ToggleableHeadingHandler(LineHandler):
             # No parent, add to top level
             context.result_blocks.append(heading_context.block)
 
-    async def _get_all_children(
-        self, parent_context: ParentBlockContext, block_registry
-    ) -> list:
+    async def _get_all_children(self, parent_context: ParentBlockContext, block_registry) -> list:
         """Helper method to combine text-based and direct block children."""
         children_blocks = []
 
         # Process text lines
         if parent_context.child_lines:
             children_text = "\n".join(parent_context.child_lines)
-            text_blocks = await self._convert_children_text(
-                children_text, block_registry
-            )
+            text_blocks = await self._convert_children_text(children_text, block_registry)
             children_blocks.extend(text_blocks)
 
         # Add direct blocks
@@ -148,9 +136,7 @@ class ToggleableHeadingHandler(LineHandler):
 
         return children_blocks
 
-    def _assign_heading_children(
-        self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]
-    ) -> None:
+    def _assign_heading_children(self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]) -> None:
         """Assign children to toggleable heading blocks."""
         block_type = parent_block.type
 

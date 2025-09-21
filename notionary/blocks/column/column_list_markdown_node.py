@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 
@@ -22,7 +24,7 @@ class ColumnListMarkdownNode(MarkdownNode):
     :::
     """
 
-    columns: list[ColumnMarkdownNode] = []
+    columns: ClassVar[list[ColumnMarkdownNode]] = []
 
     def to_markdown(self) -> str:
         if not self.columns:

@@ -12,7 +12,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Documentation](https://img.shields.io/badge/docs-mathisarends.github.io-blue.svg)](https://mathisarends.github.io/notionary/)
 
-**Transform complex Notion API interactions into simple, Pythonic code.**  
+**Transform complex Notion API interactions into simple, Pythonic code.**
 Perfect for developers building AI agents, automation workflows, and dynamic content systems.
 
 </div>
@@ -71,32 +71,32 @@ from notionary import NotionPage, NotionDatabase
 async def main():
     # Find pages by name - fuzzy matching included!
     page = await NotionPage.from_page_name("Meeting Notes")
-    
+
     # Option 1: Direct Extended Markdown
     await page.append_markdown("""
     ## Action Items
     - [x] Review project proposal
-    - [ ] Schedule team meeting  
+    - [ ] Schedule team meeting
     - [ ] Update documentation
 
     [callout](Meeting decisions require follow-up "💡")
-    
+
     +++ Details
     Additional context and next steps...
     +++
     """)
-    
+
     # Option 2: Type-Safe Builder (maps to same markdown internally)
     await page.append_markdown(lambda builder: (
         builder
-        .h2("Project Status") 
+        .h2("Project Status")
         .callout("Milestone reached!", "🎉")
         .columns(
             lambda col: col.h3("Completed").bulleted_list([
                 "API design", "Database setup", "Authentication"
             ]),
             lambda col: col.h3("In Progress").bulleted_list([
-                "Frontend UI", "Testing", "Documentation"  
+                "Frontend UI", "Testing", "Documentation"
             ]),
             width_ratios=[0.6, 0.4]
         )
@@ -135,13 +135,13 @@ Every Notion block type with extended syntax:
 - **Content Pipelines**: Automated workflows that process data and generate Notion pages
 - **Knowledge Management**: AI-powered documentation systems with smart categorization
 
-### **Workflow Automation**  
+### **Workflow Automation**
 - **Project Management**: Sync project status, update timelines, generate progress reports
 - **Data Integration**: Connect external APIs and databases to Notion workspaces
 - **Template Systems**: Dynamic page generation from templates and data sources
 
 ### **Content Management**
-- **Bulk Operations**: Mass page updates, content migration, and database management  
+- **Bulk Operations**: Mass page updates, content migration, and database management
 - **Media Handling**: Automated image/video uploads with proper organization
 - **Cross-Platform**: Sync content between Notion and other platforms
 
@@ -155,7 +155,7 @@ Every Notion block type with extended syntax:
 
 ### Smart Discovery
 - Find pages/databases by name
-- Fuzzy matching for approximate searches  
+- Fuzzy matching for approximate searches
 - No more hunting for IDs or URLs
 
 ### Extended Markdown
@@ -163,9 +163,9 @@ Every Notion block type with extended syntax:
 - Callouts, toggles, columns, media uploads
 - Schema provided for AI agent integration
 
-### Modern Python 
+### Modern Python
 - Full async/await support
-- Type hints throughout  
+- Type hints throughout
 - High-performance batch operations
 
 </td>
@@ -199,7 +199,7 @@ Every Notion block type with extended syntax:
 
 ### Quick Links
 - [**Getting Started**](https://mathisarends.github.io/notionary/get-started/) - Setup and first steps
-- [**Page Management**](https://mathisarends.github.io/notionary/page/) - Content and properties  
+- [**Page Management**](https://mathisarends.github.io/notionary/page/) - Content and properties
 - [**Database Operations**](https://mathisarends.github.io/notionary/database/) - Queries and management
 - [**Block Types Reference**](https://mathisarends.github.io/notionary/blocks/) - Complete syntax guide
 
@@ -207,12 +207,12 @@ Every Notion block type with extended syntax:
 
 **Core Functionality:**
 - [Page Management](examples/page_example.py) - Create, update, and manage pages
-- [Database Operations](examples/database.py) - Connect and query databases  
+- [Database Operations](examples/database.py) - Connect and query databases
 - [Workspace Discovery](examples/workspace_discovery.py) - Explore your workspace
 
 **Extended Markdown:**
 - [Basic Formatting](examples/markdown/basic.py) - Text, lists, and links
-- [Callouts & Highlights](examples/markdown/callout.py) - Information boxes  
+- [Callouts & Highlights](examples/markdown/callout.py) - Information boxes
 - [Toggle Sections](examples/markdown/toggle.py) - Collapsible content
 - [Multi-Column Layouts](examples/markdown/columns.py) - Side-by-side design
 - [Tables & Data](examples/markdown/table.py) - Structured presentations
@@ -223,7 +223,7 @@ Every Notion block type with extended syntax:
 
 We welcome contributions from the community! Whether you're:
 - **Fixing bugs** - Help improve stability and reliability
-- **Adding features** - Extend functionality for new use cases  
+- **Adding features** - Extend functionality for new use cases
 - **Improving docs** - Make the library more accessible
 - **Sharing examples** - Show creative applications and patterns
 

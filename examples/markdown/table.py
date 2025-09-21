@@ -21,9 +21,7 @@ def create_table_examples_content() -> str:
     return (
         MarkdownBuilder()
         .h2("📊 Table Element Examples")
-        .paragraph(
-            "Tables are perfect for organizing structured data in a clear, readable format."
-        )
+        .paragraph("Tables are perfect for organizing structured data in a clear, readable format.")
         .space()
         .h3("Product Catalog")
         .table(
@@ -114,9 +112,7 @@ async def main():
 
         print("📋 Content Preview:")
         print("-" * 50)
-        preview = (
-            table_content[:200] + "..." if len(table_content) > 200 else table_content
-        )
+        preview = table_content[:200] + "..." if len(table_content) > 200 else table_content
         print(preview)
         print("-" * 50)
 

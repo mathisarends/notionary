@@ -47,13 +47,9 @@ def create_block_with_required_fields(**kwargs) -> Block:
 @pytest.mark.asyncio
 async def test_match_markdown_valid_files():
     assert await FileElement.markdown_to_notion("[file](https://example.com/doc.pdf)")
-    assert await FileElement.markdown_to_notion(
-        "[file](https://drive.google.com/file/d/123)(caption:My Report)"
-    )
+    assert await FileElement.markdown_to_notion("[file](https://drive.google.com/file/d/123)(caption:My Report)")
     assert await FileElement.markdown_to_notion("   [file](https://abc.com/x.docx)   ")
-    assert await FileElement.markdown_to_notion(
-        "[file](https://example.com/y.xlsx)(caption:Finanzen Q4)"
-    )
+    assert await FileElement.markdown_to_notion("[file](https://example.com/y.xlsx)(caption:Finanzen Q4)")
 
 
 @pytest.mark.asyncio
@@ -100,9 +96,7 @@ async def test_match_markdown_param_invalid(text):
 def test_match_notion_block():
     file_block = create_block_with_required_fields(
         type="file",
-        file=FileBlock(
-            type="external", external=ExternalFile(url="https://example.com/file.pdf")
-        ),
+        file=FileBlock(type="external", external=ExternalFile(url="https://example.com/file.pdf")),
     )
     assert FileElement.match_notion(file_block)
 
@@ -195,9 +189,7 @@ async def test_notion_to_markdown_file_type():
         type="file",
         file=FileBlock(
             type="file",
-            file=NotionHostedFile(
-                url="https://notion.com/file.doc", expiry_time="2024-01-01T00:00:00Z"
-            ),
+            file=NotionHostedFile(url="https://notion.com/file.doc", expiry_time="2024-01-01T00:00:00Z"),
             caption=[],
         ),
     )
@@ -214,9 +206,7 @@ async def test_notion_to_markdown_invalid_cases():
     assert await FileElement.notion_to_markdown(empty_file_block) is None
 
     # File block without URL
-    file_block_no_url = create_block_with_required_fields(
-        type="file", file=FileBlock(type="external")
-    )
+    file_block_no_url = create_block_with_required_fields(type="file", file=FileBlock(type="external"))
     assert await FileElement.notion_to_markdown(file_block_no_url) is None
 
 
@@ -251,9 +241,7 @@ async def test_roundtrip_conversion(markdown):
 
     # Create Block for notion_to_markdown
     file_create_block = notion_blocks
-    notion_block = create_block_with_required_fields(
-        type="file", file=file_create_block.file
-    )
+    notion_block = create_block_with_required_fields(type="file", file=file_create_block.file)
 
     # Convert back to Markdown
     back = await FileElement.notion_to_markdown(notion_block)
@@ -279,9 +267,7 @@ async def test_unicode_and_special_caption(caption):
 
     # Create Block for roundtrip
     file_create_block = blocks
-    file_block = create_block_with_required_fields(
-        type="file", file=file_create_block.file
-    )
+    file_block = create_block_with_required_fields(type="file", file=file_create_block.file)
 
     roundtrip = await FileElement.notion_to_markdown(file_block)
     assert roundtrip == markdown
@@ -402,10 +388,7 @@ async def test_with_fixtures(simple_file_block, file_block_with_caption):
 
     # Test file block with caption
     result2 = await FileElement.notion_to_markdown(file_block_with_caption)
-    assert (
-        result2
-        == "[file](https://docs.example.com/report.pdf)(caption:Annual Report 2024)"
-    )
+    assert result2 == "[file](https://docs.example.com/report.pdf)(caption:Annual Report 2024)"
 
 
 def test_notion_block_validation():
@@ -413,18 +396,14 @@ def test_notion_block_validation():
     # Valid block
     valid_block = create_block_with_required_fields(
         type="file",
-        file=FileBlock(
-            type="external", external=ExternalFile(url="https://example.com/file.pdf")
-        ),
+        file=FileBlock(type="external", external=ExternalFile(url="https://example.com/file.pdf")),
     )
     assert FileElement.match_notion(valid_block)
 
     # Block with wrong type
     wrong_type_block = create_block_with_required_fields(
         type="paragraph",
-        file=FileBlock(
-            type="external", external=ExternalFile(url="https://example.com/file.pdf")
-        ),
+        file=FileBlock(type="external", external=ExternalFile(url="https://example.com/file.pdf")),
     )
     assert not FileElement.match_notion(wrong_type_block)
 

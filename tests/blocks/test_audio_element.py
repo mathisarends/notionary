@@ -8,30 +8,13 @@ from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 @pytest.mark.asyncio
 async def test_match_markdown_valid_audio():
-    assert (
-        await AudioElement.markdown_to_notion("[audio](https://example.com/track.mp3)")
-        is not None
-    )
-    assert (
-        await AudioElement.markdown_to_notion(
-            "[audio](https://audio.de/a.wav)(caption:Ein Track)"
-        )
-        is not None
-    )
-    assert (
-        await AudioElement.markdown_to_notion(
-            "   [audio](https://x.org/b.ogg)(caption:Hallo)   "
-        )
-        is not None
-    )
+    assert await AudioElement.markdown_to_notion("[audio](https://example.com/track.mp3)") is not None
+    assert await AudioElement.markdown_to_notion("[audio](https://audio.de/a.wav)(caption:Ein Track)") is not None
+    assert await AudioElement.markdown_to_notion("   [audio](https://x.org/b.ogg)(caption:Hallo)   ") is not None
     assert await AudioElement.markdown_to_notion("[audio](https://test.com/file.m4a)")
     # Auch OGA und Großbuchstaben
-    assert await AudioElement.markdown_to_notion(
-        "[audio](https://example.com/audio.OGA)"
-    )
-    assert await AudioElement.markdown_to_notion(
-        "[audio](https://audio.com/abc.mp3)(caption:Mit Caption)"
-    )
+    assert await AudioElement.markdown_to_notion("[audio](https://example.com/audio.OGA)")
+    assert await AudioElement.markdown_to_notion("[audio](https://audio.com/abc.mp3)(caption:Mit Caption)")
 
 
 @pytest.mark.asyncio
@@ -72,25 +55,19 @@ async def test_match_markdown_edge_cases():
     # These will be treated as potential local files or URLs
     # Non-HTTP protocols will create external blocks (may fail at Notion API level but element accepts them)
     result_ftp = await AudioElement.markdown_to_notion("[audio](ftp://x.com/file.mp3)")
-    assert (
-        result_ftp is not None
-    )  # Element accepts it, even if Notion API might reject it
+    assert result_ftp is not None  # Element accepts it, even if Notion API might reject it
 
     # Non-standard URLs without extensions are now accepted (validation happens at API level)
     result_no_ext = await AudioElement.markdown_to_notion("[audio](https://a.de/b)")
     assert result_no_ext is not None  # Now works - validation at API level
 
     # Non-audio extensions are accepted (validation happens at upload/API level)
-    result_wrong_ext = await AudioElement.markdown_to_notion(
-        "[audio](https://example.com/file.jpg)"
-    )
+    result_wrong_ext = await AudioElement.markdown_to_notion("[audio](https://example.com/file.jpg)")
     assert result_wrong_ext is not None
 
     # Local path syntax (not existing file)
     result_local = await AudioElement.markdown_to_notion("[audio](not-a-url)")
-    assert (
-        result_local is not None
-    )  # Treated as potential local file, falls back to external URL
+    assert result_local is not None  # Treated as potential local file, falls back to external URL
 
 
 def test_match_notion_block():

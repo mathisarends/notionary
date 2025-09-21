@@ -70,9 +70,7 @@ class TestTextInlineFormatterLinks:
     @pytest.mark.asyncio
     async def test_simple_link(self):
         """Test basic link parsing."""
-        result = await TextInlineFormatter.parse_inline_formatting(
-            "[text](https://example.com)"
-        )
+        result = await TextInlineFormatter.parse_inline_formatting("[text](https://example.com)")
         assert len(result) == 1
         assert result[0].plain_text == "text"
         assert result[0].text.link.url == "https://example.com"
@@ -162,9 +160,7 @@ class TestTextInlineFormatterMentions:
     async def test_database_mention(self):
         """Test database mention parsing using the explicit @database[] syntax."""
         db_id = "223e4567-e89b-12d3-a456-426614174111"
-        result = await TextInlineFormatter.parse_inline_formatting(
-            f"@database[{db_id}]"
-        )
+        result = await TextInlineFormatter.parse_inline_formatting(f"@database[{db_id}]")
         assert len(result) == 1
         assert result[0].type == RichTextType.MENTION
         assert result[0].mention.database.id == db_id
@@ -189,9 +185,7 @@ class TestTextInlineFormatterComplex:
         markdown = "Text with **bold** and *italic* and `code`"
         result = await TextInlineFormatter.parse_inline_formatting(markdown)
 
-        assert (
-            len(result) == 6
-        )  # "Text with ", "bold", " and ", "italic", " and ", "code"
+        assert len(result) == 6  # "Text with ", "bold", " and ", "italic", " and ", "code"
         assert result[0].plain_text == "Text with "
         assert result[1].plain_text == "bold"
         assert result[1].annotations.bold is True
@@ -204,9 +198,7 @@ class TestTextInlineFormatterComplex:
     async def test_nested_formatting_priority(self):
         """Test that first pattern wins when patterns overlap."""
         # Bold should take precedence over italic when they overlap
-        result = await TextInlineFormatter.parse_inline_formatting(
-            "**bold *and* text**"
-        )
+        result = await TextInlineFormatter.parse_inline_formatting("**bold *and* text**")
         # Should parse as one bold block, not separate italic inside
         assert len(result) == 1
         assert result[0].plain_text == "bold *and* text"
@@ -215,9 +207,7 @@ class TestTextInlineFormatterComplex:
     @pytest.mark.asyncio
     async def test_adjacent_formatting(self):
         """Test adjacent formatting blocks."""
-        result = await TextInlineFormatter.parse_inline_formatting(
-            "**bold**__underline__"
-        )
+        result = await TextInlineFormatter.parse_inline_formatting("**bold**__underline__")
         assert len(result) == 2
         assert result[0].annotations.bold is True
         assert result[1].annotations.underline is True
@@ -255,21 +245,15 @@ class TestTextInlineFormatterRoundtrip:
     async def test_simple_roundtrip(self, markdown):
         """Test that simple formatting survives roundtrip conversion."""
         rich_objects = await TextInlineFormatter.parse_inline_formatting(markdown)
-        back_to_markdown = await TextInlineFormatter.extract_text_with_formatting(
-            rich_objects
-        )
+        back_to_markdown = await TextInlineFormatter.extract_text_with_formatting(rich_objects)
         assert back_to_markdown == markdown
 
     @pytest.mark.asyncio
     async def test_complex_roundtrip(self):
         """Test complex formatting roundtrip."""
-        markdown = (
-            "Text with **bold** and *italic* and `code` and [link](https://example.com)"
-        )
+        markdown = "Text with **bold** and *italic* and `code` and [link](https://example.com)"
         rich_objects = await TextInlineFormatter.parse_inline_formatting(markdown)
-        back_to_markdown = await TextInlineFormatter.extract_text_with_formatting(
-            rich_objects
-        )
+        back_to_markdown = await TextInlineFormatter.extract_text_with_formatting(rich_objects)
         assert back_to_markdown == markdown
 
     @pytest.mark.asyncio
@@ -277,9 +261,7 @@ class TestTextInlineFormatterRoundtrip:
         """Test equation roundtrip with complex LaTeX."""
         markdown = "$\\sum_{i=1}^n \\frac{i}{2}$"
         rich_objects = await TextInlineFormatter.parse_inline_formatting(markdown)
-        back_to_markdown = await TextInlineFormatter.extract_text_with_formatting(
-            rich_objects
-        )
+        back_to_markdown = await TextInlineFormatter.extract_text_with_formatting(rich_objects)
         assert back_to_markdown == markdown
 
 
@@ -347,9 +329,7 @@ class TestTextInlineFormatterEdgeCases:
     async def test_whitespace_handling(self):
         """Test whitespace in formatting patterns."""
         # Leading/trailing spaces in formatting should be preserved
-        result = await TextInlineFormatter.parse_inline_formatting(
-            "** bold with spaces **"
-        )
+        result = await TextInlineFormatter.parse_inline_formatting("** bold with spaces **")
         assert len(result) == 1
         assert result[0].plain_text == " bold with spaces "
         assert result[0].annotations.bold is True

@@ -46,18 +46,14 @@ async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
     assert await EquationElement.markdown_to_notion("$E = mc^2$") is None  # Single $
     assert await EquationElement.markdown_to_notion("$$$$") is None  # Empty
-    assert (
-        await EquationElement.markdown_to_notion("$$   $$") is None
-    )  # Only whitespace
+    assert await EquationElement.markdown_to_notion("$$   $$") is None  # Only whitespace
     assert await EquationElement.markdown_to_notion("E = mc^2") is None  # No $$
     assert await EquationElement.markdown_to_notion("") is None  # Empty string
 
 
 def test_match_notion_valid():
     """Test recognition of valid equation blocks."""
-    block = create_block_with_required_fields(
-        type=BlockType.EQUATION, equation=EquationBlock(expression="E = mc^2")
-    )
+    block = create_block_with_required_fields(type=BlockType.EQUATION, equation=EquationBlock(expression="E = mc^2"))
     assert EquationElement.match_notion(block)
 
 
@@ -70,9 +66,7 @@ def test_match_notion_invalid():
     assert not EquationElement.match_notion(paragraph_block)
 
     # Right type but no equation
-    no_equation_block = create_block_with_required_fields(
-        type=BlockType.EQUATION, equation=None
-    )
+    no_equation_block = create_block_with_required_fields(type=BlockType.EQUATION, equation=None)
     assert not EquationElement.match_notion(no_equation_block)
 
 
@@ -118,9 +112,7 @@ async def test_markdown_to_notion_invalid():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_simple():
     """Test conversion from simple Notion blocks to markdown."""
-    block = create_block_with_required_fields(
-        type=BlockType.EQUATION, equation=EquationBlock(expression="E = mc^2")
-    )
+    block = create_block_with_required_fields(type=BlockType.EQUATION, equation=EquationBlock(expression="E = mc^2"))
 
     result = await EquationElement.notion_to_markdown(block)
     assert result == "$$E = mc^2$$"
@@ -158,9 +150,7 @@ async def test_notion_to_markdown_invalid():
     assert await EquationElement.notion_to_markdown(paragraph_block) is None
 
     # Right type but no equation
-    no_equation_block = create_block_with_required_fields(
-        type=BlockType.EQUATION, equation=None
-    )
+    no_equation_block = create_block_with_required_fields(type=BlockType.EQUATION, equation=None)
     assert await EquationElement.notion_to_markdown(no_equation_block) is None
 
     # Empty expression
@@ -186,9 +176,7 @@ async def test_roundtrip_conversion():
         assert notion_result is not None
 
         # Create proper Block mock for roundtrip
-        notion_block = create_block_with_required_fields(
-            type=BlockType.EQUATION, equation=notion_result.equation
-        )
+        notion_block = create_block_with_required_fields(type=BlockType.EQUATION, equation=notion_result.equation)
 
         # Convert back to markdown
         back_to_markdown = await EquationElement.notion_to_markdown(notion_block)

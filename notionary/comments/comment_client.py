@@ -19,9 +19,7 @@ class CommentClient(NotionHttpClient):
     Client for Notion comment operations.
     """
 
-    async def list_all_comments_for_page(
-        self, page_id: str, *, page_size: int = 100
-    ) -> list[Comment]:
+    async def list_all_comments_for_page(self, page_id: str, *, page_size: int = 100) -> list[Comment]:
         """
         Returns all unresolved comments for a page (handles pagination automatically).
 
@@ -33,9 +31,7 @@ class CommentClient(NotionHttpClient):
         cursor: str | None = None
 
         while True:
-            page = await self._list_comments(
-                page_id, start_cursor=cursor, page_size=page_size
-            )
+            page = await self._list_comments(page_id, start_cursor=cursor, page_size=page_size)
             results.extend(page.results)
             if not page.has_more:
                 break
@@ -63,9 +59,7 @@ class CommentClient(NotionHttpClient):
         cursor: str | None = None
 
         while True:
-            page = await self._list_comments(
-                block_id, start_cursor=cursor, page_size=page_size
-            )
+            page = await self._list_comments(block_id, start_cursor=cursor, page_size=page_size)
             for item in page.results:
                 yield item
             if not page.has_more:
@@ -113,9 +107,7 @@ class CommentClient(NotionHttpClient):
 
         resp = await self.post("comments", data=body)
         if resp is None:
-            raise RuntimeError(
-                "Failed to create comment - check logs for HTTP error details."
-            )
+            raise RuntimeError("Failed to create comment - check logs for HTTP error details.")
 
         return Comment.model_validate(resp)
 

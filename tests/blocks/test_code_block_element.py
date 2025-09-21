@@ -54,21 +54,15 @@ async def test_match_markdown_not_code_start():
     """Test rejection of non-code-start formats."""
     assert await CodeElement.markdown_to_notion("This is just text.") is None
     assert await CodeElement.markdown_to_notion("`inline code`") is None
-    assert not await CodeElement.markdown_to_notion(
-        "```python\ncode content"
-    )  # Not just start
-    assert not await CodeElement.markdown_to_notion(
-        "Some text ```python"
-    )  # Not at beginning
+    assert not await CodeElement.markdown_to_notion("```python\ncode content")  # Not just start
+    assert not await CodeElement.markdown_to_notion("Some text ```python")  # Not at beginning
 
 
 def test_match_notion():
     """Test recognition of Notion code blocks."""
     code_block = create_block_with_required_fields(
         type="code",
-        code=CodeBlock(
-            rich_text=[create_rich_text_object("print('test')")], language="python"
-        ),
+        code=CodeBlock(rich_text=[create_rich_text_object("print('test')")], language="python"),
     )
     assert CodeElement.match_notion(code_block)
 
@@ -301,9 +295,7 @@ async def test_with_fixtures(simple_code_block, code_block_with_caption):
 
     # Test code block with caption
     result2 = await CodeElement.notion_to_markdown(code_block_with_caption)
-    assert (
-        result2 == "```javascript\nconsole.log('hello');\n```\nCaption: Example JS code"
-    )
+    assert result2 == "```javascript\nconsole.log('hello');\n```\nCaption: Example JS code"
 
 
 @pytest.mark.asyncio

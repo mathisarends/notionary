@@ -44,32 +44,18 @@ async def test_match_markdown_valid_with_color():
     assert await TableOfContentsElement.markdown_to_notion("[toc](gray)")
     assert await TableOfContentsElement.markdown_to_notion("[toc](blue_background)")
     assert await TableOfContentsElement.markdown_to_notion("[toc](red_background)")
-    assert await TableOfContentsElement.markdown_to_notion(
-        "[TOC](BLUE)"
-    )  # Case insensitive
+    assert await TableOfContentsElement.markdown_to_notion("[TOC](BLUE)")  # Case insensitive
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not await TableOfContentsElement.markdown_to_notion(
-        "toc"
-    )  # Missing brackets
-    assert not await TableOfContentsElement.markdown_to_notion(
-        "[toc"
-    )  # Missing closing bracket
-    assert not await TableOfContentsElement.markdown_to_notion(
-        "toc]"
-    )  # Missing opening bracket
-    assert not await TableOfContentsElement.markdown_to_notion(
-        "[table_of_contents]"
-    )  # Wrong name
-    assert not await TableOfContentsElement.markdown_to_notion(
-        "[toc]()"
-    )  # Empty parentheses
-    assert not await TableOfContentsElement.markdown_to_notion(
-        "[breadcrumb]"
-    )  # Different element
+    assert not await TableOfContentsElement.markdown_to_notion("toc")  # Missing brackets
+    assert not await TableOfContentsElement.markdown_to_notion("[toc")  # Missing closing bracket
+    assert not await TableOfContentsElement.markdown_to_notion("toc]")  # Missing opening bracket
+    assert not await TableOfContentsElement.markdown_to_notion("[table_of_contents]")  # Wrong name
+    assert not await TableOfContentsElement.markdown_to_notion("[toc]()")  # Empty parentheses
+    assert not await TableOfContentsElement.markdown_to_notion("[breadcrumb]")  # Different element
     assert not await TableOfContentsElement.markdown_to_notion("")  # Empty string
 
 
@@ -92,9 +78,7 @@ def test_match_notion_invalid():
     assert not TableOfContentsElement.match_notion(paragraph_block)
 
     # Right type but no table_of_contents
-    no_toc_block = create_block_with_required_fields(
-        type=BlockType.TABLE_OF_CONTENTS, table_of_contents=None
-    )
+    no_toc_block = create_block_with_required_fields(type=BlockType.TABLE_OF_CONTENTS, table_of_contents=None)
     assert not TableOfContentsElement.match_notion(no_toc_block)
 
 
@@ -141,9 +125,7 @@ async def test_markdown_to_notion_case_insensitive():
 async def test_markdown_to_notion_invalid():
     """Test that invalid markdown returns None."""
     assert await TableOfContentsElement.markdown_to_notion("toc") is None
-    assert (
-        await TableOfContentsElement.markdown_to_notion("[table_of_contents]") is None
-    )
+    assert await TableOfContentsElement.markdown_to_notion("[table_of_contents]") is None
     assert await TableOfContentsElement.markdown_to_notion("[breadcrumb]") is None
     assert await TableOfContentsElement.markdown_to_notion("") is None
 
@@ -194,9 +176,7 @@ async def test_notion_to_markdown_invalid():
     assert await TableOfContentsElement.notion_to_markdown(paragraph_block) is None
 
     # Right type but no table_of_contents
-    no_toc_block = create_block_with_required_fields(
-        type=BlockType.TABLE_OF_CONTENTS, table_of_contents=None
-    )
+    no_toc_block = create_block_with_required_fields(type=BlockType.TABLE_OF_CONTENTS, table_of_contents=None)
     assert await TableOfContentsElement.notion_to_markdown(no_toc_block) is None
 
 
@@ -216,6 +196,4 @@ async def test_bidirectional_conversion():
 
         # Convert back to markdown
         markdown_result = await TableOfContentsElement.notion_to_markdown(block)
-        assert (
-            markdown_result == original.lower()
-        )  # Should match (potentially lowercased)
+        assert markdown_result == original.lower()  # Should match (potentially lowercased)

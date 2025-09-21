@@ -47,9 +47,7 @@ def test_audio_markdown_node():
     expected = "[audio](https://example.com/audio.mp3)"
     assert audio.to_markdown() == expected
 
-    audio_with_caption = AudioMarkdownNode(
-        url="https://example.com/audio.mp3", caption="My Audio File"
-    )
+    audio_with_caption = AudioMarkdownNode(url="https://example.com/audio.mp3", caption="My Audio File")
     expected = "[audio](https://example.com/audio.mp3)(caption:My Audio File)"
     assert audio_with_caption.to_markdown() == expected
 
@@ -62,9 +60,7 @@ def test_bookmark_markdown_node():
     assert bookmark.to_markdown() == expected
 
     # Test mit Caption - NEUE SYNTAX: (caption:...)
-    bookmark_with_caption = BookmarkMarkdownNode(
-        url="https://example.com", caption="Example Site"
-    )
+    bookmark_with_caption = BookmarkMarkdownNode(url="https://example.com", caption="Example Site")
     expected = "[bookmark](https://example.com)(caption:Example Site)"
     assert bookmark_with_caption.to_markdown() == expected
 
@@ -102,9 +98,7 @@ def test_code_markdown_node():
     assert code_with_lang.to_markdown() == expected
 
     # Test mit Caption - NEUE SYNTAX: Caption in Quotes auf erster Zeile!
-    code_with_caption = CodeMarkdownNode(
-        code="print('Hello World')", language="python", caption="Example code"
-    )
+    code_with_caption = CodeMarkdownNode(code="print('Hello World')", language="python", caption="Example code")
     expected = "```python \"Example code\"\nprint('Hello World')\n```"
     assert code_with_caption.to_markdown() == expected
 
@@ -124,9 +118,7 @@ def test_file_markdown_node():
     assert file.to_markdown() == expected
 
     # Test mit Caption - NEUE SYNTAX: (caption:...)
-    file_with_caption = FileMarkdownNode(
-        url="https://example.com/doc.pdf", caption="Important Document"
-    )
+    file_with_caption = FileMarkdownNode(url="https://example.com/doc.pdf", caption="Important Document")
     expected = "[file](https://example.com/doc.pdf)(caption:Important Document)"
     assert file_with_caption.to_markdown() == expected
 
@@ -139,9 +131,7 @@ def test_embed_markdown_node():
     assert embed.to_markdown() == expected
 
     # Test mit Caption
-    embed_with_caption = EmbedMarkdownNode(
-        url="https://example.com", caption="External content"
-    )
+    embed_with_caption = EmbedMarkdownNode(url="https://example.com", caption="External content")
     expected = '[embed](https://example.com "External content")'
     assert embed_with_caption.to_markdown() == expected
 
@@ -174,16 +164,12 @@ def test_image_markdown_node():
     assert image.to_markdown() == expected
 
     # Test mit Caption - NEUE SYNTAX: (caption:...)
-    image_with_caption = ImageMarkdownNode(
-        url="https://example.com/image.jpg", caption="My Image"
-    )
+    image_with_caption = ImageMarkdownNode(url="https://example.com/image.jpg", caption="My Image")
     expected = "[image](https://example.com/image.jpg)(caption:My Image)"
     assert image_with_caption.to_markdown() == expected
 
     # Test mit Caption (alt wird ignoriert)
-    image_full = ImageMarkdownNode(
-        url="https://example.com/image.jpg", caption="My Image", alt="Alternative text"
-    )
+    image_full = ImageMarkdownNode(url="https://example.com/image.jpg", caption="My Image", alt="Alternative text")
     expected = "[image](https://example.com/image.jpg)(caption:My Image)"
     assert image_full.to_markdown() == expected
 
@@ -226,7 +212,9 @@ def test_table_markdown_node():
         headers=["Name", "Age", "City"],
         rows=[["Alice", "25", "Berlin"], ["Bob", "30", "Munich"]],
     )
-    expected = "| Name | Age | City |\n| -------- | -------- | -------- |\n| Alice | 25 | Berlin |\n| Bob | 30 | Munich |"
+    expected = (
+        "| Name | Age | City |\n| -------- | -------- | -------- |\n| Alice | 25 | Berlin |\n| Bob | 30 | Munich |"
+    )
     assert table.to_markdown() == expected
 
 
@@ -270,9 +258,7 @@ def test_toggle_markdown_node():
 def test_toggleable_heading_markdown_node():
     """Test ToggleableHeadingMarkdownNode - FIXED"""
     # Test ohne Content - korrekte Syntax mit +++
-    toggleable_h1 = ToggleableHeadingMarkdownNode(
-        text="Section 1", level=1, children=[]
-    )
+    toggleable_h1 = ToggleableHeadingMarkdownNode(text="Section 1", level=1, children=[])
     expected = "+++# Section 1\n+++"
     assert toggleable_h1.to_markdown() == expected
 
@@ -301,9 +287,7 @@ def test_video_markdown_node():
     assert video.to_markdown() == expected
 
     # Test mit Caption - NEUE SYNTAX: (caption:...)
-    video_with_caption = VideoMarkdownNode(
-        url="https://youtube.com/watch?v=123", caption="Tutorial Video"
-    )
+    video_with_caption = VideoMarkdownNode(url="https://youtube.com/watch?v=123", caption="Tutorial Video")
     expected = "[video](https://youtube.com/watch?v=123)(caption:Tutorial Video)"
     assert video_with_caption.to_markdown() == expected
 
@@ -394,10 +378,6 @@ def test_pdf_markdown_node():
     assert pdf.to_markdown() == expected
 
     # Test mit Caption - NEUE SYNTAX: (caption:...)
-    pdf_with_caption = PdfMarkdownNode(
-        url="https://example.com/document.pdf", caption="Critical safety information"
-    )
-    expected = (
-        "[pdf](https://example.com/document.pdf)(caption:Critical safety information)"
-    )
+    pdf_with_caption = PdfMarkdownNode(url="https://example.com/document.pdf", caption="Critical safety information")
+    expected = "[pdf](https://example.com/document.pdf)(caption:Critical safety information)"
     assert pdf_with_caption.to_markdown() == expected

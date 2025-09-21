@@ -15,15 +15,11 @@ class PageContentWriter(LoggingMixin):
         self.block_registry = block_registry
         self._block_client = NotionBlockHttpClient()
 
-        self._markdown_to_notion_converter = MarkdownToNotionConverter(
-            block_registry=block_registry
-        )
+        self._markdown_to_notion_converter = MarkdownToNotionConverter(block_registry=block_registry)
 
     async def append_markdown(
         self,
-        content: (
-            str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema
-        ),
+        content: (str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema),
     ) -> None:
         markdown = self._extract_markdown_from_param(content)
 
@@ -31,21 +27,15 @@ class PageContentWriter(LoggingMixin):
             self.logger.error("append_markdown called with empty markdown content.")
             raise ValueError("Cannot append empty markdown content.")
 
-        processed_markdown = MarkdownWhitespaceProcessor.process_markdown_whitespace(
-            markdown
-        )
+        processed_markdown = MarkdownWhitespaceProcessor.process_markdown_whitespace(markdown)
 
         blocks = await self._markdown_to_notion_converter.convert(processed_markdown)
 
-        await self._block_client.append_block_children(
-            block_id=self.page_id, children=blocks
-        )
+        await self._block_client.append_block_children(block_id=self.page_id, children=blocks)
 
     def _extract_markdown_from_param(
         self,
-        content: (
-            str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema
-        ),
+        content: (str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema),
     ) -> str:
         if isinstance(content, str):
             return content

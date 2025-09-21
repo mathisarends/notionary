@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
@@ -21,15 +23,11 @@ class ColumnMarkdownNode(MarkdownNode):
         :::
     """
 
-    children: list[MarkdownNode] = []
+    children: ClassVar[list[MarkdownNode]] = []
     width_ratio: float | None = None
 
     def to_markdown(self) -> str:
-        # Start tag with optional width ratio
-        if self.width_ratio is not None:
-            start_tag = f"::: column {self.width_ratio}"
-        else:
-            start_tag = "::: column"
+        start_tag = f"::: column {self.width_ratio}" if self.width_ratio is not None else "::: column"
 
         if not self.children:
             return f"{start_tag}\n:::"

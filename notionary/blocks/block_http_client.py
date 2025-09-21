@@ -24,9 +24,7 @@ class NotionBlockHttpClient(NotionHttpClient):
                 return None
         return None
 
-    async def get_blocks_by_page_id_recursively(
-        self, page_id: str, parent_id: str | None = None
-    ) -> list[Block]:
+    async def get_blocks_by_page_id_recursively(self, page_id: str, parent_id: str | None = None) -> list[Block]:
         response = (
             await self.get_block_children(block_id=page_id)
             if parent_id is None
@@ -46,9 +44,7 @@ class NotionBlockHttpClient(NotionHttpClient):
             if not block_id:
                 continue
 
-            children = await self.get_blocks_by_page_id_recursively(
-                page_id=page_id, parent_id=block_id
-            )
+            children = await self.get_blocks_by_page_id_recursively(page_id=page_id, parent_id=block_id)
             if children:
                 block.children = children
 
@@ -85,9 +81,7 @@ class NotionBlockHttpClient(NotionHttpClient):
         cursor = None
 
         while True:
-            response = await self.get_block_children(
-                block_id=block_id, start_cursor=cursor, page_size=100
-            )
+            response = await self.get_block_children(block_id=block_id, start_cursor=cursor, page_size=100)
 
             if not response:
                 break
@@ -99,9 +93,7 @@ class NotionBlockHttpClient(NotionHttpClient):
 
             cursor = response.next_cursor
 
-        self.logger.debug(
-            "Retrieved %d total children for block %s", len(all_blocks), block_id
-        )
+        self.logger.debug("Retrieved %d total children for block %s", len(all_blocks), block_id)
         return all_blocks
 
     async def append_block_children(
@@ -159,9 +151,7 @@ class NotionBlockHttpClient(NotionHttpClient):
         current_after = after
         batch_size = 100
 
-        self.logger.info(
-            "Processing %d blocks in batches of %d", len(children), batch_size
-        )
+        self.logger.info("Processing %d blocks in batches of %d", len(children), batch_size)
 
         # Process blocks in chunks of 100
         for i in range(0, len(children), batch_size):
@@ -180,9 +170,7 @@ class NotionBlockHttpClient(NotionHttpClient):
             response = await self._append_single_batch(block_id, batch, current_after)
 
             if not response:
-                self.logger.error(
-                    "Failed to append batch %d/%d", batch_num, total_batches
-                )
+                self.logger.error("Failed to append batch %d/%d", batch_num, total_batches)
                 # Return partial results if we have any
                 if all_results:
                     return self._combine_batch_responses(all_results)
@@ -194,9 +182,7 @@ class NotionBlockHttpClient(NotionHttpClient):
             if response.results:
                 current_after = response.results[-1].id
 
-            self.logger.debug(
-                "Successfully appended batch %d/%d", batch_num, total_batches
-            )
+            self.logger.debug("Successfully appended batch %d/%d", batch_num, total_batches)
 
         self.logger.info(
             "Successfully appended all %d blocks in %d batches",
@@ -207,9 +193,7 @@ class NotionBlockHttpClient(NotionHttpClient):
         # Combine all batch responses into a single response
         return self._combine_batch_responses(all_results)
 
-    def _combine_batch_responses(
-        self, responses: list[BlockChildrenResponse]
-    ) -> BlockChildrenResponse:
+    def _combine_batch_responses(self, responses: list[BlockChildrenResponse]) -> BlockChildrenResponse:
         """
         Combines multiple batch responses into a single response.
         """

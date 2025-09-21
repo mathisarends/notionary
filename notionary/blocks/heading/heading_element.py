@@ -49,9 +49,7 @@ class HeadingElement(BaseBlockElement):
             return None
 
         rich_text = await TextInlineFormatter.parse_inline_formatting(content)
-        heading_content = HeadingBlock(
-            rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=False
-        )
+        heading_content = HeadingBlock(rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=False)
 
         if level == 1:
             return CreateHeading1Block(heading_1=heading_content)
@@ -86,9 +84,7 @@ class HeadingElement(BaseBlockElement):
         if not heading_data.rich_text:
             return None
 
-        text = await TextInlineFormatter.extract_text_with_formatting(
-            heading_data.rich_text
-        )
+        text = await TextInlineFormatter.extract_text_with_formatting(heading_data.rich_text)
         if not text:
             return None
 

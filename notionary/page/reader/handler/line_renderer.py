@@ -36,9 +36,7 @@ class LineRenderer(BlockHandler):
 
         # Apply indentation if needed
         if context.indent_level > 0:
-            block_markdown = self._indent_text(
-                block_markdown, spaces=context.indent_level * 4
-            )
+            block_markdown = self._indent_text(block_markdown, spaces=context.indent_level * 4)
 
         # If there are no children, return the block markdown directly
         if not context.has_children():
@@ -54,16 +52,10 @@ class LineRenderer(BlockHandler):
             context.get_children_blocks(), indent_level=context.indent_level + 1
         )
 
-        context.markdown_result = (
-            f"{block_markdown}\n{children_markdown}"
-            if children_markdown
-            else block_markdown
-        )
+        context.markdown_result = f"{block_markdown}\n{children_markdown}" if children_markdown else block_markdown
         context.was_processed = True
 
-    async def _convert_block_to_markdown(
-        self, context: BlockRenderingContext
-    ) -> str | None:
+    async def _convert_block_to_markdown(self, context: BlockRenderingContext) -> str | None:
         """Convert a Notion block to markdown using registered elements."""
         for element in context.block_registry.get_elements():
             if element.match_notion(context.block):

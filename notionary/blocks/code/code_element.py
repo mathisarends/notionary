@@ -43,9 +43,7 @@ class CodeElement(BaseBlockElement):
         return CreateCodeBlock(code=code_block)
 
     @classmethod
-    def create_from_markdown_block(
-        cls, opening_line: str, code_lines: list[str]
-    ) -> BlockCreateResult:
+    def create_from_markdown_block(cls, opening_line: str, code_lines: list[str]) -> BlockCreateResult:
         """
         Create a complete code block from markdown components.
         """
@@ -68,9 +66,7 @@ class CodeElement(BaseBlockElement):
         if caption:
             caption_list = [RichTextObject.for_caption(caption)]
 
-        code_block = CodeBlock(
-            rich_text=rich_text, language=language, caption=caption_list
-        )
+        code_block = CodeBlock(rich_text=rich_text, language=language, caption=caption_list)
 
         return CreateCodeBlock(code=code_block)
 
@@ -98,11 +94,7 @@ class CodeElement(BaseBlockElement):
             language = ""
 
         # Build markdown code block
-        result = (
-            f"```{language}\n{code_content}\n```"
-            if language
-            else f"```\n{code_content}\n```"
-        )
+        result = f"```{language}\n{code_content}\n```" if language else f"```\n{code_content}\n```"
 
         # Add caption if present
         if caption_text:

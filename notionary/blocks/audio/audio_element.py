@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import ClassVar
 
 from notionary.blocks.audio.audio_models import CreateAudioBlock
 from notionary.blocks.base_block_element import BaseBlockElement
@@ -32,7 +33,7 @@ class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin
     """
 
     AUDIO_PATTERN = re.compile(r"\[audio\]\(([^)]+)\)")
-    SUPPORTED_EXTENSIONS = {".mp3", ".wav", ".ogg", ".oga", ".m4a"}
+    SUPPORTED_EXTENSIONS: ClassVar[set[str]] = {".mp3", ".wav", ".ogg", ".oga", ".m4a"}
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
@@ -67,9 +68,7 @@ class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin
                 cls.logger.error(f"Failed to upload audio file: {path}")
                 return None
 
-            cls.logger.info(
-                f"Successfully uploaded audio file with ID: {file_upload_id}"
-            )
+            cls.logger.info(f"Successfully uploaded audio file with ID: {file_upload_id}")
 
             # Use mixin to extract caption (if present anywhere in text)
             caption_text = cls.extract_caption(text.strip())

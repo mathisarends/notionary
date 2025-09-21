@@ -18,25 +18,11 @@ from notionary.blocks.paragraph.paragraph_models import (
 async def test_match_markdown_valid():
     """Test recognition of valid paragraph text."""
     assert await ParagraphElement.markdown_to_notion("Simple text") is not None
-    assert (
-        await ParagraphElement.markdown_to_notion("Text with **bold** formatting")
-        is not None
-    )
-    assert await ParagraphElement.markdown_to_notion(
-        "Text with [link](https://example.com)"
-    )
-    assert (
-        await ParagraphElement.markdown_to_notion("  Text with leading spaces")
-        is not None
-    )
-    assert (
-        await ParagraphElement.markdown_to_notion("Text with trailing spaces  ")
-        is not None
-    )
-    assert (
-        await ParagraphElement.markdown_to_notion("Multi word paragraph text")
-        is not None
-    )
+    assert await ParagraphElement.markdown_to_notion("Text with **bold** formatting") is not None
+    assert await ParagraphElement.markdown_to_notion("Text with [link](https://example.com)")
+    assert await ParagraphElement.markdown_to_notion("  Text with leading spaces") is not None
+    assert await ParagraphElement.markdown_to_notion("Text with trailing spaces  ") is not None
+    assert await ParagraphElement.markdown_to_notion("Multi word paragraph text") is not None
 
 
 @pytest.mark.asyncio

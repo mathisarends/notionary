@@ -161,17 +161,13 @@ class NameIdResolver:
 
     async def _resolve_page_id(self, name: str) -> str | None:
         """Search for pages matching the name."""
-        search_results = await self.workspace.search_pages(
-            query=name, limit=self.search_limit
-        )
+        search_results = await self.workspace.search_pages(query=name, limit=self.search_limit)
 
         return self._find_best_fuzzy_match(query=name, candidate_objects=search_results)
 
     async def _resolve_database_id(self, name: str) -> str | None:
         """Search for databases matching the name."""
-        search_results = await self.workspace.search_databases(
-            query=name, limit=self.search_limit
-        )
+        search_results = await self.workspace.search_databases(query=name, limit=self.search_limit)
 
         return self._find_best_fuzzy_match(query=name, candidate_objects=search_results)
 

@@ -10,7 +10,6 @@ from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.comments import Comment, CommentClient
 from notionary.database.database_http_client import NotionDatabseHttpClient
 from notionary.file_upload.client import FileUploadHttpClient
-from notionary.page import page_context
 from notionary.page.page_content_deleting_service import PageContentDeletingService
 from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.page_context import PageContextProvider, page_context
@@ -62,9 +61,7 @@ class NotionPage(LoggingMixin):
         self._parent_database = parent_database
         self.token = token
 
-        self._page_client = NotionPageHttpClient(
-            page_id=page_id, properties=properties, token=token
-        )
+        self._page_client = NotionPageHttpClient(page_id=page_id, properties=properties, token=token)
         self._block_client = NotionBlockHttpClient(token=token)
         self._comment_client = CommentClient(token=token)
 
@@ -94,9 +91,7 @@ class NotionPage(LoggingMixin):
         return await load_page_from_id(page_id, token)
 
     @classmethod
-    async def from_page_name(
-        cls, page_name: str, token: str | None = None, min_similarity: float = 0.6
-    ) -> NotionPage:
+    async def from_page_name(cls, page_name: str, token: str | None = None, min_similarity: float = 0.6) -> NotionPage:
         """
         Create a NotionPage by finding a page with fuzzy matching on the title.
         Uses Notion's search API and fuzzy matching to find the best result.
@@ -148,9 +143,7 @@ class NotionPage(LoggingMixin):
         return markdown_syntax_builder.build_concise_reference()
 
     async def get_comments(self) -> list[Comment]:
-        return await self._comment_client.list_all_comments_for_page(
-            page_id=self._page_id
-        )
+        return await self._comment_client.list_all_comments_for_page(page_id=self._page_id)
 
     async def post_comment(
         self,
@@ -169,18 +162,14 @@ class NotionPage(LoggingMixin):
 
     async def append_markdown(
         self,
-        content: (
-            str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema
-        ),
+        content: (str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema),
     ) -> None:
         async with page_context(self.page_context_provider):
             _ = await self._page_content_writer.append_markdown(content=content)
 
     async def replace_content(
         self,
-        content: (
-            str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema
-        ),
+        content: (str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema),
     ) -> None:
         await self._page_content_deleting_service.clear_page_content()
         await self._page_content_writer.append_markdown(content=content)
@@ -189,9 +178,7 @@ class NotionPage(LoggingMixin):
         await self._page_content_deleting_service.clear_page_content()
 
     async def get_markdown_content(self) -> str:
-        blocks = await self._block_client.get_blocks_by_page_id_recursively(
-            page_id=self._page_id
-        )
+        blocks = await self._block_client.get_blocks_by_page_id_recursively(page_id=self._page_id)
         return await self._page_content_retriever.convert_to_markdown(blocks=blocks)
 
     async def set_emoji_icon(self, emoji: str) -> None:
@@ -239,9 +226,7 @@ class NotionPage(LoggingMixin):
             parent_page_id=self._page_id,
         )
 
-        return await NotionDatabase.from_database_id(
-            id=create_database_response.id, token=self._page_client.token
-        )
+        return await NotionDatabase.from_database_id(id=create_database_response.id, token=self._page_client.token)
 
     async def set_cover(self, external_url: str) -> None:
         updated_page = await self._page_client.patch_external_cover(external_url)
@@ -268,13 +253,9 @@ class NotionPage(LoggingMixin):
         return await self._parent_database.get_options_by_property_name(property_name)
 
     async def set_property_value_by_name(self, property_name: str, value: Any) -> Any:
-        return await self.property_writer.set_property_value_by_name(
-            property_name, value
-        )
+        return await self.property_writer.set_property_value_by_name(property_name, value)
 
-    async def set_relation_property_by_relation_values(
-        self, property_name: str, relation_values: list[str]
-    ) -> None:
+    async def set_relation_property_by_relation_values(self, property_name: str, relation_values: list[str]) -> None:
         if not self._parent_database:
             return
 
@@ -282,9 +263,7 @@ class NotionPage(LoggingMixin):
         if property_type != PropertyType.RELATION:
             return
 
-        await self.property_writer.set_relation_property_by_relation_values(
-            property_name, relation_values
-        )
+        await self.property_writer.set_relation_property_by_relation_values(property_name, relation_values)
 
     def _setup_page_context_provider(self) -> PageContextProvider:
         return PageContextProvider(

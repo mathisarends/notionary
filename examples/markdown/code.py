@@ -20,9 +20,7 @@ def create_code_examples() -> str:
     return (
         MarkdownBuilder()
         .h2("💻 Code Block Elements")
-        .paragraph(
-            "Code blocks provide syntax highlighting for various programming languages."
-        )
+        .paragraph("Code blocks provide syntax highlighting for various programming languages.")
         .space()
         .code_block(
             code='''def hello_notionary():

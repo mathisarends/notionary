@@ -43,16 +43,12 @@ class DatabaseFilterBuilder:
     # TIMESTAMP FILTERS (Created/Updated)
     def with_created_after(self, date: datetime):
         """Add condition: created after specific date."""
-        self.config.conditions.append(
-            {"timestamp": "created_time", "created_time": {"after": date.isoformat()}}
-        )
+        self.config.conditions.append({"timestamp": "created_time", "created_time": {"after": date.isoformat()}})
         return self
 
     def with_created_before(self, date: datetime):
         """Add condition: created before specific date."""
-        self.config.conditions.append(
-            {"timestamp": "created_time", "created_time": {"before": date.isoformat()}}
-        )
+        self.config.conditions.append({"timestamp": "created_time", "created_time": {"before": date.isoformat()}})
         return self
 
     def with_updated_after(self, date: datetime):
@@ -78,24 +74,18 @@ class DatabaseFilterBuilder:
     # RICH TEXT FILTERS
     def with_text_contains(self, property_name: str, value: str):
         """Rich text contains value."""
-        self.config.conditions.append(
-            {"property": property_name, "rich_text": {"contains": value}}
-        )
+        self.config.conditions.append({"property": property_name, "rich_text": {"contains": value}})
         return self
 
     def with_text_equals(self, property_name: str, value: str):
         """Rich text equals value."""
-        self.config.conditions.append(
-            {"property": property_name, "rich_text": {"equals": value}}
-        )
+        self.config.conditions.append({"property": property_name, "rich_text": {"equals": value}})
         return self
 
     # TITLE FILTERS
     def with_title_contains(self, value: str):
         """Title contains value."""
-        self.config.conditions.append(
-            {"property": "title", "title": {"contains": value}}
-        )
+        self.config.conditions.append({"property": "title", "title": {"contains": value}})
         return self
 
     def with_title_equals(self, value: str):
@@ -106,30 +96,22 @@ class DatabaseFilterBuilder:
     # SELECT FILTERS (Single Select)
     def with_select_equals(self, property_name: str, value: str):
         """Select equals value."""
-        self.config.conditions.append(
-            {"property": property_name, "select": {"equals": value}}
-        )
+        self.config.conditions.append({"property": property_name, "select": {"equals": value}})
         return self
 
     def with_select_is_empty(self, property_name: str):
         """Select is empty."""
-        self.config.conditions.append(
-            {"property": property_name, "select": {"is_empty": True}}
-        )
+        self.config.conditions.append({"property": property_name, "select": {"is_empty": True}})
         return self
 
     def with_multi_select_contains(self, property_name: str, value: str):
         """Multi-select contains value."""
-        self.config.conditions.append(
-            {"property": property_name, "multi_select": {"contains": value}}
-        )
+        self.config.conditions.append({"property": property_name, "multi_select": {"contains": value}})
         return self
 
     def with_status_equals(self, property_name: str, value: str):
         """Status equals value."""
-        self.config.conditions.append(
-            {"property": property_name, "status": {"equals": value}}
-        )
+        self.config.conditions.append({"property": property_name, "status": {"equals": value}})
         return self
 
     def with_page_size(self, size: int):
@@ -162,9 +144,7 @@ class DatabaseFilterBuilder:
 
     def copy(self):
         """Create a copy of the builder."""
-        new_config = FilterConfig(
-            conditions=self.config.conditions.copy(), page_size=self.config.page_size
-        )
+        new_config = FilterConfig(conditions=self.config.conditions.copy(), page_size=self.config.page_size)
         return DatabaseFilterBuilder(new_config)
 
     def reset(self):

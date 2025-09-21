@@ -21,9 +21,7 @@ async def main():
                 )
             ),
             lambda col: (
-                col.paragraph("Right column start").toggle(
-                    "Right toggle", lambda t: t.paragraph("inside right toggle")
-                )
+                col.paragraph("Right column start").toggle("Right toggle", lambda t: t.paragraph("inside right toggle"))
             ),
             width_ratios=[0.5, 0.5],
         )

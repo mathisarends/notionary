@@ -68,7 +68,7 @@ Combine different formatting types for complex styling:
 
 ```markdown
 **Bold _and italic_** text
-**Underlined and **bold**** content  
+**Underlined and **bold**** content
 ~~Struck through with _italic_~~ text
 ```
 
@@ -156,7 +156,7 @@ Integrate links naturally within formatted text:
 ✅ Good - Clear and purposeful
 **Project Status:** The _initial phase_ is complete. Next: update `config.yaml` and deploy.
 
-❌ Avoid - Over-formatted and hard to read  
+❌ Avoid - Over-formatted and hard to read
 **_~~Important~~_** **_update_**: **check** the `file` **now**
 ```
 

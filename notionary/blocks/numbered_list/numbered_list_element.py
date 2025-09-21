@@ -32,9 +32,7 @@ class NumberedListElement(BaseBlockElement):
         content = match.group(2)
         rich_text = await TextInlineFormatter.parse_inline_formatting(content)
 
-        numbered_list_content = NumberedListItemBlock(
-            rich_text=rich_text, color=BlockColor.DEFAULT
-        )
+        numbered_list_content = NumberedListItemBlock(rich_text=rich_text, color=BlockColor.DEFAULT)
         return CreateNumberedListItemBlock(numbered_list_item=numbered_list_content)
 
     # FIX: Roundtrip conversions will never work this way here

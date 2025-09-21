@@ -28,17 +28,13 @@ class RegularLineHandler(LineHandler):
             return False
 
         current_parent = context.parent_stack[-1]
-        return issubclass(
-            current_parent.element_type, (ColumnListElement, ColumnElement)
-        )
+        return issubclass(current_parent.element_type, (ColumnListElement, ColumnElement))
 
     def _add_to_column_context(self, context: LineProcessingContext) -> None:
         """Add line as child to the current Column context."""
         context.parent_stack[-1].add_child_line(context.line)
 
-    async def _process_single_line_content(
-        self, context: LineProcessingContext
-    ) -> bool:
+    async def _process_single_line_content(self, context: LineProcessingContext) -> bool:
         """Process a regular line for simple elements (lists, etc.)."""
         specialized_elements = self._get_specialized_elements()
 
@@ -65,7 +61,6 @@ class RegularLineHandler(LineHandler):
         context.result_blocks.append(result)
 
     def _get_specialized_elements(self):
-        """Get tuple of elements that have specialized handlers."""
         from notionary.blocks.code import CodeElement
         from notionary.blocks.table import TableElement
         from notionary.blocks.toggle import ToggleElement

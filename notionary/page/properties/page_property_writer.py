@@ -62,9 +62,7 @@ class PagePropertyWriter:
             return value
         if isinstance(value, (int, float, bool)):
             return str(value)
-        raise TypeError(
-            f"Property '{property_name}' expects string, got {type(value).__name__}: {value!r}"
-        )
+        raise TypeError(f"Property '{property_name}' expects string, got {type(value).__name__}: {value!r}")
 
     def _validate_number(self, value: Any, property_name: str) -> float:
         """Validate that value is a number or can be converted to one."""
@@ -77,16 +75,12 @@ class PagePropertyWriter:
                 raise ValueError(
                     f"Property '{property_name}' expects number, cannot convert string '{value}' to number"
                 ) from e
-        raise TypeError(
-            f"Property '{property_name}' expects number, got {type(value).__name__}: {value!r}"
-        )
+        raise TypeError(f"Property '{property_name}' expects number, got {type(value).__name__}: {value!r}")
 
     def _validate_boolean(self, value: Any, property_name: str) -> bool:
         if isinstance(value, bool):
             return value
-        raise TypeError(
-            f"Property '{property_name}' expects boolean, got {type(value).__name__}: {value!r}"
-        )
+        raise TypeError(f"Property '{property_name}' expects boolean, got {type(value).__name__}: {value!r}")
 
     def _validate_string_list(self, value: Any, property_name: str) -> list[str]:
         if isinstance(value, str):
@@ -98,20 +92,16 @@ class PagePropertyWriter:
                     result.append(self._validate_string(item, f"{property_name}[{i}]"))
                 except (TypeError, ValueError) as e:
                     raise TypeError(
-                        f"Property '{property_name}' expects list of strings, "
-                        f"but item at index {i} is invalid: {e}"
+                        f"Property '{property_name}' expects list of strings, but item at index {i} is invalid: {e}"
                     ) from e
             return result
-        raise TypeError(
-            f"Property '{property_name}' expects list of strings, got {type(value).__name__}: {value!r}"
-        )
+        raise TypeError(f"Property '{property_name}' expects list of strings, got {type(value).__name__}: {value!r}")
 
     def _validate_date(self, value: Any, property_name: str) -> str | dict:
         if isinstance(value, (str, dict)):
             return value
         raise TypeError(
-            f"Property '{property_name}' expects string or dict for date, "
-            f"got {type(value).__name__}: {value!r}"
+            f"Property '{property_name}' expects string or dict for date, got {type(value).__name__}: {value!r}"
         )
 
     def _validate_relation(self, value: Any, property_name: str) -> str | list[str]:
@@ -149,9 +139,7 @@ class PagePropertyWriter:
         self._notion_page._title = title
 
     async def set_rich_text_property(self, property_name: str, text: str) -> None:
-        await self._notion_page._page_client.patch_rich_text_property(
-            property_name, text
-        )
+        await self._notion_page._page_client.patch_rich_text_property(property_name, text)
 
     async def set_url_property(self, property_name: str, url: str) -> None:
         await self._notion_page._page_client.patch_url_property(property_name, url)
@@ -162,41 +150,23 @@ class PagePropertyWriter:
     async def set_phone_number_property(self, property_name: str, phone: str) -> None:
         await self._notion_page._page_client.patch_phone_property(property_name, phone)
 
-    async def set_number_property(
-        self, property_name: str, number: int | float
-    ) -> None:
-        await self._notion_page._page_client.patch_number_property(
-            property_name, number
-        )
+    async def set_number_property(self, property_name: str, number: int | float) -> None:
+        await self._notion_page._page_client.patch_number_property(property_name, number)
 
     async def set_checkbox_property(self, property_name: str, checked: bool) -> None:
-        await self._notion_page._page_client.patch_checkbox_property(
-            property_name, checked
-        )
+        await self._notion_page._page_client.patch_checkbox_property(property_name, checked)
 
     async def set_select_property(self, property_name: str, option_name: str) -> None:
-        await self._notion_page._page_client.patch_select_property(
-            property_name, option_name
-        )
+        await self._notion_page._page_client.patch_select_property(property_name, option_name)
 
-    async def set_multi_select_property(
-        self, property_name: str, option_names: list[str]
-    ) -> None:
-        await self._notion_page._page_client.patch_multi_select_property(
-            property_name, option_names
-        )
+    async def set_multi_select_property(self, property_name: str, option_names: list[str]) -> None:
+        await self._notion_page._page_client.patch_multi_select_property(property_name, option_names)
 
-    async def set_date_property(
-        self, property_name: str, date_value: str | dict
-    ) -> None:
-        await self._notion_page._page_client.patch_date_property(
-            property_name, date_value
-        )
+    async def set_date_property(self, property_name: str, date_value: str | dict) -> None:
+        await self._notion_page._page_client.patch_date_property(property_name, date_value)
 
     async def set_status_property(self, property_name: str, status_name: str) -> None:
-        await self._notion_page._page_client.patch_status_property(
-            property_name, status_name
-        )
+        await self._notion_page._page_client.patch_status_property(property_name, status_name)
 
     async def set_relation_property_by_relation_values(
         self, property_name: str, relation_values: str | list[str]
@@ -205,13 +175,9 @@ class PagePropertyWriter:
 
         relation_ids = await self._convert_relation_values_to_page_ids(relation_values)
 
-        await self._notion_page._page_client.patch_relation_property(
-            property_name, relation_ids
-        )
+        await self._notion_page._page_client.patch_relation_property(property_name, relation_ids)
 
-    async def _convert_relation_values_to_page_ids(
-        self, relation_values: list[str]
-    ) -> list[str]:
+    async def _convert_relation_values_to_page_ids(self, relation_values: list[str]) -> list[str]:
         if not relation_values:
             return []
 
@@ -227,9 +193,5 @@ class PagePropertyWriter:
 
         return [page.id for page in pages]
 
-    def _normalize_relation_values_to_list(
-        self, relation_values: str | list[str]
-    ) -> list[str]:
-        return (
-            relation_values if isinstance(relation_values, list) else [relation_values]
-        )
+    def _normalize_relation_values_to_list(self, relation_values: str | list[str]) -> list[str]:
+        return relation_values if isinstance(relation_values, list) else [relation_values]

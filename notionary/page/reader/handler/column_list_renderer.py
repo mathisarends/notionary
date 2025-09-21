@@ -14,9 +14,7 @@ class ColumnListRenderer(BlockHandler):
 
         # Apply indentation if needed
         if context.indent_level > 0:
-            column_list_start = self._indent_text(
-                column_list_start, spaces=context.indent_level * 4
-            )
+            column_list_start = self._indent_text(column_list_start, spaces=context.indent_level * 4)
 
         # Process children if they exist
         children_markdown = ""
@@ -36,15 +34,11 @@ class ColumnListRenderer(BlockHandler):
         # Create column list end line
         column_list_end = ":::"
         if context.indent_level > 0:
-            column_list_end = self._indent_text(
-                column_list_end, spaces=context.indent_level * 4
-            )
+            column_list_end = self._indent_text(column_list_end, spaces=context.indent_level * 4)
 
         # Combine column list with children content
         if children_markdown:
-            context.markdown_result = (
-                f"{column_list_start}\n{children_markdown}\n{column_list_end}"
-            )
+            context.markdown_result = f"{column_list_start}\n{children_markdown}\n{column_list_end}"
         else:
             context.markdown_result = f"{column_list_start}\n{column_list_end}"
 

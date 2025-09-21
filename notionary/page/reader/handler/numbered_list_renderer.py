@@ -8,10 +8,7 @@ class NumberedListRenderer(BlockHandler):
 
     def _can_handle(self, context: BlockRenderingContext) -> bool:
         """Check if this is a numbered list item."""
-        return (
-            context.block.type == BlockType.NUMBERED_LIST_ITEM
-            and context.block.numbered_list_item is not None
-        )
+        return context.block.type == BlockType.NUMBERED_LIST_ITEM and context.block.numbered_list_item is not None
 
     async def _process(self, context: BlockRenderingContext) -> None:
         """Process numbered list item with sequential numbering."""
@@ -33,9 +30,7 @@ class NumberedListRenderer(BlockHandler):
             context.was_processed = True
             context.blocks_consumed = blocks_to_skip
 
-    def _collect_numbered_list_items(
-        self, context: BlockRenderingContext
-    ) -> tuple[list[BlockRenderingContext], int]:
+    def _collect_numbered_list_items(self, context: BlockRenderingContext) -> tuple[list[BlockRenderingContext], int]:
         """Collect all consecutive numbered list items starting from current position."""
         items = []
         current_index = context.current_block_index
@@ -50,10 +45,7 @@ class NumberedListRenderer(BlockHandler):
             block = all_blocks[i]
 
             # Check if it's a numbered list item
-            if (
-                block.type == BlockType.NUMBERED_LIST_ITEM
-                and block.numbered_list_item is not None
-            ):
+            if block.type == BlockType.NUMBERED_LIST_ITEM and block.numbered_list_item is not None:
                 # Create context for this item
                 item_context = BlockRenderingContext(
                     block=block,
@@ -69,9 +61,7 @@ class NumberedListRenderer(BlockHandler):
 
         return items, blocks_processed
 
-    async def _process_single_item(
-        self, context: BlockRenderingContext, number: int
-    ) -> str:
+    async def _process_single_item(self, context: BlockRenderingContext, number: int) -> str:
         """Process a single numbered list item with the given number."""
         from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 

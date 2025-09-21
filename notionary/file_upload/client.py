@@ -1,3 +1,4 @@
+import traceback
 from io import BytesIO
 from pathlib import Path
 from typing import BinaryIO
@@ -108,9 +109,7 @@ class FileUploadHttpClient(NotionHttpClient):
                 # Explicitly do NOT set Content-Type - let httpx handle multipart
             }
 
-            self.logger.debug(
-                "Sending file upload to %s with filename %s", url, filename
-            )
+            self.logger.debug("Sending file upload to %s with filename %s", url, filename)
 
             # Use a temporary client for the multipart upload
             async with httpx.AsyncClient(timeout=self.timeout) as upload_client:
@@ -128,7 +127,7 @@ class FileUploadHttpClient(NotionHttpClient):
         except httpx.HTTPStatusError as e:
             try:
                 error_text = e.response.text
-            except:
+            except Exception:
                 error_text = "Unable to read error response"
             error_msg = f"HTTP {e.response.status_code}: {error_text}"
             self.logger.error("Send file upload failed (%s): %s", url, error_msg)
@@ -140,14 +139,11 @@ class FileUploadHttpClient(NotionHttpClient):
 
         except Exception as e:
             self.logger.error("Unexpected error in send_file_upload: %s", str(e))
-            import traceback
 
             self.logger.debug("Full traceback: %s", traceback.format_exc())
             return False
 
-    async def complete_file_upload(
-        self, file_upload_id: str
-    ) -> FileUploadResponse | None:
+    async def complete_file_upload(self, file_upload_id: str) -> FileUploadResponse | None:
         """
         Complete a multi-part file upload.
 
@@ -159,9 +155,7 @@ class FileUploadHttpClient(NotionHttpClient):
         """
         request_data = FileUploadCompleteRequest()
 
-        response = await self.post(
-            f"file_uploads/{file_upload_id}/complete", data=request_data.model_dump()
-        )
+        response = await self.post(f"file_uploads/{file_upload_id}/complete", data=request_data.model_dump())
         if response is None:
             return None
 
@@ -171,9 +165,7 @@ class FileUploadHttpClient(NotionHttpClient):
             self.logger.error("Failed to validate complete file upload response: %s", e)
             return None
 
-    async def retrieve_file_upload(
-        self, file_upload_id: str
-    ) -> FileUploadResponse | None:
+    async def retrieve_file_upload(self, file_upload_id: str) -> FileUploadResponse | None:
         """
         Retrieve details of a file upload.
 
@@ -220,9 +212,7 @@ class FileUploadHttpClient(NotionHttpClient):
             self.logger.error("Failed to validate list file uploads response: %s", e)
             return None
 
-    async def send_file_from_path(
-        self, file_upload_id: str, file_path: Path, part_number: int | None = None
-    ) -> bool:
+    async def send_file_from_path(self, file_upload_id: str, file_path: Path, part_number: int | None = None) -> bool:
         """
         Convenience method to send file from file path.
 

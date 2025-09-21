@@ -110,9 +110,7 @@ class ColumnListHandler(LineHandler):
         # Process text lines
         if column_list_context.child_lines:
             children_text = "\n".join(column_list_context.child_lines)
-            children_blocks = await self._convert_children_text(
-                children_text, context.block_registry
-            )
+            children_blocks = await self._convert_children_text(children_text, context.block_registry)
             all_children.extend(children_blocks)
 
         if column_list_context.child_blocks:
@@ -120,9 +118,7 @@ class ColumnListHandler(LineHandler):
 
         # Filter only column blocks
         column_children = [
-            block
-            for block in all_children
-            if hasattr(block, "column") and getattr(block, "type", None) == "column"
+            block for block in all_children if hasattr(block, "column") and getattr(block, "type", None) == "column"
         ]
         column_list_context.block.column_list.children = column_children
 

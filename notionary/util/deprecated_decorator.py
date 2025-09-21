@@ -5,9 +5,7 @@ from collections.abc import Callable
 from typing import Any
 
 
-def deprecated(
-    message: str | None = None, logger: logging.Logger | None = None
-) -> Callable:
+def deprecated(message: str | None = None, logger: logging.Logger | None = None) -> Callable:
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:

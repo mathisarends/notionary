@@ -55,9 +55,7 @@ class TableElement(BaseBlockElement):
         return CreateTableBlock(table=table_block)
 
     @classmethod
-    async def create_from_markdown_table(
-        cls, table_lines: list[str]
-    ) -> BlockCreateResult:
+    async def create_from_markdown_table(cls, table_lines: list[str]) -> BlockCreateResult:
         """
         Create a complete table block from markdown table lines.
         """
@@ -92,9 +90,7 @@ class TableElement(BaseBlockElement):
         return CreateTableBlock(table=table_block)
 
     @classmethod
-    async def _process_table_lines(
-        cls, table_lines: list[str]
-    ) -> tuple[list[CreateTableRowBlock], bool]:
+    async def _process_table_lines(cls, table_lines: list[str]) -> tuple[list[CreateTableRowBlock], bool]:
         """Process all table lines and return rows and separator status."""
         table_rows = []
         separator_found = False
@@ -152,17 +148,9 @@ class TableElement(BaseBlockElement):
 
         if not children:
             table_width = table_data.table_width or 3
-            header = (
-                "| "
-                + " | ".join([f"Column {i + 1}" for i in range(table_width)])
-                + " |"
-            )
-            separator = (
-                "| " + " | ".join(["--------" for _ in range(table_width)]) + " |"
-            )
-            data_row = (
-                "| " + " | ".join(["        " for _ in range(table_width)]) + " |"
-            )
+            header = "| " + " | ".join([f"Column {i + 1}" for i in range(table_width)]) + " |"
+            separator = "| " + " | ".join(["--------" for _ in range(table_width)]) + " |"
+            data_row = "| " + " | ".join(["        " for _ in range(table_width)]) + " |"
             table_rows = [header, separator, data_row]
             return "\n".join(table_rows)
 
@@ -189,9 +177,7 @@ class TableElement(BaseBlockElement):
 
             if not header_processed and table_data.has_column_header:
                 header_processed = True
-                separator = (
-                    "| " + " | ".join(["--------" for _ in range(len(cells))]) + " |"
-                )
+                separator = "| " + " | ".join(["--------" for _ in range(len(cells))]) + " |"
                 table_rows.append(separator)
 
         return "\n".join(table_rows)

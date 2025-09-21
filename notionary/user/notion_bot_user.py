@@ -34,9 +34,7 @@ class NotionBotUser(BaseNotionUser):
         self._owner_type = owner_type
 
     @classmethod
-    async def from_current_integration(
-        cls, token: str | None = None
-    ) -> NotionBotUser | None:
+    async def from_current_integration(cls, token: str | None = None) -> NotionBotUser | None:
         """
         Get the current bot user (from the API token).
 
@@ -56,9 +54,7 @@ class NotionBotUser(BaseNotionUser):
         return cls._create_from_response(bot_response, token)
 
     @classmethod
-    async def from_name(
-        cls, name: str, token: str | None = None, min_similarity: float = 0.6
-    ) -> NotionBotUser | None:
+    async def from_name(cls, name: str, token: str | None = None, min_similarity: float = 0.6) -> NotionBotUser | None:
         """
         Create a NotionBotUser by finding a bot user with fuzzy matching on the name.
         Uses Notion's list users API and fuzzy matching to find the best result.
@@ -74,9 +70,7 @@ class NotionBotUser(BaseNotionUser):
                 raise ValueError(cls.NO_USERS_FOUND_MSG)
 
             # Filter to only bot users
-            bot_users = [
-                user for user in all_users_response if user.type == "bot" and user.name
-            ]
+            bot_users = [user for user in all_users_response if user.type == "bot" and user.name]
 
             if not bot_users:
                 cls.logger.warning(cls.NO_BOT_USERS_FOUND_MSG)
@@ -121,9 +115,7 @@ class NotionBotUser(BaseNotionUser):
             raise
 
     @classmethod
-    def from_bot_response(
-        cls, bot_response: NotionBotUserResponse, token: str | None = None
-    ) -> NotionBotUser:
+    def from_bot_response(cls, bot_response: NotionBotUserResponse, token: str | None = None) -> NotionBotUser:
         """
         Create a NotionBotUser from an existing bot API response.
 
@@ -179,11 +171,7 @@ class NotionBotUser(BaseNotionUser):
     @property
     def max_file_upload_size(self) -> int | None:
         """The maximum file upload size in bytes."""
-        return (
-            self._workspace_limits.max_file_upload_size_in_bytes
-            if self._workspace_limits
-            else None
-        )
+        return self._workspace_limits.max_file_upload_size_in_bytes if self._workspace_limits else None
 
     def __str__(self) -> str:
         """String representation of the bot user."""
@@ -191,9 +179,7 @@ class NotionBotUser(BaseNotionUser):
         return f"NotionBotUser(name='{self.get_display_name()}', workspace='{workspace}', id='{self._user_id[:8]}...')"
 
     @classmethod
-    def _create_from_response(
-        cls, bot_response: NotionBotUserResponse, token: str | None
-    ) -> NotionBotUser:
+    def _create_from_response(cls, bot_response: NotionBotUserResponse, token: str | None) -> NotionBotUser:
         """Create NotionBotUser instance from API response."""
         workspace_name = None
         workspace_limits = None

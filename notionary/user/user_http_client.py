@@ -45,9 +45,7 @@ class UserHttpClient(NotionHttpClient):
             self.logger.error("Failed to validate bot user response: %s", e)
             return None
 
-    async def list_users(
-        self, page_size: int = 100, start_cursor: str | None = None
-    ) -> NotionUsersListResponse | None:
+    async def list_users(self, page_size: int = 100, start_cursor: str | None = None) -> NotionUsersListResponse | None:
         """
         List all users in the workspace (paginated).
 
@@ -77,9 +75,7 @@ class UserHttpClient(NotionHttpClient):
 
         while True:
             try:
-                response = await self.list_users(
-                    page_size=100, start_cursor=start_cursor
-                )
+                response = await self.list_users(page_size=100, start_cursor=start_cursor)
 
                 if not response or not response.results:
                     break

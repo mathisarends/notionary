@@ -133,9 +133,7 @@ class RichTextObject(BaseModel):
     def mention_user(cls, user_id: str) -> RichTextObject:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(
-                type=MentionType.USER, user=MentionUserRef(id=user_id)
-            ),
+            mention=MentionObject(type=MentionType.USER, user=MentionUserRef(id=user_id)),
             annotations=TextAnnotations(),
         )
 
@@ -143,9 +141,7 @@ class RichTextObject(BaseModel):
     def mention_page(cls, page_id: str) -> RichTextObject:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(
-                type=MentionType.PAGE, page=MentionPageRef(id=page_id)
-            ),
+            mention=MentionObject(type=MentionType.PAGE, page=MentionPageRef(id=page_id)),
             annotations=TextAnnotations(),
         )
 
@@ -153,9 +149,7 @@ class RichTextObject(BaseModel):
     def mention_database(cls, database_id: str) -> RichTextObject:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(
-                type=MentionType.DATABASE, database=MentionDatabaseRef(id=database_id)
-            ),
+            mention=MentionObject(type=MentionType.DATABASE, database=MentionDatabaseRef(id=database_id)),
             annotations=TextAnnotations(),
         )
 
@@ -163,16 +157,12 @@ class RichTextObject(BaseModel):
     def mention_link_preview(cls, url: str) -> RichTextObject:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(
-                type=MentionType.LINK_PREVIEW, link_preview=MentionLinkPreview(url=url)
-            ),
+            mention=MentionObject(type=MentionType.LINK_PREVIEW, link_preview=MentionLinkPreview(url=url)),
             annotations=TextAnnotations(),
         )
 
     @classmethod
-    def mention_date(
-        cls, start: str, end: str | None = None, time_zone: str | None = None
-    ) -> RichTextObject:
+    def mention_date(cls, start: str, end: str | None = None, time_zone: str | None = None) -> RichTextObject:
         return cls(
             type=RichTextType.MENTION,
             mention=MentionObject(

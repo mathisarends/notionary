@@ -44,9 +44,7 @@ class EquationElement(BaseBlockElement):
         return CreateEquationBlock(equation=EquationBlock(expression=expression))
 
     @classmethod
-    def create_from_markdown_block(
-        cls, opening_line: str, equation_lines: list[str]
-    ) -> BlockCreateResult:
+    def create_from_markdown_block(cls, opening_line: str, equation_lines: list[str]) -> BlockCreateResult:
         """
         Create a complete equation block from markdown components.
         Handles multiline equations like:
@@ -74,9 +72,7 @@ class EquationElement(BaseBlockElement):
             expression = "\n".join(fixed_lines).strip()
 
             if expression:
-                return CreateEquationBlock(
-                    equation=EquationBlock(expression=expression)
-                )
+                return CreateEquationBlock(equation=EquationBlock(expression=expression))
 
         return None
 

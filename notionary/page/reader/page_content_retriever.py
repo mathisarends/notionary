@@ -40,17 +40,13 @@ class PageContentRetriever(LoggingMixin):
         regular_handler = LineRenderer()
 
         # Chain handlers - most specific first
-        toggle_handler.set_next(toggleable_heading_handler).set_next(
-            column_list_handler
-        ).set_next(column_handler).set_next(numbered_list_handler).set_next(
-            regular_handler
-        )
+        toggle_handler.set_next(toggleable_heading_handler).set_next(column_list_handler).set_next(
+            column_handler
+        ).set_next(numbered_list_handler).set_next(regular_handler)
 
         self._handler_chain = toggle_handler
 
-    async def _convert_blocks_to_markdown(
-        self, blocks: list[Block], indent_level: int = 0
-    ) -> str:
+    async def _convert_blocks_to_markdown(self, blocks: list[Block], indent_level: int = 0) -> str:
         """Convert blocks to Markdown using the handler chain."""
         if not blocks:
             return ""

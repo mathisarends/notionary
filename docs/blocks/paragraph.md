@@ -18,7 +18,7 @@ Multiple paragraphs are separated by blank lines.
 
 ```markdown
 **Bold text** - Important emphasis
-_Italic text_ - Subtle emphasis  
+_Italic text_ - Subtle emphasis
 **Underlined text** - Underlined content
 ~~Strikethrough~~ - Deleted content
 `Inline code` - Code snippets
