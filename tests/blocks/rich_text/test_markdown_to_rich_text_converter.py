@@ -2,26 +2,44 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from notionary.blocks.rich_text.database_name_id_resolver import DatabaseNameIdResolver
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-from notionary.blocks.rich_text.name_id_resolver import NameIdResolver
+from notionary.blocks.rich_text.page_name_id_resolver import PageNameIdResolver
 from notionary.blocks.rich_text.rich_text_models import (
     MentionType,
     RichTextType,
 )
+from notionary.blocks.rich_text.user_name_id_resolver import UserNameIdResolver
 
 
 @pytest.fixture
-def mock_resolver() -> AsyncMock:
-    resolver: NameIdResolver = AsyncMock(spec=NameIdResolver)
+def mock_page_resolver() -> AsyncMock:
+    resolver: PageNameIdResolver = AsyncMock(spec=PageNameIdResolver)
     resolver.resolve_page_id.return_value = "page-123"
+    return resolver
+
+
+@pytest.fixture
+def mock_database_resolver() -> AsyncMock:
+    resolver: DatabaseNameIdResolver = AsyncMock(spec=DatabaseNameIdResolver)
     resolver.resolve_database_id.return_value = "db-456"
+    return resolver
+
+
+@pytest.fixture
+def mock_user_resolver() -> AsyncMock:
+    resolver: UserNameIdResolver = AsyncMock(spec=UserNameIdResolver)
     resolver.resolve_user_id.return_value = "user-789"
     return resolver
 
 
 @pytest.fixture
-def converter(mock_resolver: AsyncMock) -> MarkdownRichTextConverter:
-    return MarkdownRichTextConverter(resolver=mock_resolver)
+def converter(
+    mock_page_resolver: AsyncMock, mock_database_resolver: AsyncMock, mock_user_resolver: AsyncMock
+) -> MarkdownRichTextConverter:
+    return MarkdownRichTextConverter(
+        page_resolver=mock_page_resolver, database_resolver=mock_database_resolver, user_resolver=mock_user_resolver
+    )
 
 
 class TestMarkdownRichTextConverter:
@@ -113,9 +131,9 @@ class TestMarkdownRichTextConverter:
 
     @pytest.mark.asyncio
     async def test_unresolved_mention_fallback(
-        self, converter: MarkdownRichTextConverter, mock_resolver: AsyncMock
+        self, converter: MarkdownRichTextConverter, mock_page_resolver: AsyncMock
     ) -> None:
-        mock_resolver.resolve_page_id.return_value = None
+        mock_page_resolver.resolve_page_id.return_value = None
         result = await converter.to_rich_text("@page[Unknown Page]")
         assert len(result) == 1
         assert result[0].type == RichTextType.TEXT

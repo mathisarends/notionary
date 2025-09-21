@@ -2,7 +2,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from notionary.blocks.rich_text.name_id_resolver import NameIdResolver
+from notionary.blocks.rich_text.database_name_id_resolver import DatabaseNameIdResolver
+from notionary.blocks.rich_text.page_name_id_resolver import PageNameIdResolver
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.rich_text.rich_text_models import (
     EquationObject,
@@ -17,20 +18,37 @@ from notionary.blocks.rich_text.rich_text_models import (
     TextAnnotations,
     TextContent,
 )
+from notionary.blocks.rich_text.user_name_id_resolver import UserNameIdResolver
 
 
 @pytest.fixture
-def mock_resolver() -> AsyncMock:
-    resolver: NameIdResolver = AsyncMock(spec=NameIdResolver)
+def mock_page_resolver() -> AsyncMock:
+    resolver: PageNameIdResolver = AsyncMock(spec=PageNameIdResolver)
     resolver.resolve_page_name.return_value = "Test Page"
+    return resolver
+
+
+@pytest.fixture
+def mock_database_resolver() -> AsyncMock:
+    resolver: DatabaseNameIdResolver = AsyncMock(spec=DatabaseNameIdResolver)
     resolver.resolve_database_name.return_value = "Tasks DB"
+    return resolver
+
+
+@pytest.fixture
+def mock_user_resolver() -> AsyncMock:
+    resolver: UserNameIdResolver = AsyncMock(spec=UserNameIdResolver)
     resolver.resolve_user_name.return_value = "John Doe"
     return resolver
 
 
 @pytest.fixture
-def converter(mock_resolver: AsyncMock) -> RichTextToMarkdownConverter:
-    return RichTextToMarkdownConverter(resolver=mock_resolver)
+def converter(
+    mock_page_resolver: AsyncMock, mock_database_resolver: AsyncMock, mock_user_resolver: AsyncMock
+) -> RichTextToMarkdownConverter:
+    return RichTextToMarkdownConverter(
+        page_resolver=mock_page_resolver, database_resolver=mock_database_resolver, user_resolver=mock_user_resolver
+    )
 
 
 class TestRichTextToMarkdownConverter:

@@ -1,51 +1,15 @@
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
-from enum import StrEnum
 from re import Match
 from typing import ClassVar
 
-from notionary.blocks.rich_text.name_id_resolver import NameIdResolver
+from notionary.blocks.rich_text.database_name_id_resolver import DatabaseNameIdResolver
+from notionary.blocks.rich_text.page_name_id_resolver import PageNameIdResolver
 from notionary.blocks.rich_text.rich_text_models import MentionType, RichTextObject, RichTextType, TextAnnotations
+from notionary.blocks.rich_text.rich_text_patterns import RichTextPatterns
+from notionary.blocks.rich_text.user_name_id_resolver import UserNameIdResolver
 from notionary.blocks.types import BlockColor
-
-
-class RichTextPatterns(StrEnum):
-    BOLD = r"\*\*(.+?)\*\*"
-    """Matches **bold text**. Example: `**Hello**` → bolded "Hello"."""
-
-    ITALIC = r"\*(.+?)\*"
-    """Matches *italic text*. Example: `*Hello*` → italic "Hello"."""
-
-    ITALIC_UNDERSCORE = r"_([^_]+?)_"
-    """Matches _italic text_ using underscores. Example: `_Hello_` → italic "Hello"."""
-
-    UNDERLINE = r"__(.+?)__"
-    """Matches __underlined text__. Example: `__Hello__` → underlined "Hello"."""
-
-    STRIKETHROUGH = r"~~(.+?)~~"
-    """Matches ~~strikethrough~~ text. Example: `~~Hello~~` → struck-through "Hello"."""
-
-    CODE = r"`(.+?)`"
-    """Matches inline code. Example: `` `print("Hi")` `` → code span `print("Hi")`."""
-
-    LINK = r"\[(.+?)\]\((.+?)\)"
-    """Matches a hyperlink. Example: `[Google](https://google.com)` → link with label "Google"."""
-
-    INLINE_EQUATION = r"\$(.+?)\$"
-    """Matches an inline LaTeX equation. Example: `$E=mc^2$` → math formula E=mc²."""
-
-    COLOR = r"\((\w+):(.+?)\)"
-    """Matches colored text. Example: `(red:Important)` → text "Important" colored red."""
-
-    PAGE_MENTION = r"@page\[([^\]]+)\]"
-    """Matches a Notion page mention by name or ID. Example: `@page[My Page]`."""
-
-    DATABASE_MENTION = r"@database\[([^\]]+)\]"
-    """Matches a Notion database mention by name or ID. Example: `@database[Tasks]`."""
-
-    USER_MENTION = r"@user\[([^\]]+)\]"
-    """Matches a Notion user mention by name or ID. Example: `@user[Some Person]`."""
 
 
 @dataclass
@@ -72,8 +36,16 @@ class PatternHandler:
 class MarkdownRichTextConverter:
     VALID_COLORS: ClassVar[set[str]] = {color.value for color in BlockColor}
 
-    def __init__(self, resolver: NameIdResolver | None = None):
-        self.resolver = resolver or NameIdResolver()
+    def __init__(
+        self,
+        *,
+        page_resolver: PageNameIdResolver | None = None,
+        database_resolver: DatabaseNameIdResolver | None = None,
+        user_resolver: UserNameIdResolver | None = None,
+    ):
+        self.page_resolver = page_resolver or PageNameIdResolver()
+        self.database_resolver = database_resolver or DatabaseNameIdResolver()
+        self.user_resolver = user_resolver or UserNameIdResolver()
         self.format_handlers = self._setup_format_handlers()
 
     def _setup_format_handlers(self) -> list[PatternHandler]:
@@ -221,7 +193,7 @@ class MarkdownRichTextConverter:
         identifier = match.group(1)
         return await self._create_mention_or_fallback(
             identifier=identifier,
-            resolve_func=self.resolver.resolve_page_id,
+            resolve_func=self.page_resolver.resolve_page_id,
             create_mention_func=RichTextObject.mention_page,
             mention_type=MentionType.PAGE,
         )
@@ -230,7 +202,7 @@ class MarkdownRichTextConverter:
         identifier = match.group(1)
         return await self._create_mention_or_fallback(
             identifier=identifier,
-            resolve_func=self.resolver.resolve_database_id,
+            resolve_func=self.database_resolver.resolve_database_id,
             create_mention_func=RichTextObject.mention_database,
             mention_type=MentionType.DATABASE,
         )
@@ -239,7 +211,7 @@ class MarkdownRichTextConverter:
         identifier = match.group(1)
         return await self._create_mention_or_fallback(
             identifier=identifier,
-            resolve_func=self.resolver.resolve_user_id,
+            resolve_func=self.user_resolver.resolve_user_id,
             create_mention_func=RichTextObject.mention_user,
             mention_type=MentionType.USER,
         )

@@ -1,7 +1,3 @@
-"""
-Minimale Tests für CalloutElement - nur das Wesentliche.
-"""
-
 from unittest.mock import Mock
 
 import pytest
@@ -22,12 +18,9 @@ def create_rich_text(content: str) -> RichTextObject:
 
 @pytest.mark.asyncio
 async def test_match_markdown():
-    """Test Markdown-Erkennung."""
-    # Valid
     assert await CalloutElement.markdown_to_notion("[callout](Simple text)")
     assert await CalloutElement.markdown_to_notion('[callout](Text "🔥")')
 
-    # Invalid
     assert await CalloutElement.markdown_to_notion("Regular text") is None
     assert not await CalloutElement.markdown_to_notion("[callout]()")
 

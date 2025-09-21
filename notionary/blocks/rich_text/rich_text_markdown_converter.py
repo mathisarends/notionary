@@ -1,20 +1,30 @@
 from typing import ClassVar
 
-from notionary.blocks.rich_text.name_id_resolver import NameIdResolver
+from notionary.blocks.rich_text.database_name_id_resolver import DatabaseNameIdResolver
+from notionary.blocks.rich_text.page_name_id_resolver import PageNameIdResolver
 from notionary.blocks.rich_text.rich_text_models import (
     MentionDate,
     MentionType,
     RichTextObject,
     RichTextType,
 )
+from notionary.blocks.rich_text.user_name_id_resolver import UserNameIdResolver
 from notionary.blocks.types import BlockColor
 
 
 class RichTextToMarkdownConverter:
     VALID_COLORS: ClassVar[set[str]] = {color.value for color in BlockColor}
 
-    def __init__(self, resolver: NameIdResolver | None = None) -> None:
-        self.resolver = resolver or NameIdResolver()
+    def __init__(
+        self,
+        *,
+        page_resolver: PageNameIdResolver | None = None,
+        database_resolver: DatabaseNameIdResolver | None = None,
+        user_resolver: UserNameIdResolver | None = None,
+    ) -> None:
+        self.page_resolver = page_resolver or PageNameIdResolver()
+        self.database_resolver = database_resolver or DatabaseNameIdResolver()
+        self.user_resolver = user_resolver or UserNameIdResolver()
 
     async def to_markdown(self, rich_text: list[RichTextObject]) -> str:
         if not rich_text:
@@ -61,15 +71,15 @@ class RichTextToMarkdownConverter:
         return None
 
     async def _extract_page_mention_markdown(self, page_id: str) -> str:
-        page_name = await self.resolver.resolve_page_name(page_id)
+        page_name = await self.page_resolver.resolve_page_name(page_id)
         return f"@page[{page_name or page_id}]"
 
     async def _extract_database_mention_markdown(self, database_id: str) -> str:
-        database_name = await self.resolver.resolve_database_name(database_id)
+        database_name = await self.database_resolver.resolve_database_name(database_id)
         return f"@database[{database_name or database_id}]"
 
     async def _extract_user_mention_markdown(self, user_id: str) -> str:
-        user_name = await self.resolver.resolve_user_name(user_id)
+        user_name = await self.user_resolver.resolve_user_name(user_id)
         return f"@user[{user_name or user_id}]"
 
     def _extract_date_mention_markdown(self, date_mention: MentionDate) -> str:
