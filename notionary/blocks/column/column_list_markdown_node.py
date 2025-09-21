@@ -1,4 +1,4 @@
-from typing import ClassVar
+from pydantic import Field
 
 from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
 from notionary.blocks.markdown.markdown_node import MarkdownNode
@@ -24,7 +24,7 @@ class ColumnListMarkdownNode(MarkdownNode):
     :::
     """
 
-    columns: ClassVar[list[ColumnMarkdownNode]] = []
+    columns: list[ColumnMarkdownNode] = Field(default_factory=list)
 
     def to_markdown(self) -> str:
         if not self.columns:

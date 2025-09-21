@@ -1,4 +1,4 @@
-from typing import ClassVar
+from pydantic import Field
 
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 
@@ -13,7 +13,7 @@ class ToggleMarkdownNode(MarkdownNode):
     """
 
     title: str
-    children: ClassVar[list[MarkdownNode]] = []
+    children: list[MarkdownNode] = Field(default_factory=list)
 
     def to_markdown(self) -> str:
         result = f"+++ {self.title}"

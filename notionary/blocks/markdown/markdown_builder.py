@@ -41,42 +41,20 @@ from notionary.blocks.video import VideoMarkdownNode
 class MarkdownBuilder:
     """
     Fluent interface builder for creating Notion content with clean, direct methods.
-
-    Focuses on the developer API for programmatic content creation.
-    Model processing is handled by MarkdownModelProcessor.
     """
 
     def __init__(self) -> None:
-        """Initialize builder with empty children list."""
         self.children: list[MarkdownNode] = []
 
     def h1(self, text: str) -> Self:
-        """
-        Add an H1 heading.
-
-        Args:
-            text: The heading text content
-        """
         self.children.append(HeadingMarkdownNode(text=text, level=1))
         return self
 
     def h2(self, text: str) -> Self:
-        """
-        Add an H2 heading.
-
-        Args:
-            text: The heading text content
-        """
         self.children.append(HeadingMarkdownNode(text=text, level=2))
         return self
 
     def h3(self, text: str) -> Self:
-        """
-        Add an H3 heading.
-
-        Args:
-            text: The heading text content
-        """
         self.children.append(HeadingMarkdownNode(text=text, level=3))
         return self
 
@@ -126,27 +104,14 @@ class MarkdownBuilder:
         return self
 
     def divider(self) -> Self:
-        """Add a horizontal divider."""
         self.children.append(DividerMarkdownNode())
         return self
 
     def numbered_list(self, items: list[str]) -> Self:
-        """
-        Add a numbered list.
-
-        Args:
-            items: List of text items for the numbered list
-        """
         self.children.append(NumberedListMarkdownNode(texts=items))
         return self
 
     def bulleted_list(self, items: list[str]) -> Self:
-        """
-        Add a bulleted list.
-
-        Args:
-            items: List of text items for the bulleted list
-        """
         self.children.append(BulletedListMarkdownNode(texts=items))
         return self
 
@@ -162,13 +127,6 @@ class MarkdownBuilder:
         return self
 
     def todo_list(self, items: list[str], completed: list[bool] | None = None) -> Self:
-        """
-        Add multiple todo items.
-
-        Args:
-            items: List of todo item texts
-            completed: List of completion states for each item, defaults to all False
-        """
         if completed is None:
             completed = [False] * len(items)
 

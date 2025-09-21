@@ -1,14 +1,7 @@
-"""
-Tests für komplexe verschachtelte MarkdownBuilder Szenarien.
-Testet realistische Anwendungsfälle mit mehrstufiger Verschachtelung.
-FIXED for new caption syntax!
-"""
-
 from notionary import MarkdownBuilder
 
 
 def test_nested_columns_with_mixed_content():
-    """Test verschachtelte Spalten mit verschiedenen Content-Typen"""
     builder = MarkdownBuilder()
 
     result = (
@@ -35,7 +28,6 @@ def test_nested_columns_with_mixed_content():
         .build()
     )
 
-    # Grundlegende Struktur prüfen
     assert "# Complex Documentation" in result
     assert "Introduction text" in result
     assert "## API Overview" in result
@@ -46,7 +38,6 @@ def test_nested_columns_with_mixed_content():
     assert '[callout](Important: Always handle exceptions! "⚠️")' in result
     assert "- Authentication required" in result
 
-    # Column-spezifische Struktur prüfen
     assert "::: column" in result
     assert ":::" in result
 

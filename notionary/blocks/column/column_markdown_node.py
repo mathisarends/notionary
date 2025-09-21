@@ -1,14 +1,10 @@
-from typing import ClassVar
+from pydantic import Field
 
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
 class ColumnMarkdownNode(MarkdownNode):
     """
-    Enhanced Column node with Pydantic integration.
-    Programmatic interface for creating a single Markdown column block
-    with nested content and optional width ratio.
-
     Example:
         ::: column
         # Column Title
@@ -23,7 +19,7 @@ class ColumnMarkdownNode(MarkdownNode):
         :::
     """
 
-    children: ClassVar[list[MarkdownNode]] = []
+    children: list[MarkdownNode] = Field(default_factory=list)
     width_ratio: float | None = None
 
     def to_markdown(self) -> str:
