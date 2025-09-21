@@ -11,7 +11,7 @@ from notionary.blocks.callout.callout_element import (
     CalloutElement,
     EmojiIcon,
 )
-from notionary.blocks.rich_text import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.types import BlockType
 
 

@@ -8,7 +8,7 @@ from notionary.blocks.callout.callout_models import (
     CreateCalloutBlock,
 )
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.shared.models.icon_models import EmojiIcon, Icon
 
@@ -54,7 +54,8 @@ class CalloutElement(BaseBlockElement):
         if not emoji:
             emoji = cls.DEFAULT_EMOJI
 
-        rich_text = await TextInlineFormatter.parse_inline_formatting(content.strip())
+        converter = MarkdownRichTextConverter()
+        rich_text = await converter.to_rich_text(content.strip())
 
         callout_content = CalloutBlock(
             rich_text=rich_text,
@@ -70,7 +71,7 @@ class CalloutElement(BaseBlockElement):
 
         data = block.callout
 
-        content = await TextInlineFormatter.extract_text_with_formatting(data.rich_text)
+        content = await MarkdownRichTextConverter.to_markdown(data.rich_text)
         if not content:
             return None
 

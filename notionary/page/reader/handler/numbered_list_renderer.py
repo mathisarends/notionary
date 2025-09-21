@@ -63,10 +63,11 @@ class NumberedListRenderer(BlockHandler):
 
     async def _process_single_item(self, context: BlockRenderingContext, number: int) -> str:
         """Process a single numbered list item with the given number."""
-        from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+        from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 
         rich_text = context.block.numbered_list_item.rich_text
-        content = await TextInlineFormatter.extract_text_with_formatting(rich_text)
+        converter = RichTextToMarkdownConverter()
+        content = await converter.to_markdown(rich_text)
 
         # Apply indentation
         indent = "  " * context.indent_level

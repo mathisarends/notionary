@@ -6,8 +6,8 @@ from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
     ParagraphBlock,
 )
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.space.space_models import SPACE_MARKER
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockColor, BlockType
@@ -36,7 +36,8 @@ class SpaceElement(BaseBlockElement):
         if text.strip() != SPACE_MARKER:
             return None
 
-        rich = await TextInlineFormatter.parse_inline_formatting("")  # create_empty paragraph
+        converter = MarkdownRichTextConverter()
+        rich = await converter.to_rich_text("")  # create empty paragraph
         paragraph_content = ParagraphBlock(rich_text=rich, color=BlockColor.DEFAULT)
         return CreateParagraphBlock(paragraph=paragraph_content)
 

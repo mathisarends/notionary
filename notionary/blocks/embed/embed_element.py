@@ -10,8 +10,8 @@ from notionary.blocks.file.file_element_models import (
     NotionHostedFile,
 )
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -70,11 +70,12 @@ class EmbedElement(BaseBlockElement):
             return f"[embed]({url})"
 
         text_parts = []
+        converter = RichTextToMarkdownConverter()
         for rt in fo.caption:
             if rt.plain_text:
                 text_parts.append(rt.plain_text)
             else:
-                formatted_text = await TextInlineFormatter.extract_text_with_formatting([rt])
+                formatted_text = await converter.to_markdown([rt])
                 text_parts.append(formatted_text)
         text = "".join(text_parts)
 

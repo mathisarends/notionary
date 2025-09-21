@@ -2,6 +2,7 @@ import re
 from re import Match
 from typing import ClassVar
 
+from notionary.blocks.rich_text.name_to_id_resolver import NameIdResolver
 from notionary.blocks.rich_text.rich_text_models import (
     MentionDate,
     MentionTemplateMention,
@@ -10,10 +11,11 @@ from notionary.blocks.rich_text.rich_text_models import (
     RichTextType,
     TemplateMentionType,
 )
+from notionary.blocks.rich_text.rich_text_patterns import RichTextPatterns
 from notionary.blocks.types import BlockColor
-from notionary.shared.name_to_id_resolver import NameIdResolver
 
 
+# TODO: Refactor this here
 class TextInlineFormatter:
     """
     Supported syntax patterns:
@@ -66,37 +68,21 @@ class TextInlineFormatter:
         → RichTextObject.mention_database("resolved-id")
     """
 
-    class Patterns:
-        BOLD = r"\*\*(.+?)\*\*"
-        ITALIC = r"\*(.+?)\*"
-        ITALIC_UNDERSCORE = r"_([^_]+?)_"
-        UNDERLINE = r"__(.+?)__"
-        STRIKETHROUGH = r"~~(.+?)~~"
-        CODE = r"`(.+?)`"
-        LINK = r"\[(.+?)\]\((.+?)\)"
-        INLINE_EQUATION = r"\$(.+?)\$"
-        COLOR = r"\((\w+):(.+?)\)"  # (blue:colored text) or (blue_background:text)
-        PAGE_MENTION = r"@page\[([^\]]+)\]"  # Matches both IDs and names
-        DATABASE_MENTION = r"@database\[([^\]]+)\]"  # Matches both IDs and names
-        USER_MENTION = r"@user\[([^\]]+)\]"  # Matches both IDs and names
-
-    # Pattern to handler mapping - cleaner approach
     @classmethod
     def _get_format_handlers(cls):
-        """Get pattern to handler mapping - defined as method to access class methods."""
         return [
-            (cls.Patterns.BOLD, cls._handle_bold_pattern),
-            (cls.Patterns.ITALIC, cls._handle_italic_pattern),
-            (cls.Patterns.ITALIC_UNDERSCORE, cls._handle_italic_pattern),
-            (cls.Patterns.UNDERLINE, cls._handle_underline_pattern),
-            (cls.Patterns.STRIKETHROUGH, cls._handle_strikethrough_pattern),
-            (cls.Patterns.CODE, cls._handle_code_pattern),
-            (cls.Patterns.LINK, cls._handle_link_pattern),
-            (cls.Patterns.INLINE_EQUATION, cls._handle_equation_pattern),
-            (cls.Patterns.COLOR, cls._handle_color_pattern),
-            (cls.Patterns.PAGE_MENTION, cls._handle_page_mention_pattern),
-            (cls.Patterns.DATABASE_MENTION, cls._handle_database_mention_pattern),
-            (cls.Patterns.USER_MENTION, cls._handle_user_mention_pattern),
+            (RichTextPatterns.BOLD, cls._handle_bold_pattern),
+            (RichTextPatterns.ITALIC, cls._handle_italic_pattern),
+            (RichTextPatterns.ITALIC_UNDERSCORE, cls._handle_italic_pattern),
+            (RichTextPatterns.UNDERLINE, cls._handle_underline_pattern),
+            (RichTextPatterns.STRIKETHROUGH, cls._handle_strikethrough_pattern),
+            (RichTextPatterns.CODE, cls._handle_code_pattern),
+            (RichTextPatterns.LINK, cls._handle_link_pattern),
+            (RichTextPatterns.INLINE_EQUATION, cls._handle_equation_pattern),
+            (RichTextPatterns.COLOR, cls._handle_color_pattern),
+            (RichTextPatterns.PAGE_MENTION, cls._handle_page_mention_pattern),
+            (RichTextPatterns.DATABASE_MENTION, cls._handle_database_mention_pattern),
+            (RichTextPatterns.USER_MENTION, cls._handle_user_mention_pattern),
         ]
 
     VALID_COLORS: ClassVar[set[str]] = {color.value for color in BlockColor}

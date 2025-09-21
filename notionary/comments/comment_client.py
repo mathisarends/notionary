@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncGenerator
 
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.comments.comment_models import (
     Comment,
     CommentAttachment,
@@ -87,7 +87,8 @@ class CommentClient(NotionHttpClient):
             raise ValueError("Specify exactly one parent: page_id OR discussion_id")
 
         # Convert plain text to rich text
-        rich_text = await TextInlineFormatter.parse_inline_formatting(rich_text_str)
+        converter = MarkdownRichTextConverter()
+        rich_text = await converter.to_rich_text(rich_text_str)
 
         if page_id:
             request = CommentCreateRequest.for_page(

@@ -154,47 +154,6 @@ class RichTextObject(BaseModel):
         )
 
     @classmethod
-    def mention_link_preview(cls, url: str) -> RichTextObject:
-        return cls(
-            type=RichTextType.MENTION,
-            mention=MentionObject(type=MentionType.LINK_PREVIEW, link_preview=MentionLinkPreview(url=url)),
-            annotations=TextAnnotations(),
-        )
-
-    @classmethod
-    def mention_date(cls, start: str, end: str | None = None, time_zone: str | None = None) -> RichTextObject:
-        return cls(
-            type=RichTextType.MENTION,
-            mention=MentionObject(
-                type=MentionType.DATE,
-                date=MentionDate(start=start, end=end, time_zone=time_zone),
-            ),
-            annotations=TextAnnotations(),
-        )
-
-    @classmethod
-    def mention_template_user(cls) -> RichTextObject:
-        return cls(
-            type=RichTextType.MENTION,
-            mention=MentionObject(
-                type=MentionType.TEMPLATE_MENTION,
-                template_mention=MentionTemplateMention(type=TemplateMentionType.USER),
-            ),
-            annotations=TextAnnotations(),
-        )
-
-    @classmethod
-    def mention_template_date(cls) -> RichTextObject:
-        return cls(
-            type=RichTextType.MENTION,
-            mention=MentionObject(
-                type=MentionType.TEMPLATE_MENTION,
-                template_mention=MentionTemplateMention(type=TemplateMentionType.DATE),
-            ),
-            annotations=TextAnnotations(),
-        )
-
-    @classmethod
     def equation_inline(cls, expression: str) -> RichTextObject:
         return cls(
             type=RichTextType.EQUATION,

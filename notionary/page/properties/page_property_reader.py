@@ -71,7 +71,7 @@ class PagePropertyReader:
             return None
 
         if isinstance(prop, dict):
-            return self._extract_property_value_fallback(prop)
+            return None
 
         extractor = self._property_extractors.get(prop.type)
         if not extractor:
@@ -92,12 +92,13 @@ class PagePropertyReader:
         return select_property.select.name
 
     async def get_value_of_title_property(self, name: str) -> str:
-        from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+        from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 
         title_property = self._get_property(name, PageTitleProperty)
         if not title_property:
             return ""
-        return await TextInlineFormatter.extract_text_with_formatting(title_property)
+        converter = RichTextToMarkdownConverter()
+        return await converter.to_markdown(title_property.title)
 
     def get_values_of_people_property(self, property_name: str) -> list[str]:
         people_prop = self._get_property(property_name, PagePeopleProperty)
@@ -148,13 +149,14 @@ class PagePropertyReader:
         return date_property.date.start
 
     async def get_value_of_rich_text_property(self, name: str) -> str:
-        from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+        from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 
         rich_text_property = self._get_property(name, PageRichTextProperty)
         if not rich_text_property:
             return ""
 
-        return await TextInlineFormatter.extract_text_with_formatting(rich_text_property)
+        converter = RichTextToMarkdownConverter()
+        return await converter.to_markdown(rich_text_property.rich_text)
 
     def get_value_of_email_property(self, name: str) -> str | None:
         email_property = self._get_property(name, PageEmailProperty)
@@ -163,10 +165,6 @@ class PagePropertyReader:
     def get_value_of_phone_number_property(self, name: str) -> str | None:
         phone_property = self._get_property(name, PagePhoneNumberProperty)
         return phone_property.phone_number if phone_property else None
-
-    def _extract_property_value_fallback(self, property_dict: dict) -> Any:
-        property_type = property_dict.get("type")
-        return property_dict.get(property_type)
 
     def _get_property(self, name: str, property_type: type[PagePropertyT]) -> PagePropertyT | None:
         prop = self._notion_page.properties.get(name)

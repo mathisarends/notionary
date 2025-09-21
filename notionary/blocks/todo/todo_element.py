@@ -4,7 +4,8 @@ import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
 
@@ -43,7 +44,8 @@ class TodoElement(BaseBlockElement):
             return None
 
         # build rich text
-        rich = await TextInlineFormatter.parse_inline_formatting(content)
+        converter = MarkdownRichTextConverter()
+        rich = await converter.to_rich_text(content)
 
         todo_content = ToDoBlock(
             rich_text=rich,
@@ -59,7 +61,8 @@ class TodoElement(BaseBlockElement):
             return None
 
         td = block.to_do
-        content = await TextInlineFormatter.extract_text_with_formatting(td.rich_text)
+        converter = RichTextToMarkdownConverter()
+        content = await converter.to_markdown(td.rich_text)
         checkbox = "[x]" if td.checked else "[ ]"
         return f"- {checkbox} {content}"
 

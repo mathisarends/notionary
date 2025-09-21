@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
@@ -8,7 +6,8 @@ from notionary.blocks.numbered_list.numbered_list_models import (
     CreateNumberedListItemBlock,
     NumberedListItemBlock,
 )
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockColor
 
@@ -30,7 +29,8 @@ class NumberedListElement(BaseBlockElement):
             return None
 
         content = match.group(2)
-        rich_text = await TextInlineFormatter.parse_inline_formatting(content)
+        converter = MarkdownRichTextConverter()
+        rich_text = await converter.to_rich_text(content)
 
         numbered_list_content = NumberedListItemBlock(rich_text=rich_text, color=BlockColor.DEFAULT)
         return CreateNumberedListItemBlock(numbered_list_item=numbered_list_content)
@@ -42,7 +42,8 @@ class NumberedListElement(BaseBlockElement):
             return None
 
         rich = block.numbered_list_item.rich_text
-        content = await TextInlineFormatter.extract_text_with_formatting(rich)
+        converter = RichTextToMarkdownConverter()
+        content = await converter.to_markdown(rich)
         return f"1. {content}"
 
     @classmethod

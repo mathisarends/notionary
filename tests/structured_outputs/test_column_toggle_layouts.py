@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-
-"""
-Test Column and Toggle layouts with structured output to verify hierarchical structure.
-"""
-
 import pytest
 from pydantic import Field
 

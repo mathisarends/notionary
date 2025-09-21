@@ -2,7 +2,7 @@ import asyncio
 
 from notionary import NotionPage
 
-PAGE_NAME = "Henningway Bridge"
+PAGE_NAME = "Jarivs Clipboard"
 
 
 async def main():
@@ -15,8 +15,9 @@ async def main():
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_page_name(PAGE_NAME)
 
-        themes = await page.set_property_value_by_name("Thema", ["Second Brain", "Lernen"])
-        print(f"🗂️  Themes: {themes}")
+        content = await page.get_markdown_content()
+        print("content", content)
+
     except Exception as e:
         import traceback
 

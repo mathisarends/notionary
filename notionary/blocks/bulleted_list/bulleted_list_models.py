@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from notionary.blocks.rich_text import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.types import BlockColor
 
 

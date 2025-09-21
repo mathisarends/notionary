@@ -1,11 +1,10 @@
-from __future__ import annotations
-
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.table.table_models import (
     CreateTableBlock,
@@ -129,7 +128,8 @@ class TableElement(BaseBlockElement):
     @classmethod
     async def _convert_cell_to_rich_text(cls, cell: str) -> list[RichTextObject]:
         """Convert cell text to rich text objects."""
-        rich_text = await TextInlineFormatter.parse_inline_formatting(cell)
+        converter = MarkdownRichTextConverter()
+        rich_text = await converter.to_rich_text(cell)
         if not rich_text:
             rich_text = [RichTextObject.from_plain_text(cell)]
         return rich_text
@@ -168,8 +168,9 @@ class TableElement(BaseBlockElement):
             cells = row_data.cells or []
 
             row_cells = []
+            converter = RichTextToMarkdownConverter()
             for cell in cells:
-                cell_text = await TextInlineFormatter.extract_text_with_formatting(cell)
+                cell_text = await converter.to_markdown(cell)
                 row_cells.append(cell_text or "")
 
             row = "| " + " | ".join(row_cells) + " |"

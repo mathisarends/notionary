@@ -10,7 +10,8 @@ from notionary.blocks.heading.heading_models import (
     HeadingBlock,
 )
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -56,7 +57,8 @@ class ToggleableHeadingElement(BaseBlockElement):
         if level < 1 or level > 3 or not content:
             return None
 
-        rich_text = await TextInlineFormatter.parse_inline_formatting(content)
+        converter = MarkdownRichTextConverter()
+        rich_text = await converter.to_rich_text(content)
 
         heading_content = HeadingBlock(rich_text=rich_text, color="default", is_toggleable=True, children=[])
 
@@ -90,7 +92,8 @@ class ToggleableHeadingElement(BaseBlockElement):
         if not isinstance(heading_content, HeadingBlock):
             return None
 
-        text = await TextInlineFormatter.extract_text_with_formatting(heading_content.rich_text)
+        converter = RichTextToMarkdownConverter()
+        text = await converter.to_markdown(heading_content.rich_text)
         prefix = "#" * level
 
         return f"+++{prefix} {text or ''}"

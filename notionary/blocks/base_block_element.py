@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 
 from notionary.blocks.models import Block, BlockCreateResult
@@ -28,6 +26,7 @@ class BaseBlockElement(ABC):
         """Convert Notion block to markdown."""
         pass
 
+    # Überlegen ob ich to_notion hier überhaupt brauche
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         """Check if this element can handle the given Notion block."""

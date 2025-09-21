@@ -6,7 +6,8 @@ from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
     ParagraphBlock,
 )
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockColor, BlockType
 
@@ -26,7 +27,8 @@ class ParagraphElement(BaseBlockElement):
         if not text.strip():
             return None
 
-        rich = await TextInlineFormatter.parse_inline_formatting(text)
+        converter = MarkdownRichTextConverter()
+        rich = await converter.to_rich_text(text)
 
         paragraph_content = ParagraphBlock(rich_text=rich, color=BlockColor.DEFAULT)
         return CreateParagraphBlock(paragraph=paragraph_content)
@@ -37,7 +39,8 @@ class ParagraphElement(BaseBlockElement):
             return None
 
         rich_list = block.paragraph.rich_text
-        markdown = await TextInlineFormatter.extract_text_with_formatting(rich_list)
+        converter = RichTextToMarkdownConverter()
+        markdown = await converter.to_markdown(rich_list)
 
         return markdown or None
 

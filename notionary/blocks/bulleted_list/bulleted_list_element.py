@@ -8,7 +8,8 @@ from notionary.blocks.bulleted_list.bulleted_list_models import (
     CreateBulletedListItemBlock,
 )
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -31,19 +32,16 @@ class BulletedListElement(BaseBlockElement):
         if not (match := cls.PATTERN.match(text.strip())):
             return None
 
-        # Extract the content part (second capture group)
         content = match.group(2)
 
-        # Parse inline markdown formatting into RichTextObject list
-        rich_text = await TextInlineFormatter.parse_inline_formatting(content)
+        converter = MarkdownRichTextConverter()
+        rich_text = await converter.to_rich_text(content)
 
-        # Return a properly typed Notion block
-        bulleted_list_content = BulletedListItemBlock(rich_text=rich_text, color="default")
+        bulleted_list_content = BulletedListItemBlock(rich_text=rich_text)
         return CreateBulletedListItemBlock(bulleted_list_item=bulleted_list_content)
 
     @classmethod
     async def notion_to_markdown(cls, block: Block) -> str | None:
-        """Convert Notion bulleted_list_item block to Markdown."""
         if block.type != BlockType.BULLETED_LIST_ITEM or not block.bulleted_list_item:
             return None
 
@@ -51,7 +49,8 @@ class BulletedListElement(BaseBlockElement):
         if not rich_list:
             return "-"
 
-        text = await TextInlineFormatter.extract_text_with_formatting(rich_list)
+        converter = RichTextToMarkdownConverter()
+        text = await converter.to_markdown(rich_list)
         return f"- {text}"
 
     @classmethod

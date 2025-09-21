@@ -1,7 +1,7 @@
 import re
 
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
 class CaptionMixin:
@@ -84,5 +84,6 @@ class CaptionMixin:
         if not caption_list:
             return ""
         # Preserve markdown formatting (bold, italic, etc.)
-        caption_text = await TextInlineFormatter.extract_text_with_formatting(caption_list)
+        converter = RichTextToMarkdownConverter()
+        caption_text = await converter.to_markdown(caption_list)
         return f"(caption:{caption_text})" if caption_text else ""

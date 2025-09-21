@@ -5,7 +5,8 @@ import re
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockColor
 
@@ -41,7 +42,8 @@ class QuoteElement(BaseBlockElement):
         if "\n" in content or "\r" in content:
             return None
 
-        rich_text = await TextInlineFormatter.parse_inline_formatting(content)
+        converter = MarkdownRichTextConverter()
+        rich_text = await converter.to_rich_text(content)
 
         quote_content = QuoteBlock(rich_text=rich_text, color=BlockColor.DEFAULT)
         return CreateQuoteBlock(quote=quote_content)
@@ -52,7 +54,8 @@ class QuoteElement(BaseBlockElement):
             return None
 
         rich = block.quote.rich_text
-        text = await TextInlineFormatter.extract_text_with_formatting(rich)
+        converter = RichTextToMarkdownConverter()
+        text = await converter.to_markdown(rich)
 
         if not text.strip():
             return None

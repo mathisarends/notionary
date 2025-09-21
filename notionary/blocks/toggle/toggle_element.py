@@ -4,8 +4,8 @@ import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
 from notionary.blocks.types import BlockColor
@@ -36,7 +36,8 @@ class ToggleElement(BaseBlockElement):
             return None
 
         title = match.group(1).strip()
-        rich_text = await TextInlineFormatter.parse_inline_formatting(title)
+        converter = MarkdownRichTextConverter()
+        rich_text = await converter.to_rich_text(title)
 
         # Create toggle block with empty children - they will be populated automatically
         toggle_content = ToggleBlock(rich_text=rich_text, color=BlockColor.DEFAULT, children=[])
