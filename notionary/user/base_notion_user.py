@@ -16,13 +16,12 @@ class BaseNotionUser(LoggingMixin, ABC):
         user_id: str,
         name: str | None = None,
         avatar_url: str | None = None,
-        token: str | None = None,
     ):
         """Initialize base user properties."""
         self._user_id = user_id
         self._name = name
         self._avatar_url = avatar_url
-        self.client = UserHttpClient(token=token)
+        self.client = UserHttpClient()
 
     @property
     def id(self) -> str:

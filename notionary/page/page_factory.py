@@ -15,16 +15,16 @@ if TYPE_CHECKING:
     from notionary import NotionPage
 
 
-async def load_page_from_id(page_id: str, token: str | None = None) -> NotionPage:
+async def load_page_from_id(page_id: str) -> NotionPage:
     """Load a NotionPage from a page ID."""
     formatted_id = format_uuid(page_id) or page_id
 
-    async with NotionHttpClient(token=token) as client:
+    async with NotionHttpClient() as client:
         page_response = await client.get_page(formatted_id)
-        return await _load_page_from_response(page_response, token)
+        return await _load_page_from_response(page_response)
 
 
-async def load_page_from_name(page_name: str, token: str | None = None, min_similarity: float = 0.6) -> NotionPage:
+async def load_page_from_name(page_name: str, min_similarity: float = 0.6) -> NotionPage:
     """Load a NotionPage by finding a page with fuzzy matching on the title."""
     # Lazy import to avoid circular imports
     from notionary.workspace import NotionWorkspace
@@ -46,12 +46,12 @@ async def load_page_from_name(page_name: str, token: str | None = None, min_simi
         available_titles = [result.title for result in search_results[:5]]
         raise ValueError(f"No sufficiently similar page found for '{page_name}'. Available: {available_titles}")
 
-    async with NotionHttpClient(token=token) as client:
+    async with NotionHttpClient() as client:
         page_response = await client.get_page(page_id=best_match.item.id)
-        return await _load_page_from_response(page_response=page_response, token=token)
+        return await _load_page_from_response(page_response=page_response)
 
 
-async def load_page_from_url(url: str, token: str | None = None) -> NotionPage:
+async def load_page_from_url(url: str) -> NotionPage:
     """Load a NotionPage from a Notion page URL."""
     page_id = extract_uuid(url)
     if not page_id:
@@ -59,14 +59,13 @@ async def load_page_from_url(url: str, token: str | None = None) -> NotionPage:
 
     formatted_id = format_uuid(page_id) or page_id
 
-    async with NotionHttpClient(token=token) as client:
+    async with NotionHttpClient() as client:
         page_response = await client.get_page(formatted_id)
-        return await _load_page_from_response(page_response, token)
+        return await _load_page_from_response(page_response)
 
 
 async def _load_page_from_response(
     page_response: NotionPageDto,
-    token: str | None,
 ) -> NotionPage:
     """Create NotionPage instance from API response."""
     from notionary import NotionDatabase, NotionPage
@@ -77,9 +76,7 @@ async def _load_page_from_response(
     cover_image_url = _extract_cover_image_url(page_response)
     parent_database_id = _extract_parent_database_id(page_response)
 
-    parent_database = (
-        await NotionDatabase.from_database_id(id=parent_database_id, token=token) if parent_database_id else None
-    )
+    parent_database = await NotionDatabase.from_database_id(id=parent_database_id) if parent_database_id else None
 
     return NotionPage(
         page_id=page_response.id,
@@ -92,7 +89,6 @@ async def _load_page_from_response(
         in_trash=page_response.in_trash,
         properties=page_response.properties,  # Jetzt bereits typisiert!
         parent_database=parent_database,
-        token=token,
     )
 
 

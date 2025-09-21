@@ -17,13 +17,13 @@ class NotionWorkspace(LoggingMixin):
     Only individual user queries and bot user information are available.
     """
 
-    def __init__(self, token: str | None = None):
+    def __init__(self):
         """
         Initialize the workspace with Notion clients.
         """
-        self.database_client = NotionDatabseHttpClient(token=token)
-        self.notion_client = NotionHttpClient(token=token)
-        self.user_manager = NotionUserManager(token=token)
+        self.database_client = NotionDatabseHttpClient()
+        self.notion_client = NotionHttpClient()
+        self.user_manager = NotionUserManager()
 
     async def search_pages(self, query: str, sort_ascending: bool = True, limit: int = 100) -> list[NotionPage]:
         """

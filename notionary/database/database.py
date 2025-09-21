@@ -36,31 +36,28 @@ class NotionDatabase(LoggingMixin):
         url: str,
         emoji_icon: str | any | None = None,
         properties: dict[str, DatabaseNotionProperty] | None = None,
-        token: str | None = None,
     ):
         self._id = id
         self._title = title
         self._url = url
         self._emoji_icon = emoji_icon
         self._properties = properties or {}
-        self.token = token
 
-        self.client = NotionDatabseHttpClient(token=token)
+        self.client = NotionDatabseHttpClient()
 
     @classmethod
-    async def from_database_id(cls, id: str, token: str | None = None) -> NotionDatabase:
+    async def from_database_id(cls, id: str) -> NotionDatabase:
         provider = cls.get_database_provider()
-        return await provider.get_database_by_id(id, token)
+        return await provider.get_database_by_id(id)
 
     @classmethod
     async def from_database_name(
         cls,
         database_name: str,
-        token: str | None = None,
         min_similarity: float = 0.6,
     ) -> NotionDatabase:
         provider = cls.get_database_provider()
-        return await provider.get_database_by_name(database_name, token, min_similarity)
+        return await provider.get_database_by_name(database_name, min_similarity)
 
     @property
     def id(self) -> str:
@@ -96,7 +93,7 @@ class NotionDatabase(LoggingMixin):
         """
         create_page_response: NotionPageDto = await self.client.create_page(parent_database_id=self.id)
 
-        return await NotionPage.from_page_id(page_id=create_page_response.id, token=self.token)
+        return await NotionPage.from_page_id(page_id=create_page_response.id)
 
     async def set_title(self, new_title: str) -> str:
         result = await self.client.update_database_title(database_id=self.id, title=new_title)
@@ -200,10 +197,7 @@ class NotionDatabase(LoggingMixin):
         page_results: list[NotionPage] = []
 
         if search_results.results:
-            page_tasks = [
-                NotionPage.from_page_id(page_id=page_response.id, token=self.client.token)
-                for page_response in search_results.results
-            ]
+            page_tasks = [NotionPage.from_page_id(page_id=page_response.id) for page_response in search_results.results]
             page_results = await asyncio.gather(*page_tasks)
 
         return page_results
@@ -227,9 +221,7 @@ class NotionDatabase(LoggingMixin):
         pages: list[NotionPage] = []
 
         async for batch in self._paginate_database(page_size=100):
-            page_tasks = [
-                NotionPage.from_page_id(page_id=page_response.id, token=self.client.token) for page_response in batch
-            ]
+            page_tasks = [NotionPage.from_page_id(page_id=page_response.id) for page_response in batch]
             batch_pages = await asyncio.gather(*page_tasks)
             pages.extend(batch_pages)
 
@@ -253,7 +245,7 @@ class NotionDatabase(LoggingMixin):
         """
         async for batch in self._paginate_database(page_size, filter_conditions):
             for page_response in batch:
-                yield await NotionPage.from_page_id(page_id=page_response.id, token=self.client.token)
+                yield await NotionPage.from_page_id(page_id=page_response.id)
 
     async def _get_relation_options(self, relation_prop: DatabaseRelationProperty) -> list[str]:
         """

@@ -47,7 +47,6 @@ class NotionPage(LoggingMixin):
         cover_image_url: str | None = None,
         properties: dict[str, PageProperty] | None = None,
         parent_database: NotionDatabase | None = None,
-        token: str | None = None,
     ):
         self._page_id = page_id
         self._title = title
@@ -59,11 +58,10 @@ class NotionPage(LoggingMixin):
         self._cover_image_url = cover_image_url
         self._properties = properties or {}
         self._parent_database = parent_database
-        self.token = token
 
-        self._page_client = NotionPageHttpClient(page_id=page_id, properties=properties, token=token)
-        self._block_client = NotionBlockHttpClient(token=token)
-        self._comment_client = CommentClient(token=token)
+        self._page_client = NotionPageHttpClient(page_id=page_id, properties=properties)
+        self._block_client = NotionBlockHttpClient()
+        self._comment_client = CommentClient()
 
         self.block_element_registry = BlockRegistry()
 
@@ -87,20 +85,20 @@ class NotionPage(LoggingMixin):
         self.property_writer = PagePropertyWriter(self)
 
     @classmethod
-    async def from_page_id(cls, page_id: str, token: str | None = None) -> NotionPage:
-        return await load_page_from_id(page_id, token)
+    async def from_page_id(cls, page_id: str) -> NotionPage:
+        return await load_page_from_id(page_id)
 
     @classmethod
-    async def from_page_name(cls, page_name: str, token: str | None = None, min_similarity: float = 0.6) -> NotionPage:
+    async def from_page_name(cls, page_name: str, min_similarity: float = 0.6) -> NotionPage:
         """
         Create a NotionPage by finding a page with fuzzy matching on the title.
         Uses Notion's search API and fuzzy matching to find the best result.
         """
-        return await load_page_from_name(page_name, token, min_similarity)
+        return await load_page_from_name(page_name, min_similarity)
 
     @classmethod
-    async def from_url(cls, url: str, token: str | None = None) -> NotionPage:
-        return await load_page_from_url(url, token)
+    async def from_url(cls, url: str) -> NotionPage:
+        return await load_page_from_url(url)
 
     @property
     def id(self) -> str:
@@ -219,14 +217,14 @@ class NotionPage(LoggingMixin):
     async def create_child_database(self, title: str) -> NotionDatabase:
         from notionary import NotionDatabase
 
-        database_client = NotionDatabseHttpClient(token=self._page_client.token)
+        database_client = NotionDatabseHttpClient()
 
         create_database_response = await database_client.create_database(
             title=title,
             parent_page_id=self._page_id,
         )
 
-        return await NotionDatabase.from_database_id(id=create_database_response.id, token=self._page_client.token)
+        return await NotionDatabase.from_database_id(id=create_database_response.id)
 
     async def set_cover(self, external_url: str) -> None:
         updated_page = await self._page_client.patch_external_cover(external_url)
@@ -268,6 +266,6 @@ class NotionPage(LoggingMixin):
     def _setup_page_context_provider(self) -> PageContextProvider:
         return PageContextProvider(
             page_id=self._page_id,
-            database_client=NotionDatabseHttpClient(token=self._page_client.token),
+            database_client=NotionDatabseHttpClient(),
             file_upload_client=FileUploadHttpClient(),
         )

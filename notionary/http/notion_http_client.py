@@ -26,10 +26,13 @@ class NotionHttpClient(LoggingMixin):
     BASE_URL = "https://api.notion.com/v1"
     NOTION_VERSION = "2022-06-28"
 
-    def __init__(self, token: str | None = None, timeout: int = 30):
-        self.token = token or self._find_token()
+    def __init__(self, timeout: int = 30):
+        self.token = self._find_token()
         if not self.token:
-            raise ValueError("Notion API token is required")
+            raise ValueError(
+                "No Notion API token found in environment variables. Please set one of these environment variables: "
+                "NOTION_SECRET, NOTION_INTEGRATION_KEY, or NOTION_TOKEN"
+            )
 
         self.headers = {
             "Authorization": f"Bearer {self.token}",

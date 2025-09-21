@@ -11,15 +11,15 @@ class NotionUserManager(LoggingMixin):
     This manager provides utility functions for working with individual users and user lists.
     """
 
-    def __init__(self, token: str | None = None):
+    def __init__(self):
         """Initialize the user manager."""
-        self.client = UserHttpClient(token=token)
+        self.client = UserHttpClient()
 
     async def get_user_by_id(self, user_id: str) -> NotionUser | None:
         """
         Get a specific user by their ID.
         """
-        return await NotionUser.from_user_id(user_id, token=self.client.token)
+        return await NotionUser.from_user_id(user_id)
 
     async def get_all_users(self) -> list[NotionUser]:
         """
@@ -45,7 +45,7 @@ class NotionUserManager(LoggingMixin):
 
                 try:
                     # Use the internal creation method to convert response to NotionUser
-                    notion_user = NotionUser.from_user_response(user_response, self.client.token)
+                    notion_user = NotionUser.from_user_response(user_response)
                     notion_users.append(notion_user)
                 except Exception as e:
                     self.logger.warning(

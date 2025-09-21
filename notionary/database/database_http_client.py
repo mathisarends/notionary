@@ -15,8 +15,8 @@ class NotionDatabseHttpClient(NotionHttpClient):
     Inherits connection management and HTTP methods from NotionHttpClient.
     """
 
-    def __init__(self, token: str | None = None, timeout: int = 30):
-        super().__init__(token, timeout)
+    def __init__(self, timeout: int = 30):
+        super().__init__(timeout)
 
     async def create_database(
         self,

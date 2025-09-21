@@ -12,20 +12,18 @@ if TYPE_CHECKING:
     from notionary import NotionDatabase
 
 
-async def load_database_from_id(database_id: str, token: str | None = None) -> NotionDatabase:
+async def load_database_from_id(database_id: str) -> NotionDatabase:
     """Load a NotionDatabase from a database ID."""
     formatted_id = format_uuid(database_id) or database_id
 
-    async with NotionDatabseHttpClient(token=token) as client:
+    async with NotionDatabseHttpClient() as client:
         db_response = await client.get_database(formatted_id)
-        return _load_database_from_response(db_response, token)
+        return _load_database_from_response(db_response)
 
 
-async def load_database_from_name(
-    database_name: str, token: str | None = None, min_similarity: float = 0.6
-) -> NotionDatabase:
+async def load_database_from_name(database_name: str, min_similarity: float = 0.6) -> NotionDatabase:
     """Load a NotionDatabase by finding a database with fuzzy matching on the title."""
-    async with NotionDatabseHttpClient(token=token) as client:
+    async with NotionDatabseHttpClient() as client:
         search_result = await client.search_databases(database_name, limit=10)
 
         if not search_result.results:
@@ -46,12 +44,11 @@ async def load_database_from_name(
 
         database_id = best_match.item.id
         db_response = await client.get_database(database_id=database_id)
-        return _load_database_from_response(db_response, token)
+        return _load_database_from_response(db_response)
 
 
 def _load_database_from_response(
     db_response: NoionDatabaseDto,
-    token: str | None,
 ) -> NotionDatabase:
     """Create NotionDatabase instance from API response with typed properties."""
     from notionary import NotionDatabase
@@ -65,7 +62,6 @@ def _load_database_from_response(
         url=db_response.url,
         emoji_icon=emoji_icon,
         properties=db_response.properties,
-        token=token,
     )
 
 

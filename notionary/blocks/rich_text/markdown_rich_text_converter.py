@@ -5,7 +5,7 @@ from enum import StrEnum
 from re import Match
 from typing import ClassVar
 
-from notionary.blocks.rich_text.name_to_id_resolver import NameIdResolver
+from notionary.blocks.rich_text.name_id_resolver import NameIdResolver
 from notionary.blocks.rich_text.rich_text_models import MentionType, RichTextObject, RichTextType, TextAnnotations
 from notionary.blocks.types import BlockColor
 

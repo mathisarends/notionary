@@ -23,18 +23,17 @@ class NotionUser(BaseNotionUser):
         name: str | None = None,
         avatar_url: str | None = None,
         email: str | None = None,
-        token: str | None = None,
     ):
         """Initialize person user with person-specific properties."""
-        super().__init__(user_id, name, avatar_url, token)
+        super().__init__(user_id, name, avatar_url)
         self._email = email
 
     @classmethod
-    async def from_user_id(cls, user_id: str, token: str | None = None) -> NotionUser | None:
+    async def from_user_id(cls, user_id: str) -> NotionUser | None:
         """
         Create a NotionUser from a user ID.
         """
-        client = UserHttpClient(token=token)
+        client = UserHttpClient()
         user_response = await client.get_user(user_id)
 
         if user_response is None:
@@ -46,16 +45,16 @@ class NotionUser(BaseNotionUser):
             cls.logger.error("User %s is not a person user (type: %s)", user_id, user_response.type)
             return None
 
-        return cls._create_from_response(user_response, token)
+        return cls._create_from_response(user_response)
 
     @classmethod
-    async def from_name(cls, name: str, token: str | None = None, min_similarity: float = 0.6) -> NotionUser | None:
+    async def from_name(cls, name: str, min_similarity: float = 0.6) -> NotionUser | None:
         """
         Create a NotionUser by finding a person user with fuzzy matching on the name.
         """
         from notionary.util.fuzzy import find_best_match
 
-        client = UserHttpClient(token=token)
+        client = UserHttpClient()
 
         try:
             # Get all users from workspace
@@ -103,27 +102,26 @@ class NotionUser(BaseNotionUser):
             )
 
             # Create NotionUser from the matched user response
-            return cls._create_from_response(best_match.item, token)
+            return cls._create_from_response(best_match.item)
 
         except Exception as e:
             cls.logger.error("Error finding user by name '%s': %s", name, str(e))
             raise
 
     @classmethod
-    def from_user_response(cls, user_response: NotionUserResponse, token: str | None = None) -> NotionUser:
+    def from_user_response(cls, user_response: NotionUserResponse) -> NotionUser:
         """
         Create a NotionUser from an existing API response.
         """
         if user_response.type != "person":
             raise ValueError(f"Cannot create NotionUser from {user_response.type} user")
 
-        return cls._create_from_response(user_response, token)
+        return cls._create_from_response(user_response)
 
     @classmethod
     async def search_users_by_name(
         cls,
         name: str,
-        token: str | None = None,
         min_similarity: float = 0.3,
         limit: int | None = 5,
     ) -> list[NotionUser]:
@@ -139,7 +137,7 @@ class NotionUser(BaseNotionUser):
         Returns:
             List[NotionUser]: List of matching users sorted by similarity (best first)
         """
-        client = UserHttpClient(token=token)
+        client = UserHttpClient()
 
         try:
             # Get all users from workspace
@@ -171,7 +169,7 @@ class NotionUser(BaseNotionUser):
             result_users = []
             for match in matches:
                 try:
-                    user = cls._create_from_response(match.item, token)
+                    user = cls._create_from_response(match.item)
                     result_users.append(user)
                 except Exception as e:
                     cls.logger.warning(
@@ -210,7 +208,7 @@ class NotionUser(BaseNotionUser):
         return False
 
     @classmethod
-    def _create_from_response(cls, user_response: NotionUserResponse, token: str | None) -> NotionUser:
+    def _create_from_response(cls, user_response: NotionUserResponse) -> NotionUser:
         """Create NotionUser instance from API response."""
         email = user_response.person.email if user_response.person else None
 
@@ -219,7 +217,6 @@ class NotionUser(BaseNotionUser):
             name=user_response.name,
             avatar_url=user_response.avatar_url,
             email=email,
-            token=token,
         )
 
         cls.logger.info(

@@ -1,8 +1,8 @@
 from unittest.mock import AsyncMock
 
 import pytest
-
 from notionary.blocks.rich_text.name_to_id_resolver import NameIdResolver
+
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.rich_text.rich_text_models import (
     EquationObject,

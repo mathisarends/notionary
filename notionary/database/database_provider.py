@@ -27,9 +27,7 @@ class NotionDatabaseProvider(LoggingMixin):
     def __init__(self):
         self._database_cache: dict[str, NotionDatabase] = {}
 
-    async def get_database_by_id(
-        self, database_id: str, token: str | None = None, force_refresh: bool = False
-    ) -> NotionDatabase:
+    async def get_database_by_id(self, database_id: str, force_refresh: bool = False) -> NotionDatabase:
         """Get a NotionDatabase by ID with caching."""
         cache_key = self._create_id_cache_key(database_id)
 
@@ -37,24 +35,23 @@ class NotionDatabaseProvider(LoggingMixin):
             self.logger.debug(f"Using cached database for ID: {database_id}")
             return self._database_cache[cache_key]
 
-        database = await load_database_from_id(database_id, token)
-        self._cache_database(database, token)
+        database = await load_database_from_id(database_id)
+        self._cache_database(database)
         return database
 
     async def get_database_by_name(
         self,
         database_name: str,
-        token: str | None = None,
         min_similarity: float = 0.6,
         force_refresh: bool = False,
     ) -> NotionDatabase:
         """Get a NotionDatabase by name with caching."""
-        name_cache_key = self._create_name_cache_key(database_name, token)
+        name_cache_key = self._create_name_cache_key(database_name)
 
         if self._should_use_cache(name_cache_key, force_refresh):
             return self._database_cache[name_cache_key]
 
-        database = await load_database_from_name(database_name, token, min_similarity)
+        database = await load_database_from_name(database_name, min_similarity)
 
         id_cache_key = self._create_id_cache_key(database.id)
         if not force_refresh and id_cache_key in self._database_cache:
@@ -64,7 +61,7 @@ class NotionDatabaseProvider(LoggingMixin):
             self._database_cache[name_cache_key] = existing_database
             return existing_database
 
-        self._cache_database(database, token, database_name)
+        self._cache_database(database, database_name)
         self.logger.debug(f"Cached database: {database.title} (ID: {database.id})")
 
         return database
@@ -108,7 +105,6 @@ class NotionDatabaseProvider(LoggingMixin):
     def _cache_database(
         self,
         database: NotionDatabase,
-        token: str | None,
         original_name: str | None = None,
     ) -> None:
         """Cache a database by both ID and name (if provided)."""
@@ -117,14 +113,13 @@ class NotionDatabaseProvider(LoggingMixin):
         self._database_cache[id_cache_key] = database
 
         if original_name:
-            name_cache_key = self._create_name_cache_key(original_name, token)
+            name_cache_key = self._create_name_cache_key(original_name)
             self._database_cache[name_cache_key] = database
 
     def _create_id_cache_key(self, database_id: str) -> str:
         """Create cache key for database ID."""
         return f"id:{database_id}"
 
-    def _create_name_cache_key(self, database_name: str, token: str | None) -> str:
+    def _create_name_cache_key(self, database_name: str) -> str:
         """Create cache key for database name."""
-        token_suffix = f":{hash(token)}" if token else ":default"
-        return f"name:{database_name.lower().strip()}{token_suffix}"
+        return f"name:{database_name.lower().strip()}"

@@ -185,7 +185,6 @@ class PagePropertyWriter:
             *[
                 load_page_from_name(
                     page_name=title,
-                    token=self._notion_page.token,
                 )
                 for title in relation_values
             ]

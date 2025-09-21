@@ -35,9 +35,8 @@ class NotionPageHttpClient(NotionHttpClient):
         self,
         page_id: str,
         properties: dict[str, PageProperty] | None = None,
-        token: str | None = None,
     ):
-        super().__init__(token=token)
+        super().__init__()
         self._page_id = page_id
         self._page_properties = properties
 
