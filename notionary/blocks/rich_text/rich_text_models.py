@@ -4,6 +4,8 @@ from enum import StrEnum
 
 from pydantic import BaseModel
 
+from notionary.blocks.types import BlockColor
+
 
 class RichTextType(StrEnum):
     TEXT = "text"
@@ -31,7 +33,7 @@ class TextAnnotations(BaseModel):
     strikethrough: bool = False
     underline: bool = False
     code: bool = False
-    color: str = "default"
+    color: str = BlockColor.DEFAULT
 
 
 class LinkObject(BaseModel):

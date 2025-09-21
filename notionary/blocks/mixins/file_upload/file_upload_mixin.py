@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from notionary.file_upload import FileUploadHttpClient
+from notionary.file_upload.file_upload_http_client import FileUploadHttpClient
 from notionary.file_upload.models import UploadMode
 from notionary.page.page_context import get_page_context
 from notionary.util.logging_mixin import LoggingMixin

@@ -4,7 +4,6 @@ bootstrap_blocks()
 
 from .blocks.markdown.markdown_builder import MarkdownBuilder
 from .database import DatabaseFilterBuilder, NotionDatabase
-from .file_upload import NotionFileUpload
 from .page.page import NotionPage
 from .user import NotionBotUser, NotionUser, NotionUserManager
 from .workspace import NotionWorkspace
@@ -14,7 +13,6 @@ __all__ = [
     "MarkdownBuilder",
     "NotionBotUser",
     "NotionDatabase",
-    "NotionFileUpload",
     "NotionPage",
     "NotionUser",
     "NotionUserManager",

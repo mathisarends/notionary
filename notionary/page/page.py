@@ -9,7 +9,7 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.comments import Comment, CommentClient
 from notionary.database.database_http_client import NotionDatabseHttpClient
-from notionary.file_upload.client import FileUploadHttpClient
+from notionary.file_upload.file_upload_http_client import FileUploadHttpClient
 from notionary.page.page_content_deleting_service import PageContentDeletingService
 from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.page_context import PageContextProvider, page_context

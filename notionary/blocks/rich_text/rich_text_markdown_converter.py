@@ -58,9 +58,6 @@ class RichTextToMarkdownConverter:
         elif mention.type == MentionType.DATE and mention.date:
             return self._extract_date_mention_markdown(mention.date)
 
-        elif mention.type == MentionType.LINK_PREVIEW and mention.link_preview:
-            return f"[{obj.plain_text}]({mention.link_preview.url})"
-
         return None
 
     async def _extract_page_mention_markdown(self, page_id: str) -> str:
@@ -101,7 +98,7 @@ class RichTextToMarkdownConverter:
         if annotations.bold:
             content = f"**{content}**"
 
-        if annotations.color != "default" and annotations.color in self.VALID_COLORS:
+        if annotations.color != BlockColor.DEFAULT and annotations.color in self.VALID_COLORS:
             content = f"({annotations.color}:{content})"
 
         return content
