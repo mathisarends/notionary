@@ -13,7 +13,7 @@ from notionary.blocks.types import BlockColor
 class RichTextToMarkdownConverter:
     VALID_COLORS: ClassVar[set[str]] = {color.value for color in BlockColor}
 
-    def __init__(self, resolver: NameIdResolver | None = None):
+    def __init__(self, resolver: NameIdResolver | None = None) -> None:
         self.resolver = resolver or NameIdResolver()
 
     async def to_markdown(self, rich_text: list[RichTextObject]) -> str:

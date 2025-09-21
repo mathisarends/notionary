@@ -20,8 +20,8 @@ from notionary.blocks.rich_text.rich_text_models import (
 
 
 @pytest.fixture
-def mock_resolver():
-    resolver = AsyncMock(spec=NameIdResolver)
+def mock_resolver() -> AsyncMock:
+    resolver: NameIdResolver = AsyncMock(spec=NameIdResolver)
     resolver.resolve_page_name.return_value = "Test Page"
     resolver.resolve_database_name.return_value = "Tasks DB"
     resolver.resolve_user_name.return_value = "John Doe"
@@ -29,7 +29,7 @@ def mock_resolver():
 
 
 @pytest.fixture
-def converter(mock_resolver) -> RichTextToMarkdownConverter:
+def converter(mock_resolver: AsyncMock) -> RichTextToMarkdownConverter:
     return RichTextToMarkdownConverter(resolver=mock_resolver)
 
 
