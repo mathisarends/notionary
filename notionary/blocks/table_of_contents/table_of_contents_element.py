@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.table_of_contents.table_of_contents_models import (
     CreateTableOfContentsBlock,
     TableOfContentsBlock,
 )
-from notionary.blocks.types import BlockType, BlockColor
+from notionary.blocks.types import BlockColor, BlockType
 
 
 class TableOfContentsElement(BaseBlockElement):
@@ -50,7 +49,7 @@ class TableOfContentsElement(BaseBlockElement):
         return CreateTableOfContentsBlock(table_of_contents=toc_payload)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         # Correct guard: if not a TOC or missing payload → no match
         if block.type != BlockType.TABLE_OF_CONTENTS or not block.table_of_contents:
             return None
@@ -62,7 +61,7 @@ class TableOfContentsElement(BaseBlockElement):
         return f"[toc]({color.value})"
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """System prompt info for table of contents blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import (
@@ -12,8 +11,8 @@ from notionary.blocks.file.file_element_models import (
 from notionary.blocks.image_block.image_models import CreateImageBlock, FileBlock
 from notionary.blocks.mixins.captions import CaptionMixin
 from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class ImageElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
@@ -38,7 +37,7 @@ class ImageElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return block.type == BlockType.IMAGE and block.image
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> Optional[BlockCreateResult]:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult | None:
         """Convert markdown image syntax to Notion ImageBlock."""
         image_path = cls._extract_image_path(text.strip())
         if not image_path:
@@ -78,7 +77,7 @@ class ImageElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return CreateImageBlock(image=image_block)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         if block.type != BlockType.IMAGE or not block.image:
             return None
 
@@ -102,7 +101,7 @@ class ImageElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return result
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for image blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,
@@ -119,7 +118,7 @@ class ImageElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         )
 
     @classmethod
-    def _extract_image_path(cls, text: str) -> Optional[str]:
+    def _extract_image_path(cls, text: str) -> str | None:
         """Extract image path/URL from text, handling caption patterns."""
         clean_text = cls.remove_caption(text)
 

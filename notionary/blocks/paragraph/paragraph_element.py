@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.paragraph.paragraph_models import (
     CreateParagraphBlock,
     ParagraphBlock,
 )
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockColor, BlockType
 
 
@@ -34,7 +32,7 @@ class ParagraphElement(BaseBlockElement):
         return CreateParagraphBlock(paragraph=paragraph_content)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         if block.type != BlockType.PARAGRAPH or not block.paragraph:
             return None
 
@@ -44,7 +42,7 @@ class ParagraphElement(BaseBlockElement):
         return markdown or None
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for paragraph blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

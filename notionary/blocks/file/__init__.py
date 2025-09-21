@@ -12,12 +12,12 @@ from notionary.blocks.file.file_element_models import (
 )
 
 __all__ = [
-    "FileElement",
-    "FileType",
-    "ExternalFile",
-    "NotionHostedFile",
-    "FileUploadFile",
-    "FileBlock",
     "CreateFileBlock",
+    "ExternalFile",
+    "FileBlock",
+    "FileElement",
     "FileMarkdownNode",
+    "FileType",
+    "FileUploadFile",
+    "NotionHostedFile",
 ]

@@ -5,10 +5,6 @@ from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 class ToggleableHeadingMarkdownNode(MarkdownNode):
     """
-    Enhanced Toggleable Heading node with Pydantic integration.
-    Clean programmatic interface for creating collapsible Markdown headings (toggleable headings)
-    with pipe-prefixed nested content using MarkdownNode children.
-
     Example syntax for a level-2 toggleable heading:
         +++## Advanced Section
         some content
@@ -17,7 +13,7 @@ class ToggleableHeadingMarkdownNode(MarkdownNode):
 
     text: str
     level: int = Field(ge=1, le=3)
-    children: list[MarkdownNode] = []
+    children: list[MarkdownNode] = Field(default_factory=list)
 
     def to_markdown(self) -> str:
         prefix = "+++" + ("#" * self.level)

@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -8,7 +8,7 @@ from notionary.blocks.types import BlockColor
 class TableOfContentsBlock(BaseModel):
     """Inneres Payload-Objekt: { table_of_contents: { color: ... } }"""
 
-    color: Optional[BlockColor] = BlockColor.DEFAULT
+    color: BlockColor | None = BlockColor.DEFAULT
 
 
 class CreateTableOfContentsBlock(BaseModel):

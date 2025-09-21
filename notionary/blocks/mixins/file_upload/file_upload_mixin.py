@@ -1,6 +1,5 @@
-from urllib.parse import urlparse
 from pathlib import Path
-from typing import Optional
+
 from notionary.file_upload import FileUploadHttpClient
 from notionary.file_upload.models import UploadMode
 from notionary.page.page_context import get_page_context
@@ -56,10 +55,7 @@ class FileUploadMixin(LoggingMixin):
             return False
 
         file_path = Path(path)
-        if not file_path.exists():
-            return False
-
-        return True
+        return file_path.exists()
 
     @classmethod
     def _get_content_type(cls, file_path: Path) -> str:
@@ -200,7 +196,7 @@ class FileUploadMixin(LoggingMixin):
     @classmethod
     async def _upload_local_file(
         cls, file_path_str: str, expected_category: str = "file"
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Upload a local file and return the file upload ID.
 
@@ -272,7 +268,7 @@ class FileUploadMixin(LoggingMixin):
         file_path: Path,
         content_type: str,
         file_size: int,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Execute the actual file upload process."""
         # Step 1: Create file upload
         upload_response = await file_upload_client.create_file_upload(
@@ -311,7 +307,7 @@ class FileUploadMixin(LoggingMixin):
             return f"File not found: {file_path_str}"
 
         actual_category = cls._get_file_category(file_path)
-        if actual_category != expected_category and expected_category != "file":
+        if expected_category not in (actual_category, "file"):
             return (
                 f"Invalid file type for {expected_category} block: "
                 f"{file_path.suffix} (detected as {actual_category})"

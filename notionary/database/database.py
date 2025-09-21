@@ -1,29 +1,27 @@
 from __future__ import annotations
 
 import asyncio
-import random
-from typing import Any, AsyncGenerator
+from collections.abc import AsyncGenerator
+from typing import Any
 
-from notionary.database.database_http_client import NotionDatabseHttpClient
 from notionary.database.database_filter_builder import DatabaseFilterBuilder
-from notionary.database.database_provider import NotionDatabaseProvider
+from notionary.database.database_http_client import NotionDatabseHttpClient
 from notionary.database.database_models import (
-    NoionDatabaseDto,
     NotionQueryDatabaseResponse,
 )
-from notionary.page.page_models import NotionPageDto
+from notionary.database.database_provider import NotionDatabaseProvider
 from notionary.page.page import NotionPage
-from notionary.shared.models.icon_models import IconType
-from notionary.shared.models.database_property_models import (
-    DatabaseNotionProperty,
-    DatabasePropertyT,
-    DatabaseStatusProperty,
-    DatabaseMultiSelectProperty,
-    DatabaseSelectProperty,
-    DatabaseRelationProperty,
-)
+from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.page_property_models import (
     PageTitleProperty,
+)
+from notionary.shared.models.database_property_models import (
+    DatabaseMultiSelectProperty,
+    DatabaseNotionProperty,
+    DatabasePropertyT,
+    DatabaseRelationProperty,
+    DatabaseSelectProperty,
+    DatabaseStatusProperty,
 )
 from notionary.shared.models.shared_property_models import PropertyType
 from notionary.util import LoggingMixin
@@ -36,7 +34,7 @@ class NotionDatabase(LoggingMixin):
         id: str,
         title: str,
         url: str,
-        emoji_icon: str | any = None,
+        emoji_icon: str | any | None = None,
         properties: dict[str, DatabaseNotionProperty] | None = None,
         token: str | None = None,
     ):
@@ -88,11 +86,11 @@ class NotionDatabase(LoggingMixin):
 
     @property
     def database_provider(self) -> NotionDatabaseProvider:
-        return NotionDatabaseProvider.get_instance()
+        return NotionDatabaseProvider()
 
     @classmethod
     def get_database_provider(cls) -> NotionDatabaseProvider:
-        return NotionDatabaseProvider.get_instance()
+        return NotionDatabaseProvider()
 
     async def create_blank_page(self) -> NotionPage:
         """
@@ -242,7 +240,7 @@ class NotionDatabase(LoggingMixin):
 
     async def iter_pages_updated_within(
         self, hours: int = 24, page_size: int = 100
-    ) -> AsyncGenerator[NotionPage, None]:
+    ) -> AsyncGenerator[NotionPage]:
         """
         Iterate through pages edited in the last N hours using DatabaseFilterBuilder.
         """
@@ -284,7 +282,7 @@ class NotionDatabase(LoggingMixin):
         self,
         page_size: int = 100,
         filter_conditions: dict[str, Any] | None = None,
-    ) -> AsyncGenerator[NotionPage, None]:
+    ) -> AsyncGenerator[NotionPage]:
         """
         Asynchronous generator that yields NotionPage objects from the database.
         """
@@ -365,7 +363,7 @@ class NotionDatabase(LoggingMixin):
         self,
         page_size: int = 100,
         filter_conditions: dict[str, Any] | None = None,
-    ) -> AsyncGenerator[list[NotionPageDto], None]:
+    ) -> AsyncGenerator[list[NotionPageDto]]:
         """
         Central pagination logic for Notion Database queries.
         """

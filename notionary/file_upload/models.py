@@ -1,6 +1,5 @@
 from enum import Enum
-
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -25,9 +24,9 @@ class FileUploadResponse(BaseModel):
     upload_url: str
     archived: bool
     status: str  # "pending", "uploaded", "failed", etc.
-    filename: Optional[str] = None
-    content_type: Optional[str] = None
-    content_length: Optional[int] = None
+    filename: str | None = None
+    content_type: str | None = None
+    content_length: int | None = None
     request_id: str
 
 
@@ -38,7 +37,7 @@ class FileUploadListResponse(BaseModel):
 
     object: Literal["list"]
     results: list[FileUploadResponse]
-    next_cursor: Optional[str] = None
+    next_cursor: str | None = None
     has_more: bool
     type: Literal["file_upload"]
     file_upload: dict = {}
@@ -51,8 +50,8 @@ class FileUploadCreateRequest(BaseModel):
     """
 
     filename: str
-    content_type: Optional[str] = None
-    content_length: Optional[int] = None
+    content_type: str | None = None
+    content_length: int | None = None
     mode: UploadMode = UploadMode.SINGLE_PART
 
     def model_dump(self, **kwargs):

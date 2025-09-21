@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import re
 import textwrap
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockType
 
 
@@ -107,7 +106,7 @@ class EquationElement(BaseBlockElement):
         return fixed_lines
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         if block.type != BlockType.EQUATION or not block.equation:
             return None
 
@@ -118,7 +117,7 @@ class EquationElement(BaseBlockElement):
         return f"$${expression}$$"
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for equation blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

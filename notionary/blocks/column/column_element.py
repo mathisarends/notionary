@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.column.column_models import ColumnBlock, CreateColumnBlock
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class ColumnElement(BaseBlockElement):
@@ -60,6 +59,6 @@ class ColumnElement(BaseBlockElement):
         return f"::: column {block.column.width_ratio}"
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Column elements are documented via ColumnListElement - return None to avoid duplication."""
         return None

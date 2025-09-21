@@ -5,8 +5,8 @@ from notionary.blocks.todo.todo_markdown_node import (
 from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
 
 __all__ = [
-    "TodoElement",
-    "ToDoBlock",
     "CreateToDoBlock",
+    "ToDoBlock",
+    "TodoElement",
     "TodoMarkdownNode",
 ]

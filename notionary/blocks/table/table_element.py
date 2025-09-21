@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.table.table_models import (
     CreateTableBlock,
-    TableBlock,
     CreateTableRowBlock,
+    TableBlock,
     TableRowBlock,
 )
 from notionary.blocks.types import BlockType
@@ -140,7 +139,7 @@ class TableElement(BaseBlockElement):
         return rich_text
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         """Convert Notion table block to markdown table."""
         if block.type != BlockType.TABLE:
             return None
@@ -154,7 +153,9 @@ class TableElement(BaseBlockElement):
         if not children:
             table_width = table_data.table_width or 3
             header = (
-                "| " + " | ".join([f"Column {i+1}" for i in range(table_width)]) + " |"
+                "| "
+                + " | ".join([f"Column {i + 1}" for i in range(table_width)])
+                + " |"
             )
             separator = (
                 "| " + " | ".join(["--------" for _ in range(table_width)]) + " |"
@@ -213,7 +214,7 @@ class TableElement(BaseBlockElement):
         return bool(cls.ROW_PATTERN.match(line.strip()))
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for table blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

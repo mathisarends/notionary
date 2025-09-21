@@ -5,8 +5,8 @@ from notionary.blocks.divider.divider_markdown_node import (
 from notionary.blocks.divider.divider_models import CreateDividerBlock, DividerBlock
 
 __all__ = [
-    "DividerElement",
-    "DividerBlock",
     "CreateDividerBlock",
+    "DividerBlock",
+    "DividerElement",
     "DividerMarkdownNode",
 ]

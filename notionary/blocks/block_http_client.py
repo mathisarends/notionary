@@ -1,13 +1,14 @@
 from typing import Any
 
-from notionary.http.notion_http_client import NotionHttpClient
 from notionary.blocks.models import Block, BlockChildrenResponse, BlockCreateRequest
+from notionary.http.notion_http_client import NotionHttpClient
 
 
 class NotionBlockHttpClient(NotionHttpClient):
     """
     Client for Notion Block API operations.
     """
+
     async def get_block(self, block_id: str) -> Block | None:
         """
         Retrieves a single block by its ID.

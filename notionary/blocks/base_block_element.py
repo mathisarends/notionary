@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import Optional
 
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class BaseBlockElement(ABC):
@@ -22,7 +21,7 @@ class BaseBlockElement(ABC):
         """
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         """Convert Notion block to markdown."""
 
     @classmethod
@@ -33,7 +32,7 @@ class BaseBlockElement(ABC):
         return False
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for this block element.
 
         Subclasses should override this method to provide their specific information.

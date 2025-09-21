@@ -1,11 +1,10 @@
 import re
-from typing import Optional
 
 UUID_PATTERN = r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
 UUID_RAW_PATTERN = r"([a-f0-9]{32})"
 
 
-def extract_uuid(source: str) -> Optional[str]:
+def extract_uuid(source: str) -> str | None:
     if is_valid_uuid(source):
         return source
 
@@ -21,7 +20,7 @@ def is_valid_uuid(uuid: str) -> bool:
     return bool(re.match(UUID_PATTERN, uuid.lower()))
 
 
-def format_uuid(value: str) -> Optional[str]:
+def format_uuid(value: str) -> str | None:
     if is_valid_uuid(value):
         return value
     return extract_uuid(value)

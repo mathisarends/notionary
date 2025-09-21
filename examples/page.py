@@ -42,7 +42,7 @@ async def main():
             truncated_text = truncate_text(text_content)
 
             print(f"├── Length: {len(text_content)} characters")
-            print(f"└── Preview: {repr(truncated_text)}")
+            print(f"└── Preview: {truncated_text!r}")
         else:
             print("└── No text content found")
 

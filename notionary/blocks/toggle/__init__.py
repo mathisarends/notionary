@@ -5,8 +5,8 @@ from notionary.blocks.toggle.toggle_markdown_node import (
 from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
 
 __all__ = [
-    "ToggleElement",
-    "ToggleBlock",
     "CreateToggleBlock",
+    "ToggleBlock",
+    "ToggleElement",
     "ToggleMarkdownNode",
 ]

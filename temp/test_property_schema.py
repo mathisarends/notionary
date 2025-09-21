@@ -7,6 +7,7 @@ Perfect for verifying the unified behavior!
 """
 
 import asyncio
+
 from notionary import NotionPage
 
 PAGE_NAME = "Henningway Bridge"

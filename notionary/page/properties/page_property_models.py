@@ -1,6 +1,7 @@
 from __future__ import annotations
+
 from abc import ABC
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -197,23 +198,23 @@ class PageCreatedTimeProperty(BaseModel):
 
 
 # ===== TYPE UNIONS =====
-PageProperty = Union[
-    PageStatusProperty,
-    PageRelationProperty,
-    PageURLProperty,
-    PageRichTextProperty,
-    PageMultiSelectProperty,
-    PageSelectProperty,
-    PagePeopleProperty,
-    PageDateProperty,
-    PageTitleProperty,
-    PageNumberProperty,
-    PageCheckboxProperty,
-    PageEmailProperty,
-    PagePhoneNumberProperty,
-    PageCreatedTimeProperty,
-    dict[str, Any],  # Fallback
-]
+PageProperty = (
+    PageStatusProperty
+    | PageRelationProperty
+    | PageURLProperty
+    | PageRichTextProperty
+    | PageMultiSelectProperty
+    | PageSelectProperty
+    | PagePeopleProperty
+    | PageDateProperty
+    | PageTitleProperty
+    | PageNumberProperty
+    | PageCheckboxProperty
+    | PageEmailProperty
+    | PagePhoneNumberProperty
+    | PageCreatedTimeProperty
+    | dict[str, Any]  # Fallback
+)
 
 PagePropertyT = TypeVar("PagePropertyT", bound=PageProperty)
 

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from notionary.page.reader.handler import BlockHandler, BlockRenderingContext
 
 
@@ -65,7 +63,7 @@ class LineRenderer(BlockHandler):
 
     async def _convert_block_to_markdown(
         self, context: BlockRenderingContext
-    ) -> Optional[str]:
+    ) -> str | None:
         """Convert a Notion block to markdown using registered elements."""
         for element in context.block_registry.get_elements():
             if element.match_notion(context.block):

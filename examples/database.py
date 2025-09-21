@@ -170,8 +170,8 @@ async def main():
         print("\n🎉 MarkdownBuilder demo completed!")
 
     except Exception as e:
-        print("❌ Error: {}".format(e))
-        print("🔍 Full traceback:\n{}".format(traceback.format_exc()))
+        print(f"❌ Error: {e}")
+        print(f"🔍 Full traceback:\n{traceback.format_exc()}")
         print("💡 Troubleshooting:")
         print("   • Check if the database name exists in your workspace")
         print("   • Verify your Notion API credentials")

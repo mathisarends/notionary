@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from notionary.http.notion_http_client import NotionHttpClient
 from notionary.user.models import (
     NotionBotUserResponse,
@@ -17,7 +15,7 @@ class UserHttpClient(NotionHttpClient):
     List users endpoint is available but only returns workspace members (no guests).
     """
 
-    async def get_user(self, user_id: str) -> Optional[NotionUserResponse]:
+    async def get_user(self, user_id: str) -> NotionUserResponse | None:
         """
         Retrieve a user by their ID.
         """
@@ -32,7 +30,7 @@ class UserHttpClient(NotionHttpClient):
             self.logger.error("Failed to validate user response for %s: %s", user_id, e)
             return None
 
-    async def get_bot_user(self) -> Optional[NotionBotUserResponse]:
+    async def get_bot_user(self) -> NotionBotUserResponse | None:
         """
         Retrieve your token's bot user information.
         """
@@ -48,8 +46,8 @@ class UserHttpClient(NotionHttpClient):
             return None
 
     async def list_users(
-        self, page_size: int = 100, start_cursor: Optional[str] = None
-    ) -> Optional[NotionUsersListResponse]:
+        self, page_size: int = 100, start_cursor: str | None = None
+    ) -> NotionUsersListResponse | None:
         """
         List all users in the workspace (paginated).
 
@@ -70,7 +68,7 @@ class UserHttpClient(NotionHttpClient):
             self.logger.error("Failed to validate users list response: %s", e)
             return None
 
-    async def get_all_users(self) -> List[NotionUserResponse]:
+    async def get_all_users(self) -> list[NotionUserResponse]:
         """
         Get all users in the workspace by handling pagination automatically.
         """
@@ -101,7 +99,7 @@ class UserHttpClient(NotionHttpClient):
         self.logger.info("Retrieved %d total users from workspace", len(all_users))
         return all_users
 
-    async def get_workspace_name(self) -> Optional[str]:
+    async def get_workspace_name(self) -> str | None:
         """
         Get the workspace name from the bot user.
         """
@@ -114,7 +112,7 @@ class UserHttpClient(NotionHttpClient):
             self.logger.error("Error fetching workspace name: %s", str(e))
             return None
 
-    async def get_workspace_limits(self) -> Optional[dict]:
+    async def get_workspace_limits(self) -> dict | None:
         """
         Get workspace limits from the bot user.
         """

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import difflib
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, List, Optional, TypeVar
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 
@@ -25,11 +26,11 @@ def calculate_similarity(query: str, target: str) -> float:
 
 def find_best_matches(
     query: str,
-    items: List[T],
+    items: list[T],
     text_extractor: Callable[[T], str],
     min_similarity: float = 0.0,
-    limit: Optional[int] = None,
-) -> List[MatchResult[T]]:
+    limit: int | None = None,
+) -> list[MatchResult[T]]:
     """
     Find best fuzzy matches from a list of items.
 
@@ -66,10 +67,10 @@ def find_best_matches(
 
 def find_best_match(
     query: str,
-    items: List[T],
+    items: list[T],
     text_extractor: Callable[[T], str],
     min_similarity: float = 0.0,
-) -> Optional[MatchResult[T]]:
+) -> MatchResult[T] | None:
     """Find the single best fuzzy match."""
     matches = find_best_matches(query, items, text_extractor, min_similarity, limit=1)
     return matches[0] if matches else None

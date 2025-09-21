@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import BlockCreateRequest
@@ -39,8 +38,8 @@ class LineProcessingContext:
     parent_stack: list[ParentBlockContext]
     block_registry: BlockRegistry
 
-    all_lines: Optional[list[str]] = None
-    current_line_index: Optional[int] = None
+    all_lines: list[str] | None = None
+    current_line_index: int | None = None
     lines_consumed: int = 0
 
     # Result indicators

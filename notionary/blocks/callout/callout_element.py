@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.callout.callout_models import (
     CalloutBlock,
     CreateCalloutBlock,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.shared.models.icon_models import EmojiIcon, Icon
 
 
@@ -65,7 +64,7 @@ class CalloutElement(BaseBlockElement):
         return CreateCalloutBlock(callout=callout_content)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         if block.type != BlockType.CALLOUT or not block.callout:
             return None
 
@@ -75,7 +74,7 @@ class CalloutElement(BaseBlockElement):
         if not content:
             return None
 
-        icon: Optional[Icon] = block.callout.icon
+        icon: Icon | None = block.callout.icon
         emoji_char = icon.emoji if isinstance(icon, EmojiIcon) else cls.DEFAULT_EMOJI
 
         if emoji_char and emoji_char != cls.DEFAULT_EMOJI:
@@ -83,7 +82,7 @@ class CalloutElement(BaseBlockElement):
         return f"[callout]({content})"
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for callout blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

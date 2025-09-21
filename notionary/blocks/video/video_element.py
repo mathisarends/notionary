@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import (
@@ -13,8 +12,8 @@ from notionary.blocks.file.file_element_models import (
 )
 from notionary.blocks.mixins.captions import CaptionMixin
 from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockType
 from notionary.blocks.video.video_element_models import CreateVideoBlock
 
@@ -58,7 +57,7 @@ class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return block.type == BlockType.VIDEO and block.video
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> Optional[BlockCreateResult]:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult | None:
         """Convert markdown video syntax to a Notion VideoBlock."""
         # Extract the path/URL
         path = cls._extract_video_path(text.strip())
@@ -123,7 +122,7 @@ class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
             return CreateVideoBlock(video=video_block)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         if block.type != BlockType.VIDEO or not block.video:
             return None
 
@@ -149,7 +148,7 @@ class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return result
 
     @classmethod
-    def _get_youtube_id(cls, url: str) -> Optional[str]:
+    def _get_youtube_id(cls, url: str) -> str | None:
         for pat in cls.YOUTUBE_PATTERNS:
             m = pat.match(url)
             if m:
@@ -157,7 +156,7 @@ class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return None
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for video blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,
@@ -175,7 +174,7 @@ class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         )
 
     @classmethod
-    def _extract_video_path(cls, text: str) -> Optional[str]:
+    def _extract_video_path(cls, text: str) -> str | None:
         """Extract video path/URL from text, handling caption patterns."""
         clean_text = cls.remove_caption(text)
 

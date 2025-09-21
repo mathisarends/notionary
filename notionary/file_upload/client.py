@@ -1,11 +1,10 @@
 from io import BytesIO
 from pathlib import Path
-from typing import BinaryIO, Optional
+from typing import BinaryIO
 
 import aiofiles
 import httpx
 
-from notionary.http.notion_http_client import NotionHttpClient
 from notionary.file_upload.models import (
     FileUploadCompleteRequest,
     FileUploadCreateRequest,
@@ -13,6 +12,7 @@ from notionary.file_upload.models import (
     FileUploadResponse,
     UploadMode,
 )
+from notionary.http.notion_http_client import NotionHttpClient
 
 
 class FileUploadHttpClient(NotionHttpClient):
@@ -24,10 +24,10 @@ class FileUploadHttpClient(NotionHttpClient):
     async def create_file_upload(
         self,
         filename: str,
-        content_type: Optional[str] = None,
-        content_length: Optional[int] = None,
+        content_type: str | None = None,
+        content_length: int | None = None,
         mode: UploadMode = UploadMode.SINGLE_PART,
-    ) -> Optional[FileUploadResponse]:
+    ) -> FileUploadResponse | None:
         """
         Create a new file upload.
 
@@ -61,8 +61,8 @@ class FileUploadHttpClient(NotionHttpClient):
         self,
         file_upload_id: str,
         file_content: BinaryIO,
-        filename: Optional[str] = None,
-        part_number: Optional[int] = None,
+        filename: str | None = None,
+        part_number: int | None = None,
     ) -> bool:
         """
         Send file content to Notion.
@@ -147,7 +147,7 @@ class FileUploadHttpClient(NotionHttpClient):
 
     async def complete_file_upload(
         self, file_upload_id: str
-    ) -> Optional[FileUploadResponse]:
+    ) -> FileUploadResponse | None:
         """
         Complete a multi-part file upload.
 
@@ -173,7 +173,7 @@ class FileUploadHttpClient(NotionHttpClient):
 
     async def retrieve_file_upload(
         self, file_upload_id: str
-    ) -> Optional[FileUploadResponse]:
+    ) -> FileUploadResponse | None:
         """
         Retrieve details of a file upload.
 
@@ -194,8 +194,8 @@ class FileUploadHttpClient(NotionHttpClient):
             return None
 
     async def list_file_uploads(
-        self, page_size: int = 100, start_cursor: Optional[str] = None
-    ) -> Optional[FileUploadListResponse]:
+        self, page_size: int = 100, start_cursor: str | None = None
+    ) -> FileUploadListResponse | None:
         """
         List file uploads for the current bot integration.
 
@@ -221,7 +221,7 @@ class FileUploadHttpClient(NotionHttpClient):
             return None
 
     async def send_file_from_path(
-        self, file_upload_id: str, file_path: Path, part_number: Optional[int] = None
+        self, file_upload_id: str, file_path: Path, part_number: int | None = None
     ) -> bool:
         """
         Convenience method to send file from file path.

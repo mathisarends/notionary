@@ -1,5 +1,3 @@
-from typing import Optional
-
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
@@ -11,7 +9,7 @@ class EmbedMarkdownNode(MarkdownNode):
     """
 
     url: str
-    caption: Optional[str] = None
+    caption: str | None = None
 
     def to_markdown(self) -> str:
         if self.caption:

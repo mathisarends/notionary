@@ -119,7 +119,7 @@ class MarkdownToNotionConverter(LoggingMixin):
             if column_handler_pos >= column_list_handler_pos:
                 error_msg = (
                     f"CRITICAL: ColumnHandler must come BEFORE ColumnListHandler. "
-                    f"Current order: ColumnHandler at {column_handler_pos}, ColumnListHandler at {column_list_handler_pos}. "
+                    f"Current order: ColumnHandler at {column_handler_pos}, ColumnListHandler at {column_list_handler_pos}."
                     f"Fix: Move ColumnHandler before ColumnListHandler in _setup_handler_chain()"
                 )
                 self.logger.error(error_msg)
@@ -128,7 +128,7 @@ class MarkdownToNotionConverter(LoggingMixin):
         except ValueError as e:
             error_msg = f"Missing required handlers in chain: {e}"
             self.logger.error(error_msg)
-            raise HandlerOrderValidationError(error_msg)
+            raise HandlerOrderValidationError(error_msg) from e
 
         # Critical: RegularLineHandler should be last (fallback)
         if handler_classes[-1] != RegularLineHandler:

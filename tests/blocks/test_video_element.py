@@ -8,7 +8,6 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.file.file_element_models import FileBlock
-from notionary.blocks.paragraph.paragraph_models import CreateParagraphBlock
 from notionary.blocks.video.video_element import VideoElement
 from notionary.blocks.video.video_element_models import CreateVideoBlock
 

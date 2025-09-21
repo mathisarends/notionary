@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 from notionary.blocks.models import Block
 from notionary.blocks.registry.block_registry import BlockRegistry
@@ -16,8 +15,8 @@ class BlockProcessingContext:
     block_registry: BlockRegistry
 
     # Result
-    markdown_result: Optional[str] = None
-    children_result: Optional[str] = None
+    markdown_result: str | None = None
+    children_result: str | None = None
     was_processed: bool = False
 
     def has_children(self) -> bool:

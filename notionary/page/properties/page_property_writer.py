@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Union
+from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING, Any
 
 from notionary.page.page_factory import load_page_from_name
 from notionary.page.properties.page_property_models import PropertyType
@@ -72,10 +73,10 @@ class PagePropertyWriter:
         if isinstance(value, str):
             try:
                 return float(value)
-            except ValueError:
+            except ValueError as e:
                 raise ValueError(
                     f"Property '{property_name}' expects number, cannot convert string '{value}' to number"
-                )
+                ) from e
         raise TypeError(
             f"Property '{property_name}' expects number, got {type(value).__name__}: {value!r}"
         )
@@ -99,13 +100,13 @@ class PagePropertyWriter:
                     raise TypeError(
                         f"Property '{property_name}' expects list of strings, "
                         f"but item at index {i} is invalid: {e}"
-                    )
+                    ) from e
             return result
         raise TypeError(
             f"Property '{property_name}' expects list of strings, got {type(value).__name__}: {value!r}"
         )
 
-    def _validate_date(self, value: Any, property_name: str) -> Union[str, dict]:
+    def _validate_date(self, value: Any, property_name: str) -> str | dict:
         if isinstance(value, (str, dict)):
             return value
         raise TypeError(
@@ -113,9 +114,7 @@ class PagePropertyWriter:
             f"got {type(value).__name__}: {value!r}"
         )
 
-    def _validate_relation(
-        self, value: Any, property_name: str
-    ) -> Union[str, list[str]]:
+    def _validate_relation(self, value: Any, property_name: str) -> str | list[str]:
         if isinstance(value, str):
             return value
         if isinstance(value, list):
@@ -164,7 +163,7 @@ class PagePropertyWriter:
         await self._notion_page._page_client.patch_phone_property(property_name, phone)
 
     async def set_number_property(
-        self, property_name: str, number: Union[int, float]
+        self, property_name: str, number: int | float
     ) -> None:
         await self._notion_page._page_client.patch_number_property(
             property_name, number
@@ -188,7 +187,7 @@ class PagePropertyWriter:
         )
 
     async def set_date_property(
-        self, property_name: str, date_value: Union[str, dict]
+        self, property_name: str, date_value: str | dict
     ) -> None:
         await self._notion_page._page_client.patch_date_property(
             property_name, date_value
@@ -200,7 +199,7 @@ class PagePropertyWriter:
         )
 
     async def set_relation_property_by_relation_values(
-        self, property_name: str, relation_values: Union[str, list[str]]
+        self, property_name: str, relation_values: str | list[str]
     ) -> None:
         relation_values = self._normalize_relation_values_to_list(relation_values)
 
@@ -229,7 +228,7 @@ class PagePropertyWriter:
         return [page.id for page in pages]
 
     def _normalize_relation_values_to_list(
-        self, relation_values: Union[str, list[str]]
+        self, relation_values: str | list[str]
     ) -> list[str]:
         return (
             relation_values if isinstance(relation_values, list) else [relation_values]

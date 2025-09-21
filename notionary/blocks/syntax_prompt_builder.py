@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from textwrap import dedent
-from typing import TYPE_CHECKING, Optional
-
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from notionary.blocks.registry.block_registry import BlockRegistry
@@ -46,7 +45,7 @@ class SyntaxPromptBuilder:
         lines = ["# Notionary Markdown Syntax"]
 
         for element_class in self.block_registry.get_elements():
-            info: Optional[BlockElementMarkdownInformation] = (
+            info: BlockElementMarkdownInformation | None = (
                 element_class.get_system_prompt_information()
             )
             if info and info.syntax_examples:
@@ -61,7 +60,7 @@ class SyntaxPromptBuilder:
         blocks = []
 
         for element_class in self.block_registry.get_elements():
-            info: Optional[BlockElementMarkdownInformation] = (
+            info: BlockElementMarkdownInformation | None = (
                 element_class.get_system_prompt_information()
             )
             if info:

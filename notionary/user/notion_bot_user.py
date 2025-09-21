@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from typing import List, Optional
-
 from notionary.user.base_notion_user import BaseNotionUser
-from notionary.user.user_http_client import UserHttpClient
 from notionary.user.models import NotionBotUserResponse, WorkspaceLimits
+from notionary.user.user_http_client import UserHttpClient
 from notionary.util import factory_only
 from notionary.util.fuzzy import find_best_match
 
@@ -22,12 +20,12 @@ class NotionBotUser(BaseNotionUser):
     def __init__(
         self,
         user_id: str,
-        name: Optional[str] = None,
-        avatar_url: Optional[str] = None,
-        workspace_name: Optional[str] = None,
-        workspace_limits: Optional[WorkspaceLimits] = None,
-        owner_type: Optional[str] = None,
-        token: Optional[str] = None,
+        name: str | None = None,
+        avatar_url: str | None = None,
+        workspace_name: str | None = None,
+        workspace_limits: WorkspaceLimits | None = None,
+        owner_type: str | None = None,
+        token: str | None = None,
     ):
         """Initialize bot user with bot-specific properties."""
         super().__init__(user_id, name, avatar_url, token)
@@ -37,8 +35,8 @@ class NotionBotUser(BaseNotionUser):
 
     @classmethod
     async def from_current_integration(
-        cls, token: Optional[str] = None
-    ) -> Optional[NotionBotUser]:
+        cls, token: str | None = None
+    ) -> NotionBotUser | None:
         """
         Get the current bot user (from the API token).
 
@@ -59,8 +57,8 @@ class NotionBotUser(BaseNotionUser):
 
     @classmethod
     async def from_name(
-        cls, name: str, token: Optional[str] = None, min_similarity: float = 0.6
-    ) -> Optional[NotionBotUser]:
+        cls, name: str, token: str | None = None, min_similarity: float = 0.6
+    ) -> NotionBotUser | None:
         """
         Create a NotionBotUser by finding a bot user with fuzzy matching on the name.
         Uses Notion's list users API and fuzzy matching to find the best result.
@@ -124,7 +122,7 @@ class NotionBotUser(BaseNotionUser):
 
     @classmethod
     def from_bot_response(
-        cls, bot_response: NotionBotUserResponse, token: Optional[str] = None
+        cls, bot_response: NotionBotUserResponse, token: str | None = None
     ) -> NotionBotUser:
         """
         Create a NotionBotUser from an existing bot API response.
@@ -139,17 +137,17 @@ class NotionBotUser(BaseNotionUser):
         return cls._create_from_response(bot_response, token)
 
     @property
-    def workspace_name(self) -> Optional[str]:
+    def workspace_name(self) -> str | None:
         """Get the workspace name."""
         return self._workspace_name
 
     @property
-    def workspace_limits(self) -> Optional[WorkspaceLimits]:
+    def workspace_limits(self) -> WorkspaceLimits | None:
         """Get the workspace limits."""
         return self._workspace_limits
 
     @property
-    def owner_type(self) -> Optional[str]:
+    def owner_type(self) -> str | None:
         """Get the owner type ('workspace' or 'user')."""
         return self._owner_type
 
@@ -179,7 +177,7 @@ class NotionBotUser(BaseNotionUser):
         return self._owner_type == "user"
 
     @property
-    def max_file_upload_size(self) -> Optional[int]:
+    def max_file_upload_size(self) -> int | None:
         """The maximum file upload size in bytes."""
         return (
             self._workspace_limits.max_file_upload_size_in_bytes
@@ -194,7 +192,7 @@ class NotionBotUser(BaseNotionUser):
 
     @classmethod
     def _create_from_response(
-        cls, bot_response: NotionBotUserResponse, token: Optional[str]
+        cls, bot_response: NotionBotUserResponse, token: str | None
     ) -> NotionBotUser:
         """Create NotionBotUser instance from API response."""
         workspace_name = None

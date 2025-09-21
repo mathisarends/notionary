@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import Optional
 
 _bootstrapped = False
 
@@ -15,6 +15,7 @@ def bootstrap_blocks() -> None:
         breadcrumbs,
         bulleted_list,
         callout,
+        child_database,
         child_page,
         code,
         column,
@@ -34,7 +35,6 @@ def bootstrap_blocks() -> None:
         toggle,
         toggleable_heading,
         video,
-        child_database,
     )
 
     # Collect all exports from modules
@@ -81,6 +81,10 @@ def bootstrap_blocks() -> None:
         CreateBulletedListItemBlock,
     )
     from notionary.blocks.callout.callout_models import CalloutBlock, CreateCalloutBlock
+    from notionary.blocks.child_database.child_database_models import (
+        ChildDatabaseBlock,
+        CreateChildDatabaseBlock,
+    )
     from notionary.blocks.child_page.child_page_models import (
         ChildPageBlock,
         CreateChildPageBlock,
@@ -125,39 +129,35 @@ def bootstrap_blocks() -> None:
     from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
     from notionary.blocks.types import BlockType
     from notionary.blocks.video.video_element_models import CreateVideoBlock
-    from notionary.blocks.child_database.child_database_models import (
-        CreateChildDatabaseBlock,
-        ChildDatabaseBlock,
-    )
 
     # Define the Union types that are needed for model rebuilding
-    BlockCreateRequest = Union[
-        CreateBookmarkBlock,
-        CreateBreadcrumbBlock,
-        CreateBulletedListItemBlock,
-        CreateCalloutBlock,
-        CreateChildPageBlock,
-        CreateCodeBlock,
-        CreateColumnListBlock,
-        CreateColumnBlock,
-        CreateDividerBlock,
-        CreateEmbedBlock,
-        CreateEquationBlock,
-        CreateFileBlock,
-        CreateHeading1Block,
-        CreateHeading2Block,
-        CreateHeading3Block,
-        CreateImageBlock,
-        CreateNumberedListItemBlock,
-        CreateParagraphBlock,
-        CreateQuoteBlock,
-        CreateToDoBlock,
-        CreateToggleBlock,
-        CreateVideoBlock,
-        CreateTableOfContentsBlock,
-        CreatePdfBlock,
-        CreateChildDatabaseBlock,
-    ]
+    BlockCreateRequest = (
+        CreateBookmarkBlock
+        | CreateBreadcrumbBlock
+        | CreateBulletedListItemBlock
+        | CreateCalloutBlock
+        | CreateChildPageBlock
+        | CreateCodeBlock
+        | CreateColumnListBlock
+        | CreateColumnBlock
+        | CreateDividerBlock
+        | CreateEmbedBlock
+        | CreateEquationBlock
+        | CreateFileBlock
+        | CreateHeading1Block
+        | CreateHeading2Block
+        | CreateHeading3Block
+        | CreateImageBlock
+        | CreateNumberedListItemBlock
+        | CreateParagraphBlock
+        | CreateQuoteBlock
+        | CreateToDoBlock
+        | CreateToggleBlock
+        | CreateVideoBlock
+        | CreateTableOfContentsBlock
+        | CreatePdfBlock
+        | CreateChildDatabaseBlock
+    )
 
     BlockCreateResult = Optional[BlockCreateRequest]
 

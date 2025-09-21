@@ -8,7 +8,6 @@ from notionary.blocks.rich_text.rich_text_models import (
     TextContent,
 )
 from notionary.blocks.table.table_element import TableElement
-from notionary.blocks.table.table_models import TableBlock
 from notionary.blocks.types import BlockType
 
 

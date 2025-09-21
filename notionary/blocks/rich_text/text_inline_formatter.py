@@ -1,13 +1,13 @@
 import re
-from typing import Optional, Match
+from re import Match
 
 from notionary.blocks.rich_text.rich_text_models import (
-    RichTextObject,
-    RichTextType,
-    MentionType,
-    TemplateMentionType,
     MentionDate,
     MentionTemplateMention,
+    MentionType,
+    RichTextObject,
+    RichTextType,
+    TemplateMentionType,
 )
 from notionary.blocks.types import BlockColor
 from notionary.shared.name_to_id_resolver import NameIdResolver
@@ -100,10 +100,10 @@ class TextInlineFormatter:
 
     VALID_COLORS = {color.value for color in BlockColor}
 
-    _resolver: Optional[NameIdResolver] = None
+    _resolver: NameIdResolver | None = None
 
     @classmethod
-    def set_resolver(cls, resolver: Optional[NameIdResolver]) -> None:
+    def set_resolver(cls, resolver: NameIdResolver | None) -> None:
         """Set the name-to-ID resolver instance."""
         cls._resolver = resolver
 
@@ -167,7 +167,7 @@ class TextInlineFormatter:
     @classmethod
     def _find_earliest_pattern_match(
         cls, text: str
-    ) -> Optional[tuple[Match, callable, int]]:
+    ) -> tuple[Match, callable, int] | None:
         """Find the pattern that appears earliest in the text."""
         earliest_match = None
         earliest_position = len(text)
@@ -321,7 +321,7 @@ class TextInlineFormatter:
         return cls._apply_text_formatting_to_content(obj, content)
 
     @classmethod
-    async def _extract_mention_markdown(cls, obj: RichTextObject) -> Optional[str]:
+    async def _extract_mention_markdown(cls, obj: RichTextObject) -> str | None:
         """Extract mention objects back to markdown format with human-readable names."""
         if not obj.mention:
             return None

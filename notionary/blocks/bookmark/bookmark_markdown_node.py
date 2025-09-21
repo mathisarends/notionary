@@ -1,5 +1,3 @@
-from typing import Optional
-
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
@@ -11,8 +9,8 @@ class BookmarkMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     """
 
     url: str
-    title: Optional[str] = None
-    caption: Optional[str] = None
+    title: str | None = None
+    caption: str | None = None
 
     def to_markdown(self) -> str:
         """Return the Markdown representation.

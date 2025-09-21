@@ -4,9 +4,10 @@
 Test the refactored MarkdownBuilder with NotionContentSchema.
 """
 
+from pydantic import Field
+
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.schemas import NotionContentSchema
-from pydantic import Field
 
 
 def test_refactored_model_processing():

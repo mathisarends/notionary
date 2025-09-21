@@ -43,7 +43,6 @@ class RegularLineHandler(LineHandler):
         specialized_elements = self._get_specialized_elements()
 
         for element in context.block_registry.get_elements():
-
             if issubclass(element, specialized_elements):
                 continue
 

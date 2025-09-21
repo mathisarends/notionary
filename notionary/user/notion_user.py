@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from typing import List, Optional
-
 from notionary.user.base_notion_user import BaseNotionUser
-from notionary.user.user_http_client import UserHttpClient
 from notionary.user.models import NotionUserResponse
+from notionary.user.user_http_client import UserHttpClient
 from notionary.util import factory_only
 from notionary.util.fuzzy import find_best_matches
 
@@ -22,10 +20,10 @@ class NotionUser(BaseNotionUser):
     def __init__(
         self,
         user_id: str,
-        name: Optional[str] = None,
-        avatar_url: Optional[str] = None,
-        email: Optional[str] = None,
-        token: Optional[str] = None,
+        name: str | None = None,
+        avatar_url: str | None = None,
+        email: str | None = None,
+        token: str | None = None,
     ):
         """Initialize person user with person-specific properties."""
         super().__init__(user_id, name, avatar_url, token)
@@ -33,8 +31,8 @@ class NotionUser(BaseNotionUser):
 
     @classmethod
     async def from_user_id(
-        cls, user_id: str, token: Optional[str] = None
-    ) -> Optional[NotionUser]:
+        cls, user_id: str, token: str | None = None
+    ) -> NotionUser | None:
         """
         Create a NotionUser from a user ID.
         """
@@ -56,12 +54,12 @@ class NotionUser(BaseNotionUser):
 
     @classmethod
     async def from_name(
-        cls, name: str, token: Optional[str] = None, min_similarity: float = 0.6
-    ) -> Optional[NotionUser]:
+        cls, name: str, token: str | None = None, min_similarity: float = 0.6
+    ) -> NotionUser | None:
         """
         Create a NotionUser by finding a person user with fuzzy matching on the name.
         """
-        from notionary.util import find_best_match
+        from notionary.util.fuzzy import find_best_match
 
         client = UserHttpClient(token=token)
 
@@ -125,7 +123,7 @@ class NotionUser(BaseNotionUser):
 
     @classmethod
     def from_user_response(
-        cls, user_response: NotionUserResponse, token: Optional[str] = None
+        cls, user_response: NotionUserResponse, token: str | None = None
     ) -> NotionUser:
         """
         Create a NotionUser from an existing API response.
@@ -139,10 +137,10 @@ class NotionUser(BaseNotionUser):
     async def search_users_by_name(
         cls,
         name: str,
-        token: Optional[str] = None,
+        token: str | None = None,
         min_similarity: float = 0.3,
-        limit: Optional[int] = 5,
-    ) -> List[NotionUser]:
+        limit: int | None = 5,
+    ) -> list[NotionUser]:
         """
         Search for multiple person users by name using fuzzy matching.
 
@@ -210,7 +208,7 @@ class NotionUser(BaseNotionUser):
             return []
 
     @property
-    def email(self) -> Optional[str]:
+    def email(self) -> str | None:
         """
         Get the user email (requires proper integration capabilities).
         """
@@ -233,7 +231,7 @@ class NotionUser(BaseNotionUser):
 
     @classmethod
     def _create_from_response(
-        cls, user_response: NotionUserResponse, token: Optional[str]
+        cls, user_response: NotionUserResponse, token: str | None
     ) -> NotionUser:
         """Create NotionUser instance from API response."""
         email = user_response.person.email if user_response.person else None

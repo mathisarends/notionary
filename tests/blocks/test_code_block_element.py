@@ -235,10 +235,7 @@ def test_extract_caption_empty_list():
 )
 async def test_language_support(language, expected_lang):
     """Test support for different programming languages."""
-    if language:
-        markdown = f"```{language}"
-    else:
-        markdown = "```"
+    markdown = f"```{language}" if language else "```"
 
     result = await CodeElement.markdown_to_notion(markdown)
 

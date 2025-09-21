@@ -1,10 +1,9 @@
-from typing import Optional
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.column.column_models import ColumnListBlock, CreateColumnListBlock
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockType
 
 
@@ -38,7 +37,7 @@ class ColumnListElement(BaseBlockElement):
 
     @classmethod
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for column list blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

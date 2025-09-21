@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.breadcrumbs.breadcrumb_models import (
@@ -34,6 +33,6 @@ class BreadcrumbElement(BaseBlockElement):
         return CreateBreadcrumbBlock(breadcrumb=BreadcrumbBlock())
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         if block.type == BlockType.BREADCRUMB and block.breadcrumb:
             return cls.BREADCRUMB_MARKER

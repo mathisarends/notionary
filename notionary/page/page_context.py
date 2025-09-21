@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
-from dataclasses import dataclass
 from contextvars import ContextVar
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from notionary.database.database_http_client import NotionDatabseHttpClient
@@ -19,7 +19,7 @@ class PageContextProvider:
 
 
 # Context variable
-_page_context: ContextVar[Optional[PageContextProvider]] = ContextVar(
+_page_context: ContextVar[PageContextProvider | None] = ContextVar(
     "page_context", default=None
 )
 

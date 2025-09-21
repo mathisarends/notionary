@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
@@ -13,7 +11,7 @@ class VideoMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     """
 
     url: str
-    caption: Optional[str] = None
+    caption: str | None = None
 
     def to_markdown(self) -> str:
         """Return the Markdown representation.

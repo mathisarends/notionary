@@ -20,7 +20,7 @@ async def main():
     count = 0
     async for page in db.iter_pages_updated_within(hours=168):  # 7 days = 168 hours
         count += 1
-        print(f"{count:2d}. {page.emoji_icon if page.emoji_icon else ""} {page.title}")
+        print(f"{count:2d}. {page.emoji_icon if page.emoji_icon else ''} {page.title}")
         print(f"    └─ {page.url}")
 
 

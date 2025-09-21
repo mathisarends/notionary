@@ -1,4 +1,3 @@
-from typing import Optional
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
@@ -23,7 +22,7 @@ class ColumnMarkdownNode(MarkdownNode):
     """
 
     children: list[MarkdownNode] = []
-    width_ratio: Optional[float] = None
+    width_ratio: float | None = None
 
     def to_markdown(self) -> str:
         # Start tag with optional width ratio

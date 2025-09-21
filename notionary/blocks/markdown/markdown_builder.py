@@ -8,8 +8,10 @@ Maps 1:1 to the available blocks with clear, expressive method names.
 
 from __future__ import annotations
 
-from typing import Callable, Optional, Self
+from collections.abc import Callable
+from typing import Self
 
+from notionary.blocks.audio import AudioMarkdownNode
 from notionary.blocks.bookmark import BookmarkMarkdownNode
 from notionary.blocks.breadcrumbs import BreadcrumbMarkdownNode
 from notionary.blocks.bulleted_list import BulletedListMarkdownNode
@@ -22,20 +24,18 @@ from notionary.blocks.equation import EquationMarkdownNode
 from notionary.blocks.file import FileMarkdownNode
 from notionary.blocks.heading import HeadingMarkdownNode
 from notionary.blocks.image_block import ImageMarkdownNode
+from notionary.blocks.markdown.markdown_node import MarkdownNode
 from notionary.blocks.numbered_list import NumberedListMarkdownNode
 from notionary.blocks.paragraph import ParagraphMarkdownNode
 from notionary.blocks.pdf import PdfMarkdownNode
 from notionary.blocks.quote import QuoteMarkdownNode
+from notionary.blocks.space import SpaceMarkdownNode
 from notionary.blocks.table import TableMarkdownNode
 from notionary.blocks.table_of_contents import TableOfContentsMarkdownNode
 from notionary.blocks.todo import TodoMarkdownNode
 from notionary.blocks.toggle import ToggleMarkdownNode
 from notionary.blocks.toggleable_heading import ToggleableHeadingMarkdownNode
 from notionary.blocks.video import VideoMarkdownNode
-from notionary.blocks.audio import AudioMarkdownNode
-from notionary.blocks.space import SpaceMarkdownNode
-
-from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
 class MarkdownBuilder:
@@ -161,9 +161,7 @@ class MarkdownBuilder:
         self.children.append(TodoMarkdownNode(text=text, checked=checked))
         return self
 
-    def todo_list(
-        self, items: list[str], completed: Optional[list[bool]] = None
-    ) -> Self:
+    def todo_list(self, items: list[str], completed: list[bool] | None = None) -> Self:
         """
         Add multiple todo items.
 
@@ -179,7 +177,7 @@ class MarkdownBuilder:
             self.children.append(TodoMarkdownNode(text=item, checked=is_done))
         return self
 
-    def callout(self, text: str, emoji: Optional[str] = None) -> Self:
+    def callout(self, text: str, emoji: str | None = None) -> Self:
         """
         Add a callout block.
 
@@ -191,7 +189,7 @@ class MarkdownBuilder:
         return self
 
     def toggle(
-        self, title: str, builder_func: Callable[["MarkdownBuilder"], "MarkdownBuilder"]
+        self, title: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder]
     ) -> Self:
         """
         Add a toggle block with content built using the builder API.
@@ -219,7 +217,7 @@ class MarkdownBuilder:
         self,
         text: str,
         level: int,
-        builder_func: Callable[["MarkdownBuilder"], "MarkdownBuilder"],
+        builder_func: Callable[[MarkdownBuilder], MarkdownBuilder],
     ) -> Self:
         """
         Add a toggleable heading with content built using the builder API.
@@ -247,7 +245,7 @@ class MarkdownBuilder:
         return self
 
     def image(
-        self, url: str, caption: Optional[str] = None, alt: Optional[str] = None
+        self, url: str, caption: str | None = None, alt: str | None = None
     ) -> Self:
         """
         Add an image.
@@ -260,7 +258,7 @@ class MarkdownBuilder:
         self.children.append(ImageMarkdownNode(url=url, caption=caption, alt=alt))
         return self
 
-    def video(self, url: str, caption: Optional[str] = None) -> Self:
+    def video(self, url: str, caption: str | None = None) -> Self:
         """
         Add a video.
 
@@ -271,7 +269,7 @@ class MarkdownBuilder:
         self.children.append(VideoMarkdownNode(url=url, caption=caption))
         return self
 
-    def audio(self, url: str, caption: Optional[str] = None) -> Self:
+    def audio(self, url: str, caption: str | None = None) -> Self:
         """
         Add audio content.
 
@@ -282,7 +280,7 @@ class MarkdownBuilder:
         self.children.append(AudioMarkdownNode(url=url, caption=caption))
         return self
 
-    def file(self, url: str, caption: Optional[str] = None) -> Self:
+    def file(self, url: str, caption: str | None = None) -> Self:
         """
         Add a file.
 
@@ -293,7 +291,7 @@ class MarkdownBuilder:
         self.children.append(FileMarkdownNode(url=url, caption=caption))
         return self
 
-    def pdf(self, url: str, caption: Optional[str] = None) -> Self:
+    def pdf(self, url: str, caption: str | None = None) -> Self:
         """
         Add a PDF document.
 
@@ -305,7 +303,7 @@ class MarkdownBuilder:
         return self
 
     def bookmark(
-        self, url: str, title: Optional[str] = None, caption: Optional[str] = None
+        self, url: str, title: str | None = None, caption: str | None = None
     ) -> Self:
         """
         Add a bookmark.
@@ -320,7 +318,7 @@ class MarkdownBuilder:
         )
         return self
 
-    def embed(self, url: str, caption: Optional[str] = None) -> Self:
+    def embed(self, url: str, caption: str | None = None) -> Self:
         """
         Add an embed.
 
@@ -332,7 +330,7 @@ class MarkdownBuilder:
         return self
 
     def code(
-        self, code: str, language: Optional[str] = None, caption: Optional[str] = None
+        self, code: str, language: str | None = None, caption: str | None = None
     ) -> Self:
         """
         Add a code block.
@@ -347,7 +345,7 @@ class MarkdownBuilder:
         )
         return self
 
-    def mermaid(self, diagram: str, caption: Optional[str] = None) -> Self:
+    def mermaid(self, diagram: str, caption: str | None = None) -> Self:
         """
         Add a Mermaid diagram block.
 
@@ -403,7 +401,7 @@ class MarkdownBuilder:
         self.children.append(EquationMarkdownNode(expression=expression))
         return self
 
-    def table_of_contents(self, color: Optional[str] = None) -> Self:
+    def table_of_contents(self, color: str | None = None) -> Self:
         """
         Add a table of contents.
 
@@ -415,8 +413,8 @@ class MarkdownBuilder:
 
     def columns(
         self,
-        *builder_funcs: Callable[["MarkdownBuilder"], "MarkdownBuilder"],
-        width_ratios: Optional[list[float]] = None,
+        *builder_funcs: Callable[[MarkdownBuilder], MarkdownBuilder],
+        width_ratios: list[float] | None = None,
     ) -> Self:
         """
         Add multiple columns in a layout.
@@ -479,7 +477,7 @@ class MarkdownBuilder:
         return self
 
     def column_with_nodes(
-        self, *nodes: MarkdownNode, width_ratio: Optional[float] = None
+        self, *nodes: MarkdownNode, width_ratio: float | None = None
     ) -> Self:
         """
         Add a column with pre-built MarkdownNode objects.

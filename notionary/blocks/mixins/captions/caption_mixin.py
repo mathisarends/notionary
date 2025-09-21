@@ -1,5 +1,5 @@
-from typing import Optional
 import re
+
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
@@ -11,7 +11,7 @@ class CaptionMixin:
     CAPTION_PATTERN = re.compile(r"\(caption:([^)]*)\)")
 
     @classmethod
-    def extract_caption(cls, text: str) -> Optional[str]:
+    def extract_caption(cls, text: str) -> str | None:
         """
         Extract caption text from anywhere in the input text.
         Returns only the caption content, preserving parentheses in content.

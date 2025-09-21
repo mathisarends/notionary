@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import (
@@ -12,9 +11,9 @@ from notionary.blocks.file.file_element_models import (
 )
 from notionary.blocks.mixins.captions import CaptionMixin
 from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.pdf.pdf_models import CreatePdfBlock
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
@@ -40,7 +39,7 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return block.type == BlockType.PDF and block.pdf
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> Optional[BlockCreateResult]:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult | None:
         """Convert markdown PDF link to Notion PDF block."""
         pdf_path = cls._extract_pdf_path(text.strip())
 
@@ -93,7 +92,7 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return CreatePdfBlock(pdf=pdf_block)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         """Convert Notion PDF block to markdown."""
         if block.type != BlockType.PDF or not block.pdf:
             return None
@@ -118,7 +117,7 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return result
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for PDF blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,
@@ -135,7 +134,7 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         )
 
     @classmethod
-    def _extract_pdf_path(cls, text: str) -> Optional[str]:
+    def _extract_pdf_path(cls, text: str) -> str | None:
         """Extract PDF path/URL from text, handling caption patterns."""
         clean_text = cls.remove_caption(text)
 

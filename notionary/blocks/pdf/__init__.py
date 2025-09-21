@@ -5,7 +5,7 @@ from notionary.blocks.pdf.pdf_markdown_node import (
 from notionary.blocks.pdf.pdf_models import CreatePdfBlock
 
 __all__ = [
-    "PdfElement",
     "CreatePdfBlock",
+    "PdfElement",
     "PdfMarkdownNode",
 ]

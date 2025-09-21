@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from typing import Type, Set, Self
-
-from notionary.blocks.base_block_element import BaseBlockElement
 
 from notionary.blocks.audio import AudioElement
+from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.bookmark import BookmarkElement
 from notionary.blocks.breadcrumbs import BreadcrumbElement
 from notionary.blocks.bulleted_list import BulletedListElement
@@ -23,13 +21,13 @@ from notionary.blocks.numbered_list import NumberedListElement
 from notionary.blocks.paragraph import ParagraphElement
 from notionary.blocks.pdf import PdfElement
 from notionary.blocks.quote import QuoteElement
+from notionary.blocks.space import SpaceElement
 from notionary.blocks.table import TableElement
 from notionary.blocks.table_of_contents import TableOfContentsElement
 from notionary.blocks.todo import TodoElement
 from notionary.blocks.toggle import ToggleElement
 from notionary.blocks.toggleable_heading import ToggleableHeadingElement
 from notionary.blocks.video import VideoElement
-from notionary.blocks.space import SpaceElement
 
 
 class BlockRegistry:
@@ -64,7 +62,7 @@ class BlockRegistry:
         ParagraphElement,  # Must be last as fallback!
     ]
 
-    def __init__(self, excluded_elements: Set[Type[BaseBlockElement]] = None):
+    def __init__(self, excluded_elements: set[type[BaseBlockElement]] | None = None):
         """
         Initialize a new registry instance.
 
@@ -83,7 +81,7 @@ class BlockRegistry:
                 self._elements[element_class.__name__] = element_class
 
     def exclude_elements(
-        self, *element_classes: Type[BaseBlockElement]
+        self, *element_classes: type[BaseBlockElement]
     ) -> BlockRegistry:
         """
         Create a new registry with additional excluded elements.
@@ -98,7 +96,7 @@ class BlockRegistry:
         new_excluded.update(element_classes)
         return BlockRegistry(excluded_elements=new_excluded)
 
-    def register(self, element_class: Type[BaseBlockElement]) -> bool:
+    def register(self, element_class: type[BaseBlockElement]) -> bool:
         """
         Register an element class.
 
@@ -114,23 +112,23 @@ class BlockRegistry:
         self._elements[element_class.__name__] = element_class
         return True
 
-    def remove(self, element_class: Type[BaseBlockElement]) -> bool:
+    def remove(self, element_class: type[BaseBlockElement]) -> bool:
         """
         Remove an element class.
         """
         return self._elements.pop(element_class.__name__, None) is not None
 
-    def contains(self, element_class: Type[BaseBlockElement]) -> bool:
+    def contains(self, element_class: type[BaseBlockElement]) -> bool:
         """
         Checks if a specific element is contained in the registry.
         """
         return element_class.__name__ in self._elements
 
-    def get_elements(self) -> list[Type[BaseBlockElement]]:
+    def get_elements(self) -> list[type[BaseBlockElement]]:
         """Get all registered elements in order."""
         return list(self._elements.values())
 
-    def is_excluded(self, element_class: Type[BaseBlockElement]) -> bool:
+    def is_excluded(self, element_class: type[BaseBlockElement]) -> bool:
         """
         Check if an element class is excluded.
         """

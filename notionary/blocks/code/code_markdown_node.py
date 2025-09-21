@@ -1,5 +1,3 @@
-from typing import Optional
-
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
@@ -16,8 +14,8 @@ class CodeMarkdownNode(MarkdownNode):
     """
 
     code: str
-    language: Optional[str] = None
-    caption: Optional[str] = None
+    language: str | None = None
+    caption: str | None = None
 
     def to_markdown(self) -> str:
         lang = self.language or ""

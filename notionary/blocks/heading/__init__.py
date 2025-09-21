@@ -10,10 +10,10 @@ from notionary.blocks.heading.heading_models import (
 )
 
 __all__ = [
-    "HeadingElement",
-    "HeadingBlock",
     "CreateHeading1Block",
     "CreateHeading2Block",
     "CreateHeading3Block",
+    "HeadingBlock",
+    "HeadingElement",
     "HeadingMarkdownNode",
 ]

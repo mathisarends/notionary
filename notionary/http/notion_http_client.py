@@ -3,6 +3,7 @@ import os
 from typing import Any
 
 import httpx
+from dotenv import load_dotenv
 
 from notionary.http.exceptions import (
     NotionApiError,
@@ -18,17 +19,10 @@ from notionary.http.http_methods import HttpMethod
 from notionary.page.page_models import NotionPageDto
 from notionary.util import LoggingMixin
 
-from dotenv import load_dotenv
-
 load_dotenv()
 
 
 class NotionHttpClient(LoggingMixin):
-    """
-    Base client for Notion API operations.
-    Handles connection management and generic HTTP requests.
-    """
-
     BASE_URL = "https://api.notion.com/v1"
     NOTION_VERSION = "2022-06-28"
 
@@ -63,7 +57,9 @@ class NotionHttpClient(LoggingMixin):
             loop.create_task(self.close())
             self.logger.debug("Created cleanup task for NotionHttpClient")
         except RuntimeError:
-            self.logger.warning("No event loop available for auto-closing NotionHttpClient")
+            self.logger.warning(
+                "No event loop available for auto-closing NotionHttpClient"
+            )
 
     async def __aenter__(self):
         """Async context manager entry."""
@@ -156,17 +152,11 @@ class NotionHttpClient(LoggingMixin):
             self._handle_http_status_error(e)
         except httpx.RequestError as e:
             raise NotionConnectionError(
-                f"Failed to connect to Notion API: {str(e)}. "
+                f"Failed to connect to Notion API: {e!s}. "
                 "Please check your internet connection and try again."
             )
 
     def _handle_http_status_error(self, e: httpx.HTTPStatusError) -> None:
-        """
-        Handles HTTP status errors by raising appropriate Notion exceptions.
-
-        Args:
-            e: The HTTPStatusError exception
-        """
         status_code = e.response.status_code
         response_text = e.response.text
 

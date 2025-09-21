@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -8,7 +8,7 @@ from notionary.blocks.models import BlockCreateRequest
 
 
 class ColumnBlock(BaseModel):
-    width_ratio: Optional[float] = None
+    width_ratio: float | None = None
     children: list[BlockCreateRequest] = Field(default_factory=list)
 
 

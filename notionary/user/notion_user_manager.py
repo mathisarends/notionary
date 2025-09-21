@@ -1,7 +1,5 @@
-from typing import Optional
-
-from notionary.user.user_http_client import UserHttpClient
 from notionary.user.notion_user import NotionUser
+from notionary.user.user_http_client import UserHttpClient
 from notionary.util import LoggingMixin
 
 
@@ -13,11 +11,11 @@ class NotionUserManager(LoggingMixin):
     This manager provides utility functions for working with individual users and user lists.
     """
 
-    def __init__(self, token: Optional[str] = None):
+    def __init__(self, token: str | None = None):
         """Initialize the user manager."""
         self.client = UserHttpClient(token=token)
 
-    async def get_user_by_id(self, user_id: str) -> Optional[NotionUser]:
+    async def get_user_by_id(self, user_id: str) -> NotionUser | None:
         """
         Get a specific user by their ID.
         """

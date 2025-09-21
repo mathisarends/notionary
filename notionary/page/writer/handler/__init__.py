@@ -10,15 +10,15 @@ from .toggle_handler import ToggleHandler
 from .toggleable_heading_handler import ToggleableHeadingHandler
 
 __all__ = [
+    "CodeHandler",
+    "ColumnHandler",
+    "ColumnListHandler",
+    "EquationHandler",
+    "LineHandler",
     "LineProcessingContext",
     "ParentBlockContext",
-    "LineHandler",
-    "ColumnListHandler",
-    "ColumnHandler",
-    "ToggleableHeadingHandler",
-    "ToggleHandler",
-    "TableHandler",
     "RegularLineHandler",
-    "CodeHandler",
-    "EquationHandler",
+    "TableHandler",
+    "ToggleHandler",
+    "ToggleableHeadingHandler",
 ]

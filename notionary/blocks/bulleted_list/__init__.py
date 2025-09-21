@@ -10,6 +10,6 @@ from notionary.blocks.bulleted_list.bulleted_list_models import (
 __all__ = [
     "BulletedListElement",
     "BulletedListItemBlock",
-    "CreateBulletedListItemBlock",
     "BulletedListMarkdownNode",
+    "CreateBulletedListItemBlock",
 ]

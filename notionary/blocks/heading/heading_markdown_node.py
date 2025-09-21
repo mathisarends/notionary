@@ -1,4 +1,5 @@
 from pydantic import Field
+
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 

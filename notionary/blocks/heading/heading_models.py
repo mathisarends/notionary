@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -11,7 +11,7 @@ class HeadingBlock(BaseModel):
     rich_text: list[RichTextObject]
     color: BlockColor = BlockColor.DEFAULT
     is_toggleable: bool = False
-    children: Optional[list[Block]] = None
+    children: list[Block] | None = None
 
 
 class CreateHeading1Block(BaseModel):

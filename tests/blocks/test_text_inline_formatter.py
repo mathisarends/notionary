@@ -1,7 +1,7 @@
 import pytest
 
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.blocks.rich_text.rich_text_models import RichTextType
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 
 
 class TestTextInlineFormatterBasics:

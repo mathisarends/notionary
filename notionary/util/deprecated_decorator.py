@@ -1,11 +1,12 @@
 import functools
 import logging
 import warnings
-from typing import Callable, Optional, Any
+from collections.abc import Callable
+from typing import Any
 
 
 def deprecated(
-    message: Optional[str] = None, logger: Optional[logging.Logger] = None
+    message: str | None = None, logger: logging.Logger | None = None
 ) -> Callable:
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)

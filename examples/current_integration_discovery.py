@@ -22,7 +22,7 @@ async def example_from_current_integration():
         print(f"   ID: {bot_user.id}")
         print(f"   Workspace: {bot_user.workspace_name}")
         print(f"   Owner Type: {bot_user.owner_type}")
-        print(f"   Max Upload: {bot_user.max_file_upload_size / (1024*1024):.2f} MB")
+        print(f"   Max Upload: {bot_user.max_file_upload_size / (1024 * 1024):.2f} MB")
 
     except ValueError as e:
         print(f"❌ No suitable bot user found: {e}")

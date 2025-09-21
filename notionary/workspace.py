@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 from notionary import NotionDatabase, NotionPage
 from notionary.database.database_http_client import NotionDatabseHttpClient
@@ -18,7 +17,7 @@ class NotionWorkspace(LoggingMixin):
     Only individual user queries and bot user information are available.
     """
 
-    def __init__(self, token: Optional[str] = None):
+    def __init__(self, token: str | None = None):
         """
         Initialize the workspace with Notion clients.
         """
@@ -81,24 +80,21 @@ class NotionWorkspace(LoggingMixin):
         ]
 
     # User-related methods (limited due to API constraints)
-    async def get_current_bot_user(self) -> Optional[NotionUser]:
+    async def get_current_bot_user(self) -> NotionUser | None:
         """
         Get the current bot user from the API token.
         """
         return await self.user_manager.get_current_bot_user()
 
-    async def get_user_by_id(self, user_id: str) -> Optional[NotionUser]:
+    async def get_user_by_id(self, user_id: str) -> NotionUser | None:
         """
         Get a specific user by their ID.
         """
         return await self.user_manager.get_user_by_id(user_id)
 
-    async def get_workspace_info(self) -> Optional[dict]:
+    async def get_workspace_info(self) -> dict | None:
         """
         Get available workspace information including bot details.
-
-        Returns:
-            Optional[dict]: Workspace information or None if failed to get bot user
         """
         return await self.user_manager.get_workspace_info()
 

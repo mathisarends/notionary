@@ -6,6 +6,7 @@ Demonstrates how to upload a local video file to Notion.
 """
 
 import asyncio
+
 from notionary import NotionPage
 
 PAGE_NAME = "Jarvis Clipboard"

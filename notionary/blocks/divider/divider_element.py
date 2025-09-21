@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.divider.divider_models import CreateDividerBlock, DividerBlock
@@ -35,7 +34,7 @@ class DividerElement(BaseBlockElement):
         return CreateDividerBlock(divider=divider)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         if block.type != BlockType.DIVIDER or not block.divider:
             return None
         return "---"

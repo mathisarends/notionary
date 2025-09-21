@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal, Optional, Union
+from typing import Literal
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from notionary.blocks.rich_text import RichTextObject
 
@@ -24,8 +24,8 @@ class CommentParent(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
     type: Literal["page_id", "block_id"]
-    page_id: Optional[str] = None
-    block_id: Optional[str] = None
+    page_id: str | None = None
+    block_id: str | None = None
 
 
 class FileWithExpiry(BaseModel):
@@ -33,7 +33,7 @@ class FileWithExpiry(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
     url: str
-    expiry_time: Optional[datetime] = None
+    expiry_time: datetime | None = None
 
 
 class CommentAttachmentFile(BaseModel):
@@ -41,7 +41,7 @@ class CommentAttachmentFile(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
     type: Literal["file"] = "file"
-    name: Optional[str] = None
+    name: str | None = None
     file: FileWithExpiry
 
 
@@ -50,11 +50,11 @@ class CommentAttachmentExternal(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
     type: Literal["external"] = "external"
-    name: Optional[str] = None
-    external: dict  # {"url": "..."} – kept generic
+    name: str | None = None
+    external: dict
 
 
-CommentAttachment = Union[CommentAttachmentFile, CommentAttachmentExternal]
+CommentAttachment = CommentAttachmentFile | CommentAttachmentExternal
 
 
 # ---------------------------
@@ -70,10 +70,10 @@ class CommentDisplayName(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
     type: Literal["integration"] = "integration"
-    resolved_name: Optional[str] = None
+    resolved_name: str | None = None
 
     @classmethod
-    def for_integration(cls, name: Optional[str] = None) -> CommentDisplayName:
+    def for_integration(cls, name: str | None = None) -> CommentDisplayName:
         """
         Create a CommentDisplayName for an integration with a custom name.
         """
@@ -94,18 +94,18 @@ class CommentCreateRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     rich_text: list[RichTextObject]
-    parent: Optional[CommentParent] = None
-    discussion_id: Optional[str] = None
-    display_name: Optional[CommentDisplayName] = None
-    attachments: Optional[list[CommentAttachment]] = None
+    parent: CommentParent | None = None
+    discussion_id: str | None = None
+    display_name: CommentDisplayName | None = None
+    attachments: list[CommentAttachment] | None = None
 
     @classmethod
     def for_page(
         cls,
         page_id: str,
         rich_text: list[RichTextObject],
-        display_name: Optional[CommentDisplayName] = None,
-        attachments: Optional[list[CommentAttachment]] = None,
+        display_name: CommentDisplayName | None = None,
+        attachments: list[CommentAttachment] | None = None,
     ) -> CommentCreateRequest:
         """Create a request for a page comment."""
         return cls(
@@ -120,8 +120,8 @@ class CommentCreateRequest(BaseModel):
         cls,
         discussion_id: str,
         rich_text: list[RichTextObject],
-        display_name: Optional[CommentDisplayName] = None,
-        attachments: Optional[list[CommentAttachment]] = None,
+        display_name: CommentDisplayName | None = None,
+        attachments: list[CommentAttachment] | None = None,
     ) -> CommentCreateRequest:
         """Create a request for a discussion reply."""
         return cls(
@@ -140,8 +140,8 @@ class CommentListRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     block_id: str
-    start_cursor: Optional[str] = None
-    page_size: Optional[int] = None
+    start_cursor: str | None = None
+    page_size: int | None = None
 
     def to_params(self) -> dict[str, str | int]:
         """Convert to query parameters for the API request."""
@@ -182,8 +182,8 @@ class Comment(BaseModel):
     rich_text: list[RichTextObject] = Field(default_factory=list)
 
     # Optional fields that may appear depending on capabilities/payload
-    display_name: Optional[CommentDisplayName] = None
-    attachments: Optional[list[CommentAttachment]] = None
+    display_name: CommentDisplayName | None = None
+    attachments: list[CommentAttachment] | None = None
 
 
 # ---------------------------
@@ -200,9 +200,9 @@ class CommentListResponse(BaseModel):
 
     object: Literal["list"] = "list"
     results: list[Comment] = Field(default_factory=list)
-    next_cursor: Optional[str] = None
+    next_cursor: str | None = None
     has_more: bool = False
 
     # Notion includes these two fields on the list envelope.
-    type: Optional[Literal["comment"]] = None
-    comment: Optional[dict] = None
+    type: Literal["comment"] | None = None
+    comment: dict | None = None

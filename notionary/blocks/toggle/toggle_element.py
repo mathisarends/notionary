@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
 from notionary.blocks.types import BlockColor
 
@@ -47,7 +46,7 @@ class ToggleElement(BaseBlockElement):
         return CreateToggleBlock(toggle=toggle_content)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         """
         Converts a Notion toggle block into markdown using the ultra-simplified +++ syntax.
         """
@@ -98,7 +97,7 @@ class ToggleElement(BaseBlockElement):
 
     @classmethod
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for toggle blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

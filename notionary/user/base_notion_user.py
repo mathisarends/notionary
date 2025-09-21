@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import Optional
 
 from notionary.user.user_http_client import UserHttpClient
 from notionary.util import LoggingMixin
@@ -15,9 +14,9 @@ class BaseNotionUser(LoggingMixin, ABC):
     def __init__(
         self,
         user_id: str,
-        name: Optional[str] = None,
-        avatar_url: Optional[str] = None,
-        token: Optional[str] = None,
+        name: str | None = None,
+        avatar_url: str | None = None,
+        token: str | None = None,
     ):
         """Initialize base user properties."""
         self._user_id = user_id
@@ -31,12 +30,12 @@ class BaseNotionUser(LoggingMixin, ABC):
         return self._user_id
 
     @property
-    def name(self) -> Optional[str]:
+    def name(self) -> str | None:
         """Get the user name."""
         return self._name
 
     @property
-    def avatar_url(self) -> Optional[str]:
+    def avatar_url(self) -> str | None:
         """Get the avatar URL."""
         return self._avatar_url
 

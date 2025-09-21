@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING
 
 from notionary.http.notion_http_client import NotionHttpClient
 from notionary.page.page_models import NotionPageDto
+from notionary.page.properties.page_property_models import PageTitleProperty
 from notionary.shared.models.cover_models import CoverType
 from notionary.shared.models.icon_models import IconType
 from notionary.shared.models.parent_models import ParentType
-from notionary.page.properties.page_property_models import PageTitleProperty
 from notionary.util import extract_uuid, format_uuid
 from notionary.util.fuzzy import find_best_match
 
@@ -47,8 +47,7 @@ async def load_page_from_name(
     if not best_match:
         available_titles = [result.title for result in search_results[:5]]
         raise ValueError(
-            f"No sufficiently similar page found for '{page_name}'. "
-            f"Available: {available_titles}"
+            f"No sufficiently similar page found for '{page_name}'. Available: {available_titles}"
         )
 
     async with NotionHttpClient(token=token) as client:
@@ -74,7 +73,7 @@ async def _load_page_from_response(
     token: str | None,
 ) -> NotionPage:
     """Create NotionPage instance from API response."""
-    from notionary import NotionPage, NotionDatabase
+    from notionary import NotionDatabase, NotionPage
 
     title = _extract_title(page_response)
     emoji_icon = _extract_page_emoji_icon(page_response)

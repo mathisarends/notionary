@@ -4,8 +4,6 @@ Markdown whitespace processing utilities.
 Handles normalization of markdown text while preserving code blocks and their indentation.
 """
 
-from typing import Tuple
-
 
 class MarkdownWhitespaceProcessor:
     """
@@ -48,7 +46,7 @@ class MarkdownWhitespaceProcessor:
         processed_lines: list[str],
         in_code_block: bool,
         current_code_block: list[str],
-    ) -> Tuple[list[str], bool, list[str]]:
+    ) -> tuple[list[str], bool, list[str]]:
         """Process a single line and return updated state."""
         if MarkdownWhitespaceProcessor._is_code_block_marker(line):
             return MarkdownWhitespaceProcessor._handle_code_block_marker(
@@ -67,7 +65,7 @@ class MarkdownWhitespaceProcessor:
         processed_lines: list[str],
         in_code_block: bool,
         current_code_block: list[str],
-    ) -> Tuple[list[str], bool, list[str]]:
+    ) -> tuple[list[str], bool, list[str]]:
         """Handle code block start/end markers."""
         if not in_code_block:
             return MarkdownWhitespaceProcessor._start_code_block(line, processed_lines)
@@ -79,7 +77,7 @@ class MarkdownWhitespaceProcessor:
     @staticmethod
     def _start_code_block(
         line: str, processed_lines: list[str]
-    ) -> Tuple[list[str], bool, list[str]]:
+    ) -> tuple[list[str], bool, list[str]]:
         """Start a new code block."""
         processed_lines.append(
             MarkdownWhitespaceProcessor._normalize_code_block_start(line)
@@ -89,7 +87,7 @@ class MarkdownWhitespaceProcessor:
     @staticmethod
     def _end_code_block(
         processed_lines: list[str], current_code_block: list[str]
-    ) -> Tuple[list[str], bool, list[str]]:
+    ) -> tuple[list[str], bool, list[str]]:
         """End the current code block."""
         processed_lines.extend(
             MarkdownWhitespaceProcessor._normalize_code_block_content(

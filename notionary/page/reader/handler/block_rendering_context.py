@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Optional
 
 from notionary.blocks.models import Block
 from notionary.blocks.registry.block_registry import BlockRegistry
@@ -14,16 +14,16 @@ class BlockRenderingContext:
     block: Block
     indent_level: int
     block_registry: BlockRegistry
-    convert_children_callback: Optional[Callable[[list[Block], int], str]] = None
+    convert_children_callback: Callable[[list[Block], int], str] | None = None
 
     # For batch processing
-    all_blocks: Optional[list[Block]] = None
-    current_block_index: Optional[int] = None
+    all_blocks: list[Block] | None = None
+    current_block_index: int | None = None
     blocks_consumed: int = 0
 
     # Result
-    markdown_result: Optional[str] = None
-    children_result: Optional[str] = None
+    markdown_result: str | None = None
+    children_result: str | None = None
     was_processed: bool = False
 
     def has_children(self) -> bool:

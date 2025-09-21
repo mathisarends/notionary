@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from notionary.user.notion_user_manager import NotionUserManager
 from notionary.util import format_uuid
 from notionary.util.fuzzy import find_best_match
@@ -15,7 +13,7 @@ class NameIdResolver:
     def __init__(
         self,
         *,
-        token: Optional[str] = None,
+        token: str | None = None,
         search_limit: int = 10,
     ):
         """
@@ -27,7 +25,7 @@ class NameIdResolver:
         self.notion_user_manager = NotionUserManager(token=token)
         self.search_limit = search_limit
 
-    async def resolve_page_id(self, name: str) -> Optional[str]:
+    async def resolve_page_id(self, name: str) -> str | None:
         """
         Convert a page name to its Notion page ID.
         Specifically searches only pages, not databases.
@@ -45,7 +43,7 @@ class NameIdResolver:
         # Search for page by name
         return await self._resolve_page_id(cleaned_name)
 
-    async def resolve_database_id(self, name: str) -> Optional[str]:
+    async def resolve_database_id(self, name: str) -> str | None:
         """
         Convert a database name to its Notion database ID.
         Specifically searches only databases, not pages.
@@ -61,7 +59,7 @@ class NameIdResolver:
 
         return await self._resolve_database_id(cleaned_name)
 
-    async def resolve_page_name(self, page_id: str) -> Optional[str]:
+    async def resolve_page_name(self, page_id: str) -> str | None:
         """
         Convert a Notion page ID to its human-readable title.
         """
@@ -80,7 +78,7 @@ class NameIdResolver:
         except Exception:
             return None
 
-    async def resolve_database_name(self, database_id: str) -> Optional[str]:
+    async def resolve_database_name(self, database_id: str) -> str | None:
         """
         Convert a Notion database ID to its human-readable title.
         """
@@ -100,7 +98,7 @@ class NameIdResolver:
         except Exception:
             return None
 
-    async def resolve_user_id(self, name: str) -> Optional[str]:
+    async def resolve_user_id(self, name: str) -> str | None:
         """
         Convert a user name to its Notion user ID.
         Specifically searches only users.
@@ -118,7 +116,7 @@ class NameIdResolver:
         # Search for user by name
         return await self._resolve_user_id(cleaned_name)
 
-    async def resolve_user_name(self, user_id: str) -> Optional[str]:
+    async def resolve_user_name(self, user_id: str) -> str | None:
         """
         Convert a Notion user ID to its human-readable name.
 
@@ -142,7 +140,7 @@ class NameIdResolver:
         except Exception:
             return None
 
-    async def _resolve_user_id(self, name: str) -> Optional[str]:
+    async def _resolve_user_id(self, name: str) -> str | None:
         """Search for users matching the name."""
         try:
             users = await self.notion_user_manager.find_users_by_name(name)
@@ -161,7 +159,7 @@ class NameIdResolver:
         except Exception:
             return None
 
-    async def _resolve_page_id(self, name: str) -> Optional[str]:
+    async def _resolve_page_id(self, name: str) -> str | None:
         """Search for pages matching the name."""
         search_results = await self.workspace.search_pages(
             query=name, limit=self.search_limit
@@ -169,7 +167,7 @@ class NameIdResolver:
 
         return self._find_best_fuzzy_match(query=name, candidate_objects=search_results)
 
-    async def _resolve_database_id(self, name: str) -> Optional[str]:
+    async def _resolve_database_id(self, name: str) -> str | None:
         """Search for databases matching the name."""
         search_results = await self.workspace.search_databases(
             query=name, limit=self.search_limit
@@ -177,9 +175,7 @@ class NameIdResolver:
 
         return self._find_best_fuzzy_match(query=name, candidate_objects=search_results)
 
-    def _find_best_fuzzy_match(
-        self, query: str, candidate_objects: list
-    ) -> Optional[str]:
+    def _find_best_fuzzy_match(self, query: str, candidate_objects: list) -> str | None:
         """
         Find the best fuzzy match among candidate objects using existing fuzzy matching logic.
 

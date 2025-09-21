@@ -1,11 +1,11 @@
-from typing import Callable, Union
+from collections.abc import Callable
 
 from notionary.blocks.block_http_client import NotionBlockHttpClient
-from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
-from notionary.schemas.base import NotionContentSchema
+from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.markdown_whitespace_processor import MarkdownWhitespaceProcessor
 from notionary.page.writer.markdown_to_notion_converter import MarkdownToNotionConverter
+from notionary.schemas.base import NotionContentSchema
 from notionary.util import LoggingMixin
 
 
@@ -21,12 +21,12 @@ class PageContentWriter(LoggingMixin):
 
     async def append_markdown(
         self,
-        content: Union[
-            str, Callable[[MarkdownBuilder], MarkdownBuilder], NotionContentSchema
-        ],
+        content: (
+            str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema
+        ),
     ) -> None:
         markdown = self._extract_markdown_from_param(content)
-        
+
         if not markdown or not markdown.strip():
             self.logger.error("append_markdown called with empty markdown content.")
             raise ValueError("Cannot append empty markdown content.")
@@ -34,21 +34,18 @@ class PageContentWriter(LoggingMixin):
         processed_markdown = MarkdownWhitespaceProcessor.process_markdown_whitespace(
             markdown
         )
-        
-        blocks = await self._markdown_to_notion_converter.convert(
-            processed_markdown
-        )
+
+        blocks = await self._markdown_to_notion_converter.convert(processed_markdown)
 
         await self._block_client.append_block_children(
             block_id=self.page_id, children=blocks
         )
 
-
     def _extract_markdown_from_param(
         self,
-        content: Union[
-            str, Callable[[MarkdownBuilder], MarkdownBuilder], NotionContentSchema
-        ],
+        content: (
+            str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema
+        ),
     ) -> str:
         if isinstance(content, str):
             return content

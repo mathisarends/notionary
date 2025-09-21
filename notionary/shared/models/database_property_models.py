@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 from abc import ABC
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from notionary.shared.models.shared_property_models import PropertyType
 
+from notionary.shared.models.shared_property_models import PropertyType
 
 # ===== SHARED DATABASE SCHEMA MODELS =====
 
@@ -355,23 +356,23 @@ class DatabaseCreatedTimeProperty(BaseModel):
 
 
 # ===== TYPE UNION =====
-DatabaseNotionProperty = Union[
-    DatabaseStatusProperty,
-    DatabaseMultiSelectProperty,
-    DatabaseSelectProperty,
-    DatabaseRelationProperty,
-    DatabaseDateProperty,
-    DatabaseTitleProperty,
-    DatabaseRichTextProperty,
-    DatabaseURLProperty,
-    DatabasePeopleProperty,
-    DatabaseNumberProperty,
-    DatabaseCheckboxProperty,
-    DatabaseEmailProperty,
-    DatabasePhoneNumberProperty,
-    DatabaseCreatedTimeProperty,
-    dict[str, Any],  # Fallback
-]
+DatabaseNotionProperty = (
+    DatabaseStatusProperty
+    | DatabaseMultiSelectProperty
+    | DatabaseSelectProperty
+    | DatabaseRelationProperty
+    | DatabaseDateProperty
+    | DatabaseTitleProperty
+    | DatabaseRichTextProperty
+    | DatabaseURLProperty
+    | DatabasePeopleProperty
+    | DatabaseNumberProperty
+    | DatabaseCheckboxProperty
+    | DatabaseEmailProperty
+    | DatabasePhoneNumberProperty
+    | DatabaseCreatedTimeProperty
+    | dict[str, Any]  # Fallback
+)
 
 DatabasePropertyT = TypeVar("DatabasePropertyT", bound=DatabaseNotionProperty)
 

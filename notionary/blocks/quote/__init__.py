@@ -7,8 +7,8 @@ from notionary.blocks.quote.quote_markdown_node import (
 from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
 
 __all__ = [
-    "QuoteElement",
-    "QuoteBlock",
     "CreateQuoteBlock",
+    "QuoteBlock",
+    "QuoteElement",
     "QuoteMarkdownNode",
 ]

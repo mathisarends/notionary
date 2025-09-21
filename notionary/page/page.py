@@ -1,34 +1,34 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Union
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from notionary.blocks.block_http_client import NotionBlockHttpClient
-from notionary.comments import CommentClient, Comment
-from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
+from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
+from notionary.comments import Comment, CommentClient
 from notionary.database.database_http_client import NotionDatabseHttpClient
 from notionary.file_upload.client import FileUploadHttpClient
-from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
-from notionary.schemas import NotionContentSchema
 from notionary.page import page_context
-from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_content_deleting_service import PageContentDeletingService
 from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.page_context import PageContextProvider, page_context
-from notionary.page.reader.page_content_retriever import PageContentRetriever
-from notionary.page.properties.page_property_reader import PagePropertyReader
-from notionary.page.properties.page_property_writer import PagePropertyWriter
-from notionary.page.properties.page_property_models import (
-    PageProperty,
-    PropertyType,
-)
-from notionary.util import LoggingMixin
-
 from notionary.page.page_factory import (
     load_page_from_id,
     load_page_from_name,
     load_page_from_url,
 )
+from notionary.page.page_http_client import NotionPageHttpClient
+from notionary.page.properties.page_property_models import (
+    PageProperty,
+    PropertyType,
+)
+from notionary.page.properties.page_property_reader import PagePropertyReader
+from notionary.page.properties.page_property_writer import PagePropertyWriter
+from notionary.page.reader.page_content_retriever import PageContentRetriever
+from notionary.schemas import NotionContentSchema
+from notionary.util import LoggingMixin
 from notionary.util.covers import get_random_gradient_cover
 
 if TYPE_CHECKING:
@@ -90,9 +90,7 @@ class NotionPage(LoggingMixin):
         self.property_writer = PagePropertyWriter(self)
 
     @classmethod
-    async def from_page_id(
-        cls, page_id: str, token: str | None = None
-    ) -> NotionPage:
+    async def from_page_id(cls, page_id: str, token: str | None = None) -> NotionPage:
         return await load_page_from_id(page_id, token)
 
     @classmethod
@@ -106,7 +104,7 @@ class NotionPage(LoggingMixin):
         return await load_page_from_name(page_name, token, min_similarity)
 
     @classmethod
-    async def from_url(cls, url: str, token: str | None= None) -> NotionPage:
+    async def from_url(cls, url: str, token: str | None = None) -> NotionPage:
         return await load_page_from_url(url, token)
 
     @property
@@ -171,18 +169,18 @@ class NotionPage(LoggingMixin):
 
     async def append_markdown(
         self,
-        content: Union[
-            str, Callable[[MarkdownBuilder], MarkdownBuilder], NotionContentSchema
-        ],
+        content: (
+            str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema
+        ),
     ) -> None:
         async with page_context(self.page_context_provider):
             _ = await self._page_content_writer.append_markdown(content=content)
 
     async def replace_content(
         self,
-        content: Union[
-            str, Callable[[MarkdownBuilder], MarkdownBuilder], NotionContentSchema
-        ],
+        content: (
+            str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema
+        ),
     ) -> None:
         await self._page_content_deleting_service.clear_page_content()
         await self._page_content_writer.append_markdown(content=content)
@@ -212,7 +210,7 @@ class NotionPage(LoggingMixin):
         await self._page_client.remove_icon()
         self._emoji_icon = None
         self._external_icon_url = None
-        
+
     async def archive(self) -> None:
         if self._is_archived:
             self.logger.info("Page is already archived.")
@@ -221,7 +219,7 @@ class NotionPage(LoggingMixin):
         page_response = await self._page_client.archive_page()
         self._is_archived = page_response.archived
         self.logger.info(f"Page {self._page_id} archived.")
-        
+
     async def unarchive(self) -> None:
         if not self._is_archived:
             self.logger.info("Page is not archived.")

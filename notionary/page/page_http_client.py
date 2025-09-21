@@ -1,33 +1,33 @@
-from typing import Any, Union
+from typing import Any
 
 from pydantic import BaseModel
 
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.http.notion_http_client import NotionHttpClient
 from notionary.page.page_models import NotionPageDto, NotionPageUpdateDto
-from notionary.shared.models.icon_models import EmojiIcon, ExternalIcon
-from notionary.shared.models.cover_models import NotionCover
-from notionary.shared.models.file_models import ExternalFile
 from notionary.page.properties.page_property_models import (
+    DateValue,
+    PageCheckboxProperty,
+    PageDateProperty,
+    PageEmailProperty,
+    PageMultiSelectProperty,
+    PageNumberProperty,
+    PagePhoneNumberProperty,
     PageProperty,
     PagePropertyT,
-    PageTitleProperty,
-    PageRichTextProperty,
-    PageURLProperty,
-    PageEmailProperty,
-    PagePhoneNumberProperty,
-    PageNumberProperty,
-    PageCheckboxProperty,
-    PageSelectProperty,
-    PageMultiSelectProperty,
-    PageDateProperty,
-    PageStatusProperty,
     PageRelationProperty,
+    PageRichTextProperty,
+    PageSelectProperty,
+    PageStatusProperty,
+    PageTitleProperty,
+    PageURLProperty,
+    RelationItem,
     SelectOption,
     StatusOption,
-    RelationItem,
-    DateValue,
 )
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.shared.models.cover_models import NotionCover
+from notionary.shared.models.file_models import ExternalFile
+from notionary.shared.models.icon_models import EmojiIcon, ExternalIcon
 
 
 class NotionPageHttpClient(NotionHttpClient):
@@ -76,7 +76,7 @@ class NotionPageHttpClient(NotionHttpClient):
     async def archive_page(self) -> NotionPageDto:
         update_dto = NotionPageUpdateDto(archived=True)
         return await self.patch_page(update_dto)
-    
+
     async def unarchive_page(self) -> NotionPageDto:
         update_dto = NotionPageUpdateDto(archived=False)
         return await self.patch_page(update_dto)
@@ -128,7 +128,7 @@ class NotionPageHttpClient(NotionHttpClient):
         return await self.patch_property(property_name, phone, PagePhoneNumberProperty)
 
     async def patch_number_property(
-        self, property_name: str, number: Union[int, float]
+        self, property_name: str, number: int | float
     ) -> NotionPageDto:
         return await self.patch_property(property_name, number, PageNumberProperty)
 
@@ -150,7 +150,7 @@ class NotionPageHttpClient(NotionHttpClient):
         )
 
     async def patch_date_property(
-        self, property_name: str, date_value: Union[str, dict]
+        self, property_name: str, date_value: str | dict
     ) -> NotionPageDto:
         return await self.patch_property(property_name, date_value, PageDateProperty)
 
@@ -160,7 +160,7 @@ class NotionPageHttpClient(NotionHttpClient):
         return await self.patch_property(property_name, status_name, PageStatusProperty)
 
     async def patch_relation_property(
-        self, property_name: str, relation_ids: Union[str, list[str]]
+        self, property_name: str, relation_ids: str | list[str]
     ) -> NotionPageDto:
         if isinstance(relation_ids, str):
             relation_ids = [relation_ids]

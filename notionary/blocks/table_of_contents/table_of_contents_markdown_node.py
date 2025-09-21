@@ -1,5 +1,3 @@
-from typing import Optional
-
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
@@ -13,7 +11,7 @@ class TableOfContentsMarkdownNode(MarkdownNode):
     [toc](blue_background)
     """
 
-    color: Optional[str] = "default"
+    color: str | None = "default"
 
     def to_markdown(self) -> str:
         if self.color == "default":

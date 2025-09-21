@@ -39,4 +39,4 @@ class TableMarkdownNode(MarkdownNode):
         separator = "| " + " | ".join(["--------"] * col_count) + " |"
         # Data rows
         data_rows = ["| " + " | ".join(row) + " |" for row in self.rows]
-        return "\n".join([header, separator] + data_rows)
+        return "\n".join([header, separator, *data_rows])

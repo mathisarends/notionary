@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, Union
+from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import BaseModel
 
@@ -16,6 +16,7 @@ if TYPE_CHECKING:
         CreateBulletedListItemBlock,
     )
     from notionary.blocks.callout import CalloutBlock, CreateCalloutBlock
+    from notionary.blocks.child_database import ChildDatabaseBlock
     from notionary.blocks.child_page import ChildPageBlock, CreateChildPageBlock
     from notionary.blocks.code import CodeBlock, CreateCodeBlock
     from notionary.blocks.column import (
@@ -50,12 +51,11 @@ if TYPE_CHECKING:
     from notionary.blocks.todo import CreateToDoBlock, ToDoBlock
     from notionary.blocks.toggle import CreateToggleBlock, ToggleBlock
     from notionary.blocks.video import CreateVideoBlock
-    from notionary.blocks.child_database import ChildDatabaseBlock
 
 
 class BlockChildrenResponse(BaseModel):
     object: Literal["list"]
-    results: list["Block"]
+    results: list[Block]
     next_cursor: str | None = None
     has_more: bool
     type: Literal["block"]
@@ -110,34 +110,34 @@ class Block(BaseModel):
 
 
 if TYPE_CHECKING:
-    BlockCreateRequest = Union[
-        CreateBookmarkBlock,
-        CreateBreadcrumbBlock,
-        CreateBulletedListItemBlock,
-        CreateCalloutBlock,
-        CreateChildPageBlock,
-        CreateCodeBlock,
-        CreateColumnListBlock,
-        CreateColumnBlock,
-        CreateDividerBlock,
-        CreateEmbedBlock,
-        CreateEquationBlock,
-        CreateFileBlock,
-        CreateHeading1Block,
-        CreateHeading2Block,
-        CreateHeading3Block,
-        CreateImageBlock,
-        CreateNumberedListItemBlock,
-        CreateParagraphBlock,
-        CreateQuoteBlock,
-        CreateToDoBlock,
-        CreateToggleBlock,
-        CreateVideoBlock,
-        CreateTableOfContentsBlock,
-        CreatePdfBlock,
-        CreateTableBlock,
-    ]
-    BlockCreateResult = Union[BlockCreateRequest]
+    BlockCreateRequest = (
+        CreateBookmarkBlock
+        | CreateBreadcrumbBlock
+        | CreateBulletedListItemBlock
+        | CreateCalloutBlock
+        | CreateChildPageBlock
+        | CreateCodeBlock
+        | CreateColumnListBlock
+        | CreateColumnBlock
+        | CreateDividerBlock
+        | CreateEmbedBlock
+        | CreateEquationBlock
+        | CreateFileBlock
+        | CreateHeading1Block
+        | CreateHeading2Block
+        | CreateHeading3Block
+        | CreateImageBlock
+        | CreateNumberedListItemBlock
+        | CreateParagraphBlock
+        | CreateQuoteBlock
+        | CreateToDoBlock
+        | CreateToggleBlock
+        | CreateVideoBlock
+        | CreateTableOfContentsBlock
+        | CreatePdfBlock
+        | CreateTableBlock
+    )
+    BlockCreateResult = BlockCreateRequest
 else:
     # at runtime there are no typings anyway
     BlockCreateRequest = Any

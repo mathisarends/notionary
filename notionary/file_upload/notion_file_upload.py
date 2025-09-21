@@ -3,7 +3,6 @@ import mimetypes
 from datetime import datetime, timedelta
 from io import BytesIO
 from pathlib import Path
-from typing import Optional
 
 from notionary.file_upload.models import FileUploadResponse, UploadMode
 from notionary.util import LoggingMixin
@@ -20,15 +19,15 @@ class NotionFileUpload(LoggingMixin):
     MULTI_PART_CHUNK_SIZE = 10 * 1024 * 1024  # 10MB per part
     MAX_FILENAME_BYTES = 900
 
-    def __init__(self, token: Optional[str] = None):
+    def __init__(self, token: str | None = None):
         """Initialize the file upload service."""
         from notionary.file_upload import FileUploadHttpClient
 
         self.client = FileUploadHttpClient(token=token)
 
     async def upload_file(
-        self, file_path: Path, filename: Optional[str] = None
-    ) -> Optional[FileUploadResponse]:
+        self, file_path: Path, filename: str | None = None
+    ) -> FileUploadResponse | None:
         """
         Upload a file to Notion, automatically choosing single-part or multi-part based on size.
 
@@ -62,8 +61,8 @@ class NotionFileUpload(LoggingMixin):
             return await self._upload_large_file(file_path, filename, file_size)
 
     async def upload_from_bytes(
-        self, file_content: bytes, filename: str, content_type: Optional[str] = None
-    ) -> Optional[FileUploadResponse]:
+        self, file_content: bytes, filename: str, content_type: str | None = None
+    ) -> FileUploadResponse | None:
         """
         Upload file content from bytes.
 
@@ -100,7 +99,7 @@ class NotionFileUpload(LoggingMixin):
                 file_content, filename, content_type, file_size
             )
 
-    async def get_upload_status(self, file_upload_id: str) -> Optional[str]:
+    async def get_upload_status(self, file_upload_id: str) -> str | None:
         """
         Get the current status of a file upload.
 
@@ -115,7 +114,7 @@ class NotionFileUpload(LoggingMixin):
 
     async def wait_for_upload_completion(
         self, file_upload_id: str, timeout_seconds: int = 300, poll_interval: int = 2
-    ) -> Optional[FileUploadResponse]:
+    ) -> FileUploadResponse | None:
         """
         Wait for a file upload to complete.
 
@@ -187,7 +186,7 @@ class NotionFileUpload(LoggingMixin):
 
     async def _upload_small_file(
         self, file_path: Path, filename: str, file_size: int
-    ) -> Optional[FileUploadResponse]:
+    ) -> FileUploadResponse | None:
         """Upload a small file using single-part upload."""
         content_type, _ = mimetypes.guess_type(str(file_path))
 
@@ -219,7 +218,7 @@ class NotionFileUpload(LoggingMixin):
 
     async def _upload_large_file(
         self, file_path: Path, filename: str, file_size: int
-    ) -> Optional[FileUploadResponse]:
+    ) -> FileUploadResponse | None:
         """Upload a large file using multi-part upload."""
         content_type, _ = mimetypes.guess_type(str(file_path))
 
@@ -260,9 +259,9 @@ class NotionFileUpload(LoggingMixin):
         self,
         file_content: bytes,
         filename: str,
-        content_type: Optional[str],
+        content_type: str | None,
         file_size: int,
-    ) -> Optional[FileUploadResponse]:
+    ) -> FileUploadResponse | None:
         """Upload small file from bytes."""
         # Create file upload
         file_upload = await self.client.create_file_upload(
@@ -290,9 +289,9 @@ class NotionFileUpload(LoggingMixin):
         self,
         file_content: bytes,
         filename: str,
-        content_type: Optional[str],
+        content_type: str | None,
         file_size: int,
-    ) -> Optional[FileUploadResponse]:
+    ) -> FileUploadResponse | None:
         """Upload large file from bytes using multi-part."""
         # Create file upload
         file_upload = await self.client.create_file_upload(

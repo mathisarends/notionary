@@ -1,25 +1,26 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Awaitable, Callable
+from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING, Any
 
 from notionary.page.properties.page_property_models import (
-    PropertyType,
-    PageStatusProperty,
-    PageRelationProperty,
-    PageMultiSelectProperty,
-    PageSelectProperty,
-    PageURLProperty,
-    PageNumberProperty,
     PageCheckboxProperty,
-    PageDateProperty,
-    PageTitleProperty,
-    PageRichTextProperty,
-    PageEmailProperty,
-    PagePhoneNumberProperty,
-    PagePeopleProperty,
     PageCreatedTimeProperty,
+    PageDateProperty,
+    PageEmailProperty,
+    PageMultiSelectProperty,
+    PageNumberProperty,
+    PagePeopleProperty,
+    PagePhoneNumberProperty,
     PagePropertyT,
+    PageRelationProperty,
+    PageRichTextProperty,
+    PageSelectProperty,
+    PageStatusProperty,
+    PageTitleProperty,
+    PageURLProperty,
+    PropertyType,
 )
 
 if TYPE_CHECKING:

@@ -1,5 +1,4 @@
-from notionary.blocks.models import Block, BlockType
-from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.models import BlockType
 from notionary.page.reader.handler.base_block_renderer import BlockHandler
 from notionary.page.reader.handler.block_rendering_context import BlockRenderingContext
 
@@ -55,7 +54,6 @@ class NumberedListRenderer(BlockHandler):
                 block.type == BlockType.NUMBERED_LIST_ITEM
                 and block.numbered_list_item is not None
             ):
-
                 # Create context for this item
                 item_context = BlockRenderingContext(
                     block=block,

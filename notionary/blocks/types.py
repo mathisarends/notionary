@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-
-from typing import Protocol, TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
     from notionary.blocks.models import BlockCreateRequest

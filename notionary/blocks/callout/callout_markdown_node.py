@@ -1,4 +1,3 @@
-from typing import Optional
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 
 
@@ -10,7 +9,7 @@ class CalloutMarkdownNode(MarkdownNode):
     """
 
     text: str
-    emoji: Optional[str] = None
+    emoji: str | None = None
 
     def to_markdown(self) -> str:
         if self.emoji and self.emoji != "💡":

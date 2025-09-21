@@ -5,8 +5,8 @@ from notionary.blocks.embed.embed_markdown_node import (
 from notionary.blocks.embed.embed_models import CreateEmbedBlock, EmbedBlock
 
 __all__ = [
-    "EmbedElement",
-    "EmbedBlock",
     "CreateEmbedBlock",
+    "EmbedBlock",
+    "EmbedElement",
     "EmbedMarkdownNode",
 ]

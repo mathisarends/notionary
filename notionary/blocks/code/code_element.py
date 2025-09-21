@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.code.code_models import CodeBlock, CodeLanguage, CreateCodeBlock
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class CodeElement(BaseBlockElement):
@@ -76,7 +75,7 @@ class CodeElement(BaseBlockElement):
         return CreateCodeBlock(code=code_block)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         """Convert Notion code block to Markdown."""
         if block.type != BlockType.CODE:
             return None
@@ -99,10 +98,11 @@ class CodeElement(BaseBlockElement):
             language = ""
 
         # Build markdown code block
-        if language:
-            result = f"```{language}\n{code_content}\n```"
-        else:
-            result = f"```\n{code_content}\n```"
+        result = (
+            f"```{language}\n{code_content}\n```"
+            if language
+            else f"```\n{code_content}\n```"
+        )
 
         # Add caption if present
         if caption_text:
@@ -134,7 +134,7 @@ class CodeElement(BaseBlockElement):
         return "".join(rt.plain_text for rt in caption_list if rt.plain_text)
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for code blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

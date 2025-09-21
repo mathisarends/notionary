@@ -5,9 +5,10 @@ Test Column and Toggle layouts with structured output to verify hierarchical str
 """
 
 import pytest
+from pydantic import Field
+
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.schemas import NotionContentSchema
-from pydantic import Field
 
 
 class TestColumnToggleLayouts:

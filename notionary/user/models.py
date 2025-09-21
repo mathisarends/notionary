@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -7,14 +7,14 @@ from pydantic import BaseModel
 class PersonUser(BaseModel):
     """Person user details"""
 
-    email: Optional[str] = None
+    email: str | None = None
 
 
 class BotOwner(BaseModel):
     """Bot owner information - simplified structure"""
 
     type: Literal["workspace", "user"]
-    workspace: Optional[bool] = None
+    workspace: bool | None = None
 
 
 class WorkspaceLimits(BaseModel):
@@ -26,9 +26,9 @@ class WorkspaceLimits(BaseModel):
 class BotUser(BaseModel):
     """Bot user details"""
 
-    owner: Optional[BotOwner] = None
-    workspace_name: Optional[str] = None
-    workspace_limits: Optional[WorkspaceLimits] = None
+    owner: BotOwner | None = None
+    workspace_name: str | None = None
+    workspace_limits: WorkspaceLimits | None = None
 
 
 class NotionUserResponse(BaseModel):
@@ -39,15 +39,15 @@ class NotionUserResponse(BaseModel):
 
     object: Literal["user"]
     id: str
-    type: Optional[Literal["person", "bot"]] = None
-    name: Optional[str] = None
-    avatar_url: Optional[str] = None
+    type: Literal["person", "bot"] | None = None
+    name: str | None = None
+    avatar_url: str | None = None
 
     # Person-specific fields
-    person: Optional[PersonUser] = None
+    person: PersonUser | None = None
 
     # Bot-specific fields
-    bot: Optional[BotUser] = None
+    bot: BotUser | None = None
 
 
 class NotionBotUserResponse(NotionUserResponse):
@@ -57,7 +57,7 @@ class NotionBotUserResponse(NotionUserResponse):
 
     # Bot users should have these fields, but they can still be None
     type: Literal["bot"]
-    bot: Optional[BotUser] = None
+    bot: BotUser | None = None
 
 
 class NotionUsersListResponse(BaseModel):
@@ -68,7 +68,7 @@ class NotionUsersListResponse(BaseModel):
 
     object: Literal["list"]
     results: list[NotionUserResponse]
-    next_cursor: Optional[str] = None
+    next_cursor: str | None = None
     has_more: bool
     type: Literal["user"]
     user: dict = {}
@@ -78,7 +78,7 @@ class NotionUsersListResponse(BaseModel):
 class WorkspaceInfo:
     """Dataclass to hold workspace information for bot users."""
 
-    name: Optional[str] = None
-    limits: Optional[WorkspaceLimits] = None
-    owner_type: Optional[str] = None
+    name: str | None = None
+    limits: WorkspaceLimits | None = None
+    owner_type: str | None = None
     is_workspace_owned: bool = False

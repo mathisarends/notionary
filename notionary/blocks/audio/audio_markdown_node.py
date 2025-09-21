@@ -1,5 +1,3 @@
-from typing import Optional
-
 from notionary.blocks.markdown.markdown_node import MarkdownNode
 from notionary.blocks.mixins.captions import CaptionMarkdownNodeMixin
 
@@ -11,7 +9,7 @@ class AudioMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     """
 
     url: str
-    caption: Optional[str] = None
+    caption: str | None = None
 
     def to_markdown(self) -> str:
         """Return the Markdown representation.

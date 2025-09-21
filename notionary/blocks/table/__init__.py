@@ -10,10 +10,10 @@ from notionary.blocks.table.table_models import (
 )
 
 __all__ = [
-    "TableElement",
-    "TableBlock",
-    "TableRowBlock",
-    "CreateTableRowBlock",
     "CreateTableBlock",
+    "CreateTableRowBlock",
+    "TableBlock",
+    "TableElement",
     "TableMarkdownNode",
+    "TableRowBlock",
 ]

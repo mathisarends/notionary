@@ -5,7 +5,7 @@ from notionary.blocks.video.video_markdown_node import (
 )
 
 __all__ = [
-    "VideoElement",
     "CreateVideoBlock",
+    "VideoElement",
     "VideoMarkdownNode",
 ]

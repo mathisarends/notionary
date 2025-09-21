@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.numbered_list.numbered_list_models import (
     CreateNumberedListItemBlock,
     NumberedListItemBlock,
 )
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockColor
 
 
@@ -40,7 +39,7 @@ class NumberedListElement(BaseBlockElement):
 
     # FIX: Roundtrip conversions will never work this way here
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         if block.type != BlockType.NUMBERED_LIST_ITEM or not block.numbered_list_item:
             return None
 
@@ -49,7 +48,7 @@ class NumberedListElement(BaseBlockElement):
         return f"1. {content}"
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for numbered list blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -28,10 +28,10 @@ class FileUploadFile(BaseModel):
 class FileBlock(BaseModel):
     caption: list[RichTextObject] = Field(default_factory=list)
     type: FileType
-    external: Optional[ExternalFile] = None
-    file: Optional[NotionHostedFile] = None
-    file_upload: Optional[FileUploadFile] = None
-    name: Optional[str] = None
+    external: ExternalFile | None = None
+    file: NotionHostedFile | None = None
+    file_upload: FileUploadFile | None = None
+    name: str | None = None
 
 
 class CreateFileBlock(BaseModel):

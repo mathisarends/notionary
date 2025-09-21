@@ -1,7 +1,7 @@
 import pytest
 
-from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
+from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.writer.markdown_to_notion_converter import MarkdownToNotionConverter
 
 
@@ -218,7 +218,7 @@ if response.status_code == 200:
         actual_block_types = [block.type for block in actual_blocks]
 
         # Prüfe erwartete Block-Typen (flexibler Ansatz)
-        expected_types = expected_block_structure["expected_block_types"]
+        expected_block_structure["expected_block_types"]
 
         # Prüfe, dass wichtige Block-Typen vorhanden sind
         assert "breadcrumb" in actual_block_types, "Breadcrumb sollte vorhanden sein"

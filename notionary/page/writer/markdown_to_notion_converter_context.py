@@ -1,8 +1,8 @@
 # notionary/blocks/context/conversion_context.py
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from notionary.database.database_http_client import NotionDatabseHttpClient
@@ -14,8 +14,8 @@ class ConverterContext:
     Context object that provides dependencies for block conversion operations.
     """
 
-    page_id: Optional[str] = None
-    database_client: Optional["NotionDatabseHttpClient"] = None
+    page_id: str | None = None
+    database_client: NotionDatabseHttpClient | None = None
 
     def require_database_client(self) -> NotionDatabseHttpClient:
         """Get database client or raise if not available."""

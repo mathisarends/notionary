@@ -1,11 +1,11 @@
 from typing import Any
 
-from notionary.http.notion_http_client import NotionHttpClient
 from notionary.database.database_models import (
     NoionDatabaseDto,
     NotionDatabaseSearchResponse,
     NotionQueryDatabaseResponse,
 )
+from notionary.http.notion_http_client import NotionHttpClient
 from notionary.page.page_models import NotionPageDto
 
 
@@ -51,7 +51,7 @@ class NotionDatabseHttpClient(NotionHttpClient):
         return NoionDatabaseDto.model_validate(response)
 
     async def query_database(
-        self, database_id: str, query_data: dict[str, Any] = None
+        self, database_id: str, query_data: dict[str, Any] | None = None
     ) -> NotionQueryDatabaseResponse:
         """
         Queries a Notion database with the provided filter and sorts.

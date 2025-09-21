@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Optional
 
 from notionary.blocks.audio.audio_models import CreateAudioBlock
 from notionary.blocks.base_block_element import BaseBlockElement
@@ -14,8 +13,8 @@ from notionary.blocks.file.file_element_models import (
 )
 from notionary.blocks.mixins.captions import CaptionMixin
 from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.util.logging_mixin import LoggingMixin
 
 
@@ -41,7 +40,7 @@ class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin
         return block.type == BlockType.AUDIO
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> Optional[BlockCreateResult]:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult | None:
         """Convert markdown audio embed to Notion audio block."""
         # Extract the path/URL
         path = cls._extract_audio_path(text.strip())
@@ -99,7 +98,7 @@ class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin
             return CreateAudioBlock(audio=audio_content)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         """Convert Notion audio block to markdown audio embed."""
         if block.type != BlockType.AUDIO or block.audio is None:
             return None
@@ -126,7 +125,7 @@ class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin
         return result
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for audio blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,
@@ -147,7 +146,7 @@ class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin
         return any(url.lower().endswith(ext) for ext in cls.SUPPORTED_EXTENSIONS)
 
     @classmethod
-    def _extract_audio_path(cls, text: str) -> Optional[str]:
+    def _extract_audio_path(cls, text: str) -> str | None:
         """Extract audio path/URL from text, handling caption patterns."""
         clean_text = cls.remove_caption(text)
 

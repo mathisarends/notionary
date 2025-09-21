@@ -2,17 +2,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from typing import Any
 
 
 @dataclass
 class FilterConfig:
     """Simple configuration for Notion Database filters."""
 
-    conditions: List[Dict[str, Any]] = field(default_factory=list)
+    conditions: list[dict[str, Any]] = field(default_factory=list)
     page_size: int = 100
 
-    def to_filter_dict(self) -> Dict[str, Any]:
+    def to_filter_dict(self) -> dict[str, Any]:
         """Convert to a Notion filter dictionary."""
         if len(self.conditions) == 0:
             return {}
@@ -152,7 +152,7 @@ class DatabaseFilterBuilder:
 
         return self
 
-    def build(self) -> Dict[str, Any]:
+    def build(self) -> dict[str, Any]:
         """Build the final filter dictionary."""
         return self.config.to_filter_dict()
 

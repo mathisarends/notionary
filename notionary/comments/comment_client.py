@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from typing import AsyncGenerator, Optional
+from collections.abc import AsyncGenerator
 
-from notionary.http.notion_http_client import NotionHttpClient
+from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
 from notionary.comments.comment_models import (
     Comment,
-    CommentListResponse,
-    CommentDisplayName,
     CommentAttachment,
     CommentCreateRequest,
+    CommentDisplayName,
     CommentListRequest,
+    CommentListResponse,
 )
-from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.http.notion_http_client import NotionHttpClient
 
 
 class CommentClient(NotionHttpClient):
@@ -48,7 +48,7 @@ class CommentClient(NotionHttpClient):
         block_id: str,
         *,
         page_size: int = 100,
-    ) -> AsyncGenerator[Comment, None]:
+    ) -> AsyncGenerator[Comment]:
         """
         Async generator over all unresolved comments for a given page/block.
         Handles pagination automatically.
@@ -60,7 +60,7 @@ class CommentClient(NotionHttpClient):
         Yields:
             Individual Comment objects.
         """
-        cursor: Optional[str] = None
+        cursor: str | None = None
 
         while True:
             page = await self._list_comments(
@@ -76,9 +76,9 @@ class CommentClient(NotionHttpClient):
         self,
         rich_text_str: str,
         *,
-        page_id: Optional[str] = None,
-        discussion_id: Optional[str] = None,
-        attachments: Optional[list[CommentAttachment]] = None,
+        page_id: str | None = None,
+        discussion_id: str | None = None,
+        attachments: list[CommentAttachment] | None = None,
     ) -> Comment:
         """
         Create a comment on a page OR reply to an existing discussion.
@@ -124,8 +124,8 @@ class CommentClient(NotionHttpClient):
         page_id: str,
         text: str,
         *,
-        display_name: Optional[CommentDisplayName] = None,
-        attachments: Optional[list[CommentAttachment]] = None,
+        display_name: CommentDisplayName | None = None,
+        attachments: list[CommentAttachment] | None = None,
     ) -> Comment:
         """
         Create a top-level comment on a page using plain text.
@@ -148,8 +148,8 @@ class CommentClient(NotionHttpClient):
         discussion_id: str,
         text: str,
         *,
-        display_name: Optional[CommentDisplayName] = None,
-        attachments: Optional[list[CommentAttachment]] = None,
+        display_name: CommentDisplayName | None = None,
+        attachments: list[CommentAttachment] | None = None,
     ) -> Comment:
         """
         Reply to an existing discussion using plain text.
@@ -171,7 +171,7 @@ class CommentClient(NotionHttpClient):
         self,
         block_id: str,
         *,
-        start_cursor: Optional[str] = None,
+        start_cursor: str | None = None,
         page_size: int = 100,
     ) -> CommentListResponse:
         """

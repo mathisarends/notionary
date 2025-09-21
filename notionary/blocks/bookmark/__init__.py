@@ -5,8 +5,8 @@ from notionary.blocks.bookmark.bookmark_markdown_node import (
 from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
 
 __all__ = [
-    "BookmarkElement",
     "BookmarkBlock",
-    "CreateBookmarkBlock",
+    "BookmarkElement",
     "BookmarkMarkdownNode",
+    "CreateBookmarkBlock",
 ]

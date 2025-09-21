@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.bulleted_list.bulleted_list_models import (
     BulletedListItemBlock,
     CreateBulletedListItemBlock,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class BulletedListElement(BaseBlockElement):
@@ -45,7 +44,7 @@ class BulletedListElement(BaseBlockElement):
         return CreateBulletedListItemBlock(bulleted_list_item=bulleted_list_content)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         """Convert Notion bulleted_list_item block to Markdown."""
         if block.type != BlockType.BULLETED_LIST_ITEM or not block.bulleted_list_item:
             return None
@@ -58,7 +57,7 @@ class BulletedListElement(BaseBlockElement):
         return f"- {text}"
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for bulleted list blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

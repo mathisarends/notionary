@@ -5,9 +5,9 @@ from notionary.blocks.equation.equation_element_markdown_node import (
 from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
 
 __all__ = [
-    "EquationElement",
-    "EquationBlock",
     "CreateEquationBlock",
-    "EquationMarkdownNode",
+    "EquationBlock",
+    "EquationElement",
     "EquationMarkdownBlockParams",
+    "EquationMarkdownNode",
 ]

@@ -5,11 +5,11 @@ Handles text length validation and truncation for blocks that exceed
 Notion's rich_text character limit of 2000 characters per element.
 """
 
-from typing import TypeGuard, Union
+from typing import TypeGuard
 
 from notionary.blocks.models import BlockCreateRequest
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.blocks.types import HasRichText, HasChildren
+from notionary.blocks.types import HasChildren, HasRichText
 from notionary.util import LoggingMixin
 
 
@@ -22,6 +22,7 @@ class NotionTextLengthProcessor(LoggingMixin):
     """
 
     DEFAULT_MAX_LENGTH = 1900  # Leave some buffer under the 2000 limit
+    NOTION_MAX_LENGTH = 2000
 
     def __init__(self, max_text_length: int = DEFAULT_MAX_LENGTH) -> None:
         """
@@ -32,7 +33,7 @@ class NotionTextLengthProcessor(LoggingMixin):
         """
         if max_text_length <= 0:
             raise ValueError("max_text_length must be positive")
-        if max_text_length > 2000:
+        if max_text_length > self.NOTION_MAX_LENGTH:
             self.logger.warning(
                 "max_text_length (%d) exceeds Notion's limit of 2000 characters",
                 max_text_length,
@@ -114,7 +115,7 @@ class NotionTextLengthProcessor(LoggingMixin):
                 rich_text_obj.text.content = content[: self.max_text_length]
 
     def _flatten_block_list(
-        self, blocks: list[Union[BlockCreateRequest, list]]
+        self, blocks: list[BlockCreateRequest | list]
     ) -> list[BlockCreateRequest]:
         """
         Flatten a potentially nested list of blocks.
@@ -133,11 +134,11 @@ class NotionTextLengthProcessor(LoggingMixin):
 
     def _is_rich_text_container(self, obj: object) -> TypeGuard[HasRichText]:
         """Type guard to check if an object has rich_text attribute."""
-        return hasattr(obj, "rich_text") and isinstance(getattr(obj, "rich_text"), list)
+        return hasattr(obj, "rich_text") and isinstance(obj.rich_text, list)
 
     def _is_children_container(self, obj: object) -> TypeGuard[HasChildren]:
         """Type guard to check if an object has children attribute."""
-        return hasattr(obj, "children") and isinstance(getattr(obj, "children"), list)
+        return hasattr(obj, "children") and isinstance(obj.children, list)
 
     def _is_text_rich_text_object(
         self, rich_text_obj: RichTextObject

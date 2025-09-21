@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from notionary.page.writer.handler.line_processing_context import LineProcessingContext
 
@@ -10,7 +9,7 @@ class LineHandler(ABC):
     """Abstract base class for line handlers."""
 
     def __init__(self):
-        self._next_handler: Optional[LineHandler] = None
+        self._next_handler: LineHandler | None = None
 
     def set_next(self, handler: LineHandler) -> LineHandler:
         """Set the next handler in the chain."""

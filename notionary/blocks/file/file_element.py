@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.file.file_element_models import (
@@ -14,8 +13,8 @@ from notionary.blocks.file.file_element_models import (
 )
 from notionary.blocks.mixins.captions import CaptionMixin
 from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
@@ -39,7 +38,7 @@ class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return bool(block.type == BlockType.FILE and block.file)
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> Optional[BlockCreateResult]:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult | None:
         """Convert markdown file link to Notion FileBlock."""
         file_path = cls._extract_file_path(text.strip())
         if not file_path:
@@ -81,7 +80,7 @@ class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return CreateFileBlock(file=file_block)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         if block.type != BlockType.FILE or not block.file:
             return None
 
@@ -105,7 +104,7 @@ class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return result
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for file blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,
@@ -122,7 +121,7 @@ class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         )
 
     @classmethod
-    def _extract_file_path(cls, text: str) -> Optional[str]:
+    def _extract_file_path(cls, text: str) -> str | None:
         """Extract file path/URL from text, handling caption patterns."""
         clean_text = cls.remove_caption(text)
 

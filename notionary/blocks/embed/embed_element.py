@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.embed.embed_models import CreateEmbedBlock, EmbedBlock
@@ -10,10 +9,10 @@ from notionary.blocks.file.file_element_models import (
     FileUploadFile,
     NotionHostedFile,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class EmbedElement(BaseBlockElement):
@@ -54,7 +53,7 @@ class EmbedElement(BaseBlockElement):
         return CreateEmbedBlock(embed=embed_block)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         if block.type != BlockType.EMBED or not block.embed:
             return None
 
@@ -84,7 +83,7 @@ class EmbedElement(BaseBlockElement):
         return f'[embed]({url} "{text}")'
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for embed blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

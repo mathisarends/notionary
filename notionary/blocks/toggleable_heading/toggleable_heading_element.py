@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.heading.heading_models import (
@@ -10,9 +9,9 @@ from notionary.blocks.heading.heading_models import (
     CreateHeading3Block,
     HeadingBlock,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class ToggleableHeadingElement(BaseBlockElement):
@@ -71,7 +70,7 @@ class ToggleableHeadingElement(BaseBlockElement):
             return CreateHeading3Block(heading_3=heading_content)
 
     @staticmethod
-    async def notion_to_markdown(block: Block) -> Optional[str]:
+    async def notion_to_markdown(block: Block) -> str | None:
         """Convert Notion toggleable heading block to markdown collapsible heading."""
         # Only handle heading blocks via BlockType enum
         if block.type not in (
@@ -98,10 +97,10 @@ class ToggleableHeadingElement(BaseBlockElement):
         )
         prefix = "#" * level
 
-        return f'+++{prefix} {text or ""}'
+        return f"+++{prefix} {text or ''}"
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for toggleable heading blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

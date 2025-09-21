@@ -1,8 +1,7 @@
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-from notionary.blocks.models import Block
 from notionary.blocks.rich_text import RichTextObject
 from notionary.blocks.types import BlockColor
 

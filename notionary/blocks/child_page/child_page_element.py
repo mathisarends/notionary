@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.page.page_context import get_page_context
 
 
@@ -24,7 +23,7 @@ class ChildPageElement(BaseBlockElement):
         return block.type == BlockType.CHILD_PAGE and getattr(block, "child_page", None)
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> Optional[BlockCreateResult]:
+    async def markdown_to_notion(cls, text: str) -> BlockCreateResult | None:
         """
         Convert markdown page syntax to an actual Notion page.
         Returns None since child_page blocks are created implicitly via Pages API (not Blocks API).
@@ -64,7 +63,7 @@ class ChildPageElement(BaseBlockElement):
             return None
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         if block.type != BlockType.CHILD_PAGE or not getattr(block, "child_page", None):
             return None
 
@@ -76,7 +75,7 @@ class ChildPageElement(BaseBlockElement):
         return f"[page: {title.strip()}]"
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for child page blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

@@ -1,15 +1,17 @@
 from __future__ import annotations
+
 from typing import Any, Literal
 
 from pydantic import BaseModel
+
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.page.page_models import NotionPageDto
 from notionary.shared.models.cover_models import NotionCover
-from notionary.shared.models.icon_models import Icon
-from notionary.shared.models.parent_models import NotionParent
 from notionary.shared.models.database_property_models import (
     NotionObjectWithDatabaseProperties,
 )
+from notionary.shared.models.icon_models import Icon
+from notionary.shared.models.parent_models import NotionParent
 from notionary.shared.models.user_models import NotionUser
 
 

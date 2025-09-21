@@ -1,21 +1,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 
 @dataclass
 class SearchConfig:
     """Konfiguration für Notion Search API Filter."""
 
-    query: Optional[str] = None
-    object_type: Optional[Literal["page", "database"]] = None
+    query: str | None = None
+    object_type: Literal["page", "database"] | None = None
     sort_direction: Literal["ascending", "descending"] = "descending"
     sort_timestamp: Literal["last_edited_time", "created_time"] = "last_edited_time"
     page_size: int = 100
-    start_cursor: Optional[str] = None
+    start_cursor: str | None = None
 
-    def to_search_dict(self) -> Dict[str, Any]:
+    def to_search_dict(self) -> dict[str, Any]:
         """Konvertiert zu einem Notion Search API Dictionary."""
         search_dict = {}
 
@@ -96,7 +96,7 @@ class SearchFilterBuilder:
         self.config.page_size = min(size, 100)
         return self
 
-    def with_cursor(self, cursor: Optional[str]) -> SearchFilterBuilder:
+    def with_cursor(self, cursor: str | None) -> SearchFilterBuilder:
         """Set start cursor for pagination."""
         self.config.start_cursor = cursor
         return self
@@ -106,7 +106,7 @@ class SearchFilterBuilder:
         self.config.start_cursor = None
         return self
 
-    def build(self) -> Dict[str, Any]:
+    def build(self) -> dict[str, Any]:
         """Build the final search filter dictionary. Builder bleibt wiederverwendbar!"""
         return self.config.to_search_dict()
 

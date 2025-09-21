@@ -6,13 +6,15 @@ from notionary.database.database_factory import (
     load_database_from_id,
     load_database_from_name,
 )
-from notionary.util import LoggingMixin, SingletonMetaClass
+from notionary.util.logging_mixin import LoggingMixin
+from notionary.util.singleton import singleton
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
 
 
-class NotionDatabaseProvider(LoggingMixin, metaclass=SingletonMetaClass):
+@singleton
+class NotionDatabaseProvider(LoggingMixin):
     """
     Provider class for creating and caching Notion database instances.
 

@@ -5,7 +5,7 @@ from notionary.blocks.image_block.image_markdown_node import (
 from notionary.blocks.image_block.image_models import CreateImageBlock
 
 __all__ = [
-    "ImageElement",
     "CreateImageBlock",
+    "ImageElement",
     "ImageMarkdownNode",
 ]

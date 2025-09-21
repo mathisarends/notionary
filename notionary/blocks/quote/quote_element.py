@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockColor
 
 
@@ -48,7 +47,7 @@ class QuoteElement(BaseBlockElement):
         return CreateQuoteBlock(quote=quote_content)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         if block.type != BlockType.QUOTE or not block.quote:
             return None
 
@@ -61,7 +60,7 @@ class QuoteElement(BaseBlockElement):
         return f"> {text.strip()}"
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for quote blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

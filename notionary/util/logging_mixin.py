@@ -1,6 +1,7 @@
 import logging
 import os
-from typing import ClassVar, Optional
+from typing import ClassVar
+
 
 def setup_logging():
     """
@@ -38,7 +39,7 @@ class LoggingMixin:
         return self._logger
 
     @staticmethod
-    def _get_class_name_from_frame(frame) -> Optional[str]:
+    def _get_class_name_from_frame(frame) -> str | None:
         local_vars = frame.f_locals
         if "self" in local_vars:
             return local_vars["self"].__class__.__name__

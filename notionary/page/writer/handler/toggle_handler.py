@@ -56,10 +56,7 @@ class ToggleHandler(LineHandler):
         toggleable_heading_pattern = re.compile(
             r"^[+]{3}\s*#{1,3}\s+.+$", re.IGNORECASE
         )
-        if toggleable_heading_pattern.match(line):
-            return False
-
-        return True
+        return not toggleable_heading_pattern.match(line)
 
     def _is_toggle_end(self, context: LineProcessingContext) -> bool:
         """Check if we need to end a toggle (+++)."""

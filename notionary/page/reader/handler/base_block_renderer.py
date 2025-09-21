@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from notionary.page.reader.handler.block_rendering_context import BlockRenderingContext
 
@@ -10,7 +9,7 @@ class BlockHandler(ABC):
     """Abstract base class for block handlers."""
 
     def __init__(self):
-        self._next_handler: Optional[BlockHandler] = None
+        self._next_handler: BlockHandler | None = None
 
     def set_next(self, handler: BlockHandler) -> BlockHandler:
         """Set the next handler in the chain."""

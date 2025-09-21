@@ -6,6 +6,6 @@ from notionary.blocks.audio.audio_models import CreateAudioBlock
 
 __all__ = [
     "AudioElement",
-    "CreateAudioBlock",
     "AudioMarkdownNode",
+    "CreateAudioBlock",
 ]

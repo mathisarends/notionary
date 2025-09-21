@@ -10,8 +10,8 @@ from notionary.blocks.table_of_contents.table_of_contents_models import (
 )
 
 __all__ = [
-    "TableOfContentsElement",
-    "TableOfContentsBlock",
     "CreateTableOfContentsBlock",
+    "TableOfContentsBlock",
+    "TableOfContentsElement",
     "TableOfContentsMarkdownNode",
 ]

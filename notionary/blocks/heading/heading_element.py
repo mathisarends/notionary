@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Optional, cast
+from typing import cast
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.heading.heading_models import (
@@ -10,9 +10,9 @@ from notionary.blocks.heading.heading_models import (
     CreateHeading3Block,
     HeadingBlock,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.text_inline_formatter import TextInlineFormatter
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockColor
 
 
@@ -61,7 +61,7 @@ class HeadingElement(BaseBlockElement):
             return CreateHeading3Block(heading_3=heading_content)
 
     @classmethod
-    async def notion_to_markdown(cls, block: Block) -> Optional[str]:
+    async def notion_to_markdown(cls, block: Block) -> str | None:
         # Only handle heading blocks via BlockType enum
         if block.type not in (
             BlockType.HEADING_1,
@@ -96,7 +96,7 @@ class HeadingElement(BaseBlockElement):
         return f"{('#' * level)} {text}"
 
     @classmethod
-    def get_system_prompt_information(cls) -> Optional[BlockElementMarkdownInformation]:
+    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
         """Get system prompt information for heading blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,

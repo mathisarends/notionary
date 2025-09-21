@@ -8,8 +8,6 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.heading.heading_element import HeadingElement
-from notionary.blocks.types import BlockType
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.heading.heading_models import HeadingBlock
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.types import BlockType
@@ -42,7 +40,7 @@ def test_match_notion():
         (3, BlockType.HEADING_3, "heading_3"),
     ]
 
-    for level, block_type, attr_name in heading_types:
+    for _level, block_type, attr_name in heading_types:
         block = Mock()
         block.type = block_type  # BlockType enum statt String
         setattr(block, attr_name, Mock())  # Not None
@@ -100,7 +98,7 @@ async def test_notion_to_markdown():
     rich_text = RichTextObject.from_plain_text("Test Heading")
     heading_content.rich_text = [rich_text]
 
-    setattr(block, "heading_2", heading_content)
+    block.heading_2 = heading_content
 
     result = await HeadingElement.notion_to_markdown(block)
     assert result == "## Test Heading"

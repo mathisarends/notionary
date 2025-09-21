@@ -8,8 +8,8 @@ from notionary.blocks.paragraph.paragraph_models import (
 )
 
 __all__ = [
-    "ParagraphElement",
-    "ParagraphBlock",
     "CreateParagraphBlock",
+    "ParagraphBlock",
+    "ParagraphElement",
     "ParagraphMarkdownNode",
 ]

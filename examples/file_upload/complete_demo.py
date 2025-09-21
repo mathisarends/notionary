@@ -7,6 +7,7 @@ Shows how easy it is to upload different media types to Notion.
 """
 
 import asyncio
+
 from notionary import NotionPage
 
 PAGE_NAME = "Jarvis Clipboard"
