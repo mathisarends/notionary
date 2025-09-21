@@ -2,14 +2,14 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from notionary.blocks.rich_text.database_name_id_resolver import DatabaseNameIdResolver
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-from notionary.blocks.rich_text.page_name_id_resolver import PageNameIdResolver
+from notionary.blocks.rich_text.name_id_resolver.database_name_id_resolver import DatabaseNameIdResolver
+from notionary.blocks.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
+from notionary.blocks.rich_text.name_id_resolver.user_name_id_resolver import UserNameIdResolver
 from notionary.blocks.rich_text.rich_text_models import (
     MentionType,
     RichTextType,
 )
-from notionary.blocks.rich_text.user_name_id_resolver import UserNameIdResolver
 
 
 @pytest.fixture

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from notionary.blocks.rich_text.name_id_resolvcer.base_name_id_resolver import BaseNameIdResolver
+from notionary.blocks.rich_text.name_id_resolver.base_name_id_resolver import BaseNameIdResolver
 from notionary.util import format_uuid
 from notionary.util.fuzzy import find_best_match
 
