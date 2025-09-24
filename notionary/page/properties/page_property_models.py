@@ -13,36 +13,26 @@ from notionary.shared.models.user_models import NotionUser
 
 
 class SelectOption(BaseModel):
-    """Represents a select option."""
-
     id: str
     name: str
 
 
 class StatusOption(BaseModel):
-    """Represents a status option."""
-
     id: str
     name: str
 
 
 class RelationItem(BaseModel):
-    """Represents a relation item."""
-
     id: str
 
 
 class DateValue(BaseModel):
-    """Represents a date value."""
-
     start: str
     end: str | None = None
     time_zone: str | None = None
 
 
 class PageStatusProperty(BaseModel):
-    """Status property for Page responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -56,8 +46,6 @@ class PageStatusProperty(BaseModel):
 
 
 class PageRelationProperty(BaseModel):
-    """Relation property for Page responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -67,8 +55,6 @@ class PageRelationProperty(BaseModel):
 
 
 class PageURLProperty(BaseModel):
-    """URL property."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -77,8 +63,6 @@ class PageURLProperty(BaseModel):
 
 
 class PageRichTextProperty(BaseModel):
-    """Rich text property."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -87,8 +71,6 @@ class PageRichTextProperty(BaseModel):
 
 
 class PageMultiSelectProperty(BaseModel):
-    """Multi-select property for Page responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -98,13 +80,10 @@ class PageMultiSelectProperty(BaseModel):
 
     @property
     def option_names(self) -> list[str]:
-        """Get available multi-select option names from schema."""
         return [option.name for option in self.options]
 
 
 class PageSelectProperty(BaseModel):
-    """Select property for Page responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -118,8 +97,6 @@ class PageSelectProperty(BaseModel):
 
 
 class PagePeopleProperty(BaseModel):
-    """People property for Page responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -128,8 +105,6 @@ class PagePeopleProperty(BaseModel):
 
 
 class PageDateProperty(BaseModel):
-    """Date property."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -138,8 +113,6 @@ class PageDateProperty(BaseModel):
 
 
 class PageTitleProperty(BaseModel):
-    """Title property."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -148,8 +121,6 @@ class PageTitleProperty(BaseModel):
 
 
 class PageNumberProperty(BaseModel):
-    """Number property."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -158,8 +129,6 @@ class PageNumberProperty(BaseModel):
 
 
 class PageCheckboxProperty(BaseModel):
-    """Checkbox property."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -168,8 +137,6 @@ class PageCheckboxProperty(BaseModel):
 
 
 class PageEmailProperty(BaseModel):
-    """Email property."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -178,8 +145,6 @@ class PageEmailProperty(BaseModel):
 
 
 class PagePhoneNumberProperty(BaseModel):
-    """Phone number property."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -188,8 +153,6 @@ class PagePhoneNumberProperty(BaseModel):
 
 
 class PageCreatedTimeProperty(BaseModel):
-    """Created time property."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -219,13 +182,7 @@ PageProperty = (
 PagePropertyT = TypeVar("PagePropertyT", bound=PageProperty)
 
 
-# ===== BASE CLASSES =====
 class NotionObjectWithProperties(BaseModel, ABC):
-    """
-    Abstract base class for Notion objects that contain properties.
-    Provides automatic property parsing for Page DTOs (uses PageProperty models).
-    """
-
     properties: dict[str, PageProperty] = Field(default_factory=dict)
 
     @field_validator("properties", mode="before")

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC
+from dataclasses import dataclass
 from typing import Any, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -11,8 +12,6 @@ from notionary.shared.models.shared_property_models import PropertyType
 
 
 class DatabasePropertyOption(BaseModel):
-    """Option for select/multi-select/status properties in database schema."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -22,8 +21,6 @@ class DatabasePropertyOption(BaseModel):
 
 
 class DatabaseStatusGroup(BaseModel):
-    """Status group for status properties in database schema."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -32,34 +29,51 @@ class DatabaseStatusGroup(BaseModel):
     option_ids: list[str]
 
 
-class DatabaseStatusConfig(BaseModel):
-    """Status configuration for status properties in database schema."""
+# This class has no mapping to the api but is a convenient wrapper to display options of status props
+@dataclass
+class EnrichedDatabaseStatusOption(BaseModel):
+    model_config = ConfigDict(extra="ignore")
 
+    id: str
+    name: str
+    color: str
+    description: str | None = None
+    group_name: str | None = None
+
+
+class DatabaseStatusConfig(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     options: list[DatabasePropertyOption] = Field(default_factory=list)
     groups: list[DatabaseStatusGroup] = Field(default_factory=list)
 
+    @property
+    def detailed_options(self) -> list[EnrichedDatabaseStatusOption]:
+        option_to_group = {option_id: group.name for group in self.groups for option_id in group.option_ids}
+
+        return [
+            EnrichedDatabaseStatusOption(
+                id=option.id,
+                name=option.name,
+                color=option.color,
+                description=option.description,
+                group_name=option_to_group.get(option.id),
+            )
+            for option in self.options
+        ]
+
 
 class DatabaseSelectConfig(BaseModel):
-    """Select configuration for select properties in database schema."""
-
     model_config = ConfigDict(extra="ignore")
-
     options: list[DatabasePropertyOption] = Field(default_factory=list)
 
 
 class DatabaseMultiSelectConfig(BaseModel):
-    """Multi-select configuration for multi-select properties in database schema."""
-
     model_config = ConfigDict(extra="ignore")
-
     options: list[DatabasePropertyOption] = Field(default_factory=list)
 
 
 class DatabaseRelationConfig(BaseModel):
-    """Relation configuration for relation properties in database schema."""
-
     model_config = ConfigDict(extra="ignore")
 
     database_id: str | None = None
@@ -69,80 +83,58 @@ class DatabaseRelationConfig(BaseModel):
 
 
 class DatabaseDateConfig(BaseModel):
-    """Date configuration for date properties in database schema."""
-
     model_config = ConfigDict(extra="ignore")
 
     # Date properties in schema are usually empty objects
 
 
 class DatabaseTitleConfig(BaseModel):
-    """Title configuration for title properties in database schema."""
-
     model_config = ConfigDict(extra="ignore")
 
     # Title properties in schema are usually empty objects
 
 
 class DatabaseRichTextConfig(BaseModel):
-    """Rich text configuration for rich text properties in database schema."""
-
     model_config = ConfigDict(extra="ignore")
 
     # Rich text properties in schema are usually empty objects
 
 
 class DatabaseURLConfig(BaseModel):
-    """URL configuration for URL properties in database schema."""
-
     model_config = ConfigDict(extra="ignore")
 
     # URL properties in schema are usually empty objects
 
 
 class DatabasePeopleConfig(BaseModel):
-    """People configuration for people properties in database schema."""
-
     model_config = ConfigDict(extra="ignore")
 
     # People properties in schema are usually empty objects
 
 
 class DatabaseNumberConfig(BaseModel):
-    """Number configuration for number properties in database schema."""
-
-    model_config = ConfigDict(extra="ignore")
-
     format: str | None = None  # e.g., "number", "number_with_commas", "percent", etc.
 
 
 class DatabaseCheckboxConfig(BaseModel):
-    """Checkbox configuration for checkbox properties in database schema."""
-
     model_config = ConfigDict(extra="ignore")
 
     # Checkbox properties in schema are usually empty objects
 
 
 class DatabaseEmailConfig(BaseModel):
-    """Email configuration for email properties in database schema."""
-
     model_config = ConfigDict(extra="ignore")
 
     # Email properties in schema are usually empty objects
 
 
 class DatabasePhoneNumberConfig(BaseModel):
-    """Phone number configuration for phone number properties in database schema."""
-
     model_config = ConfigDict(extra="ignore")
 
     # Phone number properties in schema are usually empty objects
 
 
 class DatabaseCreatedTimeConfig(BaseModel):
-    """Created time configuration for created time properties in database schema."""
-
     model_config = ConfigDict(extra="ignore")
 
     # Created time properties in schema are usually empty objects
@@ -152,8 +144,6 @@ class DatabaseCreatedTimeConfig(BaseModel):
 
 
 class DatabaseStatusProperty(BaseModel):
-    """Status property for Database Schema responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -164,18 +154,14 @@ class DatabaseStatusProperty(BaseModel):
 
     @property
     def option_names(self) -> list[str]:
-        """Get available status option names from database schema."""
         return [option.name for option in self.status.options]
 
     @property
     def group_names(self) -> list[str]:
-        """Get available status group names from database schema."""
         return [group.name for group in self.status.groups]
 
 
 class DatabaseMultiSelectProperty(BaseModel):
-    """Multi-select property for Database Schema responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -186,13 +172,10 @@ class DatabaseMultiSelectProperty(BaseModel):
 
     @property
     def option_names(self) -> list[str]:
-        """Get available multi-select option names from database schema."""
         return [option.name for option in self.multi_select.options]
 
 
 class DatabaseSelectProperty(BaseModel):
-    """Select property for Database Schema responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -203,13 +186,10 @@ class DatabaseSelectProperty(BaseModel):
 
     @property
     def option_names(self) -> list[str]:
-        """Get available select option names from database schema."""
         return [option.name for option in self.select.options]
 
 
 class DatabaseRelationProperty(BaseModel):
-    """Relation property for Database Schema responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -225,8 +205,6 @@ class DatabaseRelationProperty(BaseModel):
 
 
 class DatabaseDateProperty(BaseModel):
-    """Date property for Database Schema responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -237,8 +215,6 @@ class DatabaseDateProperty(BaseModel):
 
 
 class DatabaseTitleProperty(BaseModel):
-    """Title property for Database Schema responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -249,8 +225,6 @@ class DatabaseTitleProperty(BaseModel):
 
 
 class DatabaseRichTextProperty(BaseModel):
-    """Rich text property for Database Schema responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -261,8 +235,6 @@ class DatabaseRichTextProperty(BaseModel):
 
 
 class DatabaseURLProperty(BaseModel):
-    """URL property for Database Schema responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -273,8 +245,6 @@ class DatabaseURLProperty(BaseModel):
 
 
 class DatabasePeopleProperty(BaseModel):
-    """People property for Database Schema responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -285,8 +255,6 @@ class DatabasePeopleProperty(BaseModel):
 
 
 class DatabaseNumberProperty(BaseModel):
-    """Number property for Database Schema responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -297,13 +265,10 @@ class DatabaseNumberProperty(BaseModel):
 
     @property
     def number_format(self) -> str | None:
-        """Get the number format if specified."""
         return self.number.format
 
 
 class DatabaseCheckboxProperty(BaseModel):
-    """Checkbox property for Database Schema responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -314,8 +279,6 @@ class DatabaseCheckboxProperty(BaseModel):
 
 
 class DatabaseEmailProperty(BaseModel):
-    """Email property for Database Schema responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -326,8 +289,6 @@ class DatabaseEmailProperty(BaseModel):
 
 
 class DatabasePhoneNumberProperty(BaseModel):
-    """Phone number property for Database Schema responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -338,8 +299,6 @@ class DatabasePhoneNumberProperty(BaseModel):
 
 
 class DatabaseCreatedTimeProperty(BaseModel):
-    """Created time property for Database Schema responses."""
-
     model_config = ConfigDict(extra="ignore")
 
     id: str
@@ -371,26 +330,16 @@ DatabaseNotionProperty = (
 DatabasePropertyT = TypeVar("DatabasePropertyT", bound=DatabaseNotionProperty)
 
 
-# ===== BASE CLASS =====
 class NotionObjectWithDatabaseProperties(BaseModel, ABC):
-    """
-    Abstract base class for Notion objects that contain database schema properties.
-    Provides automatic property parsing for Database DTOs (uses DatabaseNotionProperty models).
-    """
-
     properties: dict[str, DatabaseNotionProperty] = Field(default_factory=dict)
 
     @field_validator("properties", mode="before")
     @classmethod
-    def parse_database_properties(cls, v: dict[str, Any]) -> dict[str, DatabaseNotionProperty]:
-        """
-        Parse database schema properties dictionary and create typed DatabaseNotionProperty objects.
-        Falls back to dict[str, Any] for unknown property types.
-        """
-        if not v:
+    def parse_database_properties(cls, value: dict[str, Any]) -> dict[str, DatabaseNotionProperty]:
+        if not value:
             return {}
 
-        return {key: cls._create_database_property(prop_data) for key, prop_data in v.items()}
+        return {key: cls._create_database_property(prop_data) for key, prop_data in value.items()}
 
     @classmethod
     def _create_database_property(cls, prop_data: Any) -> DatabaseNotionProperty:

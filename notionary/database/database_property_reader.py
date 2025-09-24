@@ -7,18 +7,17 @@ from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.page_property_models import PageTitleProperty
 from notionary.shared.models.database_property_models import (
     DatabaseMultiSelectProperty,
+    DatabasePropertyOption,
     DatabasePropertyT,
     DatabaseRelationProperty,
     DatabaseSelectProperty,
     DatabaseStatusProperty,
+    EnrichedDatabaseStatusOption,
 )
 from notionary.shared.models.shared_property_models import PropertyType
 
 if TYPE_CHECKING:
     from notionary.database.database import NotionDatabase
-
-# TODO: Wenn man sich hier die DatabaseProperties angucket könnte man sich überlegen ob man hier nicht auch sogar die detailed views hier abfragen wollte?
-# Also mit Farbe und gruppen etc.
 
 
 class DatabasePropertyReader:
@@ -54,40 +53,45 @@ class DatabasePropertyReader:
         return []
 
     def get_select_options_by_property_name(self, property_name: str) -> list[str]:
-        select_prop = self._get_select_property(property_name)
+        select_prop = self._get_typed_database_property(property_name, DatabaseSelectProperty)
         if select_prop:
             return select_prop.option_names
+
+    def get_detailed_select_options_by_property_name(self, property_name: str) -> list[DatabaseSelectProperty]:
+        select_prop = self._get_typed_database_property(property_name, DatabaseSelectProperty)
+        if select_prop:
+            return select_prop.select.options
         return []
 
-    def _get_select_property(self, property_name: str) -> DatabaseSelectProperty | None:
-        return self._get_database_property(property_name, DatabaseSelectProperty)
-
-    def get_multi_select_options_by_property_name(self, property_name: str) -> list[str]:
-        multi_select_prop = self._get_multi_select_property(property_name)
+    def get_multi_select_options_by_property_name(self, property_name: str) -> list[DatabasePropertyOption]:
+        multi_select_prop = self._get_typed_database_property(property_name, DatabaseMultiSelectProperty)
         if multi_select_prop:
             return multi_select_prop.option_names
         return []
 
-    def _get_multi_select_property(self, property_name: str) -> DatabaseMultiSelectProperty | None:
-        return self._get_database_property(property_name, DatabaseMultiSelectProperty)
+    def get_detailed_multi_select_options_by_property_name(self, property_name: str) -> list[DatabaseSelectProperty]:
+        multi_select_prop = self._get_typed_database_property(property_name, DatabaseMultiSelectProperty)
+        if multi_select_prop:
+            return multi_select_prop.multi_select.options
+        return []
 
     def get_status_options_by_property_name(self, property_name: str) -> list[str]:
-        status_prop = self._get_status_property(property_name)
+        status_prop = self._get_typed_database_property(property_name, DatabaseStatusProperty)
         if status_prop:
             return status_prop.option_names
         return []
 
-    def _get_status_property(self, property_name: str) -> DatabaseStatusProperty | None:
-        return self._get_database_property(property_name, DatabaseStatusProperty)
+    def get_detailed_status_options_by_property_name(self, property_name: str) -> list[EnrichedDatabaseStatusOption]:
+        status_prop = self._get_typed_database_property(property_name, DatabaseStatusProperty)
+        if status_prop:
+            return status_prop.status.detailed_options
+        return []
 
     async def get_relation_options_by_property_name(self, property_name: str) -> list[str]:
-        relation_prop = self._get_relation_property(property_name)
+        relation_prop = self._get_typed_database_property(property_name, DatabaseRelationProperty)
         if relation_prop:
             return await self._get_relation_options(relation_prop)
         return []
-
-    def _get_relation_property(self, property_name: str) -> DatabaseRelationProperty | None:
-        return self._get_database_property(property_name, DatabaseRelationProperty)
 
     async def _get_relation_options(self, relation_prop: DatabaseRelationProperty) -> list[str]:
         related_db_id = relation_prop.related_database_id
@@ -119,7 +123,9 @@ class DatabasePropertyReader:
 
         return "".join(item.plain_text for item in title_property.title)
 
-    def _get_database_property(self, name: str, property_type: type[DatabasePropertyT]) -> DatabasePropertyT | None:
+    def _get_typed_database_property(
+        self, name: str, property_type: type[DatabasePropertyT]
+    ) -> DatabasePropertyT | None:
         prop = self._database.properties.get(name)
         if isinstance(prop, property_type):
             return prop

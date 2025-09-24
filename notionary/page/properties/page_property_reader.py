@@ -23,6 +23,10 @@ from notionary.page.properties.page_property_models import (
     PageURLProperty,
     PropertyType,
 )
+from notionary.shared.models.database_property_models import (
+    DatabaseSelectProperty,
+    EnrichedDatabaseStatusOption,
+)
 
 if TYPE_CHECKING:
     from notionary import NotionPage
@@ -172,7 +176,6 @@ class PagePropertyReader:
         return None
 
     # --- PROPERTY OPTIONS (for select, multi-select, status, relation) ---
-    # Decorator (sollte hier None zurückgegeben werden? Was wäre hier am idiomatiscsten?)
     async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
         if not self._property_exist_in_parent_database(property_name):
             return []
@@ -185,17 +188,35 @@ class PagePropertyReader:
 
         return self._parent_database.property_reader.get_select_options_by_property_name(property_name)
 
+    def get_detailed_select_options_by_property_name(self, property_name: str) -> list[DatabaseSelectProperty]:
+        if not self._property_exist_in_parent_database(property_name):
+            return []
+
+        return self._parent_database.property_reader.get_detailed_select_options_by_property_name(property_name)
+
     def get_multi_select_options_by_property_name(self, property_name: str) -> list[str]:
         if not self._property_exist_in_parent_database(property_name):
             return []
 
         return self._parent_database.property_reader.get_multi_select_options_by_property_name(property_name)
 
+    def get_detailed_multi_select_options_by_property_name(self, property_name: str) -> list[DatabaseSelectProperty]:
+        if not self._property_exist_in_parent_database(property_name):
+            return []
+
+        return self._parent_database.property_reader.get_detailed_multi_select_options_by_property_name(property_name)
+
     def get_status_options_by_property_name(self, property_name: str) -> list[str]:
         if not self._property_exist_in_parent_database(property_name):
             return []
 
         return self._parent_database.property_reader.get_status_options_by_property_name(property_name)
+
+    def get_detailed_status_options_by_property_name(self, property_name: str) -> list[EnrichedDatabaseStatusOption]:
+        if not self._property_exist_in_parent_database(property_name):
+            return []
+
+        return self._parent_database.property_reader.get_detailed_status_options_by_property_name(property_name)
 
     async def get_relation_options_by_property_name(self, property_name: str) -> list[str]:
         if not self._property_exist_in_parent_database(property_name):

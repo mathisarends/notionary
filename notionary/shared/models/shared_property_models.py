@@ -4,8 +4,6 @@ from enum import StrEnum
 
 
 class PropertyType(StrEnum):
-    """Canonical Notion property types used across schema + page models."""
-
     SELECT = "select"
     MULTI_SELECT = "multi_select"
     STATUS = "status"
