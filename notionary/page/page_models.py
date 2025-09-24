@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-from typing import Literal
-
 from notionary.page.properties.page_property_models import (
     NotionObjectWithProperties,
     PageProperty,
 )
-from notionary.shared.entities.entity_models import NotionEntityDto
+from notionary.shared.entities.entity_models import NotionEntityResponseDto
 
 
-class NotionPageDto(NotionEntityDto, NotionObjectWithProperties):
-    object: Literal["page"]
+class NotionPageDto(NotionEntityResponseDto, NotionObjectWithProperties): ...
 
 
 class NotionPageUpdateDto(NotionObjectWithProperties):

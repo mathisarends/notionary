@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.page.page_models import NotionPageDto
-from notionary.shared.entities.entity_models import NotionEntityDto
+from notionary.shared.entities.entity_models import NotionEntityResponseDto
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.database_property_models import (
     NotionObjectWithDatabaseProperties,
@@ -14,8 +14,7 @@ from notionary.shared.models.database_property_models import (
 from notionary.shared.models.icon_models import Icon
 
 
-class NotionDatabaseDto(NotionEntityDto, NotionObjectWithDatabaseProperties):
-    object: Literal["database"]
+class NotionDatabaseDto(NotionEntityResponseDto, NotionObjectWithDatabaseProperties):
     title: list[RichTextObject]
     description: list[RichTextObject]
     is_inline: bool

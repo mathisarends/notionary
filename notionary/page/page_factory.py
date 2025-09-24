@@ -2,153 +2,80 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from notionary.page.page_http_client import NotionPageHttpClient
-from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.page_property_models import PageTitleProperty
-from notionary.shared.models.cover_models import CoverType
-from notionary.shared.models.icon_models import IconType
-from notionary.shared.models.parent_models import ParentType
-from notionary.util import extract_uuid, format_uuid
+from notionary.shared.entities.entity_factory import NotionEntityFactory
+from notionary.shared.entities.entity_models import NotionEntityResponseDto
 from notionary.util.fuzzy import find_best_match
+from notionary.util.page_id_utils import format_uuid
 
 if TYPE_CHECKING:
     from notionary import NotionPage
 
 
-# TODO: Norm these factories here aswell so that there is less code duplication
+class NotionPageFactory(NotionEntityFactory):
+    async def load_from_id(self, page_id: str) -> NotionPage:
+        formatted_id = format_uuid(page_id) or page_id
+        response = await self._fetch_page_response(formatted_id)
+        return await self._create_page_from_response(response)
+
+    async def load_from_title(self, page_title: str, min_similarity: float = 0.6) -> NotionPage:
+        from notionary.workspace import NotionWorkspace
+
+        workspace = NotionWorkspace()
+        search_results = await workspace.search_pages(page_title, limit=10)
+
+        if not search_results:
+            raise ValueError(f"No pages found for name: {page_title}")
+
+        best_match = find_best_match(
+            query=page_title,
+            items=search_results,
+            text_extractor=lambda page: page.title,
+            min_similarity=min_similarity,
+        )
+
+        if not best_match:
+            available_titles = [result.title for result in search_results[:5]]
+            raise ValueError(f"No sufficiently similar page found for '{page_title}'. Available: {available_titles}")
+
+        return await self.load_from_id(best_match.item.id)
+
+    async def _extract_title(self, response: NotionEntityResponseDto) -> str:
+        title_property = self._lookup_title_property_in_page_response(response)
+        rich_text_title = title_property.title if title_property else []
+        return await self._extract_title_from_rich_text_objects(rich_text_title)
+
+    async def _fetch_page_response(self, page_id: str) -> NotionEntityResponseDto:
+        from notionary.page.page_http_client import NotionPageHttpClient
+
+        async with NotionPageHttpClient(page_id=page_id) as client:
+            return await client.get_page()
+
+    async def _create_page_from_response(self, response: NotionEntityResponseDto) -> NotionPage:
+        from notionary import NotionDatabase, NotionPage
+
+        entity_kwargs = await self._create_common_entity_kwargs(response)
+
+        parent_database = None
+        parent_db_id = self._extract_parent_database_id(response)
+        if parent_db_id:
+            parent_database = await NotionDatabase.from_id(parent_db_id)
+
+        entity_kwargs["parent_database"] = parent_database
+        return NotionPage(**entity_kwargs)
+
+    def _lookup_title_property_in_page_response(self, response: NotionEntityResponseDto) -> PageTitleProperty | None:
+        return next(
+            (prop for prop in response.properties.values() if isinstance(prop, PageTitleProperty)),
+            None,
+        )
+
+
 async def load_page_from_id(page_id: str) -> NotionPage:
-    formatted_id = format_uuid(page_id) or page_id
-
-    async with NotionPageHttpClient(page_id=formatted_id) as client:
-        page_response = await client.get_page()
-        return await _load_page_from_response(page_response)
+    factory = NotionPageFactory()
+    return await factory.load_from_id(page_id)
 
 
-async def load_page_from_name(page_name: str, min_similarity: float = 0.6) -> NotionPage:
-    from notionary.workspace import NotionWorkspace
-
-    workspace = NotionWorkspace()
-    search_results: list[NotionPage] = await workspace.search_pages(page_name, limit=10)
-
-    if not search_results:
-        raise ValueError(f"No pages found for name: {page_name}")
-
-    best_match = find_best_match(
-        query=page_name,
-        items=search_results,
-        text_extractor=lambda page: page.title,
-        min_similarity=min_similarity,
-    )
-
-    if not best_match:
-        available_titles = [result.title for result in search_results[:5]]
-        raise ValueError(f"No sufficiently similar page found for '{page_name}'. Available: {available_titles}")
-
-    async with NotionPageHttpClient(page_id=best_match.item.id) as client:
-        page_response = await client.get_page()
-        return await _load_page_from_response(page_response=page_response)
-
-
-async def load_page_from_url(url: str) -> NotionPage:
-    """Load a NotionPage from a Notion page URL."""
-    page_id = extract_uuid(url)
-    if not page_id:
-        raise ValueError(f"Could not extract page ID from URL: {url}")
-
-    formatted_id = format_uuid(page_id) or page_id
-
-    async with NotionPageHttpClient(page_id=formatted_id) as client:
-        page_response = await client.get_page()
-        return await _load_page_from_response(page_response)
-
-
-async def _load_page_from_response(
-    page_response: NotionPageDto,
-) -> NotionPage:
-    """Create NotionPage instance from API response."""
-    from notionary import NotionDatabase, NotionPage
-
-    title = _extract_title(page_response)
-    emoji_icon = _extract_page_emoji_icon(page_response)
-    external_icon_url = _extract_external_icon_url(page_response)
-    cover_image_url = _extract_cover_image_url(page_response)
-    parent_database_id = _extract_parent_database_id(page_response)
-
-    parent_database = await NotionDatabase.from_id(id=parent_database_id) if parent_database_id else None
-
-    return NotionPage(
-        id=page_response.id,
-        title=title,
-        url=page_response.url,
-        emoji_icon=emoji_icon,
-        external_icon_url=external_icon_url,
-        cover_image_url=cover_image_url,
-        archived=page_response.archived,
-        in_trash=page_response.in_trash,
-        properties=page_response.properties,  # Jetzt bereits typisiert!
-        parent_database=parent_database,
-    )
-
-
-def _extract_title(page_response: NotionPageDto) -> str:
-    """Extract title from page response using typed properties."""
-    if not page_response.properties:
-        return ""
-
-    # find the first title property no matter its name
-    title_property = next(
-        (prop for prop in page_response.properties.values() if isinstance(prop, PageTitleProperty)),
-        None,
-    )
-
-    if not title_property:
-        return ""
-
-    # Verwende die typisierte TitleProperty
-    return "".join(item.plain_text for item in title_property.title)
-
-
-def _extract_page_emoji_icon(page_response: NotionPageDto) -> str | None:
-    """Extract emoji icon from page response."""
-    if not page_response.icon:
-        return None
-
-    if page_response.icon.type == IconType.EMOJI:
-        return page_response.icon.emoji
-
-    return None
-
-
-def _extract_external_icon_url(page_response: NotionPageDto) -> str | None:
-    """Extract external icon URL from page response."""
-    if not page_response.icon:
-        return None
-
-    if page_response.icon.type == IconType.EXTERNAL:
-        return page_response.icon.external.url if page_response.icon.external else None
-
-    return None
-
-
-def _extract_parent_database_id(page_response: NotionPageDto) -> str | None:
-    """Extract parent database ID from page response."""
-    parent = page_response.parent
-
-    if not parent:
-        return None
-
-    if parent.type == ParentType.DATABASE_ID:
-        return parent.database_id
-
-    return None
-
-
-def _extract_cover_image_url(page_response: NotionPageDto) -> str | None:
-    """Extract cover image URL from page response."""
-    if not page_response.cover:
-        return None
-
-    if page_response.cover.type == CoverType.EXTERNAL:
-        return page_response.cover.external.url if page_response.cover.external else None
-
-    return None
+async def load_page_from_title(page_title: str, min_similarity: float = 0.6) -> NotionPage:
+    factory = NotionPageFactory()
+    return await factory.load_from_title(page_title, min_similarity)

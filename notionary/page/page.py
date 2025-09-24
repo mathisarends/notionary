@@ -15,7 +15,7 @@ from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.page_context import PageContextProvider, page_context
 from notionary.page.page_factory import (
     load_page_from_id,
-    load_page_from_name,
+    load_page_from_title,
 )
 from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.properties.page_property_models import (
@@ -92,7 +92,7 @@ class NotionPage(NotionEntity):
 
     @classmethod
     async def from_title(cls, title: str, min_similarity: float = 0.6) -> NotionPage:
-        return await load_page_from_name(title, min_similarity)
+        return await load_page_from_title(title, min_similarity)
 
     @property
     def id(self) -> str:
@@ -195,7 +195,7 @@ class NotionPage(NotionEntity):
                 parent_page_id=self._page_id,
             )
 
-        return await NotionDatabase.from_id(id=create_database_response.id)
+        return await NotionDatabase.from_id(create_database_response.id)
 
     @override
     async def set_cover_image_by_url(self, url: str) -> None:

@@ -4,7 +4,7 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any
 
-from notionary.page.page_factory import load_page_from_name
+from notionary.page.page_factory import load_page_from_title
 from notionary.page.properties.page_property_models import PropertyType
 
 if TYPE_CHECKING:
@@ -183,7 +183,7 @@ class PagePropertyWriter:
 
         pages = await asyncio.gather(
             *[
-                load_page_from_name(
+                load_page_from_title(
                     page_name=title,
                 )
                 for title in relation_values
