@@ -57,29 +57,16 @@ class NotionDatabase(NotionEntity):
         self.client = NotionDatabseHttpClient(database_id=id)
 
     @classmethod
-    @override
     async def from_id(cls, id: str) -> NotionDatabase:
         return await load_database_from_id(id)
 
     @classmethod
-    @override
     async def from_title(
         cls,
         title: str,
         min_similarity: float = 0.6,
     ) -> NotionDatabase:
         return await load_database_from_name(title, min_similarity)
-
-    @classmethod
-    @override
-    async def from_url(cls, url: str) -> NotionDatabase:
-        # Extract database ID from URL and use from_id
-        from notionary.util import extract_uuid
-
-        database_id = extract_uuid(url)
-        if not database_id:
-            raise ValueError(f"Could not extract database ID from URL: {url}")
-        return await cls.from_id(database_id)
 
     @property
     def emoji(self) -> str | None:

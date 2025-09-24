@@ -16,7 +16,6 @@ from notionary.page.page_context import PageContextProvider, page_context
 from notionary.page.page_factory import (
     load_page_from_id,
     load_page_from_name,
-    load_page_from_url,
 )
 from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.properties.page_property_models import (
@@ -94,10 +93,6 @@ class NotionPage(NotionEntity):
     @classmethod
     async def from_title(cls, title: str, min_similarity: float = 0.6) -> NotionPage:
         return await load_page_from_name(title, min_similarity)
-
-    @classmethod
-    async def from_url(cls, url: str) -> NotionPage:
-        return await load_page_from_url(url)
 
     @property
     def id(self) -> str:

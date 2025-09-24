@@ -22,7 +22,7 @@ def create_code_examples() -> str:
         .h2("💻 Code Block Elements")
         .paragraph("Code blocks provide syntax highlighting for various programming languages.")
         .space()
-        .code_block(
+        .code(
             code='''def hello_notionary():
     """Greet the Notionary library."""
     print("Hello, Notionary!")

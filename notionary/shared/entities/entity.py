@@ -1,5 +1,4 @@
-from __future__ import annotations
-
+import re
 from abc import ABC, abstractmethod
 from typing import Self
 
@@ -35,13 +34,15 @@ class NotionEntity(LoggingMixin, ABC):
 
     @classmethod
     @abstractmethod
-    async def from_url(cls, url: str) -> Self:
+    async def from_title(cls, title: str) -> Self:
         pass
 
     @classmethod
-    @abstractmethod
-    async def from_title(cls, title: str) -> Self:
-        pass
+    async def from_url(cls, url: str) -> Self:
+        entity_id = cls._extract_uuid(url)
+        if not entity_id:
+            raise ValueError(f"Could not extract entity ID from URL: {url}")
+        return await cls.from_id(entity_id)
 
     @property
     def id(self) -> str:
@@ -134,3 +135,22 @@ class NotionEntity(LoggingMixin, ABC):
         ]
 
         return random.choice(DEFAULT_NOTION_COVERS)
+
+    @staticmethod
+    def _extract_uuid(source: str) -> str | None:
+        UUID_RAW_PATTERN = r"([a-f0-9]{32})"
+
+        if NotionEntity._is_valid_uuid(source):
+            return source
+
+        match = re.search(UUID_RAW_PATTERN, source.lower())
+        if not match:
+            return None
+
+        uuid_raw = match.group(1)
+        return f"{uuid_raw[0:8]}-{uuid_raw[8:12]}-{uuid_raw[12:16]}-{uuid_raw[16:20]}-{uuid_raw[20:32]}"
+
+    @staticmethod
+    def _is_valid_uuid(uuid: str) -> bool:
+        UUID_PATTERN = r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+        return bool(re.match(UUID_PATTERN, uuid.lower()))

@@ -13,7 +13,7 @@ async def main():
 
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
-        db = await NotionDatabase.from_title(PAGE_NAME)
+        db = await NotionDatabase.from_title("PAGE_NAME")
 
         print("db_title", db.title)
         print("icon before", db.emoji)
