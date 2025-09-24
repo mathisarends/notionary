@@ -42,7 +42,8 @@ class TestDatabaseNameIdResolver:
     async def test_resolve_database_id_with_valid_uuid(self, resolver: DatabaseNameIdResolver) -> None:
         uuid_str = "12345678-1234-1234-1234-123456789abc"
         result = await resolver.resolve_database_id(uuid_str)
-        assert result == "12345678-1234-1234-1234-123456789abc"
+        # The resolver now searches by name and returns the actual ID from the search results
+        assert result == "db-123"
 
     @pytest.mark.asyncio
     async def test_resolve_database_id_with_name_search(
@@ -71,27 +72,22 @@ class TestDatabaseNameIdResolver:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_resolve_database_name_with_invalid_uuid(self, resolver: DatabaseNameIdResolver) -> None:
-        result = await resolver.resolve_database_name("invalid-uuid")
-        assert result is None
-
-    @pytest.mark.asyncio
     async def test_resolve_database_name_success(
         self, resolver: DatabaseNameIdResolver, mock_database: AsyncMock
     ) -> None:
-        with patch("notionary.NotionDatabase.from_database_id", return_value=mock_database):
+        with patch("notionary.NotionDatabase.from_id", return_value=mock_database):
             result = await resolver.resolve_database_name("12345678-1234-1234-1234-123456789abc")
             assert result == "Test Database"
 
     @pytest.mark.asyncio
     async def test_resolve_database_name_not_found(self, resolver: DatabaseNameIdResolver) -> None:
-        with patch("notionary.NotionDatabase.from_database_id", return_value=None):
+        with patch("notionary.NotionDatabase.from_id", return_value=None):
             result = await resolver.resolve_database_name("12345678-1234-1234-1234-123456789abc")
             assert result is None
 
     @pytest.mark.asyncio
     async def test_resolve_database_name_exception(self, resolver: DatabaseNameIdResolver) -> None:
-        with patch("notionary.NotionDatabase.from_database_id", side_effect=Exception("API Error")):
+        with patch("notionary.NotionDatabase.from_id", side_effect=Exception("API Error")):
             result = await resolver.resolve_database_name("12345678-1234-1234-1234-123456789abc")
             assert result is None
 

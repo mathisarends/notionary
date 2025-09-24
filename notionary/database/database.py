@@ -14,14 +14,14 @@ from notionary.database.database_metadata_update_client import DatabaseMetadataU
 from notionary.database.database_models import (
     NotionQueryDatabaseResponse,
 )
-from notionary.database.database_property_reader import DatabasePropertyReader
+from notionary.database.properties.database_property_models import (
+    DatabaseNotionProperty,
+)
+from notionary.database.properties.database_property_reader import DatabasePropertyReader
 from notionary.page.page import NotionPage
 from notionary.page.page_models import NotionPageDto
 from notionary.shared.entities.entity import NotionEntity
 from notionary.shared.entities.entity_metadata_update_client import EntityMetadataUpdateClient
-from notionary.shared.models.database_property_models import (
-    DatabaseNotionProperty,
-)
 
 
 # extract datbase properties manager
@@ -42,7 +42,7 @@ class NotionDatabase(NotionEntity):
         cover_image_url: str | None = None,
         properties: dict[str, DatabaseNotionProperty] | None = None,
         description: str | None = None,
-    ):
+    ) -> None:
         super().__init__(
             id=id,
             title=title,
