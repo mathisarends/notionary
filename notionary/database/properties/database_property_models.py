@@ -1,28 +1,25 @@
 from __future__ import annotations
 
-from abc import ABC
 from dataclasses import dataclass
 from typing import Any, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 from notionary.shared.models.shared_property_models import PropertyType
 
-# ===== SHARED DATABASE SCHEMA MODELS =====
 
-
-class DatabasePropertyOption(BaseModel):
+class IgnoreExtraFieldsMixin(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
+
+class DatabasePropertyOption(IgnoreExtraFieldsMixin):
     id: str
     name: str
     color: str
     description: str | None = None
 
 
-class DatabaseStatusGroup(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseStatusGroup(IgnoreExtraFieldsMixin):
     id: str
     name: str
     color: str
@@ -31,9 +28,7 @@ class DatabaseStatusGroup(BaseModel):
 
 # This class has no mapping to the api but is a convenient wrapper to display options of status props
 @dataclass
-class EnrichedDatabaseStatusOption(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class EnrichedDatabaseStatusOption:
     id: str
     name: str
     color: str
@@ -41,9 +36,7 @@ class EnrichedDatabaseStatusOption(BaseModel):
     group_name: str | None = None
 
 
-class DatabaseStatusConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseStatusConfig(IgnoreExtraFieldsMixin):
     options: list[DatabasePropertyOption] = Field(default_factory=list)
     groups: list[DatabaseStatusGroup] = Field(default_factory=list)
 
@@ -63,89 +56,55 @@ class DatabaseStatusConfig(BaseModel):
         ]
 
 
-class DatabaseSelectConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+class DatabaseSelectConfig(IgnoreExtraFieldsMixin):
     options: list[DatabasePropertyOption] = Field(default_factory=list)
 
 
-class DatabaseMultiSelectConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+class DatabaseMultiSelectConfig(IgnoreExtraFieldsMixin):
     options: list[DatabasePropertyOption] = Field(default_factory=list)
 
 
-class DatabaseRelationConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseRelationConfig(IgnoreExtraFieldsMixin):
     database_id: str | None = None
     data_source_id: str | None = None
     type: str = "single_property"
     single_property: dict[str, Any] = Field(default_factory=dict)
 
 
-class DatabaseDateConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    # Date properties in schema are usually empty objects
+# Simple empty config classes for basic property types (these dont define a schema and therefore are of no further interest to this api)
+class DatabaseDateConfig(IgnoreExtraFieldsMixin): ...
 
 
-class DatabaseTitleConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    # Title properties in schema are usually empty objects
+class DatabaseTitleConfig(IgnoreExtraFieldsMixin): ...
 
 
-class DatabaseRichTextConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    # Rich text properties in schema are usually empty objects
+class DatabaseRichTextConfig(IgnoreExtraFieldsMixin): ...
 
 
-class DatabaseURLConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    # URL properties in schema are usually empty objects
+class DatabaseURLConfig(IgnoreExtraFieldsMixin): ...
 
 
-class DatabasePeopleConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    # People properties in schema are usually empty objects
+class DatabasePeopleConfig(IgnoreExtraFieldsMixin): ...
 
 
-class DatabaseNumberConfig(BaseModel):
+class DatabaseCheckboxConfig(IgnoreExtraFieldsMixin): ...
+
+
+class DatabaseEmailConfig(IgnoreExtraFieldsMixin): ...
+
+
+class DatabasePhoneNumberConfig(IgnoreExtraFieldsMixin): ...
+
+
+class DatabaseCreatedTimeConfig(IgnoreExtraFieldsMixin): ...
+
+
+# Config classes with actual fields
+class DatabaseNumberConfig(IgnoreExtraFieldsMixin):
     format: str | None = None  # e.g., "number", "number_with_commas", "percent", etc.
 
 
-class DatabaseCheckboxConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    # Checkbox properties in schema are usually empty objects
-
-
-class DatabaseEmailConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    # Email properties in schema are usually empty objects
-
-
-class DatabasePhoneNumberConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    # Phone number properties in schema are usually empty objects
-
-
-class DatabaseCreatedTimeConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    # Created time properties in schema are usually empty objects
-
-
-# ===== DATABASE SCHEMA PROPERTY MODELS =====
-
-
-class DatabaseStatusProperty(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseStatusProperty(IgnoreExtraFieldsMixin):
     id: str
     name: str
     description: str | None = None
@@ -161,9 +120,7 @@ class DatabaseStatusProperty(BaseModel):
         return [group.name for group in self.status.groups]
 
 
-class DatabaseMultiSelectProperty(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseMultiSelectProperty(IgnoreExtraFieldsMixin):
     id: str
     name: str
     description: str | None = None
@@ -175,9 +132,7 @@ class DatabaseMultiSelectProperty(BaseModel):
         return [option.name for option in self.multi_select.options]
 
 
-class DatabaseSelectProperty(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseSelectProperty(IgnoreExtraFieldsMixin):
     id: str
     name: str
     description: str | None = None
@@ -189,9 +144,7 @@ class DatabaseSelectProperty(BaseModel):
         return [option.name for option in self.select.options]
 
 
-class DatabaseRelationProperty(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseRelationProperty(IgnoreExtraFieldsMixin):
     id: str
     name: str
     description: str | None = None
@@ -204,9 +157,7 @@ class DatabaseRelationProperty(BaseModel):
         return self.relation.database_id
 
 
-class DatabaseDateProperty(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseDateProperty(IgnoreExtraFieldsMixin):
     id: str
     name: str
     description: str | None = None
@@ -214,9 +165,7 @@ class DatabaseDateProperty(BaseModel):
     date: DatabaseDateConfig = Field(default_factory=DatabaseDateConfig)
 
 
-class DatabaseTitleProperty(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseTitleProperty(IgnoreExtraFieldsMixin):
     id: str
     name: str
     description: str | None = None
@@ -224,9 +173,7 @@ class DatabaseTitleProperty(BaseModel):
     title: DatabaseTitleConfig = Field(default_factory=DatabaseTitleConfig)
 
 
-class DatabaseRichTextProperty(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseRichTextProperty(IgnoreExtraFieldsMixin):
     id: str
     name: str
     description: str | None = None
@@ -234,9 +181,7 @@ class DatabaseRichTextProperty(BaseModel):
     rich_text: DatabaseRichTextConfig = Field(default_factory=DatabaseRichTextConfig)
 
 
-class DatabaseURLProperty(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseURLProperty(IgnoreExtraFieldsMixin):
     id: str
     name: str
     description: str | None = None
@@ -244,9 +189,7 @@ class DatabaseURLProperty(BaseModel):
     url: DatabaseURLConfig = Field(default_factory=DatabaseURLConfig)
 
 
-class DatabasePeopleProperty(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabasePeopleProperty(IgnoreExtraFieldsMixin):
     id: str
     name: str
     description: str | None = None
@@ -254,9 +197,7 @@ class DatabasePeopleProperty(BaseModel):
     people: DatabasePeopleConfig = Field(default_factory=DatabasePeopleConfig)
 
 
-class DatabaseNumberProperty(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseNumberProperty(IgnoreExtraFieldsMixin):
     id: str
     name: str
     description: str | None = None
@@ -268,9 +209,7 @@ class DatabaseNumberProperty(BaseModel):
         return self.number.format
 
 
-class DatabaseCheckboxProperty(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseCheckboxProperty(IgnoreExtraFieldsMixin):
     id: str
     name: str
     description: str | None = None
@@ -278,9 +217,7 @@ class DatabaseCheckboxProperty(BaseModel):
     checkbox: DatabaseCheckboxConfig = Field(default_factory=DatabaseCheckboxConfig)
 
 
-class DatabaseEmailProperty(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseEmailProperty(IgnoreExtraFieldsMixin):
     id: str
     name: str
     description: str | None = None
@@ -288,9 +225,7 @@ class DatabaseEmailProperty(BaseModel):
     email: DatabaseEmailConfig = Field(default_factory=DatabaseEmailConfig)
 
 
-class DatabasePhoneNumberProperty(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabasePhoneNumberProperty(IgnoreExtraFieldsMixin):
     id: str
     name: str
     description: str | None = None
@@ -298,9 +233,7 @@ class DatabasePhoneNumberProperty(BaseModel):
     phone_number: DatabasePhoneNumberConfig = Field(default_factory=DatabasePhoneNumberConfig)
 
 
-class DatabaseCreatedTimeProperty(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
+class DatabaseCreatedTimeProperty(IgnoreExtraFieldsMixin):
     id: str
     name: str
     description: str | None = None
@@ -308,7 +241,6 @@ class DatabaseCreatedTimeProperty(BaseModel):
     created_time: DatabaseCreatedTimeConfig = Field(default_factory=DatabaseCreatedTimeConfig)
 
 
-# ===== TYPE UNION =====
 DatabaseNotionProperty = (
     DatabaseStatusProperty
     | DatabaseMultiSelectProperty
@@ -328,51 +260,3 @@ DatabaseNotionProperty = (
 )
 
 DatabasePropertyT = TypeVar("DatabasePropertyT", bound=DatabaseNotionProperty)
-
-
-class NotionObjectWithDatabaseProperties(BaseModel, ABC):
-    properties: dict[str, DatabaseNotionProperty] = Field(default_factory=dict)
-
-    @field_validator("properties", mode="before")
-    @classmethod
-    def parse_database_properties(cls, value: dict[str, Any]) -> dict[str, DatabaseNotionProperty]:
-        if not value:
-            return {}
-
-        return {key: cls._create_database_property(prop_data) for key, prop_data in value.items()}
-
-    @classmethod
-    def _create_database_property(cls, prop_data: Any) -> DatabaseNotionProperty:
-        if not isinstance(prop_data, dict) or "type" not in prop_data:
-            return prop_data
-
-        prop_type = prop_data.get("type")
-
-        database_property_classes = {
-            PropertyType.STATUS: DatabaseStatusProperty,
-            PropertyType.MULTI_SELECT: DatabaseMultiSelectProperty,
-            PropertyType.SELECT: DatabaseSelectProperty,
-            PropertyType.RELATION: DatabaseRelationProperty,
-            PropertyType.DATE: DatabaseDateProperty,
-            PropertyType.TITLE: DatabaseTitleProperty,
-            PropertyType.RICH_TEXT: DatabaseRichTextProperty,
-            PropertyType.URL: DatabaseURLProperty,
-            PropertyType.PEOPLE: DatabasePeopleProperty,
-            PropertyType.NUMBER: DatabaseNumberProperty,
-            PropertyType.CHECKBOX: DatabaseCheckboxProperty,
-            PropertyType.EMAIL: DatabaseEmailProperty,
-            PropertyType.PHONE_NUMBER: DatabasePhoneNumberProperty,
-            PropertyType.CREATED_TIME: DatabaseCreatedTimeProperty,
-        }
-
-        property_class = database_property_classes.get(prop_type)
-
-        if property_class:
-            try:
-                result = property_class(**prop_data)
-                return result
-            except Exception as e:
-                print(f"❌ Database property error for {property_class.__name__}: {e}")
-                return prop_data
-
-        return prop_data

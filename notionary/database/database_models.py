@@ -3,17 +3,14 @@ from typing import Any, Literal
 from pydantic import BaseModel
 
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.database.properties.database_property_models import (
-    NotionObjectWithDatabaseProperties,
-)
+from notionary.database.properties.database_properties_mixin import DatabasePropertiesMixin
 from notionary.page.page_models import NotionPageDto
 from notionary.shared.entities.entity_models import NotionEntityResponseDto
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.icon_models import Icon
 
 
-# descriptions should be parsable here in the factory aswell (should be changable as well - implement methods from databse)
-class NotionDatabaseDto(NotionEntityResponseDto, NotionObjectWithDatabaseProperties):
+class NotionDatabaseDto(NotionEntityResponseDto, DatabasePropertiesMixin):
     title: list[RichTextObject]
     description: list[RichTextObject]
     is_inline: bool
