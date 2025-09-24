@@ -2,7 +2,7 @@ import re
 from abc import ABC, abstractmethod
 from typing import Self
 
-from notionary.shared.entities.entity_metadata_client import EntityMetadataClient
+from notionary.shared.entities.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.util import LoggingMixin
 
 
@@ -47,8 +47,9 @@ class NotionEntity(LoggingMixin, ABC):
 
     @property
     @abstractmethod
-    def _metadata_client(self) -> EntityMetadataClient:
-        """Return the concrete metadata client for this entity."""
+    def _entity_metadata_update_client(self) -> EntityMetadataUpdateClient:
+        # functionality for updating properties like title, icon, cover, archive status depends on interface for template like implementation
+        # has to be implementated by inheritants to correctly use the methods below
         ...
 
     @property
@@ -83,27 +84,26 @@ class NotionEntity(LoggingMixin, ABC):
     def is_in_trash(self) -> bool:
         return self._is_in_trash
 
-    async def set_title(self, title: str) -> None:
-        await self._metadata_client.set_title(title)
-        self._title = title
+    @abstractmethod
+    async def set_title(self, title: str) -> None: ...
 
     async def set_emoji_icon(self, emoji: str) -> None:
-        entity_response = await self._metadata_client.patch_emoji_icon(emoji)
+        entity_response = await self._entity_metadata_update_client.patch_emoji_icon(emoji)
         self._emoji_icon = entity_response.icon.emoji
         self._external_icon_url = None
 
     async def set_external_icon(self, icon_url: str) -> None:
-        entity_response = await self._metadata_client.patch_external_icon(icon_url)
+        entity_response = await self._entity_metadata_update_client.patch_external_icon(icon_url)
         self._emoji_icon = None
         self._external_icon_url = entity_response.icon.external.url
 
     async def remove_icon(self) -> None:
-        await self._metadata_client.remove_icon()
+        await self._entity_metadata_update_client.remove_icon()
         self._emoji_icon = None
         self._external_icon_url = None
 
     async def set_cover_image_by_url(self, image_url: str) -> None:
-        entity_response = await self._metadata_client.patch_external_cover(image_url)
+        entity_response = await self._entity_metadata_update_client.patch_external_cover(image_url)
         self._cover_image_url = entity_response.cover.external.url
 
     async def set_random_gradient_cover(self) -> None:
@@ -111,7 +111,7 @@ class NotionEntity(LoggingMixin, ABC):
         await self.set_cover_image_by_url(random_cover_url)
 
     async def remove_cover_image(self) -> None:
-        await self._metadata_client.remove_cover()
+        await self._entity_metadata_update_client.remove_cover()
         self._cover_image_url = None
 
     async def archive(self) -> None:
@@ -119,7 +119,7 @@ class NotionEntity(LoggingMixin, ABC):
             self.logger.info("Entity is already archived.")
             return
 
-        entity_response = await self._metadata_client.archive_page()
+        entity_response = await self._entity_metadata_update_client.archive_page()
         self._is_archieved = entity_response.archived
 
     async def unarchive(self) -> None:
@@ -127,7 +127,7 @@ class NotionEntity(LoggingMixin, ABC):
             self.logger.info("Entity is not archived.")
             return
 
-        entity_response = await self._metadata_client.unarchive_page()
+        entity_response = await self._entity_metadata_update_client.unarchive_page()
         self._is_archieved = entity_response.archived
 
     def __repr__(self) -> str:

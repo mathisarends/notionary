@@ -47,10 +47,10 @@ class TestUserNameIdResolver:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_resolve_user_id_with_search_name(self, resolver: UserNameIdResolver) -> None:
-        # Test searches for user name and returns the best match ID
-        result = await resolver.resolve_user_id("John Doe")
-        assert result == "user-123"
+    async def test_resolve_user_id_with_valid_uuid(self, resolver: UserNameIdResolver) -> None:
+        uuid_str = "12345678-1234-1234-1234-123456789abc"
+        result = await resolver.resolve_user_id(uuid_str)
+        assert result == "12345678-1234-1234-1234-123456789abc"
 
     @pytest.mark.asyncio
     async def test_resolve_user_id_with_name_search(
@@ -84,6 +84,11 @@ class TestUserNameIdResolver:
     @pytest.mark.asyncio
     async def test_resolve_user_name_with_none(self, resolver: UserNameIdResolver) -> None:
         result = await resolver.resolve_user_name(None)
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_resolve_user_name_with_invalid_uuid(self, resolver: UserNameIdResolver) -> None:
+        result = await resolver.resolve_user_name("invalid-uuid")
         assert result is None
 
     @pytest.mark.asyncio

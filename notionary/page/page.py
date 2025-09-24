@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, override
+from typing import TYPE_CHECKING, Any
 
 from notionary.blocks.block_http_client import NotionBlockHttpClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
@@ -18,6 +18,7 @@ from notionary.page.page_factory import (
     load_page_from_title,
 )
 from notionary.page.page_http_client import NotionPageHttpClient
+from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
 from notionary.page.properties.page_property_models import (
     PageProperty,
     PropertyType,
@@ -27,7 +28,6 @@ from notionary.page.properties.page_property_writer import PagePropertyWriter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.schemas import NotionContentSchema
 from notionary.shared.entities.entity import NotionEntity
-from notionary.util.covers import get_random_gradient_cover
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
@@ -86,6 +86,8 @@ class NotionPage(NotionEntity):
         self.property_reader = PagePropertyReader(self)
         self.property_writer = PagePropertyWriter(self)
 
+        self._metadata_update_client = PageMetadataUpdateClient(page_id=id)
+
     @classmethod
     async def from_id(cls, id: str) -> NotionPage:
         return await load_page_from_id(id)
@@ -93,6 +95,11 @@ class NotionPage(NotionEntity):
     @classmethod
     async def from_title(cls, title: str, min_similarity: float = 0.6) -> NotionPage:
         return await load_page_from_title(title, min_similarity)
+
+    @property
+    def _entity_metadata_update_client(self) -> PageMetadataUpdateClient:
+        """Return the concrete metadata client for this entity."""
+        return self._metadata_update_client
 
     @property
     def id(self) -> str:
@@ -121,7 +128,6 @@ class NotionPage(NotionEntity):
             discussion_id=discussion_id,
         )
 
-    @override
     async def set_title(self, title: str) -> None:
         await self.property_writer.set_title_property(title)
         self._title = title
@@ -147,44 +153,6 @@ class NotionPage(NotionEntity):
         blocks = await self._block_client.get_blocks_by_page_id_recursively(page_id=self._page_id)
         return await self._page_content_retriever.convert_to_markdown(blocks=blocks)
 
-    @override
-    async def set_emoji_icon(self, emoji: str) -> None:
-        page_response = await self._page_client.patch_emoji_icon(emoji)
-        self._emoji_icon = page_response.icon.emoji
-        self._external_icon_url = None
-
-    @override
-    async def set_external_icon(self, icon_url: str) -> None:
-        page_response = await self._page_client.patch_external_icon(icon_url)
-        self._emoji_icon = None
-        self._external_icon_url = page_response.icon.external.url
-
-    @override
-    async def remove_icon(self) -> None:
-        await self._page_client.remove_icon()
-        self._emoji_icon = None
-        self._external_icon_url = None
-
-    @override
-    async def archive(self) -> None:
-        if self._is_archieved:
-            self.logger.info("Page is already archived.")
-            return
-
-        page_response = await self._page_client.archive_page()
-        self._is_archieved = page_response.archived
-        self.logger.info(f"Page {self._page_id} archived.")
-
-    @override
-    async def unarchive(self) -> None:
-        if not self._is_archieved:
-            self.logger.info("Page is not archived.")
-            return
-
-        page_response = await self._page_client.unarchive_page()
-        self._is_archieved = page_response.archived
-        self.logger.info(f"Page {self._page_id} unarchived.")
-
     async def create_child_database(self, title: str) -> NotionDatabase:
         from notionary import NotionDatabase
 
@@ -196,29 +164,6 @@ class NotionPage(NotionEntity):
             )
 
         return await NotionDatabase.from_id(create_database_response.id)
-
-    @override
-    async def set_cover_image_by_url(self, url: str) -> None:
-        updated_page = await self._page_client.patch_external_cover(url)
-        self._cover_image_url = updated_page.cover.external.url
-
-    @override
-    async def remove_cover_image(self) -> None:
-        await self._page_client.remove_cover()
-        self._cover_image_url = None
-
-    @override
-    async def set_random_gradient_cover(self) -> None:
-        random_cover_url = get_random_gradient_cover()
-        await self.set_cover_image_by_url(random_cover_url)
-
-    async def set_cover(self, external_url: str) -> None:
-        # Legacy method that now calls the standard interface method
-        await self.set_cover_image_by_url(external_url)
-
-    async def remove_cover(self) -> None:
-        # Legacy method that now calls the standard interface method
-        await self.remove_cover_image()
 
     async def get_property_value_by_name(self, property_name: str) -> Any:
         return await self.property_reader.get_property_value_by_name(property_name)

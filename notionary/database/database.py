@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncGenerator
-from typing import Any
+from typing import Any, override
 
 from notionary.database.database_factory import (
     load_database_from_id,
@@ -10,6 +10,7 @@ from notionary.database.database_factory import (
 )
 from notionary.database.database_filter_builder import DatabaseFilterBuilder
 from notionary.database.database_http_client import NotionDatabseHttpClient
+from notionary.database.database_metadata_update_client import DatabaseMetadataUpdateClient
 from notionary.database.database_models import (
     NotionQueryDatabaseResponse,
 )
@@ -19,6 +20,7 @@ from notionary.page.properties.page_property_models import (
     PageTitleProperty,
 )
 from notionary.shared.entities.entity import NotionEntity
+from notionary.shared.entities.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.models.database_property_models import (
     DatabaseMultiSelectProperty,
     DatabaseNotionProperty,
@@ -56,6 +58,8 @@ class NotionDatabase(NotionEntity):
         self._properties = properties or {}
         self.client = NotionDatabseHttpClient(database_id=id)
 
+        self._metadata_update_client = DatabaseMetadataUpdateClient(database_id=id)
+
     @classmethod
     async def from_id(cls, id: str) -> NotionDatabase:
         return await load_database_from_id(id)
@@ -73,6 +77,11 @@ class NotionDatabase(NotionEntity):
         return self._emoji_icon
 
     @property
+    def _entity_metadata_update_client(self) -> EntityMetadataUpdateClient:
+        """Return the concrete metadata client for this entity."""
+        return self._metadata_update_client
+
+    @property
     def properties(self) -> dict[str, DatabaseNotionProperty]:
         return self._properties
 
@@ -81,43 +90,10 @@ class NotionDatabase(NotionEntity):
 
         return await NotionPage.from_id(create_page_response.id)
 
+    @override
     async def set_title(self, title: str) -> None:
         result = await self.client.update_database_title(title=title)
         self._title = result.title[0].plain_text
-
-    async def set_emoji_icon(self, emoji: str) -> None:
-        result = await self.client.update_database_emoji_icon(emoji=emoji)
-        self._emoji_icon = result.icon.emoji if result.icon else None
-
-    async def set_cover_image_by_url(self, image_url: str) -> None:
-        result = await self.client.update_database_cover_image(image_url=image_url)
-        self._cover_image_url = result.cover.external.url if result.cover and result.cover.external else image_url
-
-    async def set_random_gradient_cover(self) -> None:
-        random_cover_url = self._get_random_gradient_cover()
-        await self.set_cover_image_by_url(random_cover_url)
-
-    async def set_external_icon(self, icon_url: str) -> None:
-        result = await self.client.update_database_external_icon(icon_url=icon_url)
-        self._external_icon_url = result.icon.external.url if result.icon and result.icon.external else icon_url
-        self._emoji_icon = None
-
-    async def remove_icon(self) -> None:
-        await self.client.remove_icon()
-        self._emoji_icon = None
-        self._external_icon_url = None
-
-    async def remove_cover_image(self) -> None:
-        await self.client.remove_cover_image()
-        self._cover_image_url = None
-
-    async def archive(self) -> None:
-        await self.client.archive_database()
-        self._is_archieved = True
-
-    async def unarchive(self) -> None:
-        await self.client.unarchive_database()
-        self._is_archieved = False
 
     async def get_property_options(self, property_name: str) -> list[str]:
         prop = self._properties.get(property_name)

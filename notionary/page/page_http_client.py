@@ -25,9 +25,6 @@ from notionary.page.properties.page_property_models import (
     SelectOption,
     StatusOption,
 )
-from notionary.shared.models.cover_models import NotionCover
-from notionary.shared.models.file_models import ExternalFile
-from notionary.shared.models.icon_models import EmojiIcon, ExternalIcon
 
 
 class NotionPageHttpClient(NotionHttpClient):
@@ -52,38 +49,6 @@ class NotionPageHttpClient(NotionHttpClient):
         page_update_result = NotionPageDto.model_validate(result_dict)
         self._page_properties = page_update_result.properties
         return page_update_result
-
-    async def patch_emoji_icon(self, emoji: str) -> NotionPageDto:
-        icon = EmojiIcon(emoji=emoji)
-        update_dto = NotionPageUpdateDto(icon=icon)
-        return await self.patch_page(update_dto)
-
-    async def patch_external_icon(self, icon_url: str) -> NotionPageDto:
-        external_file = ExternalFile(url=icon_url)
-        icon = ExternalIcon(external=external_file)
-        update_dto = NotionPageUpdateDto(icon=icon)
-        return await self.patch_page(update_dto)
-
-    async def remove_icon(self) -> NotionPageDto:
-        update_dto = NotionPageUpdateDto(icon=None)
-        return await self.patch_page(update_dto)
-
-    async def patch_external_cover(self, cover_url: str) -> NotionPageDto:
-        cover = NotionCover.from_url(cover_url)
-        update_dto = NotionPageUpdateDto(cover=cover)
-        return await self.patch_page(update_dto)
-
-    async def remove_cover(self) -> NotionPageDto:
-        update_dto = NotionPageUpdateDto(cover=None)
-        return await self.patch_page(update_dto)
-
-    async def archive_page(self) -> NotionPageDto:
-        update_dto = NotionPageUpdateDto(archived=True)
-        return await self.patch_page(update_dto)
-
-    async def unarchive_page(self) -> NotionPageDto:
-        update_dto = NotionPageUpdateDto(archived=False)
-        return await self.patch_page(update_dto)
 
     async def patch_property(self, property_name: str, value: Any, property_type: type[PagePropertyT]) -> NotionPageDto:
         """

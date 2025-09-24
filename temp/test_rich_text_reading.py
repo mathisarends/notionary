@@ -11,6 +11,7 @@ async def main():
         page = await NotionPage.from_title(PAGE_NAME)
 
         content = await page.get_markdown_content()
+        await page.set_emoji_icon("📝")
         print("📝 Markdown Content:")
         print(content)
 
