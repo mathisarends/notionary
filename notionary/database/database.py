@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncGenerator
-from typing import Any
+from typing import Any, override
 
 from notionary.database.database_factory import (
     load_database_from_id,
@@ -18,6 +18,7 @@ from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.page_property_models import (
     PageTitleProperty,
 )
+from notionary.shared.entities.entity import NotionEntity
 from notionary.shared.models.database_property_models import (
     DatabaseMultiSelectProperty,
     DatabaseNotionProperty,
@@ -27,11 +28,9 @@ from notionary.shared.models.database_property_models import (
     DatabaseStatusProperty,
 )
 from notionary.shared.models.shared_property_models import PropertyType
-from notionary.util import LoggingMixin
-from notionary.util.covers import get_random_gradient_cover
 
 
-class NotionDatabase(LoggingMixin):
+class NotionDatabase(NotionEntity):
     def __init__(
         self,
         id: str,
@@ -44,17 +43,43 @@ class NotionDatabase(LoggingMixin):
         cover_image_url: str | None = None,
         properties: dict[str, DatabaseNotionProperty] | None = None,
     ):
-        self._id = id
-        self._title = title
-        self._url = url
-        self._is_archived = archived
-        self._is_in_trash = in_trash
-        self._emoji_icon = emoji_icon
-        self.external_icon_url = external_icon_url
-        self._cover_image_url = cover_image_url
+        super().__init__(
+            id=id,
+            title=title,
+            url=url,
+            archived=archived,
+            in_trash=in_trash,
+            emoji_icon=emoji_icon,
+            external_icon_url=external_icon_url,
+            cover_image_url=cover_image_url,
+        )
         self._properties = properties or {}
-
         self.client = NotionDatabseHttpClient(database_id=id)
+
+    @classmethod
+    @override
+    async def from_id(cls, id: str) -> NotionDatabase:
+        return await load_database_from_id(id)
+
+    @classmethod
+    @override
+    async def from_title(
+        cls,
+        title: str,
+        min_similarity: float = 0.6,
+    ) -> NotionDatabase:
+        return await load_database_from_name(title, min_similarity)
+
+    @classmethod
+    @override
+    async def from_url(cls, url: str) -> NotionDatabase:
+        # Extract database ID from URL and use from_id
+        from notionary.util import extract_uuid
+
+        database_id = extract_uuid(url)
+        if not database_id:
+            raise ValueError(f"Could not extract database ID from URL: {url}")
+        return await cls.from_id(database_id)
 
     @classmethod
     async def from_database_id(cls, id: str) -> NotionDatabase:
@@ -69,18 +94,6 @@ class NotionDatabase(LoggingMixin):
         return await load_database_from_name(database_name, min_similarity)
 
     @property
-    def id(self) -> str:
-        return self._id
-
-    @property
-    def title(self) -> str:
-        return self._title
-
-    @property
-    def url(self) -> str:
-        return self._url
-
-    @property
     def emoji(self) -> str | None:
         return self._emoji_icon
 
@@ -93,31 +106,56 @@ class NotionDatabase(LoggingMixin):
 
         return await NotionPage.from_page_id(page_id=create_page_response.id)
 
-    async def set_title(self, new_title: str) -> str:
-        result = await self.client.update_database_title(title=new_title)
-
+    @override
+    async def set_title(self, title: str) -> None:
+        result = await self.client.update_database_title(title=title)
         self._title = result.title[0].plain_text
-        return self._title
 
-    async def set_emoji_icon(self, new_emoji: str) -> str:
-        result = await self.client.update_database_emoji_icon(emoji=new_emoji)
-
+    @override
+    async def set_emoji_icon(self, emoji: str) -> None:
+        result = await self.client.update_database_emoji_icon(emoji=emoji)
         self._emoji_icon = result.icon.emoji if result.icon else None
-        return self._emoji_icon
 
-    async def set_cover_image(self, image_url: str) -> str:
+    @override
+    async def set_cover_image_by_url(self, image_url: str) -> None:
         result = await self.client.update_database_cover_image(image_url=image_url)
+        self._cover_image_url = result.cover.external.url if result.cover and result.cover.external else image_url
 
-        return result.cover.external.url if result.cover and result.cover.external else image_url
+    @override
+    async def set_random_gradient_cover(self) -> None:
+        random_cover_url = self._get_random_gradient_cover()
+        await self.set_cover_image_by_url(random_cover_url)
 
-    async def set_random_gradient_cover(self) -> str:
-        random_cover_url = get_random_gradient_cover()
-        return await self.set_cover_image(random_cover_url)
+    @override
+    async def set_external_icon(self, icon_url: str) -> None:
+        result = await self.client.update_database_external_icon(icon_url=icon_url)
+        self._external_icon_url = result.icon.external.url if result.icon and result.icon.external else icon_url
+        self._emoji_icon = None
 
-    async def set_external_icon(self, external_icon_url: str) -> str:
-        result = await self.client.update_database_external_icon(icon_url=external_icon_url)
+    @override
+    async def remove_icon(self) -> None:
+        # Database API doesn't have a direct remove icon method, so we set it to None
+        # This would need to be implemented in the HTTP client if the API supports it
+        self._emoji_icon = None
+        self._external_icon_url = None
 
-        return result.icon.external.url if result.icon and result.icon.external else external_icon_url
+    @override
+    async def remove_cover_image(self) -> None:
+        # Database API doesn't have a direct remove cover method, so we set it to None
+        # This would need to be implemented in the HTTP client if the API supports it
+        self._cover_image_url = None
+
+    @override
+    async def archive(self) -> None:
+        # Database archiving would need to be implemented in the HTTP client
+        # For now, we just update the local state
+        self._is_archieved = True
+
+    @override
+    async def unarchive(self) -> None:
+        # Database unarchiving would need to be implemented in the HTTP client
+        # For now, we just update the local state
+        self._is_archieved = False
 
     async def get_property_options(self, property_name: str) -> list[str]:
         """

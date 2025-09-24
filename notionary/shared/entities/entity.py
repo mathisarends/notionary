@@ -28,18 +28,18 @@ class NotionEntity(LoggingMixin, ABC):
         self._is_archieved = archived
         self._is_in_trash = in_trash
 
-    @abstractmethod
     @classmethod
+    @abstractmethod
     async def from_id(cls, id: str) -> Self:
         pass
 
-    @abstractmethod
     @classmethod
+    @abstractmethod
     async def from_url(cls, url: str) -> Self:
         pass
 
-    @abstractmethod
     @classmethod
+    @abstractmethod
     async def from_title(cls, title: str) -> Self:
         pass
 

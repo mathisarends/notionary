@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, override
 
 from notionary.blocks.block_http_client import NotionBlockHttpClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
@@ -27,14 +27,14 @@ from notionary.page.properties.page_property_reader import PagePropertyReader
 from notionary.page.properties.page_property_writer import PagePropertyWriter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.schemas import NotionContentSchema
-from notionary.util import LoggingMixin
+from notionary.shared.entities.entity import NotionEntity
 from notionary.util.covers import get_random_gradient_cover
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
 
 
-class NotionPage(LoggingMixin):
+class NotionPage(NotionEntity):
     def __init__(
         self,
         page_id: str,
@@ -48,14 +48,17 @@ class NotionPage(LoggingMixin):
         properties: dict[str, PageProperty] | None = None,
         parent_database: NotionDatabase | None = None,
     ):
+        super().__init__(
+            id=page_id,
+            title=title,
+            url=url,
+            archived=archived,
+            in_trash=in_trash,
+            emoji_icon=emoji_icon,
+            external_icon_url=external_icon_url,
+            cover_image_url=cover_image_url,
+        )
         self._page_id = page_id
-        self._title = title
-        self._url = url
-        self._is_archived = archived
-        self._is_in_trash = in_trash
-        self._emoji_icon = emoji_icon
-        self._external_icon_url = external_icon_url
-        self._cover_image_url = cover_image_url
         self._properties = properties or {}
         self._parent_database = parent_database
 
@@ -85,6 +88,21 @@ class NotionPage(LoggingMixin):
         self.property_writer = PagePropertyWriter(self)
 
     @classmethod
+    @override
+    async def from_id(cls, id: str) -> NotionPage:
+        return await load_page_from_id(id)
+
+    @classmethod
+    @override
+    async def from_title(cls, title: str, min_similarity: float = 0.6) -> NotionPage:
+        return await load_page_from_name(title, min_similarity)
+
+    @classmethod
+    @override
+    async def from_url(cls, url: str) -> NotionPage:
+        return await load_page_from_url(url)
+
+    @classmethod
     async def from_page_id(cls, page_id: str) -> NotionPage:
         return await load_page_from_id(page_id)
 
@@ -92,45 +110,13 @@ class NotionPage(LoggingMixin):
     async def from_page_name(cls, page_name: str, min_similarity: float = 0.6) -> NotionPage:
         return await load_page_from_name(page_name, min_similarity)
 
-    @classmethod
-    async def from_url(cls, url: str) -> NotionPage:
-        return await load_page_from_url(url)
-
     @property
     def id(self) -> str:
         return self._page_id
 
     @property
-    def title(self) -> str:
-        return self._title
-
-    @property
-    def url(self) -> str:
-        return self._url
-
-    @property
-    def external_icon_url(self) -> str | None:
-        return self._external_icon_url
-
-    @property
-    def emoji_icon(self) -> str | None:
-        return self._emoji_icon
-
-    @property
-    def cover_image_url(self) -> str | None:
-        return self._cover_image_url
-
-    @property
     def properties(self) -> dict[str, PageProperty]:
         return self._properties
-
-    @property
-    def is_archived(self) -> bool:
-        return self._is_archived
-
-    @property
-    def is_in_trash(self) -> bool:
-        return self._is_in_trash
 
     def get_prompt_information(self) -> str:
         markdown_syntax_builder = SyntaxPromptBuilder()
@@ -151,8 +137,10 @@ class NotionPage(LoggingMixin):
             discussion_id=discussion_id,
         )
 
+    @override
     async def set_title(self, title: str) -> None:
         await self.property_writer.set_title_property(title)
+        self._title = title
 
     async def append_markdown(
         self,
@@ -175,39 +163,42 @@ class NotionPage(LoggingMixin):
         blocks = await self._block_client.get_blocks_by_page_id_recursively(page_id=self._page_id)
         return await self._page_content_retriever.convert_to_markdown(blocks=blocks)
 
+    @override
     async def set_emoji_icon(self, emoji: str) -> None:
         page_response = await self._page_client.patch_emoji_icon(emoji)
-
         self._emoji_icon = page_response.icon.emoji
         self._external_icon_url = None
 
-    async def set_external_icon(self, url: str) -> None:
-        page_response = await self._page_client.patch_external_icon(url)
-
+    @override
+    async def set_external_icon(self, icon_url: str) -> None:
+        page_response = await self._page_client.patch_external_icon(icon_url)
         self._emoji_icon = None
         self._external_icon_url = page_response.icon.external.url
 
+    @override
     async def remove_icon(self) -> None:
         await self._page_client.remove_icon()
         self._emoji_icon = None
         self._external_icon_url = None
 
+    @override
     async def archive(self) -> None:
-        if self._is_archived:
+        if self._is_archieved:
             self.logger.info("Page is already archived.")
             return
 
         page_response = await self._page_client.archive_page()
-        self._is_archived = page_response.archived
+        self._is_archieved = page_response.archived
         self.logger.info(f"Page {self._page_id} archived.")
 
+    @override
     async def unarchive(self) -> None:
-        if not self._is_archived:
+        if not self._is_archieved:
             self.logger.info("Page is not archived.")
             return
 
         page_response = await self._page_client.unarchive_page()
-        self._is_archived = page_response.archived
+        self._is_archieved = page_response.archived
         self.logger.info(f"Page {self._page_id} unarchived.")
 
     async def create_child_database(self, title: str) -> NotionDatabase:
@@ -222,17 +213,28 @@ class NotionPage(LoggingMixin):
 
         return await NotionDatabase.from_database_id(id=create_database_response.id)
 
-    async def set_cover(self, external_url: str) -> None:
-        updated_page = await self._page_client.patch_external_cover(external_url)
+    @override
+    async def set_cover_image_by_url(self, url: str) -> None:
+        updated_page = await self._page_client.patch_external_cover(url)
         self._cover_image_url = updated_page.cover.external.url
 
-    async def remove_cover(self) -> None:
+    @override
+    async def remove_cover_image(self) -> None:
         await self._page_client.remove_cover()
         self._cover_image_url = None
 
+    @override
     async def set_random_gradient_cover(self) -> None:
         random_cover_url = get_random_gradient_cover()
-        await self.set_cover(random_cover_url)
+        await self.set_cover_image_by_url(random_cover_url)
+
+    async def set_cover(self, external_url: str) -> None:
+        # Legacy method that now calls the standard interface method
+        await self.set_cover_image_by_url(external_url)
+
+    async def remove_cover(self) -> None:
+        # Legacy method that now calls the standard interface method
+        await self.remove_cover_image()
 
     async def get_property_value_by_name(self, property_name: str) -> Any:
         return await self.property_reader.get_property_value_by_name(property_name)
