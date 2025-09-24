@@ -57,7 +57,7 @@ def create_basic_markdown_content() -> str:
         .divider()
         # Inline Code and Links Section
         .h3("Inline Code and Links")
-        .paragraph("Use `NotionPage.from_page_name()` to find pages by name.")
+        .paragraph("Use `NotionPage.from_title()` to find pages by name.")
         .paragraph("The `append_markdown()` method adds content to existing pages.")
         .paragraph("Variables like `DATABASE_NAME` should be set in your configuration.")
         .divider()
