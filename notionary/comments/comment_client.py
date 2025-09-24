@@ -15,18 +15,7 @@ from notionary.http.http_client import NotionHttpClient
 
 
 class CommentClient(NotionHttpClient):
-    """
-    Client for Notion comment operations.
-    """
-
     async def list_all_comments_for_page(self, page_id: str, *, page_size: int = 100) -> list[Comment]:
-        """
-        Returns all unresolved comments for a page (handles pagination automatically).
-
-        Args:
-            page_id: Page ID to get comments for.
-            page_size: Items per page for pagination (default: 100).
-        """
         results: list[Comment] = []
         cursor: str | None = None
 
@@ -73,7 +62,7 @@ class CommentClient(NotionHttpClient):
         page_id: str | None = None,
         discussion_id: str | None = None,
         attachments: list[CommentAttachment] | None = None,
-    ) -> Comment:
+    ) -> None:
         """
         Create a comment on a page OR reply to an existing discussion.
 

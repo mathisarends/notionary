@@ -1,15 +1,15 @@
 import asyncio
 
-from notionary import NotionDatabase
+from notionary import NotionPage
 
-PAGE_NAME = "Wissen & Notizen"
+PAGE_NAME = "Ruff Linter"
 
 
 async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
-        db = await NotionDatabase.from_title(PAGE_NAME)
-        await db.set_description("Neue Beschreibung der Datenbank")
+        page = await NotionPage.from_title(PAGE_NAME)
+        await page.property_writer.set_relation_property_by_page_titles("Thema", ["Smart Home", "Lernen"])
 
     except Exception as e:
         import traceback

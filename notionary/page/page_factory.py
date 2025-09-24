@@ -74,6 +74,6 @@ async def load_page_from_id(page_id: str) -> NotionPage:
     return await factory.load_from_id(page_id)
 
 
-async def load_page_from_title(page_title: str, min_similarity: float = 0.6) -> NotionPage:
+async def load_page_from_title(title: str, min_similarity: float = 0.6) -> NotionPage:
     factory = NotionPageFactory()
-    return await factory.load_from_title(page_title, min_similarity)
+    return await factory.load_from_title(title, min_similarity)

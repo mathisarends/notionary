@@ -14,24 +14,20 @@ from notionary.database.database_metadata_update_client import DatabaseMetadataU
 from notionary.database.database_models import (
     NotionQueryDatabaseResponse,
 )
+from notionary.database.database_property_reader import DatabasePropertyReader
 from notionary.page.page import NotionPage
 from notionary.page.page_models import NotionPageDto
-from notionary.page.properties.page_property_models import (
-    PageTitleProperty,
-)
 from notionary.shared.entities.entity import NotionEntity
 from notionary.shared.entities.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.models.database_property_models import (
-    DatabaseMultiSelectProperty,
     DatabaseNotionProperty,
-    DatabasePropertyT,
-    DatabaseRelationProperty,
-    DatabaseSelectProperty,
-    DatabaseStatusProperty,
 )
-from notionary.shared.models.shared_property_models import PropertyType
 
 
+# extract datbase properties manager
+# try to update property options here by the notion database here itsel
+# for example add fields to props and change its options
+# make a database_proeprty_service out of it
 class NotionDatabase(NotionEntity):
     def __init__(
         self,
@@ -64,6 +60,7 @@ class NotionDatabase(NotionEntity):
         self.client = NotionDatabseHttpClient(database_id=id)
 
         self._metadata_update_client = DatabaseMetadataUpdateClient(database_id=id)
+        self.property_reader = DatabasePropertyReader(self)
 
     @classmethod
     async def from_id(cls, id: str) -> NotionDatabase:
@@ -108,46 +105,19 @@ class NotionDatabase(NotionEntity):
         self._description = udapted_description
 
     async def get_options_by_property_name(self, property_name: str) -> list[str]:
-        prop = self._properties.get(property_name)
+        return await self.property_reader.get_options_by_property_name(property_name)
 
-        if not prop:
-            return []
+    async def get_relation_options_by_property_name(self, property_name: str) -> list[str]:
+        return await self.property_reader.get_relation_options_by_property_name(property_name)
 
-        if prop.type in (
-            PropertyType.SELECT,
-            PropertyType.MULTI_SELECT,
-            PropertyType.STATUS,
-        ):
-            return prop.option_names
-        elif prop.type == PropertyType.RELATION:
-            return await self._get_relation_options(prop)
+    def get_select_options_by_property_name(self, property_name: str) -> list[str]:
+        return self.property_reader.get_select_options_by_property_name(property_name)
 
-        return []
+    def get_multi_select_options_by_property_name(self, property_name: str) -> list[str]:
+        return self.property_reader.get_multi_select_options_by_property_name(property_name)
 
-    def get_property_type(self, property_name: str) -> str | None:
-        """
-        Get the type of a property by its name.
-        """
-        prop = self._properties.get(property_name)
-        if not prop:
-            return None
-
-        if isinstance(prop, dict):
-            return prop.get("type")
-
-        return prop.type
-
-    def get_status_property(self, property_name: str) -> DatabaseStatusProperty | None:
-        return self._get_database_property(property_name, DatabaseStatusProperty)
-
-    def get_select_property(self, property_name: str) -> DatabaseSelectProperty | None:
-        return self._get_database_property(property_name, DatabaseSelectProperty)
-
-    def get_multi_select_property(self, property_name: str) -> DatabaseMultiSelectProperty | None:
-        return self._get_database_property(property_name, DatabaseMultiSelectProperty)
-
-    def get_relation_property(self, property_name: str) -> DatabaseRelationProperty | None:
-        return self._get_database_property(property_name, DatabaseRelationProperty)
+    def get_status_options_by_property_name(self, property_name: str) -> list[str]:
+        return self.property_reader.get_status_options_by_property_name(property_name)
 
     async def query_database_by_title(self, page_title: str) -> list[NotionPage]:
         """
@@ -189,10 +159,6 @@ class NotionDatabase(NotionEntity):
         return pages
 
     async def get_last_edited_time(self) -> str:
-        """
-        Retrieve the last edited time of the database.
-        Returns ISO 8601 timestamp string of the last database edit.
-        """
         db = await self.client.get_database(self.id)
         return db.last_edited_time
 
@@ -207,62 +173,6 @@ class NotionDatabase(NotionEntity):
         async for batch in self._paginate_database(page_size, filter_conditions):
             for page_response in batch:
                 yield await NotionPage.from_id(page_response.id)
-
-    async def _get_relation_options(self, relation_prop: DatabaseRelationProperty) -> list[str]:
-        """
-        Get the titles of all pages related to a relation property.
-        """
-        related_db_id = relation_prop.related_database_id
-        if not related_db_id:
-            return []
-
-        async with NotionDatabseHttpClient(database_id=related_db_id) as related_client:
-            search_results = await related_client.query_database()
-
-        page_titles = []
-        for page_response in search_results.results:
-            title = self._extract_title_from_page(page_response)
-            if title:
-                page_titles.append(title)
-
-        return page_titles
-
-    def _extract_title_from_page(self, page: NotionPageDto) -> str | None:
-        """
-        Extract the title from a NotionPageDto object using typed properties.
-        """
-        if not page.properties:
-            return None
-
-        title_property = next(
-            (prop for prop in page.properties.values() if isinstance(prop, PageTitleProperty)),
-            None,
-        )
-
-        if not title_property:
-            # Fallback to old method for backward compatibility
-            title_property = next(
-                (prop for prop in page.properties.values() if isinstance(prop, dict) and prop.get("type") == "title"),
-                None,
-            )
-
-            if not title_property or "title" not in title_property:
-                return None
-
-            try:
-                title_parts = title_property["title"]
-                return "".join(part.get("plain_text", "") for part in title_parts)
-            except (KeyError, TypeError, AttributeError):
-                return None
-
-        return "".join(item.plain_text for item in title_property.title)
-
-    def _get_database_property(self, name: str, property_type: type[DatabasePropertyT]) -> DatabasePropertyT | None:
-        """Get a database property by name and type with type safety."""
-        prop = self._properties.get(name)
-        if isinstance(prop, property_type):
-            return prop
-        return None
 
     async def _paginate_database(
         self,

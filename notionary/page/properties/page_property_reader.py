@@ -4,6 +4,7 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any
 
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.page.properties.page_property_models import (
     PageCheckboxProperty,
     PageCreatedTimeProperty,
@@ -31,8 +32,9 @@ Extractor = Callable[[str], Awaitable[Any]]
 
 
 class PagePropertyReader:
-    def __init__(self, notion_page: NotionPage):
+    def __init__(self, notion_page: NotionPage) -> None:
         self._notion_page = notion_page
+        self._parent_database = notion_page._parent_database
         self._property_extractors = self._build_property_extractors()
 
     def _build_property_extractors(self) -> dict[PropertyType, Extractor]:
@@ -148,8 +150,6 @@ class PagePropertyReader:
         return date_property.date.start
 
     async def get_value_of_rich_text_property(self, name: str) -> str:
-        from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-
         rich_text_property = self._get_property(name, PageRichTextProperty)
         if not rich_text_property:
             return ""
@@ -170,3 +170,41 @@ class PagePropertyReader:
         if isinstance(prop, property_type):
             return prop
         return None
+
+    # --- PROPERTY OPTIONS (for select, multi-select, status, relation) ---
+    # Decorator (sollte hier None zurückgegeben werden? Was wäre hier am idiomatiscsten?)
+    async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
+        if not self._property_exist_in_parent_database(property_name):
+            return []
+
+        return await self._parent_database.property_reader.get_options_for_property_by_name(property_name)
+
+    def get_select_options_by_property_name(self, property_name: str) -> list[str]:
+        if not self._property_exist_in_parent_database(property_name):
+            return []
+
+        return self._parent_database.property_reader.get_select_options_by_property_name(property_name)
+
+    def get_multi_select_options_by_property_name(self, property_name: str) -> list[str]:
+        if not self._property_exist_in_parent_database(property_name):
+            return []
+
+        return self._parent_database.property_reader.get_multi_select_options_by_property_name(property_name)
+
+    def get_status_options_by_property_name(self, property_name: str) -> list[str]:
+        if not self._property_exist_in_parent_database(property_name):
+            return []
+
+        return self._parent_database.property_reader.get_status_options_by_property_name(property_name)
+
+    async def get_relation_options_by_property_name(self, property_name: str) -> list[str]:
+        if not self._property_exist_in_parent_database(property_name):
+            return []
+
+        return await self._parent_database.property_reader.get_relation_options_by_property_name(property_name)
+
+    def _property_exist_in_parent_database(self, property_name: str) -> bool:
+        if not self._parent_database:
+            return False
+
+        return property_name in self._parent_database.properties
