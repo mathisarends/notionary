@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncGenerator
-from typing import Any, override
+from typing import Any
 
 from notionary.database.database_factory import (
     load_database_from_id,
@@ -40,10 +40,12 @@ class NotionDatabase(NotionEntity):
         url: str,
         archived: bool,
         in_trash: bool,
+        is_inline: bool,
         emoji_icon: str | any | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
         properties: dict[str, DatabaseNotionProperty] | None = None,
+        description: str | None = None,
     ):
         super().__init__(
             id=id,
@@ -56,6 +58,9 @@ class NotionDatabase(NotionEntity):
             cover_image_url=cover_image_url,
         )
         self._properties = properties or {}
+        self._description = description
+        self._is_inline = is_inline
+
         self.client = NotionDatabseHttpClient(database_id=id)
 
         self._metadata_update_client = DatabaseMetadataUpdateClient(database_id=id)
@@ -73,8 +78,12 @@ class NotionDatabase(NotionEntity):
         return await load_database_from_title(title, min_similarity)
 
     @property
-    def emoji(self) -> str | None:
-        return self._emoji_icon
+    def description(self) -> str | None:
+        return self._description
+
+    @property
+    def is_inline(self) -> bool:
+        return self._is_inline
 
     @property
     def _entity_metadata_update_client(self) -> EntityMetadataUpdateClient:
@@ -90,12 +99,15 @@ class NotionDatabase(NotionEntity):
 
         return await NotionPage.from_id(create_page_response.id)
 
-    @override
     async def set_title(self, title: str) -> None:
         result = await self.client.update_database_title(title=title)
         self._title = result.title[0].plain_text
 
-    async def get_property_options(self, property_name: str) -> list[str]:
+    async def set_description(self, description: str) -> None:
+        udapted_description = await self.client.update_database_description(description=description)
+        self._description = udapted_description
+
+    async def get_options_by_property_name(self, property_name: str) -> list[str]:
         prop = self._properties.get(property_name)
 
         if not prop:
@@ -112,14 +124,6 @@ class NotionDatabase(NotionEntity):
 
         return []
 
-    # Keep the old method name for backward compatibility
-    async def get_options_by_property_name(self, property_name: str) -> list[str]:
-        """
-        Retrieve all option names for a select, multi_select, status, or relation property.
-        (Backward compatibility method - use get_property_options instead)
-        """
-        return await self.get_property_options(property_name)
-
     def get_property_type(self, property_name: str) -> str | None:
         """
         Get the type of a property by its name.
@@ -134,19 +138,15 @@ class NotionDatabase(NotionEntity):
         return prop.type
 
     def get_status_property(self, property_name: str) -> DatabaseStatusProperty | None:
-        """Get a status property by name with type safety."""
         return self._get_database_property(property_name, DatabaseStatusProperty)
 
     def get_select_property(self, property_name: str) -> DatabaseSelectProperty | None:
-        """Get a select property by name with type safety."""
         return self._get_database_property(property_name, DatabaseSelectProperty)
 
     def get_multi_select_property(self, property_name: str) -> DatabaseMultiSelectProperty | None:
-        """Get a multi-select property by name with type safety."""
         return self._get_database_property(property_name, DatabaseMultiSelectProperty)
 
     def get_relation_property(self, property_name: str) -> DatabaseRelationProperty | None:
-        """Get a relation property by name with type safety."""
         return self._get_database_property(property_name, DatabaseRelationProperty)
 
     async def query_database_by_title(self, page_title: str) -> list[NotionPage]:

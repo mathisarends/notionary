@@ -1,19 +1,15 @@
 import asyncio
 
-from notionary import NotionPage
+from notionary import NotionDatabase
 
-PAGE_NAME = "Jarvis Clipboard"
+PAGE_NAME = "Wissen & Notizen"
 
 
 async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
-        page = await NotionPage.from_title(PAGE_NAME)
-
-        content = await page.get_markdown_content()
-        await page.set_emoji_icon("📝")
-        print("📝 Markdown Content:")
-        print(content)
+        db = await NotionDatabase.from_title(PAGE_NAME)
+        await db.set_description("Neue Beschreibung der Datenbank")
 
     except Exception as e:
         import traceback

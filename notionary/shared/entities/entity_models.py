@@ -5,7 +5,6 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.icon_models import Icon
 from notionary.shared.models.parent_models import NotionParent
@@ -35,7 +34,6 @@ class NotionEntityResponseDto(BaseModel):
 
 
 class NotionEntityUpdateDto(BaseModel):
-    title: list[RichTextObject] | None = None
     icon: Icon | None = None
     cover: NotionCover | None = None
     archived: bool | None = None

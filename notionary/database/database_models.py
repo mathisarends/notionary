@@ -29,7 +29,6 @@ class NotionQueryDatabaseResponse(BaseModel):
     request_id: str
 
 
-# TODO: this is basically the same but with different model results (it should be a union type)
 class NotionDatabaseSearchResponse(BaseModel):
     object: Literal["list"]
     results: list[NotionDatabaseDto]
@@ -45,3 +44,4 @@ class NotionDatabaseUpdateDto(BaseModel):
     icon: Icon | None = None
     cover: NotionCover | None = None
     archived: bool | None = None
+    description: list[RichTextObject] | None = None

@@ -55,7 +55,25 @@ class NotionDatabaseFactory(NotionEntityFactory):
         from notionary import NotionDatabase
 
         entity_kwargs = await self._create_common_entity_kwargs(response)
+
+        entity_kwargs["is_inline"] = self._extract_is_inline(response)
+        entity_kwargs["description"] = await self._extract_description(response)
+
         return NotionDatabase(**entity_kwargs)
+
+    async def _extract_description(self, response: NotionEntityResponseDto) -> str:
+        from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+
+        database_response: NotionDatabaseDto = cast(NotionDatabaseDto, response)
+        description_rich_text = database_response.description
+
+        rich_text_markdown_converter = RichTextToMarkdownConverter()
+
+        return await rich_text_markdown_converter.to_markdown(description_rich_text)
+
+    def _extract_is_inline(self, response: NotionEntityResponseDto) -> bool:
+        database_response: NotionDatabaseDto = cast(NotionDatabaseDto, response)
+        return database_response.is_inline
 
 
 async def load_database_from_id(database_id: str) -> NotionDatabase:
