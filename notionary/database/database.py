@@ -4,12 +4,15 @@ import asyncio
 from collections.abc import AsyncGenerator
 from typing import Any
 
+from notionary.database.database_factory import (
+    load_database_from_id,
+    load_database_from_name,
+)
 from notionary.database.database_filter_builder import DatabaseFilterBuilder
 from notionary.database.database_http_client import NotionDatabseHttpClient
 from notionary.database.database_models import (
     NotionQueryDatabaseResponse,
 )
-from notionary.database.database_provider import NotionDatabaseProvider
 from notionary.page.page import NotionPage
 from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.page_property_models import (
@@ -43,12 +46,11 @@ class NotionDatabase(LoggingMixin):
         self._emoji_icon = emoji_icon
         self._properties = properties or {}
 
-        self.client = NotionDatabseHttpClient()
+        self.client = NotionDatabseHttpClient(database_id=id)
 
     @classmethod
     async def from_database_id(cls, id: str) -> NotionDatabase:
-        provider = cls.get_database_provider()
-        return await provider.get_database_by_id(id)
+        return await load_database_from_id(id)
 
     @classmethod
     async def from_database_name(
@@ -56,8 +58,7 @@ class NotionDatabase(LoggingMixin):
         database_name: str,
         min_similarity: float = 0.6,
     ) -> NotionDatabase:
-        provider = cls.get_database_provider()
-        return await provider.get_database_by_name(database_name, min_similarity)
+        return await load_database_from_name(database_name, min_similarity)
 
     @property
     def id(self) -> str:
@@ -79,43 +80,29 @@ class NotionDatabase(LoggingMixin):
     def properties(self) -> dict[str, DatabaseNotionProperty]:
         return self._properties
 
-    @property
-    def database_provider(self) -> NotionDatabaseProvider:
-        return NotionDatabaseProvider()
-
-    @classmethod
-    def get_database_provider(cls) -> NotionDatabaseProvider:
-        return NotionDatabaseProvider()
-
     async def create_blank_page(self) -> NotionPage:
         """
         Create a new blank page in the database with minimal properties.
         """
-        create_page_response: NotionPageDto = await self.client.create_page(parent_database_id=self.id)
+        create_page_response: NotionPageDto = await self.client.create_page()
 
         return await NotionPage.from_page_id(page_id=create_page_response.id)
 
     async def set_title(self, new_title: str) -> str:
-        result = await self.client.update_database_title(database_id=self.id, title=new_title)
+        result = await self.client.update_database_title(title=new_title)
 
         self._title = result.title[0].plain_text
-        self.database_provider.invalidate_database_cache(database_id=self.id)
         return self._title
 
-    async def set_emoji(self, new_emoji: str) -> str:
-        """
-        Update the database emoji.
-        """
-        result = await self.client.update_database_emoji(database_id=self.id, emoji=new_emoji)
+    async def set_emoji_icon(self, new_emoji: str) -> str:
+        result = await self.client.update_database_emoji_icon(emoji=new_emoji)
 
         self._emoji_icon = result.icon.emoji if result.icon else None
-        self.database_provider.invalidate_database_cache(database_id=self.id)
         return self._emoji_icon
 
     async def set_cover_image(self, image_url: str) -> str:
-        result = await self.client.update_database_cover_image(database_id=self.id, image_url=image_url)
+        result = await self.client.update_database_cover_image(image_url=image_url)
 
-        self.database_provider.invalidate_database_cache(database_id=self.id)
         return result.cover.external.url if result.cover and result.cover.external else image_url
 
     async def set_random_gradient_cover(self) -> str:
@@ -123,9 +110,8 @@ class NotionDatabase(LoggingMixin):
         return await self.set_cover_image(random_cover_url)
 
     async def set_external_icon(self, external_icon_url: str) -> str:
-        result = await self.client.update_database_external_icon(database_id=self.id, icon_url=external_icon_url)
+        result = await self.client.update_database_external_icon(icon_url=external_icon_url)
 
-        self.database_provider.invalidate_database_cache(database_id=self.id)
         return result.icon.external.url if result.icon and result.icon.external else external_icon_url
 
     async def get_property_options(self, property_name: str) -> list[str]:
@@ -190,9 +176,7 @@ class NotionDatabase(LoggingMixin):
         """
         Query the database for pages with a specific title.
         """
-        search_results: NotionQueryDatabaseResponse = await self.client.query_database_by_title(
-            database_id=self.id, page_title=page_title
-        )
+        search_results: NotionQueryDatabaseResponse = await self.client.query_database_by_title(page_title=page_title)
 
         page_results: list[NotionPage] = []
 
@@ -255,7 +239,8 @@ class NotionDatabase(LoggingMixin):
         if not related_db_id:
             return []
 
-        search_results = await self.client.query_database(database_id=related_db_id)
+        async with NotionDatabseHttpClient(database_id=related_db_id) as related_client:
+            search_results = await related_client.query_database()
 
         page_titles = []
         for page_response in search_results.results:
@@ -321,9 +306,7 @@ class NotionDatabase(LoggingMixin):
             if filter_conditions:
                 query_data["filter"] = filter_conditions
 
-            result: NotionQueryDatabaseResponse = await self.client.query_database(
-                database_id=self.id, query_data=query_data
-            )
+            result: NotionQueryDatabaseResponse = await self.client.query_database(query_data=query_data)
 
             if not result or not result.results:
                 return

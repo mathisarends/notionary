@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from notionary.http.notion_http_client import NotionHttpClient
+from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.page_property_models import PageTitleProperty
 from notionary.shared.models.cover_models import CoverType
@@ -16,17 +16,14 @@ if TYPE_CHECKING:
 
 
 async def load_page_from_id(page_id: str) -> NotionPage:
-    """Load a NotionPage from a page ID."""
     formatted_id = format_uuid(page_id) or page_id
 
-    async with NotionHttpClient() as client:
-        page_response = await client.get_page(formatted_id)
+    async with NotionPageHttpClient(page_id=formatted_id) as client:
+        page_response = await client.get_page()
         return await _load_page_from_response(page_response)
 
 
 async def load_page_from_name(page_name: str, min_similarity: float = 0.6) -> NotionPage:
-    """Load a NotionPage by finding a page with fuzzy matching on the title."""
-    # Lazy import to avoid circular imports
     from notionary.workspace import NotionWorkspace
 
     workspace = NotionWorkspace()
@@ -46,8 +43,8 @@ async def load_page_from_name(page_name: str, min_similarity: float = 0.6) -> No
         available_titles = [result.title for result in search_results[:5]]
         raise ValueError(f"No sufficiently similar page found for '{page_name}'. Available: {available_titles}")
 
-    async with NotionHttpClient() as client:
-        page_response = await client.get_page(page_id=best_match.item.id)
+    async with NotionPageHttpClient(page_id=best_match.item.id) as client:
+        page_response = await client.get_page()
         return await _load_page_from_response(page_response=page_response)
 
 
@@ -59,8 +56,8 @@ async def load_page_from_url(url: str) -> NotionPage:
 
     formatted_id = format_uuid(page_id) or page_id
 
-    async with NotionHttpClient() as client:
-        page_response = await client.get_page(formatted_id)
+    async with NotionPageHttpClient(page_id=formatted_id) as client:
+        page_response = await client.get_page()
         return await _load_page_from_response(page_response)
 
 

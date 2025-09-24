@@ -23,5 +23,9 @@ class ExternalIcon(BaseModel):
     type: Literal[IconType.EXTERNAL] = IconType.EXTERNAL
     external: ExternalFile
 
+    @classmethod
+    def from_url(cls, url: str) -> ExternalIcon:
+        return cls(external=ExternalFile(url=url))
+
 
 Icon = EmojiIcon | ExternalIcon

@@ -113,7 +113,6 @@ class PagePropertyReader:
         return created_time_property.created_time if created_time_property else None
 
     async def get_values_of_relation_property(self, name: str) -> list[str]:
-        """Get the values of a relation property."""
         from notionary.page.page_factory import load_page_from_id
 
         relation_property = self._get_property(name, PageRelationProperty)

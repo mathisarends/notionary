@@ -13,7 +13,7 @@ from notionary.file_upload.models import (
     FileUploadResponse,
     UploadMode,
 )
-from notionary.http.notion_http_client import NotionHttpClient
+from notionary.http.http_client import NotionHttpClient
 
 
 class FileUploadHttpClient(NotionHttpClient):

@@ -1,4 +1,4 @@
-from notionary.http.notion_http_client import NotionHttpClient
+from notionary.http.http_client import NotionHttpClient
 from notionary.user.models import (
     NotionBotUserResponse,
     NotionUserResponse,

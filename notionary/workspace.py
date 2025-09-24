@@ -3,7 +3,7 @@ import asyncio
 from notionary import NotionDatabase, NotionPage
 from notionary.database.database_http_client import NotionDatabseHttpClient
 from notionary.database.database_models import NotionQueryDatabaseResponse
-from notionary.http.notion_http_client import NotionHttpClient
+from notionary.http.http_client import NotionHttpClient
 from notionary.page.search_filter_builder import SearchFilterBuilder
 from notionary.user import NotionUser, NotionUserManager
 from notionary.util import LoggingMixin
@@ -21,7 +21,6 @@ class NotionWorkspace(LoggingMixin):
         """
         Initialize the workspace with Notion clients.
         """
-        self.database_client = NotionDatabseHttpClient()
         self.notion_client = NotionHttpClient()
         self.user_manager = NotionUserManager()
 
@@ -50,7 +49,9 @@ class NotionWorkspace(LoggingMixin):
         """
         search_query = self._truncate_query_if_needed(query)
 
-        response = await self.database_client.search_databases(query=search_query, limit=limit)
+        # Create a temporary client for search operations (no specific database_id needed)
+        async with NotionDatabseHttpClient(database_id="temp") as temp_client:
+            response = await temp_client.search_databases(query=search_query, limit=limit)
         return await asyncio.gather(*(NotionDatabase.from_database_id(database.id) for database in response.results))
 
     async def search_users(self, query: str, limit: int = 100) -> list[NotionUser]:
@@ -68,7 +69,8 @@ class NotionWorkspace(LoggingMixin):
         List all databases in the workspace.
         Returns a list of NotionDatabase instances.
         """
-        database_results = await self.database_client.search_databases(query="", limit=limit)
+        async with NotionDatabseHttpClient(database_id="temp") as temp_client:
+            database_results = await temp_client.search_databases(query="", limit=limit)
         return [await NotionDatabase.from_database_id(database.id) for database in database_results.results]
 
     # User-related methods (limited due to API constraints)

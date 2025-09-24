@@ -16,35 +16,35 @@ async def load_database_from_id(database_id: str) -> NotionDatabase:
     """Load a NotionDatabase from a database ID."""
     formatted_id = format_uuid(database_id) or database_id
 
-    async with NotionDatabseHttpClient() as client:
-        db_response = await client.get_database(formatted_id)
+    async with NotionDatabseHttpClient(database_id=formatted_id) as client:
+        db_response = await client.get_database()
         return _load_database_from_response(db_response)
 
 
 async def load_database_from_name(database_name: str, min_similarity: float = 0.6) -> NotionDatabase:
     """Load a NotionDatabase by finding a database with fuzzy matching on the title."""
-    async with NotionDatabseHttpClient() as client:
-        search_result = await client.search_databases(database_name, limit=10)
+    from notionary.workspace import NotionWorkspace
 
-        if not search_result.results:
-            raise ValueError(f"No databases found for name: {database_name}")
+    workspace = NotionWorkspace()
+    search_results: list[NotionDatabase] = await workspace.search_databases(database_name, limit=10)
 
-        best_match = find_best_match(
-            query=database_name,
-            items=search_result.results,
-            text_extractor=lambda db: _extract_title(db),
-            min_similarity=min_similarity,
-        )
+    if not search_results:
+        raise ValueError(f"No databases found for name: {database_name}")
 
-        if not best_match:
-            available_titles = [_extract_title(db) for db in search_result.results[:5]]
-            raise ValueError(
-                f"No sufficiently similar database found for '{database_name}'. Available: {available_titles}"
-            )
+    best_match = find_best_match(
+        query=database_name,
+        items=search_results,
+        text_extractor=lambda database: database.title,
+        min_similarity=min_similarity,
+    )
 
-        database_id = best_match.item.id
-        db_response = await client.get_database(database_id=database_id)
-        return _load_database_from_response(db_response)
+    if not best_match:
+        available_titles = [result.title for result in search_results[:5]]
+        raise ValueError(f"No sufficiently similar database found for '{database_name}'. Available: {available_titles}")
+
+    async with NotionDatabseHttpClient(database_id=best_match.item.id) as client:
+        db_response = await client.get_database()
+        return _load_database_from_response(db_response=db_response)
 
 
 def _load_database_from_response(

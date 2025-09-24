@@ -90,10 +90,6 @@ class NotionPage(LoggingMixin):
 
     @classmethod
     async def from_page_name(cls, page_name: str, min_similarity: float = 0.6) -> NotionPage:
-        """
-        Create a NotionPage by finding a page with fuzzy matching on the title.
-        Uses Notion's search API and fuzzy matching to find the best result.
-        """
         return await load_page_from_name(page_name, min_similarity)
 
     @classmethod
@@ -217,12 +213,12 @@ class NotionPage(LoggingMixin):
     async def create_child_database(self, title: str) -> NotionDatabase:
         from notionary import NotionDatabase
 
-        database_client = NotionDatabseHttpClient()
-
-        create_database_response = await database_client.create_database(
-            title=title,
-            parent_page_id=self._page_id,
-        )
+        # Use a temporary database_id since this creates a new database
+        async with NotionDatabseHttpClient(database_id=self._parent_database.id or "temp") as database_client:
+            create_database_response = await database_client.create_database(
+                title=title,
+                parent_page_id=self._page_id,
+            )
 
         return await NotionDatabase.from_database_id(id=create_database_response.id)
 
@@ -264,8 +260,9 @@ class NotionPage(LoggingMixin):
         await self.property_writer.set_relation_property_by_relation_values(property_name, relation_values)
 
     def _setup_page_context_provider(self) -> PageContextProvider:
+        # Use a temporary database_id for page context
         return PageContextProvider(
             page_id=self._page_id,
-            database_client=NotionDatabseHttpClient(),
+            database_client=NotionDatabseHttpClient(database_id=self._parent_database.id or "temp"),
             file_upload_client=FileUploadHttpClient(),
         )

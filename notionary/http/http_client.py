@@ -15,8 +15,7 @@ from notionary.http.exceptions import (
     NotionServerError,
     NotionValidationError,
 )
-from notionary.http.http_methods import HttpMethod
-from notionary.page.page_models import NotionPageDto
+from notionary.http.http_models import HttpMethod
 from notionary.util import LoggingMixin
 
 load_dotenv()
@@ -82,23 +81,19 @@ class NotionHttpClient(LoggingMixin):
         self.logger.debug("NotionHttpClient closed")
 
     async def get(self, endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any] | None:
-        return await self._make_request(HttpMethod.GET, endpoint, params=params)
+        return await self.make_request(HttpMethod.GET, endpoint, params=params)
 
     async def post(self, endpoint: str, data: dict[str, Any] | None = None) -> dict[str, Any] | None:
-        return await self._make_request(HttpMethod.POST, endpoint, data)
+        return await self.make_request(HttpMethod.POST, endpoint, data)
 
     async def patch(self, endpoint: str, data: dict[str, Any] | None = None) -> dict[str, Any] | None:
-        return await self._make_request(HttpMethod.PATCH, endpoint, data)
+        return await self.make_request(HttpMethod.PATCH, endpoint, data)
 
     async def delete(self, endpoint: str) -> bool:
-        result = await self._make_request(HttpMethod.DELETE, endpoint)
+        result = await self.make_request(HttpMethod.DELETE, endpoint)
         return result is not None
 
-    async def get_page(self, page_id: str) -> NotionPageDto:
-        response = await self.get(f"pages/{page_id}")
-        return NotionPageDto.model_validate(response)
-
-    async def _make_request(
+    async def make_request(
         self,
         method: HttpMethod,
         endpoint: str,

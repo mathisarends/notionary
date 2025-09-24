@@ -1,7 +1,7 @@
 from typing import Any
 
 from notionary.blocks.models import Block, BlockChildrenResponse, BlockCreateRequest
-from notionary.http.notion_http_client import NotionHttpClient
+from notionary.http.http_client import NotionHttpClient
 
 
 class NotionBlockHttpClient(NotionHttpClient):

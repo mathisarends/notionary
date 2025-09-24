@@ -11,7 +11,7 @@ from notionary.comments.comment_models import (
     CommentListRequest,
     CommentListResponse,
 )
-from notionary.http.notion_http_client import NotionHttpClient
+from notionary.http.http_client import NotionHttpClient
 
 
 class CommentClient(NotionHttpClient):

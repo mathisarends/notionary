@@ -1,8 +1,8 @@
 import asyncio
 
-from notionary import NotionPage
+from notionary import NotionDatabase
 
-PAGE_NAME = "Jarivs Clipboard"
+PAGE_NAME = "Wissen & Notizen"
 
 
 async def main():
@@ -13,10 +13,11 @@ async def main():
 
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
-        page = await NotionPage.from_page_name(PAGE_NAME)
+        db = await NotionDatabase.from_database_name(PAGE_NAME)
 
-        content = await page.get_markdown_content()
-        print("content", content)
+        await db.set_title("Neuer Titel")
+
+        await db.set_emoji_icon("🚀")
 
     except Exception as e:
         import traceback

@@ -16,10 +16,6 @@ from notionary.shared.models.user_models import NotionUser
 
 
 class NoionDatabaseDto(NotionObjectWithDatabaseProperties):
-    """
-    Represents the response from the Notion API when retrieving a database.
-    """
-
     object: Literal["database"]
     id: str
     cover: Any | None = None
@@ -40,10 +36,6 @@ class NoionDatabaseDto(NotionObjectWithDatabaseProperties):
 
 
 class NotionQueryDatabaseResponse(BaseModel):
-    """
-    Notion database query response model for querying pages within a database.
-    """
-
     object: Literal["list"]
     results: list[NotionPageDto]
     next_cursor: str | None = None
@@ -54,10 +46,6 @@ class NotionQueryDatabaseResponse(BaseModel):
 
 
 class NotionDatabaseSearchResponse(BaseModel):
-    """
-    Notion search response model for database-only searches.
-    """
-
     object: Literal["list"]
     results: list[NoionDatabaseDto]
     next_cursor: str | None = None
@@ -65,3 +53,9 @@ class NotionDatabaseSearchResponse(BaseModel):
     type: Literal["page_or_database"]
     page_or_database: dict[str, Any]
     request_id: str
+
+
+class NotionDatabaseUpdateDto(BaseModel):
+    title: list[RichTextObject] | None = None
+    icon: Icon | None = None
+    cover: NotionCover | None = None

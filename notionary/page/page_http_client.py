@@ -3,7 +3,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.http.notion_http_client import NotionHttpClient
+from notionary.http.http_client import NotionHttpClient
 from notionary.page.page_models import NotionPageDto, NotionPageUpdateDto
 from notionary.page.properties.page_property_models import (
     DateValue,
@@ -39,6 +39,11 @@ class NotionPageHttpClient(NotionHttpClient):
         super().__init__()
         self._page_id = page_id
         self._page_properties = properties
+
+    async def get_page(self) -> NotionPageDto:
+        response = await self.get(f"pages/{self._page_id}")
+        page_dto = NotionPageDto.model_validate(response)
+        return page_dto
 
     async def patch_page(self, data: BaseModel) -> NotionPageDto:
         data_dict = data.model_dump(exclude_unset=True, exclude_none=True)
