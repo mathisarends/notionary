@@ -96,9 +96,33 @@ class NotionDatabseHttpClient(NotionHttpClient):
 
         return await self.patch_database(database_external_icon_update_dto_dict)
 
+    async def remove_icon(self) -> NotionDatabaseDto:
+        database_icon_remove_dto = NotionDatabaseUpdateDto(icon=None)
+        database_icon_remove_dto_dict = database_icon_remove_dto.model_dump()
+
+        return await self.patch_database(database_icon_remove_dto_dict)
+
     async def update_database_cover_image(self, image_url: str) -> NotionDatabaseDto:
         notion_cover = NotionCover.from_url(image_url)
         database_cover_update_dto = NotionDatabaseUpdateDto(cover=notion_cover)
         database_cover_update_dto_dict = database_cover_update_dto.model_dump(exclude_none=True)
 
         return await self.patch_database(database_cover_update_dto_dict)
+
+    async def remove_cover_image(self) -> NotionDatabaseDto:
+        database_cover_remove_dto = NotionDatabaseUpdateDto(cover=None)
+        database_cover_remove_dto_dict = database_cover_remove_dto.model_dump()
+
+        return await self.patch_database(database_cover_remove_dto_dict)
+
+    async def archive_database(self) -> NotionDatabaseDto:
+        database_archive_dto = NotionDatabaseUpdateDto(archived=True)
+        database_archive_dto_dict = database_archive_dto.model_dump(exclude_none=True)
+
+        return await self.patch_database(database_archive_dto_dict)
+
+    async def unarchive_database(self) -> NotionDatabaseDto:
+        database_unarchive_dto = NotionDatabaseUpdateDto(archived=False)
+        database_unarchive_dto_dict = database_unarchive_dto.model_dump(exclude_none=True)
+
+        return await self.patch_database(database_unarchive_dto_dict)

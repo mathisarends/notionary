@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Any, Literal
 
 from pydantic import BaseModel
@@ -14,6 +12,7 @@ from notionary.shared.models.database_property_models import (
 from notionary.shared.models.icon_models import Icon
 
 
+# descriptions should be parsable here in the factory aswell (should be changable as well - implement methods from databse)
 class NotionDatabaseDto(NotionEntityResponseDto, NotionObjectWithDatabaseProperties):
     title: list[RichTextObject]
     description: list[RichTextObject]
@@ -30,6 +29,7 @@ class NotionQueryDatabaseResponse(BaseModel):
     request_id: str
 
 
+# TODO: this is basically the same but with different model results (it should be a union type)
 class NotionDatabaseSearchResponse(BaseModel):
     object: Literal["list"]
     results: list[NotionDatabaseDto]
@@ -44,3 +44,4 @@ class NotionDatabaseUpdateDto(BaseModel):
     title: list[RichTextObject] | None = None
     icon: Icon | None = None
     cover: NotionCover | None = None
+    archived: bool | None = None

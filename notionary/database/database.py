@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncGenerator
-from typing import Any, override
+from typing import Any
 
 from notionary.database.database_factory import (
     load_database_from_id,
@@ -81,62 +81,45 @@ class NotionDatabase(NotionEntity):
 
         return await NotionPage.from_id(create_page_response.id)
 
-    @override
     async def set_title(self, title: str) -> None:
         result = await self.client.update_database_title(title=title)
         self._title = result.title[0].plain_text
 
-    @override
     async def set_emoji_icon(self, emoji: str) -> None:
         result = await self.client.update_database_emoji_icon(emoji=emoji)
         self._emoji_icon = result.icon.emoji if result.icon else None
 
-    @override
     async def set_cover_image_by_url(self, image_url: str) -> None:
         result = await self.client.update_database_cover_image(image_url=image_url)
         self._cover_image_url = result.cover.external.url if result.cover and result.cover.external else image_url
 
-    @override
     async def set_random_gradient_cover(self) -> None:
         random_cover_url = self._get_random_gradient_cover()
         await self.set_cover_image_by_url(random_cover_url)
 
-    @override
     async def set_external_icon(self, icon_url: str) -> None:
         result = await self.client.update_database_external_icon(icon_url=icon_url)
         self._external_icon_url = result.icon.external.url if result.icon and result.icon.external else icon_url
         self._emoji_icon = None
 
-    @override
     async def remove_icon(self) -> None:
-        # Database API doesn't have a direct remove icon method, so we set it to None
-        # This would need to be implemented in the HTTP client if the API supports it
+        await self.client.remove_icon()
         self._emoji_icon = None
         self._external_icon_url = None
 
-    @override
     async def remove_cover_image(self) -> None:
-        # Database API doesn't have a direct remove cover method, so we set it to None
-        # This would need to be implemented in the HTTP client if the API supports it
+        await self.client.remove_cover_image()
         self._cover_image_url = None
 
-    @override
     async def archive(self) -> None:
-        # Database archiving would need to be implemented in the HTTP client
-        # For now, we just update the local state
+        await self.client.archive_database()
         self._is_archieved = True
 
-    @override
     async def unarchive(self) -> None:
-        # Database unarchiving would need to be implemented in the HTTP client
-        # For now, we just update the local state
+        await self.client.unarchive_database()
         self._is_archieved = False
 
     async def get_property_options(self, property_name: str) -> list[str]:
-        """
-        Get the available options for a property (select, multi_select, status, relation).
-        Returns empty list if property doesn't exist or has no options.
-        """
         prop = self._properties.get(property_name)
 
         if not prop:
