@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from notionary.database.database_http_client import NotionDatabseHttpClient
-from notionary.database.database_models import NoionDatabaseDto
+from notionary.database.database_models import NotionDatabaseDto
 from notionary.shared.models.cover_models import CoverType
 from notionary.shared.models.icon_models import IconType
 from notionary.util import format_uuid
@@ -49,7 +49,7 @@ async def load_database_from_name(database_name: str, min_similarity: float = 0.
 
 
 def _load_database_from_response(
-    db_response: NoionDatabaseDto,
+    db_response: NotionDatabaseDto,
 ) -> NotionDatabase:
     from notionary import NotionDatabase
 
@@ -71,13 +71,13 @@ def _load_database_from_response(
     )
 
 
-def _extract_title(db_response: NoionDatabaseDto) -> str:
+def _extract_title(db_response: NotionDatabaseDto) -> str:
     if db_response.title and len(db_response.title) > 0:
         return db_response.title[0].plain_text
     return "Untitled Database"
 
 
-def _extract_emoji_icon(db_response: NoionDatabaseDto) -> str | None:
+def _extract_emoji_icon(db_response: NotionDatabaseDto) -> str | None:
     if not db_response.icon:
         return None
 
@@ -87,7 +87,7 @@ def _extract_emoji_icon(db_response: NoionDatabaseDto) -> str | None:
     return None
 
 
-def _extract_external_icon_url(db_response: NoionDatabaseDto) -> str | None:
+def _extract_external_icon_url(db_response: NotionDatabaseDto) -> str | None:
     if not db_response.icon:
         return None
 
@@ -97,7 +97,7 @@ def _extract_external_icon_url(db_response: NoionDatabaseDto) -> str | None:
     return None
 
 
-def _extract_cover_image_url(db_response: NoionDatabaseDto) -> str | None:
+def _extract_cover_image_url(db_response: NotionDatabaseDto) -> str | None:
     if not db_response.cover:
         return None
 

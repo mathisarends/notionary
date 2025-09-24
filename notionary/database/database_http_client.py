@@ -1,7 +1,7 @@
 from typing import Any
 
 from notionary.database.database_models import (
-    NoionDatabaseDto,
+    NotionDatabaseDto,
     NotionDatabaseSearchResponse,
     NotionDatabaseUpdateDto,
     NotionQueryDatabaseResponse,
@@ -21,22 +21,22 @@ class NotionDatabseHttpClient(NotionHttpClient):
         self,
         title: str,
         parent_page_id: str | None,
-    ) -> NoionDatabaseDto:
+    ) -> NotionDatabaseDto:
         database_data = {
             "parent": {"page_id": parent_page_id},
             "title": [{"type": "text", "text": {"content": title}}],
         }
 
         response = await self.post("databases", database_data)
-        return NoionDatabaseDto.model_validate(response)
+        return NotionDatabaseDto.model_validate(response)
 
-    async def get_database(self) -> NoionDatabaseDto:
+    async def get_database(self) -> NotionDatabaseDto:
         response = await self.get(f"databases/{self._database_id}")
-        return NoionDatabaseDto.model_validate(response)
+        return NotionDatabaseDto.model_validate(response)
 
-    async def patch_database(self, data: dict[str, Any]) -> NoionDatabaseDto:
+    async def patch_database(self, data: dict[str, Any]) -> NotionDatabaseDto:
         response = await self.patch(f"databases/{self._database_id}", data=data)
-        return NoionDatabaseDto.model_validate(response)
+        return NotionDatabaseDto.model_validate(response)
 
     async def query_database(self, query_data: dict[str, Any] | None = None) -> NotionQueryDatabaseResponse:
         response = await self.post(f"databases/{self._database_id}/query", data=query_data)
@@ -71,7 +71,7 @@ class NotionDatabseHttpClient(NotionHttpClient):
         response = await self.post("pages", page_data)
         return NotionPageDto.model_validate(response)
 
-    async def update_database_title(self, title: str) -> NoionDatabaseDto:
+    async def update_database_title(self, title: str) -> NotionDatabaseDto:
         from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 
         markdown_rich_text_formatter = MarkdownRichTextConverter()
@@ -82,21 +82,21 @@ class NotionDatabseHttpClient(NotionHttpClient):
 
         return await self.patch_database(database_title_update_dto_dict)
 
-    async def update_database_emoji_icon(self, emoji: str) -> NoionDatabaseDto:
+    async def update_database_emoji_icon(self, emoji: str) -> NotionDatabaseDto:
         emoji_icon = EmojiIcon(emoji=emoji)
         database_emoji_icon_update_dto = NotionDatabaseUpdateDto(icon=emoji_icon)
         database_emoji_icon_update_dto_dict = database_emoji_icon_update_dto.model_dump(exclude_none=True)
 
         return await self.patch_database(database_emoji_icon_update_dto_dict)
 
-    async def update_database_external_icon(self, icon_url: str) -> NoionDatabaseDto:
+    async def update_database_external_icon(self, icon_url: str) -> NotionDatabaseDto:
         icon = ExternalIcon.from_url(icon_url)
         database_external_icon_update_dto = NotionDatabaseUpdateDto(icon=icon)
         database_external_icon_update_dto_dict = database_external_icon_update_dto.model_dump(exclude_none=True)
 
         return await self.patch_database(database_external_icon_update_dto_dict)
 
-    async def update_database_cover_image(self, image_url: str) -> NoionDatabaseDto:
+    async def update_database_cover_image(self, image_url: str) -> NotionDatabaseDto:
         notion_cover = NotionCover.from_url(image_url)
         database_cover_update_dto = NotionDatabaseUpdateDto(cover=notion_cover)
         database_cover_update_dto_dict = database_cover_update_dto.model_dump(exclude_none=True)

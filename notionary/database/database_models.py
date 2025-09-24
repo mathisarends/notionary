@@ -6,33 +6,19 @@ from pydantic import BaseModel
 
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.page.page_models import NotionPageDto
+from notionary.shared.entities.entity_models import NotionEntityDto
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.database_property_models import (
     NotionObjectWithDatabaseProperties,
 )
 from notionary.shared.models.icon_models import Icon
-from notionary.shared.models.parent_models import NotionParent
-from notionary.shared.models.user_models import NotionUser
 
 
-class NoionDatabaseDto(NotionObjectWithDatabaseProperties):
+class NotionDatabaseDto(NotionEntityDto, NotionObjectWithDatabaseProperties):
     object: Literal["database"]
-    id: str
-    cover: Any | None = None
-    icon: Icon | None = None
-    cover: NotionCover | None = None
-    created_time: str
-    last_edited_time: str
-    created_by: NotionUser
-    last_edited_by: NotionUser
     title: list[RichTextObject]
-    description: list[Any]
+    description: list[RichTextObject]
     is_inline: bool
-    parent: NotionParent
-    url: str
-    public_url: str | None = None
-    archived: bool
-    in_trash: bool
 
 
 class NotionQueryDatabaseResponse(BaseModel):
@@ -47,7 +33,7 @@ class NotionQueryDatabaseResponse(BaseModel):
 
 class NotionDatabaseSearchResponse(BaseModel):
     object: Literal["list"]
-    results: list[NoionDatabaseDto]
+    results: list[NotionDatabaseDto]
     next_cursor: str | None = None
     has_more: bool
     type: Literal["page_or_database"]

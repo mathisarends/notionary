@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from notionary import NotionPage
 
 
+# TODO: Norm these factories here aswell so that there is less code duplication
 async def load_page_from_id(page_id: str) -> NotionPage:
     formatted_id = format_uuid(page_id) or page_id
 
