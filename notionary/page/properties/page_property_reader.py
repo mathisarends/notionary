@@ -5,6 +5,7 @@ from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.database.database_property_reader import DatabasePropertyReader
 from notionary.page.properties.page_property_models import (
     PageCheckboxProperty,
     PageCreatedTimeProperty,
@@ -24,7 +25,7 @@ from notionary.page.properties.page_property_models import (
     PropertyType,
 )
 from notionary.shared.models.database_property_models import (
-    DatabaseSelectProperty,
+    DatabasePropertyOption,
     EnrichedDatabaseStatusOption,
 )
 
@@ -40,6 +41,10 @@ class PagePropertyReader:
         self._notion_page = notion_page
         self._parent_database = notion_page._parent_database
         self._property_extractors = self._build_property_extractors()
+
+    @property
+    def db_reader(self) -> DatabasePropertyReader | None:
+        return self._parent_database.property_reader if self._parent_database else None
 
     def _build_property_extractors(self) -> dict[PropertyType, Extractor]:
         return {
@@ -176,56 +181,29 @@ class PagePropertyReader:
         return None
 
     # --- PROPERTY OPTIONS (for select, multi-select, status, relation) ---
-    async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
-        if not self._property_exist_in_parent_database(property_name):
-            return []
-
-        return await self._parent_database.property_reader.get_options_for_property_by_name(property_name)
-
+    # Delegate db_reader options to make the api more accesible
     def get_select_options_by_property_name(self, property_name: str) -> list[str]:
-        if not self._property_exist_in_parent_database(property_name):
-            return []
+        return self.db_reader.get_select_options_by_property_name(property_name) if self.db_reader else []
 
-        return self._parent_database.property_reader.get_select_options_by_property_name(property_name)
-
-    def get_detailed_select_options_by_property_name(self, property_name: str) -> list[DatabaseSelectProperty]:
-        if not self._property_exist_in_parent_database(property_name):
-            return []
-
-        return self._parent_database.property_reader.get_detailed_select_options_by_property_name(property_name)
+    def get_detailed_select_options_by_property_name(self, property_name: str) -> list[DatabasePropertyOption]:
+        return self.db_reader.get_detailed_select_options_by_property_name(property_name) if self.db_reader else []
 
     def get_multi_select_options_by_property_name(self, property_name: str) -> list[str]:
-        if not self._property_exist_in_parent_database(property_name):
-            return []
+        return self.db_reader.get_multi_select_options_by_property_name(property_name) if self.db_reader else []
 
-        return self._parent_database.property_reader.get_multi_select_options_by_property_name(property_name)
-
-    def get_detailed_multi_select_options_by_property_name(self, property_name: str) -> list[DatabaseSelectProperty]:
-        if not self._property_exist_in_parent_database(property_name):
-            return []
-
-        return self._parent_database.property_reader.get_detailed_multi_select_options_by_property_name(property_name)
+    def get_detailed_multi_select_options_by_property_name(self, property_name: str) -> list[DatabasePropertyOption]:
+        return (
+            self.db_reader.get_detailed_multi_select_options_by_property_name(property_name) if self.db_reader else []
+        )
 
     def get_status_options_by_property_name(self, property_name: str) -> list[str]:
-        if not self._property_exist_in_parent_database(property_name):
-            return []
-
-        return self._parent_database.property_reader.get_status_options_by_property_name(property_name)
+        return self.db_reader.get_status_options_by_property_name(property_name) if self.db_reader else []
 
     def get_detailed_status_options_by_property_name(self, property_name: str) -> list[EnrichedDatabaseStatusOption]:
-        if not self._property_exist_in_parent_database(property_name):
-            return []
-
-        return self._parent_database.property_reader.get_detailed_status_options_by_property_name(property_name)
+        return self.db_reader.get_detailed_status_options_by_property_name(property_name) if self.db_reader else []
 
     async def get_relation_options_by_property_name(self, property_name: str) -> list[str]:
-        if not self._property_exist_in_parent_database(property_name):
-            return []
+        return await self.db_reader.get_relation_options_by_property_name(property_name) if self.db_reader else []
 
-        return await self._parent_database.property_reader.get_relation_options_by_property_name(property_name)
-
-    def _property_exist_in_parent_database(self, property_name: str) -> bool:
-        if not self._parent_database:
-            return False
-
-        return property_name in self._parent_database.properties
+    async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
+        return await self.db_reader.get_options_for_property_by_name(property_name) if self.db_reader else []

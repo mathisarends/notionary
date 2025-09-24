@@ -9,7 +9,10 @@ async def main():
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
         page = await NotionPage.from_title(PAGE_NAME)
-        await page.property_writer.set_relation_property_by_page_titles("Thema", ["Smart Home", "Lernen"])
+        # await page.property_writer.set_relation_property_by_page_titles("Thema", ["Smart Home", "Lernen"])
+
+        tag_options = page.property_reader.get_multi_select_options_by_property_name("Tags")
+        print(f"🏷️ Available tag options: {tag_options}")
 
     except Exception as e:
         import traceback
