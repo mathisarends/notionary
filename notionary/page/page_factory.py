@@ -6,7 +6,6 @@ from notionary.page.properties.page_property_models import PageTitleProperty
 from notionary.shared.entities.entity_factory import NotionEntityFactory
 from notionary.shared.entities.entity_models import NotionEntityResponseDto
 from notionary.util.fuzzy import find_best_match
-from notionary.util.page_id_utils import format_uuid
 
 if TYPE_CHECKING:
     from notionary import NotionPage
@@ -14,8 +13,7 @@ if TYPE_CHECKING:
 
 class NotionPageFactory(NotionEntityFactory):
     async def load_from_id(self, page_id: str) -> NotionPage:
-        formatted_id = format_uuid(page_id) or page_id
-        response = await self._fetch_page_response(formatted_id)
+        response = await self._fetch_page_response(page_id)
         return await self._create_page_from_response(response)
 
     async def load_from_title(self, page_title: str, min_similarity: float = 0.6) -> NotionPage:

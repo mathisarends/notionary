@@ -1,23 +1,18 @@
 import asyncio
 
-from notionary import NotionDatabase
+from notionary import NotionPage
 
-PAGE_NAME = "Wissen & Notizen"
+PAGE_NAME = "Jarvis Clipboard"
 
 
 async def main():
-    """Test the new caption syntax across different media blocks."""
-
-    print("🚀 Notionary Caption Syntax Test")
-    print("=" * 40)
-
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
-        db = await NotionDatabase.from_title(PAGE_NAME)
+        page = await NotionPage.from_title(PAGE_NAME)
 
-        print("db_title", db.title)
-        print("icon before", db.emoji)
-        print("url", db.url)
+        content = await page.get_markdown_content()
+        print("📝 Markdown Content:")
+        print(content)
 
     except Exception as e:
         import traceback

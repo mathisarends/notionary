@@ -86,7 +86,7 @@ class RichTextToMarkdownConverter:
         date_range = date_mention.start
         if date_mention.end:
             date_range += f"–{date_mention.end}"
-        return date_range
+        return f"@date[{date_range}]"
 
     def _apply_text_formatting_to_content(self, obj: RichTextObject, content: str) -> str:
         if obj.text and obj.text.link:

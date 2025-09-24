@@ -166,7 +166,7 @@ class TestRichTextToMarkdownConverter:
             )
         ]
         result = await converter.to_markdown(rich_text)
-        assert result == "2024-01-15–2024-01-20"
+        assert result == "@date[2024-01-15–2024-01-20]"
 
     @pytest.mark.asyncio
     async def test_mixed_content(self, converter: RichTextToMarkdownConverter) -> None:

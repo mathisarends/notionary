@@ -39,10 +39,10 @@ class TestPageNameIdResolver:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_resolve_page_id_with_valid_uuid(self, resolver: PageNameIdResolver) -> None:
-        uuid_str = "12345678-1234-1234-1234-123456789abc"
-        result = await resolver.resolve_page_id(uuid_str)
-        assert result == "12345678-1234-1234-1234-123456789abc"
+    async def test_resolve_page_id_with_search_name(self, resolver: PageNameIdResolver) -> None:
+        # Test searches for page name and returns the best match ID
+        result = await resolver.resolve_page_id("Test Page")
+        assert result == "page-123"
 
     @pytest.mark.asyncio
     async def test_resolve_page_id_with_name_search(
@@ -71,26 +71,21 @@ class TestPageNameIdResolver:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_resolve_page_name_with_invalid_uuid(self, resolver: PageNameIdResolver) -> None:
-        result = await resolver.resolve_page_name("invalid-uuid")
-        assert result is None
-
-    @pytest.mark.asyncio
     async def test_resolve_page_name_success(self, resolver: PageNameIdResolver, mock_page: AsyncMock) -> None:
-        with patch("notionary.NotionPage.from_page_id", return_value=mock_page):
-            result = await resolver.resolve_page_name("12345678-1234-1234-1234-123456789abc")
+        with patch("notionary.NotionPage.from_id", return_value=mock_page):
+            result = await resolver.resolve_page_name("page-123")
             assert result == "Test Page"
 
     @pytest.mark.asyncio
     async def test_resolve_page_name_not_found(self, resolver: PageNameIdResolver) -> None:
-        with patch("notionary.NotionPage.from_page_id", return_value=None):
-            result = await resolver.resolve_page_name("12345678-1234-1234-1234-123456789abc")
+        with patch("notionary.NotionPage.from_id", return_value=None):
+            result = await resolver.resolve_page_name("page-123")
             assert result is None
 
     @pytest.mark.asyncio
     async def test_resolve_page_name_exception(self, resolver: PageNameIdResolver) -> None:
-        with patch("notionary.NotionPage.from_page_id", side_effect=Exception("API Error")):
-            result = await resolver.resolve_page_name("12345678-1234-1234-1234-123456789abc")
+        with patch("notionary.NotionPage.from_id", side_effect=Exception("API Error")):
+            result = await resolver.resolve_page_name("page-123")
             assert result is None
 
     @pytest.mark.asyncio

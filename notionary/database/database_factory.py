@@ -6,7 +6,6 @@ from notionary.database.database_models import NotionDatabaseDto
 from notionary.shared.entities.entity_factory import NotionEntityFactory
 from notionary.shared.entities.entity_models import NotionEntityResponseDto
 from notionary.util.fuzzy import find_best_match
-from notionary.util.page_id_utils import format_uuid
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
@@ -14,8 +13,7 @@ if TYPE_CHECKING:
 
 class NotionDatabaseFactory(NotionEntityFactory):
     async def load_from_id(self, database_id: str) -> NotionDatabase:
-        formatted_id = format_uuid(database_id) or database_id
-        response = await self._fetch_database_response(formatted_id)
+        response = await self._fetch_database_response(database_id)
         return await self._create_database_from_response(response)
 
     async def load_from_title(self, database_title: str, min_similarity: float = 0.6) -> NotionDatabase:

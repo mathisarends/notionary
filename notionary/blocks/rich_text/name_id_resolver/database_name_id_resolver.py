@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from notionary.blocks.rich_text.name_id_resolver.base_name_id_resolver import BaseNameIdResolver
-from notionary.util import format_uuid
 from notionary.util.fuzzy import find_best_match
 
 if TYPE_CHECKING:
@@ -16,25 +15,16 @@ class DatabaseNameIdResolver(BaseNameIdResolver):
             return None
 
         cleaned_name = name.strip()
-
-        formatted_uuid = format_uuid(cleaned_name)
-        if formatted_uuid:
-            return formatted_uuid
-
         return await self._resolve_database_id(cleaned_name)
 
     async def resolve_database_name(self, database_id: str) -> str | None:
         if not database_id:
             return None
 
-        formatted_id = format_uuid(database_id)
-        if not formatted_id:
-            return None
-
         try:
             from notionary import NotionDatabase
 
-            database = await NotionDatabase.from_id(formatted_id)
+            database = await NotionDatabase.from_id(database_id)
             return database.title if database else None
         except Exception:
             return None

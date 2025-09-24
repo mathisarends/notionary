@@ -246,9 +246,10 @@ class NotionPage(NotionEntity):
         await self.property_writer.set_relation_property_by_relation_values(property_name, relation_values)
 
     def _setup_page_context_provider(self) -> PageContextProvider:
-        # Use a temporary database_id for page context
+        parent_database_id = self._parent_database.id if self._parent_database else "temp"
+
         return PageContextProvider(
             page_id=self._page_id,
-            database_client=NotionDatabseHttpClient(database_id=self._parent_database.id or "temp"),
+            database_client=NotionDatabseHttpClient(parent_database_id),
             file_upload_client=FileUploadHttpClient(),
         )

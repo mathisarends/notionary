@@ -2,6 +2,7 @@ import re
 from abc import ABC, abstractmethod
 from typing import Self
 
+from notionary.shared.entities.entity_metadata_client import EntityMetadataClient
 from notionary.util import LoggingMixin
 
 
@@ -45,6 +46,12 @@ class NotionEntity(LoggingMixin, ABC):
         return await cls.from_id(entity_id)
 
     @property
+    @abstractmethod
+    def _metadata_client(self) -> EntityMetadataClient:
+        """Return the concrete metadata client for this entity."""
+        ...
+
+    @property
     def id(self) -> str:
         return self._id
 
@@ -76,41 +83,52 @@ class NotionEntity(LoggingMixin, ABC):
     def is_in_trash(self) -> bool:
         return self._is_in_trash
 
-    @abstractmethod
     async def set_title(self, title: str) -> None:
-        pass
+        await self._metadata_client.set_title(title)
+        self._title = title
 
-    @abstractmethod
     async def set_emoji_icon(self, emoji: str) -> None:
-        pass
+        entity_response = await self._metadata_client.patch_emoji_icon(emoji)
+        self._emoji_icon = entity_response.icon.emoji
+        self._external_icon_url = None
 
-    @abstractmethod
     async def set_external_icon(self, icon_url: str) -> None:
-        pass
+        entity_response = await self._metadata_client.patch_external_icon(icon_url)
+        self._emoji_icon = None
+        self._external_icon_url = entity_response.icon.external.url
 
-    @abstractmethod
     async def remove_icon(self) -> None:
-        pass
+        await self._metadata_client.remove_icon()
+        self._emoji_icon = None
+        self._external_icon_url = None
 
-    @abstractmethod
     async def set_cover_image_by_url(self, image_url: str) -> None:
-        pass
+        entity_response = await self._metadata_client.patch_external_cover(image_url)
+        self._cover_image_url = entity_response.cover.external.url
 
-    @abstractmethod
     async def set_random_gradient_cover(self) -> None:
-        pass
+        random_cover_url = self._get_random_gradient_cover()
+        await self.set_cover_image_by_url(random_cover_url)
 
-    @abstractmethod
     async def remove_cover_image(self) -> None:
-        pass
+        await self._metadata_client.remove_cover()
+        self._cover_image_url = None
 
-    @abstractmethod
     async def archive(self) -> None:
-        pass
+        if self._is_archieved:
+            self.logger.info("Entity is already archived.")
+            return
 
-    @abstractmethod
+        entity_response = await self._metadata_client.archive_page()
+        self._is_archieved = entity_response.archived
+
     async def unarchive(self) -> None:
-        pass
+        if not self._is_archieved:
+            self.logger.info("Entity is not archived.")
+            return
+
+        entity_response = await self._metadata_client.unarchive_page()
+        self._is_archieved = entity_response.archived
 
     def __repr__(self) -> str:
         return (
