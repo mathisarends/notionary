@@ -1,15 +1,13 @@
 import asyncio
 
-from notionary.markdown.markdown_builder import MarkdownBuilder
-
-from notionary import NotionPage
+from notionary import MarkdownBuilder, NotionPage
 
 
 async def main():
     """Minimal column test to isolate parsing issues."""
 
     try:
-        page = await NotionPage.from_page_name("Jarvis Clipboard")
+        page = await NotionPage.from_title("Jarvis Clipboard")
         builder = MarkdownBuilder()
 
         builder.h1("Minimal Columns + Toggle Test")

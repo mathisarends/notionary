@@ -12,7 +12,7 @@ Work with Notion pages using intuitive Python methods:
 from notionary import NotionPage
 
 # Find page by name with fuzzy matching
-page = await NotionPage.from_page_name("Meeting Notes")
+page = await NotionPage.from_title("Meeting Notes")
 
 # Update content with rich markdown
 await page.append_markdown("""
@@ -156,7 +156,7 @@ await update_project_status("Website Redesign", "In Progress")
 ```python
 # Generate team documentation automatically
 async def create_team_docs():
-    page = await NotionPage.from_page_name("Team Documentation")
+    page = await NotionPage.from_title("Team Documentation")
 
     await page.replace_content(lambda builder: (
         builder

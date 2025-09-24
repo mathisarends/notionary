@@ -19,7 +19,7 @@ async def main():
     print("=" * 40)
 
     try:
-        page = await NotionPage.from_page_name(PAGE_NAME)
+        page = await NotionPage.from_title(PAGE_NAME)
 
         markdown = """
         # File Upload Demo 🚀

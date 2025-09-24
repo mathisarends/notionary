@@ -183,7 +183,7 @@ data = response.json()
 
 ```python
 from notionary import NotionPage
-page = await NotionPage.from_page_name("My Page")
+page = await NotionPage.from_title("My Page")
 ```
 
 :::
@@ -202,7 +202,7 @@ builder = (MarkdownBuilder()
         ),
         lambda col: (col
             .h3("✅ After")
-            .code('from notionary import NotionPage\npage = await NotionPage.from_page_name("My Page")', "python")
+            .code('from notionary import NotionPage\npage = await NotionPage.from_title("My Page")', "python")
         )
     )
 )

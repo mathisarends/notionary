@@ -44,7 +44,7 @@ Find pages by name without needing exact matches or URLs.
 
 ```python
 # Find page by name (fuzzy matching supported)
-page = await NotionPage.from_page_name("Meeting Notes")
+page = await NotionPage.from_title("Meeting Notes")
 ```
 
 ### Page Metadata Control
@@ -211,7 +211,7 @@ import asyncio
 
 async def main():
     # All operations are async
-    page = await NotionPage.from_page_name("My Page")
+    page = await NotionPage.from_title("My Page")
     await page.replace_content("# Hello World")
 
     # Efficient batch operations
@@ -227,7 +227,7 @@ Robust error handling with automatic retries for network issues.
 
 ```python
 try:
-    page = await NotionPage.from_page_name("Non-existent Page")
+    page = await NotionPage.from_title("Non-existent Page")
 except Exception as e:
     print(f"Page not found: {e}")
 ```
@@ -298,6 +298,6 @@ Full type hints for better IDE support and code reliability.
 from notionary import NotionPage, NotionDatabase
 
 # IDE will provide full autocompletion and type checking
-page: NotionPage = await NotionPage.from_page_name("My Page")
+page: NotionPage = await NotionPage.from_title("My Page")
 db: NotionDatabase = await NotionDatabase.from_database_name("Projects")
 ```

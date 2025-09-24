@@ -187,7 +187,7 @@ This project provides **powerful features** for developers.
 ## Code Example
 ```python
 from notionary import NotionPage
-page = await NotionPage.from_page_name("My Page")
+page = await NotionPage.from_title("My Page")
 ````
 
 ### Error Handling & Reliability

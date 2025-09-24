@@ -13,11 +13,11 @@ async def main():
 
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
-        db = await NotionDatabase.from_database_name(PAGE_NAME)
+        db = await NotionDatabase.from_title(PAGE_NAME)
 
-        await db.set_title("Neuer Titel")
-
-        await db.set_emoji_icon("🚀")
+        print("db_title", db.title)
+        print("icon before", db.emoji)
+        print("url", db.url)
 
     except Exception as e:
         import traceback

@@ -9,7 +9,7 @@ Update the page title:
 ```python
 from notionary import NotionPage
 
-page = await NotionPage.from_page_name("Old Title")
+page = await NotionPage.from_title("Old Title")
 title = await page.set_title("New Page Title")
 ```
 
@@ -157,7 +157,7 @@ Apply comprehensive customization:
 
 ```python
 # Full page customization workflow
-page = await NotionPage.from_page_name("My Project")
+page = await NotionPage.from_title("My Project")
 
 # Update appearance
 await page.set_title("🚀 Project Alpha - Complete Guide")

@@ -14,7 +14,7 @@ YOUR_DATABASE_NAME = "WISSEN/NOTIZEN"
 
 
 async def main():
-    db = await NotionDatabase.from_database_name(YOUR_DATABASE_NAME)
+    db = await NotionDatabase.from_title(YOUR_DATABASE_NAME)
 
     print("Pages updated in the last 7 days:")
     count = 0

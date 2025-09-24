@@ -81,18 +81,6 @@ class NotionDatabase(NotionEntity):
             raise ValueError(f"Could not extract database ID from URL: {url}")
         return await cls.from_id(database_id)
 
-    @classmethod
-    async def from_database_id(cls, id: str) -> NotionDatabase:
-        return await load_database_from_id(id)
-
-    @classmethod
-    async def from_database_name(
-        cls,
-        database_name: str,
-        min_similarity: float = 0.6,
-    ) -> NotionDatabase:
-        return await load_database_from_name(database_name, min_similarity)
-
     @property
     def emoji(self) -> str | None:
         return self._emoji_icon
@@ -104,7 +92,7 @@ class NotionDatabase(NotionEntity):
     async def create_blank_page(self) -> NotionPage:
         create_page_response: NotionPageDto = await self.client.create_page()
 
-        return await NotionPage.from_page_id(page_id=create_page_response.id)
+        return await NotionPage.from_id(page_id=create_page_response.id)
 
     @override
     async def set_title(self, title: str) -> None:
@@ -224,7 +212,7 @@ class NotionDatabase(NotionEntity):
         page_results: list[NotionPage] = []
 
         if search_results.results:
-            page_tasks = [NotionPage.from_page_id(page_id=page_response.id) for page_response in search_results.results]
+            page_tasks = [NotionPage.from_id(page_id=page_response.id) for page_response in search_results.results]
             page_results = await asyncio.gather(*page_tasks)
 
         return page_results
@@ -248,7 +236,7 @@ class NotionDatabase(NotionEntity):
         pages: list[NotionPage] = []
 
         async for batch in self._paginate_database(page_size=100):
-            page_tasks = [NotionPage.from_page_id(page_id=page_response.id) for page_response in batch]
+            page_tasks = [NotionPage.from_id(page_id=page_response.id) for page_response in batch]
             batch_pages = await asyncio.gather(*page_tasks)
             pages.extend(batch_pages)
 
@@ -272,7 +260,7 @@ class NotionDatabase(NotionEntity):
         """
         async for batch in self._paginate_database(page_size, filter_conditions):
             for page_response in batch:
-                yield await NotionPage.from_page_id(page_id=page_response.id)
+                yield await NotionPage.from_id(page_id=page_response.id)
 
     async def _get_relation_options(self, relation_prop: DatabaseRelationProperty) -> list[str]:
         """

@@ -116,7 +116,7 @@ import asyncio
 from notionary import NotionPage
 
 async def create_structured_content():
-    page = await NotionPage.from_page_name("Documentation")
+    page = await NotionPage.from_title("Documentation")
 
     content = """
 # API Guide

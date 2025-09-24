@@ -8,7 +8,7 @@ Ready to get started? Head over to our [Getting Started Guide](get-started/index
 
 ```python
 # Find a page and update it with rich content
-page = await NotionPage.from_page_name("My Project")
+page = await NotionPage.from_title("My Project")
 await page.replace_content("""
 # 🚀 Project Overview
 

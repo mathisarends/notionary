@@ -14,7 +14,7 @@ async def main():
 
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
-        page = await NotionPage.from_page_name(PAGE_NAME)
+        page = await NotionPage.from_title(PAGE_NAME)
 
         # Erste Request
         start_time = time.time()

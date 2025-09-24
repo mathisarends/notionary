@@ -1,12 +1,10 @@
 import asyncio
 
-from notionary.markdown.markdown_builder import MarkdownBuilder
-
-from notionary import NotionPage
+from notionary import MarkdownBuilder, NotionPage
 
 
-async def main():
-    page = await NotionPage.from_page_name("Jarvis Clipboard")
+async def main() -> None:
+    page = await NotionPage.from_title("Jarvis Clipboard")
     builder = MarkdownBuilder()
 
     builder.h1("Mermaid Diagram Test")

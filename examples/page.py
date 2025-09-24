@@ -23,7 +23,7 @@ async def main():
 
     try:
         print(f"🔍 Loading page: '{PAGE_NAME}'")
-        page = await NotionPage.from_page_name(PAGE_NAME)
+        page = await NotionPage.from_title(PAGE_NAME)
 
         text_content = await page.get_text_content()
 

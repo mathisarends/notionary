@@ -63,7 +63,7 @@ import asyncio
 from notionary import NotionPage
 
 async def add_content():
-    page = await NotionPage.from_page_name("My Page")
+    page = await NotionPage.from_title("My Page")
 
     # Add single paragraph
     await page.append_markdown("This is a simple paragraph.")

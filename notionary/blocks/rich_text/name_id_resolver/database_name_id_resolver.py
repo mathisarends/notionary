@@ -34,7 +34,7 @@ class DatabaseNameIdResolver(BaseNameIdResolver):
         try:
             from notionary import NotionDatabase
 
-            database = await NotionDatabase.from_database_id(formatted_id)
+            database = await NotionDatabase.from_id(formatted_id)
             return database.title if database else None
         except Exception:
             return None

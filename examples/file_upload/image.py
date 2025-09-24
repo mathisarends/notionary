@@ -19,7 +19,7 @@ async def main():
 
     try:
         # Load the page
-        page = await NotionPage.from_page_name(PAGE_NAME)
+        page = await NotionPage.from_title(PAGE_NAME)
 
         # Simple image upload with caption
         markdown = """

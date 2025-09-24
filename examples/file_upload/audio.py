@@ -18,8 +18,7 @@ async def main():
     print("=" * 30)
 
     try:
-        # Load the page
-        page = await NotionPage.from_page_name(PAGE_NAME)
+        page = await NotionPage.from_title(PAGE_NAME)
 
         # Simple audio upload with caption
         markdown = """

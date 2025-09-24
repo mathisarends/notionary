@@ -41,7 +41,7 @@ class NotionWorkspace(LoggingMixin):
         result = await self.notion_client.post("search", search_filter.build())
         response = NotionQueryDatabaseResponse.model_validate(result)
 
-        return await asyncio.gather(*(NotionPage.from_page_id(page.id) for page in response.results))
+        return await asyncio.gather(*(NotionPage.from_id(page.id) for page in response.results))
 
     async def search_databases(self, query: str, limit: int = 100) -> list[NotionDatabase]:
         """
@@ -52,7 +52,7 @@ class NotionWorkspace(LoggingMixin):
         # Create a temporary client for search operations (no specific database_id needed)
         async with NotionDatabseHttpClient(database_id="temp") as temp_client:
             response = await temp_client.search_databases(query=search_query, limit=limit)
-        return await asyncio.gather(*(NotionDatabase.from_database_id(database.id) for database in response.results))
+        return await asyncio.gather(*(NotionDatabase.from_id(database.id) for database in response.results))
 
     async def search_users(self, query: str, limit: int = 100) -> list[NotionUser]:
         """
@@ -71,7 +71,7 @@ class NotionWorkspace(LoggingMixin):
         """
         async with NotionDatabseHttpClient(database_id="temp") as temp_client:
             database_results = await temp_client.search_databases(query="", limit=limit)
-        return [await NotionDatabase.from_database_id(database.id) for database in database_results.results]
+        return [await NotionDatabase.from_id(database.id) for database in database_results.results]
 
     # User-related methods (limited due to API constraints)
     async def get_current_bot_user(self) -> NotionUser | None:

@@ -62,7 +62,7 @@ def create_demo_page_content() -> str:
             code="""from notionary import NotionPage
 
             # Find page by name
-            page = await NotionPage.from_page_name("Meeting Notes")
+            page = await NotionPage.from_title("Meeting Notes")
 
             # Update content
             await page.append_markdown("## Action Items\\n- [ ] Follow up with team")
@@ -139,7 +139,7 @@ async def main():
 
     try:
         print(f"🔍 Loading database: '{DATABASE_NAME}'")
-        db = await NotionDatabase.from_database_name(DATABASE_NAME)
+        db = await NotionDatabase.from_title(DATABASE_NAME)
 
         # Display basic database information
         print(f"\n{db.emoji} Database Information:")
@@ -162,7 +162,7 @@ async def main():
         await page.append_markdown(content)
 
         print("\n✅ Demo page created successfully!")
-        print(f"├── Database: {db.title} (ID: {db.from_database_id})")
+        print(f"├── Database: {db.title} (ID: {db.id})")
         print(f"├── Page title: {page.title}")
         print(f"├── Page emoji: {page.emoji_icon}")
         print(f"└── Visit at: {page.url}")

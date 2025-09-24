@@ -19,7 +19,7 @@ This content was written as raw Notionary Markdown.
 - Bullet B
 """
 
-page = await NotionPage.from_page_name("Docs Playground")
+page = await NotionPage.from_title("Docs Playground")
 await page.append_markdown(content)
 ```
 
@@ -31,7 +31,7 @@ Pass a function that **receives a `MarkdownBuilder`** and returns it after confi
 from notionary import NotionPage, MarkdownBuilder
 
 async def write_with_builder():
-    page = await NotionPage.from_page_name("Docs Playground")
+    page = await NotionPage.from_title("Docs Playground")
 
     await page.append_markdown(
         lambda b: (b
@@ -89,7 +89,7 @@ content: Union[str, Callable[[MarkdownBuilder], MarkdownBuilder]]
 `get_text_content()` returns the page as **Notionary Markdown**. You can modify it or re‑apply it, enabling round‑trip workflows.
 
 ```python
-page = await NotionPage.from_page_name("Docs Playground")
+page = await NotionPage.from_title("Docs Playground")
 original_md = await page.get_text_content()
 
 # ... edit original_md or store it ...
@@ -136,7 +136,7 @@ Returns the page converted **back** to Notionary Markdown for storage, editing, 
 from notionary import NotionPage, MarkdownBuilder
 
 async def demo():
-    page = await NotionPage.from_page_name("Builder Demo")
+    page = await NotionPage.from_title("Builder Demo")
 
     # Write via builder
     await page.replace_content(lambda b: (b

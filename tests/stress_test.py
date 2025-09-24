@@ -80,7 +80,7 @@ async def main():
     """Tests batch processing by appending many blocks to a Notion page."""
     try:
         print("Searching for page by name...")
-        page = await NotionPage.from_page_name(YOUR_PAGE_NAME)
+        page = await NotionPage.from_title(YOUR_PAGE_NAME)
 
         print(f'✅ Found: "{page.title}" {page.emoji_icon} → {page.url}')
 

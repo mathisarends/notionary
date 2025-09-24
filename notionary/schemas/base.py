@@ -57,7 +57,7 @@ class NotionContentSchema(BaseModel):
         """
         raise NotImplementedError("Subclasses must implement to_notion_content()")
 
-    async def append_to_page(self, page_name: str):
+    async def append_to_page(self, title: str):
         """
         Upload this content directly to a Notion page.
 
@@ -70,5 +70,5 @@ class NotionContentSchema(BaseModel):
         builder = MarkdownBuilder()
         markdown = self.to_notion_content(builder)
 
-        page = await NotionPage.from_page_name(page_name)
+        page = await NotionPage.from_title(title)
         await page.append_markdown(markdown)

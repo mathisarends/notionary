@@ -50,13 +50,13 @@ export NOTION_SECRET=your_integration_key
 
 https://github.com/user-attachments/assets/da8b4691-bee4-4b0f-801e-dccacb630398
 
-*Create styled project pages with properties, content, and rich formatting*
+_Create styled project pages with properties, content, and rich formatting_
 
 ### Local File Uploads (Videos & Images)
 
 https://github.com/user-attachments/assets/a079ec01-bb56-4c65-8260-7b1fca42ac68
 
-*Upload videos and images using simple markdown syntax - files are automatically uploaded to Notion*
+_Upload videos and images using simple markdown syntax - files are automatically uploaded to Notion_
 
 ---
 
@@ -70,7 +70,7 @@ from notionary import NotionPage, NotionDatabase
 
 async def main():
     # Find pages by name - fuzzy matching included!
-    page = await NotionPage.from_page_name("Meeting Notes")
+    page = await NotionPage.from_title("Meeting Notes")
 
     # Option 1: Direct Extended Markdown
     await page.append_markdown("""
@@ -115,32 +115,35 @@ asyncio.run(main())
 
 Every Notion block type with extended syntax:
 
-| Block Type | Markdown Syntax | Use Case |
-|------------|-----------------|----------|
-| **Callouts** | `[callout](Text "🔥")` | Highlighting key information |
-| **Toggles** | `+++ Title\nContent\n+++` | Collapsible sections |
-| **Columns** | `::: columns\n::: column\nContent\n:::\n:::` | Side-by-side layouts |
-| **Tables** | Standard markdown tables | Structured data |
-| **Media** | `[video](./file.mp4)(caption:Description)` | Auto-uploading files |
-| **Code** | Standard code fences with captions | Code snippets |
-| **Equations** | `$LaTeX$` | Mathematical expressions |
-| **TOC** | `[toc](blue_background)` | Auto-generated navigation |
+| Block Type    | Markdown Syntax                              | Use Case                     |
+| ------------- | -------------------------------------------- | ---------------------------- |
+| **Callouts**  | `[callout](Text "🔥")`                       | Highlighting key information |
+| **Toggles**   | `+++ Title\nContent\n+++`                    | Collapsible sections         |
+| **Columns**   | `::: columns\n::: column\nContent\n:::\n:::` | Side-by-side layouts         |
+| **Tables**    | Standard markdown tables                     | Structured data              |
+| **Media**     | `[video](./file.mp4)(caption:Description)`   | Auto-uploading files         |
+| **Code**      | Standard code fences with captions           | Code snippets                |
+| **Equations** | `$LaTeX$`                                    | Mathematical expressions     |
+| **TOC**       | `[toc](blue_background)`                     | Auto-generated navigation    |
 
 ---
 
 ## What You Can Build 💡
 
 ### **AI Content Systems**
+
 - **Report Generation**: AI agents that create structured reports, documentation, and analysis
 - **Content Pipelines**: Automated workflows that process data and generate Notion pages
 - **Knowledge Management**: AI-powered documentation systems with smart categorization
 
 ### **Workflow Automation**
+
 - **Project Management**: Sync project status, update timelines, generate progress reports
 - **Data Integration**: Connect external APIs and databases to Notion workspaces
 - **Template Systems**: Dynamic page generation from templates and data sources
 
 ### **Content Management**
+
 - **Bulk Operations**: Mass page updates, content migration, and database management
 - **Media Handling**: Automated image/video uploads with proper organization
 - **Cross-Platform**: Sync content between Notion and other platforms
@@ -154,16 +157,19 @@ Every Notion block type with extended syntax:
 <td width="50%">
 
 ### Smart Discovery
+
 - Find pages/databases by name
 - Fuzzy matching for approximate searches
 - No more hunting for IDs or URLs
 
 ### Extended Markdown
+
 - Rich syntax beyond standard markdown
 - Callouts, toggles, columns, media uploads
 - Schema provided for AI agent integration
 
 ### Modern Python
+
 - Full async/await support
 - Type hints throughout
 - High-performance batch operations
@@ -172,16 +178,19 @@ Every Notion block type with extended syntax:
 <td width="50%">
 
 ### Round-Trip Editing
+
 - Read existing content as markdown
 - Edit and modify preserving formatting
 - Write back to Notion seamlessly
 
 ### AI-Ready Architecture
+
 - Schema-driven syntax for LLM prompts
 - Perfect for AI content generation
 - Handles complex nested structures
 
 ### Complete Coverage
+
 - Every Notion block type supported
 - File uploads with automatic handling
 - Database operations and properties
@@ -195,9 +204,11 @@ Every Notion block type with extended syntax:
 ## Examples & Documentation
 
 ### Full Documentation
+
 [**mathisarends.github.io/notionary**](https://mathisarends.github.io/notionary/) - Complete API reference, guides, and tutorials
 
 ### Quick Links
+
 - [**Getting Started**](https://mathisarends.github.io/notionary/get-started/) - Setup and first steps
 - [**Page Management**](https://mathisarends.github.io/notionary/page/) - Content and properties
 - [**Database Operations**](https://mathisarends.github.io/notionary/database/) - Queries and management
@@ -206,11 +217,13 @@ Every Notion block type with extended syntax:
 ### Hands-On Examples
 
 **Core Functionality:**
+
 - [Page Management](examples/page_example.py) - Create, update, and manage pages
 - [Database Operations](examples/database.py) - Connect and query databases
 - [Workspace Discovery](examples/workspace_discovery.py) - Explore your workspace
 
 **Extended Markdown:**
+
 - [Basic Formatting](examples/markdown/basic.py) - Text, lists, and links
 - [Callouts & Highlights](examples/markdown/callout.py) - Information boxes
 - [Toggle Sections](examples/markdown/toggle.py) - Collapsible content
@@ -222,6 +235,7 @@ Every Notion block type with extended syntax:
 ## Contributing
 
 We welcome contributions from the community! Whether you're:
+
 - **Fixing bugs** - Help improve stability and reliability
 - **Adding features** - Extend functionality for new use cases
 - **Improving docs** - Make the library more accessible
@@ -237,7 +251,7 @@ Check our [**Contributing Guide**](https://mathisarends.github.io/notionary/cont
 
 [📖 **Read the Docs**](https://mathisarends.github.io/notionary/) • [🚀 **Getting Started**](https://mathisarends.github.io/notionary/get-started/) • [💻 **Browse Examples**](examples/)
 
-*Built with ❤️ for Python developers and AI agents*
+_Built with ❤️ for Python developers and AI agents_
 
 ---
 

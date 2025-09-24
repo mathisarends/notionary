@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 class NotionPage(NotionEntity):
     def __init__(
         self,
-        page_id: str,
+        id: str,
         title: str,
         url: str,
         archived: bool,
@@ -49,7 +49,7 @@ class NotionPage(NotionEntity):
         parent_database: NotionDatabase | None = None,
     ):
         super().__init__(
-            id=page_id,
+            id=id,
             title=title,
             url=url,
             archived=archived,
@@ -58,11 +58,11 @@ class NotionPage(NotionEntity):
             external_icon_url=external_icon_url,
             cover_image_url=cover_image_url,
         )
-        self._page_id = page_id
+        self._page_id = id
         self._properties = properties or {}
         self._parent_database = parent_database
 
-        self._page_client = NotionPageHttpClient(page_id=page_id, properties=properties)
+        self._page_client = NotionPageHttpClient(page_id=id, properties=properties)
         self._block_client = NotionBlockHttpClient()
         self._comment_client = CommentClient()
 
@@ -88,27 +88,16 @@ class NotionPage(NotionEntity):
         self.property_writer = PagePropertyWriter(self)
 
     @classmethod
-    @override
     async def from_id(cls, id: str) -> NotionPage:
         return await load_page_from_id(id)
 
     @classmethod
-    @override
     async def from_title(cls, title: str, min_similarity: float = 0.6) -> NotionPage:
         return await load_page_from_name(title, min_similarity)
 
     @classmethod
-    @override
     async def from_url(cls, url: str) -> NotionPage:
         return await load_page_from_url(url)
-
-    @classmethod
-    async def from_page_id(cls, page_id: str) -> NotionPage:
-        return await load_page_from_id(page_id)
-
-    @classmethod
-    async def from_page_name(cls, page_name: str, min_similarity: float = 0.6) -> NotionPage:
-        return await load_page_from_name(page_name, min_similarity)
 
     @property
     def id(self) -> str:
@@ -211,7 +200,7 @@ class NotionPage(NotionEntity):
                 parent_page_id=self._page_id,
             )
 
-        return await NotionDatabase.from_database_id(id=create_database_response.id)
+        return await NotionDatabase.from_id(id=create_database_response.id)
 
     @override
     async def set_cover_image_by_url(self, url: str) -> None:

@@ -73,10 +73,10 @@ async def _load_page_from_response(
     cover_image_url = _extract_cover_image_url(page_response)
     parent_database_id = _extract_parent_database_id(page_response)
 
-    parent_database = await NotionDatabase.from_database_id(id=parent_database_id) if parent_database_id else None
+    parent_database = await NotionDatabase.from_id(id=parent_database_id) if parent_database_id else None
 
     return NotionPage(
-        page_id=page_response.id,
+        id=page_response.id,
         title=title,
         url=page_response.url,
         emoji_icon=emoji_icon,

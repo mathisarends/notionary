@@ -64,7 +64,7 @@ import asyncio
 from notionary import NotionPage
 
 async def add_callouts():
-    page = await NotionPage.from_page_name("My Guide")
+    page = await NotionPage.from_title("My Guide")
 
     # Add tip callout
     await page.append_markdown('[callout](💡 **Pro Tip:** Save time with shortcuts "💡")')

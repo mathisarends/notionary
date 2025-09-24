@@ -7,7 +7,7 @@ async def main():
     """Minimal column test to isolate parsing issues."""
 
     try:
-        page = await NotionPage.from_page_name("Jarvis Clipboard")
+        page = await NotionPage.from_title("Jarvis Clipboard")
 
         markdown = """
         | Name | Age |

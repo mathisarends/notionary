@@ -16,7 +16,7 @@ Connect to existing pages using multiple methods:
 from notionary import NotionPage
 
 # Find by name with fuzzy matching
-page = await NotionPage.from_page_name("Meeting Notes")
+page = await NotionPage.from_title("Meeting Notes")
 
 # Connect by ID
 page = await NotionPage.from_page_id("12345678-1234-1234-1234-123456789012")

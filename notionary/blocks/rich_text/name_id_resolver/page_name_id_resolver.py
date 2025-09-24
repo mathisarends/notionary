@@ -34,7 +34,7 @@ class PageNameIdResolver(BaseNameIdResolver):
         try:
             from notionary import NotionPage
 
-            page = await NotionPage.from_page_id(formatted_id)
+            page = await NotionPage.from_id(formatted_id)
             return page.title if page else None
         except Exception:
             return None

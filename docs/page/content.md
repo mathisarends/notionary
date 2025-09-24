@@ -9,7 +9,7 @@ Add new content to the end of existing page content:
 ```python
 from notionary import NotionPage
 
-page = await NotionPage.from_page_name("My Notes")
+page = await NotionPage.from_title("My Notes")
 
 # Simple markdown string
 await page.append_markdown("""
