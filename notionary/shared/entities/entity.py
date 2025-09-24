@@ -1,0 +1,136 @@
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+from typing import Self
+
+from notionary.util import LoggingMixin
+
+
+class NotionEntity(LoggingMixin, ABC):
+    def __init__(
+        self,
+        id: str,
+        title: str,
+        url: str,
+        archived: bool,
+        in_trash: bool,
+        emoji_icon: str | None = None,
+        external_icon_url: str | None = None,
+        cover_image_url: str | None = None,
+    ):
+        self._id = id
+        self._title = title
+        self._url = url
+        self._emoji_icon = emoji_icon
+        self._external_icon_url = external_icon_url
+        self._cover_image_url = cover_image_url
+
+        self._is_archieved = archived
+        self._is_in_trash = in_trash
+
+    @abstractmethod
+    @classmethod
+    async def from_id(cls, id: str) -> Self:
+        pass
+
+    @abstractmethod
+    @classmethod
+    async def from_url(cls, url: str) -> Self:
+        pass
+
+    @abstractmethod
+    @classmethod
+    async def from_title(cls, title: str) -> Self:
+        pass
+
+    @property
+    def id(self) -> str:
+        return self._id
+
+    @property
+    def title(self) -> str:
+        return self._title
+
+    @property
+    def url(self) -> str:
+        return self._url
+
+    @property
+    def external_icon_url(self) -> str | None:
+        return self._external_icon_url
+
+    @property
+    def emoji_icon(self) -> str | None:
+        return self._emoji_icon
+
+    @property
+    def cover_image_url(self) -> str | None:
+        return self._cover_image_url
+
+    @property
+    def is_archived(self) -> bool:
+        return self._is_archieved
+
+    @property
+    def is_in_trash(self) -> bool:
+        return self._is_in_trash
+
+    @abstractmethod
+    async def set_title(self, title: str) -> None:
+        pass
+
+    @abstractmethod
+    async def set_emoji_icon(self, emoji: str) -> None:
+        pass
+
+    @abstractmethod
+    async def set_external_icon(self, icon_url: str) -> None:
+        pass
+
+    @abstractmethod
+    async def remove_icon(self) -> None:
+        pass
+
+    @abstractmethod
+    async def set_cover_image_by_url(self, image_url: str) -> None:
+        pass
+
+    @abstractmethod
+    async def set_random_gradient_cover(self) -> None:
+        pass
+
+    @abstractmethod
+    async def remove_cover_image(self) -> None:
+        pass
+
+    @abstractmethod
+    async def archive(self) -> None:
+        pass
+
+    @abstractmethod
+    async def unarchive(self) -> None:
+        pass
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            f"id={self._id!r}, "
+            f"title={self._title!r}, "
+            f"url={self._url!r}, "
+            f"archived={self._is_archieved!r}, "
+            f"in_trash={self._is_in_trash!r}, "
+            f"emoji_icon={self._emoji_icon!r}, "
+            f"external_icon_url={self._external_icon_url!r}, "
+            f"cover_image_url={self._cover_image_url!r}"
+            f")"
+        )
+
+    def _get_random_gradient_cover(self) -> str:
+        import random
+        from collections.abc import Sequence
+
+        DEFAULT_NOTION_COVERS: Sequence[str] = [
+            f"https://www.notion.so/images/page-cover/gradients_{i}.png" for i in range(1, 10)
+        ]
+
+        return random.choice(DEFAULT_NOTION_COVERS)

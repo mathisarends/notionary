@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from notionary.database.database_http_client import NotionDatabseHttpClient
 from notionary.database.database_models import NoionDatabaseDto
+from notionary.shared.models.cover_models import CoverType
 from notionary.shared.models.icon_models import IconType
 from notionary.util import format_uuid
 from notionary.util.fuzzy import find_best_match
@@ -50,34 +51,57 @@ async def load_database_from_name(database_name: str, min_similarity: float = 0.
 def _load_database_from_response(
     db_response: NoionDatabaseDto,
 ) -> NotionDatabase:
-    """Create NotionDatabase instance from API response with typed properties."""
     from notionary import NotionDatabase
 
     title = _extract_title(db_response)
     emoji_icon = _extract_emoji_icon(db_response)
+    external_icon_url = _extract_external_icon_url(db_response)
+    cover_image_url = _extract_cover_image_url(db_response)
 
     return NotionDatabase(
         id=db_response.id,
         title=title,
         url=db_response.url,
+        archived=db_response.archived,
+        in_trash=db_response.in_trash,
         emoji_icon=emoji_icon,
+        external_icon_url=external_icon_url,
+        cover_image_url=cover_image_url,
         properties=db_response.properties,
     )
 
 
 def _extract_title(db_response: NoionDatabaseDto) -> str:
-    """Extract title from database response."""
     if db_response.title and len(db_response.title) > 0:
         return db_response.title[0].plain_text
     return "Untitled Database"
 
 
 def _extract_emoji_icon(db_response: NoionDatabaseDto) -> str | None:
-    """Extract emoji icon from database response."""
     if not db_response.icon:
         return None
 
     if db_response.icon.type == IconType.EMOJI:
         return db_response.icon.emoji
+
+    return None
+
+
+def _extract_external_icon_url(db_response: NoionDatabaseDto) -> str | None:
+    if not db_response.icon:
+        return None
+
+    if db_response.icon.type == IconType.EXTERNAL:
+        return db_response.icon.external.url if db_response.icon.external else None
+
+    return None
+
+
+def _extract_cover_image_url(db_response: NoionDatabaseDto) -> str | None:
+    if not db_response.cover:
+        return None
+
+    if db_response.cover.type == CoverType.EXTERNAL:
+        return db_response.cover.external.url if db_response.cover.external else None
 
     return None

@@ -37,13 +37,21 @@ class NotionDatabase(LoggingMixin):
         id: str,
         title: str,
         url: str,
+        archived: bool,
+        in_trash: bool,
         emoji_icon: str | any | None = None,
+        external_icon_url: str | None = None,
+        cover_image_url: str | None = None,
         properties: dict[str, DatabaseNotionProperty] | None = None,
     ):
         self._id = id
         self._title = title
         self._url = url
+        self._is_archived = archived
+        self._is_in_trash = in_trash
         self._emoji_icon = emoji_icon
+        self.external_icon_url = external_icon_url
+        self._cover_image_url = cover_image_url
         self._properties = properties or {}
 
         self.client = NotionDatabseHttpClient(database_id=id)
@@ -81,9 +89,6 @@ class NotionDatabase(LoggingMixin):
         return self._properties
 
     async def create_blank_page(self) -> NotionPage:
-        """
-        Create a new blank page in the database with minimal properties.
-        """
         create_page_response: NotionPageDto = await self.client.create_page()
 
         return await NotionPage.from_page_id(page_id=create_page_response.id)

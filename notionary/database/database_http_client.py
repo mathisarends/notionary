@@ -13,11 +13,6 @@ from notionary.shared.models.icon_models import EmojiIcon, ExternalIcon
 
 
 class NotionDatabseHttpClient(NotionHttpClient):
-    """
-    Specialized Notion client for database operations.
-    Inherits connection management and HTTP methods from NotionHttpClient.
-    """
-
     def __init__(self, database_id: str, timeout: int = 30):
         super().__init__(timeout)
         self._database_id = database_id
