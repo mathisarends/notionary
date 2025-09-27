@@ -3,13 +3,12 @@ from notionary.blocks import bootstrap_blocks
 bootstrap_blocks()
 
 from .blocks.markdown.markdown_builder import MarkdownBuilder
-from .database import DatabaseFilterBuilder, NotionDatabase
+from .database.database import NotionDatabase
 from .page.page import NotionPage
 from .user import NotionBotUser, NotionUser, NotionUserManager
 from .workspace import NotionWorkspace
 
 __all__ = [
-    "DatabaseFilterBuilder",
     "MarkdownBuilder",
     "NotionBotUser",
     "NotionDatabase",

@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar
+from typing import TypeVar, cast
 
 from notionary.shared.entities.entity_models import NotionEntityResponseDto
 from notionary.shared.models.cover_models import CoverType
 from notionary.shared.models.icon_models import IconType
-from notionary.shared.models.parent_models import ParentType
+from notionary.shared.models.parent_models import DataSourceParent, ParentType
 
 EntityT = TypeVar("EntityT", bound=object)
 
@@ -32,8 +32,8 @@ class NotionEntityFactory(ABC):
             "id": response.id,
             "title": title,
             "created_time": response.created_time,
-            "last_edited_time": response.last_edited_time,
             "created_by": response.created_by,
+            "last_edited_time": response.last_edited_time,
             "last_edited_by": response.last_edited_by,
             "archived": response.archived,
             "in_trash": response.in_trash,
@@ -60,10 +60,12 @@ class NotionEntityFactory(ABC):
             return None
         return response.cover.external.url if response.cover.external else None
 
-    def _extract_parent_database_id(self, response: NotionEntityResponseDto) -> str | None:
-        if response.parent.type == ParentType.DATABASE_ID:
-            return response.parent.database_id
-        return None
+    def _extract_parent_data_source(self, response: NotionEntityResponseDto) -> str | None:
+        if response.parent.type != ParentType.DATA_SOURCE_ID:
+            return None
+
+        data_source_response = cast(DataSourceParent, response.parent)
+        return data_source_response.data_source_id
 
     async def _extract_title_from_rich_text_objects(self, rich_text_objects: list) -> str:
         from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter

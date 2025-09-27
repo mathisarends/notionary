@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-import asyncio
-from collections.abc import AsyncGenerator
-from typing import Any
-
 from notionary.database.database_factory import (
     load_database_from_id,
     load_database_from_title,
@@ -11,9 +7,6 @@ from notionary.database.database_factory import (
 from notionary.database.database_filter_builder import DatabaseFilterBuilder
 from notionary.database.database_http_client import NotionDatabseHttpClient
 from notionary.database.database_metadata_update_client import DatabaseMetadataUpdateClient
-from notionary.database.database_models import (
-    NotionQueryDatabaseResponse,
-)
 from notionary.database.properties.database_property_models import (
     DatabaseNotionProperty,
 )
@@ -22,6 +15,7 @@ from notionary.page.page import NotionPage
 from notionary.page.page_models import NotionPageDto
 from notionary.shared.entities.entity import NotionEntity
 from notionary.shared.entities.entity_metadata_update_client import EntityMetadataUpdateClient
+from notionary.shared.models.user_models import NotionUser
 
 
 class NotionDatabase(NotionEntity):
@@ -29,10 +23,15 @@ class NotionDatabase(NotionEntity):
         self,
         id: str,
         title: str,
+        created_time: str,
+        created_by: NotionUser,
+        last_edited_time: str,
+        last_edited_by: NotionUser,
         url: str,
         archived: bool,
         in_trash: bool,
         is_inline: bool,
+        public_url: str | None = None,
         emoji_icon: str | any | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
@@ -42,12 +41,17 @@ class NotionDatabase(NotionEntity):
         super().__init__(
             id=id,
             title=title,
+            created_time=created_time,
+            last_edited_time=last_edited_time,
+            last_edited_by=last_edited_by,
             url=url,
             archived=archived,
             in_trash=in_trash,
+            public_url=public_url,
             emoji_icon=emoji_icon,
             external_icon_url=external_icon_url,
             cover_image_url=cover_image_url,
+            created_by=created_by,
         )
         self._properties = properties or {}
         self._description = description
@@ -99,76 +103,11 @@ class NotionDatabase(NotionEntity):
         udapted_description = await self.client.update_database_description(description=description)
         self._description = udapted_description
 
-    async def query_database_by_title(self, page_title: str) -> list[NotionPage]:
-        search_results: NotionQueryDatabaseResponse = await self.client.query_database_by_title(page_title=page_title)
+    def filter(self) -> DatabaseFilterBuilder:
+        return DatabaseFilterBuilder(database=self)
 
-        page_results: list[NotionPage] = []
+    async def find_by_title(self, title: str) -> list[NotionPage]:
+        return await self.filter().title_contains(title).to_list()
 
-        if search_results.results:
-            page_tasks = [NotionPage.from_id(page_response.id) for page_response in search_results.results]
-            page_results = await asyncio.gather(*page_tasks)
-
-        return page_results
-
-    async def iter_pages_updated_within(self, hours: int = 24, page_size: int = 100) -> AsyncGenerator[NotionPage]:
-        filter_builder = DatabaseFilterBuilder()
-        filter_builder.with_updated_last_n_hours(hours)
-        filter_conditions = filter_builder.build()
-
-        async for page in self._iter_pages(page_size, filter_conditions):
-            yield page
-
-    async def get_all_pages(self) -> list[NotionPage]:
-        pages: list[NotionPage] = []
-
-        async for batch in self._paginate_database(page_size=100):
-            page_tasks = [NotionPage.from_id(page_response.id) for page_response in batch]
-            batch_pages = await asyncio.gather(*page_tasks)
-            pages.extend(batch_pages)
-
-        return pages
-
-    async def get_last_edited_time(self) -> str:
-        db = await self.client.get_database(self.id)
-        return db.last_edited_time
-
-    async def _iter_pages(
-        self,
-        page_size: int = 100,
-        filter_conditions: dict[str, Any] | None = None,
-    ) -> AsyncGenerator[NotionPage]:
-        """
-        Asynchronous generator that yields NotionPage objects from the database.
-        """
-        async for batch in self._paginate_database(page_size, filter_conditions):
-            for page_response in batch:
-                yield await NotionPage.from_id(page_response.id)
-
-    async def _paginate_database(
-        self,
-        page_size: int = 100,
-        filter_conditions: dict[str, Any] | None = None,
-    ) -> AsyncGenerator[list[NotionPageDto]]:
-        """
-        Central pagination logic for Notion Database queries.
-        """
-        start_cursor: str | None = None
-        has_more = True
-
-        while has_more:
-            query_data: dict[str, Any] = {"page_size": page_size}
-
-            if start_cursor:
-                query_data["start_cursor"] = start_cursor
-            if filter_conditions:
-                query_data["filter"] = filter_conditions
-
-            result: NotionQueryDatabaseResponse = await self.client.query_database(query_data=query_data)
-
-            if not result or not result.results:
-                return
-
-            yield result.results
-
-            has_more = result.has_more
-            start_cursor = result.next_cursor if has_more else None
+    async def all_pages(self, page_size: int = 100) -> list[NotionPage]:
+        return await self.filter().page_size(page_size).to_list()

@@ -27,6 +27,7 @@ from notionary.page.properties.page_property_writer import PagePropertyWriter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.schemas import NotionContentSchema
 from notionary.shared.entities.entity import NotionEntity
+from notionary.user.notion_user import NotionUser
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
@@ -37,9 +38,14 @@ class NotionPage(NotionEntity):
         self,
         id: str,
         title: str,
+        created_time: str,
+        created_by: NotionUser,
+        last_edited_time: str,
+        last_edited_by: NotionUser,
         url: str,
         archived: bool,
         in_trash: bool,
+        public_url: str | None = None,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
@@ -49,9 +55,14 @@ class NotionPage(NotionEntity):
         super().__init__(
             id=id,
             title=title,
+            created_time=created_time,
+            created_by=created_by,
+            last_edited_time=last_edited_time,
+            last_edited_by=last_edited_by,
             url=url,
             archived=archived,
             in_trash=in_trash,
+            public_url=public_url,
             emoji_icon=emoji_icon,
             external_icon_url=external_icon_url,
             cover_image_url=cover_image_url,

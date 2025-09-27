@@ -14,6 +14,8 @@ async def main():
         tag_options = page.property_reader.get_multi_select_options_by_property_name("Tags")
         print(f"🏷️ Available tag options: {tag_options}")
 
+        print("page.last_edited_by", page.last_edited_by)
+
     except Exception as e:
         import traceback
 

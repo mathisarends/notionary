@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Self
 
 from notionary.shared.entities.entity_metadata_update_client import EntityMetadataUpdateClient
+from notionary.user.notion_user import NotionUser
 from notionary.util import LoggingMixin
 
 
@@ -12,7 +13,9 @@ class NotionEntity(LoggingMixin, ABC):
         id: str,
         title: str,
         created_time: str,
+        created_by: NotionUser,
         last_edited_time: str,
+        last_edited_by: NotionUser,
         archived: bool,
         in_trash: bool,
         url: str,
@@ -24,7 +27,9 @@ class NotionEntity(LoggingMixin, ABC):
         self._id = id
         self._title = title
         self._created_time = created_time
+        self._created_by = created_by
         self._last_edited_time = last_edited_time
+        self._last_edited_by = last_edited_by
         self._url = url
         self._public_url = public_url
         self._emoji_icon = emoji_icon
@@ -95,8 +100,16 @@ class NotionEntity(LoggingMixin, ABC):
         return self._created_time
 
     @property
+    def created_by(self) -> NotionUser:
+        return self._created_by
+
+    @property
     def last_edited_time(self) -> str:
         return self._last_edited_time
+
+    @property
+    def last_edited_by(self) -> NotionUser:
+        return self._last_edited_by
 
     @property
     def public_url(self) -> str | None:
@@ -153,12 +166,14 @@ class NotionEntity(LoggingMixin, ABC):
             f"{self.__class__.__name__}("
             f"id={self._id!r}, "
             f"title={self._title!r}, "
+            f"created_time={self._created_time!r}, "
+            f"created_by={self._created_by!r}, "
+            f"last_edited_time={self._last_edited_time!r}, "
+            f"last_edited_by={self._last_edited_by!r}, "
             f"url={self._url!r}, "
             f"public_url={self._public_url!r}, "
             f"archived={self._is_archieved!r}, "
             f"in_trash={self._is_in_trash!r}, "
-            f"created_time={self._created_time!r}, "
-            f"last_edited_time={self._last_edited_time!r}, "
             f"emoji_icon={self._emoji_icon!r}, "
             f"external_icon_url={self._external_icon_url!r}, "
             f"cover_image_url={self._cover_image_url!r}"

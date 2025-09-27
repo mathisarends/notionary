@@ -5,20 +5,31 @@ from pydantic import BaseModel
 
 
 class ParentType(StrEnum):
-    DATABASE_ID = "database_id"
+    DATA_SOURCE_ID = "data_source_id"
     PAGE_ID = "page_id"
     BLOCK_ID = "block_id"
     WORKSPACE = "workspace"
 
 
-class NotionParent(BaseModel):
-    type: Literal[
-        ParentType.DATABASE_ID,
-        ParentType.PAGE_ID,
-        ParentType.BLOCK_ID,
-        ParentType.WORKSPACE,
-    ]
-    database_id: str | None = None
-    page_id: str | None = None
-    block_id: str | None = None
-    workspace: bool | None = None
+class DataSourceParent(BaseModel):
+    type: Literal[ParentType.DATA_SOURCE_ID]
+    data_source_id: str
+    database_id: str
+
+
+class PageParent(BaseModel):
+    type: Literal[ParentType.PAGE_ID]
+    page_id: str
+
+
+class BlockParent(BaseModel):
+    type: Literal[ParentType.BLOCK_ID]
+    block_id: str
+
+
+class WorkspaceParent(BaseModel):
+    type: Literal[ParentType.WORKSPACE]
+    workspace: bool
+
+
+NotionParent = DataSourceParent | PageParent | BlockParent | WorkspaceParent

@@ -23,7 +23,7 @@ load_dotenv()
 
 class NotionHttpClient(LoggingMixin):
     BASE_URL = "https://api.notion.com/v1"
-    NOTION_VERSION = "2022-06-28"
+    NOTION_VERSION = "2025-09-03"
 
     def __init__(self, timeout: int = 30):
         self.token = self._find_token()

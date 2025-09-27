@@ -32,6 +32,9 @@ class NotionDatabseHttpClient(NotionHttpClient):
 
     async def get_database(self) -> NotionDatabaseDto:
         response = await self.get(f"databases/{self._database_id}")
+        import json
+
+        print(json.dumps(response, indent=2))
         return NotionDatabaseDto.model_validate(response)
 
     async def patch_database(self, update_database_dto: NotionDatabaseUpdateDto) -> NotionDatabaseDto:
