@@ -8,6 +8,7 @@ from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.comments import Comment, CommentClient
+from notionary.data_source.data_source import NotionDataSource
 from notionary.database.database_http_client import NotionDatabseHttpClient
 from notionary.file_upload.file_upload_http_client import FileUploadHttpClient
 from notionary.page.page_content_deleting_service import PageContentDeletingService
@@ -48,6 +49,7 @@ class NotionPage(Entity):
         cover_image_url: str | None = None,
         properties: dict[str, PageProperty] | None = None,
         parent_database: NotionDatabase | None = None,
+        parent_data_source: NotionDataSource | None = None,
     ):
         super().__init__(
             id=id,
@@ -60,11 +62,11 @@ class NotionPage(Entity):
             external_icon_url=external_icon_url,
             cover_image_url=cover_image_url,
         )
-        # Handle additional fields manually
         self._title = title
         self._archived = archived
         self._properties = properties or {}
         self._parent_database = parent_database
+        self._parent_data_source = parent_data_source
 
         self._page_client = NotionPageHttpClient(page_id=id, properties=properties)
         self._block_client = NotionBlockHttpClient()

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.page_property_models import PageTitleProperty
@@ -50,11 +52,16 @@ class NotionPageFactory(BaseFactory, ParentExtractMixin):
             return await client.get_page()
 
     async def _create_page_from_response(self, response: NotionPageDto) -> NotionPage:
-        from notionary import NotionDatabase, NotionPage
+        from notionary import NotionPage
 
         entity_kwargs = self._create_common_entity_kwargs(response)
 
-        title = await self._extract_title(response)
+        title, parent_database, parent_data_source = await asyncio.gather(
+            self._extract_title(response),
+            self._extract_parent_database(response),
+            self._extract_parent_data_source(response),
+        )
+
         entity_kwargs.update(
             {
                 "title": title,
@@ -67,12 +74,8 @@ class NotionPageFactory(BaseFactory, ParentExtractMixin):
             }
         )
 
-        parent_database = None
-        parent_db_id = self._extract_parent_database_id(response)
-        if parent_db_id:
-            parent_database = await NotionDatabase.from_id(parent_db_id)
-
         entity_kwargs["parent_database"] = parent_database
+        entity_kwargs["parent_data_source"] = parent_data_source
         return NotionPage(**entity_kwargs)
 
     async def _extract_title(self, response: NotionPageDto) -> str:
@@ -86,7 +89,7 @@ class NotionPageFactory(BaseFactory, ParentExtractMixin):
             None,
         )
 
-    async def _extract_title_from_rich_text_objects(self, rich_text_objects: list) -> str:
+    async def _extract_title_from_rich_text_objects(self, rich_text_objects: list[RichTextObject]) -> str:
         rich_text_markdown_converter = RichTextToMarkdownConverter()
         title = await rich_text_markdown_converter.to_markdown(rich_text_objects)
         return title

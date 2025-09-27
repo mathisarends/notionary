@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-import asyncio
-from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any
-
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.data_source.properties.database_property_models import (
-    DatabasePropertyOption,
-    EnrichedDatabaseStatusOption,
+from notionary.data_source.data_source import NotionDataSource
+from notionary.data_source.properties.data_source_property_models import (
+    EnrichedDataSourceStatusOption,
 )
-from notionary.data_source.properties.database_property_reader import DatabasePropertyReader
+from notionary.data_source.properties.data_source_property_reader import DataSourcePropertyReader
 from notionary.page.properties.page_property_models import (
     PageCheckboxProperty,
     PageCreatedTimeProperty,
@@ -19,6 +15,7 @@ from notionary.page.properties.page_property_models import (
     PageNumberProperty,
     PagePeopleProperty,
     PagePhoneNumberProperty,
+    PageProperty,
     PagePropertyT,
     PageRelationProperty,
     PageRichTextProperty,
@@ -26,69 +23,17 @@ from notionary.page.properties.page_property_models import (
     PageStatusProperty,
     PageTitleProperty,
     PageURLProperty,
-    PropertyType,
 )
-
-if TYPE_CHECKING:
-    from notionary import NotionPage
-
-
-Extractor = Callable[[str], Awaitable[Any]]
 
 
 class PagePropertyReader:
-    def __init__(self, notion_page: NotionPage) -> None:
-        self._notion_page = notion_page
-        self._parent_database = notion_page._parent_database
-        self._property_extractors = self._build_property_extractors()
+    def __init__(self, properties: dict[str, PageProperty], parent_data_source: NotionDataSource | None) -> None:
+        self._properties = properties
+        self._parent_data_source = parent_data_source
 
     @property
-    def db_reader(self) -> DatabasePropertyReader | None:
-        return self._parent_database.property_reader if self._parent_database else None
-
-    def _build_property_extractors(self) -> dict[PropertyType, Extractor]:
-        return {
-            PropertyType.STATUS: lambda prop_name: self._await(self.get_value_of_status_property(prop_name)),
-            PropertyType.RELATION: self.get_values_of_relation_property,
-            PropertyType.MULTI_SELECT: lambda prop_name: self._await(
-                self.get_values_of_multiselect_property(prop_name)
-            ),
-            PropertyType.SELECT: lambda prop_name: self._await(self.get_value_of_select_property(prop_name)),
-            PropertyType.URL: lambda prop_name: self._await(self.get_value_of_url_property(prop_name)),
-            PropertyType.NUMBER: lambda prop_name: self._await(self.get_value_of_number_property(prop_name)),
-            PropertyType.CHECKBOX: lambda prop_name: self._await(self.get_value_of_checkbox_property(prop_name)),
-            PropertyType.DATE: lambda prop_name: self._await(self.get_value_of_date_property(prop_name)),
-            PropertyType.TITLE: self.get_value_of_title_property,
-            PropertyType.RICH_TEXT: self.get_value_of_rich_text_property,
-            PropertyType.EMAIL: lambda prop_name: self._await(self.get_value_of_email_property(prop_name)),
-            PropertyType.PHONE_NUMBER: lambda prop_name: self._await(
-                self.get_value_of_phone_number_property(prop_name)
-            ),
-            PropertyType.PEOPLE: self.get_values_of_people_property,
-            PropertyType.CREATED_TIME: lambda prop_name: self._await(
-                self.get_value_of_created_time_property(prop_name)
-            ),
-        }
-
-    @staticmethod
-    def _await(value: Any) -> Awaitable[Any]:
-        # Wrap sync results so they can always be awaited.
-        # This ensures the caller can always use `await` without checks.
-        return value if asyncio.iscoroutine(value) else asyncio.sleep(0, result=value)
-
-    async def get_property_value_by_name(self, property_name: str) -> Any:
-        prop = self._notion_page.properties.get(property_name)
-        if not prop:
-            return None
-
-        if isinstance(prop, dict):
-            return None
-
-        extractor = self._property_extractors.get(prop.type)
-        if not extractor:
-            return None
-
-        return await extractor(property_name)
+    def data_source_reader(self) -> DataSourcePropertyReader | None:
+        return self._parent_data_source.property_reader if self._parent_data_source else None
 
     def get_value_of_status_property(self, name: str) -> str | None:
         status_property = self._get_property(name, PageStatusProperty)
@@ -175,35 +120,49 @@ class PagePropertyReader:
         return phone_property.phone_number if phone_property else None
 
     def _get_property(self, name: str, property_type: type[PagePropertyT]) -> PagePropertyT | None:
-        prop = self._notion_page.properties.get(name)
+        prop = self._properties.get(name)
         if isinstance(prop, property_type):
             return prop
         return None
 
-    # --- PROPERTY OPTIONS (for select, multi-select, status, relation) ---
-    # Delegate db_reader options to make the api more accesible
     def get_select_options_by_property_name(self, property_name: str) -> list[str]:
-        return self.db_reader.get_select_options_by_property_name(property_name) if self.db_reader else []
-
-    def get_detailed_select_options_by_property_name(self, property_name: str) -> list[DatabasePropertyOption]:
-        return self.db_reader.get_detailed_select_options_by_property_name(property_name) if self.db_reader else []
+        return (
+            self.data_source_reader.get_select_options_by_property_name(property_name)
+            if self.data_source_reader
+            else []
+        )
 
     def get_multi_select_options_by_property_name(self, property_name: str) -> list[str]:
-        return self.db_reader.get_multi_select_options_by_property_name(property_name) if self.db_reader else []
-
-    def get_detailed_multi_select_options_by_property_name(self, property_name: str) -> list[DatabasePropertyOption]:
         return (
-            self.db_reader.get_detailed_multi_select_options_by_property_name(property_name) if self.db_reader else []
+            self.data_source_reader.get_multi_select_options_by_property_name(property_name)
+            if self.data_source_reader
+            else []
         )
 
     def get_status_options_by_property_name(self, property_name: str) -> list[str]:
-        return self.db_reader.get_status_options_by_property_name(property_name) if self.db_reader else []
+        return (
+            self.data_source_reader.get_status_options_by_property_name(property_name)
+            if self.data_source_reader
+            else []
+        )
 
-    def get_detailed_status_options_by_property_name(self, property_name: str) -> list[EnrichedDatabaseStatusOption]:
-        return self.db_reader.get_detailed_status_options_by_property_name(property_name) if self.db_reader else []
+    def get_detailed_status_options_by_property_name(self, property_name: str) -> list[EnrichedDataSourceStatusOption]:
+        return (
+            self.data_source_reader.get_detailed_status_options_by_property_name(property_name)
+            if self.data_source_reader
+            else []
+        )
 
     async def get_relation_options_by_property_name(self, property_name: str) -> list[str]:
-        return await self.db_reader.get_relation_options_by_property_name(property_name) if self.db_reader else []
+        return (
+            await self.data_source_reader.get_relation_options_by_property_name(property_name)
+            if self.data_source_reader
+            else []
+        )
 
     async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
-        return await self.db_reader.get_options_for_property_by_name(property_name) if self.db_reader else []
+        return (
+            await self.data_source_reader.get_options_for_property_by_name(property_name)
+            if self.data_source_reader
+            else []
+        )
