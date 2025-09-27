@@ -27,7 +27,6 @@ from notionary.page.properties.page_property_writer import PagePropertyWriter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.schemas import NotionContentSchema
 from notionary.shared.entity.entity import Entity
-from notionary.shared.models.user_models import NotionUser
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
@@ -39,9 +38,7 @@ class NotionPage(Entity):
         id: str,
         title: str,
         created_time: str,
-        created_by: NotionUser,
         last_edited_time: str,
-        last_edited_by: NotionUser,
         url: str,
         archived: bool,
         in_trash: bool,
@@ -65,8 +62,6 @@ class NotionPage(Entity):
         )
         # Handle additional fields manually
         self._title = title
-        self._created_by = created_by
-        self._last_edited_by = last_edited_by
         self._archived = archived
         self._properties = properties or {}
         self._parent_database = parent_database
@@ -108,28 +103,15 @@ class NotionPage(Entity):
 
     @property
     def _entity_metadata_update_client(self) -> PageMetadataUpdateClient:
-        """Return the concrete metadata client for this entity."""
         return self._metadata_update_client
-
-    @property
-    def properties(self) -> dict[str, PageProperty]:
-        return self._properties
 
     @property
     def title(self) -> str:
         return self._title
 
     @property
-    def created_by(self) -> NotionUser:
-        return self._created_by
-
-    @property
-    def last_edited_by(self) -> NotionUser:
-        return self._last_edited_by
-
-    @property
-    def archived(self) -> bool:
-        return self._archived
+    def properties(self) -> dict[str, PageProperty]:
+        return self._properties
 
     def get_prompt_information(self) -> str:
         markdown_syntax_builder = SyntaxPromptBuilder()
@@ -151,7 +133,7 @@ class NotionPage(Entity):
         )
 
     async def set_title(self, title: str) -> None:
-        await self._page_client.patch_title(title)
+        await self.property_writer.set_title_property(title)
         self._title = title
 
     async def append_markdown(
@@ -178,7 +160,6 @@ class NotionPage(Entity):
     async def create_child_database(self, title: str) -> NotionDatabase:
         from notionary import NotionDatabase
 
-        # Use a temporary database_id since this creates a new database
         async with NotionDatabseHttpClient(database_id=self._parent_database.id or "temp") as database_client:
             create_database_response = await database_client.create_database(
                 title=title,
@@ -186,22 +167,6 @@ class NotionPage(Entity):
             )
 
         return await NotionDatabase.from_id(create_database_response.id)
-
-    async def archive(self) -> None:
-        if self._archived:
-            self.logger.info("Page is already archived.")
-            return
-
-        entity_response = await self._metadata_update_client.archive_page()
-        self._archived = entity_response.archived
-
-    async def unarchive(self) -> None:
-        if not self._archived:
-            self.logger.info("Page is not archived.")
-            return
-
-        entity_response = await self._metadata_update_client.unarchive_page()
-        self._archived = entity_response.archived
 
     def _setup_page_context_provider(self) -> PageContextProvider:
         parent_database_id = self._parent_database.id if self._parent_database else "temp"

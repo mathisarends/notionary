@@ -8,11 +8,6 @@ from notionary.util.fuzzy import find_best_matches
 
 
 class NotionUser(BaseNotionUser):
-    """
-    Manager for Notion person users.
-    Handles person-specific operations and information.
-    """
-
     NO_USERS_FOUND_MSG = "No users found in workspace"
     NO_PERSON_USERS_FOUND_MSG = "No person users found in workspace"
 
@@ -30,9 +25,6 @@ class NotionUser(BaseNotionUser):
 
     @classmethod
     async def from_user_id(cls, user_id: str) -> NotionUser | None:
-        """
-        Create a NotionUser from a user ID.
-        """
         client = UserHttpClient()
         user_response = await client.get_user(user_id)
 
@@ -49,9 +41,6 @@ class NotionUser(BaseNotionUser):
 
     @classmethod
     async def from_name(cls, name: str, min_similarity: float = 0.6) -> NotionUser | None:
-        """
-        Create a NotionUser by finding a person user with fuzzy matching on the name.
-        """
         from notionary.util.fuzzy import find_best_match
 
         client = UserHttpClient()
@@ -110,9 +99,6 @@ class NotionUser(BaseNotionUser):
 
     @classmethod
     def from_user_response(cls, user_response: NotionUserResponse) -> NotionUser:
-        """
-        Create a NotionUser from an existing API response.
-        """
         if user_response.type != "person":
             raise ValueError(f"Cannot create NotionUser from {user_response.type} user")
 
@@ -187,24 +173,18 @@ class NotionUser(BaseNotionUser):
 
     @property
     def email(self) -> str | None:
-        """
-        Get the user email (requires proper integration capabilities).
-        """
         return self._email
 
     @property
     def user_type(self) -> str:
-        """Get the user type."""
         return "person"
 
     @property
     def is_person(self) -> bool:
-        """Check if this is a person user."""
         return True
 
     @property
     def is_bot(self) -> bool:
-        """Check if this is a bot user."""
         return False
 
     @classmethod

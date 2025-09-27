@@ -1,7 +1,8 @@
 import asyncio
 
-from notionary import NotionDatabase, NotionPage
-from notionary.database.database_http_client import NotionDatabseHttpClient
+from notionary import NotionPage
+from notionary.data_source.data_source import NotionDataSource
+from notionary.data_source.http.data_source_client import DataSourceClient
 from notionary.database.database_models import NotionQueryDatabaseResponse
 from notionary.http.http_client import NotionHttpClient
 from notionary.page.search_filter_builder import SearchFilterBuilder
@@ -10,24 +11,11 @@ from notionary.util import LoggingMixin
 
 
 class NotionWorkspace(LoggingMixin):
-    """
-    Represents a Notion workspace, providing methods to interact with databases, pages, and limited user operations.
-
-    Note: Due to Notion API limitations, bulk user operations (listing all users) are not supported.
-    Only individual user queries and bot user information are available.
-    """
-
-    def __init__(self):
-        """
-        Initialize the workspace with Notion clients.
-        """
+    def __init__(self) -> None:
         self.notion_client = NotionHttpClient()
         self.user_manager = NotionUserManager()
 
     async def search_pages(self, query: str, sort_ascending: bool = True, limit: int = 100) -> list[NotionPage]:
-        """
-        Searches for pages in Notion using the search endpoint.
-        """
         search_query = self._truncate_query_if_needed(query)
 
         search_filter = (
@@ -43,59 +31,29 @@ class NotionWorkspace(LoggingMixin):
 
         return await asyncio.gather(*(NotionPage.from_id(page.id) for page in response.results))
 
-    async def search_databases(self, query: str, limit: int = 100) -> list[NotionDatabase]:
-        """
-        Search for databases globally across the Notion workspace.
-        """
+    async def search_data_sources(self, query: str, limit: int = 100) -> list[NotionDataSource]:
         search_query = self._truncate_query_if_needed(query)
 
-        # Create a temporary client for search operations (no specific database_id needed)
-        async with NotionDatabseHttpClient(database_id="temp") as temp_client:
-            response = await temp_client.search_databases(query=search_query, limit=limit)
-        return await asyncio.gather(*(NotionDatabase.from_id(database.id) for database in response.results))
+        async with DataSourceClient() as data_source_client:
+            response = await data_source_client.search_data_sources(query=search_query, limit=limit)
+        return await asyncio.gather(*(NotionDataSource.from_id(data_source.id) for data_source in response.results))
 
     async def search_users(self, query: str, limit: int = 100) -> list[NotionUser]:
-        """
-        Search for users in the Notion workspace using fuzzy matching.
-        Only returns person users, excludes bots and integrations.
-        """
         search_query = self._truncate_query_if_needed(query)
         users = await self.user_manager.find_users_by_name(search_query)
 
         return users[:limit] if limit > 0 else users
 
-    async def list_all_databases(self, limit: int = 100) -> list[NotionDatabase]:
-        """
-        List all databases in the workspace.
-        Returns a list of NotionDatabase instances.
-        """
-        async with NotionDatabseHttpClient(database_id="temp") as temp_client:
-            database_results = await temp_client.search_databases(query="", limit=limit)
-        return [await NotionDatabase.from_id(database.id) for database in database_results.results]
-
-    # User-related methods (limited due to API constraints)
     async def get_current_bot_user(self) -> NotionUser | None:
-        """
-        Get the current bot user from the API token.
-        """
         return await self.user_manager.get_current_bot_user()
 
     async def get_user_by_id(self, user_id: str) -> NotionUser | None:
-        """
-        Get a specific user by their ID.
-        """
         return await self.user_manager.get_user_by_id(user_id)
 
     async def get_workspace_info(self) -> dict | None:
-        """
-        Get available workspace information including bot details.
-        """
         return await self.user_manager.get_workspace_info()
 
     def _truncate_query_if_needed(self, query: str) -> str:
-        """
-        Truncates search queries to first 4 words to avoid Notion API issues with long queries.
-        """
         MAX_WORDS = 4
 
         words = query.split()

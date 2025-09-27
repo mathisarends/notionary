@@ -2,16 +2,23 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.page.page_http_client import NotionPageHttpClient
+from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.page_property_models import PageTitleProperty
-from notionary.shared.page_or_data_source.page_or_data_source_models import NotionPageOrDataSourceDto
-from notionary.shared.page_or_data_source.page_or_datasource_factory import PageOrDatasourceFactory
+from notionary.shared.entity.factory.entity_factory import EntityFactory
+from notionary.shared.entity.factory.parent_extract_mixin import ParentExtractMixin
 from notionary.util.fuzzy import find_best_match
 
 if TYPE_CHECKING:
     from notionary import NotionPage
 
+    BaseFactory = EntityFactory[NotionPage]
+else:
+    BaseFactory = EntityFactory
 
-class NotionPageFactory(PageOrDatasourceFactory):
+
+class NotionPageFactory(BaseFactory, ParentExtractMixin):
     async def load_from_id(self, page_id: str) -> NotionPage:
         response = await self._fetch_page_response(page_id)
         return await self._create_page_from_response(response)
@@ -38,25 +45,27 @@ class NotionPageFactory(PageOrDatasourceFactory):
 
         return await self.load_from_id(best_match.item.id)
 
-    async def _extract_title(self, response: NotionPageOrDataSourceDto) -> str:
-        title_property = self._lookup_title_property_in_page_response(response)
-        rich_text_title = title_property.title if title_property else []
-        return await self._extract_title_from_rich_text_objects(rich_text_title)
-
-    async def _fetch_page_response(self, page_id: str) -> NotionPageOrDataSourceDto:
-        from notionary.page.page_http_client import NotionPageHttpClient
-
+    async def _fetch_page_response(self, page_id: str) -> NotionPageDto:
         async with NotionPageHttpClient(page_id=page_id) as client:
             return await client.get_page()
 
-    async def _create_page_from_response(self, response: NotionPageOrDataSourceDto) -> NotionPage:
+    async def _create_page_from_response(self, response: NotionPageDto) -> NotionPage:
         from notionary import NotionDatabase, NotionPage
 
-        entity_kwargs = await self._create_common_entity_kwargs(response)
+        entity_kwargs = self._create_common_entity_kwargs(response)
 
-        data_source_id = self._extract_data_source_id(response)
-        # TODO: Jump here to instantiate data_source
-        print("Data Source ID:", data_source_id)
+        title = await self._extract_title(response)
+        entity_kwargs.update(
+            {
+                "title": title,
+                "created_by": response.created_by,
+                "last_edited_by": response.last_edited_by,
+                "archived": response.archived,
+                "url": response.url,
+                "public_url": response.public_url,
+                "properties": response.properties,
+            }
+        )
 
         parent_database = None
         parent_db_id = self._extract_parent_database_id(response)
@@ -66,11 +75,21 @@ class NotionPageFactory(PageOrDatasourceFactory):
         entity_kwargs["parent_database"] = parent_database
         return NotionPage(**entity_kwargs)
 
-    def _lookup_title_property_in_page_response(self, response: NotionPageOrDataSourceDto) -> PageTitleProperty | None:
+    async def _extract_title(self, response: NotionPageDto) -> str:
+        title_property = self._lookup_title_property_in_page_response(response)
+        rich_text_title = title_property.title if title_property else []
+        return await self._extract_title_from_rich_text_objects(rich_text_title)
+
+    def _lookup_title_property_in_page_response(self, response: NotionPageDto) -> PageTitleProperty | None:
         return next(
             (prop for prop in response.properties.values() if isinstance(prop, PageTitleProperty)),
             None,
         )
+
+    async def _extract_title_from_rich_text_objects(self, rich_text_objects: list) -> str:
+        rich_text_markdown_converter = RichTextToMarkdownConverter()
+        title = await rich_text_markdown_converter.to_markdown(rich_text_objects)
+        return title
 
 
 async def load_page_from_id(page_id: str) -> NotionPage:

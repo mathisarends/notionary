@@ -15,8 +15,6 @@ class Entity(LoggingMixin, ABC):
         created_time: str,
         last_edited_time: str,
         in_trash: bool,
-        url: str,
-        public_url: str | None = None,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
@@ -24,8 +22,6 @@ class Entity(LoggingMixin, ABC):
         self._id = id
         self._created_time = created_time
         self._last_edited_time = last_edited_time
-        self._url = url
-        self._public_url = public_url
         self._emoji_icon = emoji_icon
         self._external_icon_url = external_icon_url
         self._cover_image_url = cover_image_url
@@ -70,14 +66,6 @@ class Entity(LoggingMixin, ABC):
     @property
     def in_trash(self) -> bool:
         return self._in_trash
-
-    @property
-    def url(self) -> str:
-        return self._url
-
-    @property
-    def public_url(self) -> str | None:
-        return self._public_url
 
     @property
     def emoji_icon(self) -> str | None:

@@ -13,7 +13,7 @@ class EntityObjectType(StrEnum):
     DATABASE = "database"
 
 
-class NotionEntityDto(BaseModel):
+class EntityDto(BaseModel):
     object: EntityObjectType
     id: str
     created_time: str

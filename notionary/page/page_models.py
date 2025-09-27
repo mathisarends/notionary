@@ -1,8 +1,7 @@
 from notionary.page.properties.page_properties_mixin import PagePropertiesMixin
-from notionary.shared.page_or_data_source.page_or_data_source_models import NotionPageOrDataSourceDto
+from notionary.shared.entity.entity_models import EntityDto
+from notionary.shared.entity.user_context_mixin import UserContextMixin
 
 
-class NotionPageDto(NotionPageOrDataSourceDto, PagePropertiesMixin): ...
-
-
-class NotionPageUpdateDto(NotionPageOrDataSourceDto, PagePropertiesMixin): ...
+class NotionPageDto(EntityDto, UserContextMixin, PagePropertiesMixin):
+    archived: bool

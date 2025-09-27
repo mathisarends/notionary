@@ -4,7 +4,6 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRich
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.database.database_models import (
     NotionDatabaseDto,
-    NotionDatabaseSearchResponse,
     NotionDatabaseUpdateDto,
     NotionQueryDatabaseResponse,
 )
@@ -51,22 +50,6 @@ class NotionDatabseHttpClient(NotionHttpClient):
         query_data = {"filter": {"property": "title", "title": {"contains": page_title}}}
 
         return await self.query_database(query_data=query_data)
-
-    async def search_data_sources(
-        self, query: str = "", sort_ascending: bool = True, limit: int = 100
-    ) -> NotionDatabaseSearchResponse:
-        search_data = {
-            "query": query,
-            "filter": {"value": "data_source", "property": "object"},
-            "sort": {
-                "direction": "ascending" if sort_ascending else "descending",
-                "timestamp": "last_edited_time",
-            },
-            "page_size": limit,
-        }
-
-        response = await self.post("search", search_data)
-        return NotionDatabaseSearchResponse.model_validate(response)
 
     async def create_page(self) -> NotionPageDto:
         page_data = {

@@ -1,11 +1,10 @@
-from notionary.data_source.data_source_http_client import NotionDataSourceHttpClient
+from notionary import NotionDataSource
 
 
 async def main():
-    client = NotionDataSourceHttpClient("1a6389d5-7bd3-804d-ac1d-000b852bf920")
+    data_source = await NotionDataSource.from_title("Wissen / Notizen")
 
-    data_source = await client.get_data_source()
-
+    print("data_source.id", data_source.id)
     print("data_source.title", data_source.title)
 
 
