@@ -4,9 +4,9 @@ from pydantic import BaseModel, Field
 
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.page.page_models import NotionPageDto
+from notionary.shared.entity.entity_models import NotionEntityDto
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.icon_models import Icon
-from notionary.shared.models.parent_models import NotionParent
 
 
 class DataSourceDiscoveryDto(BaseModel):
@@ -14,20 +14,12 @@ class DataSourceDiscoveryDto(BaseModel):
     name: str
 
 
-class NotionDatabaseDto(BaseModel):
-    object: Literal["database"] = "database"
-    id: str
+class NotionDatabaseDto(NotionEntityDto):
     title: list[RichTextObject]
     description: list[RichTextObject]
-    parent: NotionParent
     is_inline: bool
-    in_trash: bool
     is_locked: bool
-    created_time: str
-    last_edited_time: str
     data_sources: list[DataSourceDiscoveryDto] = Field(default_factory=list)
-    icon: Icon | None = None
-    cover: NotionCover | None = None
     url: str
     public_url: str | None = None
 

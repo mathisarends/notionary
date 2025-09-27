@@ -4,9 +4,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
-from notionary.shared.models.cover_models import NotionCover
-from notionary.shared.models.icon_models import Icon
-from notionary.shared.models.parent_models import NotionParent
+from notionary.shared.entity.entity_models import NotionEntityDto
 
 
 class NotionUserDto(BaseModel):
@@ -14,16 +12,9 @@ class NotionUserDto(BaseModel):
     id: str
 
 
-class NotionPageOrDataSourceDto(BaseModel):
-    object: Literal["page", "data_source"]
-    id: str
-    created_time: str
-    last_edited_time: str
+# TODO: Hierfragen ob man eine so spezifische DTO braucht oder ob NotionEntityDto reicht
+class NotionPageOrDataSourceDto(NotionEntityDto):
     created_by: NotionUserDto
     last_edited_by: NotionUserDto
-    cover: NotionCover | None = None
-    icon: Icon | None = None
-    parent: NotionParent
     archived: bool
-    in_trash: bool
     properties: dict[str, Any]

@@ -26,14 +26,14 @@ from notionary.page.properties.page_property_reader import PagePropertyReader
 from notionary.page.properties.page_property_writer import PagePropertyWriter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.schemas import NotionContentSchema
+from notionary.shared.entity.entity import Entity
 from notionary.shared.models.user_models import NotionUser
-from notionary.shared.page_or_data_source.page_or_data_source import PageOrDataSource
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
 
 
-class NotionPage(PageOrDataSource):
+class NotionPage(Entity):
     def __init__(
         self,
         id: str,
@@ -54,19 +54,20 @@ class NotionPage(PageOrDataSource):
     ):
         super().__init__(
             id=id,
-            title=title,
             created_time=created_time,
-            created_by=created_by,
             last_edited_time=last_edited_time,
-            last_edited_by=last_edited_by,
-            url=url,
-            archived=archived,
             in_trash=in_trash,
+            url=url,
             public_url=public_url,
             emoji_icon=emoji_icon,
             external_icon_url=external_icon_url,
             cover_image_url=cover_image_url,
         )
+        # Handle additional fields manually
+        self._title = title
+        self._created_by = created_by
+        self._last_edited_by = last_edited_by
+        self._archived = archived
         self._properties = properties or {}
         self._parent_database = parent_database
 
@@ -113,6 +114,22 @@ class NotionPage(PageOrDataSource):
     @property
     def properties(self) -> dict[str, PageProperty]:
         return self._properties
+
+    @property
+    def title(self) -> str:
+        return self._title
+
+    @property
+    def created_by(self) -> NotionUser:
+        return self._created_by
+
+    @property
+    def last_edited_by(self) -> NotionUser:
+        return self._last_edited_by
+
+    @property
+    def archived(self) -> bool:
+        return self._archived
 
     def get_prompt_information(self) -> str:
         markdown_syntax_builder = SyntaxPromptBuilder()
@@ -169,6 +186,22 @@ class NotionPage(PageOrDataSource):
             )
 
         return await NotionDatabase.from_id(create_database_response.id)
+
+    async def archive(self) -> None:
+        if self._archived:
+            self.logger.info("Page is already archived.")
+            return
+
+        entity_response = await self._metadata_update_client.archive_page()
+        self._archived = entity_response.archived
+
+    async def unarchive(self) -> None:
+        if not self._archived:
+            self.logger.info("Page is not archived.")
+            return
+
+        entity_response = await self._metadata_update_client.unarchive_page()
+        self._archived = entity_response.archived
 
     def _setup_page_context_provider(self) -> PageContextProvider:
         parent_database_id = self._parent_database.id if self._parent_database else "temp"
