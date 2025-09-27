@@ -54,6 +54,10 @@ class NotionPageFactory(NotionEntityFactory):
 
         entity_kwargs = await self._create_common_entity_kwargs(response)
 
+        data_source_id = self._extract_data_source_id(response)
+        # TODO: Jump here to instantiate data_source
+        print("Data Source ID:", data_source_id)
+
         parent_database = None
         parent_db_id = self._extract_parent_database_id(response)
         if parent_db_id:

@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from notionary.database.database_http_client import NotionDatabseHttpClient
-from notionary.database.properties.database_property_models import (
+from notionary.data_source.properties.database_property_models import (
     DatabaseMultiSelectProperty,
     DatabasePropertyOption,
     DatabasePropertyT,
@@ -12,6 +11,7 @@ from notionary.database.properties.database_property_models import (
     DatabaseStatusProperty,
     EnrichedDatabaseStatusOption,
 )
+from notionary.database.database_http_client import NotionDatabseHttpClient
 from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.page_property_models import PageTitleProperty
 from notionary.shared.models.shared_property_models import PropertyType

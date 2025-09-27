@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Self
 
 from notionary.shared.entities.entity_metadata_update_client import EntityMetadataUpdateClient
-from notionary.user.notion_user import NotionUser
+from notionary.shared.models.user_models import NotionUser
 from notionary.util import LoggingMixin
 
 

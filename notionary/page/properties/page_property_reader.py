@@ -5,11 +5,11 @@ from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.database.properties.database_property_models import (
+from notionary.data_source.properties.database_property_models import (
     DatabasePropertyOption,
     EnrichedDatabaseStatusOption,
 )
-from notionary.database.properties.database_property_reader import DatabasePropertyReader
+from notionary.data_source.properties.database_property_reader import DatabasePropertyReader
 from notionary.page.properties.page_property_models import (
     PageCheckboxProperty,
     PageCreatedTimeProperty,

@@ -60,12 +60,18 @@ class NotionEntityFactory(ABC):
             return None
         return response.cover.external.url if response.cover.external else None
 
-    def _extract_parent_data_source(self, response: NotionEntityResponseDto) -> str | None:
+    def _extract_data_source_id(self, response: NotionEntityResponseDto) -> str | None:
+        data_source_parent = self._get_data_source_parent(response)
+        return data_source_parent.data_source_id if data_source_parent else None
+
+    def _extract_parent_database_id(self, response: NotionEntityResponseDto) -> str | None:
+        data_source_parent = self._get_data_source_parent(response)
+        return data_source_parent.database_id if data_source_parent else None
+
+    def _get_data_source_parent(self, response: NotionEntityResponseDto) -> DataSourceParent | None:
         if response.parent.type != ParentType.DATA_SOURCE_ID:
             return None
-
-        data_source_response = cast(DataSourceParent, response.parent)
-        return data_source_response.data_source_id
+        return cast(DataSourceParent, response.parent)
 
     async def _extract_title_from_rich_text_objects(self, rich_text_objects: list) -> str:
         from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter

@@ -52,12 +52,12 @@ class NotionDatabseHttpClient(NotionHttpClient):
 
         return await self.query_database(query_data=query_data)
 
-    async def search_databases(
+    async def search_data_sources(
         self, query: str = "", sort_ascending: bool = True, limit: int = 100
     ) -> NotionDatabaseSearchResponse:
         search_data = {
             "query": query,
-            "filter": {"value": "database", "property": "object"},
+            "filter": {"value": "data_source", "property": "object"},
             "sort": {
                 "direction": "ascending" if sort_ascending else "descending",
                 "timestamp": "last_edited_time",

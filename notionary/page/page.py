@@ -27,7 +27,7 @@ from notionary.page.properties.page_property_writer import PagePropertyWriter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.schemas import NotionContentSchema
 from notionary.shared.entities.entity import NotionEntity
-from notionary.user.notion_user import NotionUser
+from notionary.shared.models.user_models import NotionUser
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase

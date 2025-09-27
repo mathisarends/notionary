@@ -18,7 +18,6 @@ class NotionPageHttpClient(NotionHttpClient):
 
         import json
 
-        print(json.dumps(response, indent=2))
+        print("RESPONSE", json.dumps(response, indent=4))
 
-        page_dto = NotionPageDto.model_validate(response)
-        return page_dto
+        return NotionPageDto.model_validate(response)

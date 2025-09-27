@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
-from notionary.database.properties.database_property_models import (
+from notionary.data_source.properties.database_property_models import (
     DatabaseCheckboxProperty,
     DatabaseCreatedTimeProperty,
     DatabaseDateProperty,
@@ -22,7 +22,7 @@ from notionary.database.properties.database_property_models import (
 from notionary.shared.models.shared_property_models import PropertyType
 
 
-class DatabasePropertiesMixin(BaseModel):
+class DataSourcePropertiesMixin(BaseModel):
     properties: dict[str, DatabaseNotionProperty] = Field(default_factory=dict)
 
     @field_validator("properties", mode="before")
@@ -31,10 +31,10 @@ class DatabasePropertiesMixin(BaseModel):
         if not property_values:
             return {}
 
-        return {key: cls._create_database_property(prop_data) for key, prop_data in property_values.items()}
+        return {key: cls.create_typed_database_property(prop_data) for key, prop_data in property_values.items()}
 
     @classmethod
-    def _create_database_property(cls, prop_data: Any) -> DatabaseNotionProperty:
+    def create_typed_database_property(cls, prop_data: Any) -> DatabaseNotionProperty:
         if not isinstance(prop_data, dict) or "type" not in prop_data:
             return prop_data
 
