@@ -2,8 +2,8 @@ from typing import override
 
 from notionary.database.database_models import NotionDatabaseDto
 from notionary.http.http_client import NotionHttpClient
-from notionary.shared.entities.entity_metadata_update_client import EntityMetadataUpdateClient
-from notionary.shared.entities.entity_models import NotionEntityUpdateDto
+from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
+from notionary.shared.entity.entity_models import NotionEntityUpdateDto
 
 
 class DatabaseMetadataUpdateClient(NotionHttpClient, EntityMetadataUpdateClient):

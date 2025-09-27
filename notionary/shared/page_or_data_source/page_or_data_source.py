@@ -1,13 +1,15 @@
+from __future__ import annotations
+
 import re
 from abc import ABC, abstractmethod
 from typing import Self
 
-from notionary.shared.entities.entity_metadata_update_client import EntityMetadataUpdateClient
+from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.models.user_models import NotionUser
 from notionary.util import LoggingMixin
 
 
-class NotionEntity(LoggingMixin, ABC):
+class PageOrDataSource(LoggingMixin, ABC):
     def __init__(
         self,
         id: str,
@@ -194,7 +196,7 @@ class NotionEntity(LoggingMixin, ABC):
     def _extract_uuid(source: str) -> str | None:
         UUID_RAW_PATTERN = r"([a-f0-9]{32})"
 
-        if NotionEntity._is_valid_uuid(source):
+        if PageOrDataSource._is_valid_uuid(source):
             return source
 
         match = re.search(UUID_RAW_PATTERN, source.lower())

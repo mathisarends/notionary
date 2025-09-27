@@ -14,8 +14,7 @@ class NotionUserDto(BaseModel):
     id: str
 
 
-# TODO: Rename to PageOrDataSourceResponseDto
-class NotionEntityResponseDto(BaseModel):
+class NotionPageOrDataSourceDto(BaseModel):
     object: Literal["page", "data_source"]
     id: str
     created_time: str
@@ -28,9 +27,3 @@ class NotionEntityResponseDto(BaseModel):
     archived: bool
     in_trash: bool
     properties: dict[str, Any]
-
-
-class NotionEntityUpdateDto(BaseModel):
-    icon: Icon | None = None
-    cover: NotionCover | None = None
-    archived: bool | None = None

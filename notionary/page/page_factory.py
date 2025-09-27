@@ -3,15 +3,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from notionary.page.properties.page_property_models import PageTitleProperty
-from notionary.shared.entities.entity_factory import NotionEntityFactory
-from notionary.shared.entities.entity_models import NotionEntityResponseDto
+from notionary.shared.page_or_data_source.page_or_data_source_models import NotionPageOrDataSourceDto
+from notionary.shared.page_or_data_source.page_or_datasource_factory import PageOrDatasourceFactory
 from notionary.util.fuzzy import find_best_match
 
 if TYPE_CHECKING:
     from notionary import NotionPage
 
 
-class NotionPageFactory(NotionEntityFactory):
+class NotionPageFactory(PageOrDatasourceFactory):
     async def load_from_id(self, page_id: str) -> NotionPage:
         response = await self._fetch_page_response(page_id)
         return await self._create_page_from_response(response)
@@ -38,18 +38,18 @@ class NotionPageFactory(NotionEntityFactory):
 
         return await self.load_from_id(best_match.item.id)
 
-    async def _extract_title(self, response: NotionEntityResponseDto) -> str:
+    async def _extract_title(self, response: NotionPageOrDataSourceDto) -> str:
         title_property = self._lookup_title_property_in_page_response(response)
         rich_text_title = title_property.title if title_property else []
         return await self._extract_title_from_rich_text_objects(rich_text_title)
 
-    async def _fetch_page_response(self, page_id: str) -> NotionEntityResponseDto:
+    async def _fetch_page_response(self, page_id: str) -> NotionPageOrDataSourceDto:
         from notionary.page.page_http_client import NotionPageHttpClient
 
         async with NotionPageHttpClient(page_id=page_id) as client:
             return await client.get_page()
 
-    async def _create_page_from_response(self, response: NotionEntityResponseDto) -> NotionPage:
+    async def _create_page_from_response(self, response: NotionPageOrDataSourceDto) -> NotionPage:
         from notionary import NotionDatabase, NotionPage
 
         entity_kwargs = await self._create_common_entity_kwargs(response)
@@ -66,7 +66,7 @@ class NotionPageFactory(NotionEntityFactory):
         entity_kwargs["parent_database"] = parent_database
         return NotionPage(**entity_kwargs)
 
-    def _lookup_title_property_in_page_response(self, response: NotionEntityResponseDto) -> PageTitleProperty | None:
+    def _lookup_title_property_in_page_response(self, response: NotionPageOrDataSourceDto) -> PageTitleProperty | None:
         return next(
             (prop for prop in response.properties.values() if isinstance(prop, PageTitleProperty)),
             None,

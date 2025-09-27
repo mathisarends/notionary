@@ -26,14 +26,14 @@ from notionary.page.properties.page_property_reader import PagePropertyReader
 from notionary.page.properties.page_property_writer import PagePropertyWriter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.schemas import NotionContentSchema
-from notionary.shared.entities.entity import NotionEntity
 from notionary.shared.models.user_models import NotionUser
+from notionary.shared.page_or_data_source.page_or_data_source import PageOrDataSource
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
 
 
-class NotionPage(NotionEntity):
+class NotionPage(PageOrDataSource):
     def __init__(
         self,
         id: str,

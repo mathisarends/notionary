@@ -1,15 +1,15 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, cast
 
-from notionary.shared.entities.entity_models import NotionEntityResponseDto
 from notionary.shared.models.cover_models import CoverType
 from notionary.shared.models.icon_models import IconType
 from notionary.shared.models.parent_models import DataSourceParent, ParentType
+from notionary.shared.page_or_data_source.page_or_data_source_models import NotionPageOrDataSourceDto
 
 EntityT = TypeVar("EntityT", bound=object)
 
 
-class NotionEntityFactory(ABC):
+class PageOrDatasourceFactory(ABC):
     @abstractmethod
     async def load_from_id(self, entity_id: str) -> EntityT:
         pass
@@ -19,10 +19,10 @@ class NotionEntityFactory(ABC):
         pass
 
     @abstractmethod
-    async def _extract_title(self, response: NotionEntityResponseDto) -> str:
+    async def _extract_title(self, response: NotionPageOrDataSourceDto) -> str:
         pass
 
-    async def _create_common_entity_kwargs(self, response: NotionEntityResponseDto) -> dict:
+    async def _create_common_entity_kwargs(self, response: NotionPageOrDataSourceDto) -> dict:
         title = await self._extract_title(response)
         emoji_icon = self._extract_emoji_icon(response)
         external_icon_url = self._extract_external_icon_url(response)
@@ -45,30 +45,30 @@ class NotionEntityFactory(ABC):
             "properties": response.properties,
         }
 
-    def _extract_emoji_icon(self, response: NotionEntityResponseDto) -> str | None:
+    def _extract_emoji_icon(self, response: NotionPageOrDataSourceDto) -> str | None:
         if not response.icon or response.icon.type != IconType.EMOJI:
             return None
         return response.icon.emoji
 
-    def _extract_external_icon_url(self, response: NotionEntityResponseDto) -> str | None:
+    def _extract_external_icon_url(self, response: NotionPageOrDataSourceDto) -> str | None:
         if not response.icon or response.icon.type != IconType.EXTERNAL:
             return None
         return response.icon.external.url if response.icon.external else None
 
-    def _extract_cover_image_url(self, response: NotionEntityResponseDto) -> str | None:
+    def _extract_cover_image_url(self, response: NotionPageOrDataSourceDto) -> str | None:
         if not response.cover or response.cover.type != CoverType.EXTERNAL:
             return None
         return response.cover.external.url if response.cover.external else None
 
-    def _extract_data_source_id(self, response: NotionEntityResponseDto) -> str | None:
+    def _extract_data_source_id(self, response: NotionPageOrDataSourceDto) -> str | None:
         data_source_parent = self._get_data_source_parent(response)
         return data_source_parent.data_source_id if data_source_parent else None
 
-    def _extract_parent_database_id(self, response: NotionEntityResponseDto) -> str | None:
+    def _extract_parent_database_id(self, response: NotionPageOrDataSourceDto) -> str | None:
         data_source_parent = self._get_data_source_parent(response)
         return data_source_parent.database_id if data_source_parent else None
 
-    def _get_data_source_parent(self, response: NotionEntityResponseDto) -> DataSourceParent | None:
+    def _get_data_source_parent(self, response: NotionPageOrDataSourceDto) -> DataSourceParent | None:
         if response.parent.type != ParentType.DATA_SOURCE_ID:
             return None
         return cast(DataSourceParent, response.parent)
