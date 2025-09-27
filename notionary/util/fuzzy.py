@@ -65,8 +65,9 @@ def find_best_match(
     query: str,
     items: list[T],
     text_extractor: Callable[[T], str],
-    min_similarity: float = 0.0,
+    min_similarity: float | None = 0.0,
 ) -> MatchResult[T] | None:
-    """Find the single best fuzzy match."""
+    min_similarity = 0.0 if min_similarity is None else min_similarity
+
     matches = find_best_matches(query, items, text_extractor, min_similarity, limit=1)
     return matches[0] if matches else None

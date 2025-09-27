@@ -9,7 +9,7 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.comments import Comment, CommentClient
 from notionary.data_source.data_source import NotionDataSource
-from notionary.database.database_http_client import NotionDatabseHttpClient
+from notionary.database.database_http_client import NotionDatabaseHttpClient
 from notionary.file_upload.file_upload_http_client import FileUploadHttpClient
 from notionary.page.page_content_deleting_service import PageContentDeletingService
 from notionary.page.page_content_writer import PageContentWriter
@@ -162,7 +162,7 @@ class NotionPage(Entity):
     async def create_child_database(self, title: str) -> NotionDatabase:
         from notionary import NotionDatabase
 
-        async with NotionDatabseHttpClient(database_id=self._parent_database.id or "temp") as database_client:
+        async with NotionDatabaseHttpClient(database_id=self._parent_database.id or "temp") as database_client:
             create_database_response = await database_client.create_database(
                 title=title,
                 parent_page_id=self._id,
@@ -175,6 +175,6 @@ class NotionPage(Entity):
 
         return PageContextProvider(
             page_id=self._id,
-            database_client=NotionDatabseHttpClient(parent_database_id),
+            database_client=NotionDatabaseHttpClient(parent_database_id),
             file_upload_client=FileUploadHttpClient(),
         )

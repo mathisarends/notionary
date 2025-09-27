@@ -2,9 +2,10 @@ import asyncio
 
 from notionary import NotionPage
 from notionary.data_source.data_source import NotionDataSource
-from notionary.data_source.http.data_source_client import DataSourceClient
+from notionary.database.database import NotionDatabase
 from notionary.database.database_models import NotionQueryDatabaseResponse
 from notionary.http.http_client import NotionHttpClient
+from notionary.http.search_client import SearchClient
 from notionary.page.search_filter_builder import SearchFilterBuilder
 from notionary.user import NotionUser, NotionUserManager
 from notionary.util import LoggingMixin
@@ -34,9 +35,16 @@ class NotionWorkspace(LoggingMixin):
     async def search_data_sources(self, query: str, limit: int = 100) -> list[NotionDataSource]:
         search_query = self._truncate_query_if_needed(query)
 
-        async with DataSourceClient() as data_source_client:
+        async with SearchClient() as data_source_client:
             response = await data_source_client.search_data_sources(query=search_query, limit=limit)
         return await asyncio.gather(*(NotionDataSource.from_id(data_source.id) for data_source in response.results))
+
+    async def search_databases(self, query: str, limit: int = 100) -> list[NotionDataSource]:
+        search_query = self._truncate_query_if_needed(query)
+
+        async with SearchClient() as data_source_client:
+            response = await data_source_client.search_databases(query=search_query, limit=limit)
+        return await asyncio.gather(*(NotionDatabase.from_id(data_source.id) for data_source in response.results))
 
     async def search_users(self, query: str, limit: int = 100) -> list[NotionUser]:
         search_query = self._truncate_query_if_needed(query)

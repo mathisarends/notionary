@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from notionary.database.database_models import NotionDatabaseDto
-from notionary.util.fuzzy import find_best_match
+from notionary.http.search_client import SearchClient
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
@@ -12,44 +12,20 @@ if TYPE_CHECKING:
 class NotionDatabaseFactory:
     async def load_from_id(self, database_id: str) -> NotionDatabase:
         response = await self._fetch_database_response(database_id)
-        import json
-
-        print("Database Response:", json.dumps(response.model_dump(), indent=2))
-
         return await self._create_database_from_response(response)
 
-    async def load_from_title(self, database_title: str, min_similarity: float = 0.6) -> NotionDatabase:
-        from notionary.workspace import NotionWorkspace
-
-        workspace = NotionWorkspace()
-        search_results = await workspace.search_databases(database_title, limit=10)
-
-        if not search_results:
-            raise ValueError(f"No databases found for name: {database_title}")
-
-        best_match = find_best_match(
-            query=database_title,
-            items=search_results,
-            text_extractor=lambda database: database.title,
-            min_similarity=min_similarity,
-        )
-
-        if not best_match:
-            available_titles = [result.title for result in search_results[:5]]
-            raise ValueError(
-                f"No sufficiently similar database found for '{database_title}'. Available: {available_titles}"
-            )
-
-        return await self.load_from_id(best_match.item.id)
+    async def load_from_title(self, database_title: str) -> NotionDatabase:
+        async with SearchClient() as data_source_client:
+            return await data_source_client.find_database(database_title)
 
     async def _extract_title(self, response: NotionDatabaseDto) -> str:
         rich_text_title = response.title
         return await self._extract_title_from_rich_text_objects(rich_text_title)
 
     async def _fetch_database_response(self, database_id: str) -> NotionDatabaseDto:
-        from notionary.database.database_http_client import NotionDatabseHttpClient
+        from notionary.database.database_http_client import NotionDatabaseHttpClient
 
-        async with NotionDatabseHttpClient(database_id=database_id) as client:
+        async with NotionDatabaseHttpClient(database_id=database_id) as client:
             return await client.get_database()
 
     async def _create_database_from_response(self, response: NotionDatabaseDto) -> NotionDatabase:
@@ -124,6 +100,6 @@ async def load_database_from_id(database_id: str) -> NotionDatabase:
     return await factory.load_from_id(database_id)
 
 
-async def load_database_from_title(database_title: str, min_similarity: float = 0.6) -> NotionDatabase:
+async def load_database_from_title(database_title: str) -> NotionDatabase:
     factory = NotionDatabaseFactory()
-    return await factory.load_from_title(database_title, min_similarity)
+    return await factory.load_from_title(database_title)

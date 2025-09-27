@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from notionary.database.database_http_client import NotionDatabseHttpClient
+    from notionary.database.database_http_client import NotionDatabaseHttpClient
 
 
 @dataclass
@@ -15,9 +15,9 @@ class ConverterContext:
     """
 
     page_id: str | None = None
-    database_client: NotionDatabseHttpClient | None = None
+    database_client: NotionDatabaseHttpClient | None = None
 
-    def require_database_client(self) -> NotionDatabseHttpClient:
+    def require_database_client(self) -> NotionDatabaseHttpClient:
         """Get database client or raise if not available."""
         if self.database_client is None:
             raise ValueError("Database client required but not provided in context")

@@ -6,8 +6,6 @@ from typing import Any, Literal
 
 @dataclass
 class SearchConfig:
-    """Konfiguration für Notion Search API Filter."""
-
     query: str | None = None
     object_type: Literal["page", "database"] | None = None
     sort_direction: Literal["ascending", "descending"] = "descending"
