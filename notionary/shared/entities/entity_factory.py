@@ -31,12 +31,17 @@ class NotionEntityFactory(ABC):
         return {
             "id": response.id,
             "title": title,
-            "url": response.url,
+            "created_time": response.created_time,
+            "last_edited_time": response.last_edited_time,
+            "created_by": response.created_by,
+            "last_edited_by": response.last_edited_by,
             "archived": response.archived,
             "in_trash": response.in_trash,
             "emoji_icon": emoji_icon,
             "external_icon_url": external_icon_url,
             "cover_image_url": cover_image_url,
+            "url": response.url,
+            "public_url": response.public_url,
             "properties": response.properties,
         }
 

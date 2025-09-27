@@ -24,10 +24,6 @@ from notionary.shared.entities.entity import NotionEntity
 from notionary.shared.entities.entity_metadata_update_client import EntityMetadataUpdateClient
 
 
-# extract datbase properties manager
-# try to update property options here by the notion database here itsel
-# for example add fields to props and change its options
-# make a database_proeprty_service out of it
 class NotionDatabase(NotionEntity):
     def __init__(
         self,
@@ -84,7 +80,6 @@ class NotionDatabase(NotionEntity):
 
     @property
     def _entity_metadata_update_client(self) -> EntityMetadataUpdateClient:
-        """Return the concrete metadata client for this entity."""
         return self._metadata_update_client
 
     @property
@@ -104,25 +99,7 @@ class NotionDatabase(NotionEntity):
         udapted_description = await self.client.update_database_description(description=description)
         self._description = udapted_description
 
-    async def get_options_by_property_name(self, property_name: str) -> list[str]:
-        return await self.property_reader.get_options_by_property_name(property_name)
-
-    async def get_relation_options_by_property_name(self, property_name: str) -> list[str]:
-        return await self.property_reader.get_relation_options_by_property_name(property_name)
-
-    def get_select_options_by_property_name(self, property_name: str) -> list[str]:
-        return self.property_reader.get_select_options_by_property_name(property_name)
-
-    def get_multi_select_options_by_property_name(self, property_name: str) -> list[str]:
-        return self.property_reader.get_multi_select_options_by_property_name(property_name)
-
-    def get_status_options_by_property_name(self, property_name: str) -> list[str]:
-        return self.property_reader.get_status_options_by_property_name(property_name)
-
     async def query_database_by_title(self, page_title: str) -> list[NotionPage]:
-        """
-        Query the database for pages with a specific title.
-        """
         search_results: NotionQueryDatabaseResponse = await self.client.query_database_by_title(page_title=page_title)
 
         page_results: list[NotionPage] = []
@@ -134,9 +111,6 @@ class NotionDatabase(NotionEntity):
         return page_results
 
     async def iter_pages_updated_within(self, hours: int = 24, page_size: int = 100) -> AsyncGenerator[NotionPage]:
-        """
-        Iterate through pages edited in the last N hours using DatabaseFilterBuilder.
-        """
         filter_builder = DatabaseFilterBuilder()
         filter_builder.with_updated_last_n_hours(hours)
         filter_conditions = filter_builder.build()
@@ -145,10 +119,6 @@ class NotionDatabase(NotionEntity):
             yield page
 
     async def get_all_pages(self) -> list[NotionPage]:
-        """
-        Get all pages in the database (use with caution for large databases).
-        Uses asyncio.gather to parallelize NotionPage creation per API batch.
-        """
         pages: list[NotionPage] = []
 
         async for batch in self._paginate_database(page_size=100):
