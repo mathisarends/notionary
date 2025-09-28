@@ -159,17 +159,6 @@ class NotionPage(Entity):
         blocks = await self._block_client.get_blocks_by_page_id_recursively(page_id=self._id)
         return await self._page_content_retriever.convert_to_markdown(blocks=blocks)
 
-    async def create_child_database(self, title: str) -> NotionDatabase:
-        from notionary import NotionDatabase
-
-        async with NotionDatabaseHttpClient(database_id=self._parent_database.id or "temp") as database_client:
-            create_database_response = await database_client.create_database(
-                title=title,
-                parent_page_id=self._id,
-            )
-
-        return await NotionDatabase.from_id(create_database_response.id)
-
     def _setup_page_context_provider(self) -> PageContextProvider:
         parent_database_id = self._parent_database.id if self._parent_database else "temp"
 

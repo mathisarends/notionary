@@ -3,22 +3,39 @@ site_url: https://mathisarends.github.io/notionary/
 
 theme:
   name: material
+  font:
+    text: Poppins
+    code: JetBrains Mono
   features:
-    # bestehende Features
+    # KEINE TABS MEHR:
+    # - navigation.tabs   <-- entfernen
+    # Sidebar/UX:
+    - navigation.sections # Gruppen im linken Menü
+    - navigation.indexes # index.md als Abschnittsübersicht
+    - navigation.expand # alle Sektionen standardmäßig aufgeklappt
+    - navigation.tracking # aktive Sektion beim Scrollen markieren
+    - navigation.top # "Back to top" Button
+    - search.suggest
+    - search.highlight
     - content.code.copy
     - content.code.select
     - content.code.annotate
-    # NEU: Tabs + Section-Index + (optional) sticky Tabs
-    - navigation.tabs
-    - navigation.sections
-    - navigation.indexes
   palette:
     - scheme: default
-      primary: deep purple
-      accent: purple
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
     - scheme: slate
-      primary: deep purple
-      accent: purple
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+
+extra_css:
+  - assets/styles.css
 
 # Top-Level-Tabs (jede Gruppe hat ein eigenes index.md)
 nav:
@@ -33,6 +50,7 @@ nav:
       - Instantiating a Database: database/connecting.md
       - Editing Information: database/customization.md
       - Create a page: database/create_page.md
+  # Add datasources here
 
   - Page:
       - Page API: page/index.md
