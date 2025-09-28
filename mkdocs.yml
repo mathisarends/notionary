@@ -7,14 +7,11 @@ theme:
     text: Poppins
     code: JetBrains Mono
   features:
-    # KEINE TABS MEHR:
-    # - navigation.tabs   <-- entfernen
-    # Sidebar/UX:
-    - navigation.sections # Gruppen im linken Menü
-    - navigation.indexes # index.md als Abschnittsübersicht
-    - navigation.expand # alle Sektionen standardmäßig aufgeklappt
-    - navigation.tracking # aktive Sektion beim Scrollen markieren
-    - navigation.top # "Back to top" Button
+    - navigation.sections
+    - navigation.indexes
+    - navigation.expand
+    - navigation.tracking
+    - navigation.top
     - search.suggest
     - search.highlight
     - content.code.copy
@@ -24,68 +21,48 @@ theme:
     - scheme: default
       primary: black
       accent: indigo
-      toggle:
-        icon: material/weather-night
-        name: Dark mode
-    - scheme: slate
-      primary: black
-      accent: indigo
-      toggle:
-        icon: material/weather-sunny
-        name: Light mode
 
 extra_css:
   - assets/styles.css
 
-# Top-Level-Tabs (jede Gruppe hat ein eigenes index.md)
 nav:
-  - Home: index.md
+  - Intro: index.md
+  - Quickstart: quickstart.md
 
-  - Get Started:
-      - Overview: get-started/index.md
-      - Installation: get-started/installation.md
+  - Documentation:
+      - Page: page.md
+      - Database: database.md
+      - Datasource: datasource.md
 
-  - Database:
-      - Overview: database/index.md
-      - Instantiating a Database: database/connecting.md
-      - Editing Information: database/customization.md
-      - Create a page: database/create_page.md
-  # Add datasources here
-
-  - Page:
-      - Page API: page/index.md
-      - Content Management: page/content.md
-      - Page Customization: page/customization.md
-
-  - Blocks:
-      - Overview: blocks/index.md
-      - Paragraph: blocks/paragraph.md
-      - Heading: blocks/heading.md
-      - Callout: blocks/callout.md
-      - Code: blocks/code.md
-      - Quote: blocks/quote.md
-      - Divider: blocks/divider.md
-      - Column: blocks/column.md
-      - Toggle: blocks/toggle.md
-      - Table: blocks/table.md
-      - Equation: blocks/equation.md
-      - Breadcrumb: blocks/breadcrumb.md
-      - Table of Contents: blocks/table_of_contents.md
-      - Embed: blocks/embed.md
-      - File: blocks/file.md
-      - PDF: blocks/pdf.md
-      - Lists:
-          - Bulleted List: blocks/bulleted_list.md
-          - Numbered List: blocks/numbered_list.md
-      - Media:
-          - Image: blocks/image.md
-          - Video: blocks/video.md
-      - Inline Formatting:
-          - Overview: blocks/inline_formatting/index.md
-          - Rich Text: blocks/inline_formatting/rich_text.md
-          - Mentions: blocks/inline_formatting/mentions.md
-          - Colors & Highlights: blocks/inline_formatting/colors_and_highlights.md
-          - Equations: blocks/inline_formatting/equations.md
+      - Blocks:
+          - Overview: blocks/index.md
+          - Paragraph: blocks/paragraph.md
+          - Heading: blocks/heading.md
+          - Callout: blocks/callout.md
+          - Code: blocks/code.md
+          - Quote: blocks/quote.md
+          - Divider: blocks/divider.md
+          - Column: blocks/column.md
+          - Toggle: blocks/toggle.md
+          - Table: blocks/table.md
+          - Equation: blocks/equation.md
+          - Breadcrumb: blocks/breadcrumb.md
+          - Table of Contents: blocks/table_of_contents.md
+          - Embed: blocks/embed.md
+          - File: blocks/file.md
+          - PDF: blocks/pdf.md
+          - Lists:
+              - Bulleted List: blocks/bulleted_list.md
+              - Numbered List: blocks/numbered_list.md
+          - Media:
+              - Image: blocks/image.md
+              - Video: blocks/video.md
+          - Inline Formatting:
+              - Overview: blocks/inline_formatting/index.md
+              - Rich Text: blocks/inline_formatting/rich_text.md
+              - Mentions: blocks/inline_formatting/mentions.md
+              - Colors & Highlights: blocks/inline_formatting/colors_and_highlights.md
+              - Equations: blocks/inline_formatting/equations.md
 
   - Contributing:
       - Overview: contributing/index.md

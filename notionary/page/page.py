@@ -7,7 +7,8 @@ from notionary.blocks.block_http_client import NotionBlockHttpClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
-from notionary.comments import Comment, CommentClient
+from notionary.comments import CommentClient
+from notionary.comments.comment import Comment
 from notionary.data_source.data_source import NotionDataSource
 from notionary.database.database_http_client import NotionDatabaseHttpClient
 from notionary.file_upload.file_upload_http_client import FileUploadHttpClient
@@ -56,8 +57,6 @@ class NotionPage(Entity):
             created_time=created_time,
             last_edited_time=last_edited_time,
             in_trash=in_trash,
-            url=url,
-            public_url=public_url,
             emoji_icon=emoji_icon,
             external_icon_url=external_icon_url,
             cover_image_url=cover_image_url,
@@ -67,6 +66,8 @@ class NotionPage(Entity):
         self._properties = properties or {}
         self._parent_database = parent_database
         self._parent_data_source = parent_data_source
+        self._url = url
+        self._public_url = public_url
 
         self._page_client = NotionPageHttpClient(page_id=id, properties=properties)
         self._block_client = NotionBlockHttpClient()
@@ -90,7 +91,7 @@ class NotionPage(Entity):
 
         self.page_context_provider = self._setup_page_context_provider()
 
-        self.property_reader = PagePropertyReader(self)
+        self.property_reader = PagePropertyReader(self._properties, self._parent_data_source)
         self.property_writer = PagePropertyWriter(self)
 
         self._metadata_update_client = PageMetadataUpdateClient(page_id=id)

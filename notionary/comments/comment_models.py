@@ -18,7 +18,7 @@ class UserRef(BaseModel):
 
 class CommentParent(BaseModel):
     """
-    Parent of a comment. Can be page_id or block_id.
+    Parent of a CommentDto. Can be page_id or block_id.
     Notion responds with the active one; the other remains None.
     """
 
@@ -87,7 +87,7 @@ class CommentDisplayName(BaseModel):
 
 class CommentCreateRequest(BaseModel):
     """
-    Request model for creating a comment.
+    Request model for creating a CommentDto.
     Handles both page comments and discussion replies.
     """
 
@@ -107,7 +107,7 @@ class CommentCreateRequest(BaseModel):
         display_name: CommentDisplayName | None = None,
         attachments: list[CommentAttachment] | None = None,
     ) -> CommentCreateRequest:
-        """Create a request for a page comment."""
+        """Create a request for a page CommentDto."""
         return cls(
             rich_text=rich_text,
             parent=CommentParent(type="page_id", page_id=page_id),
@@ -154,20 +154,11 @@ class CommentListRequest(BaseModel):
 
 
 # ---------------------------
-# Core Comment object
+# Core CommentDto object
 # ---------------------------
 
 
-class Comment(BaseModel):
-    """
-    Notion Comment object as returned by:
-      - GET /v1/comments/{comment_id} (retrieve)
-      - GET /v1/comments?block_id=... (list -> in results[])
-      - POST /v1/comments (create)
-    """
-
-    model_config = ConfigDict(extra="ignore")
-
+class CommentDto(BaseModel):
     object: Literal["comment"] = "comment"
     id: str
 
@@ -192,17 +183,7 @@ class Comment(BaseModel):
 
 
 class CommentListResponse(BaseModel):
-    """
-    Envelope for GET /v1/comments?block_id=...
-    """
-
-    model_config = ConfigDict(extra="ignore")
-
     object: Literal["list"] = "list"
-    results: list[Comment] = Field(default_factory=list)
+    results: list[CommentDto] = Field(default_factory=list)
     next_cursor: str | None = None
     has_more: bool = False
-
-    # Notion includes these two fields on the list envelope.
-    type: Literal["comment"] | None = None
-    comment: dict | None = None

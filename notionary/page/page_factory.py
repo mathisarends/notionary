@@ -54,6 +54,8 @@ class NotionPageFactory(BaseFactory, ParentExtractMixin):
     async def _create_page_from_response(self, response: NotionPageDto) -> NotionPage:
         from notionary import NotionPage
 
+        print("response", response.parent)
+
         entity_kwargs = self._create_common_entity_kwargs(response)
 
         title, parent_database, parent_data_source = await asyncio.gather(
@@ -65,8 +67,8 @@ class NotionPageFactory(BaseFactory, ParentExtractMixin):
         entity_kwargs.update(
             {
                 "title": title,
-                "created_by": response.created_by,
-                "last_edited_by": response.last_edited_by,
+                "created_time": response.created_time,
+                "last_edited_time": response.last_edited_time,
                 "archived": response.archived,
                 "url": response.url,
                 "public_url": response.public_url,

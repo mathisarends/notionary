@@ -15,9 +15,4 @@ class NotionPageHttpClient(NotionHttpClient):
 
     async def get_page(self) -> NotionPageDto:
         response = await self.get(f"pages/{self._page_id}")
-
-        import json
-
-        print("RESPONSE", json.dumps(response, indent=4))
-
         return NotionPageDto.model_validate(response)

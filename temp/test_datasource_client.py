@@ -1,13 +1,13 @@
-from notionary.database.database import NotionDataSource
+from notionary import NotionPage
 
 
 async def main() -> None:
-    data_source = await NotionDataSource.from_title("Wissen / Notizen")
+    page = await NotionPage.from_title("Ruff Linter")
 
-    print("data_source", data_source.title)
+    comments = await page.get_comments()
 
-    themes = await data_source.property_reader.get_relation_options_by_property_name("Thema")
-    print(themes)
+    for comment in comments:
+        print(f"{comment.author_name}: {comment.content}")
 
 
 if __name__ == "__main__":
