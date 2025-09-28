@@ -8,6 +8,10 @@ from notionary.data_source.properties.models.datetime_properties import (
     DataSourceCreatedTimeProperty,
     DataSourceDateProperty,
 )
+from notionary.data_source.properties.models.formula_properties import (
+    DataSourceFormulaConfig,
+    DataSourceUniqueIdConfig,
+)
 from notionary.data_source.properties.models.number_properties import DataSourceNumberProperty
 from notionary.data_source.properties.models.relation_properties import DataSourceRelationProperty
 from notionary.data_source.properties.models.select_properties import (
@@ -28,6 +32,7 @@ __all__ = [
     "DataSourceCreatedTimeProperty",
     "DataSourceDateProperty",
     "DataSourceEmailProperty",
+    "DataSourceFormulaConfig",
     "DataSourceMultiSelectProperty",
     "DataSourceNotionProperty",
     "DataSourceNumberProperty",
@@ -41,4 +46,5 @@ __all__ = [
     "DataSourceStatusProperty",
     "DataSourceTitleProperty",
     "DataSourceURLProperty",
+    "DataSourceUniqueIdConfig",
 ]

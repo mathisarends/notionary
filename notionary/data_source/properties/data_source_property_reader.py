@@ -12,7 +12,7 @@ from notionary.data_source.properties.models import (
 )
 from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.page_property_models import PageTitleProperty
-from notionary.shared.models.shared_property_models import PropertyType
+from notionary.shared.properties.property_type import PropertyType
 
 
 class DataSourcePropertyReader:
@@ -53,14 +53,9 @@ class DataSourcePropertyReader:
 
     def get_multi_select_options_by_property_name(self, property_name: str) -> list[DataSourcePropertyOption]:
         multi_select_prop = self._get_typed_database_property(property_name, DataSourceMultiSelectProperty)
+        print("multi_select_prop", multi_select_prop)
         if multi_select_prop:
             return multi_select_prop.option_names
-        return []
-
-    def get_detailed_multi_select_options_by_property_name(self, property_name: str) -> list[DataSourceSelectProperty]:
-        multi_select_prop = self._get_typed_database_property(property_name, DataSourceMultiSelectProperty)
-        if multi_select_prop:
-            return multi_select_prop.multi_select.options
         return []
 
     def get_status_options_by_property_name(self, property_name: str) -> list[str]:

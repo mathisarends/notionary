@@ -5,8 +5,8 @@ from typing import Any, TypeVar
 from pydantic import BaseModel, ConfigDict, Field
 
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.shared.models.shared_property_models import PropertyType
 from notionary.shared.models.user_models import NotionUser
+from notionary.shared.properties.property_type import PropertyType
 
 
 class IgnoreExtraFieldsMixin(BaseModel):

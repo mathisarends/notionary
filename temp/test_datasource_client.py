@@ -1,14 +1,13 @@
-from notionary.database.database import NotionDatabase
+from notionary.database.database import NotionDataSource
 
 
 async def main() -> None:
-    print("ich bin hier du bist da")
-    database = await NotionDatabase.from_title("Wissen / Notizen")
-    print("database", database.title)
+    data_source = await NotionDataSource.from_title("Wissen / Notizen")
 
-    data_sources = await database.get_data_sources()
-    for ds in data_sources:
-        print(" - data source:", ds.title)
+    print("data_source", data_source.title)
+
+    themes = await data_source.property_reader.get_relation_options_by_property_name("Thema")
+    print(themes)
 
 
 if __name__ == "__main__":

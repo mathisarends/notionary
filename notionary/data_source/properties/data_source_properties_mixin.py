@@ -1,7 +1,3 @@
-from typing import Any
-
-from pydantic import BaseModel, Field, field_validator
-
 from notionary.data_source.properties.models import (
     DataSourceCheckboxProperty,
     DataSourceCreatedTimeProperty,
@@ -19,28 +15,14 @@ from notionary.data_source.properties.models import (
     DataSourceTitleProperty,
     DataSourceURLProperty,
 )
-from notionary.shared.models.shared_property_models import PropertyType
+from notionary.shared.properties.base_property_mixin import BasePropertyMixin
+from notionary.shared.properties.property_type import PropertyType
 
 
-class DataSourcePropertiesMixin(BaseModel):
-    properties: dict[str, DataSourceNotionProperty] = Field(default_factory=dict)
-
-    @field_validator("properties", mode="before")
+class DataSourcePropertiesMixin(BasePropertyMixin[DataSourceNotionProperty]):
     @classmethod
-    def parse_data_source_properties(cls, property_values: dict[str, Any]) -> dict[str, DataSourceNotionProperty]:
-        if not property_values:
-            return {}
-
-        return {key: cls.create_typed_data_source_property(prop_data) for key, prop_data in property_values.items()}
-
-    @classmethod
-    def create_typed_data_source_property(cls, prop_data: Any) -> DataSourceNotionProperty:
-        if not isinstance(prop_data, dict) or "type" not in prop_data:
-            return prop_data
-
-        prop_type = prop_data.get("type")
-
-        data_source_property_classes = {
+    def _get_property_classes(cls) -> dict[PropertyType, type[DataSourceNotionProperty]]:
+        return {
             PropertyType.STATUS: DataSourceStatusProperty,
             PropertyType.MULTI_SELECT: DataSourceMultiSelectProperty,
             PropertyType.SELECT: DataSourceSelectProperty,
@@ -56,11 +38,3 @@ class DataSourcePropertiesMixin(BaseModel):
             PropertyType.PHONE_NUMBER: DataSourcePhoneNumberProperty,
             PropertyType.CREATED_TIME: DataSourceCreatedTimeProperty,
         }
-
-        property_class = data_source_property_classes.get(prop_type)
-
-        if property_class:
-            result = property_class(**prop_data)
-            return result
-
-        return prop_data

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from notionary.shared.models.shared_property_models import PropertyType
+from notionary.shared.properties.property_type import PropertyType
 
 
 class DataSourceEmailConfig(BaseModel): ...
