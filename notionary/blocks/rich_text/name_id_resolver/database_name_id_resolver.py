@@ -10,16 +10,23 @@ class DatabaseNameIdResolver(NameIdResolver):
         self.search_limit = search_limit
 
     @override
-    async def resolve_id_to_name(self, name: str) -> str | None:
-        database = await self.search_client.find_database(query=name, limit=self.search_limit)
+    async def resolve_name_to_id(self, name: str) -> str | None:
+        if not name:
+            return None
+
+        cleaned_name = name.strip()
+        database = await self.search_client.find_database(query=cleaned_name, limit=self.search_limit)
         return database.id if database else None
 
     @override
-    async def resolve_name_to_id(self, database_id: str) -> str | None:
+    async def resolve_id_to_name(self, database_id: str) -> str | None:
         if not database_id:
             return None
 
-        from notionary import NotionDatabase
+        try:
+            from notionary import NotionDatabase
 
-        database = await NotionDatabase.from_id(database_id)
-        return database.title if database else None
+            database = await NotionDatabase.from_id(database_id)
+            return database.title if database else None
+        except Exception:
+            return None

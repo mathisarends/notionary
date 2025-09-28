@@ -15,21 +15,21 @@ from notionary.blocks.rich_text.rich_text_models import (
 @pytest.fixture
 def mock_page_resolver() -> AsyncMock:
     resolver: PageNameIdResolver = AsyncMock(spec=PageNameIdResolver)
-    resolver.resolve_page_name_to_id.return_value = "page-123"
+    resolver.resolve_name_to_id.return_value = "page-123"
     return resolver
 
 
 @pytest.fixture
 def mock_database_resolver() -> AsyncMock:
     resolver: DatabaseNameIdResolver = AsyncMock(spec=DatabaseNameIdResolver)
-    resolver.resolve_database_id.return_value = "db-456"
+    resolver.resolve_name_to_id.return_value = "db-456"
     return resolver
 
 
 @pytest.fixture
 def mock_user_resolver() -> AsyncMock:
     resolver: UserNameIdResolver = AsyncMock(spec=UserNameIdResolver)
-    resolver.resolve_user_id.return_value = "user-789"
+    resolver.resolve_name_to_id.return_value = "user-789"
     return resolver
 
 
@@ -133,7 +133,7 @@ class TestMarkdownRichTextConverter:
     async def test_unresolved_mention_fallback(
         self, converter: MarkdownRichTextConverter, mock_page_resolver: AsyncMock
     ) -> None:
-        mock_page_resolver.resolve_page_name_to_id.return_value = None
+        mock_page_resolver.resolve_name_to_id.return_value = None
         result = await converter.to_rich_text("@page[Unknown Page]")
         assert len(result) == 1
         assert result[0].type == RichTextType.TEXT

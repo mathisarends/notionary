@@ -24,21 +24,21 @@ from notionary.blocks.rich_text.rich_text_models import (
 @pytest.fixture
 def mock_page_resolver() -> AsyncMock:
     resolver: PageNameIdResolver = AsyncMock(spec=PageNameIdResolver)
-    resolver.resolve_page_id_to_name.return_value = "Test Page"
+    resolver.resolve_id_to_name.return_value = "Test Page"
     return resolver
 
 
 @pytest.fixture
 def mock_database_resolver() -> AsyncMock:
     resolver: DatabaseNameIdResolver = AsyncMock(spec=DatabaseNameIdResolver)
-    resolver.resolve_database_name.return_value = "Tasks DB"
+    resolver.resolve_id_to_name.return_value = "Tasks DB"
     return resolver
 
 
 @pytest.fixture
 def mock_user_resolver() -> AsyncMock:
     resolver: UserNameIdResolver = AsyncMock(spec=UserNameIdResolver)
-    resolver.resolve_user_name.return_value = "John Doe"
+    resolver.resolve_id_to_name.return_value = "John Doe"
     return resolver
 
 

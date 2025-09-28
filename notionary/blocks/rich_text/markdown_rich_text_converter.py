@@ -194,7 +194,7 @@ class MarkdownRichTextConverter:
         identifier = match.group(1)
         return await self._create_mention_or_fallback(
             identifier=identifier,
-            resolve_func=self.page_resolver.resolve_page_name_to_id,
+            resolve_func=self.page_resolver.resolve_name_to_id,
             create_mention_func=RichTextObject.mention_page,
             mention_type=MentionType.PAGE,
         )
@@ -212,7 +212,7 @@ class MarkdownRichTextConverter:
         identifier = match.group(1)
         return await self._create_mention_or_fallback(
             identifier=identifier,
-            resolve_func=self.user_resolver.resolve_user_id,
+            resolve_func=self.user_resolver.resolve_name_to_id,
             create_mention_func=RichTextObject.mention_user,
             mention_type=MentionType.USER,
         )

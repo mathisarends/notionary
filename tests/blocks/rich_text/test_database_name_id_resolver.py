@@ -6,13 +6,13 @@ from notionary.blocks.rich_text.name_id_resolver.database_name_id_resolver impor
 
 
 @pytest.fixture
-def mock_workspace() -> AsyncMock:
-    workspace = AsyncMock()
-    workspace.search_databases.return_value = [
-        AsyncMock(id="db-123", title="Test Database"),
-        AsyncMock(id="db-456", title="Another Database"),
-    ]
-    return workspace
+def mock_search_client() -> AsyncMock:
+    search_client = AsyncMock()
+    mock_database = AsyncMock()
+    mock_database.id = "db-123"
+    mock_database.title = "Test Database"
+    search_client.find_database.return_value = mock_database
+    return search_client
 
 
 @pytest.fixture
@@ -23,52 +23,52 @@ def mock_database() -> AsyncMock:
 
 
 @pytest.fixture
-def resolver(mock_workspace: AsyncMock) -> DatabaseNameIdResolver:
-    return DatabaseNameIdResolver(workspace=mock_workspace, search_limit=10)
+def resolver(mock_search_client: AsyncMock) -> DatabaseNameIdResolver:
+    return DatabaseNameIdResolver(search_client=mock_search_client, search_limit=10)
 
 
 class TestDatabaseNameIdResolver:
     @pytest.mark.asyncio
     async def test_resolve_database_id_with_empty_name(self, resolver: DatabaseNameIdResolver) -> None:
-        result = await resolver.resolve_database_id("")
+        result = await resolver.resolve_name_to_id("")
         assert result is None
 
     @pytest.mark.asyncio
     async def test_resolve_database_id_with_none(self, resolver: DatabaseNameIdResolver) -> None:
-        result = await resolver.resolve_database_id(None)
+        result = await resolver.resolve_name_to_id(None)
         assert result is None
 
     @pytest.mark.asyncio
     async def test_resolve_database_id_with_valid_uuid(self, resolver: DatabaseNameIdResolver) -> None:
         uuid_str = "12345678-1234-1234-1234-123456789abc"
-        result = await resolver.resolve_database_id(uuid_str)
+        result = await resolver.resolve_name_to_id(uuid_str)
         # The resolver now searches by name and returns the actual ID from the search results
         assert result == "db-123"
 
     @pytest.mark.asyncio
     async def test_resolve_database_id_with_name_search(
-        self, resolver: DatabaseNameIdResolver, mock_workspace: AsyncMock
+        self, resolver: DatabaseNameIdResolver, mock_search_client: AsyncMock
     ) -> None:
-        result = await resolver.resolve_database_id("Test Database")
+        result = await resolver.resolve_name_to_id("Test Database")
         assert result == "db-123"
-        mock_workspace.search_databases.assert_called_once_with(query="Test Database", limit=10)
+        mock_search_client.find_database.assert_called_once_with(query="Test Database", limit=10)
 
     @pytest.mark.asyncio
     async def test_resolve_database_id_no_search_results(
-        self, resolver: DatabaseNameIdResolver, mock_workspace: AsyncMock
+        self, resolver: DatabaseNameIdResolver, mock_search_client: AsyncMock
     ) -> None:
-        mock_workspace.search_databases.return_value = []
-        result = await resolver.resolve_database_id("Nonexistent Database")
+        mock_search_client.find_database.return_value = None
+        result = await resolver.resolve_name_to_id("Nonexistent Database")
         assert result is None
 
     @pytest.mark.asyncio
     async def test_resolve_database_name_with_empty_id(self, resolver: DatabaseNameIdResolver) -> None:
-        result = await resolver.resolve_database_name("")
+        result = await resolver.resolve_id_to_name("")
         assert result is None
 
     @pytest.mark.asyncio
     async def test_resolve_database_name_with_none(self, resolver: DatabaseNameIdResolver) -> None:
-        result = await resolver.resolve_database_name(None)
+        result = await resolver.resolve_id_to_name(None)
         assert result is None
 
     @pytest.mark.asyncio
@@ -76,31 +76,31 @@ class TestDatabaseNameIdResolver:
         self, resolver: DatabaseNameIdResolver, mock_database: AsyncMock
     ) -> None:
         with patch("notionary.NotionDatabase.from_id", return_value=mock_database):
-            result = await resolver.resolve_database_name("12345678-1234-1234-1234-123456789abc")
+            result = await resolver.resolve_id_to_name("12345678-1234-1234-1234-123456789abc")
             assert result == "Test Database"
 
     @pytest.mark.asyncio
     async def test_resolve_database_name_not_found(self, resolver: DatabaseNameIdResolver) -> None:
         with patch("notionary.NotionDatabase.from_id", return_value=None):
-            result = await resolver.resolve_database_name("12345678-1234-1234-1234-123456789abc")
+            result = await resolver.resolve_id_to_name("12345678-1234-1234-1234-123456789abc")
             assert result is None
 
     @pytest.mark.asyncio
     async def test_resolve_database_name_exception(self, resolver: DatabaseNameIdResolver) -> None:
         with patch("notionary.NotionDatabase.from_id", side_effect=Exception("API Error")):
-            result = await resolver.resolve_database_name("12345678-1234-1234-1234-123456789abc")
+            result = await resolver.resolve_id_to_name("12345678-1234-1234-1234-123456789abc")
             assert result is None
 
     @pytest.mark.asyncio
-    async def test_whitespace_handling(self, resolver: DatabaseNameIdResolver, mock_workspace: AsyncMock) -> None:
-        await resolver.resolve_database_id("  Test Database  ")
-        mock_workspace.search_databases.assert_called_once_with(query="Test Database", limit=10)
+    async def test_whitespace_handling(self, resolver: DatabaseNameIdResolver, mock_search_client: AsyncMock) -> None:
+        await resolver.resolve_name_to_id("  Test Database  ")
+        mock_search_client.find_database.assert_called_once_with(query="Test Database", limit=10)
 
-    def test_constructor_with_default_workspace(self) -> None:
+    def test_constructor_with_default_search_client(self) -> None:
         resolver = DatabaseNameIdResolver()
-        assert resolver.workspace is not None
-        assert resolver.search_limit == 10
+        assert resolver.search_client is not None
+        assert resolver.search_limit == 100
 
-    def test_constructor_with_custom_search_limit(self, mock_workspace: AsyncMock) -> None:
-        resolver = DatabaseNameIdResolver(workspace=mock_workspace, search_limit=5)
+    def test_constructor_with_custom_search_limit(self) -> None:
+        resolver = DatabaseNameIdResolver(search_limit=5)
         assert resolver.search_limit == 5

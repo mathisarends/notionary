@@ -11,13 +11,23 @@ class UserNameIdResolver(NameIdResolver):
 
     @override
     async def resolve_name_to_id(self, name: str) -> str | None:
-        user = await self._search_client.find_user(name)
-        return user.id if user else None
+        if not name:
+            return None
+
+        cleaned_name = name.strip()
+        try:
+            user = await self._search_client.find_user(cleaned_name)
+            return user.id if user else None
+        except Exception:
+            return None
 
     @override
     async def resolve_id_to_name(self, user_id: str) -> str | None:
         if not user_id:
             return None
 
-        user = await NotionUser.from_user_id(user_id)
-        return user.name if user else None
+        try:
+            user = await NotionUser.from_user_id(user_id)
+            return user.name if user else None
+        except Exception:
+            return None

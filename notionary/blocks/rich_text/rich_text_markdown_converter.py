@@ -73,7 +73,7 @@ class RichTextToMarkdownConverter:
         return None
 
     async def _extract_page_mention_markdown(self, page_id: str) -> str:
-        page_name = await self.page_resolver.resolve_page_id_to_name(page_id)
+        page_name = await self.page_resolver.resolve_id_to_name(page_id)
         return f"@page[{page_name or page_id}]"
 
     async def _extract_database_mention_markdown(self, database_id: str) -> str:
@@ -81,7 +81,7 @@ class RichTextToMarkdownConverter:
         return f"@database[{database_name or database_id}]"
 
     async def _extract_user_mention_markdown(self, user_id: str) -> str:
-        user_name = await self.user_resolver.resolve_user_id_to_name(user_id)
+        user_name = await self.user_resolver.resolve_id_to_name(user_id)
         return f"@user[{user_name or user_id}]"
 
     def _extract_date_mention_markdown(self, date_mention: MentionDate) -> str:
