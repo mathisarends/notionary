@@ -6,55 +6,55 @@ from notionary.util.fuzzy import _calculate_similarity, _find_best_matches, find
 
 
 @dataclass
-class TestItem:
+class SampleItem:
     name: str
     title: str
 
 
 class TestFuzzyMatcher:
     @pytest.fixture
-    def sample_items(self) -> list[TestItem]:
+    def sample_items(self) -> list[SampleItem]:
         """Sample test data with various similarity patterns."""
         return [
-            TestItem(name="apple", title="Apple Inc."),
-            TestItem(name="application", title="Mobile Application"),
-            TestItem(name="banana", title="Banana Republic"),
-            TestItem(name="grape", title="Grape Fruit Company"),
-            TestItem(name="orange", title="Orange County"),
-            TestItem(name="pineapple", title="Pineapple Express"),
-            TestItem(name="app", title="App Store"),
+            SampleItem(name="apple", title="Apple Inc."),
+            SampleItem(name="application", title="Mobile Application"),
+            SampleItem(name="banana", title="Banana Republic"),
+            SampleItem(name="grape", title="Grape Fruit Company"),
+            SampleItem(name="orange", title="Orange County"),
+            SampleItem(name="pineapple", title="Pineapple Express"),
+            SampleItem(name="app", title="App Store"),
         ]
 
-    def test_find_best_match_exact_match(self, sample_items: list[TestItem]) -> None:
+    def test_find_best_match_exact_match(self, sample_items: list[SampleItem]) -> None:
         result = find_best_match("apple", sample_items, lambda x: x.name)
 
         assert result is not None
         assert result.name == "apple"
 
-    def test_find_best_match_partial_match(self, sample_items: list[TestItem]) -> None:
+    def test_find_best_match_partial_match(self, sample_items: list[SampleItem]) -> None:
         result = find_best_match("app", sample_items, lambda x: x.name)
 
         assert result is not None
         assert result.name == "app"  # Should find exact "app" over partial "apple"
 
-    def test_find_best_match_case_insensitive(self, sample_items: list[TestItem]) -> None:
+    def test_find_best_match_case_insensitive(self, sample_items: list[SampleItem]) -> None:
         result = find_best_match("APPLE", sample_items, lambda x: x.name)
 
         assert result is not None
         assert result.name == "apple"
 
-    def test_find_best_match_with_title_extractor(self, sample_items: list[TestItem]) -> None:
+    def test_find_best_match_with_title_extractor(self, sample_items: list[SampleItem]) -> None:
         result = find_best_match("Mobile App", sample_items, lambda x: x.title)
 
         assert result is not None
         assert result.title == "Mobile Application"
 
-    def test_find_best_match_no_match_below_threshold(self, sample_items: list[TestItem]) -> None:
+    def test_find_best_match_no_match_below_threshold(self, sample_items: list[SampleItem]) -> None:
         result = find_best_match("xyz", sample_items, lambda x: x.name, min_similarity=0.5)
 
         assert result is None
 
-    def test_find_best_match_no_match_with_high_threshold(self, sample_items: list[TestItem]) -> None:
+    def test_find_best_match_no_match_with_high_threshold(self, sample_items: list[SampleItem]) -> None:
         result = find_best_match("appl", sample_items, lambda x: x.name, min_similarity=0.9)
 
         assert result is None
@@ -64,13 +64,13 @@ class TestFuzzyMatcher:
 
         assert result is None
 
-    def test_find_best_match_empty_query(self, sample_items: list[TestItem]) -> None:
+    def test_find_best_match_empty_query(self, sample_items: list[SampleItem]) -> None:
         result = find_best_match("", sample_items, lambda x: x.name)
 
         # Should return first item as all have 0 similarity with empty string
         assert result is not None
 
-    def test_find_best_matches_multiple_results(self, sample_items: list[TestItem]) -> None:
+    def test_find_best_matches_multiple_results(self, sample_items: list[SampleItem]) -> None:
         results = _find_best_matches("app", sample_items, lambda x: x.name, min_similarity=0.3, limit=3)
 
         assert len(results) <= 3
@@ -79,12 +79,12 @@ class TestFuzzyMatcher:
         for i in range(len(results) - 1):
             assert results[i].similarity >= results[i + 1].similarity
 
-    def test_find_best_matches_with_limit(self, sample_items: list[TestItem]) -> None:
+    def test_find_best_matches_with_limit(self, sample_items: list[SampleItem]) -> None:
         results = _find_best_matches("a", sample_items, lambda x: x.name, min_similarity=0.1, limit=2)
 
         assert len(results) <= 2
 
-    def test_find_best_matches_no_limit(self, sample_items: list[TestItem]) -> None:
+    def test_find_best_matches_no_limit(self, sample_items: list[SampleItem]) -> None:
         results = _find_best_matches("a", sample_items, lambda x: x.name, min_similarity=0.1)
 
         assert len(results) > 0
@@ -110,17 +110,17 @@ class TestFuzzyMatcher:
         similarity = _calculate_similarity("  apple  ", "apple")
         assert similarity == pytest.approx(1.0)
 
-    def test_find_best_match_with_none_min_similarity(self, sample_items: list[TestItem]) -> None:
+    def test_find_best_match_with_none_min_similarity(self, sample_items: list[SampleItem]) -> None:
         result = find_best_match("xyz", sample_items, lambda x: x.name, min_similarity=None)
 
         assert result is not None
 
     def test_find_best_matches_sorted_by_similarity(self) -> None:
         items = [
-            TestItem(name="apple", title="Apple"),
-            TestItem(name="application", title="Application"),
-            TestItem(name="app", title="App"),
-            TestItem(name="apricot", title="Apricot"),
+            SampleItem(name="apple", title="Apple"),
+            SampleItem(name="application", title="Application"),
+            SampleItem(name="app", title="App"),
+            SampleItem(name="apricot", title="Apricot"),
         ]
 
         results = _find_best_matches("app", items, lambda x: x.name, min_similarity=0.0)
@@ -132,8 +132,8 @@ class TestFuzzyMatcher:
 
     def test_text_extractor_function(self) -> None:
         items = [
-            TestItem(name="short", title="Very Long Title Here"),
-            TestItem(name="very_long_name_here", title="Short"),
+            SampleItem(name="short", title="Very Long Title Here"),
+            SampleItem(name="very_long_name_here", title="Short"),
         ]
 
         # Using name extractor
