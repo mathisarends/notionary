@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Self
 
+from notionary.data_source.data_source import NotionDataSource
 from notionary.database.database_factory import (
     load_database_from_id,
     load_database_from_title,
@@ -11,6 +13,7 @@ from notionary.database.database_metadata_update_client import DatabaseMetadataU
 from notionary.shared.entity.entity import Entity
 
 
+# TODO: Databases enthlaten jetzt vorallem auch datasources (auf die muss ich hier zugreifen können)
 class NotionDatabase(Entity):
     def __init__(
         self,
@@ -21,6 +24,7 @@ class NotionDatabase(Entity):
         url: str,
         in_trash: bool,
         is_inline: bool,
+        data_source_ids: list[str],
         public_url: str | None = None,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
@@ -41,6 +45,9 @@ class NotionDatabase(Entity):
         self._public_url = public_url
         self._description = description
         self._is_inline = is_inline
+
+        self._data_sources: list[NotionDataSource] | None = None
+        self._data_source_ids = data_source_ids
 
         self.client = NotionDatabaseHttpClient(database_id=id)
 
@@ -80,6 +87,18 @@ class NotionDatabase(Entity):
     @property
     def is_inline(self) -> bool:
         return self._is_inline
+
+    async def get_data_sources(self) -> list[NotionDataSource]:
+        if self._data_sources is None:
+            self._data_sources = await self._load_data_sources()
+        return self._data_sources
+
+    async def _load_data_sources(self) -> list[NotionDataSource]:
+        from notionary.data_source.data_source import NotionDataSource
+
+        return await asyncio.gather(
+            *(NotionDataSource.from_id(data_source_id) for data_source_id in self._data_source_ids)
+        )
 
     async def set_title(self, title: str) -> None:
         result = await self.client.update_database_title(title=title)
