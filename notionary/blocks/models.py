@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Literal
 from pydantic import BaseModel
 
 from notionary.blocks.types import BlockType
-from notionary.shared.models.parent_models import NotionParent
+from notionary.shared.models.parent_models import Parent
 from notionary.shared.models.user_models import NotionUser
 
 if TYPE_CHECKING:
@@ -66,7 +66,7 @@ class BlockChildrenResponse(BaseModel):
 class Block(BaseModel):
     object: Literal["block"]
     id: str
-    parent: NotionParent | None = None
+    parent: Parent | None = None
     type: BlockType
     created_time: str
     last_edited_time: str

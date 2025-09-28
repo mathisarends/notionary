@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
-from notionary.data_source.properties.data_source_property_models import (
+from notionary.data_source.properties.models import (
     DataSourceCheckboxProperty,
     DataSourceCreatedTimeProperty,
     DataSourceDateProperty,

@@ -8,7 +8,7 @@ async def main() -> None:
 
     data_sources = await database.get_data_sources()
     for ds in data_sources:
-        print(" - data source:", ds)
+        print(" - data source:", ds.title)
 
 
 if __name__ == "__main__":

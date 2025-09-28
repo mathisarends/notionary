@@ -7,11 +7,11 @@ from notionary.data_source.properties.data_source_properties_mixin import DataSo
 from notionary.page.page_models import NotionPageDto
 from notionary.shared.entity.entity_models import EntityDto, NotionEntityUpdateDto
 from notionary.shared.entity.user_context_mixin import UserContextMixin
-from notionary.shared.models.parent_models import NotionParent
+from notionary.shared.models.parent_models import Parent
 
 
 class DataSourceDto(EntityDto, UserContextMixin, DataSourcePropertiesMixin):
-    database_parent: NotionParent
+    database_parent: Parent
     title: list[RichTextObject]
     description: list[RichTextObject]
     archived: bool

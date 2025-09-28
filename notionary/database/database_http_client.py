@@ -1,14 +1,10 @@
-from typing import Any
-
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.database.database_models import (
     NotionDatabaseDto,
     NotionDatabaseUpdateDto,
-    NotionQueryDatabaseResponse,
 )
 from notionary.http.http_client import NotionHttpClient
-from notionary.page.page_models import NotionPageDto
 
 
 class NotionDatabaseHttpClient(NotionHttpClient):
@@ -38,23 +34,6 @@ class NotionDatabaseHttpClient(NotionHttpClient):
 
         response = await self.patch(f"databases/{self._database_id}", data=update_database_dto_dict)
         return NotionDatabaseDto.model_validate(response)
-
-    async def query_database(self, query_data: dict[str, Any] | None = None) -> NotionQueryDatabaseResponse:
-        response = await self.post(f"databases/{self._database_id}/query", data=query_data)
-        return NotionQueryDatabaseResponse.model_validate(response)
-
-    async def query_database_by_title(self, page_title: str) -> NotionQueryDatabaseResponse:
-        query_data = {"filter": {"property": "title", "title": {"contains": page_title}}}
-
-        return await self.query_database(query_data=query_data)
-
-    async def create_page(self) -> NotionPageDto:
-        page_data = {
-            "parent": {"database_id": self._database_id},
-            "properties": {},
-        }
-        response = await self.post("pages", page_data)
-        return NotionPageDto.model_validate(response)
 
     async def update_database_title(self, title: str) -> NotionDatabaseDto:
         markdown_rich_text_formatter = MarkdownRichTextConverter()

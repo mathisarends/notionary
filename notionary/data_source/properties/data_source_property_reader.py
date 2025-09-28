@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from notionary.data_source.http.data_source_instance_client import DataSourceInstanceClient
-from notionary.data_source.properties.data_source_property_models import (
+from notionary.data_source.properties.models import (
     DataSourceMultiSelectProperty,
     DataSourceNotionProperty,
     DataSourcePropertyOption,
@@ -9,7 +9,6 @@ from notionary.data_source.properties.data_source_property_models import (
     DataSourceRelationProperty,
     DataSourceSelectProperty,
     DataSourceStatusProperty,
-    EnrichedDataSourceStatusOption,
 )
 from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.page_property_models import PageTitleProperty
@@ -68,12 +67,6 @@ class DataSourcePropertyReader:
         status_prop = self._get_typed_database_property(property_name, DataSourceStatusProperty)
         if status_prop:
             return status_prop.option_names
-        return []
-
-    def get_detailed_status_options_by_property_name(self, property_name: str) -> list[EnrichedDataSourceStatusOption]:
-        status_prop = self._get_typed_database_property(property_name, DataSourceStatusProperty)
-        if status_prop:
-            return status_prop.status.detailed_options
         return []
 
     async def get_relation_options_by_property_name(self, property_name: str) -> list[str]:

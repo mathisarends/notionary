@@ -13,7 +13,6 @@ from notionary.database.database_metadata_update_client import DatabaseMetadataU
 from notionary.shared.entity.entity import Entity
 
 
-# TODO: Databases enthlaten jetzt vorallem auch datasources (auf die muss ich hier zugreifen können)
 class NotionDatabase(Entity):
     def __init__(
         self,

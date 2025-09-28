@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from notionary.blocks.rich_text.rich_text_models import RichTextObject
 
 
-class BlockColor(str, Enum):
+class BlockColor(StrEnum):
     BLUE = "blue"
     BLUE_BACKGROUND = "blue_background"
     BROWN = "brown"
@@ -31,7 +31,7 @@ class BlockColor(str, Enum):
     DEFAULT_BACKGROUND = "default_background"
 
 
-class BlockType(str, Enum):
+class BlockType(StrEnum):
     BOOKMARK = "bookmark"
     BREADCRUMB = "breadcrumb"
     BULLETED_LIST_ITEM = "bulleted_list_item"
@@ -66,7 +66,7 @@ class BlockType(str, Enum):
     AUDIO = "audio"
 
 
-class MarkdownBlockType(str, Enum):
+class MarkdownBlockType(StrEnum):
     """
     Extended block types for the MarkdownBuilder.
     Includes all BlockType values and adds user-friendly aliases
@@ -118,12 +118,8 @@ class MarkdownBlockType(str, Enum):
 
 
 class HasRichText(Protocol):
-    """Protocol for objects that have a rich_text attribute."""
-
     rich_text: list[RichTextObject]
 
 
 class HasChildren(Protocol):
-    """Protocol for objects that have children blocks."""
-
     children: list[BlockCreateRequest]

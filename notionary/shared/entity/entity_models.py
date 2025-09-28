@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.icon_models import Icon
-from notionary.shared.models.parent_models import NotionParent
+from notionary.shared.models.parent_models import Parent
 
 
 class EntityObjectType(StrEnum):
@@ -20,7 +20,7 @@ class EntityDto(BaseModel):
     last_edited_time: str
     cover: NotionCover | None = None
     icon: Icon | None = None
-    parent: NotionParent
+    parent: Parent
     in_trash: bool
     url: str
     public_url: str | None = None

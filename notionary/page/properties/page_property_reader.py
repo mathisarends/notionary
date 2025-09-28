@@ -2,9 +2,6 @@ from __future__ import annotations
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.data_source.data_source import NotionDataSource
-from notionary.data_source.properties.data_source_property_models import (
-    EnrichedDataSourceStatusOption,
-)
 from notionary.data_source.properties.data_source_property_reader import DataSourcePropertyReader
 from notionary.page.properties.page_property_models import (
     PageCheckboxProperty,
@@ -142,13 +139,6 @@ class PagePropertyReader:
     def get_status_options_by_property_name(self, property_name: str) -> list[str]:
         return (
             self.data_source_reader.get_status_options_by_property_name(property_name)
-            if self.data_source_reader
-            else []
-        )
-
-    def get_detailed_status_options_by_property_name(self, property_name: str) -> list[EnrichedDataSourceStatusOption]:
-        return (
-            self.data_source_reader.get_detailed_status_options_by_property_name(property_name)
             if self.data_source_reader
             else []
         )

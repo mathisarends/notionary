@@ -38,4 +38,4 @@ class DatabaseParent(BaseModel):
     database_id: str
 
 
-NotionParent = DataSourceParent | PageParent | BlockParent | WorkspaceParent | DatabaseParent
+Parent = DataSourceParent | PageParent | BlockParent | WorkspaceParent | DatabaseParent

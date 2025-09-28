@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Self
 
 from notionary.data_source.data_source_factory import load_data_source_from_id, load_data_source_from_title
 from notionary.data_source.http.data_source_instance_client import DataSourceInstanceClient
-from notionary.data_source.properties.data_source_property_models import DataSourceNotionProperty
 from notionary.data_source.properties.data_source_property_reader import DataSourcePropertyReader
+from notionary.data_source.properties.models.types import DataSourceNotionProperty
 from notionary.shared.entity.entity import Entity
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 
