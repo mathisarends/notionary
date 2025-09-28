@@ -1,63 +1,29 @@
-# Image Blocks
+# Image
 
-Image blocks embed visual content from URLs or files. Useful for documentation, tutorials, and diagrams.
+Display images with optional captions and alt text.
 
-## Basic Syntax
-
-```markdown
-[image](https://example.com/image.png)
-[image](https://example.com/image.png "Caption text")
-```
-
-## Quick Examples
+## Syntax
 
 ```markdown
-## Dashboard Overview
-
-[image](https://docs.example.com/screenshots/dashboard.png "Main dashboard overview")
+[image](path/to/image.jpg)
+[image](https://example.com/photo.jpg "Caption text")
 ```
+
+## Examples
 
 ```markdown
-## Architecture Diagram
-
-[image](https://docs.example.com/diagrams/architecture.svg "System Architecture")
+[image](./assets/screenshot.png)
+[image](https://example.com/diagram.svg "System architecture")
 ```
 
-```markdown
-## Before/After Comparison
-
-### Before
-
-[image](https://updates.example.com/v1/old-ui.png "Old interface")
-
-### After
-
-[image](https://updates.example.com/v2/new-ui.png "New interface")
-```
-
-## Programmatic Usage
-
-### Using MarkdownBuilder
+## Builder
 
 ```python
-from notionary import MarkdownBuilder
+from notionary.markdown import MarkdownBuilder
 
-builder = (MarkdownBuilder()
-    .h1("User Interface Guide")
-    .h2("Main Dashboard")
-    .paragraph("When you log in, you'll see the main dashboard:")
-    .image("https://docs.example.com/ui/dashboard.png", "Main dashboard overview")
-    .h2("Settings Panel")
-    .paragraph("Access account settings from the top-right menu:")
-    .image("https://docs.example.com/ui/settings.png", "User settings panel")
-)
-
-print(builder.build())
+markdown = (MarkdownBuilder()
+  .h2("Setup Guide")
+  .image("./assets/interface.png", "Main dashboard view")
+  .paragraph("Navigate using the sidebar.")
+  .build())
 ```
-
-## Related Blocks
-
-- **[Video](video.md)** – For moving content
-- **[File](file.md)** – For downloadable assets
-- **[Callout](callout.md)** – For highlighting important visuals
-- **[Toggle](toggle.md)** – For collapsible image groups

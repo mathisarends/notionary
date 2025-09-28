@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from notionary.page.page_factory import load_page_from_title
 from notionary.page.properties.page_property_http_client import PagePropertyHttpClient
@@ -14,27 +13,12 @@ if TYPE_CHECKING:
     from notionary import NotionPage
 
 
-Setter = Callable[[str, Any], Awaitable[None]]
-
-
 class PagePropertyWriter:
     def __init__(self, notion_page: NotionPage) -> None:
         self._notion_page = notion_page
-        self._parent_database = notion_page._parent_database
-        self._property_setters = self._build_property_setters()
+        self._parent_data_source = notion_page._parent_data_source
 
         self._property_http_client = PagePropertyHttpClient(page_id=notion_page.id)
-
-    async def set_property_value_by_name(self, property_name: str, value: Any) -> Any:
-        prop = self._notion_page.properties.get(property_name)
-        if not prop:
-            return None
-
-        setter = self._property_setters.get(prop.type)
-        if not setter:
-            return None
-
-        return await setter(property_name, value)
 
     async def set_title_property(self, title: str) -> None:
         updated_page = await self._property_http_client.patch_title(title)
@@ -82,10 +66,10 @@ class PagePropertyWriter:
         self._notion_page._properties = updated_page.properties
 
     async def set_relation_property_by_page_titles(self, property_name: str, page_titles: list[str]) -> None:
-        if not self._parent_database:
+        if not self._parent_data_source:
             return
 
-        property_type = self._parent_database.property_reader.get_property_type_by_name(property_name)
+        property_type = self._parent_data_source.property_reader.get_property_type_by_name(property_name)
         if property_type != PropertyType.RELATION:
             return
 
@@ -107,105 +91,3 @@ class PagePropertyWriter:
         )
 
         return [page.id for page in pages]
-
-    def _build_property_setters(self) -> dict[PropertyType, Setter]:
-        return {
-            PropertyType.RICH_TEXT: lambda prop_name, prop_value: self.set_rich_text_property(
-                prop_name, self._validate_string(prop_value, prop_name)
-            ),
-            PropertyType.URL: lambda prop_name, prop_value: self.set_url_property(
-                prop_name, self._validate_string(prop_value, prop_name)
-            ),
-            PropertyType.EMAIL: lambda prop_name, prop_value: self.set_email_property(
-                prop_name, self._validate_string(prop_value, prop_name)
-            ),
-            PropertyType.PHONE_NUMBER: lambda prop_name, prop_value: self.set_phone_number_property(
-                prop_name, self._validate_string(prop_value, prop_name)
-            ),
-            PropertyType.NUMBER: lambda prop_name, prop_value: self.set_number_property(
-                prop_name, self._validate_number(prop_value, prop_name)
-            ),
-            PropertyType.CHECKBOX: lambda prop_name, prop_value: self.set_checkbox_property(
-                prop_name, self._validate_boolean(prop_value, prop_name)
-            ),
-            PropertyType.SELECT: lambda prop_name, prop_value: self.set_select_property_by_option_name(
-                prop_name, self._validate_string(prop_value, prop_name)
-            ),
-            PropertyType.MULTI_SELECT: lambda prop_name, prop_value: self.set_multi_select_property_by_option_names(
-                prop_name, self._validate_string_list(prop_value, prop_name)
-            ),
-            PropertyType.DATE: lambda prop_name, prop_value: self.set_date_property(
-                prop_name, self._validate_date(prop_value, prop_name)
-            ),
-            PropertyType.STATUS: lambda prop_name, prop_value: self.set_status_property_by_option_name(
-                prop_name, self._validate_string(prop_value, prop_name)
-            ),
-            PropertyType.RELATION: lambda prop_name, prop_value: self.set_relation_property_by_page_titles(
-                prop_name, self._validate_relation(prop_value, prop_name)
-            ),
-        }
-
-    def _validate_string(self, value: Any, property_name: str) -> str:
-        if isinstance(value, str):
-            return value
-        if isinstance(value, (int, float, bool)):
-            return str(value)
-        raise TypeError(f"Property '{property_name}' expects string, got {type(value).__name__}: {value!r}")
-
-    def _validate_number(self, value: Any, property_name: str) -> float:
-        if isinstance(value, (int, float)):
-            return float(value)
-        if isinstance(value, str):
-            try:
-                return float(value)
-            except ValueError as e:
-                raise ValueError(
-                    f"Property '{property_name}' expects number, cannot convert string '{value}' to number"
-                ) from e
-        raise TypeError(f"Property '{property_name}' expects number, got {type(value).__name__}: {value!r}")
-
-    def _validate_boolean(self, value: Any, property_name: str) -> bool:
-        if isinstance(value, bool):
-            return value
-        raise TypeError(f"Property '{property_name}' expects boolean, got {type(value).__name__}: {value!r}")
-
-    def _validate_string_list(self, value: Any, property_name: str) -> list[str]:
-        if isinstance(value, str):
-            return [value]
-        if isinstance(value, list):
-            result = []
-            for i, item in enumerate(value):
-                try:
-                    result.append(self._validate_string(item, f"{property_name}[{i}]"))
-                except (TypeError, ValueError) as e:
-                    raise TypeError(
-                        f"Property '{property_name}' expects list of strings, but item at index {i} is invalid: {e}"
-                    ) from e
-            return result
-        raise TypeError(f"Property '{property_name}' expects list of strings, got {type(value).__name__}: {value!r}")
-
-    def _validate_date(self, value: Any, property_name: str) -> str | dict:
-        if isinstance(value, (str, dict)):
-            return value
-        raise TypeError(
-            f"Property '{property_name}' expects string or dict for date, got {type(value).__name__}: {value!r}"
-        )
-
-    def _validate_relation(self, value: Any, property_name: str) -> str | list[str]:
-        if isinstance(value, str):
-            return value
-        if isinstance(value, list):
-            result = []
-            for i, item in enumerate(value):
-                if isinstance(item, str):
-                    result.append(item)
-                else:
-                    raise TypeError(
-                        f"Property '{property_name}' expects string or list of strings for relations, "
-                        f"but item at index {i} is {type(item).__name__}: {item!r}"
-                    )
-            return result
-        raise TypeError(
-            f"Property '{property_name}' expects string or list of strings for relations, "
-            f"got {type(value).__name__}: {value!r}"
-        )

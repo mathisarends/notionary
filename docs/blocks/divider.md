@@ -1,6 +1,6 @@
-# Divider Blocks
+# Divider
 
-Divider blocks create horizontal lines to visually separate content sections.
+Visual break between sections. Simple horizontal rule.
 
 ## Syntax
 
@@ -8,66 +8,44 @@ Divider blocks create horizontal lines to visually separate content sections.
 ---
 ```
 
-## Usage
+Three or more hyphens on their own line.
 
-### Section Separation
-
-```markdown
-## Introduction
-
-Welcome to our platform.
-
----
-
-## Getting Started
-
-Follow these steps...
-
----
-
-## Advanced Features
-
-Learn about advanced capabilities.
-```
-
-### Content Organization
+## Examples
 
 ```markdown
-# User Guide
+## Section A
 
-Basic setup information here.
-
----
-
-**Advanced Configuration**
-
-Complex setup details here.
+Content here.
 
 ---
 
-**Troubleshooting**
+## Section B
 
-Common issues and solutions.
+More content below the divider.
 ```
 
-## Programmatic Usage
+## Builder
 
 ```python
-from notionary import MarkdownBuilder
+from notionary.markdown import MarkdownBuilder
 
-builder = (MarkdownBuilder()
-    .h2("Section 1")
-    .paragraph("Content here.")
-    .divider()
-    .h2("Section 2")
-    .paragraph("More content here.")
-)
-
-print(builder.build())
+markdown = (MarkdownBuilder()
+  .h2("Setup")
+  .paragraph("Initial steps.")
+  .divider()
+  .h2("Advanced")
+  .paragraph("Complex configuration.")
+  .build())
 ```
 
-## Related Blocks
+## When To Use
 
-- **[Heading](heading.md)** - For structured content organization
-- **[Callout](callout.md)** - For highlighted section breaks
-- **[Quote](quote.md)** - For emphasized content separation
+- Separate major topics
+- Break up long content visually
+- Mark transitions between concepts
+
+## Related
+
+- Heading: semantic structure
+- Space: blank vertical gap
+- Column: layout divisions

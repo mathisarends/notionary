@@ -1,98 +1,45 @@
-# Code Blocks
+# Code
 
-Code blocks display syntax-highlighted code with support for 70+ programming languages.
+Multi-line, syntax-highlighted code blocks and diagrams (Mermaid). For short inline snippets, use backticks within a paragraph. Specify the language after the opening fence (for example, ```python) to enable syntax highlighting for many languages. Choosing the correct language is important for the Notion web UI to display proper highlighting.
 
-## Basic Syntax
-
-````markdown
-```language
-code content here
-```
-````
-
-## Quick Examples
+## Syntax
 
 ````markdown
 ```python
-def hello():
-    return "Hello, Notionary!"
+print("Hello")
 ```
 
-```javascript
-const greet = (name) => `Hello, ${name}!`;
-```
-
-```bash
+```bash "Install"
 pip install notionary
 ```
 
-```json
-{ "name": "notionary", "version": "1.0.0" }
+```mermaid
+graph TD; A-->B; B-->C;
 ```
 ````
 
-## With Captions
+Caption: optional text in quotes after the language.
 
-````markdown
-```python "Authentication example"
-import os
-from notionary import NotionHttpClient
+## Common Languages
 
-client = NotionHttpClient(token=os.getenv("NOTION_TOKEN"))
-```
-````
+`python`, `javascript`, `bash`, `json`, `yaml`, `sql`, `mermaid`, `go`, `rust`
 
-## Programmatic Usage
-
-### Using MarkdownBuilder
-
-```python
-from notionary import MarkdownBuilder
-
-builder = (MarkdownBuilder()
-    .h2("API Examples")
-    .code("pip install notionary", "bash")
-    .code('print("Hello, world!")', "python", "Basic example")
-    .mermaid("graph TD; A-->B; B-->C;", "Flow diagram")
-)
-
-print(builder.build())
-```
-
-## Supported Languages
-
-Notionary supports 70+ programming languages including:
-
-**Popular Languages:** `python`, `javascript`, `typescript`, `java`, `c++`, `c#`, `go`, `rust`, `swift`, `kotlin`
-
-**Web Technologies:** `html`, `css`, `scss`, `sass`, `less`
-
-**Functional:** `haskell`, `erlang`, `elixir`, `f#`, `clojure`, `scheme`, `lisp`
-
-**Data Formats:** `json`, `yaml`, `xml`, `sql`, `csv`
-
-**Scripting:** `bash`, `shell`, `powershell`, `perl`, `ruby`
-
-**Scientific:** `r`, `matlab`, `julia`
-
-**Markup:** `markdown`, `latex`
-
-**Other:** `docker`, `nginx`, `protobuf`, `graphql`, `mermaid`
-
-### Complete Language List
+Full list: inspect `CodeLanguage` enum.
 
 ```python
 from notionary.blocks.code import CodeLanguage
-
-# All supported languages
-print(list(CodeLanguage))
-# ['abap', 'arduino', 'bash', 'basic', 'c', 'clojure', ...]
+all_langs = [c.value for c in CodeLanguage]
 ```
 
-## Reference
+## Builder
 
-For detailed language support and formatting options, see the [Notion API Code Block Reference](https://developers.notion.com/reference/block#code).
+```python
+from notionary.markdown import MarkdownBuilder
 
-```
-
+markdown = (MarkdownBuilder()
+    .h2("Examples")
+    .code('print("Hello")', 'python', 'Basic')
+    .code('pip install notionary', 'bash')
+    .mermaid('graph TD; A-->B; B-->C;', 'Flow')
+    .build())
 ```

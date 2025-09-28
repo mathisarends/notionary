@@ -1,98 +1,30 @@
-# Quote Blocks
+# Quote
 
-Quote blocks highlight important text, citations, and emphasized content with visual distinction from regular paragraphs.
+Emphasize a statement or citation. Styled distinct from a paragraph. Supports inline rich text (see [Rich Text](./rich_text.md)).
 
-## Basic Syntax
-
-```markdown
-[quote](This is a quoted text that stands out from regular content)
-```
-
-## Quick Examples
+## Syntax
 
 ```markdown
-[quote](The best time to plant a tree was 20 years ago. The second best time is now.)
-
-[quote](Code is like humor. When you have to explain it, it's bad. - Cory House)
+> Simplicity is the soul of efficiency.
 ```
 
-## Rich Text Formatting
+## Examples
 
 ```markdown
-[quote](The key to **successful development** is _clean, maintainable code_ that follows established `best practices`.)
-
-[quote](**Rule #1:** Always write code as if the person who ends up maintaining it is a _violent psychopath_ who knows where you live.)
-
-[quote](As documented in our [style guide](https://guide.example.com), consistency is more important than personal preference.)
+> The best time to plant a tree was 20 years ago. The second best time is now.
+> Code is like humor. When you have to explain it, it's bad. - Cory House
+> Follow the **data**, not assumptions.
 ```
 
-## Programmatic Usage
-
-### Using MarkdownBuilder
+## Builder
 
 ```python
-from notionary import MarkdownBuilder
+from notionary.markdown import MarkdownBuilder
 
-builder = (MarkdownBuilder()
-    .h2("Development Principles")
-    .quote("Clean code always looks like it was written by someone who cares. - Michael Feathers")
-    .paragraph("This principle guides our coding standards.")
-    .quote("Simple is better than complex. Complex is better than complicated.")
-    .paragraph("Following the Zen of Python for better design decisions.")
-)
-
-print(builder.build())
+markdown = (MarkdownBuilder()
+  .h2("Principles")
+  .quote("Clean code looks like it was written by someone who cares.")
+  .paragraph("Guiding standard.")
+  .quote("Simple is better than complex.")
+  .build())
 ```
-
-## Common Use Cases
-
-**Important Notes:** Highlight critical information in documentation
-
-**Design Principles:** Emphasize key development philosophies
-
-**Expert Advice:** Share wisdom from industry leaders
-
-**Warnings:** Call attention to important considerations
-
-**Testimonials:** Feature user feedback and success stories
-
-## Best Practices
-
-- Keep quotes concise and impactful
-- Use relevant quotes that add value to content
-- Avoid overusing quotes in the same section
-- Integrate quotes naturally with surrounding content
-- Use rich text formatting sparingly for emphasis
-
-## Integration Examples
-
-### With Other Blocks
-
-````markdown
-## Security Guidelines
-
-[quote](Always store API tokens securely and never commit them to version control.)
-
-[callout](💡 **Tip:** Use environment variables or secure credential stores.)
-
-```python
-import os
-token = os.getenv("NOTION_TOKEN")
-```
-````
-
-````
-
-### In Toggles
-
-```markdown
-+++ Development Philosophy
-[quote](Simple things should be simple, complex things should be possible. - Alan Kay)
-
-This principle guides our API design decisions and architecture choices.
-+++
-````
-
-## Reference
-
-Quotes automatically receive visual styling with larger text, left borders, and indentation for clear distinction from regular content.

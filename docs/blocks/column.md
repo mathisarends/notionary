@@ -1,307 +1,95 @@
-# Column Blocks
+# Column
 
-Column blocks enable multi-column layouts for organizing content side-by-side. Perfect for comparisons, feature lists, and responsive design patterns.
+Side‑by‑side layout. A column group is started with a `columns` container; each child `column` holds arbitrary block content.
 
-## Basic Syntax
-
-```markdown
-::: columns
-::: column
-Left column content
-:::
-::: column
-Right column content
-:::
-:::
-```
-
-### MarkdownBuilder Example
+## Syntax (Builder)
 
 ```python
-from notionary import MarkdownBuilder
-
-builder = (MarkdownBuilder()
-    .h1("Product Comparison")
-    .columns(
-        lambda col: col.h3("Features").bulleted_list(["Fast", "Secure", "Reliable"]),
-        lambda col: col.h3("Benefits").bulleted_list(["Save time", "Reduce costs", "Scale easily"])
-    )
-)
-
-print(builder.build())
-```
-
-## Column Layouts
-
-### Multiple Columns
-
-```markdown
-::: columns
-::: column
-
-## Starter
-
-- Basic features
-- $9/month
-  :::
-  ::: column
-
-## Professional
-
-- Advanced features
-- $29/month
-  :::
-  ::: column
-
-## Enterprise
-
-- All features
-- Custom pricing
-  :::
-  :::
-```
-
-### MarkdownBuilder Example
-
-```python
-builder = (MarkdownBuilder()
-    .h2("Pricing Plans")
-    .columns(
-        lambda col: col.h3("Starter").bulleted_list(["Basic features", "$9/month"]),
-        lambda col: col.h3("Professional").bulleted_list(["Advanced features", "$29/month"]),
-        lambda col: col.h3("Enterprise").bulleted_list(["All features", "Custom pricing"])
-    )
+builder.columns(
+  lambda col: col.h3("Left").paragraph("Left content"),
+  lambda col: col.h3("Right").paragraph("Right content")
 )
 ```
 
-## Width Ratios
+With explicit width ratios (must add to 1.0):
 
-### Custom Column Widths
+```python
+builder.columns(
+  lambda col: col.h3("Main").paragraph("70% width"),
+  lambda col: col.h3("Sidebar").paragraph("30% width"),
+  width_ratios=[0.7, 0.3]
+)
+```
 
-```markdown
+## Syntax (Raw Markdown)
+
+```
+::: columns
+::: column
+Left content
+:::
+::: column
+Right content
+:::
+:::
+```
+
+With width ratios:
+
+```
 ::: columns
 ::: column 0.7
-
-## Main Content (70%)
-
-Primary content area with more space.
+Main
 :::
 ::: column 0.3
-
-## Sidebar (30%)
-
-- Quick links
-- Related info
-  :::
-  :::
+Sidebar
+:::
+:::
 ```
 
-### MarkdownBuilder Example
+Rules:
+
+- Container starts with `::: columns` and ends with a lone `:::`.
+- Each column starts with `::: column` or `::: column <ratio>` and ends with `:::`.
+- Accepted ratio forms: `.5`, `0.5`, `0.25`, `1.0` (plain `1` is ignored and treated as no ratio).
+- Omitted / invalid ratios fall back to equal width distribution.
+- Order defines horizontal ordering (first = leftmost).
+
+Example invalid builder usage (raises):
 
 ```python
-builder = (MarkdownBuilder()
-    .h1("Documentation Layout")
-    .columns(
-        lambda col: col.h2("Main Content").paragraph("Primary content area"),
-        lambda col: col.h3("Sidebar").bulleted_list(["Quick links", "Related info"]),
-        width_ratios=[0.7, 0.3]
-    )
+builder.columns(
+  lambda c: c.paragraph("Left"),
+  lambda c: c.paragraph("Right"),
+  width_ratios=[0.55, 0.5]  # ValueError: width ratios must sum to 1.0
 )
 ```
 
-## Rich Content
+## Examples
 
-### Mixed Content Types
-
-````markdown
-::: columns
-::: column
-
-## Setup Guide
-
-[callout](💡 **Quick Start:** Follow these steps "💡")
-
-```bash
-pip install notionary
-```
-
-:::
-::: column
-
-## Troubleshooting
-
-+++ Common Issues
-
-- Port already in use
-- Missing variables
-  +++
-  :::
-  :::
-````
-
-### MarkdownBuilder Example
+Two‑column layout:
 
 ```python
-builder = (MarkdownBuilder()
-    .columns(
-        lambda col: (col
-            .h2("Setup Guide")
-            .callout("💡 **Quick Start:** Follow these steps", "💡")
-            .code("pip install notionary", "bash")
-        ),
-        lambda col: (col
-            .h2("Troubleshooting")
-            .toggle("Common Issues", lambda t: t.bulleted_list([
-                "Port already in use",
-                "Missing variables"
-            ]))
-        )
-    )
-)
+from notionary.markdown import MarkdownBuilder
+
+markdown = (MarkdownBuilder()
+  .h2("Comparison")
+  .columns(
+    lambda l: l.h3("Before").paragraph("Old approach."),
+    lambda r: r.h3("After").paragraph("New approach.")
+  )
+  .build())
 ```
 
-## Code Comparisons
-
-### Before/After Example
-
-````markdown
-::: columns
-::: column
-
-## ❌ Before
+Three‑column with ratios:
 
 ```python
-import requests
-response = requests.get(url, headers=headers)
-data = response.json()
+markdown = (MarkdownBuilder()
+  .columns(
+    lambda nav: nav.h4("Navigation").bulleted_list(["Home", "About"]),
+    lambda main: main.h2("Content").paragraph("Main article."),
+    lambda ads: ads.h4("Ads").paragraph("Advertisement."),
+    width_ratios=[0.2, 0.6, 0.2]
+  )
+  .build())
 ```
-
-:::
-::: column
-
-## ✅ After
-
-```python
-from notionary import NotionPage
-page = await NotionPage.from_title("My Page")
-```
-
-:::
-:::
-````
-
-### MarkdownBuilder Example
-
-```python
-builder = (MarkdownBuilder()
-    .h2("API Comparison")
-    .columns(
-        lambda col: (col
-            .h3("❌ Before")
-            .code('import requests\nresponse = requests.get(url)', "python")
-        ),
-        lambda col: (col
-            .h3("✅ After")
-            .code('from notionary import NotionPage\npage = await NotionPage.from_title("My Page")', "python")
-        )
-    )
-)
-```
-
-## Nested Layouts
-
-### Columns in Toggles
-
-```markdown
-+++ Pricing Comparison
-::: columns
-::: column
-### Basic
-$10/month
-:::
-::: column
-### Premium
-$25/month
-:::
-:::
-+++
-```
-
-### MarkdownBuilder Example
-
-```python
-builder = (MarkdownBuilder()
-    .toggle("Pricing Comparison", lambda t: t.columns(
-        lambda col: col.h3("Basic").paragraph("$10/month"),
-        lambda col: col.h3("Premium").paragraph("$25/month")
-    ))
-)
-```
-
-## Responsive Behavior
-
-Columns automatically stack on mobile devices:
-
-- **Desktop**: Side-by-side layout
-- **Mobile**: Stacked vertically
-- **Tablet**: Depends on content width
-
-### Content Guidelines
-
-```markdown
-# ✅ Good - Concise content
-
-::: columns
-::: column
-
-## Short Title
-
-Brief, scannable content works best.
-:::
-::: column
-
-## Another Title
-
-Keep paragraphs short for readability.
-:::
-:::
-```
-
-## Best Practices
-
-### Content Balance
-
-- Keep similar content amounts in each column
-- Use semantic headings for accessibility
-- Test with screen readers
-- Ensure content reads logically when stacked
-
-### Visual Hierarchy
-
-```markdown
-::: columns
-::: column
-
-## Primary Focus
-
-### Important Details
-
-Key information here.
-:::
-::: column
-
-## Secondary Info
-
-### Supporting Details
-
-Additional context.
-:::
-:::
-```
-
-## Related Blocks
-
-- **[Table](table.md)** - For structured data layout
-- **[Toggle](toggle.md)** - For collapsible sections in columns
-- **[Callout](callout.md)** - For highlighting content in columns
-- **[Divider](divider.md)** - For separating column sections

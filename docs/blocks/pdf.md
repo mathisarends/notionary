@@ -1,58 +1,29 @@
-# PDF Blocks
+# PDF
 
-PDF blocks embed PDF documents directly in pages for inline viewing without requiring downloads.
+Display PDF documents inline with optional captions.
 
 ## Syntax
 
 ```markdown
-[pdf](https://example.com/document.pdf)
-[pdf](https://example.com/manual.pdf "Installation Manual")
+[pdf](path/to/document.pdf)
+[pdf](https://example.com/manual.pdf "User guide")
 ```
 
-## Basic Usage
-
-### Documentation
+## Examples
 
 ```markdown
-## User Manual
-
-[pdf](https://docs.example.com/user-manual.pdf "Complete User Manual")
-
-## API Reference
-
-[pdf](https://api.example.com/reference.pdf "API Documentation")
+[pdf](./assets/specification.pdf)
+[pdf](https://docs.example.com/api.pdf "Complete API reference")
 ```
 
-### Reports
-
-```markdown
-## Monthly Analytics
-
-[pdf](https://reports.example.com/analytics-march.pdf "March 2024 Report")
-
-## Financial Summary
-
-[pdf](https://finance.example.com/q1-summary.pdf "Q1 Financial Report")
-```
-
-## Programmatic Usage
+## Builder
 
 ```python
-from notionary import MarkdownBuilder
+from notionary.markdown import MarkdownBuilder
 
-builder = (MarkdownBuilder()
-    .h1("Documentation Library")
-    .pdf("https://docs.example.com/user-manual.pdf", "Complete User Manual")
-    .pdf("https://api.example.com/reference.pdf", "API Documentation")
-    .pdf("https://reports.example.com/analytics.pdf", "Monthly Analytics Report")
-)
-
-print(builder.build())
+markdown = (MarkdownBuilder()
+  .h2("Documentation")
+  .pdf("./assets/manual.pdf", "Installation guide")
+  .paragraph("Follow the steps in the PDF above.")
+  .build())
 ```
-
-## Related Blocks
-
-- **[File](file.md)** - For downloadable PDF files
-- **[Image](image.md)** - For PDF page screenshots
-- **[Embed](embed.md)** - For other document types
-- **[Bookmark](bookmark.md)** - For PDF preview links

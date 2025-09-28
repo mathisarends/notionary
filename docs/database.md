@@ -1,126 +1,88 @@
-# NotionDatabase
+A `Database` in Notionary is a container object that stores structure and presentation metadata (title, description, icon, cover, inline state) and provides access to its data sources. Since API version `2025-09-03`, a database no longer directly stores the row data; instead, each data source attached to it holds the actual pages (rows), and the database acts as an umbrella for those sources.
 
-The `NotionDatabase` class provides comprehensive functionality for working with Notion databases. Databases are one of Notion's core building blocks, allowing you to store and organize structured data with custom properties, filters, and views.
+```mermaid
+flowchart TD
+    DB[(Database)]
 
-## Overview
+    DS1[(Data Source)]
+    DS2[(Data Source)]
 
-Notion databases combine the flexibility of documents with the structure of spreadsheets. Each database contains pages that act as rows, with properties that define the columns and data types.
+    P1[Page]
+    P2[Page]
+    P3[Page]
+    P4[Page]
 
-For complete information about Notion databases and their capabilities, see the [official Notion API Database reference](https://developers.notion.com/reference/database).
+    DB --> DS1
+    DB --> DS2
 
-## Core Functionality
+    DS1 --> P1
+    DS1 --> P2
+    DS2 --> P3
+    DS2 --> P4
+```
 
-### Database Connection
+## Instantiating a Database
 
-Connect to existing databases using multiple methods:
+You can create a `Database` object using:
 
 ```python
 from notionary import NotionDatabase
 
-# Find by name with fuzzy matching
-db = await NotionDatabase.from_database_name("Projects")
-
-# Connect by ID
-db = await NotionDatabase.from_database_id("12345678-1234-1234-1234-123456789012")
-
-# Load from URL
-db = await NotionDatabase.from_url("https://notion.so/workspace/database-id")
+db = await NotionDatabase.from_id("your-database-id")
 ```
-
-### Database Information
-
-Access database metadata and structure:
 
 ```python
-# Basic information
-print(f"Database: {db.title}")
-print(f"ID: {db.id}")
-print(f"URL: {db.url}")
+from notionary import NotionDatabase
 
-# Properties and schema
-properties = db.properties
-for name, config in properties.items():
-    print(f"Property: {name} (Type: {config['type']})")
+db = await NotionDatabase.from_title("Tasks")
 ```
-
-### Page Management
-
-Create and manage pages within the database:
 
 ```python
-# Create new page
-page = await db.create_blank_page()
-await page.set_title("New Entry")
+from notionary import NotionDatabase
 
-# Set properties
-await page.set_property_value_by_name("Status", "Active")
-await page.set_property_value_by_name("Priority", "High")
+db = await NotionDatabase.from_url("https://www.notion.so/your-workspace/your-database-id")
 ```
 
-### Querying and Filtering
+Most likely you want to use `from_title` when working interactively.
 
-Query database pages with filters:
+## Setting Metadata
+
+You can update database‑level metadata similar to pages:
+
+- Set title
+- Set or remove emoji icon
+- Set or remove external icon
+- Set, randomize, or remove cover image
+- Move to trash / restore
+
+### Examples
+
+p
 
 ```python
-# Iterate all pages
-async for page in db.iter_pages():
-    print(f"Page: {page.title}")
-
-# Filter by criteria
-recent_filter = db.create_filter().with_created_last_n_days(7)
-async for page in db.iter_pages_with_filter(recent_filter):
-    print(f"Recent: {page.title}")
+await db.set_title("Project Tracker")
+await db.set_emoji_icon("📊")
+await db.set_external_icon("https://example.com/icon.png")
+await db.set_cover_image_by_url("https://example.com/cover.png")
+await db.set_random_gradient_cover()
+await db.remove_cover_image()
+await db.move_to_trash()
+await db.restore_from_trash()
 ```
 
-## Property Types
+## Working with Data Sources
 
-Notionary supports all Notion property types including:
+A database lazily loads its underlying data sources. The first call to `get_data_sources()` triggers a fetch; subsequent calls return the cached list.
 
-- **Text** - Single and multi-line text
-- **Number** - Numeric values with formatting
-- **Select** - Single choice from predefined options
-- **Multi-select** - Multiple choices from options
-- **Date** - Dates and date ranges
-- **People** - User references
-- **Files** - File attachments
-- **Checkbox** - Boolean values
-- **URL** - Web links
-- **Email** - Email addresses
-- **Phone** - Phone numbers
-- **Formula** - Calculated values
-- **Relation** - References to other database pages
-- **Rollup** - Aggregate values from relations
+```python
+data_sources = await db.get_data_sources()
+for data_source in data_sources:
+    print(data_source.title, data_source.id)
+```
 
-## Key Features
+Each data source exposes its own properties and can yield pages / rows through its querying interface (see the Data Source documentation for details).
 
-### Smart Discovery
+## Reference
 
-Find databases by name without exact matches or complex IDs.
-
-### Property Management
-
-Full support for reading and writing all Notion property types.
-
-### Advanced Filtering
-
-Create complex queries with multiple conditions and date ranges.
-
-### Async Operations
-
-Built for modern Python with full async/await support for optimal performance.
-
-### Type Safety
-
-Comprehensive type hints for better IDE support and code reliability.
-
-## Related Documentation
-
-- **[Instantiating Pages](instantiating-pages.md)** - Create and manage database pages
-- **[Page Management](../page/index.md)** - Work with individual pages
-- **[Official Notion Database API](https://developers.notion.com/reference/database)** - Complete API reference
-
-## Next Steps
-
-- Learn how to [create and manage pages](instantiating-pages.md) in databases
-- Explore [Page Management](../page/index.md) for content operations
-- Check the [examples](../examples/) for real-world usage patterns
+!!! info "Notion API Reference"
+For the official Notion API reference on databases, see [https://developers.notion.com/reference/database](https://developers.notion.com/reference/database)

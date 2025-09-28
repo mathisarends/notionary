@@ -1,46 +1,38 @@
-# Equation Blocks
+# Equation
 
-Equation blocks render LaTeX-based math expressions. Ideal for technical docs, education, and research.
+Block‑level LaTeX mathematical expressions.
 
-## Basic Syntax
-
-```markdown
-[equation](E = mc^2)
-[equation](x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a})
-```
-
-## Quick Examples
+## Syntax
 
 ```markdown
-[equation](F = ma)
-[equation](A = \pi r^2)
-[equation](\sum\_{i=1}^n x_i)
-[equation](\int_a^b f(x) dx)
+$$E = mc^2$$
 ```
 
-## Programmatic Usage
+Multi‑line:
 
-### Using MarkdownBuilder
+```markdown
+$$
+x = \frac{-b \pm \sqrt{b^2-4ac}}{2a}
+$$
+```
+
+## Examples
+
+```markdown
+$$\sum_{i=1}^{n} x_i = x_1 + x_2 + \ldots + x_n$$
+
+$$\int_{a}^{b} f(x) dx = F(b) - F(a)$$
+```
+
+## Builder
 
 ```python
-from notionary import MarkdownBuilder
+from notionary.markdown import MarkdownBuilder
 
-builder = (MarkdownBuilder()
-    .h1("Physics Formulas")
-    .h2("Mechanics")
-    .equation("F = ma")
-    .equation("E = \\frac{1}{2}mv^2")
-    .h2("Thermodynamics")
-    .equation("PV = nRT")
-    .h2("Statistics")
-    .equation("\\mu = \\frac{1}{n} \\sum_{i=1}^{n} x_i")
-)
-
-print(builder.build())
+markdown = (MarkdownBuilder()
+  .h2("Physics Formulas")
+  .equation("E = mc^2")
+  .paragraph("Einstein's mass‑energy equivalence.")
+  .equation("F = ma")
+  .build())
 ```
-
-## Related Blocks
-
-- **[Code](code.md)** – For computational logic
-- **[Table](table.md)** – For organizing formulas
-- **[Callout](callout.md)** – For highlighting equations

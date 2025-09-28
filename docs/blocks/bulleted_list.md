@@ -1,8 +1,8 @@
-# Bulleted List Blocks
+# Bulleted List
 
-Bulleted lists organize information in unordered, scannable format. Ideal for features, benefits, or requirements.
+Unordered list with bullet points. Each item supports inline rich text (see [Rich Text](./rich_text.md)).
 
-## Basic Syntax
+## Syntax
 
 ```markdown
 - First item
@@ -10,74 +10,47 @@ Bulleted lists organize information in unordered, scannable format. Ideal for fe
 - Third item
 ```
 
-## Quick Examples
+Alternative markers: `*` or `+` instead of `-`.
+
+## Examples
 
 ```markdown
-## Features
-
 - Real-time collaboration
 - Advanced analytics
 - 24/7 support
 ```
 
-```markdown
-## Requirements
-
-- Python 3.8+
-- 4GB RAM
-- Internet connection
-```
+With rich text:
 
 ```markdown
-## Resources
-
-- [Documentation](https://docs.example.com)
-- [GitHub Repo](https://github.com/example/repo)
+- **Bold** important item
+- Visit [docs](https://example.com)
+- Ask @user[Jane] for details
 ```
 
-## Nested Lists
-
-```markdown
-## Project Structure
-
-- Frontend
-  - React components
-  - CSS styles
-- Backend
-  - API routes
-  - Database models
-```
-
-## Mixed Content
-
-```markdown
-## API Endpoints
-
-- `GET /api/users` – List users
-- `POST /api/users` – Create user
-- `PUT /api/users/{id}` – Update user
-```
-
-## Programmatic Usage
-
-### Using MarkdownBuilder
+## Builder
 
 ```python
-from notionary import MarkdownBuilder
+from notionary.markdown import MarkdownBuilder
 
-builder = (MarkdownBuilder()
-    .h2("Core Features")
-    .bulleted_list([
-        "Real-time collaboration",
-        "Advanced analytics",
-        "Custom integrations"
-    ])
-    .h2("Resources")
-    .bulleted_list([
-        "[Docs](https://docs.example.com)",
-        "[GitHub](https://github.com/example/repo)"
-    ])
-)
-
-print(builder.build())
+markdown = (MarkdownBuilder()
+  .h2("Features")
+  .bulleted_list([
+    "Real-time collaboration",
+    "Advanced analytics",
+    "Custom integrations"
+  ])
+  .build())
 ```
+
+## When To Use
+
+- List features, benefits, requirements
+- Unordered information (no sequence)
+- Quick scannable points
+
+## Related
+
+- Numbered list: sequential items
+- Todo: checkbox items
+- Paragraph: continuous narrative

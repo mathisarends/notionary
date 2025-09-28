@@ -1,109 +1,45 @@
-# Paragraph Blocks
+Paragraph is the most fundamental block. If no other specific block syntax matches, text becomes a paragraph. Use it for normal narrative content and inline formatting.
 
-Paragraph blocks are the foundation of content in Notion and serve as the **fallback block type** when no other specialized syntax matches. They support rich text formatting including bold, italic, strikethrough, underline, inline code, and links.
+Inline formatting, mentions, colors, equations: see the [Rich Text guide](./rich_text.md) for the complete syntax list.
 
-## Syntax
-
-```markdown
-This is a basic paragraph with **bold**, _italic_, and `inline code`.
-
-You can also include [links](https://example.com) and ~~strikethrough~~ text.
-
-Multiple paragraphs are separated by blank lines.
-```
-
-## Rich Text Formatting
-
-### Text Styles
+## Basic Markdown
 
 ```markdown
-**Bold text** - Important emphasis
-_Italic text_ - Subtle emphasis
-**Underlined text** - Underlined content
-~~Strikethrough~~ - Deleted content
-`Inline code` - Code snippets
+This is a paragraph with **bold**, _italic_, `code`, a [link](https://example.com),
+and ~~strikethrough~~ text.
+
+Blank line → new paragraph.
 ```
 
-### Links
+## Mentions & Inline Rich Text
+
+You can drop mentions directly inside paragraphs:
 
 ```markdown
-[Link text](https://example.com)
-[Link with title](https://example.com "Hover title")
+Discuss with @user[Jane Doe] and link to @page[Architecture Overview].
+Launch window: @date[2025-10-01–2025-10-07].
 ```
 
-### Mentions
-
-```markdown
-@[page-id-here] - Link to another page
-@user(user-id) - Mention a user
-@db(database-id) - Reference a database
-```
-
-## Programmatic Usage
-
-### Creating Paragraphs
+### Usage in markdown
 
 ```python
-from notionary.blocks.paragraph import ParagraphMarkdownNode
+from notionary import MarkdownBuilder
 
-# Simple paragraph
-paragraph = ParagraphMarkdownNode(text="Hello, world!")
-markdown = paragraph.to_markdown()
-
-# Rich text paragraph
-rich_paragraph = ParagraphMarkdownNode(
-    text="Visit our **website** at [example.com](https://example.com)"
-)
+markdown = """
+Intro paragraph with context.
+Follow‑up with **emphasis** and a [link](https://example.com)."
+"""
+await page.replace_content(lambda: builder.build())
 ```
 
-### Using with Pages
+### Usage with builder
 
 ```python
-import asyncio
-from notionary import NotionPage
+from notionary import MarkdownBuilder
 
-async def add_content():
-    page = await NotionPage.from_title("My Page")
+builder = MarkdownBuilder() \
+	.paragraph("Intro paragraph with context.") \
+	.paragraph("Follow‑up with **emphasis** and a [link](https://example.com).")
 
-    # Add single paragraph
-    await page.append_markdown("This is a simple paragraph.")
-
-    # Add formatted paragraph
-    formatted_text = """
-    This paragraph includes **bold text**, _italic text_,
-    and a [link](https://example.com) for reference.
-    """
-    await page.append_markdown(formatted_text)
-
-asyncio.run(add_content())
-```
-
-### With MarkdownBuilder
-
-```python
-from notionary.markdown import MarkdownBuilder
-
-def create_content():
-    builder = MarkdownBuilder()
-    builder.paragraph("Introduction paragraph with key information.")
-    builder.paragraph("Second paragraph with **emphasis** and details.")
-    return builder.build()
-
-# Use with page
-await page.replace_content(create_content)
-```
-
-## Advanced Features
-
-### Color Support
-
-```python
-from notionary.blocks.paragraph import ParagraphBlock
-from notionary.blocks.types import BlockColor
-
-# Programmatically set paragraph color
-paragraph_block = ParagraphBlock(
-    rich_text=[...],
-    color=BlockColor.BLUE_BACKGROUND
-)
+await page.replace_content(lambda: builder.build())
 ```

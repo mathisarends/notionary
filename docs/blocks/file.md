@@ -1,57 +1,41 @@
-# File Blocks
+# File
 
-File blocks provide downloadable attachments and file links for documents, archives, and other resources.
+Attach and reference files. Supports uploads and external links.
 
 ## Syntax
 
 ```markdown
-[file](https://example.com/document.pdf)
-[file](https://example.com/archive.zip "Project Files")
+[file](path/to/file.pdf)
+[file](https://example.com/document.pdf "User manual")
 ```
 
-## Supported File Types
-
-### Documents
+## Examples
 
 ```markdown
-[file](https://docs.example.com/user-guide.pdf "User Guide")
-[file](https://files.example.com/api-spec.docx "API Specification")
-[file](https://assets.example.com/presentation.pptx "Product Demo")
+[file](./assets/specification.pdf)
+[file](https://docs.example.com/api.pdf "API Reference")
 ```
 
-### Archives
-
-```markdown
-[file](https://downloads.example.com/source-code.zip "Source Code")
-[file](https://releases.example.com/v1.2.0.tar.gz "Release Package")
-```
-
-### Data Files
-
-```markdown
-[file](https://data.example.com/sample-data.csv "Sample Dataset")
-[file](https://exports.example.com/report.xlsx "Monthly Report")
-[file](https://backups.example.com/database.sql "Database Backup")
-```
-
-## Programmatic Usage
+## Builder
 
 ```python
-from notionary import MarkdownBuilder
+from notionary.markdown import MarkdownBuilder
 
-builder = (MarkdownBuilder()
-    .h1("Download Resources")
-    .file("https://example.com/user-guide.pdf", "Installation Manual")
-    .file("https://releases.example.com/v1.2.0.zip", "Source Code Package")
-    .file("https://data.example.com/sample.csv", "Sample Dataset")
-)
-
-print(builder.build())
+markdown = (MarkdownBuilder()
+  .h2("Resources")
+  .file("./assets/manual.pdf", "Installation guide")
+  .paragraph("Download and follow the steps.")
+  .build())
 ```
 
-## Related Blocks
+## When To Use
 
-- **[PDF](pdf.md)** - For inline PDF viewing
-- **[Image](image.md)** - For image file display
-- **[Video](video.md)** - For video file embeds
-- **[Code](code.md)** - For code file examples
+- Reference documents, PDFs, spreadsheets
+- Download links for resources
+- Attachments in documentation
+
+## Related
+
+- PDF: specialized PDF display
+- Image: visual media
+- Link: text‑based references

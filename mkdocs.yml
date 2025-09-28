@@ -3,9 +3,6 @@ site_url: https://mathisarends.github.io/notionary/
 
 theme:
   name: material
-  font:
-    text: Poppins
-    code: JetBrains Mono
   features:
     - navigation.sections
     - navigation.indexes
@@ -25,6 +22,9 @@ theme:
 extra_css:
   - assets/styles.css
 
+extra_javascript:
+  - https://unpkg.com/mermaid/dist/mermaid.min.js
+
 nav:
   - Intro: index.md
   - Quickstart: quickstart.md
@@ -32,17 +32,18 @@ nav:
   - Documentation:
       - Page: page.md
       - Database: database.md
-      - Datasource: datasource.md
+      - Datasource: data_source.md
 
       - Blocks:
-          - Overview: blocks/index.md
+          - Overview: blocks/blocks.md
+          - Rich Text: blocks/rich_text.md
           - Paragraph: blocks/paragraph.md
           - Heading: blocks/heading.md
           - Callout: blocks/callout.md
           - Code: blocks/code.md
           - Quote: blocks/quote.md
           - Divider: blocks/divider.md
-          - Column: blocks/column.md
+          - Columns: blocks/column.md
           - Toggle: blocks/toggle.md
           - Table: blocks/table.md
           - Equation: blocks/equation.md
@@ -51,21 +52,13 @@ nav:
           - Embed: blocks/embed.md
           - File: blocks/file.md
           - PDF: blocks/pdf.md
-          - Lists:
-              - Bulleted List: blocks/bulleted_list.md
-              - Numbered List: blocks/numbered_list.md
-          - Media:
-              - Image: blocks/image.md
-              - Video: blocks/video.md
-          - Inline Formatting:
-              - Overview: blocks/inline_formatting/index.md
-              - Rich Text: blocks/inline_formatting/rich_text.md
-              - Mentions: blocks/inline_formatting/mentions.md
-              - Colors & Highlights: blocks/inline_formatting/colors_and_highlights.md
-              - Equations: blocks/inline_formatting/equations.md
+          - Bulleted List: blocks/bulleted_list.md
+          - Numbered List: blocks/numbered_list.md
+          - Image: blocks/image.md
+          - Video: blocks/video.md
 
-  - Contributing:
-      - Overview: contributing/index.md
+  - Shoutouts: shoutouts.md
+  - Contributing: contributing.md
 
 repo_url: https://github.com/mathisarends/notionary
 repo_name: mathisarends/notionary
@@ -80,6 +73,10 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - toc:
       permalink: true

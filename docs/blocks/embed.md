@@ -1,6 +1,6 @@
-# Embed Blocks
+# Embed
 
-Embed blocks integrate external web content directly into your Notion pages.
+Embed external content (YouTube, Twitter, etc.) directly in the page.
 
 ## Syntax
 
@@ -9,49 +9,33 @@ Embed blocks integrate external web content directly into your Notion pages.
 [embed](https://example.com "Caption text")
 ```
 
-## Supported Content
-
-### Web Pages
+## Examples
 
 ```markdown
-[embed](https://github.com/user/repo)
-[embed](https://codepen.io/user/pen/abc123)
-[embed](https://figma.com/file/design-id)
+[embed](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+[embed](https://twitter.com/user/status/123456789 "Key announcement")
 ```
 
-### Interactive Tools
-
-```markdown
-[embed](https://replit.com/@user/project)
-[embed](https://codesandbox.io/s/example)
-[embed](https://observable.com/@user/notebook)
-```
-
-### Documentation
-
-```markdown
-[embed](https://api-docs.example.com "API Documentation")
-[embed](https://status.example.com "Service Status")
-```
-
-## Programmatic Usage
+## Builder
 
 ```python
-from notionary import MarkdownBuilder
+from notionary.markdown import MarkdownBuilder
 
-builder = (MarkdownBuilder()
-    .h1("Project Resources")
-    .embed("https://github.com/user/repo", "Project Repository")
-    .embed("https://codepen.io/user/pen/abc123", "Live Demo")
-    .embed("https://figma.com/file/design-id", "Design Prototype")
-)
-
-print(builder.build())
+markdown = (MarkdownBuilder()
+  .h2("Demo Video")
+  .embed("https://www.youtube.com/watch?v=example", "Product walkthrough")
+  .paragraph("See the features in action.")
+  .build())
 ```
 
-## Related Blocks
+## When To Use
 
-- **[Video](video.md)** - For video-specific embeds
-- **[Image](image.md)** - For static visual content
-- **[Bookmark](bookmark.md)** - For link previews
-- **[File](file.md)** - For downloadable content
+- Include videos, social media posts
+- External interactive content
+- Rich media without file uploads
+
+## Related
+
+- Video: uploaded video files
+- Image: static media
+- Link: text‑based references

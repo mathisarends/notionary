@@ -53,7 +53,6 @@ class DataSourcePropertyReader:
 
     def get_multi_select_options_by_property_name(self, property_name: str) -> list[DataSourcePropertyOption]:
         multi_select_prop = self._get_typed_database_property(property_name, DataSourceMultiSelectProperty)
-        print("multi_select_prop", multi_select_prop)
         if multi_select_prop:
             return multi_select_prop.option_names
         return []
