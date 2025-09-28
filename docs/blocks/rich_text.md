@@ -1,26 +1,12 @@
 # Rich Text
 
-Rich text is the inline format used everywhere: page titles, paragraphs, list items, callouts, table cells, captions. Notionary lets you author it in readable Markdown (plus a few tiny extensions) and converts it reliably to / from Notion’s JSON objects.
+Rich text is the inline format used everywhere: page titles, paragraphs, list items, callouts, table cells, captions. Notionary lets you author it in `readable Markdown` (plus a few tiny extensions) and converts it reliably to / from Notion’s JSON objects.
 
 **Why it matters**
 
 - One way to write formatting, mentions, colors, equations
 - Human friendly authoring; API objects handled for you
 - Safe round‑trip (what you don’t know, you don’t need to learn)
-
----
-
-## Conversion Flow
-
-```mermaid
-flowchart LR
-    A[Markdown Input] --> B(MarkdownRichTextConverter)
-    B --> C[RichText Objects]
-    C --> D[Notion API]
-    D --> C2[RichText Objects]
-    C2 --> E(RichTextToMarkdownConverter)
-    E --> F[Markdown Output]
-```
 
 ### Mentions
 
@@ -102,16 +88,7 @@ Page vs id (both valid):
 
 When read back both display using the page title if resolvable.
 
----
-
-## Related
-
-- Blocks overview for block‑level structures
-- Page / Data Source docs for property context
-- Internals (optional): `RichTextToMarkdownConverter`, `MarkdownRichTextConverter`
-
----
-
 ## Reference
 
-Official Notion rich text: https://developers.notion.com/reference/rich-text
+!!! info "Notion API Reference"
+For the official Notion API reference on blocks, see [https://developers.notion.com/reference/rich-text](https://developers.notion.com/reference/rich-text)

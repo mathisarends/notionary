@@ -4,11 +4,11 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.data_source.data_source_models import DataSourceDto, DataSourceSearchResponse
+from notionary.data_source.data_source_models import DataSourceDto
 from notionary.data_source.http.data_source_client import DataSourceClient
 from notionary.shared.entity.factory.entity_factory import EntityFactory
 from notionary.shared.entity.factory.parent_extract_mixin import ParentExtractMixin
-from notionary.util.fuzzy import find_best_match
+from notionary.workspace.search.search_client import SearchClient
 
 if TYPE_CHECKING:
     from notionary.data_source.data_source import NotionDataSource
@@ -23,10 +23,14 @@ class DataSourceFactory(BaseFactory, ParentExtractMixin):
         self,
         data_source_client: DataSourceClient | None = None,
         rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
+        search_client: SearchClient | None = None,
     ) -> None:
         super().__init__()
+        from notionary.workspace.search.search_client import SearchClient
+
         self._data_source_client = data_source_client or DataSourceClient()
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
+        self._search_client = search_client or SearchClient()
 
     async def load_from_id(self, data_source_id: str) -> NotionDataSource:
         data_source_dto = await self._data_source_client.get_data_source(data_source_id)
@@ -34,32 +38,7 @@ class DataSourceFactory(BaseFactory, ParentExtractMixin):
         return await self._create_from_response(data_source_dto)
 
     async def load_from_title(self, data_source_title: str, min_similarity: float = 0.6) -> NotionDataSource:
-        search_response = await self._data_source_client.search_data_sources(data_source_title)
-        data_source_candidates = await self._extract_potential_data_sources_from_search_result(search_response)
-
-        best_match = find_best_match(
-            query=data_source_title,
-            items=data_source_candidates,
-            text_extractor=lambda data_source: data_source.title,
-            min_similarity=min_similarity,
-        )
-
-        if not best_match:
-            available_titles = [result.title for result in data_source_candidates[:5]]
-            raise ValueError(
-                f"No sufficiently similar data source found for '{data_source_title}'. Available: {available_titles}"
-            )
-
-        return best_match.item
-
-    async def _extract_potential_data_sources_from_search_result(
-        self, search_response: DataSourceSearchResponse
-    ) -> list[NotionDataSource]:
-        from notionary.data_source.data_source import NotionDataSource
-
-        return await asyncio.gather(
-            *(NotionDataSource.from_id(data_source.id) for data_source in search_response.results)
-        )
+        return await self._search_client.find_data_source(data_source_title, min_similarity=min_similarity)
 
     async def _create_from_response(self, data_source_dto: DataSourceDto) -> NotionDataSource:
         entity_kwargs = self._create_common_entity_kwargs(data_source_dto)

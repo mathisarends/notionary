@@ -27,15 +27,3 @@ markdown = (MarkdownBuilder()
   .paragraph("See the features in action.")
   .build())
 ```
-
-## When To Use
-
-- Include videos, social media posts
-- External interactive content
-- Rich media without file uploads
-
-## Related
-
-- Video: uploaded video files
-- Image: static media
-- Link: text‑based references

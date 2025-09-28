@@ -27,15 +27,3 @@ markdown = (MarkdownBuilder()
   .paragraph("Download and follow the steps.")
   .build())
 ```
-
-## When To Use
-
-- Reference documents, PDFs, spreadsheets
-- Download links for resources
-- Attachments in documentation
-
-## Related
-
-- PDF: specialized PDF display
-- Image: visual media
-- Link: text‑based references

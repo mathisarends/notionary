@@ -4,7 +4,6 @@ from notionary.user.base_notion_user import BaseNotionUser
 from notionary.user.models import NotionUserResponse
 from notionary.user.user_http_client import UserHttpClient
 from notionary.util import factory_only
-from notionary.util.fuzzy import find_best_matches
 
 
 class NotionUser(BaseNotionUser):
@@ -103,73 +102,6 @@ class NotionUser(BaseNotionUser):
             raise ValueError(f"Cannot create NotionUser from {user_response.type} user")
 
         return cls._create_from_response(user_response)
-
-    @classmethod
-    async def search_users_by_name(
-        cls,
-        name: str,
-        min_similarity: float = 0.3,
-        limit: int | None = 5,
-    ) -> list[NotionUser]:
-        """
-        Search for multiple person users by name using fuzzy matching.
-
-        Args:
-            name: The name to search for
-            token: Optional Notion API token
-            min_similarity: Minimum similarity threshold (0.0 to 1.0), default 0.3
-            limit: Maximum number of results to return, default 5
-
-        Returns:
-            List[NotionUser]: List of matching users sorted by similarity (best first)
-        """
-        client = UserHttpClient()
-
-        try:
-            # Get all users from workspace
-            all_users_response = await client.get_all_users()
-
-            if not all_users_response:
-                cls.logger.warning(cls.NO_USERS_FOUND_MSG)
-                return []
-
-            # Filter to only person users (not bots)
-            person_users = [user for user in all_users_response if user.type == "person" and user.name]
-
-            if not person_users:
-                cls.logger.warning(cls.NO_PERSON_USERS_FOUND_MSG)
-                return []
-
-            # Use fuzzy matching to find all matches
-            matches = find_best_matches(
-                query=name,
-                items=person_users,
-                text_extractor=lambda user: user.name or "",
-                min_similarity=min_similarity,
-                limit=limit,
-            )
-
-            cls.logger.info("Found %d matching users for query '%s'", len(matches), name)
-
-            # Convert to NotionUser instances
-            result_users = []
-            for match in matches:
-                try:
-                    user = cls._create_from_response(match.item)
-                    result_users.append(user)
-                except Exception as e:
-                    cls.logger.warning(
-                        "Failed to create user from match '%s': %s",
-                        match.matched_text,
-                        str(e),
-                    )
-                    continue
-
-            return result_users
-
-        except Exception as e:
-            cls.logger.error("Error searching users by name '%s': %s", name, str(e))
-            return []
 
     @property
     def email(self) -> str | None:

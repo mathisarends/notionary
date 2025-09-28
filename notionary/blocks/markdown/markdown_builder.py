@@ -1,11 +1,3 @@
-"""
-Clean Fluent Markdown Builder
-============================
-
-A direct, chainable builder for all MarkdownNode types without overengineering.
-Maps 1:1 to the available blocks with clear, expressive method names.
-"""
-
 from __future__ import annotations
 
 from collections.abc import Callable

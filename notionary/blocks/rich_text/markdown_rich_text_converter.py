@@ -5,6 +5,7 @@ from re import Match
 from typing import ClassVar
 
 from notionary.blocks.rich_text.name_id_resolver.database_name_id_resolver import DatabaseNameIdResolver
+from notionary.blocks.rich_text.name_id_resolver.name_id_resolver import NameIdResolver
 from notionary.blocks.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
 from notionary.blocks.rich_text.name_id_resolver.user_name_id_resolver import UserNameIdResolver
 from notionary.blocks.rich_text.rich_text_models import MentionType, RichTextObject, RichTextType, TextAnnotations
@@ -39,9 +40,9 @@ class MarkdownRichTextConverter:
     def __init__(
         self,
         *,
-        page_resolver: PageNameIdResolver | None = None,
-        database_resolver: DatabaseNameIdResolver | None = None,
-        user_resolver: UserNameIdResolver | None = None,
+        page_resolver: NameIdResolver | None = None,
+        database_resolver: NameIdResolver | None = None,
+        user_resolver: NameIdResolver | None = None,
     ):
         self.page_resolver = page_resolver or PageNameIdResolver()
         self.database_resolver = database_resolver or DatabaseNameIdResolver()
@@ -193,7 +194,7 @@ class MarkdownRichTextConverter:
         identifier = match.group(1)
         return await self._create_mention_or_fallback(
             identifier=identifier,
-            resolve_func=self.page_resolver.resolve_page_id,
+            resolve_func=self.page_resolver.resolve_page_name_to_id,
             create_mention_func=RichTextObject.mention_page,
             mention_type=MentionType.PAGE,
         )

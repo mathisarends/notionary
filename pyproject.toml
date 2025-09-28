@@ -3,7 +3,7 @@ name = "notionary"
 version = "0.2.27"
 description = "Python library for programmatic Notion workspace management - databases, pages, and content with advanced Markdown support"
 authors = [{ name = "Mathis Arends", email = "mathisarends27@gmail.com" }]
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 readme = "README.md"
 license = { text = "MIT" }
 dependencies = [
@@ -57,6 +57,7 @@ ignore = [
   "PLW0603",  # global statement
   "PLW2901",  # loop variable overwritten
   "RUF001",   # en dash, etc.
+  "UP046",    # derive from generic base class
 ]
 
 [tool.ruff.format]

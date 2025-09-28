@@ -1,23 +1,24 @@
-from __future__ import annotations
+from typing import override
 
-from typing import TYPE_CHECKING
-
-from notionary.blocks.rich_text.name_id_resolver.base_name_id_resolver import BaseNameIdResolver
-from notionary.util.fuzzy import find_best_match
-
-if TYPE_CHECKING:
-    from notionary import NotionPage
+from notionary.blocks.rich_text.name_id_resolver.name_id_resolver import NameIdResolver
+from notionary.workspace.search.search_client import SearchClient
 
 
-class PageNameIdResolver(BaseNameIdResolver):
-    async def resolve_page_id(self, name: str) -> str | None:
+class PageNameIdResolver(NameIdResolver):
+    def __init__(self, search_client: SearchClient | None = None, search_limit: int = 100) -> None:
+        self.search_client = search_client or SearchClient()
+        self.search_limit = search_limit
+
+    @override
+    async def resolve_name_to_id(self, name: str) -> str | None:
         if not name:
             return None
 
         cleaned_name = name.strip()
         return await self._resolve_page_id(cleaned_name)
 
-    async def resolve_page_name(self, page_id: str) -> str | None:
+    @override
+    async def resolve_id_to_name(self, page_id: str) -> str | None:
         if not page_id:
             return None
 
@@ -30,18 +31,5 @@ class PageNameIdResolver(BaseNameIdResolver):
             return None
 
     async def _resolve_page_id(self, name: str) -> str | None:
-        search_results = await self.workspace.search_pages(query=name, limit=self.search_limit)
-
-        return self._find_best_fuzzy_match(query=name, candidate_objects=search_results)
-
-    def _find_best_fuzzy_match(self, query: str, candidate_objects: list[NotionPage]) -> str | None:
-        if not candidate_objects:
-            return None
-
-        best_match = find_best_match(
-            query=query,
-            items=candidate_objects,
-            text_extractor=lambda obj: obj.title,
-        )
-
-        return best_match.item.id if best_match else None
+        page = await self.search_client.find_page(query=name, limit=self.search_limit)
+        return page.id if page else None

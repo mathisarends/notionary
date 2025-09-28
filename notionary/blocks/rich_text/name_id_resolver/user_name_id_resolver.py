@@ -1,40 +1,23 @@
-from __future__ import annotations
+from typing import override
 
-from notionary.blocks.rich_text.name_id_resolver.base_name_id_resolver import BaseNameIdResolver
-from notionary.util.fuzzy import find_best_match
+from notionary.blocks.rich_text.name_id_resolver.name_id_resolver import NameIdResolver
+from notionary.user.notion_user import NotionUser
+from notionary.workspace.search.search_client import SearchClient
 
 
-class UserNameIdResolver(BaseNameIdResolver):
-    async def resolve_user_id(self, name: str) -> str | None:
-        if not name:
-            return None
+class UserNameIdResolver(NameIdResolver):
+    def __init__(self, search_client: SearchClient | None = None) -> None:
+        self._search_client = search_client or SearchClient()
 
-        cleaned_name = name.strip()
-        return await self._resolve_user_id(cleaned_name)
+    @override
+    async def resolve_name_to_id(self, name: str) -> str | None:
+        user = await self._search_client.find_user(name)
+        return user.id if user else None
 
-    async def resolve_user_name(self, user_id: str) -> str | None:
+    @override
+    async def resolve_id_to_name(self, user_id: str) -> str | None:
         if not user_id:
             return None
 
-        try:
-            user = await self.workspace.get_user_by_id(user_id)
-            return user.name if user else None
-        except Exception:
-            return None
-
-    async def _resolve_user_id(self, name: str) -> str | None:
-        try:
-            users = await self.workspace.search_users(name)
-
-            if not users:
-                return None
-
-            best_match = find_best_match(
-                query=name,
-                items=users,
-                text_extractor=lambda user: user.name or "",
-            )
-
-            return best_match.item.id if best_match else None
-        except Exception:
-            return None
+        user = await NotionUser.from_user_id(user_id)
+        return user.name if user else None

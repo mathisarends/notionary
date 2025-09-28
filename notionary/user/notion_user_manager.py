@@ -11,9 +11,8 @@ class NotionUserManager(LoggingMixin):
     This manager provides utility functions for working with individual users and user lists.
     """
 
-    def __init__(self):
-        """Initialize the user manager."""
-        self.client = UserHttpClient()
+    def __init__(self, client: UserHttpClient | None = None) -> None:
+        self.client = client or UserHttpClient()
 
     async def get_user_by_id(self, user_id: str) -> NotionUser | None:
         """

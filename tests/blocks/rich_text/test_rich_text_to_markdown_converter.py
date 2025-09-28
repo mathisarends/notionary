@@ -24,7 +24,7 @@ from notionary.blocks.rich_text.rich_text_models import (
 @pytest.fixture
 def mock_page_resolver() -> AsyncMock:
     resolver: PageNameIdResolver = AsyncMock(spec=PageNameIdResolver)
-    resolver.resolve_page_name.return_value = "Test Page"
+    resolver.resolve_page_id_to_name.return_value = "Test Page"
     return resolver
 
 

@@ -23,13 +23,6 @@ class UpdateDataSourceDto(NotionEntityUpdateDto):
     archived: bool
 
 
-class DataSourceSearchResponse(BaseModel):
-    results: list[DataSourceDto]
-    next_cursor: str | None = None
-    has_more: bool
-    type: Literal["page_or_data_source"]
-
-
 class QueryDataSourceResponse(BaseModel):
     object: Literal["list"]
     results: list[NotionPageDto]

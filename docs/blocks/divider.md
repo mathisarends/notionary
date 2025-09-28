@@ -37,15 +37,3 @@ markdown = (MarkdownBuilder()
   .paragraph("Complex configuration.")
   .build())
 ```
-
-## When To Use
-
-- Separate major topics
-- Break up long content visually
-- Mark transitions between concepts
-
-## Related
-
-- Heading: semantic structure
-- Space: blank vertical gap
-- Column: layout divisions

@@ -1,23 +1,21 @@
-from __future__ import annotations
+from typing import override
 
-from typing import TYPE_CHECKING
-
-from notionary.blocks.rich_text.name_id_resolver.base_name_id_resolver import BaseNameIdResolver
-from notionary.util.fuzzy import find_best_match
-
-if TYPE_CHECKING:
-    from notionary import NotionDatabase
+from notionary.blocks.rich_text.name_id_resolver.name_id_resolver import NameIdResolver
+from notionary.workspace.search.search_client import SearchClient
 
 
-class DatabaseNameIdResolver(BaseNameIdResolver):
-    async def resolve_database_id(self, name: str) -> str | None:
-        if not name:
-            return None
+class DatabaseNameIdResolver(NameIdResolver):
+    def __init__(self, search_client: SearchClient, search_limit: int = 100) -> None:
+        self.search_client = search_client
+        self.search_limit = search_limit
 
-        cleaned_name = name.strip()
-        return await self._resolve_database_id(cleaned_name)
+    @override
+    async def resolve_id_to_name(self, name: str) -> str | None:
+        database = await self.search_client.find_database(query=name, limit=self.search_limit)
+        return database.id if database else None
 
-    async def resolve_database_name(self, database_id: str) -> str | None:
+    @override
+    async def resolve_name_to_id(self, database_id: str) -> str | None:
         if not database_id:
             return None
 
@@ -28,20 +26,3 @@ class DatabaseNameIdResolver(BaseNameIdResolver):
             return database.title if database else None
         except Exception:
             return None
-
-    async def _resolve_database_id(self, name: str) -> str | None:
-        search_results = await self.workspace.search_databases(query=name, limit=self.search_limit)
-
-        return self._find_best_fuzzy_match(query=name, candidate_objects=search_results)
-
-    def _find_best_fuzzy_match(self, query: str, candidate_objects: list[NotionDatabase]) -> str | None:
-        if not candidate_objects:
-            return None
-
-        best_match = find_best_match(
-            query=query,
-            items=candidate_objects,
-            text_extractor=lambda obj: obj.title,
-        )
-
-        return best_match.item.id if best_match else None

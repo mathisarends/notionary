@@ -6,6 +6,8 @@ from notionary.comments.comment_models import CommentDto
 from notionary.user.notion_user import NotionUser
 
 
+# TODO: Make models more consistent and the api (and make it possible to respond to a comment like this via this object for example)
+# allow for comments not only on pages but on blocks as well.
 class Comment:
     def __init__(self, author_name: str, content: str) -> None:
         self.author_name = author_name

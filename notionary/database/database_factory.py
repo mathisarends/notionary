@@ -4,7 +4,6 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from notionary.database.database_models import NotionDatabaseDto
-from notionary.http.search_client import SearchClient
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
@@ -17,6 +16,8 @@ class NotionDatabaseFactory:
         return await self._create_database_from_response(response)
 
     async def load_from_title(self, database_title: str) -> NotionDatabase:
+        from notionary.workspace.search.search_client import SearchClient
+
         async with SearchClient() as data_source_client:
             return await data_source_client.find_database(database_title)
 

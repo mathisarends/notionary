@@ -7,7 +7,6 @@ from .data_source.data_source import NotionDataSource
 from .database.database import NotionDatabase
 from .page.page import NotionPage
 from .user import NotionBotUser, NotionUser, NotionUserManager
-from .workspace import NotionWorkspace
 
 __all__ = [
     "MarkdownBuilder",
@@ -17,5 +16,4 @@ __all__ = [
     "NotionPage",
     "NotionUser",
     "NotionUserManager",
-    "NotionWorkspace",
 ]

@@ -42,15 +42,3 @@ markdown = (MarkdownBuilder()
   ])
   .build())
 ```
-
-## When To Use
-
-- List features, benefits, requirements
-- Unordered information (no sequence)
-- Quick scannable points
-
-## Related
-
-- Numbered list: sequential items
-- Todo: checkbox items
-- Paragraph: continuous narrative
