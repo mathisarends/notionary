@@ -5,8 +5,8 @@ from notionary.workspace.search.search_client import SearchClient
 
 
 class DatabaseNameIdResolver(NameIdResolver):
-    def __init__(self, search_client: SearchClient, search_limit: int = 100) -> None:
-        self.search_client = search_client
+    def __init__(self, search_client: SearchClient | None = None, search_limit: int = 100) -> None:
+        self.search_client = search_client or SearchClient()
         self.search_limit = search_limit
 
     @override
@@ -19,10 +19,7 @@ class DatabaseNameIdResolver(NameIdResolver):
         if not database_id:
             return None
 
-        try:
-            from notionary import NotionDatabase
+        from notionary import NotionDatabase
 
-            database = await NotionDatabase.from_id(database_id)
-            return database.title if database else None
-        except Exception:
-            return None
+        database = await NotionDatabase.from_id(database_id)
+        return database.title if database else None

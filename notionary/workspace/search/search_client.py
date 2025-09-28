@@ -11,9 +11,7 @@ from notionary.workspace.search.search_filter_builder import SearchFilterBuilder
 from notionary.workspace.search.search_models import DataSourceSearchResponse, PageSearchResponse
 
 if TYPE_CHECKING:
-    from notionary.data_source.data_source import NotionDataSource
-    from notionary.database.database import NotionDatabase
-    from notionary.page.page import NotionPage
+    from notionary import NotionDatabase, NotionDataSource, NotionPage
 
 
 class SearchableEntity(asyncio.Protocol):
@@ -53,6 +51,8 @@ class SearchClient(NotionHttpClient):
         return users[0]
 
     async def search_pages(self, query: str, sort_ascending: bool = True, limit=100) -> None:
+        from notionary import NotionPage
+
         search_filter = (
             SearchFilterBuilder()
             .with_query(query)

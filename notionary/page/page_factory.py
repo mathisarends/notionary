@@ -10,7 +10,7 @@ from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.page_property_models import PageTitleProperty
 from notionary.shared.entity.factory.entity_factory import EntityFactory
 from notionary.shared.entity.factory.parent_extract_mixin import ParentExtractMixin
-from notionary.util.fuzzy import find_best_match
+from notionary.workspace.search.search_client import SearchClient
 
 if TYPE_CHECKING:
     from notionary import NotionPage
@@ -26,26 +26,9 @@ class NotionPageFactory(BaseFactory, ParentExtractMixin):
         return await self._create_page_from_response(response)
 
     async def load_from_title(self, page_title: str, min_similarity: float = 0.6) -> NotionPage:
-        from notionary.workspace import NotionWorkspace
+        search_client = SearchClient()
 
-        workspace = NotionWorkspace()
-        search_results = await workspace.search_pages(page_title, limit=10)
-
-        if not search_results:
-            raise ValueError(f"No pages found for name: {page_title}")
-
-        best_match = find_best_match(
-            query=page_title,
-            items=search_results,
-            text_extractor=lambda page: page.title,
-            min_similarity=min_similarity,
-        )
-
-        if not best_match:
-            available_titles = [result.title for result in search_results[:5]]
-            raise ValueError(f"No sufficiently similar page found for '{page_title}'. Available: {available_titles}")
-
-        return await self.load_from_id(best_match.item.id)
+        return await search_client.find_page(page_title, min_similarity=min_similarity)
 
     async def _fetch_page_response(self, page_id: str) -> NotionPageDto:
         async with NotionPageHttpClient(page_id=page_id) as client:
