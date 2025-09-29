@@ -5,7 +5,7 @@ import pytest
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.rich_text.name_id_resolver.database_name_id_resolver import DatabaseNameIdResolver
 from notionary.blocks.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
-from notionary.blocks.rich_text.name_id_resolver.user_name_id_resolver import UserNameIdResolver
+from notionary.blocks.rich_text.name_id_resolver.person_name_id_resolver import PersonNameIdResolver
 from notionary.blocks.rich_text.rich_text_models import (
     MentionType,
     RichTextType,
@@ -28,7 +28,7 @@ def mock_database_resolver() -> AsyncMock:
 
 @pytest.fixture
 def mock_user_resolver() -> AsyncMock:
-    resolver: UserNameIdResolver = AsyncMock(spec=UserNameIdResolver)
+    resolver: PersonNameIdResolver = AsyncMock(spec=PersonNameIdResolver)
     resolver.resolve_name_to_id.return_value = "user-789"
     return resolver
 
@@ -38,7 +38,7 @@ def converter(
     mock_page_resolver: AsyncMock, mock_database_resolver: AsyncMock, mock_user_resolver: AsyncMock
 ) -> MarkdownRichTextConverter:
     return MarkdownRichTextConverter(
-        page_resolver=mock_page_resolver, database_resolver=mock_database_resolver, user_resolver=mock_user_resolver
+        page_resolver=mock_page_resolver, database_resolver=mock_database_resolver, person_resolver=mock_user_resolver
     )
 
 

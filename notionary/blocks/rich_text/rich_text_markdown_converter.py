@@ -18,15 +18,15 @@ class RichTextToMarkdownConverter:
         *,
         page_resolver: NameIdResolver | None = None,
         database_resolver: NameIdResolver | None = None,
-        user_resolver: NameIdResolver | None = None,
+        person_resolver: NameIdResolver | None = None,
     ) -> None:
         from notionary.blocks.rich_text.name_id_resolver.database_name_id_resolver import DatabaseNameIdResolver
         from notionary.blocks.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
-        from notionary.blocks.rich_text.name_id_resolver.user_name_id_resolver import UserNameIdResolver
+        from notionary.blocks.rich_text.name_id_resolver.person_name_id_resolver import PersonNameIdResolver
 
         self.page_resolver = page_resolver or PageNameIdResolver()
         self.database_resolver = database_resolver or DatabaseNameIdResolver()
-        self.user_resolver = user_resolver or UserNameIdResolver()
+        self.person_resolver = person_resolver or PersonNameIdResolver()
 
     async def to_markdown(self, rich_text: list[RichTextObject]) -> str:
         if not rich_text:
@@ -77,11 +77,11 @@ class RichTextToMarkdownConverter:
         return f"@page[{page_name or page_id}]"
 
     async def _extract_database_mention_markdown(self, database_id: str) -> str:
-        database_name = await self.database_resolver.resolve_database_name(database_id)
+        database_name = await self.database_resolver.resolve_id_to_name(database_id)
         return f"@database[{database_name or database_id}]"
 
     async def _extract_user_mention_markdown(self, user_id: str) -> str:
-        user_name = await self.user_resolver.resolve_id_to_name(user_id)
+        user_name = await self.person_resolver.resolve_id_to_name(user_id)
         return f"@user[{user_name or user_id}]"
 
     def _extract_date_mention_markdown(self, date_mention: MentionDate) -> str:

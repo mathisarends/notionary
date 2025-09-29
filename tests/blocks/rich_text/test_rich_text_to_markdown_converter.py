@@ -4,7 +4,7 @@ import pytest
 
 from notionary.blocks.rich_text.name_id_resolver.database_name_id_resolver import DatabaseNameIdResolver
 from notionary.blocks.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
-from notionary.blocks.rich_text.name_id_resolver.user_name_id_resolver import UserNameIdResolver
+from notionary.blocks.rich_text.name_id_resolver.person_name_id_resolver import PersonNameIdResolver
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.rich_text.rich_text_models import (
     EquationObject,
@@ -37,7 +37,7 @@ def mock_database_resolver() -> AsyncMock:
 
 @pytest.fixture
 def mock_user_resolver() -> AsyncMock:
-    resolver: UserNameIdResolver = AsyncMock(spec=UserNameIdResolver)
+    resolver: PersonNameIdResolver = AsyncMock(spec=PersonNameIdResolver)
     resolver.resolve_id_to_name.return_value = "John Doe"
     return resolver
 
@@ -47,7 +47,7 @@ def converter(
     mock_page_resolver: AsyncMock, mock_database_resolver: AsyncMock, mock_user_resolver: AsyncMock
 ) -> RichTextToMarkdownConverter:
     return RichTextToMarkdownConverter(
-        page_resolver=mock_page_resolver, database_resolver=mock_database_resolver, user_resolver=mock_user_resolver
+        page_resolver=mock_page_resolver, database_resolver=mock_database_resolver, person_resolver=mock_user_resolver
     )
 
 

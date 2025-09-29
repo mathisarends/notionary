@@ -7,7 +7,7 @@ from typing import ClassVar
 from notionary.blocks.rich_text.name_id_resolver.database_name_id_resolver import DatabaseNameIdResolver
 from notionary.blocks.rich_text.name_id_resolver.name_id_resolver import NameIdResolver
 from notionary.blocks.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
-from notionary.blocks.rich_text.name_id_resolver.user_name_id_resolver import UserNameIdResolver
+from notionary.blocks.rich_text.name_id_resolver.person_name_id_resolver import PersonNameIdResolver
 from notionary.blocks.rich_text.rich_text_models import MentionType, RichTextObject, RichTextType, TextAnnotations
 from notionary.blocks.rich_text.rich_text_patterns import RichTextPatterns
 from notionary.blocks.types import BlockColor
@@ -42,11 +42,11 @@ class MarkdownRichTextConverter:
         *,
         page_resolver: NameIdResolver | None = None,
         database_resolver: NameIdResolver | None = None,
-        user_resolver: NameIdResolver | None = None,
+        person_resolver: NameIdResolver | None = None,
     ):
         self.page_resolver = page_resolver or PageNameIdResolver()
         self.database_resolver = database_resolver or DatabaseNameIdResolver()
-        self.user_resolver = user_resolver or UserNameIdResolver()
+        self.person_resolver = person_resolver or PersonNameIdResolver()
         self.format_handlers = self._setup_format_handlers()
 
     def _setup_format_handlers(self) -> list[PatternHandler]:
@@ -212,7 +212,7 @@ class MarkdownRichTextConverter:
         identifier = match.group(1)
         return await self._create_mention_or_fallback(
             identifier=identifier,
-            resolve_func=self.user_resolver.resolve_name_to_id,
+            resolve_func=self.person_resolver.resolve_name_to_id,
             create_mention_func=RichTextObject.mention_user,
             mention_type=MentionType.USER,
         )
