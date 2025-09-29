@@ -6,14 +6,10 @@ from .blocks.markdown.markdown_builder import MarkdownBuilder
 from .data_source.data_source import NotionDataSource
 from .database.database import NotionDatabase
 from .page.page import NotionPage
-from .user import NotionBotUser, NotionUser, NotionUserManager
 
 __all__ = [
     "MarkdownBuilder",
-    "NotionBotUser",
     "NotionDataSource",
     "NotionDatabase",
     "NotionPage",
-    "NotionUser",
-    "NotionUserManager",
 ]

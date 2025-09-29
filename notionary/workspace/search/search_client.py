@@ -4,8 +4,6 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from notionary.http.http_client import NotionHttpClient
-from notionary.user.notion_user import NotionUser
-from notionary.user.notion_user_manager import NotionUserManager
 from notionary.util.fuzzy import find_best_match
 from notionary.workspace.search.search_filter_builder import SearchFilterBuilder, SortDirection
 from notionary.workspace.search.search_models import DataSourceSearchResponse, PageSearchResponse
@@ -44,11 +42,10 @@ class SearchClient(NotionHttpClient):
 
         return self._get_best_match(potential_databases, query)
 
-    # TODO: This is the most trivial search ever but must suffice for now (Notion User is horrific)
-    async def find_user(self, query: str) -> NotionUser:
+    """ async def find_user(self, query: str) -> NotionUser:
         user_manager = NotionUserManager()
         users = await user_manager.find_users_by_name(query)
-        return users[0]
+        return users[0] """
 
     async def search_pages(self, query: str, sort_ascending: bool = True, limit=100) -> None:
         from notionary import NotionPage

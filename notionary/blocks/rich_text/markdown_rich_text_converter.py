@@ -117,8 +117,8 @@ class MarkdownRichTextConverter:
         async_handlers = {
             self._handle_page_mention_pattern,
             self._handle_database_mention_pattern,
-            self._handle_user_mention_pattern,
             self._handle_color_pattern,  # Color pattern needs async for recursive parsing
+            self._handle_user_mention_pattern,
         }
         return handler_method in async_handlers
 
@@ -203,7 +203,7 @@ class MarkdownRichTextConverter:
         identifier = match.group(1)
         return await self._create_mention_or_fallback(
             identifier=identifier,
-            resolve_func=self.database_resolver.resolve_database_id,
+            resolve_func=self.database_resolver.resolve_name_to_id,
             create_mention_func=RichTextObject.mention_database,
             mention_type=MentionType.DATABASE,
         )

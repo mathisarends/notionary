@@ -3,15 +3,17 @@ from typing import Self
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.comments.comment_models import CommentDto
-from notionary.user.notion_user import NotionUser
+from notionary.user.notion_person import NotionPersonFactory
 
 
-# TODO: Make models more consistent and the api (and make it possible to respond to a comment like this via this object for example)
-# allow for comments not only on pages but on blocks as well.
 class Comment:
-    def __init__(self, author_name: str, content: str) -> None:
-        self.author_name = author_name
-        self.content = content
+    UNKNOWN_AUTHOR = "Unknown Author"
+
+    def __init__(self, author_name: str, content: str, person_factory: NotionPersonFactory | None = None) -> None:
+        self._author_name = author_name
+        self._content = content
+
+        self._person_factory = person_factory or NotionPersonFactory()
 
     @classmethod
     async def from_comment_dto(cls, dto: CommentDto) -> Self:
@@ -23,8 +25,12 @@ class Comment:
     async def _resolve_user_name(cls, dto: CommentDto) -> str:
         user_id = dto.created_by.id
 
-        user = await NotionUser.from_user_id(user_id)
-        return user.name if user else "Unknown"
+        try:
+            person = await NotionPersonFactory().from_user_id(user_id)
+            if person and person.name:
+                return person.name
+        except Exception:
+            return cls.UNKNOWN_AUTHOR
 
     @classmethod
     async def _reolve_content(cls, dto: CommentDto) -> str:
