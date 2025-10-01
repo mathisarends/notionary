@@ -6,9 +6,10 @@ from typing import TYPE_CHECKING
 from notionary.blocks.block_http_client import NotionBlockHttpClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
-from notionary.comments.client import CommentClient
 from notionary.comments.models import Comment
+from notionary.comments.service import CommentService
 from notionary.data_source.data_source import NotionDataSource
 from notionary.database.database_http_client import NotionDatabaseHttpClient
 from notionary.file_upload.file_upload_http_client import FileUploadHttpClient
@@ -71,7 +72,8 @@ class NotionPage(Entity):
 
         self._page_client = NotionPageHttpClient(page_id=id, properties=properties)
         self._block_client = NotionBlockHttpClient()
-        self._comment_client = CommentClient()
+        self._comment_service = CommentService()
+        self._rich_text_converter = MarkdownRichTextConverter()
 
         self.block_element_registry = BlockRegistry()
 
@@ -121,19 +123,13 @@ class NotionPage(Entity):
         return markdown_syntax_builder.build_concise_reference()
 
     async def get_comments(self) -> list[Comment]:
-        return await self._comment_client.list_all_comments_for_page(page_id=self._id)
+        return await self._comment_service.list_all_comments_for_page(page_id=self._id)
 
-    async def post_comment(
-        self,
-        rich_text_str: str,
-        *,
-        discussion_id: str | None = None,
-    ) -> None:
-        await self._comment_client.create_comment(
-            rich_text_str=rich_text_str,
-            page_id=self._id,
-            discussion_id=discussion_id,
-        )
+    async def post_top_level_comment(self, comment: str) -> None:
+        await self._comment_service.create_comment_on_page(page_id=self._id, text=comment)
+
+    async def post_reply_to_discussion(self, discussion_id: str, comment: str) -> None:
+        await self._comment_service.reply_to_discussion_by_id(discussion_id=discussion_id, text=comment)
 
     async def set_title(self, title: str) -> None:
         await self.property_writer.set_title_property(title)

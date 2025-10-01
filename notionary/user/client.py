@@ -1,3 +1,5 @@
+from pydantic import TypeAdapter
+
 from notionary.http.http_client import NotionHttpClient
 from notionary.user.schemas import (
     NotionUsersListResponse,
@@ -8,7 +10,9 @@ from notionary.user.schemas import (
 class UserHttpClient(NotionHttpClient):
     async def get_user_by_id(self, user_id: str) -> UserResponseDto | None:
         response = await self.get(f"users/{user_id}")
-        return UserResponseDto.model_validate(response)
+
+        adapter = TypeAdapter(UserResponseDto)
+        return adapter.validate_python(response)
 
     async def get_all_workspace_users(self) -> list[UserResponseDto]:
         all_entities = []

@@ -1,13 +1,10 @@
-from notionary import NotionPage
+from notionary import NotionDataSource
 
 
 async def main() -> None:
-    page = await NotionPage.from_title("Ruff Linter")
+    data_source = await NotionDataSource.from_title("Wissen und Notizen")
 
-    comments = await page.get_comments()
-
-    for comment in comments:
-        print(f"{comment.author_name}: {comment.content}")
+    await data_source.create_blank_page(title="Neue leere Seite")
 
 
 if __name__ == "__main__":

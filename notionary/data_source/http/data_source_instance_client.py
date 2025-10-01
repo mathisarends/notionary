@@ -49,3 +49,11 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
     async def query(self, query_data: dict[str, Any] | None = None) -> QueryDataSourceResponse:
         response = await self.post(f"data_sources/{self._data_source_id}/query", data=query_data)
         return QueryDataSourceResponse.model_validate(response)
+
+    async def create_blank_page(self, title: str | None = None) -> dict[str, Any]:
+        data = {"parent": {"type": "data_source_id", "data_source_id": self._data_source_id}, "properties": {}}
+
+        if title:
+            data["properties"]["Name"] = {"title": [{"text": {"content": title}}]}
+
+        await self.post("pages", data=data)

@@ -79,6 +79,9 @@ class NotionDataSource(Entity):
     def parent_database(self) -> NotionDatabase:
         return self._parent_database
 
+    async def create_blank_page(self, title: str | None = None) -> None:
+        await self._data_source_client.create_blank_page(title=title)
+
     async def set_title(self, title: str) -> None:
         data_source_dto = await self._data_source_client.update_title(title)
         self._title = data_source_dto.title

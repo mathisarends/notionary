@@ -42,11 +42,6 @@ class SearchClient(NotionHttpClient):
 
         return self._get_best_match(potential_databases, query)
 
-    """ async def find_user(self, query: str) -> NotionUser:
-        user_manager = NotionUserManager()
-        users = await user_manager.find_users_by_name(query)
-        return users[0] """
-
     async def search_pages(self, query: str, sort_ascending: bool = True, limit=100) -> None:
         from notionary import NotionPage
 
@@ -67,6 +62,8 @@ class SearchClient(NotionHttpClient):
     async def search_data_sources(
         self, query: str = "", sort_ascending: bool = True, limit: int = 100
     ) -> list[NotionDataSource]:
+        from notionary import NotionDataSource
+
         search_filter = (
             SearchFilterBuilder()
             .with_query(query)

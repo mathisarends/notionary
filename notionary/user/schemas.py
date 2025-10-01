@@ -1,6 +1,7 @@
 from enum import StrEnum
+from typing import Annotated, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class UserType(StrEnum):
@@ -34,7 +35,7 @@ class BotUserDto(BaseModel):
 
 class PersonUserResponseDto(BaseModel):
     id: str
-    type: UserType = UserType.PERSON
+    type: Literal[UserType.PERSON] = UserType.PERSON
     name: str | None = None
     avatar_url: str | None = None
     person: PersonUserDto
@@ -42,13 +43,13 @@ class PersonUserResponseDto(BaseModel):
 
 class BotUserResponseDto(BaseModel):
     id: str
-    type: UserType = UserType.BOT
+    type: Literal[UserType.BOT] = UserType.BOT
     name: str | None = None
     avatar_url: str | None = None
     bot: BotUserDto
 
 
-UserResponseDto = PersonUserResponseDto | BotUserResponseDto
+UserResponseDto = Annotated[PersonUserResponseDto | BotUserResponseDto, Field(discriminator="type")]
 
 
 class NotionUsersListResponse(BaseModel):
