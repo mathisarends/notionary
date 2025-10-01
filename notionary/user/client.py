@@ -1,33 +1,16 @@
 from notionary.http.http_client import NotionHttpClient
-from notionary.user.user_models import (
-    NotionUserResponse,
+from notionary.user.schemas import (
     NotionUsersListResponse,
+    UserResponseDto,
 )
 
 
 class UserHttpClient(NotionHttpClient):
-    async def get_user_by_id(self, user_id: str) -> NotionUserResponse | None:
+    async def get_user_by_id(self, user_id: str) -> UserResponseDto | None:
         response = await self.get(f"users/{user_id}")
-        return NotionUserResponse.model_validate(response)
+        return UserResponseDto.model_validate(response)
 
-    async def get_all_workspace_users(self) -> list[NotionUserResponse]:
-        all_entities = []
-        start_cursor = None
-        page_count = 0
-
-        while True:
-            response = await self._get_workspace_entities(page_size=100, start_cursor=start_cursor)
-
-            page_count += 1
-            all_entities.extend(response.results)
-
-            self.logger.debug(
-                "Fetched page %d: %d entities (total: %d)", page_count, len(response.results), len(all_entities)
-            )
-
-            if not response.has_more:
-                self.logger.debug("No more pages - pagination complete")
-                break
+    async def get_all_workspace_users(self) -> list[UserResponseDto]:
         all_entities = []
         start_cursor = None
         page_count = 0

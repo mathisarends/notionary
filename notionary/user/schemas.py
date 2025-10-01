@@ -13,11 +13,11 @@ class WorkspaceOwnerType(StrEnum):
     WORKSPACE = "workspace"
 
 
-class PersonUser(BaseModel):
+class PersonUserDto(BaseModel):
     email: str | None = None
 
 
-class BotOwner(BaseModel):
+class BotOwnerDto(BaseModel):
     type: WorkspaceOwnerType
     workspace: bool | None = None
 
@@ -26,32 +26,32 @@ class WorkspaceLimits(BaseModel):
     max_file_upload_size_in_bytes: int
 
 
-class BotUser(BaseModel):
-    owner: BotOwner | None = None
+class BotUserDto(BaseModel):
+    owner: BotOwnerDto | None = None
     workspace_name: str | None = None
     workspace_limits: WorkspaceLimits | None = None
 
 
-class NotionPersonResponse(BaseModel):
+class PersonUserResponseDto(BaseModel):
     id: str
     type: UserType = UserType.PERSON
     name: str | None = None
     avatar_url: str | None = None
-    person: PersonUser
+    person: PersonUserDto
 
 
-class NotionBotResponse(BaseModel):
+class BotUserResponseDto(BaseModel):
     id: str
     type: UserType = UserType.BOT
     name: str | None = None
     avatar_url: str | None = None
-    bot: BotUser
+    bot: BotUserDto
 
 
-NotionUserResponse = NotionPersonResponse | NotionBotResponse
+UserResponseDto = PersonUserResponseDto | BotUserResponseDto
 
 
 class NotionUsersListResponse(BaseModel):
-    results: list[NotionUserResponse]
+    results: list[UserResponseDto]
     next_cursor: str | None = None
     has_more: bool

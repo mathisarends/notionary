@@ -7,8 +7,8 @@ from notionary.blocks.block_http_client import NotionBlockHttpClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
-from notionary.comments import CommentClient
-from notionary.comments.comment import Comment
+from notionary.comments.client import CommentClient
+from notionary.comments.models import Comment
 from notionary.data_source.data_source import NotionDataSource
 from notionary.database.database_http_client import NotionDatabaseHttpClient
 from notionary.file_upload.file_upload_http_client import FileUploadHttpClient

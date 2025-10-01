@@ -1,14 +1,11 @@
-from __future__ import annotations
-
 import asyncio
 from collections.abc import AsyncGenerator
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-from notionary.comments.comment import Comment
-from notionary.comments.comment_models import (
-    CommentAttachment,
+from notionary.comments.factory import CommentFactory
+from notionary.comments.models import Comment
+from notionary.comments.schemas import (
     CommentCreateRequest,
-    CommentDisplayName,
     CommentDto,
     CommentListRequest,
     CommentListResponse,
@@ -17,7 +14,11 @@ from notionary.http.http_client import NotionHttpClient
 
 
 class CommentClient(NotionHttpClient):
-    async def list_all_comments_for_page(self, page_id: str, *, page_size: int = 100) -> list[CommentDto]:
+    def __init__(self, comment_factory: CommentFactory | None) -> None:
+        super().__init__()
+        self.comment = comment_factory or CommentFactory()
+
+    async def list_all_comments_for_page(self, page_id: str, *, page_size: int = 100) -> list[Comment]:
         results: list[CommentDto] = []
         cursor: str | None = None
 
@@ -28,7 +29,7 @@ class CommentClient(NotionHttpClient):
                 break
             cursor = page.next_cursor
 
-        comments = await asyncio.gather(*(Comment.from_comment_dto(dto) for dto in results))
+        comments = await asyncio.gather(*(self.comment_factory.create_from_dto(dto) for dto in results))
 
         return comments
 
@@ -38,17 +39,6 @@ class CommentClient(NotionHttpClient):
         *,
         page_size: int = 100,
     ) -> AsyncGenerator[CommentDto]:
-        """
-        Async generator over all unresolved comments for a given page/block.
-        Handles pagination automatically.
-
-        Args:
-            block_id: Page ID or block ID to iterate comments for.
-            page_size: Items per page for pagination (default: 100).
-
-        Yields:
-            Individual CommentDto objects.
-        """
         cursor: str | None = None
 
         while True:
@@ -65,17 +55,7 @@ class CommentClient(NotionHttpClient):
         *,
         page_id: str | None = None,
         discussion_id: str | None = None,
-        attachments: list[CommentAttachment] | None = None,
     ) -> None:
-        """
-        Create a CommentDto on a page OR reply to an existing discussion.
-
-        Args:
-            rich_text_str: Plain text content (will be converted to rich text).
-            page_id: Page ID to CommentDto on (for top-level comments).
-            discussion_id: Discussion ID to reply to (for replies).
-            attachments: Optional list of attachments (max 3).
-        """
         if (page_id is None) == (discussion_id is None):
             raise ValueError("Specify exactly one parent: page_id OR discussion_id")
 
@@ -87,13 +67,11 @@ class CommentClient(NotionHttpClient):
             request = CommentCreateRequest.for_page(
                 page_id=page_id,
                 rich_text=rich_text,
-                attachments=attachments,
             )
         else:
             request = CommentCreateRequest.for_discussion(
                 discussion_id=discussion_id,
                 rich_text=rich_text,
-                attachments=attachments,
             )
 
         # Convert request to API format and make the call
@@ -109,48 +87,20 @@ class CommentClient(NotionHttpClient):
         self,
         page_id: str,
         text: str,
-        *,
-        display_name: CommentDisplayName | None = None,
-        attachments: list[CommentAttachment] | None = None,
-    ) -> CommentDto:
-        """
-        Create a top-level CommentDto on a page using plain text.
-
-        Args:
-            page_id: Target page ID.
-            text: Plain text content.
-            display_name: Optional display name override.
-            attachments: Optional list of attachments (max 3).
-        """
+    ) -> None:
         return await self.create_comment(
             text,
             page_id=page_id,
-            display_name=display_name,
-            attachments=attachments,
         )
 
     async def reply_to_discussion(
         self,
         discussion_id: str,
         text: str,
-        *,
-        display_name: CommentDisplayName | None = None,
-        attachments: list[CommentAttachment] | None = None,
     ) -> CommentDto:
-        """
-        Reply to an existing discussion using plain text.
-
-        Args:
-            discussion_id: Target discussion ID to reply to.
-            text: Plain text content.
-            display_name: Optional display name override.
-            attachments: Optional list of attachments (max 3).
-        """
         return await self.create_comment(
             text,
             discussion_id=discussion_id,
-            display_name=display_name,
-            attachments=attachments,
         )
 
     async def _list_comments(
@@ -160,14 +110,6 @@ class CommentClient(NotionHttpClient):
         start_cursor: str | None = None,
         page_size: int = 100,
     ) -> CommentListResponse:
-        """
-        List unresolved comments for a page or block.
-
-        Args:
-            block_id: Page ID or block ID to list comments for.
-            start_cursor: Pagination cursor.
-            page_size: Max items per page (<= 100).
-        """
         request = CommentListRequest(
             block_id=block_id,
             start_cursor=start_cursor,
