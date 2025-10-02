@@ -56,7 +56,6 @@ class LineRenderer(BlockHandler):
         context.was_processed = True
 
     async def _convert_block_to_markdown(self, context: BlockRenderingContext) -> str | None:
-        """Convert a Notion block to markdown using registered elements."""
         for element in context.block_registry.get_elements():
             if element.match_notion(context.block):
                 return await element.notion_to_markdown(context.block)

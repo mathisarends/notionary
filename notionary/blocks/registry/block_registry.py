@@ -32,8 +32,6 @@ from notionary.blocks.video import VideoElement
 
 
 class BlockRegistry:
-    """Registry of elements that can convert between Markdown and Notion."""
-
     _DEFAULT_ELEMENTS: ClassVar[list[type[BaseBlockElement]]] = [
         HeadingElement,
         CalloutElement,
