@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.http.http_client import NotionHttpClient
-from notionary.page.page_models import NotionPageDto
+from notionary.page.page_models import NotionPageDto, PgePropertiesUpdateDto
 from notionary.page.properties.page_property_models import (
     DateValue,
     PageCheckboxProperty,
@@ -32,7 +32,6 @@ class PagePropertyHttpClient(NotionHttpClient):
         self._page_id = page_id
 
     async def patch_page(self, data: BaseModel) -> NotionPageDto:
-        """Patch page with given data. Returns the updated page data."""
         data_dict = data.model_dump(exclude_unset=True, exclude_none=True)
 
         result_dict = await self.patch(f"pages/{self._page_id}", data=data_dict)
@@ -48,7 +47,7 @@ class PagePropertyHttpClient(NotionHttpClient):
         updated_property = self._create_updated_property(property_type, current_property, value)
 
         properties = {property_name: updated_property}
-        update_dto = NotionPageDto(properties=properties)
+        update_dto = PgePropertiesUpdateDto(properties=properties)
 
         return await self.patch_page(update_dto)
 

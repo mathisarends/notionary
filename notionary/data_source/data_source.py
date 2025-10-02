@@ -6,7 +6,7 @@ from notionary.data_source.data_source_factory import load_data_source_from_id, 
 from notionary.data_source.http.data_source_instance_client import DataSourceInstanceClient
 from notionary.data_source.properties.models import (
     DataSourceMultiSelectProperty,
-    DataSourceNotionProperty,
+    DataSourceProperty,
     DataSourcePropertyOption,
     DataSourcePropertyT,
     DataSourceRelationProperty,
@@ -37,7 +37,7 @@ class NotionDataSource(Entity):
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
         description: str | None = None,
-        properties: dict[str, DataSourceNotionProperty] | None = None,
+        properties: dict[str, DataSourceProperty] | None = None,
     ) -> None:
         super().__init__(
             id=id,

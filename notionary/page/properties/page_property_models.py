@@ -1,21 +1,15 @@
-from __future__ import annotations
+from typing import Annotated, Literal, TypeVar
 
-from typing import Any, TypeVar
-
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.shared.models.user_models import NotionUser
 from notionary.shared.properties.property_type import PropertyType
 
 
-class IgnoreExtraFieldsMixin(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-
-class SelectOption(BaseModel):
+class PageProperty(BaseModel):
     id: str
-    name: str
+    type: str
 
 
 class StatusOption(BaseModel):
@@ -23,19 +17,9 @@ class StatusOption(BaseModel):
     name: str
 
 
-class RelationItem(BaseModel):
+class PageStatusProperty(PageProperty):
     id: str
-
-
-class DateValue(BaseModel):
-    start: str
-    end: str | None = None
-    time_zone: str | None = None
-
-
-class PageStatusProperty(IgnoreExtraFieldsMixin):
-    id: str
-    type: PropertyType = PropertyType.STATUS
+    type: Literal[PropertyType.STATUS] = PropertyType.STATUS
     status: StatusOption | None = None
     options: list[StatusOption] = Field(default_factory=list)
 
@@ -44,28 +28,33 @@ class PageStatusProperty(IgnoreExtraFieldsMixin):
         return [option.name for option in self.options]
 
 
-class PageRelationProperty(IgnoreExtraFieldsMixin):
+class RelationItem(BaseModel):
     id: str
-    type: PropertyType = PropertyType.RELATION
+
+
+class PageRelationProperty(PageProperty):
+    type: Literal[PropertyType.RELATION] = PropertyType.RELATION
     relation: list[RelationItem] = Field(default_factory=list)
     has_more: bool = False
 
 
-class PageURLProperty(IgnoreExtraFieldsMixin):
-    id: str
-    type: PropertyType = PropertyType.URL
+class PageURLProperty(PageProperty):
+    type: Literal[PropertyType.URL] = PropertyType.URL
     url: str | None = None
 
 
-class PageRichTextProperty(IgnoreExtraFieldsMixin):
-    id: str
-    type: PropertyType = PropertyType.RICH_TEXT
+class PageRichTextProperty(PageProperty):
+    type: Literal[PropertyType.RICH_TEXT] = PropertyType.RICH_TEXT
     rich_text: list[RichTextObject] = Field(default_factory=list)
 
 
-class PageMultiSelectProperty(IgnoreExtraFieldsMixin):
+class SelectOption(BaseModel):
     id: str
-    type: PropertyType = PropertyType.MULTI_SELECT
+    name: str
+
+
+class PageMultiSelectProperty(PageProperty):
+    type: Literal[PropertyType.MULTI_SELECT] = PropertyType.MULTI_SELECT
     multi_select: list[SelectOption] = Field(default_factory=list)
     options: list[SelectOption] = Field(default_factory=list)
 
@@ -74,9 +63,8 @@ class PageMultiSelectProperty(IgnoreExtraFieldsMixin):
         return [option.name for option in self.options]
 
 
-class PageSelectProperty(IgnoreExtraFieldsMixin):
-    id: str
-    type: PropertyType = PropertyType.SELECT
+class PageSelectProperty(PageProperty):
+    type: Literal[PropertyType.SELECT] = PropertyType.SELECT
     select: SelectOption | None = None
     options: list[SelectOption] = Field(default_factory=list)
 
@@ -85,56 +73,53 @@ class PageSelectProperty(IgnoreExtraFieldsMixin):
         return [option.name for option in self.options]
 
 
-class PagePeopleProperty(IgnoreExtraFieldsMixin):
-    id: str
-    type: PropertyType = PropertyType.PEOPLE
+class PagePeopleProperty(PageProperty):
+    type: Literal[PropertyType.PEOPLE] = PropertyType.PEOPLE
     people: list[NotionUser] = Field(default_factory=list)
 
 
-class PageDateProperty(IgnoreExtraFieldsMixin):
-    id: str
-    type: PropertyType = PropertyType.DATE
+class DateValue(BaseModel):
+    start: str
+    end: str | None = None
+    time_zone: str | None = None
+
+
+class PageDateProperty(PageProperty):
+    type: Literal[PropertyType.DATE] = PropertyType.DATE
     date: DateValue | None = None
 
 
-class PageTitleProperty(IgnoreExtraFieldsMixin):
-    id: str
-    type: PropertyType = PropertyType.TITLE
+class PageTitleProperty(PageProperty):
+    type: Literal[PropertyType.TITLE] = PropertyType.TITLE
     title: list[RichTextObject] = Field(default_factory=list)
 
 
-class PageNumberProperty(IgnoreExtraFieldsMixin):
-    id: str
-    type: PropertyType = PropertyType.NUMBER
+class PageNumberProperty(PageProperty):
+    type: Literal[PropertyType.NUMBER] = PropertyType.NUMBER
     number: float | None = None
 
 
-class PageCheckboxProperty(IgnoreExtraFieldsMixin):
-    id: str
-    type: PropertyType = PropertyType.CHECKBOX
+class PageCheckboxProperty(PageProperty):
+    type: Literal[PropertyType.CHECKBOX] = PropertyType.CHECKBOX
     checkbox: bool = False
 
 
-class PageEmailProperty(IgnoreExtraFieldsMixin):
-    id: str
-    type: PropertyType = PropertyType.EMAIL
+class PageEmailProperty(PageProperty):
+    type: Literal[PropertyType.EMAIL] = PropertyType.EMAIL
     email: str | None = None
 
 
-class PagePhoneNumberProperty(IgnoreExtraFieldsMixin):
-    id: str
-    type: PropertyType = PropertyType.PHONE_NUMBER
+class PagePhoneNumberProperty(PageProperty):
+    type: Literal[PropertyType.PHONE_NUMBER] = PropertyType.PHONE_NUMBER
     phone_number: str | None = None
 
 
-class PageCreatedTimeProperty(IgnoreExtraFieldsMixin):
-    id: str
-    type: PropertyType = PropertyType.CREATED_TIME
+class PageCreatedTimeProperty(PageProperty):
+    type: Literal[PropertyType.CREATED_TIME] = PropertyType.CREATED_TIME
     created_time: str | None = None
 
 
-# ===== TYPE UNIONS =====
-PageProperty = (
+DiscriminatedPageProperty = Annotated[
     PageStatusProperty
     | PageRelationProperty
     | PageURLProperty
@@ -148,8 +133,8 @@ PageProperty = (
     | PageCheckboxProperty
     | PageEmailProperty
     | PagePhoneNumberProperty
-    | PageCreatedTimeProperty
-    | dict[str, Any]  # Fallback
-)
+    | PageCreatedTimeProperty,
+    Field(discriminator="type"),
+]
 
 PagePropertyT = TypeVar("PagePropertyT", bound=PageProperty)
