@@ -1,11 +1,10 @@
 from pydantic import BaseModel
 
 from notionary.page.properties.models import DiscriminatedPageProperty
-from notionary.shared.entity.entity_models import EntityDto
-from notionary.shared.entity.user_context_mixin import UserContextMixin
+from notionary.shared.entity.schemas import EntityResponseDto
 
 
-class NotionPageDto(EntityDto, UserContextMixin):
+class NotionPageDto(EntityResponseDto):
     archived: bool
     properties: dict[str, DiscriminatedPageProperty]
 

@@ -33,12 +33,10 @@ class SearchClient(NotionHttpClient):
         return self._get_best_match(pages, query, min_similarity=min_similarity)
 
     async def find_database(self, query: str = "", sort_ascending: bool = True, limit: int = 100) -> NotionDatabase:
-        # notion does not support direct search for databases we search for data sources and extract their parent databases.
         data_sources = await self.search_data_sources(query, sort_ascending, limit)
 
-        potential_databases = [
-            data_source.parent_database for data_source in data_sources if data_source.parent_database
-        ]
+        parent_databases = await asyncio.gather(*(data_source.get_parent_database() for data_source in data_sources))
+        potential_databases = [db for db in parent_databases if db is not None]
 
         return self._get_best_match(potential_databases, query)
 
@@ -62,8 +60,6 @@ class SearchClient(NotionHttpClient):
     async def search_data_sources(
         self, query: str = "", sort_ascending: bool = True, limit: int = 100
     ) -> list[NotionDataSource]:
-        from notionary import NotionDataSource
-
         search_filter = (
             SearchFilterBuilder()
             .with_query(query)

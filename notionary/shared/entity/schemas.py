@@ -1,10 +1,13 @@
 from enum import StrEnum
+from typing import Protocol
 
 from pydantic import BaseModel
 
+from notionary.blocks.rich_text.models import RichText
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.icon_models import Icon
 from notionary.shared.models.parent_models import Parent
+from notionary.user.schemas import PartialUserDto
 
 
 class EntityObjectType(StrEnum):
@@ -13,11 +16,13 @@ class EntityObjectType(StrEnum):
     DATABASE = "database"
 
 
-class EntityDto(BaseModel):
+class EntityResponseDto(BaseModel):
     object: EntityObjectType
     id: str
     created_time: str
+    created_by: PartialUserDto
     last_edited_time: str
+    last_edited_by: PartialUserDto
     cover: NotionCover | None = None
     icon: Icon | None = None
     parent: Parent
@@ -30,3 +35,11 @@ class NotionEntityUpdateDto(BaseModel):
     icon: Icon | None = None
     cover: NotionCover | None = None
     in_trash: bool | None = None
+
+
+class Titled(Protocol):
+    title: list[RichText]
+
+
+class Describable(Protocol):
+    description: list[RichText] | None

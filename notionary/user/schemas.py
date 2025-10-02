@@ -62,6 +62,6 @@ class NotionUsersListResponse(BaseModel):
     has_more: bool
 
 
-class NotionUserReferenceDto(BaseModel):
+class PartialUserDto(BaseModel):
     object: Literal["user"] = "user"
     id: str

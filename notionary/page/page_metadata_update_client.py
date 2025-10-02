@@ -3,7 +3,7 @@ from typing import override
 from notionary.http.http_client import NotionHttpClient
 from notionary.page.page_models import NotionPageDto
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
-from notionary.shared.entity.entity_models import NotionEntityUpdateDto
+from notionary.shared.entity.schemas import NotionEntityUpdateDto
 
 
 class PageMetadataUpdateClient(NotionHttpClient, EntityMetadataUpdateClient):

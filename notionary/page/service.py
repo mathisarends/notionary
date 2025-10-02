@@ -21,9 +21,12 @@ from notionary.page.properties.models import PageTitleProperty
 from notionary.page.properties.service import PagePropertyHandler
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.schemas import NotionContentSchema
+from notionary.shared.entity.dto_parsers import (
+    extract_cover_image_url_from_dto,
+    extract_emoji_icon_from_dto,
+    extract_external_icon_url_from_dto,
+)
 from notionary.shared.entity.entity import Entity
-from notionary.shared.models.cover_models import CoverType
-from notionary.shared.models.icon_models import IconType
 from notionary.workspace.search.search_client import SearchClient
 
 
@@ -127,41 +130,19 @@ class NotionPage(Entity):
             url=response.url,
             page_property_handler=page_property_handler,
             public_url=response.public_url,
-            emoji_icon=cls._extract_emoji_icon_from_dto(response),
-            external_icon_url=cls._extract_external_icon_url_from_dto(response),
-            cover_image_url=cls._extract_cover_image_url_from_dto(response),
+            emoji_icon=extract_emoji_icon_from_dto(response),
+            external_icon_url=extract_external_icon_url_from_dto(response),
+            cover_image_url=extract_cover_image_url_from_dto(response),
         )
 
     @staticmethod
     async def _extract_title_from_dto(response: NotionPageDto) -> str:
-        """Extract and convert the title from the DTO."""
         title_property = next(
             (prop for prop in response.properties.values() if isinstance(prop, PageTitleProperty)),
             None,
         )
         rich_text_title = title_property.title if title_property else []
         return await convert_rich_text_to_markdown(rich_text_title)
-
-    @staticmethod
-    def _extract_emoji_icon_from_dto(response: NotionPageDto) -> str | None:
-        """Extract the emoji icon from the DTO."""
-        if not response.icon or response.icon.type != IconType.EMOJI:
-            return None
-        return response.icon.emoji
-
-    @staticmethod
-    def _extract_external_icon_url_from_dto(response: NotionPageDto) -> str | None:
-        """Extract the external icon URL from the DTO."""
-        if not response.icon or response.icon.type != IconType.EXTERNAL:
-            return None
-        return response.icon.external.url if response.icon.external else None
-
-    @staticmethod
-    def _extract_cover_image_url_from_dto(response: NotionPageDto) -> str | None:
-        """Extract the cover image URL from the DTO."""
-        if not response.cover or response.cover.type != CoverType.EXTERNAL:
-            return None
-        return response.cover.external.url if response.cover.external else None
 
     @property
     def _entity_metadata_update_client(self) -> PageMetadataUpdateClient:

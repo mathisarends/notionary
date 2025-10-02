@@ -20,11 +20,16 @@ from notionary.data_source.properties.models import (
 from notionary.data_source.schemas import DataSourceDto
 from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.models import PageTitleProperty
+from notionary.shared.entity.dto_parsers import (
+    extract_cover_image_url_from_dto,
+    extract_database_id,
+    extract_description,
+    extract_emoji_icon_from_dto,
+    extract_external_icon_url_from_dto,
+    extract_title,
+)
 from notionary.shared.entity.entity import Entity
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
-from notionary.shared.entity.utils import extract_parent_database
-from notionary.shared.models.cover_models import CoverType
-from notionary.shared.models.icon_models import IconType
 from notionary.workspace.search.search_client import SearchClient
 
 if TYPE_CHECKING:
@@ -40,7 +45,7 @@ class NotionDataSource(Entity):
         last_edited_time: str,
         archived: bool,
         in_trash: bool,
-        parent_database: NotionDatabase,
+        parent_database_id: str | None,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
@@ -56,7 +61,8 @@ class NotionDataSource(Entity):
             external_icon_url=external_icon_url,
             cover_image_url=cover_image_url,
         )
-        self._parent_database = parent_database
+        self._parent_database_id = parent_database_id
+        self._parent_database: NotionDatabase | None = None
         self._title = title
         self._archived = archived
         self._description = description
@@ -93,11 +99,12 @@ class NotionDataSource(Entity):
         response: DataSourceDto,
         rich_text_converter: RichTextToMarkdownConverter,
     ) -> Self:
-        title, description, parent_database = await asyncio.gather(
-            cls._extract_title_from_dto(response, rich_text_converter),
-            cls._extract_description_from_dto(response, rich_text_converter),
-            extract_parent_database(response),
+        title, description = await asyncio.gather(
+            extract_title(response, rich_text_converter),
+            extract_description(response, rich_text_converter),
         )
+
+        parent_database_id = extract_database_id(response)
 
         return cls(
             id=response.id,
@@ -108,45 +115,11 @@ class NotionDataSource(Entity):
             archived=response.archived,
             in_trash=response.in_trash,
             properties=response.properties,
-            parent_database=parent_database,
-            emoji_icon=cls._extract_emoji_icon_from_dto(response),
-            external_icon_url=cls._extract_external_icon_url_from_dto(response),
-            cover_image_url=cls._extract_cover_image_url_from_dto(response),
+            parent_database_id=parent_database_id,
+            emoji_icon=extract_emoji_icon_from_dto(response),
+            external_icon_url=extract_external_icon_url_from_dto(response),
+            cover_image_url=extract_cover_image_url_from_dto(response),
         )
-
-    @staticmethod
-    async def _extract_title_from_dto(
-        response: DataSourceDto,
-        rich_text_converter: RichTextToMarkdownConverter,
-    ) -> str:
-        return await rich_text_converter.to_markdown(response.title)
-
-    @staticmethod
-    async def _extract_description_from_dto(
-        response: DataSourceDto,
-        rich_text_converter: RichTextToMarkdownConverter,
-    ) -> str | None:
-        if not response.description:
-            return None
-        return await rich_text_converter.to_markdown(response.description)
-
-    @staticmethod
-    def _extract_emoji_icon_from_dto(response: DataSourceDto) -> str | None:
-        if not response.icon or response.icon.type != IconType.EMOJI:
-            return None
-        return response.icon.emoji
-
-    @staticmethod
-    def _extract_external_icon_url_from_dto(response: DataSourceDto) -> str | None:
-        if not response.icon or response.icon.type != IconType.EXTERNAL:
-            return None
-        return response.icon.external.url if response.icon.external else None
-
-    @staticmethod
-    def _extract_cover_image_url_from_dto(response: DataSourceDto) -> str | None:
-        if not response.cover or response.cover.type != CoverType.EXTERNAL:
-            return None
-        return response.cover.external.url if response.cover.external else None
 
     @property
     def _entity_metadata_update_client(self) -> EntityMetadataUpdateClient:
@@ -168,8 +141,9 @@ class NotionDataSource(Entity):
     def properties(self) -> dict:
         return self._properties
 
-    @property
-    def parent_database(self) -> NotionDatabase:
+    async def get_parent_database(self) -> NotionDatabase | None:
+        if self._parent_database is None and self._parent_database_id:
+            self._parent_database = await NotionDatabase.from_id(self._parent_database_id)
         return self._parent_database
 
     async def create_blank_page(self, title: str | None = None) -> None:
@@ -217,19 +191,19 @@ class NotionDataSource(Entity):
         return []
 
     def get_select_options_by_property_name(self, property_name: str) -> list[str]:
-        select_prop = self._get_typed_property(property_name, DataSourceSelectProperty)
+        select_prop = self._get_typed_property_or_raise(property_name, DataSourceSelectProperty)
         return select_prop.option_names
 
     def get_multi_select_options_by_property_name(self, property_name: str) -> list[DataSourcePropertyOption]:
-        multi_select_prop = self._get_typed_property(property_name, DataSourceMultiSelectProperty)
+        multi_select_prop = self._get_typed_property_or_raise(property_name, DataSourceMultiSelectProperty)
         return multi_select_prop.option_names
 
     def get_status_options_by_property_name(self, property_name: str) -> list[str]:
-        status_prop = self._get_typed_property(property_name, DataSourceStatusProperty)
+        status_prop = self._get_typed_property_or_raise(property_name, DataSourceStatusProperty)
         return status_prop.option_names
 
     async def get_relation_options_by_property_name(self, property_name: str) -> list[str]:
-        relation_prop = self._get_typed_property(property_name, DataSourceRelationProperty)
+        relation_prop = self._get_typed_property_or_raise(property_name, DataSourceRelationProperty)
         return await self._get_relation_options(relation_prop)
 
     async def _get_relation_options(self, relation_prop: DataSourceRelationProperty) -> list[str]:
@@ -262,7 +236,7 @@ class NotionDataSource(Entity):
 
         return "".join(item.plain_text for item in title_property.title)
 
-    def _get_typed_property(self, name: str, property_type: type[DataSourcePropertyT]) -> DataSourcePropertyT:
+    def _get_typed_property_or_raise(self, name: str, property_type: type[DataSourcePropertyT]) -> DataSourcePropertyT:
         prop = self._properties.get(name)
 
         if prop is None:

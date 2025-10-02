@@ -1,22 +1,22 @@
 from pydantic import BaseModel, Field
 
 from notionary.blocks.rich_text.models import RichText
-from notionary.shared.entity.entity_models import EntityDto
+from notionary.shared.entity.schemas import EntityResponseDto
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.icon_models import Icon
 
 
-class DataSourceDiscoveryDto(BaseModel):
+class _DataSourceDiscoveryDto(BaseModel):
     id: str
     name: str
 
 
-class NotionDatabaseDto(EntityDto):
+class NotionDatabaseDto(EntityResponseDto):
     title: list[RichText]
     description: list[RichText]
     is_inline: bool
     is_locked: bool
-    data_sources: list[DataSourceDiscoveryDto] = Field(default_factory=list)
+    data_sources: list[_DataSourceDiscoveryDto] = Field(default_factory=list)
     url: str
     public_url: str | None = None
 
