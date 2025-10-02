@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Self, cast
 
 from notionary.user.base import BaseUser
@@ -22,7 +20,7 @@ class PersonUser(BaseUser):
         return UserType.PERSON
 
     @classmethod
-    def _from_dto(cls, user_dto: UserResponseDto) -> Self:
+    def from_dto(cls, user_dto: UserResponseDto) -> Self:
         person_dto = cast(PersonUserResponseDto, user_dto)
         return cls(
             id=person_dto.id,

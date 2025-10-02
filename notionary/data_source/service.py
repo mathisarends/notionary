@@ -30,6 +30,7 @@ from notionary.shared.entity.dto_parsers import (
 )
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.entity.service import Entity
+from notionary.user.schemas import PartialUserDto
 from notionary.workspace.search.search_client import SearchClient
 
 if TYPE_CHECKING:
@@ -42,7 +43,9 @@ class NotionDataSource(Entity):
         id: str,
         title: str,
         created_time: str,
+        created_by: PartialUserDto,
         last_edited_time: str,
+        last_edited_by: PartialUserDto,
         archived: bool,
         in_trash: bool,
         parent_database_id: str | None,
@@ -55,7 +58,9 @@ class NotionDataSource(Entity):
         super().__init__(
             id=id,
             created_time=created_time,
+            created_by=created_by,
             last_edited_time=last_edited_time,
+            last_edited_by=last_edited_by,
             in_trash=in_trash,
             emoji_icon=emoji_icon,
             external_icon_url=external_icon_url,
@@ -111,7 +116,9 @@ class NotionDataSource(Entity):
             title=title,
             description=description,
             created_time=response.created_time,
+            created_by=response.created_by,
             last_edited_time=response.last_edited_time,
+            last_edited_by=response.last_edited_by,
             archived=response.archived,
             in_trash=response.in_trash,
             properties=response.properties,

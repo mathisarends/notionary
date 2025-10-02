@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Self, cast
 
 from notionary.user.base import BaseUser
@@ -26,7 +24,7 @@ class BotUser(BaseUser):
         return UserType.BOT
 
     @classmethod
-    def _from_dto(cls, user_dto: UserResponseDto) -> Self:
+    def from_dto(cls, user_dto: UserResponseDto) -> Self:
         bot_dto = cast(BotUserResponseDto, user_dto)
         bot_data = bot_dto.bot
 

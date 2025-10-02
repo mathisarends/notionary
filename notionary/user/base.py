@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 from typing import Self
 
@@ -32,7 +30,7 @@ class BaseUser(ABC):
         if user_dto.type != expected_type:
             raise ValueError(f"User {user_id} is not a '{expected_type.value}', but '{user_dto.type.value}'")
 
-        return cls._from_dto(user_dto)
+        return cls.from_dto(user_dto)
 
     @classmethod
     async def from_name(
@@ -59,7 +57,7 @@ class BaseUser(ABC):
         all_workspace_user_dtos = await http_client.get_all_workspace_users()
         expected_type = cls._get_expected_user_type()
         filtered_dtos = [dto for dto in all_workspace_user_dtos if dto.type == expected_type]
-        return [cls._from_dto(dto) for dto in filtered_dtos]
+        return [cls.from_dto(dto) for dto in filtered_dtos]
 
     @classmethod
     @abstractmethod
@@ -68,7 +66,7 @@ class BaseUser(ABC):
 
     @classmethod
     @abstractmethod
-    def _from_dto(cls, user_dto: UserResponseDto) -> Self:
+    def from_dto(cls, user_dto: UserResponseDto) -> Self:
         pass
 
     @classmethod
