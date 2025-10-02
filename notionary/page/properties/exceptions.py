@@ -15,8 +15,25 @@ class PagePropertyNotFoundError(NotionaryError):
 
 
 class PagePropertyTypeError(NotionaryError):
-    def __init__(self, property_name: str, expected_type: str, actual_type: str) -> None:
-        message = f"Property '{property_name}' has the wrong type. Expected: '{expected_type}', found: '{actual_type}'."
+    def __init__(
+        self,
+        property_name: str,
+        actual_type: str,
+        used_method: str | None = None,
+        correct_method: str | None = None,
+    ) -> None:
+        incorrect_method_used = used_method != correct_method
+        if used_method and correct_method and incorrect_method_used:
+            message = (
+                f"Property '{property_name}' cannot be accessed with the method '{used_method}'. "
+                f"Because the property is of type '{actual_type}', you should use the method "
+                f"'{correct_method}' instead."
+            )
+        else:
+            message = f"Property '{property_name}' has the wrong type: '{actual_type}'."
+            if correct_method:
+                message += f" Try using the method '{correct_method}' to access it."
+
         super().__init__(message)
 
 
