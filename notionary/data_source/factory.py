@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.data_source.http.data_source_client import DataSourceClient
 from notionary.data_source.schemas import DataSourceDto
-from notionary.shared.entity.factory.parent_extract_mixin import ParentExtractMixin
+from notionary.shared.entity.utils import extract_parent_database
 from notionary.shared.models.cover_models import CoverType
 from notionary.shared.models.icon_models import IconType
 from notionary.workspace.search.search_client import SearchClient
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from notionary.data_source.service import NotionDataSource
 
 
-class DataSourceFactory(ParentExtractMixin):
+class DataSourceFactory:
     def __init__(
         self,
         data_source_client: DataSourceClient | None = None,
@@ -39,7 +39,7 @@ class DataSourceFactory(ParentExtractMixin):
         title, description, parent_database = await asyncio.gather(
             self._extract_title(response),
             self._extract_description(response),
-            self._extract_parent_database(response),
+            extract_parent_database(response),
         )
 
         return NotionDataSource(

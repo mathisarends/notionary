@@ -1,17 +1,18 @@
 from __future__ import annotations
 
+import asyncio
 import difflib
-import inspect
-from typing import TYPE_CHECKING, ClassVar, Never
+from typing import Never
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
 from notionary.data_source.service import NotionDataSource
+from notionary.page.properties.client import PagePropertyHttpClient
 from notionary.page.properties.exceptions import (
     AccessPagePropertyWithoutDataSourceError,
     PagePropertyNotFoundError,
     PagePropertyTypeError,
 )
-from notionary.page.properties.page_property_models import (
+from notionary.page.properties.models import (
     PageCheckboxProperty,
     PageCreatedTimeProperty,
     PageDateProperty,
@@ -20,6 +21,7 @@ from notionary.page.properties.page_property_models import (
     PageNumberProperty,
     PagePeopleProperty,
     PagePhoneNumberProperty,
+    PageProperty,
     PagePropertyT,
     PageRelationProperty,
     PageRichTextProperty,
@@ -28,46 +30,35 @@ from notionary.page.properties.page_property_models import (
     PageTitleProperty,
     PageURLProperty,
 )
-
-if TYPE_CHECKING:
-    from notionary import NotionPage
+from notionary.shared.models.parent_models import ParentType
 
 
-class PagePropertyReader:
-    _PROPERTY_TYPE_TO_METHOD_MAP: ClassVar[dict[type, str]] = {
-        PageStatusProperty: "get_value_of_status_property",
-        PageSelectProperty: "get_value_of_select_property",
-        PageTitleProperty: "get_value_of_title_property",
-        PagePeopleProperty: "get_values_of_people_property",
-        PageCreatedTimeProperty: "get_value_of_created_time_property",
-        PageRelationProperty: "get_values_of_relation_property",
-        PageMultiSelectProperty: "get_values_of_multiselect_property",
-        PageURLProperty: "get_value_of_url_property",
-        PageNumberProperty: "get_value_of_number_property",
-        PageCheckboxProperty: "get_value_of_checkbox_property",
-        PageDateProperty: "get_value_of_date_property",
-        PageRichTextProperty: "get_value_of_rich_text_property",
-        PageEmailProperty: "get_value_of_email_property",
-        PagePhoneNumberProperty: "get_value_of_phone_number_property",
-    }
+class PagePropertyHandler:
+    def __init__(
+        self,
+        properties: dict[str, PageProperty],
+        parent_type: ParentType,
+        page_url: str,
+        page_property_http_client: PagePropertyHttpClient,
+        parent_data_source: NotionDataSource | None,
+    ) -> None:
+        self._properties = properties
+        self._parent_type = parent_type
+        self._page_url = page_url
+        self._parent_data_source = parent_data_source
+        self._property_http_client = page_property_http_client
 
-    def __init__(self, page: NotionPage) -> None:
-        self._properties = page.properties
-        self._parent_data_source = page.parent_data_source
-        self._parent_type = page.parent_type
-        self._page_url = page.url
+    # =========================================================================
+    # Reader Methods
+    # =========================================================================
 
     def get_value_of_status_property(self, name: str) -> str | None:
         status_property = self._get_typed_property_or_raise(name, PageStatusProperty)
-        if not status_property.status:
-            return None
-        return status_property.status.name
+        return status_property.status.name if status_property.status else None
 
     def get_value_of_select_property(self, name: str) -> str | None:
         select_property = self._get_typed_property_or_raise(name, PageSelectProperty)
-        if not select_property.select:
-            return None
-        return select_property.select.name
+        return select_property.select.name if select_property.select else None
 
     async def get_value_of_title_property(self, name: str) -> str:
         title_property = self._get_typed_property_or_raise(name, PageTitleProperty)
@@ -75,8 +66,7 @@ class PagePropertyReader:
 
     def get_values_of_people_property(self, property_name: str) -> list[str]:
         people_prop = self._get_typed_property_or_raise(property_name, PagePeopleProperty)
-        names = [person.name for person in people_prop.people if person.name]
-        return names
+        return [person.name for person in people_prop.people if person.name]
 
     def get_value_of_created_time_property(self, name: str) -> str | None:
         created_time_property = self._get_typed_property_or_raise(name, PageCreatedTimeProperty)
@@ -108,9 +98,7 @@ class PagePropertyReader:
 
     def get_value_of_date_property(self, name: str) -> str | None:
         date_property = self._get_typed_property_or_raise(name, PageDateProperty)
-        if not date_property.date:
-            return None
-        return date_property.date.start
+        return date_property.date.start if date_property.date else None
 
     async def get_value_of_rich_text_property(self, name: str) -> str:
         rich_text_property = self._get_typed_property_or_raise(name, PageRichTextProperty)
@@ -123,6 +111,10 @@ class PagePropertyReader:
     def get_value_of_phone_number_property(self, name: str) -> str | None:
         phone_property = self._get_typed_property_or_raise(name, PagePhoneNumberProperty)
         return phone_property.phone_number
+
+    # =========================================================================
+    # Options Getters
+    # =========================================================================
 
     def get_select_options_by_property_name(self, property_name: str) -> list[str]:
         data_source = self._get_parent_data_source_or_raise()
@@ -144,6 +136,75 @@ class PagePropertyReader:
         data_source = self._get_parent_data_source_or_raise()
         return await data_source.get_options_for_property_by_name(property_name)
 
+    # =========================================================================
+    # Writer Methods
+    # =========================================================================
+
+    async def set_title_property(self, property_name: str, title: str) -> None:
+        self._get_typed_property_or_raise(property_name, PageTitleProperty)
+        updated_page = await self._property_http_client.patch_title(property_name, title)
+        self._properties = updated_page.properties
+
+    async def set_rich_text_property(self, property_name: str, text: str) -> None:
+        self._get_typed_property_or_raise(property_name, PageRichTextProperty)
+        updated_page = await self._property_http_client.patch_rich_text_property(property_name, text)
+        self._properties = updated_page.properties
+
+    async def set_url_property(self, property_name: str, url: str) -> None:
+        self._get_typed_property_or_raise(property_name, PageURLProperty)
+        updated_page = await self._property_http_client.patch_url_property(property_name, url)
+        self._properties = updated_page.properties
+
+    async def set_email_property(self, property_name: str, email: str) -> None:
+        self._get_typed_property_or_raise(property_name, PageEmailProperty)
+        updated_page = await self._property_http_client.patch_email_property(property_name, email)
+        self._properties = updated_page.properties
+
+    async def set_phone_number_property(self, property_name: str, phone_number: str) -> None:
+        self._get_typed_property_or_raise(property_name, PagePhoneNumberProperty)
+        updated_page = await self._property_http_client.patch_phone_property(property_name, phone_number)
+        self._properties = updated_page.properties
+
+    async def set_number_property(self, property_name: str, number: int | float) -> None:
+        self._get_typed_property_or_raise(property_name, PageNumberProperty)
+        updated_page = await self._property_http_client.patch_number_property(property_name, number)
+        self._properties = updated_page.properties
+
+    async def set_checkbox_property(self, property_name: str, checked: bool) -> None:
+        self._get_typed_property_or_raise(property_name, PageCheckboxProperty)
+        updated_page = await self._property_http_client.patch_checkbox_property(property_name, checked)
+        self._properties = updated_page.properties
+
+    async def set_date_property(self, property_name: str, date_value: str | dict) -> None:
+        self._get_typed_property_or_raise(property_name, PageDateProperty)
+        updated_page = await self._property_http_client.patch_date_property(property_name, date_value)
+        self._properties = updated_page.properties
+
+    async def set_select_property_by_option_name(self, property_name: str, option_name: str) -> None:
+        self._get_typed_property_or_raise(property_name, PageSelectProperty)
+        updated_page = await self._property_http_client.patch_select_property(property_name, option_name)
+        self._properties = updated_page.properties
+
+    async def set_multi_select_property_by_option_names(self, property_name: str, option_names: list[str]) -> None:
+        self._get_typed_property_or_raise(property_name, PageMultiSelectProperty)
+        updated_page = await self._property_http_client.patch_multi_select_property(property_name, option_names)
+        self._properties = updated_page.properties
+
+    async def set_status_property_by_option_name(self, property_name: str, status: str) -> None:
+        self._get_typed_property_or_raise(property_name, PageStatusProperty)
+        updated_page = await self._property_http_client.patch_status_property(property_name, status)
+        self._properties = updated_page.properties
+
+    async def set_relation_property_by_page_titles(self, property_name: str, page_titles: list[str]) -> None:
+        self._get_typed_property_or_raise(property_name, PageRelationProperty)
+        relation_ids = await self._convert_page_titles_to_ids(page_titles)
+        updated_page = await self._property_http_client.patch_relation_property(property_name, relation_ids)
+        self._properties = updated_page.properties
+
+    # =========================================================================
+    # Private Helper Methods
+    # =========================================================================
+
     def _get_parent_data_source_or_raise(self) -> NotionDataSource:
         if not self._parent_data_source:
             raise AccessPagePropertyWithoutDataSourceError(self._parent_type)
@@ -155,9 +216,9 @@ class PagePropertyReader:
         if prop is None:
             self._handle_prop_not_found(name)
 
-        is_incorrect_type = not isinstance(prop, property_type)
-        if is_incorrect_type:
+        if not isinstance(prop, property_type):
             self._handle_incorrect_type(name, type(prop))
+
         return prop
 
     def _handle_prop_not_found(self, name: str) -> Never:
@@ -175,20 +236,17 @@ class PagePropertyReader:
         return difflib.get_close_matches(property_name, all_names, n=max_matches, cutoff=0.6)
 
     def _handle_incorrect_type(self, property_name: str, actual_type: type) -> Never:
-        used_method = None
-        current_frame = inspect.currentframe()
-
-        internal_caller_frame = current_frame.f_back
-        public_method_frame = internal_caller_frame.f_back if internal_caller_frame else None
-        if current_frame and public_method_frame:
-            original_caller_frame = current_frame.f_back.f_back
-            used_method = original_caller_frame.f_code.co_name
-
-        correct_method = self._PROPERTY_TYPE_TO_METHOD_MAP.get(actual_type)
-
         raise PagePropertyTypeError(
             property_name=property_name,
             actual_type=actual_type.__name__,
-            used_method=used_method,
-            correct_method=correct_method,
         )
+
+    async def _convert_page_titles_to_ids(self, page_titles: list[str]) -> list[str]:
+        from notionary.page.factory import load_page_from_title
+
+        if not page_titles:
+            return []
+
+        pages = await asyncio.gather(*[load_page_from_title(title=title) for title in page_titles])
+
+        return [page.id for page in pages if page]

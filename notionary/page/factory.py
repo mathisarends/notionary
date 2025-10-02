@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 from notionary.blocks.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
 from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_models import NotionPageDto
-from notionary.page.properties.page_property_models import PageTitleProperty
-from notionary.shared.entity.factory.parent_extract_mixin import ParentExtractMixin
+from notionary.page.properties.factory import PagePropertyHandlerFactory
+from notionary.page.properties.models import PageTitleProperty
 from notionary.shared.models.cover_models import CoverType
 from notionary.shared.models.icon_models import IconType
 from notionary.workspace.search.search_client import SearchClient
@@ -17,7 +17,10 @@ if TYPE_CHECKING:
     from notionary import NotionPage
 
 
-class NotionPageFactory(ParentExtractMixin):
+class NotionPageFactory:
+    def __init__(self, page_propertyy_handler_factory: PagePropertyHandlerFactory | None = None) -> None:
+        self._page_property_handler_factory = page_propertyy_handler_factory or PagePropertyHandlerFactory()
+
     async def load_from_id(self, page_id: str) -> NotionPage:
         response = await self._fetch_page_response(page_id)
         return await self._create_page_from_response(response)
@@ -33,9 +36,9 @@ class NotionPageFactory(ParentExtractMixin):
     async def _create_page_from_response(self, response: NotionPageDto) -> NotionPage:
         from notionary import NotionPage
 
-        title, parent_data_source = await asyncio.gather(
+        title, page_property_handler = await asyncio.gather(
             self._extract_title(response),
-            self._extract_parent_data_source(response),
+            self._page_property_handler_factory.create_from_page_response(response),
         )
 
         return NotionPage(
@@ -46,10 +49,8 @@ class NotionPageFactory(ParentExtractMixin):
             archived=response.archived,
             in_trash=response.in_trash,
             url=response.url,
-            parent_type=response.parent.type,
+            page_property_handler=page_property_handler,
             public_url=response.public_url,
-            properties=response.properties,
-            parent_data_source=parent_data_source,
             emoji_icon=self._extract_emoji_icon(response),
             external_icon_url=self._extract_external_icon_url(response),
             cover_image_url=self._extract_cover_image_url(response),

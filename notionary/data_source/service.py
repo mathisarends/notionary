@@ -16,7 +16,7 @@ from notionary.data_source.properties.models import (
     DataSourceStatusProperty,
 )
 from notionary.page.page_models import NotionPageDto
-from notionary.page.properties.page_property_models import PageTitleProperty
+from notionary.page.properties.models import PageTitleProperty
 from notionary.shared.entity.entity import Entity
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 

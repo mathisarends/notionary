@@ -6,7 +6,7 @@ PAGE = "Ruff Linter"
 async def main() -> None:
     page = await NotionPage.from_title(PAGE)
 
-    themes = await page.property_reader.get_values_of_multiselect_property("Thema")
+    themes = await page.properties.get_values_of_multiselect_property("Thema")
 
     print("Themes", themes)
 
