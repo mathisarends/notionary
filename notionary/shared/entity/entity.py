@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from typing import Self
 
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
-from notionary.utils.mixins import LoggingMixin
+from notionary.utils.mixins.logging import LoggingMixin
 from notionary.utils.uuid_utils import extract_uuid
 
 

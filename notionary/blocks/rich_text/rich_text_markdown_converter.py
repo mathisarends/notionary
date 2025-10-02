@@ -114,3 +114,18 @@ class RichTextToMarkdownConverter:
             content = f"({annotations.color}:{content})"
 
         return content
+
+
+async def convert_rich_text_to_markdown(
+    rich_text: list[RichText],
+    *,
+    page_resolver: NameIdResolver | None = None,
+    database_resolver: NameIdResolver | None = None,
+    person_resolver: NameIdResolver | None = None,
+) -> str:
+    converter = RichTextToMarkdownConverter(
+        page_resolver=page_resolver,
+        database_resolver=database_resolver,
+        person_resolver=person_resolver,
+    )
+    return await converter.to_markdown(rich_text)

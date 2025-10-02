@@ -9,7 +9,7 @@ from notionary.page.reader.handler import (
     ToggleableHeadingRenderer,
     ToggleRenderer,
 )
-from notionary.utils.mixins import LoggingMixin
+from notionary.utils.mixins.logging import LoggingMixin
 
 
 class PageContentRetriever(LoggingMixin):

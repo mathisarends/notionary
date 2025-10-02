@@ -1,5 +1,5 @@
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.database.database_models import (
+from notionary.database.models import (
     NotionDatabaseDto,
     NotionDatabaseUpdateDto,
 )
@@ -10,19 +10,6 @@ class NotionDatabaseHttpClient(NotionHttpClient):
     def __init__(self, database_id: str, timeout: int = 30) -> None:
         super().__init__(timeout)
         self._database_id = database_id
-
-    async def create_database(
-        self,
-        title: str,
-        parent_page_id: str | None,
-    ) -> NotionDatabaseDto:
-        database_data = {
-            "parent": {"page_id": parent_page_id},
-            "title": [{"type": "text", "text": {"content": title}}],
-        }
-
-        response = await self.post("databases", database_data)
-        return NotionDatabaseDto.model_validate(response)
 
     async def get_database(self) -> NotionDatabaseDto:
         response = await self.get(f"databases/{self._database_id}")

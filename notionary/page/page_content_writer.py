@@ -6,7 +6,7 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.markdown_whitespace_processor import MarkdownWhitespaceProcessor
 from notionary.page.writer.markdown_to_notion_converter import MarkdownToNotionConverter
 from notionary.schemas.base import NotionContentSchema
-from notionary.utils.mixins import LoggingMixin
+from notionary.utils.mixins.logging import LoggingMixin
 
 
 class PageContentWriter(LoggingMixin):

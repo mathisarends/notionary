@@ -4,8 +4,7 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.rich_text.rich_text_models import RichText
+from notionary.blocks.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
 from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.page_property_models import PageTitleProperty
@@ -47,6 +46,7 @@ class NotionPageFactory(ParentExtractMixin):
             archived=response.archived,
             in_trash=response.in_trash,
             url=response.url,
+            parent_type=response.parent.type,
             public_url=response.public_url,
             properties=response.properties,
             parent_data_source=parent_data_source,
@@ -58,17 +58,13 @@ class NotionPageFactory(ParentExtractMixin):
     async def _extract_title(self, response: NotionPageDto) -> str:
         title_property = self._find_title_property(response)
         rich_text_title = title_property.title if title_property else []
-        return await self._convert_rich_text_to_markdown(rich_text_title)
+        return await convert_rich_text_to_markdown(rich_text_title)
 
     def _find_title_property(self, response: NotionPageDto) -> PageTitleProperty | None:
         return next(
             (prop for prop in response.properties.values() if isinstance(prop, PageTitleProperty)),
             None,
         )
-
-    async def _convert_rich_text_to_markdown(self, rich_text_objects: list[RichText]) -> str:
-        converter = RichTextToMarkdownConverter()
-        return await converter.to_markdown(rich_text_objects)
 
     def _extract_emoji_icon(self, response: NotionPageDto) -> str | None:
         if not response.icon or response.icon.type != IconType.EMOJI:

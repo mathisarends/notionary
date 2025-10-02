@@ -9,9 +9,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 class CodeElement(BaseBlockElement):
     """
-    Handles conversion between Markdown code blocks and Notion code blocks.
-    Now integrated into the LineProcessor stack system.
-
     Markdown code block syntax:
     ```language
     [code content as child lines]
@@ -24,12 +21,10 @@ class CodeElement(BaseBlockElement):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        """Check if block is a Notion code block."""
         return block.type == BlockType.CODE and block.code
 
     @classmethod
     async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
-        """Convert opening ```language to Notion code block."""
         if not (match := cls.CODE_START_PATTERN.match(text.strip())):
             return None
 
@@ -70,7 +65,6 @@ class CodeElement(BaseBlockElement):
 
     @classmethod
     async def notion_to_markdown(cls, block: Block) -> str | None:
-        """Convert Notion code block to Markdown."""
         if block.type != BlockType.CODE:
             return None
 
@@ -102,30 +96,22 @@ class CodeElement(BaseBlockElement):
 
     @classmethod
     def _normalize_language(cls, language: str) -> CodeLanguage:
-        """
-        Normalize the language string to a valid CodeLanguage enum or default.
-        """
-        # Try to find matching enum by value
         for lang_enum in CodeLanguage:
             if lang_enum.value.lower() == language.lower():
                 return lang_enum
 
-        # Return default if not found
         return CodeLanguage.PLAIN_TEXT
 
     @staticmethod
     def extract_content(rich_text_list: list[RichText]) -> str:
-        """Extract code content from rich_text array."""
         return "".join(rt.plain_text for rt in rich_text_list if rt.plain_text)
 
     @staticmethod
     def extract_caption(caption_list: list[RichText]) -> str:
-        """Extract caption text from caption array."""
         return "".join(rt.plain_text for rt in caption_list if rt.plain_text)
 
     @classmethod
     def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for code blocks."""
         return BlockElementMarkdownInformation(
             block_type=cls.__name__,
             description="Code blocks display syntax-highlighted code with optional language specification and captions",

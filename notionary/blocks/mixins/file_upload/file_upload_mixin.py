@@ -3,7 +3,7 @@ from pathlib import Path
 from notionary.file_upload.file_upload_http_client import FileUploadHttpClient
 from notionary.file_upload.models import UploadMode
 from notionary.page.page_context import get_page_context
-from notionary.utils.mixins import LoggingMixin
+from notionary.utils.mixins.logging import LoggingMixin
 
 
 # TOOD: Hier überlegen wirklich nur was common ist hier in den mixin ansonstne dediziert handeln.

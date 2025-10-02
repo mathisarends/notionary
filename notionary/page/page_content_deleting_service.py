@@ -2,7 +2,7 @@ from notionary.blocks.block_http_client import NotionBlockHttpClient
 from notionary.blocks.models import Block
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.reader.page_content_retriever import PageContentRetriever
-from notionary.utils.mixins import LoggingMixin
+from notionary.utils.mixins.logging import LoggingMixin
 
 
 class PageContentDeletingService(LoggingMixin):

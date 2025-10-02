@@ -1,14 +1,14 @@
 from notionary import NotionPage
 
-PAGE = "Clean Code Udemy Course"
+PAGE = "Ruff Linter"
 
 
-async def main():
+async def main() -> None:
     page = await NotionPage.from_title(PAGE)
 
-    themes = await page.property_reader.get_values_of_relation_property("Thema")
+    themes = await page.property_reader.get_values_of_relation_property("Schema")
 
-    print(f"Themes: {themes}")
+    print("Themes", themes)
 
     """ await page.property_writer.set_relation_property_by_page_titles("Thema", ["Smart Home"])
  """

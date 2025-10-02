@@ -1,0 +1,2 @@
+class NotionaryError(Exception):
+    pass

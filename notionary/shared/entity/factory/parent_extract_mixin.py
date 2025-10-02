@@ -11,12 +11,12 @@ from notionary.shared.models.parent_models import (
 
 if TYPE_CHECKING:
     from notionary.data_source.service import NotionDataSource
-    from notionary.database.database import NotionDatabase
+    from notionary.database.service import NotionDatabase
 
 
 class ParentExtractMixin:
     async def _extract_parent_database(self, response: EntityDto) -> NotionDatabase | None:
-        from notionary.database.database import NotionDatabase
+        from notionary.database.service import NotionDatabase
 
         database_id = self._extract_parent_database_id(response)
         if not database_id:

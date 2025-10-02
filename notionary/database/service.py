@@ -4,12 +4,12 @@ import asyncio
 from typing import Self
 
 from notionary.data_source.service import NotionDataSource
-from notionary.database.database_factory import (
+from notionary.database.database_http_client import NotionDatabaseHttpClient
+from notionary.database.database_metadata_update_client import DatabaseMetadataUpdateClient
+from notionary.database.factory import (
     load_database_from_id,
     load_database_from_title,
 )
-from notionary.database.database_http_client import NotionDatabaseHttpClient
-from notionary.database.database_metadata_update_client import DatabaseMetadataUpdateClient
 from notionary.shared.entity.entity import Entity
 
 
@@ -80,10 +80,6 @@ class NotionDatabase(Entity):
         return self._public_url
 
     @property
-    def description(self) -> str | None:
-        return self._description
-
-    @property
     def is_inline(self) -> bool:
         return self._is_inline
 
@@ -106,3 +102,6 @@ class NotionDatabase(Entity):
     async def set_description(self, description: str) -> None:
         updated_description = await self.client.update_database_description(description=description)
         self._description = updated_description
+
+    def get_description(self) -> str | None:
+        return self._description

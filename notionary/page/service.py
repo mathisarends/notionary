@@ -27,6 +27,7 @@ from notionary.page.properties.page_property_writer import PagePropertyWriter
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.schemas import NotionContentSchema
 from notionary.shared.entity.entity import Entity
+from notionary.shared.models.parent_models import ParentType
 
 
 class NotionPage(Entity):
@@ -39,13 +40,14 @@ class NotionPage(Entity):
         url: str,
         archived: bool,
         in_trash: bool,
+        parent_type: ParentType,
         public_url: str | None = None,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
         properties: dict[str, PageProperty] | None = None,
         parent_data_source: NotionDataSource | None = None,
-    ):
+    ) -> None:
         super().__init__(
             id=id,
             created_time=created_time,
@@ -59,6 +61,7 @@ class NotionPage(Entity):
         self._archived = archived
         self._properties = properties or {}
         self._parent_data_source = parent_data_source
+        self._parent_type = parent_type
         self._url = url
         self._public_url = public_url
 
@@ -84,7 +87,7 @@ class NotionPage(Entity):
 
         self.page_context_provider = self._setup_page_context_provider()
 
-        self.property_reader = PagePropertyReader(self._properties, self._parent_data_source)
+        self.property_reader = PagePropertyReader(self)
         self.property_writer = PagePropertyWriter(self)
 
         self._metadata_update_client = PageMetadataUpdateClient(page_id=id)
@@ -108,6 +111,18 @@ class NotionPage(Entity):
     @property
     def properties(self) -> dict[str, PageProperty]:
         return self._properties
+
+    @property
+    def parent_type(self) -> ParentType:
+        return self._parent_type
+
+    @property
+    def parent_data_source(self) -> NotionDataSource | None:
+        return self._parent_data_source
+
+    @property
+    def url(self) -> str:
+        return self._url
 
     def get_prompt_information(self) -> str:
         markdown_syntax_builder = SyntaxPromptBuilder()

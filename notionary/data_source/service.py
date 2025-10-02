@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import difflib
 from typing import TYPE_CHECKING, Self
 
 from notionary.data_source.factory import load_data_source_from_id, load_data_source_from_title
 from notionary.data_source.http.data_source_instance_client import DataSourceInstanceClient
+from notionary.data_source.properties.exceptions import DataSourcePropertyNotFound, DataSourcePropertyTypeError
 from notionary.data_source.properties.models import (
     DataSourceMultiSelectProperty,
     DataSourceProperty,
@@ -17,10 +19,9 @@ from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.page_property_models import PageTitleProperty
 from notionary.shared.entity.entity import Entity
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
-from notionary.shared.properties.property_type import PropertyType
 
 if TYPE_CHECKING:
-    from notionary.database.database import NotionDatabase
+    from notionary.database.service import NotionDatabase
 
 
 class NotionDataSource(Entity):
@@ -125,42 +126,38 @@ class NotionDataSource(Entity):
     async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
         prop = self._properties.get(property_name)
 
-        if not prop:
+        if prop is None:
             return []
 
-        if prop.type in (
-            PropertyType.SELECT,
-            PropertyType.MULTI_SELECT,
-            PropertyType.STATUS,
-        ):
+        if isinstance(prop, DataSourceSelectProperty):
             return prop.option_names
-        elif prop.type == PropertyType.RELATION:
+
+        if isinstance(prop, DataSourceMultiSelectProperty):
+            return prop.option_names
+
+        if isinstance(prop, DataSourceStatusProperty):
+            return prop.option_names
+
+        if isinstance(prop, DataSourceRelationProperty):
             return await self._get_relation_options(prop)
 
         return []
 
     def get_select_options_by_property_name(self, property_name: str) -> list[str]:
-        select_prop = self._get_typed_database_property(property_name, DataSourceSelectProperty)
-        if select_prop:
-            return select_prop.option_names
+        select_prop = self._get_typed_property(property_name, DataSourceSelectProperty)
+        return select_prop.option_names
 
     def get_multi_select_options_by_property_name(self, property_name: str) -> list[DataSourcePropertyOption]:
-        multi_select_prop = self._get_typed_database_property(property_name, DataSourceMultiSelectProperty)
-        if multi_select_prop:
-            return multi_select_prop.option_names
-        return []
+        multi_select_prop = self._get_typed_property(property_name, DataSourceMultiSelectProperty)
+        return multi_select_prop.option_names
 
     def get_status_options_by_property_name(self, property_name: str) -> list[str]:
-        status_prop = self._get_typed_database_property(property_name, DataSourceStatusProperty)
-        if status_prop:
-            return status_prop.option_names
-        return []
+        status_prop = self._get_typed_property(property_name, DataSourceStatusProperty)
+        return status_prop.option_names
 
     async def get_relation_options_by_property_name(self, property_name: str) -> list[str]:
-        relation_prop = self._get_typed_database_property(property_name, DataSourceRelationProperty)
-        if relation_prop:
-            return await self._get_relation_options(relation_prop)
-        return []
+        relation_prop = self._get_typed_property(property_name, DataSourceRelationProperty)
+        return await self._get_relation_options(relation_prop)
 
     async def _get_relation_options(self, relation_prop: DataSourceRelationProperty) -> list[str]:
         related_data_source_id = relation_prop.related_data_source_id
@@ -192,10 +189,24 @@ class NotionDataSource(Entity):
 
         return "".join(item.plain_text for item in title_property.title)
 
-    def _get_typed_database_property(
-        self, name: str, property_type: type[DataSourcePropertyT]
-    ) -> DataSourcePropertyT | None:
+    def _get_typed_property(self, name: str, property_type: type[DataSourcePropertyT]) -> DataSourcePropertyT:
         prop = self._properties.get(name)
-        if isinstance(prop, property_type):
-            return prop
-        return None
+
+        if prop is None:
+            suggestions = self._find_closest_property_names(name)
+            raise DataSourcePropertyNotFound(property_name=name, suggestions=suggestions)
+
+        if not isinstance(prop, property_type):
+            raise DataSourcePropertyTypeError(
+                property_name=name, expected_type=property_type.__name__, actual_type=type(prop).__name__
+            )
+
+        return prop
+
+    def _find_closest_property_names(self, property_name: str, max_matches: int = 5) -> list[str]:
+        if not self._properties:
+            return []
+
+        keys = list(self._properties.keys())
+        matches = difflib.get_close_matches(property_name, keys, n=max_matches, cutoff=0.6)
+        return matches

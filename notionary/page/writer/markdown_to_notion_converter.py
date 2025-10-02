@@ -15,7 +15,7 @@ from notionary.page.writer.handler import (
 from notionary.page.writer.notion_text_length_processor import (
     NotionTextLengthProcessor,
 )
-from notionary.utils.mixins import LoggingMixin
+from notionary.utils.mixins.logging import LoggingMixin
 
 
 class HandlerOrderValidationError(RuntimeError):

@@ -4,8 +4,8 @@ bootstrap_blocks()
 
 from .blocks.markdown.markdown_builder import MarkdownBuilder
 from .data_source.service import NotionDataSource
-from .database.database import NotionDatabase
-from .page.page import NotionPage
+from .database.service import NotionDatabase
+from .page.service import NotionPage
 
 __all__ = [
     "MarkdownBuilder",
