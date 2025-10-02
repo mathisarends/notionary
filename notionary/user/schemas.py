@@ -48,7 +48,7 @@ class PersonUserResponseDto(NotionUserBase):
     person: PersonUserDto
 
 
-class BotUserResponseDto(BaseModel):
+class BotUserResponseDto(NotionUserBase):
     type: Literal[UserType.BOT] = UserType.BOT
     bot: BotUserDto
 

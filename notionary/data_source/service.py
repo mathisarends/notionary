@@ -28,8 +28,8 @@ from notionary.shared.entity.dto_parsers import (
     extract_external_icon_url_from_dto,
     extract_title,
 )
-from notionary.shared.entity.entity import Entity
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
+from notionary.shared.entity.service import Entity
 from notionary.workspace.search.search_client import SearchClient
 
 if TYPE_CHECKING:

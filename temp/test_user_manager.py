@@ -1,10 +1,8 @@
-from notionary.user.factories import PersonUserFactory
+from notionary.user.person import PersonUser
 
 
 async def main() -> None:
-    factory = PersonUserFactory()
-    person = await factory.from_name("Mathis")
-
+    person = await PersonUser.from_name("Mathis")
     print(person)
 
 

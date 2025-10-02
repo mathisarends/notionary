@@ -4,12 +4,11 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Self
 
-from notionary.database.models import NotionDatabaseDto
-
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.data_source.service import NotionDataSource
 from notionary.database.client import NotionDatabaseHttpClient
 from notionary.database.database_metadata_update_client import DatabaseMetadataUpdateClient
+from notionary.database.schemas import NotionDatabaseDto
 from notionary.shared.entity.dto_parsers import (
     extract_cover_image_url_from_dto,
     extract_description,
@@ -17,7 +16,7 @@ from notionary.shared.entity.dto_parsers import (
     extract_external_icon_url_from_dto,
     extract_title,
 )
-from notionary.shared.entity.entity import Entity
+from notionary.shared.entity.service import Entity
 from notionary.workspace.search.search_client import SearchClient
 
 type DataSourceFactory = Callable[[str], Awaitable[NotionDataSource]]

@@ -3,7 +3,8 @@ import asyncio
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.comments.models import Comment
 from notionary.comments.schemas import CommentDto
-from notionary.user.factories import PersonUserFactory
+from notionary.user.client import UserHttpClient
+from notionary.user.person import PersonUser
 from notionary.utils.mixins.logging import LoggingMixin
 
 
@@ -12,10 +13,10 @@ class CommentFactory(LoggingMixin):
 
     def __init__(
         self,
-        person_factory: PersonUserFactory | None = None,
+        http_client: UserHttpClient | None = None,
         markdown_converter: RichTextToMarkdownConverter | None = None,
     ) -> None:
-        self.person_factory = person_factory or PersonUserFactory()
+        self.http_client = http_client
         self.markdown_converter = markdown_converter or RichTextToMarkdownConverter()
 
     async def create_from_dto(self, dto: CommentDto) -> Comment:
@@ -27,7 +28,7 @@ class CommentFactory(LoggingMixin):
         user_id = dto.created_by.id
 
         try:
-            person = await self.person_factory.from_id(user_id)
+            person = await PersonUser.from_id(user_id, self.http_client)
             if person and person.name:
                 return person.name
         except Exception:

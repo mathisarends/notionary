@@ -1,11 +1,10 @@
-# notionary/blocks/context/conversion_context.py
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from notionary.database.database_http_client import NotionDatabaseHttpClient
+    from notionary.database.client import NotionDatabaseHttpClient
 
 
 @dataclass

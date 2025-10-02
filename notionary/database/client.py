@@ -1,9 +1,8 @@
-from notionary.database.models import (
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.database.schemas import (
     NotionDatabaseDto,
     NotionDatabaseUpdateDto,
 )
-
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.http.http_client import NotionHttpClient
 
 
