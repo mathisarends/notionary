@@ -14,7 +14,7 @@ def mock_person_factory() -> AsyncMock:
     mock_user1.name = "John Doe"
 
     factory.from_name.return_value = mock_user1
-    factory.from_user_id.return_value = mock_user1
+    factory.from_id.return_value = mock_user1
     return factory
 
 
@@ -82,7 +82,7 @@ class TestUserNameIdResolver:
 
     @pytest.mark.asyncio
     async def test_resolve_user_name_with_invalid_uuid(self, mock_person_factory: AsyncMock) -> None:
-        mock_person_factory.from_user_id.side_effect = ValueError("Invalid UUID")
+        mock_person_factory.from_id.side_effect = ValueError("Invalid UUID")
         resolver = PersonNameIdResolver(person_user_factory=mock_person_factory)
         result = await resolver.resolve_id_to_name("invalid-uuid")
         assert result is None
@@ -94,14 +94,14 @@ class TestUserNameIdResolver:
 
     @pytest.mark.asyncio
     async def test_resolve_user_name_not_found(self, mock_person_factory: AsyncMock) -> None:
-        mock_person_factory.from_user_id.side_effect = ValueError("User not found")
+        mock_person_factory.from_id.side_effect = ValueError("User not found")
         resolver = PersonNameIdResolver(person_user_factory=mock_person_factory)
         result = await resolver.resolve_id_to_name("12345678-1234-1234-1234-123456789abc")
         assert result is None
 
     @pytest.mark.asyncio
     async def test_resolve_user_name_exception(self, mock_person_factory: AsyncMock) -> None:
-        mock_person_factory.from_user_id.side_effect = Exception("API Error")
+        mock_person_factory.from_id.side_effect = Exception("API Error")
         resolver = PersonNameIdResolver(person_user_factory=mock_person_factory)
         result = await resolver.resolve_id_to_name("12345678-1234-1234-1234-123456789abc")
         assert result is None
@@ -109,7 +109,7 @@ class TestUserNameIdResolver:
     @pytest.mark.asyncio
     async def test_whitespace_handling(self, resolver: PersonNameIdResolver, mock_person_factory: AsyncMock) -> None:
         await resolver.resolve_name_to_id("  John Doe  ")
-        mock_person_factory.from_name.assert_called_once_with("John Doe")
+        mock_person_factory.from_name.assert_called_once_with("John Doe", None)
 
     def test_constructor_with_default_search_client(self) -> None:
         resolver = PersonNameIdResolver()
