@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from notionary.blocks.rich_text.rich_text_models import RichText
+from notionary.blocks.types import BlockType
 
 
 class EmbedBlock(BaseModel):
@@ -11,5 +12,5 @@ class EmbedBlock(BaseModel):
 
 
 class CreateEmbedBlock(BaseModel):
-    type: Literal["embed"] = "embed"
+    type: Literal[BlockType.EMBED] = BlockType.EMBED
     embed: EmbedBlock

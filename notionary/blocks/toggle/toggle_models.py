@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from notionary.blocks.models import Block
 from notionary.blocks.rich_text.rich_text_models import RichText
-from notionary.blocks.types import BlockColor
+from notionary.blocks.types import BlockColor, BlockType
 
 
 class ToggleBlock(BaseModel):
@@ -14,5 +14,5 @@ class ToggleBlock(BaseModel):
 
 
 class CreateToggleBlock(BaseModel):
-    type: Literal["toggle"] = "toggle"
+    type: Literal[BlockType.TOGGLE] = BlockType.TOGGLE
     toggle: ToggleBlock

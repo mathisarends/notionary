@@ -20,8 +20,8 @@ def create_block_with_required_fields(**kwargs) -> Block:
         "id": "test-id",
         "created_time": "2023-01-01T00:00:00.000Z",
         "last_edited_time": "2023-01-01T00:00:00.000Z",
-        "created_by": {"object": "user", "id": "user-id"},
-        "last_edited_by": {"object": "user", "id": "user-id"},
+        "created_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
+        "last_edited_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
     }
     defaults.update(kwargs)
     return Block(**defaults)

@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from notionary.blocks.models import Block
 from notionary.blocks.rich_text.rich_text_models import RichText
-from notionary.blocks.types import BlockColor
+from notionary.blocks.types import BlockColor, BlockType
 from notionary.shared.models.icon_models import Icon
 
 
@@ -16,5 +16,5 @@ class CalloutBlock(BaseModel):
 
 
 class CreateCalloutBlock(BaseModel):
-    type: Literal["callout"] = "callout"
+    type: Literal[BlockType.CALLOUT] = BlockType.CALLOUT
     callout: CalloutBlock

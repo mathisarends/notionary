@@ -66,57 +66,6 @@ class BlockType(StrEnum):
     AUDIO = "audio"
 
 
-class MarkdownBlockType(StrEnum):
-    """
-    Extended block types for the MarkdownBuilder.
-    Includes all BlockType values and adds user-friendly aliases
-    for blocks with no direct Notion API counterpart.
-    """
-
-    # All BlockType values
-    BOOKMARK = "bookmark"
-    BREADCRUMB = "breadcrumb"
-    BULLETED_LIST_ITEM = "bulleted_list_item"
-    CALLOUT = "callout"
-    CHILD_DATABASE = "child_database"
-    CHILD_PAGE = "child_page"
-    COLUMN = "column"
-    COLUMN_LIST = "column_list"
-    CODE = "code"
-    DIVIDER = "divider"
-    EMBED = "embed"
-    EQUATION = "equation"
-    FILE = "file"
-    HEADING_1 = "heading_1"
-    HEADING_2 = "heading_2"
-    HEADING_3 = "heading_3"
-    IMAGE = "image"
-    LINK_PREVIEW = "link_preview"
-    LINK_TO_PAGE = "link_to_page"
-    NUMBERED_LIST_ITEM = "numbered_list_item"
-    PARAGRAPH = "paragraph"
-    PDF = "pdf"
-    QUOTE = "quote"
-    SYNCED_BLOCK = "synced_block"
-    TABLE = "table"
-    TABLE_OF_CONTENTS = "table_of_contents"
-    TABLE_ROW = "table_row"
-    TO_DO = "to_do"
-    TOGGLE = "toggle"
-    UNSUPPORTED = "unsupported"
-    VIDEO = "video"
-    AUDIO = "audio"
-
-    # Markdown-specific aliases
-    HEADING = "heading"
-    BULLETED_LIST = "bulleted_list"
-    NUMBERED_LIST = "numbered_list"
-    TODO = "todo"
-    TOGGLEABLE_HEADING = "toggleable_heading"
-    COLUMNS = "columns"
-    SPACE = "space"
-
-
 class HasRichText(Protocol):
     rich_text: list[RichText]
 

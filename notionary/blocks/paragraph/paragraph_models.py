@@ -3,7 +3,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 from notionary.blocks.rich_text.rich_text_models import RichText
-from notionary.blocks.types import BlockColor
+from notionary.blocks.types import BlockColor, BlockType
 
 
 class ParagraphBlock(BaseModel):
@@ -12,5 +12,5 @@ class ParagraphBlock(BaseModel):
 
 
 class CreateParagraphBlock(BaseModel):
-    type: Literal["paragraph"] = "paragraph"
+    type: Literal[BlockType.PARAGRAPH] = BlockType.PARAGRAPH
     paragraph: ParagraphBlock

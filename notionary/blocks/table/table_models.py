@@ -1,10 +1,18 @@
-from __future__ import annotations
-
 from typing import Literal
 
 from pydantic import BaseModel
 
 from notionary.blocks.rich_text.rich_text_models import RichText
+from notionary.blocks.types import BlockType
+
+
+class TableRowBlock(BaseModel):
+    cells: list[list[RichText]]
+
+
+class CreateTableRowBlock(BaseModel):
+    type: Literal[BlockType.TABLE_ROW] = BlockType.TABLE_ROW
+    table_row: TableRowBlock
 
 
 class TableBlock(BaseModel):
@@ -14,15 +22,6 @@ class TableBlock(BaseModel):
     children: list[CreateTableRowBlock] = []
 
 
-class TableRowBlock(BaseModel):
-    cells: list[list[RichText]]
-
-
-class CreateTableRowBlock(BaseModel):
-    type: Literal["table_row"] = "table_row"
-    table_row: TableRowBlock
-
-
 class CreateTableBlock(BaseModel):
-    type: Literal["table"] = "table"
+    type: Literal[BlockType.TABLE] = BlockType.TABLE
     table: TableBlock

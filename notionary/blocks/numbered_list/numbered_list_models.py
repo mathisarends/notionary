@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from notionary.blocks.models import Block
 from notionary.blocks.rich_text.rich_text_models import RichText
-from notionary.blocks.types import BlockColor
+from notionary.blocks.types import BlockColor, BlockType
 
 
 class NumberedListItemBlock(BaseModel):
@@ -14,5 +14,5 @@ class NumberedListItemBlock(BaseModel):
 
 
 class CreateNumberedListItemBlock(BaseModel):
-    type: Literal["numbered_list_item"] = "numbered_list_item"
+    type: Literal[BlockType.NUMBERED_LIST_ITEM] = BlockType.NUMBERED_LIST_ITEM
     numbered_list_item: NumberedListItemBlock

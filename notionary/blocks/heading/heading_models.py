@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from notionary.blocks.models import Block
 from notionary.blocks.rich_text.rich_text_models import RichText
-from notionary.blocks.types import BlockColor
+from notionary.blocks.types import BlockColor, BlockType
 
 
 class HeadingBlock(BaseModel):
@@ -15,15 +15,15 @@ class HeadingBlock(BaseModel):
 
 
 class CreateHeading1Block(BaseModel):
-    type: Literal["heading_1"] = "heading_1"
+    type: Literal[BlockType.HEADING_1] = BlockType.HEADING_1
     heading_1: HeadingBlock
 
 
 class CreateHeading2Block(BaseModel):
-    type: Literal["heading_2"] = "heading_2"
+    type: Literal[BlockType.HEADING_2] = BlockType.HEADING_2
     heading_2: HeadingBlock
 
 
 class CreateHeading3Block(BaseModel):
-    type: Literal["heading_3"] = "heading_3"
+    type: Literal[BlockType.HEADING_3] = BlockType.HEADING_3
     heading_3: HeadingBlock

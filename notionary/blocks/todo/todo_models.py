@@ -3,7 +3,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 from notionary.blocks.rich_text.rich_text_models import RichText
-from notionary.blocks.types import BlockColor
+from notionary.blocks.types import BlockColor, BlockType
 
 
 class ToDoBlock(BaseModel):
@@ -13,5 +13,5 @@ class ToDoBlock(BaseModel):
 
 
 class CreateToDoBlock(BaseModel):
-    type: Literal["to_do"] = "to_do"
+    type: Literal[BlockType.TO_DO] = BlockType.TO_DO
     to_do: ToDoBlock

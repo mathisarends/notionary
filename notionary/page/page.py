@@ -2,12 +2,15 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from notionary.page.properties.page_property_writer import PagePropertyWriter
+
 from notionary.blocks.block_http_client import NotionBlockHttpClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
+from notionary.data_source.service import NotionDataSource
 from notionary.file_upload.file_upload_http_client import FileUploadHttpClient
 from notionary.page.factory import (
     load_page_from_id,
@@ -16,8 +19,12 @@ from notionary.page.factory import (
 from notionary.page.page_content_deleting_service import PageContentDeletingService
 from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.page_context import PageContextProvider, page_context
+from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
-from notionary.page.properties.service import PagePropertyHandler
+from notionary.page.properties.models import (
+    PageProperty,
+)
+from notionary.page.properties.service import PagePropertyReader
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.schemas import NotionContentSchema
 from notionary.shared.entity.entity import Entity
@@ -33,12 +40,13 @@ class NotionPage(Entity):
         url: str,
         archived: bool,
         in_trash: bool,
-        page_property_handler: PagePropertyHandler,
         public_url: str | None = None,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
-    ) -> None:
+        properties: dict[str, PageProperty] | None = None,
+        parent_data_source: NotionDataSource | None = None,
+    ):
         super().__init__(
             id=id,
             created_time=created_time,
@@ -50,9 +58,12 @@ class NotionPage(Entity):
         )
         self._title = title
         self._archived = archived
+        self._properties = properties or {}
+        self._parent_data_source = parent_data_source
         self._url = url
         self._public_url = public_url
 
+        self._page_client = NotionPageHttpClient(page_id=id, properties=properties)
         self._block_client = NotionBlockHttpClient()
         self._comment_service = CommentService()
 
@@ -73,7 +84,9 @@ class NotionPage(Entity):
         )
 
         self.page_context_provider = self._setup_page_context_provider()
-        self.properties = page_property_handler
+
+        self.property_reader = PagePropertyReader(self._properties, self._parent_data_source)
+        self.property_writer = PagePropertyWriter(self)
 
         self._metadata_update_client = PageMetadataUpdateClient(page_id=id)
 
@@ -94,8 +107,8 @@ class NotionPage(Entity):
         return self._title
 
     @property
-    def url(self) -> str:
-        return self._url
+    def properties(self) -> dict[str, PageProperty]:
+        return self._properties
 
     def get_prompt_information(self) -> str:
         markdown_syntax_builder = SyntaxPromptBuilder()
@@ -111,7 +124,7 @@ class NotionPage(Entity):
         await self._comment_service.reply_to_discussion_by_id(discussion_id=discussion_id, text=comment)
 
     async def set_title(self, title: str) -> None:
-        await self.properties.set_title_property(title)
+        await self.property_writer.set_title_property(title)
         self._title = title
 
     async def append_markdown(

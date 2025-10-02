@@ -136,7 +136,6 @@ class TableElement(BaseBlockElement):
 
     @classmethod
     async def notion_to_markdown(cls, block: Block) -> str | None:
-        """Convert Notion table block to markdown table."""
         if block.type != BlockType.TABLE:
             return None
 

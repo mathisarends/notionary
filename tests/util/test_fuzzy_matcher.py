@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from notionary.util.fuzzy import _calculate_similarity, _find_best_matches, find_best_match
+from notionary.utils.fuzzy import _calculate_similarity, _find_best_matches, find_best_match
 
 
 @dataclass

@@ -63,6 +63,7 @@ class BlockChildrenResponse(BaseModel):
     request_id: str
 
 
+# TODO: maybe use DU here aswell ()
 class Block(BaseModel):
     object: Literal["block"]
     id: str

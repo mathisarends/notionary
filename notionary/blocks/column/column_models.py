@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from notionary.blocks.models import BlockCreateRequest
+from notionary.blocks.types import BlockType
 
 
 class ColumnBlock(BaseModel):
@@ -11,7 +12,7 @@ class ColumnBlock(BaseModel):
 
 
 class CreateColumnBlock(BaseModel):
-    type: Literal["column"] = "column"
+    type: Literal[BlockType.COLUMN] = BlockType.COLUMN
     column: ColumnBlock
 
 
@@ -20,5 +21,5 @@ class ColumnListBlock(BaseModel):
 
 
 class CreateColumnListBlock(BaseModel):
-    type: Literal["column_list"] = "column_list"
+    type: Literal[BlockType.COLUMN_LIST] = BlockType.COLUMN_LIST
     column_list: ColumnListBlock

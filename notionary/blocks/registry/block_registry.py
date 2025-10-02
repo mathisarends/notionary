@@ -64,12 +64,6 @@ class BlockRegistry:
     ]
 
     def __init__(self, excluded_elements: set[type[BaseBlockElement]] | None = None):
-        """
-        Initialize a new registry instance.
-
-        Args:
-            excluded_elements: Set of element classes to exclude from the registry
-        """
         self._elements = OrderedDict()
         self._excluded_elements = excluded_elements or set()
 
@@ -82,29 +76,11 @@ class BlockRegistry:
                 self._elements[element_class.__name__] = element_class
 
     def exclude_elements(self, *element_classes: type[BaseBlockElement]) -> BlockRegistry:
-        """
-        Create a new registry with additional excluded elements.
-
-        Args:
-            element_classes: Element classes to exclude
-
-        Returns:
-            New BlockRegistry instance with excluded elements
-        """
         new_excluded = self._excluded_elements.copy()
         new_excluded.update(element_classes)
         return BlockRegistry(excluded_elements=new_excluded)
 
     def register(self, element_class: type[BaseBlockElement]) -> bool:
-        """
-        Register an element class.
-
-        Args:
-            element_class: The element class to register
-
-        Returns:
-            True if element was added, False if it already existed
-        """
         if element_class.__name__ in self._elements:
             return False
 
@@ -112,23 +88,13 @@ class BlockRegistry:
         return True
 
     def remove(self, element_class: type[BaseBlockElement]) -> bool:
-        """
-        Remove an element class.
-        """
         return self._elements.pop(element_class.__name__, None) is not None
 
     def contains(self, element_class: type[BaseBlockElement]) -> bool:
-        """
-        Checks if a specific element is contained in the registry.
-        """
         return element_class.__name__ in self._elements
 
     def get_elements(self) -> list[type[BaseBlockElement]]:
-        """Get all registered elements in order."""
         return list(self._elements.values())
 
     def is_excluded(self, element_class: type[BaseBlockElement]) -> bool:
-        """
-        Check if an element class is excluded.
-        """
         return element_class in self._excluded_elements
