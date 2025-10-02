@@ -2,7 +2,7 @@ import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
-from notionary.blocks.numbered_list.numbered_list_models import (
+from notionary.blocks.numbered_list.models import (
     CreateNumberedListItemBlock,
     NumberedListItemBlock,
 )

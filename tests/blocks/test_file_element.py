@@ -1,19 +1,13 @@
-"""
-Pytest tests for FileElement.
-Tests conversion between Markdown file blocks and Notion file blocks.
-Updated to use new caption mixin syntax.
-"""
-
 import pytest
 
 from notionary.blocks.file.file_element import FileElement
-from notionary.blocks.file.file_element_models import (
+from notionary.blocks.file.models import (
     CreateFileBlock,
     ExternalFile,
     FileBlock,
 )
 from notionary.blocks.models import Block
-from notionary.blocks.rich_text.rich_text_models import (
+from notionary.blocks.rich_text.models import (
     RichText,
     TextAnnotations,
     TextContent,
@@ -183,7 +177,7 @@ async def test_notion_to_markdown_without_caption():
 
 @pytest.mark.asyncio
 async def test_notion_to_markdown_file_type():
-    from notionary.blocks.file.file_element_models import NotionHostedFile
+    from notionary.blocks.file.models import NotionHostedFile
 
     notion_block = create_block_with_required_fields(
         type="file",

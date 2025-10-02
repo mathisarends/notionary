@@ -1,7 +1,7 @@
 import re
 
+from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.rich_text.rich_text_models import RichText
 
 
 class CaptionMixin:

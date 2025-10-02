@@ -6,7 +6,7 @@ from notionary.blocks.column.column_list_markdown_node import (
 from notionary.blocks.column.column_markdown_node import (
     ColumnMarkdownNode,
 )
-from notionary.blocks.column.column_models import (
+from notionary.blocks.column.models import (
     ColumnBlock,
     ColumnListBlock,
     CreateColumnBlock,

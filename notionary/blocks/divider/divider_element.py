@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.divider.divider_models import CreateDividerBlock, DividerBlock
+from notionary.blocks.divider.models import CreateDividerBlock, DividerBlock
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.types import BlockType
 

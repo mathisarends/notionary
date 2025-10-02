@@ -1,8 +1,8 @@
 import pytest
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.models import RichTextType
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.rich_text.rich_text_models import RichTextType
 
 
 class TestMarkdownRichTextConverter:
@@ -131,7 +131,7 @@ class TestRichTextToMarkdownConverter:
         converter = RichTextToMarkdownConverter()
 
         # Create bold rich text manually
-        from notionary.blocks.rich_text.rich_text_models import RichText
+        from notionary.blocks.rich_text.models import RichText
 
         rich_text = [RichText.from_plain_text("bold text", bold=True)]
 
@@ -143,7 +143,7 @@ class TestRichTextToMarkdownConverter:
         """Test converting italic rich text to markdown."""
         converter = RichTextToMarkdownConverter()
 
-        from notionary.blocks.rich_text.rich_text_models import RichText
+        from notionary.blocks.rich_text.models import RichText
 
         rich_text = [RichText.from_plain_text("italic text", italic=True)]
 
@@ -155,7 +155,7 @@ class TestRichTextToMarkdownConverter:
         """Test converting link rich text to markdown."""
         converter = RichTextToMarkdownConverter()
 
-        from notionary.blocks.rich_text.rich_text_models import RichText
+        from notionary.blocks.rich_text.models import RichText
 
         rich_text = [RichText.for_link("text", "https://example.com")]
 
@@ -167,7 +167,7 @@ class TestRichTextToMarkdownConverter:
         """Test converting equation rich text to markdown."""
         converter = RichTextToMarkdownConverter()
 
-        from notionary.blocks.rich_text.rich_text_models import RichText
+        from notionary.blocks.rich_text.models import RichText
 
         rich_text = [RichText.equation_inline("E = mc^2")]
 
@@ -179,7 +179,7 @@ class TestRichTextToMarkdownConverter:
         """Test converting colored rich text to markdown."""
         converter = RichTextToMarkdownConverter()
 
-        from notionary.blocks.rich_text.rich_text_models import RichText
+        from notionary.blocks.rich_text.models import RichText
 
         rich_text = [RichText.from_plain_text("important", color="red")]
 
@@ -198,7 +198,7 @@ class TestRichTextToMarkdownConverter:
         """Test converting plain rich text to markdown."""
         converter = RichTextToMarkdownConverter()
 
-        from notionary.blocks.rich_text.rich_text_models import RichText
+        from notionary.blocks.rich_text.models import RichText
 
         rich_text = [RichText.from_plain_text("Just plain text")]
 

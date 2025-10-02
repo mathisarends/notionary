@@ -1,20 +1,15 @@
-"""
-Minimal tests for EmbedElement.
-Tests core functionality for embed syntax ([embed](url)).
-"""
-
 from unittest.mock import Mock
 
 import pytest
 
 from notionary.blocks.embed.embed_element import EmbedElement
-from notionary.blocks.embed.embed_models import CreateEmbedBlock, EmbedBlock
-from notionary.blocks.file.file_element_models import (
+from notionary.blocks.embed.models import CreateEmbedBlock, EmbedBlock
+from notionary.blocks.file.models import (
     ExternalFile,
     FileUploadFile,
     NotionHostedFile,
 )
-from notionary.blocks.rich_text.rich_text_models import RichText
+from notionary.blocks.rich_text.models import RichText
 
 
 @pytest.mark.asyncio

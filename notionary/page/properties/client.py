@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from notionary.blocks.rich_text.rich_text_models import RichText
+from notionary.blocks.rich_text.models import RichText
 from notionary.http.http_client import NotionHttpClient
 from notionary.page.page_models import NotionPageDto, PgePropertiesUpdateDto
 from notionary.page.properties.models import (

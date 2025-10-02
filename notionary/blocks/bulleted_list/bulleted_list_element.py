@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.bulleted_list.bulleted_list_models import (
+from notionary.blocks.bulleted_list.models import (
     BulletedListItemBlock,
     CreateBulletedListItemBlock,
 )

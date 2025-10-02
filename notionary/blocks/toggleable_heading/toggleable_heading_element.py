@@ -13,6 +13,7 @@ from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
+from notionary.blocks.types import BlockColor
 
 
 class ToggleableHeadingElement(BaseBlockElement):
@@ -60,7 +61,7 @@ class ToggleableHeadingElement(BaseBlockElement):
         converter = MarkdownRichTextConverter()
         rich_text = await converter.to_rich_text(content)
 
-        heading_content = HeadingBlock(rich_text=rich_text, color="default", is_toggleable=True, children=[])
+        heading_content = HeadingBlock(rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=True, children=[])
 
         if level == 1:
             return CreateHeading1Block(heading_1=heading_content)

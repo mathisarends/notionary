@@ -66,67 +66,67 @@ def bootstrap_blocks() -> None:
 
     # Add missing types that are needed for model rebuilding
     # These are the types that are only defined in TYPE_CHECKING in block_models
-    from notionary.blocks.bookmark.bookmark_models import (
+    from notionary.blocks.bookmark.models import (
         BookmarkBlock,
         CreateBookmarkBlock,
     )
-    from notionary.blocks.breadcrumbs.breadcrumb_models import (
+    from notionary.blocks.breadcrumbs.models import (
         BreadcrumbBlock,
         CreateBreadcrumbBlock,
     )
-    from notionary.blocks.bulleted_list.bulleted_list_models import (
+    from notionary.blocks.bulleted_list.models import (
         BulletedListItemBlock,
         CreateBulletedListItemBlock,
     )
-    from notionary.blocks.callout.callout_models import CalloutBlock, CreateCalloutBlock
-    from notionary.blocks.child_database.child_database_models import (
+    from notionary.blocks.callout.models import CalloutBlock, CreateCalloutBlock
+    from notionary.blocks.child_database.models import (
         ChildDatabaseBlock,
         CreateChildDatabaseBlock,
     )
-    from notionary.blocks.child_page.child_page_models import (
+    from notionary.blocks.child_page.models import (
         ChildPageBlock,
         CreateChildPageBlock,
     )
-    from notionary.blocks.code.code_models import CodeBlock, CreateCodeBlock
-    from notionary.blocks.column.column_models import (
+    from notionary.blocks.code.models import CodeBlock, CreateCodeBlock
+    from notionary.blocks.column.models import (
         ColumnBlock,
         ColumnListBlock,
         CreateColumnBlock,
         CreateColumnListBlock,
     )
-    from notionary.blocks.divider.divider_models import CreateDividerBlock, DividerBlock
-    from notionary.blocks.embed.embed_models import CreateEmbedBlock, EmbedBlock
-    from notionary.blocks.equation.equation_models import (
+    from notionary.blocks.divider.models import CreateDividerBlock, DividerBlock
+    from notionary.blocks.embed.models import CreateEmbedBlock, EmbedBlock
+    from notionary.blocks.equation.models import (
         CreateEquationBlock,
         EquationBlock,
     )
-    from notionary.blocks.file.file_element_models import CreateFileBlock, FileBlock
-    from notionary.blocks.heading.heading_models import (
+    from notionary.blocks.file.models import CreateFileBlock, FileBlock
+    from notionary.blocks.heading.models import (
         CreateHeading1Block,
         CreateHeading2Block,
         CreateHeading3Block,
         HeadingBlock,
     )
-    from notionary.blocks.image_block.image_models import CreateImageBlock
-    from notionary.blocks.numbered_list.numbered_list_models import (
+    from notionary.blocks.image_block.models import CreateImageBlock
+    from notionary.blocks.numbered_list.models import (
         CreateNumberedListItemBlock,
         NumberedListItemBlock,
     )
-    from notionary.blocks.paragraph.paragraph_models import (
+    from notionary.blocks.paragraph.models import (
         CreateParagraphBlock,
         ParagraphBlock,
     )
-    from notionary.blocks.pdf.pdf_models import CreatePdfBlock
-    from notionary.blocks.quote.quote_models import CreateQuoteBlock, QuoteBlock
-    from notionary.blocks.table.table_models import TableBlock, TableRowBlock
-    from notionary.blocks.table_of_contents.table_of_contents_models import (
+    from notionary.blocks.pdf.models import CreatePdfBlock
+    from notionary.blocks.quote.models import CreateQuoteBlock, QuoteBlock
+    from notionary.blocks.table.models import TableBlock, TableRowBlock
+    from notionary.blocks.table_of_contents.models import (
         CreateTableOfContentsBlock,
         TableOfContentsBlock,
     )
-    from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
-    from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
+    from notionary.blocks.todo.models import CreateToDoBlock, ToDoBlock
+    from notionary.blocks.toggle.models import CreateToggleBlock, ToggleBlock
     from notionary.blocks.types import BlockType
-    from notionary.blocks.video.video_element_models import CreateVideoBlock
+    from notionary.blocks.video.models import CreateVideoBlock
 
     # Define the Union types that are needed for model rebuilding
     BlockCreateRequest = (

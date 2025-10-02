@@ -1,15 +1,11 @@
-"""
-Minimale Tests für QuoteElement - nur das Wesentliche.
-"""
-
 from unittest.mock import Mock
 
 import pytest
 
+from notionary.blocks.quote.models import QuoteBlock
 from notionary.blocks.quote.quote_element import QuoteElement
-from notionary.blocks.quote.quote_models import QuoteBlock
-from notionary.blocks.rich_text.rich_text_models import RichText
-from notionary.blocks.types import BlockType
+from notionary.blocks.rich_text.models import RichText
+from notionary.blocks.types import BlockColor, BlockType
 
 
 def create_rich_text(content: str) -> RichText:
@@ -98,7 +94,7 @@ async def test_markdown_to_notion_invalid():
 @pytest.mark.asyncio
 async def test_notion_to_markdown():
     """Test Notion -> Markdown conversion."""
-    quote_data = QuoteBlock(rich_text=[create_rich_text("Test quote")], color="default")
+    quote_data = QuoteBlock(rich_text=[create_rich_text("Test quote")], color=BlockColor.DEFAULT)
 
     block = Mock()
     block.type = BlockType.QUOTE
@@ -123,7 +119,7 @@ async def test_notion_to_markdown_invalid():
     assert await QuoteElement.notion_to_markdown(block) is None
 
     # Empty text
-    quote_data = QuoteBlock(rich_text=[create_rich_text("")], color="default")
+    quote_data = QuoteBlock(rich_text=[create_rich_text("")], color=BlockColor.DEFAULT)
     block.quote = quote_data
     assert await QuoteElement.notion_to_markdown(block) is None
 

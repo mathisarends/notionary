@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from notionary.blocks.rich_text.rich_text_models import RichText
+from notionary.blocks.rich_text.models import RichText
 from notionary.data_source.properties.models import DiscriminatedDataSourceProperty
 from notionary.page.page_models import NotionPageDto
 from notionary.shared.entity.entity_models import EntityDto, NotionEntityUpdateDto

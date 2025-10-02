@@ -1,5 +1,5 @@
 from notionary.blocks.markdown.markdown_node import MarkdownNode
-from notionary.blocks.space.space_models import SPACE_MARKER
+from notionary.blocks.space.models import SPACE_MARKER
 
 
 class SpaceMarkdownNode(MarkdownNode):

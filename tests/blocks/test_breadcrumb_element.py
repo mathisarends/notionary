@@ -1,12 +1,7 @@
-"""
-Pytest tests for BreadcrumbElement.
-Tests the essential functionality for breadcrumb block handling.
-"""
-
 import pytest
 
 from notionary.blocks.breadcrumbs.breadcrumb_element import BreadcrumbElement
-from notionary.blocks.breadcrumbs.breadcrumb_models import (
+from notionary.blocks.breadcrumbs.models import (
     BreadcrumbBlock,
     CreateBreadcrumbBlock,
 )

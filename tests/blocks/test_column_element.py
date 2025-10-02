@@ -1,12 +1,7 @@
-"""
-Pytest tests for ColumnElement.
-Tests the essential functionality for column block handling.
-"""
-
 import pytest
 
 from notionary.blocks.column.column_element import ColumnElement
-from notionary.blocks.column.column_models import ColumnBlock, CreateColumnBlock
+from notionary.blocks.column.models import ColumnBlock, CreateColumnBlock
 from notionary.blocks.models import Block
 
 

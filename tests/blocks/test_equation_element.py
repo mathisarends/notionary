@@ -1,12 +1,7 @@
-"""
-Pytest tests for EquationElement.
-Tests the essential functionality for equation block handling with $$....$$ syntax.
-"""
-
 import pytest
 
 from notionary.blocks.equation.equation_element import EquationElement
-from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
+from notionary.blocks.equation.models import CreateEquationBlock, EquationBlock
 from notionary.blocks.models import Block, BlockType
 
 

@@ -1,7 +1,7 @@
 from typing import TypeGuard
 
 from notionary.blocks.models import BlockCreateRequest
-from notionary.blocks.rich_text.rich_text_models import RichText
+from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.types import HasChildren, HasRichText
 from notionary.utils.mixins.logging import LoggingMixin
 

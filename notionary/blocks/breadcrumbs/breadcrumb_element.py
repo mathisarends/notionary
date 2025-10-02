@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.breadcrumbs.breadcrumb_models import (
+from notionary.blocks.breadcrumbs.models import (
     BreadcrumbBlock,
     CreateBreadcrumbBlock,
 )

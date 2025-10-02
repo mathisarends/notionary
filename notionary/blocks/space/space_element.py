@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult
-from notionary.blocks.paragraph.paragraph_models import (
+from notionary.blocks.paragraph.models import (
     CreateParagraphBlock,
     ParagraphBlock,
 )
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-from notionary.blocks.rich_text.rich_text_models import RichText
-from notionary.blocks.space.space_models import SPACE_MARKER
+from notionary.blocks.rich_text.models import RichText
+from notionary.blocks.space.models import SPACE_MARKER
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockColor, BlockType
 

@@ -1,15 +1,10 @@
-"""
-Minimal tests for ImageElement.
-Tests core functionality for image embeds ([image](url)).
-"""
-
 from unittest.mock import Mock
 
 import pytest
 
 from notionary.blocks.image_block.image_element import ImageElement
-from notionary.blocks.image_block.image_models import CreateImageBlock
-from notionary.blocks.rich_text.rich_text_models import RichText
+from notionary.blocks.image_block.models import CreateImageBlock
+from notionary.blocks.rich_text.models import RichText
 
 
 @pytest.mark.asyncio

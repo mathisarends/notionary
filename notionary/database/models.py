@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from notionary.blocks.rich_text.rich_text_models import RichText
+from notionary.blocks.rich_text.models import RichText
 from notionary.shared.entity.entity_models import EntityDto
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.icon_models import Icon

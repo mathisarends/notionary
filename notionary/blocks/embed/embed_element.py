@@ -3,15 +3,15 @@ from __future__ import annotations
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.embed.embed_models import CreateEmbedBlock, EmbedBlock
-from notionary.blocks.file.file_element_models import (
+from notionary.blocks.embed.models import CreateEmbedBlock, EmbedBlock
+from notionary.blocks.file.models import (
     ExternalFile,
     FileUploadFile,
     NotionHostedFile,
 )
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
+from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.rich_text.rich_text_models import RichText
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 

@@ -1,14 +1,9 @@
-"""
-Minimal tests for TodoElement.
-Tests core functionality for todo blocks with checkbox syntax.
-"""
-
 from unittest.mock import Mock
 
 import pytest
 
+from notionary.blocks.todo.models import CreateToDoBlock, ToDoBlock
 from notionary.blocks.todo.todo_element import TodoElement
-from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
 
 
 @pytest.mark.asyncio

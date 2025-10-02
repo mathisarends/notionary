@@ -4,7 +4,7 @@ import re
 import textwrap
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.equation.equation_models import CreateEquationBlock, EquationBlock
+from notionary.blocks.equation.models import CreateEquationBlock, EquationBlock
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockType

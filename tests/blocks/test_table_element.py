@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.rich_text.rich_text_models import (
+from notionary.blocks.rich_text.models import (
     RichText,
     TextAnnotations,
     TextContent,

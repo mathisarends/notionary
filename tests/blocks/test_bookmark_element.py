@@ -1,15 +1,10 @@
-"""
-Pytest tests for BookmarkElement.
-Updated to match the actual implementation with new caption mixin syntax.
-"""
-
 from unittest.mock import Mock
 
 import pytest
 import pytest_asyncio
 
 from notionary.blocks.bookmark.bookmark_element import BookmarkElement
-from notionary.blocks.bookmark.bookmark_models import BookmarkBlock, CreateBookmarkBlock
+from notionary.blocks.bookmark.models import BookmarkBlock, CreateBookmarkBlock
 from notionary.blocks.types import BlockType
 
 

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
     from notionary.blocks.models import BlockCreateRequest
-    from notionary.blocks.rich_text.rich_text_models import RichText
+    from notionary.blocks.rich_text.models import RichText
 
 
 class BlockColor(StrEnum):

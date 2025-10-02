@@ -1,18 +1,14 @@
-"""
-Pytest tests for TableOfContentsElement.
-Tests the essential functionality for table of contents block handling.
-"""
-
 import pytest
 
 from notionary.blocks.models import Block, BlockType
-from notionary.blocks.table_of_contents.table_of_contents_element import (
-    TableOfContentsElement,
-)
-from notionary.blocks.table_of_contents.table_of_contents_models import (
+from notionary.blocks.table_of_contents.models import (
     CreateTableOfContentsBlock,
     TableOfContentsBlock,
 )
+from notionary.blocks.table_of_contents.table_of_contents_element import (
+    TableOfContentsElement,
+)
+from notionary.blocks.types import BlockColor
 
 
 def create_block_with_required_fields(**kwargs) -> Block:
@@ -63,7 +59,7 @@ def test_match_notion_valid():
     """Test recognition of valid table of contents blocks."""
     block = create_block_with_required_fields(
         type=BlockType.TABLE_OF_CONTENTS,
-        table_of_contents=TableOfContentsBlock(color="default"),
+        table_of_contents=TableOfContentsBlock(color=BlockColor.DEFAULT),
     )
     assert TableOfContentsElement.match_notion(block)
 
@@ -73,7 +69,7 @@ def test_match_notion_invalid():
     # Wrong type
     paragraph_block = create_block_with_required_fields(
         type=BlockType.PARAGRAPH,
-        table_of_contents=TableOfContentsBlock(color="default"),
+        table_of_contents=TableOfContentsBlock(color=BlockColor.DEFAULT),
     )
     assert not TableOfContentsElement.match_notion(paragraph_block)
 
@@ -135,7 +131,7 @@ async def test_notion_to_markdown_default():
     """Test conversion from default Notion blocks to markdown."""
     block = create_block_with_required_fields(
         type=BlockType.TABLE_OF_CONTENTS,
-        table_of_contents=TableOfContentsBlock(color="default"),
+        table_of_contents=TableOfContentsBlock(color=BlockColor.DEFAULT),
     )
 
     result = await TableOfContentsElement.notion_to_markdown(block)
@@ -147,7 +143,7 @@ async def test_notion_to_markdown_with_color():
     """Test conversion from colored Notion blocks to markdown."""
     block = create_block_with_required_fields(
         type=BlockType.TABLE_OF_CONTENTS,
-        table_of_contents=TableOfContentsBlock(color="blue"),
+        table_of_contents=TableOfContentsBlock(color=BlockColor.BLUE),
     )
 
     result = await TableOfContentsElement.notion_to_markdown(block)
@@ -159,7 +155,7 @@ async def test_notion_to_markdown_with_background_color():
     """Test conversion with background colors."""
     block = create_block_with_required_fields(
         type=BlockType.TABLE_OF_CONTENTS,
-        table_of_contents=TableOfContentsBlock(color="blue_background"),
+        table_of_contents=TableOfContentsBlock(color=BlockColor.BLUE_BACKGROUND),
     )
 
     result = await TableOfContentsElement.notion_to_markdown(block)
@@ -171,7 +167,7 @@ async def test_notion_to_markdown_invalid():
     """Test that invalid blocks return None."""
     # Wrong type
     paragraph_block = create_block_with_required_fields(
-        type=BlockType.PARAGRAPH, table_of_contents=TableOfContentsBlock(color="blue")
+        type=BlockType.PARAGRAPH, table_of_contents=TableOfContentsBlock(color=BlockColor.BLUE)
     )
     assert await TableOfContentsElement.notion_to_markdown(paragraph_block) is None
 

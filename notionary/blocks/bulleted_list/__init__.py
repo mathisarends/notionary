@@ -2,7 +2,7 @@ from notionary.blocks.bulleted_list.bulleted_list_element import BulletedListEle
 from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
     BulletedListMarkdownNode,
 )
-from notionary.blocks.bulleted_list.bulleted_list_models import (
+from notionary.blocks.bulleted_list.models import (
     BulletedListItemBlock,
     CreateBulletedListItemBlock,
 )

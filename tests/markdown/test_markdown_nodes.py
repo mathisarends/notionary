@@ -1,9 +1,3 @@
-"""
-Tests für alle MarkdownNode-Implementierungen mit pytest.
-Testet ob die to_markdown() Methode den erwarteten String zurückgibt.
-FIXED for correct implementations.
-"""
-
 import pytest
 
 from notionary.blocks.audio.audio_markdown_node import AudioMarkdownNode
@@ -37,6 +31,7 @@ from notionary.blocks.toggle.toggle_markdown_node import ToggleMarkdownNode
 from notionary.blocks.toggleable_heading.toggleable_heading_markdown_node import (
     ToggleableHeadingMarkdownNode,
 )
+from notionary.blocks.types import BlockColor
 from notionary.blocks.video.video_markdown_node import VideoMarkdownNode
 
 
@@ -307,12 +302,12 @@ def test_table_of_contents_markdown_node():
     assert toc.to_markdown() == expected
 
     # Test mit color="default"
-    toc_default = TableOfContentsMarkdownNode(color="default")
+    toc_default = TableOfContentsMarkdownNode(color=BlockColor.DEFAULT)
     expected = "[toc]"
     assert toc_default.to_markdown() == expected
 
     # Test mit custom color
-    toc_blue = TableOfContentsMarkdownNode(color="blue")
+    toc_blue = TableOfContentsMarkdownNode(color=BlockColor.BLUE)
     expected = "[toc](blue)"
     assert toc_blue.to_markdown() == expected
 

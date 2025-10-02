@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import ClassVar
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.file.file_element_models import (
+from notionary.blocks.file.models import (
     ExternalFile,
     FileBlock,
     FileType,
@@ -16,7 +16,7 @@ from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixi
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockType
-from notionary.blocks.video.video_element_models import CreateVideoBlock
+from notionary.blocks.video.models import CreateVideoBlock
 
 
 class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):

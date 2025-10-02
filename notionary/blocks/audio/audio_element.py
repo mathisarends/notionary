@@ -4,9 +4,9 @@ import re
 from pathlib import Path
 from typing import ClassVar
 
-from notionary.blocks.audio.audio_models import CreateAudioBlock
+from notionary.blocks.audio.models import CreateAudioBlock
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.file.file_element_models import (
+from notionary.blocks.file.models import (
     ExternalFile,
     FileBlock,
     FileType,

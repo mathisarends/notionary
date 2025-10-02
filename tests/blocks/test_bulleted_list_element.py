@@ -1,14 +1,9 @@
-"""
-Minimal tests for BulletedListElement.
-Tests core functionality for bulleted list items (-, *, +).
-"""
-
 from unittest.mock import Mock
 
 import pytest
 
 from notionary.blocks.bulleted_list.bulleted_list_element import BulletedListElement
-from notionary.blocks.bulleted_list.bulleted_list_models import (
+from notionary.blocks.bulleted_list.models import (
     BulletedListItemBlock,
     CreateBulletedListItemBlock,
 )

@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.file.file_element_models import (
+from notionary.blocks.file.models import (
     CreateFileBlock,
     ExternalFile,
     FileBlock,

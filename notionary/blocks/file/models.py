@@ -1,31 +1,35 @@
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
-from notionary.blocks.rich_text.rich_text_models import RichText
+from notionary.blocks.rich_text.models import RichText
 
 
-class FileType(str, Enum):
+class FileType(StrEnum):
     EXTERNAL = "external"
     FILE = "file"
     FILE_UPLOAD = "file_upload"
 
 
 class ExternalFile(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     url: str
 
 
 class NotionHostedFile(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     url: str
     expiry_time: str
 
 
 class FileUploadFile(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: str
 
 
 class FileBlock(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     caption: list[RichText] = Field(default_factory=list)
     type: FileType
     external: ExternalFile | None = None

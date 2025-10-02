@@ -4,7 +4,7 @@ import re
 from typing import cast
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.heading.heading_models import (
+from notionary.blocks.heading.models import (
     CreateHeading1Block,
     CreateHeading2Block,
     CreateHeading3Block,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult
-from notionary.blocks.paragraph.paragraph_models import (
+from notionary.blocks.paragraph.models import (
     CreateParagraphBlock,
     ParagraphBlock,
 )

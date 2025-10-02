@@ -5,9 +5,9 @@ import re
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-from notionary.blocks.rich_text.rich_text_models import RichText
+from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
-from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
+from notionary.blocks.toggle.models import CreateToggleBlock, ToggleBlock
 from notionary.blocks.types import BlockColor
 
 

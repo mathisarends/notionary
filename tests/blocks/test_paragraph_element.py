@@ -1,17 +1,12 @@
-"""
-Minimal tests for ParagraphElement.
-Tests core functionality for paragraph blocks.
-"""
-
 from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.paragraph.paragraph_element import ParagraphElement
-from notionary.blocks.paragraph.paragraph_models import (
+from notionary.blocks.paragraph.models import (
     CreateParagraphBlock,
     ParagraphBlock,
 )
+from notionary.blocks.paragraph.paragraph_element import ParagraphElement
 
 
 @pytest.mark.asyncio

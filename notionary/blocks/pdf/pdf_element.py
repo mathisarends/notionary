@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.file.file_element_models import (
+from notionary.blocks.file.models import (
     ExternalFile,
     FileBlock,
     FileType,
@@ -12,7 +12,7 @@ from notionary.blocks.file.file_element_models import (
 from notionary.blocks.mixins.captions import CaptionMixin
 from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
-from notionary.blocks.pdf.pdf_models import CreatePdfBlock
+from notionary.blocks.pdf.models import CreatePdfBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -93,7 +93,6 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
 
     @classmethod
     async def notion_to_markdown(cls, block: Block) -> str | None:
-        """Convert Notion PDF block to markdown."""
         if block.type != BlockType.PDF or not block.pdf:
             return None
 

@@ -7,7 +7,8 @@ from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
-from notionary.blocks.todo.todo_models import CreateToDoBlock, ToDoBlock
+from notionary.blocks.todo.models import CreateToDoBlock, ToDoBlock
+from notionary.blocks.types import BlockColor
 
 
 class TodoElement(BaseBlockElement):
@@ -50,7 +51,7 @@ class TodoElement(BaseBlockElement):
         todo_content = ToDoBlock(
             rich_text=rich,
             checked=checked,
-            color="default",
+            color=BlockColor.DEFAULT,
         )
         return CreateToDoBlock(to_do=todo_content)
 

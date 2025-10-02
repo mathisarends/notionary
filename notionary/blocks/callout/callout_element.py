@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.callout.callout_models import (
+from notionary.blocks.callout.models import (
     CalloutBlock,
     CreateCalloutBlock,
 )

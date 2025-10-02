@@ -1,17 +1,12 @@
-"""
-Minimal tests for NumberedListElement.
-Tests core functionality for numbered list items (1., 2., etc.).
-"""
-
 from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.numbered_list.numbered_list_element import NumberedListElement
-from notionary.blocks.numbered_list.numbered_list_models import (
+from notionary.blocks.numbered_list.models import (
     CreateNumberedListItemBlock,
     NumberedListItemBlock,
 )
+from notionary.blocks.numbered_list.numbered_list_element import NumberedListElement
 
 
 @pytest.mark.asyncio
