@@ -4,7 +4,7 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMa
 from notionary.comments.models import Comment
 from notionary.comments.schemas import CommentDto
 from notionary.user.factories import PersonUserFactory
-from notionary.util.logging_mixin import LoggingMixin
+from notionary.utils.mixins import LoggingMixin
 
 
 class CommentFactory(LoggingMixin):

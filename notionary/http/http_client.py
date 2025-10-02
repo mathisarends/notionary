@@ -16,7 +16,7 @@ from notionary.http.exceptions import (
     NotionValidationError,
 )
 from notionary.http.http_models import HttpMethod
-from notionary.util import LoggingMixin
+from notionary.utils.mixins import LoggingMixin
 
 load_dotenv()
 

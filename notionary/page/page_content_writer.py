@@ -6,11 +6,11 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.markdown_whitespace_processor import MarkdownWhitespaceProcessor
 from notionary.page.writer.markdown_to_notion_converter import MarkdownToNotionConverter
 from notionary.schemas.base import NotionContentSchema
-from notionary.util import LoggingMixin
+from notionary.utils.mixins import LoggingMixin
 
 
 class PageContentWriter(LoggingMixin):
-    def __init__(self, page_id: str, block_registry: BlockRegistry):
+    def __init__(self, page_id: str, block_registry: BlockRegistry) -> None:
         self.page_id = page_id
         self.block_registry = block_registry
         self._block_client = NotionBlockHttpClient()

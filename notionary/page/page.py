@@ -13,13 +13,13 @@ from notionary.comments.service import CommentService
 from notionary.data_source.data_source import NotionDataSource
 from notionary.database.database_http_client import NotionDatabaseHttpClient
 from notionary.file_upload.file_upload_http_client import FileUploadHttpClient
-from notionary.page.page_content_deleting_service import PageContentDeletingService
-from notionary.page.page_content_writer import PageContentWriter
-from notionary.page.page_context import PageContextProvider, page_context
-from notionary.page.page_factory import (
+from notionary.page.factory import (
     load_page_from_id,
     load_page_from_title,
 )
+from notionary.page.page_content_deleting_service import PageContentDeletingService
+from notionary.page.page_content_writer import PageContentWriter
+from notionary.page.page_context import PageContextProvider, page_context
 from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
 from notionary.page.properties.page_property_models import (

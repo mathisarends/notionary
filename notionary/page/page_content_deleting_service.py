@@ -2,13 +2,11 @@ from notionary.blocks.block_http_client import NotionBlockHttpClient
 from notionary.blocks.models import Block
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.reader.page_content_retriever import PageContentRetriever
-from notionary.util import LoggingMixin
+from notionary.utils.mixins import LoggingMixin
 
 
 class PageContentDeletingService(LoggingMixin):
-    """Service responsible for deleting page content and blocks."""
-
-    def __init__(self, page_id: str, block_registry: BlockRegistry):
+    def __init__(self, page_id: str, block_registry: BlockRegistry) -> None:
         self.page_id = page_id
         self.block_registry = block_registry
         self._block_client = NotionBlockHttpClient()

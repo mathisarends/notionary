@@ -9,7 +9,7 @@ from notionary.page.reader.handler import (
     ToggleableHeadingRenderer,
     ToggleRenderer,
 )
-from notionary.util import LoggingMixin
+from notionary.utils.mixins import LoggingMixin
 
 
 class PageContentRetriever(LoggingMixin):
@@ -18,7 +18,7 @@ class PageContentRetriever(LoggingMixin):
     def __init__(
         self,
         block_registry: BlockRegistry,
-    ):
+    ) -> None:
         self._block_registry = block_registry
 
         self._setup_handler_chain()

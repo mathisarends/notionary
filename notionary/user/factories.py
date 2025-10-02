@@ -7,7 +7,7 @@ from notionary.user.schemas import (
     PersonUserResponseDto,
     UserType,
 )
-from notionary.util.fuzzy import find_best_match
+from notionary.utils.fuzzy import find_best_match
 
 
 class BotUserFactory:

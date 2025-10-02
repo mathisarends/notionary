@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
-from notionary.page.page_factory import load_page_from_title
+from notionary.page.factory import load_page_from_title
 from notionary.page.properties.page_property_http_client import PagePropertyHttpClient
 from notionary.page.properties.page_property_models import (
     PropertyType,
@@ -69,7 +69,7 @@ class PagePropertyWriter:
         if not self._parent_data_source:
             return
 
-        property_type = self._parent_data_source.property_reader.get_property_type_by_name(property_name)
+        property_type = self._parent_data_source.get_property_type_by_name(property_name)
         if property_type != PropertyType.RELATION:
             return
 

@@ -1,26 +1,12 @@
-"""
-Post-processor for handling Notion API text length limitations.
-
-Handles text length validation and truncation for blocks that exceed
-Notion's rich_text character limit of 2000 characters per element.
-"""
-
 from typing import TypeGuard
 
 from notionary.blocks.models import BlockCreateRequest
 from notionary.blocks.rich_text.rich_text_models import RichTextObject
 from notionary.blocks.types import HasChildren, HasRichText
-from notionary.util import LoggingMixin
+from notionary.utils.mixins import LoggingMixin
 
 
 class NotionTextLengthProcessor(LoggingMixin):
-    """
-    Processes Notion blocks to ensure text content doesn't exceed API limits.
-
-    The Notion API has a limit of 2000 characters per rich_text element.
-    This processor truncates content that exceeds the specified limit.
-    """
-
     DEFAULT_MAX_LENGTH = 1900  # Leave some buffer under the 2000 limit
     NOTION_MAX_LENGTH = 2000
 

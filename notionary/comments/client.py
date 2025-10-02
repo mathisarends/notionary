@@ -37,7 +37,6 @@ class CommentClient(NotionHttpClient):
         start_cursor: str | None = None,
         page_size: int = 100,
     ) -> CommentListResponse:
-        """Ruft eine einzelne Seite von Kommentaren ab."""
         request = CommentListRequest(
             block_id=block_id,
             start_cursor=start_cursor,

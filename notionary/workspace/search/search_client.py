@@ -4,7 +4,7 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from notionary.http.http_client import NotionHttpClient
-from notionary.util.fuzzy import find_best_match
+from notionary.utils.fuzzy import find_best_match
 from notionary.workspace.search.search_filter_builder import SearchFilterBuilder, SortDirection
 from notionary.workspace.search.search_models import DataSourceSearchResponse, PageSearchResponse
 

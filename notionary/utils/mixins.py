@@ -3,10 +3,7 @@ import os
 from typing import ClassVar
 
 
-def setup_logging():
-    """
-    Sets up logging configuration for the application.
-    """
+def _setup_logging() -> None:
     log_level = os.getenv("LOG_LEVEL", "WARNING").upper()
     logging.basicConfig(
         level=getattr(logging, log_level),
@@ -16,18 +13,13 @@ def setup_logging():
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
-setup_logging()
+_setup_logging()
 
 
 class LoggingMixin:
-    # Class attribute with proper typing
     logger: ClassVar[logging.Logger] = None
 
     def __init_subclass__(cls, **kwargs):
-        """
-        This method is called when a class inherits from LoggingMixin.
-        It automatically sets up the logger as a class attribute.
-        """
         super().__init_subclass__(**kwargs)
         cls.logger = logging.getLogger(cls.__name__)
 

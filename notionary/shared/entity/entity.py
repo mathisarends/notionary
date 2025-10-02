@@ -4,8 +4,8 @@ from collections.abc import Sequence
 from typing import Self
 
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
-from notionary.util import LoggingMixin
-from notionary.util.uuid_utils import extract_uuid
+from notionary.utils.mixins import LoggingMixin
+from notionary.utils.uuid_utils import extract_uuid
 
 
 class Entity(LoggingMixin, ABC):

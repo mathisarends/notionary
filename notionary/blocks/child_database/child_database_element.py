@@ -5,16 +5,10 @@ import re
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockType
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
-from notionary.util import LoggingMixin
+from notionary.utils.mixins import LoggingMixin
 
 
 class ChildDatabaseElement(BaseBlockElement, LoggingMixin):
-    """
-    Handles conversion between Markdown database references and Notion child database blocks.
-
-    Creates new databases when converting from markdown.
-    """
-
     PATTERN_BRACKET = re.compile(r"^\[database:\s*(.+)\]$", re.IGNORECASE)
     PATTERN_EMOJI = re.compile(r"^📊\s*(.+)$")
 

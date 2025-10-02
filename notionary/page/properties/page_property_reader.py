@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.data_source.data_source import NotionDataSource
-from notionary.data_source.properties.data_source_property_reader import DataSourcePropertyReader
 from notionary.page.properties.page_property_models import (
     PageCheckboxProperty,
     PageCreatedTimeProperty,
@@ -29,8 +28,8 @@ class PagePropertyReader:
         self._parent_data_source = parent_data_source
 
     @property
-    def data_source_reader(self) -> DataSourcePropertyReader | None:
-        return self._parent_data_source.property_reader if self._parent_data_source else None
+    def data_source_reader(self) -> NotionDataSource | None:
+        return self._parent_data_source
 
     def get_value_of_status_property(self, name: str) -> str | None:
         status_property = self._get_property(name, PageStatusProperty)
@@ -66,7 +65,7 @@ class PagePropertyReader:
         return created_time_property.created_time if created_time_property else None
 
     async def get_values_of_relation_property(self, name: str) -> list[str]:
-        from notionary.page.page_factory import load_page_from_id
+        from notionary.page.factory import load_page_from_id
 
         relation_property = self._get_property(name, PageRelationProperty)
         if not relation_property:

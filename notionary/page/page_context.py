@@ -31,14 +31,11 @@ def get_page_context() -> PageContextProvider:
 
 
 class page_context:
-    """Async-only context manager for page operations."""
-
-    def __init__(self, provider: PageContextProvider):
+    def __init__(self, provider: PageContextProvider) -> None:
         self.provider = provider
         self._token = None
 
     def _set_context(self) -> PageContextProvider:
-        """Helper to set context and return provider."""
         self._token = _page_context.set(self.provider)
         return self.provider
 
