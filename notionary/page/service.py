@@ -1,26 +1,30 @@
-from __future__ import annotations
-
+import asyncio
 from collections.abc import Callable
+from typing import Self
 
 from notionary.blocks.block_http_client import NotionBlockHttpClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
 from notionary.file_upload.file_upload_http_client import FileUploadHttpClient
-from notionary.page.factory import (
-    load_page_from_id,
-    load_page_from_title,
-)
 from notionary.page.page_content_deleting_service import PageContentDeletingService
 from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.page_context import PageContextProvider, page_context
+from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
+from notionary.page.page_models import NotionPageDto
+from notionary.page.properties.factory import PagePropertyHandlerFactory
+from notionary.page.properties.models import PageTitleProperty
 from notionary.page.properties.service import PagePropertyHandler
 from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.schemas import NotionContentSchema
 from notionary.shared.entity.entity import Entity
+from notionary.shared.models.cover_models import CoverType
+from notionary.shared.models.icon_models import IconType
+from notionary.workspace.search.search_client import SearchClient
 
 
 class NotionPage(Entity):
@@ -78,12 +82,86 @@ class NotionPage(Entity):
         self._metadata_update_client = PageMetadataUpdateClient(page_id=id)
 
     @classmethod
-    async def from_id(cls, id: str) -> NotionPage:
-        return await load_page_from_id(id)
+    async def from_id(
+        cls,
+        page_id: str,
+        page_property_handler_factory: PagePropertyHandlerFactory | None = None,
+    ) -> Self:
+        factory = page_property_handler_factory or PagePropertyHandlerFactory()
+        response = await cls._fetch_page_dto(page_id)
+        return await cls._create_from_dto(response, factory)
 
     @classmethod
-    async def from_title(cls, title: str, min_similarity: float = 0.6) -> NotionPage:
-        return await load_page_from_title(title, min_similarity)
+    async def from_title(
+        cls,
+        page_title: str,
+        min_similarity: float = 0.6,
+        search_client: SearchClient | None = None,
+    ) -> Self:
+        client = search_client or SearchClient()
+        return await client.find_page(page_title, min_similarity=min_similarity)
+
+    @classmethod
+    async def _fetch_page_dto(cls, page_id: str) -> NotionPageDto:
+        async with NotionPageHttpClient(page_id=page_id) as client:
+            return await client.get_page()
+
+    @classmethod
+    async def _create_from_dto(
+        cls,
+        response: NotionPageDto,
+        page_property_handler_factory: PagePropertyHandlerFactory,
+    ) -> Self:
+        title, page_property_handler = await asyncio.gather(
+            cls._extract_title_from_dto(response),
+            page_property_handler_factory.create_from_page_response(response),
+        )
+
+        return cls(
+            id=response.id,
+            title=title,
+            created_time=response.created_time,
+            last_edited_time=response.last_edited_time,
+            archived=response.archived,
+            in_trash=response.in_trash,
+            url=response.url,
+            page_property_handler=page_property_handler,
+            public_url=response.public_url,
+            emoji_icon=cls._extract_emoji_icon_from_dto(response),
+            external_icon_url=cls._extract_external_icon_url_from_dto(response),
+            cover_image_url=cls._extract_cover_image_url_from_dto(response),
+        )
+
+    @staticmethod
+    async def _extract_title_from_dto(response: NotionPageDto) -> str:
+        """Extract and convert the title from the DTO."""
+        title_property = next(
+            (prop for prop in response.properties.values() if isinstance(prop, PageTitleProperty)),
+            None,
+        )
+        rich_text_title = title_property.title if title_property else []
+        return await convert_rich_text_to_markdown(rich_text_title)
+
+    @staticmethod
+    def _extract_emoji_icon_from_dto(response: NotionPageDto) -> str | None:
+        """Extract the emoji icon from the DTO."""
+        if not response.icon or response.icon.type != IconType.EMOJI:
+            return None
+        return response.icon.emoji
+
+    @staticmethod
+    def _extract_external_icon_url_from_dto(response: NotionPageDto) -> str | None:
+        """Extract the external icon URL from the DTO."""
+        if not response.icon or response.icon.type != IconType.EXTERNAL:
+            return None
+        return response.icon.external.url if response.icon.external else None
+
+    @staticmethod
+    def _extract_cover_image_url_from_dto(response: NotionPageDto) -> str | None:
+        """Extract the cover image URL from the DTO."""
+        if not response.cover or response.cover.type != CoverType.EXTERNAL:
+            return None
+        return response.cover.external.url if response.cover.external else None
 
     @property
     def _entity_metadata_update_client(self) -> PageMetadataUpdateClient:

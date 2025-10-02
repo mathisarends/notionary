@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 import difflib
 from typing import TYPE_CHECKING, Self
 
-from notionary.data_source.factory import load_data_source_from_id, load_data_source_from_title
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.data_source.http.data_source_client import DataSourceClient
 from notionary.data_source.http.data_source_instance_client import DataSourceInstanceClient
 from notionary.data_source.properties.exceptions import DataSourcePropertyNotFound, DataSourcePropertyTypeError
 from notionary.data_source.properties.models import (
@@ -15,10 +17,15 @@ from notionary.data_source.properties.models import (
     DataSourceSelectProperty,
     DataSourceStatusProperty,
 )
+from notionary.data_source.schemas import DataSourceDto
 from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.models import PageTitleProperty
 from notionary.shared.entity.entity import Entity
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
+from notionary.shared.entity.utils import extract_parent_database
+from notionary.shared.models.cover_models import CoverType
+from notionary.shared.models.icon_models import IconType
+from notionary.workspace.search.search_client import SearchClient
 
 if TYPE_CHECKING:
     from notionary.database.service import NotionDatabase
@@ -58,12 +65,88 @@ class NotionDataSource(Entity):
         self._data_source_client = DataSourceInstanceClient(data_source_id=id)
 
     @classmethod
-    async def from_id(cls, id: str) -> Self:
-        return await load_data_source_from_id(id)
+    async def from_id(
+        cls,
+        data_source_id: str,
+        data_source_client: DataSourceClient | None = None,
+        rich_text_converter: RichTextToMarkdownConverter | None = None,
+    ) -> Self:
+        client = data_source_client or DataSourceClient()
+        converter = rich_text_converter or RichTextToMarkdownConverter()
+
+        data_source_dto = await client.get_data_source(data_source_id)
+        return await cls._create_from_dto(data_source_dto, converter)
 
     @classmethod
-    async def from_title(cls, title: str) -> Self:
-        return await load_data_source_from_title(title)
+    async def from_title(
+        cls,
+        data_source_title: str,
+        min_similarity: float = 0.6,
+        search_client: SearchClient | None = None,
+    ) -> Self:
+        client = search_client or SearchClient()
+        return await client.find_data_source(data_source_title, min_similarity=min_similarity)
+
+    @classmethod
+    async def _create_from_dto(
+        cls,
+        response: DataSourceDto,
+        rich_text_converter: RichTextToMarkdownConverter,
+    ) -> Self:
+        title, description, parent_database = await asyncio.gather(
+            cls._extract_title_from_dto(response, rich_text_converter),
+            cls._extract_description_from_dto(response, rich_text_converter),
+            extract_parent_database(response),
+        )
+
+        return cls(
+            id=response.id,
+            title=title,
+            description=description,
+            created_time=response.created_time,
+            last_edited_time=response.last_edited_time,
+            archived=response.archived,
+            in_trash=response.in_trash,
+            properties=response.properties,
+            parent_database=parent_database,
+            emoji_icon=cls._extract_emoji_icon_from_dto(response),
+            external_icon_url=cls._extract_external_icon_url_from_dto(response),
+            cover_image_url=cls._extract_cover_image_url_from_dto(response),
+        )
+
+    @staticmethod
+    async def _extract_title_from_dto(
+        response: DataSourceDto,
+        rich_text_converter: RichTextToMarkdownConverter,
+    ) -> str:
+        return await rich_text_converter.to_markdown(response.title)
+
+    @staticmethod
+    async def _extract_description_from_dto(
+        response: DataSourceDto,
+        rich_text_converter: RichTextToMarkdownConverter,
+    ) -> str | None:
+        if not response.description:
+            return None
+        return await rich_text_converter.to_markdown(response.description)
+
+    @staticmethod
+    def _extract_emoji_icon_from_dto(response: DataSourceDto) -> str | None:
+        if not response.icon or response.icon.type != IconType.EMOJI:
+            return None
+        return response.icon.emoji
+
+    @staticmethod
+    def _extract_external_icon_url_from_dto(response: DataSourceDto) -> str | None:
+        if not response.icon or response.icon.type != IconType.EXTERNAL:
+            return None
+        return response.icon.external.url if response.icon.external else None
+
+    @staticmethod
+    def _extract_cover_image_url_from_dto(response: DataSourceDto) -> str | None:
+        if not response.cover or response.cover.type != CoverType.EXTERNAL:
+            return None
+        return response.cover.external.url if response.cover.external else None
 
     @property
     def _entity_metadata_update_client(self) -> EntityMetadataUpdateClient:
@@ -112,16 +195,6 @@ class NotionDataSource(Entity):
 
     async def update_description(self, description: str) -> None:
         self._description = await self._data_source_client.update_description(description)
-
-    def get_property_type_by_name(self, property_name: str) -> str | None:
-        prop = self._properties.get(property_name)
-        if not prop:
-            return None
-
-        if isinstance(prop, dict):
-            return prop.get("type")
-
-        return prop.type
 
     async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
         prop = self._properties.get(property_name)

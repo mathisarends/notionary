@@ -73,11 +73,11 @@ class PagePropertyHandler:
         return created_time_property.created_time
 
     async def get_values_of_relation_property(self, name: str) -> list[str]:
-        from notionary.page.factory import load_page_from_id
+        from notionary import NotionPage
 
         relation_property = self._get_typed_property_or_raise(name, PageRelationProperty)
         relation_page_ids = [rel.id for rel in relation_property.relation]
-        notion_pages = [await load_page_from_id(page_id) for page_id in relation_page_ids]
+        notion_pages = [await NotionPage.from_id(page_id) for page_id in relation_page_ids]
         return [page.title for page in notion_pages if page]
 
     def get_values_of_multiselect_property(self, name: str) -> list[str]:
@@ -242,11 +242,11 @@ class PagePropertyHandler:
         )
 
     async def _convert_page_titles_to_ids(self, page_titles: list[str]) -> list[str]:
-        from notionary.page.factory import load_page_from_title
+        from notionary import NotionPage
 
         if not page_titles:
             return []
 
-        pages = await asyncio.gather(*[load_page_from_title(title=title) for title in page_titles])
+        pages = await asyncio.gather(*[NotionPage.from_title(title=title) for title in page_titles])
 
         return [page.id for page in pages if page]
