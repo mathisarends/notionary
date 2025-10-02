@@ -9,7 +9,7 @@ import pytest
 
 from notionary.blocks.heading.heading_element import HeadingElement
 from notionary.blocks.heading.heading_models import HeadingBlock
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 from notionary.blocks.types import BlockType
 
 
@@ -93,9 +93,9 @@ async def test_notion_to_markdown():
     block = Mock()
     block.type = BlockType.HEADING_2
 
-    # Mock heading content with real RichTextObject
+    # Mock heading content with real RichText
     heading_content = Mock()
-    rich_text = RichTextObject.from_plain_text("Test Heading")
+    rich_text = RichText.from_plain_text("Test Heading")
     heading_content.rich_text = [rich_text]
 
     block.heading_2 = heading_content

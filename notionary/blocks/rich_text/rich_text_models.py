@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 from enum import StrEnum
+from typing import Self
 
 from pydantic import BaseModel
 
@@ -87,7 +86,7 @@ class MentionObject(BaseModel):
     template_mention: MentionTemplateMention | None = None
 
 
-class RichTextObject(BaseModel):
+class RichText(BaseModel):
     type: RichTextType = RichTextType.TEXT
 
     text: TextContent | None = None
@@ -100,7 +99,7 @@ class RichTextObject(BaseModel):
     equation: EquationObject | None = None
 
     @classmethod
-    def from_plain_text(cls, content: str, **ann) -> RichTextObject:
+    def from_plain_text(cls, content: str, **ann) -> Self:
         return cls(
             type=RichTextType.TEXT,
             text=TextContent(content=content),
@@ -109,7 +108,7 @@ class RichTextObject(BaseModel):
         )
 
     @classmethod
-    def for_caption(cls, content: str) -> RichTextObject:
+    def for_caption(cls, content: str) -> Self:
         return cls(
             type=RichTextType.TEXT,
             text=TextContent(content=content),
@@ -118,12 +117,12 @@ class RichTextObject(BaseModel):
         )
 
     @classmethod
-    def for_code_block(cls, content: str) -> RichTextObject:
+    def for_code_block(cls, content: str) -> Self:
         # keine annotations setzen → Notion Code-Highlight bleibt an
         return cls.for_caption(content)
 
     @classmethod
-    def for_link(cls, content: str, url: str, **ann) -> RichTextObject:
+    def for_link(cls, content: str, url: str, **ann) -> Self:
         return cls(
             type=RichTextType.TEXT,
             text=TextContent(content=content, link=LinkObject(url=url)),
@@ -132,7 +131,7 @@ class RichTextObject(BaseModel):
         )
 
     @classmethod
-    def mention_user(cls, user_id: str) -> RichTextObject:
+    def mention_user(cls, user_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
             mention=MentionObject(type=MentionType.USER, user=MentionUserRef(id=user_id)),
@@ -140,7 +139,7 @@ class RichTextObject(BaseModel):
         )
 
     @classmethod
-    def mention_page(cls, page_id: str) -> RichTextObject:
+    def mention_page(cls, page_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
             mention=MentionObject(type=MentionType.PAGE, page=MentionPageRef(id=page_id)),
@@ -148,7 +147,7 @@ class RichTextObject(BaseModel):
         )
 
     @classmethod
-    def mention_database(cls, database_id: str) -> RichTextObject:
+    def mention_database(cls, database_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
             mention=MentionObject(type=MentionType.DATABASE, database=MentionDatabaseRef(id=database_id)),
@@ -156,7 +155,7 @@ class RichTextObject(BaseModel):
         )
 
     @classmethod
-    def equation_inline(cls, expression: str) -> RichTextObject:
+    def equation_inline(cls, expression: str) -> Self:
         return cls(
             type=RichTextType.EQUATION,
             equation=EquationObject(expression=expression),

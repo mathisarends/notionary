@@ -4,7 +4,7 @@ from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.table.table_models import (
     CreateTableBlock,
@@ -126,12 +126,12 @@ class TableElement(BaseBlockElement):
         return CreateTableRowBlock(table_row=table_row)
 
     @classmethod
-    async def _convert_cell_to_rich_text(cls, cell: str) -> list[RichTextObject]:
+    async def _convert_cell_to_rich_text(cls, cell: str) -> list[RichText]:
         """Convert cell text to rich text objects."""
         converter = MarkdownRichTextConverter()
         rich_text = await converter.to_rich_text(cell)
         if not rich_text:
-            rich_text = [RichTextObject.from_plain_text(cell)]
+            rich_text = [RichText.from_plain_text(cell)]
         return rich_text
 
     @classmethod

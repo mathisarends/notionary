@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 from enum import StrEnum
-from typing import Literal
+from typing import Literal, Self
 
 from pydantic import BaseModel
 
@@ -18,5 +16,5 @@ class NotionCover(BaseModel):
     external: ExternalFile | None = None
 
     @classmethod
-    def from_url(cls, url: str) -> NotionCover:
+    def from_url(cls, url: str) -> Self:
         return cls(icon=ExternalFile(url))

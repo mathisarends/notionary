@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from notionary.database.database_http_client import NotionDatabaseHttpClient
     from notionary.file_upload import FileUploadHttpClient
 
 
@@ -14,7 +13,6 @@ class PageContextProvider:
     """Context object that provides dependencies for block conversion operations."""
 
     page_id: str
-    database_client: NotionDatabaseHttpClient
     file_upload_client: FileUploadHttpClient
 
 

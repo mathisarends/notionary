@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.data_source.data_source import NotionDataSource
+from notionary.data_source.service import NotionDataSource
 from notionary.page.properties.page_property_models import (
     PageCheckboxProperty,
     PageCreatedTimeProperty,

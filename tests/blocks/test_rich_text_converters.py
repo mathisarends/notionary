@@ -131,9 +131,9 @@ class TestRichTextToMarkdownConverter:
         converter = RichTextToMarkdownConverter()
 
         # Create bold rich text manually
-        from notionary.blocks.rich_text.rich_text_models import RichTextObject
+        from notionary.blocks.rich_text.rich_text_models import RichText
 
-        rich_text = [RichTextObject.from_plain_text("bold text", bold=True)]
+        rich_text = [RichText.from_plain_text("bold text", bold=True)]
 
         result = await converter.to_markdown(rich_text)
         assert result == "**bold text**"
@@ -143,9 +143,9 @@ class TestRichTextToMarkdownConverter:
         """Test converting italic rich text to markdown."""
         converter = RichTextToMarkdownConverter()
 
-        from notionary.blocks.rich_text.rich_text_models import RichTextObject
+        from notionary.blocks.rich_text.rich_text_models import RichText
 
-        rich_text = [RichTextObject.from_plain_text("italic text", italic=True)]
+        rich_text = [RichText.from_plain_text("italic text", italic=True)]
 
         result = await converter.to_markdown(rich_text)
         assert result == "*italic text*"
@@ -155,9 +155,9 @@ class TestRichTextToMarkdownConverter:
         """Test converting link rich text to markdown."""
         converter = RichTextToMarkdownConverter()
 
-        from notionary.blocks.rich_text.rich_text_models import RichTextObject
+        from notionary.blocks.rich_text.rich_text_models import RichText
 
-        rich_text = [RichTextObject.for_link("text", "https://example.com")]
+        rich_text = [RichText.for_link("text", "https://example.com")]
 
         result = await converter.to_markdown(rich_text)
         assert result == "[text](https://example.com)"
@@ -167,9 +167,9 @@ class TestRichTextToMarkdownConverter:
         """Test converting equation rich text to markdown."""
         converter = RichTextToMarkdownConverter()
 
-        from notionary.blocks.rich_text.rich_text_models import RichTextObject
+        from notionary.blocks.rich_text.rich_text_models import RichText
 
-        rich_text = [RichTextObject.equation_inline("E = mc^2")]
+        rich_text = [RichText.equation_inline("E = mc^2")]
 
         result = await converter.to_markdown(rich_text)
         assert result == "$E = mc^2$"
@@ -179,9 +179,9 @@ class TestRichTextToMarkdownConverter:
         """Test converting colored rich text to markdown."""
         converter = RichTextToMarkdownConverter()
 
-        from notionary.blocks.rich_text.rich_text_models import RichTextObject
+        from notionary.blocks.rich_text.rich_text_models import RichText
 
-        rich_text = [RichTextObject.from_plain_text("important", color="red")]
+        rich_text = [RichText.from_plain_text("important", color="red")]
 
         result = await converter.to_markdown(rich_text)
         assert result == "(red:important)"
@@ -198,9 +198,9 @@ class TestRichTextToMarkdownConverter:
         """Test converting plain rich text to markdown."""
         converter = RichTextToMarkdownConverter()
 
-        from notionary.blocks.rich_text.rich_text_models import RichTextObject
+        from notionary.blocks.rich_text.rich_text_models import RichText
 
-        rich_text = [RichTextObject.from_plain_text("Just plain text")]
+        rich_text = [RichText.from_plain_text("Just plain text")]
 
         result = await converter.to_markdown(rich_text)
         assert result == "Just plain text"

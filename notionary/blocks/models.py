@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from notionary.blocks.types import BlockType
 from notionary.shared.models.parent_models import Parent
-from notionary.shared.models.user_models import NotionUser
+from notionary.user.schemas import UserResponseDto
 
 if TYPE_CHECKING:
     from notionary.blocks.bookmark import BookmarkBlock, CreateBookmarkBlock
@@ -70,8 +70,8 @@ class Block(BaseModel):
     type: BlockType
     created_time: str
     last_edited_time: str
-    created_by: NotionUser
-    last_edited_by: NotionUser
+    created_by: UserResponseDto
+    last_edited_by: UserResponseDto
     archived: bool = False
     in_trash: bool = False
     has_children: bool = False

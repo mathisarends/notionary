@@ -6,7 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 
 # ---------------------------
 # Comment Parent
@@ -110,7 +110,7 @@ class CommentDisplayNameDto(BaseModel):
 
 
 class CommentCreateRequest(BaseModel):
-    rich_text: list[RichTextObject]
+    rich_text: list[RichText]
     parent: CommentParent | None = None
     discussion_id: str | None = None
     display_name: CommentDisplayNameInput | None = None
@@ -120,7 +120,7 @@ class CommentCreateRequest(BaseModel):
     def for_page(
         cls,
         page_id: str,
-        rich_text: list[RichTextObject],
+        rich_text: list[RichText],
         display_name: CommentDisplayNameInput | None = None,
         attachments: list[CommentAttachmentInput] | None = None,
     ) -> CommentCreateRequest:
@@ -135,7 +135,7 @@ class CommentCreateRequest(BaseModel):
     def for_block(
         cls,
         block_id: str,
-        rich_text: list[RichTextObject],
+        rich_text: list[RichText],
         display_name: CommentDisplayNameInput | None = None,
         attachments: list[CommentAttachmentInput] | None = None,
     ) -> CommentCreateRequest:
@@ -150,7 +150,7 @@ class CommentCreateRequest(BaseModel):
     def for_discussion(
         cls,
         discussion_id: str,
-        rich_text: list[RichTextObject],
+        rich_text: list[RichText],
         display_name: CommentDisplayNameInput | None = None,
         attachments: list[CommentAttachmentInput] | None = None,
     ) -> CommentCreateRequest:
@@ -210,7 +210,7 @@ class CommentDto(BaseModel):
 
     created_by: UserRef
 
-    rich_text: list[RichTextObject] = Field(default_factory=list)
+    rich_text: list[RichText] = Field(default_factory=list)
     attachments: list[CommentAttachmentDto] = Field(default_factory=list)
     display_name: CommentDisplayNameDto | None = None
 

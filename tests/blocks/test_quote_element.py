@@ -8,13 +8,13 @@ import pytest
 
 from notionary.blocks.quote.quote_element import QuoteElement
 from notionary.blocks.quote.quote_models import QuoteBlock
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 from notionary.blocks.types import BlockType
 
 
-def create_rich_text(content: str) -> RichTextObject:
-    """Helper to create RichTextObject."""
-    return RichTextObject.from_plain_text(content)
+def create_rich_text(content: str) -> RichText:
+    """Helper to create RichText."""
+    return RichText.from_plain_text(content)
 
 
 @pytest.mark.asyncio

@@ -5,7 +5,7 @@ import re
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.toggle.toggle_models import CreateToggleBlock, ToggleBlock
 from notionary.blocks.types import BlockColor
@@ -74,7 +74,7 @@ class ToggleElement(BaseBlockElement):
         return toggle_line + "\n" + "\n".join(child_lines) + "\n+++"
 
     @classmethod
-    def _extract_text_content(cls, rich_text: list[RichTextObject]) -> str:
+    def _extract_text_content(cls, rich_text: list[RichText]) -> str:
         """Extracts plain text content from Notion rich_text blocks."""
         result = ""
         for text_obj in rich_text:

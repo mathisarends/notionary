@@ -1,7 +1,7 @@
 from typing import TypeGuard
 
 from notionary.blocks.models import BlockCreateRequest
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 from notionary.blocks.types import HasChildren, HasRichText
 from notionary.utils.mixins import LoggingMixin
 
@@ -79,7 +79,7 @@ class NotionTextLengthProcessor(LoggingMixin):
                 if child_content:
                     self._fix_content_text_lengths(child_content)
 
-    def _truncate_rich_text_content(self, rich_text_list: list[RichTextObject]) -> None:
+    def _truncate_rich_text_content(self, rich_text_list: list[RichText]) -> None:
         """
         Truncate text content in rich text objects that exceed the limit.
         """
@@ -121,8 +121,8 @@ class NotionTextLengthProcessor(LoggingMixin):
         """Type guard to check if an object has children attribute."""
         return hasattr(obj, "children") and isinstance(obj.children, list)
 
-    def _is_text_rich_text_object(self, rich_text_obj: RichTextObject) -> TypeGuard[RichTextObject]:
-        """Type guard to check if a RichTextObject is of type 'text' with content."""
+    def _is_text_rich_text_object(self, rich_text_obj: RichText) -> TypeGuard[RichText]:
+        """Type guard to check if a RichText is of type 'text' with content."""
         return (
             rich_text_obj.type == "text" and rich_text_obj.text is not None and rich_text_obj.text.content is not None
         )

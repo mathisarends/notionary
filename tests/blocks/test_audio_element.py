@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.audio.audio_element import AudioElement
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 
 
 @pytest.mark.asyncio
@@ -149,8 +149,8 @@ async def test_notion_to_markdown_with_caption():
     notion_block.audio.external = Mock()
     notion_block.audio.external.url = "https://sound.com/track.ogg"
 
-    # Use real RichTextObject instead of mock
-    caption_rt = RichTextObject.from_plain_text("Der Sound")
+    # Use real RichText instead of mock
+    caption_rt = RichText.from_plain_text("Der Sound")
     notion_block.audio.caption = [caption_rt]
 
     result = await AudioElement.notion_to_markdown(notion_block)
@@ -350,8 +350,8 @@ async def test_multiple_caption_rich_text_objects():
     notion_block.audio.external.url = "https://example.com/audio.mp3"
 
     # Use real RichTextObjects instead of mocks
-    rt1 = RichTextObject.from_plain_text("Part 1 ")
-    rt2 = RichTextObject.from_plain_text("Part 2")
+    rt1 = RichText.from_plain_text("Part 1 ")
+    rt2 = RichText.from_plain_text("Part 2")
     notion_block.audio.caption = [rt1, rt2]
 
     result = await AudioElement.notion_to_markdown(notion_block)
@@ -368,8 +368,8 @@ async def test_notion_to_markdown_with_plain_text_fallback():
     notion_block.audio.external = Mock()
     notion_block.audio.external.url = "https://example.com/audio.mp3"
 
-    # Use real RichTextObject instead of mock
-    rt = RichTextObject.from_plain_text("Fallback Text")
+    # Use real RichText instead of mock
+    rt = RichText.from_plain_text("Fallback Text")
     notion_block.audio.caption = [rt]
 
     result = await AudioElement.notion_to_markdown(notion_block)

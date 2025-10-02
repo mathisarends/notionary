@@ -14,7 +14,7 @@ from notionary.blocks.file.file_element_models import (
     FileUploadFile,
     NotionHostedFile,
 )
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 
 
 @pytest.mark.asyncio
@@ -119,8 +119,8 @@ async def test_notion_to_markdown_external_file_with_caption():
     external_file = Mock(spec=ExternalFile)
     external_file.url = "https://example.com/video"
 
-    # Mock caption with real RichTextObject
-    caption_rt = RichTextObject.from_plain_text("Cool Video")
+    # Mock caption with real RichText
+    caption_rt = RichText.from_plain_text("Cool Video")
     external_file.caption = [caption_rt]
 
     block.embed = external_file
@@ -300,8 +300,8 @@ async def test_multiple_caption_parts():
     external_file.url = "https://example.com"
 
     # Multiple rich text objects in caption
-    rt1 = RichTextObject.from_plain_text("Part 1 ")
-    rt2 = RichTextObject.from_plain_text("Part 2")
+    rt1 = RichText.from_plain_text("Part 1 ")
+    rt2 = RichText.from_plain_text("Part 2")
     external_file.caption = [rt1, rt2]
 
     block.embed = external_file

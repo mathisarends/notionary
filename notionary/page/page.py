@@ -1,17 +1,14 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING
 
 from notionary.blocks.block_http_client import NotionBlockHttpClient
 from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
-from notionary.data_source.data_source import NotionDataSource
-from notionary.database.database_http_client import NotionDatabaseHttpClient
+from notionary.data_source.service import NotionDataSource
 from notionary.file_upload.file_upload_http_client import FileUploadHttpClient
 from notionary.page.factory import (
     load_page_from_id,
@@ -31,9 +28,6 @@ from notionary.page.reader.page_content_retriever import PageContentRetriever
 from notionary.schemas import NotionContentSchema
 from notionary.shared.entity.entity import Entity
 
-if TYPE_CHECKING:
-    from notionary import NotionDatabase
-
 
 class NotionPage(Entity):
     def __init__(
@@ -50,7 +44,6 @@ class NotionPage(Entity):
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
         properties: dict[str, PageProperty] | None = None,
-        parent_database: NotionDatabase | None = None,
         parent_data_source: NotionDataSource | None = None,
     ):
         super().__init__(
@@ -65,7 +58,6 @@ class NotionPage(Entity):
         self._title = title
         self._archived = archived
         self._properties = properties or {}
-        self._parent_database = parent_database
         self._parent_data_source = parent_data_source
         self._url = url
         self._public_url = public_url
@@ -73,7 +65,6 @@ class NotionPage(Entity):
         self._page_client = NotionPageHttpClient(page_id=id, properties=properties)
         self._block_client = NotionBlockHttpClient()
         self._comment_service = CommentService()
-        self._rich_text_converter = MarkdownRichTextConverter()
 
         self.block_element_registry = BlockRegistry()
 
@@ -157,10 +148,7 @@ class NotionPage(Entity):
         return await self._page_content_retriever.convert_to_markdown(blocks=blocks)
 
     def _setup_page_context_provider(self) -> PageContextProvider:
-        parent_database_id = self._parent_database.id if self._parent_database else "temp"
-
         return PageContextProvider(
             page_id=self._id,
-            database_client=NotionDatabaseHttpClient(parent_database_id),
             file_upload_client=FileUploadHttpClient(),
         )

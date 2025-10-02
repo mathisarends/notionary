@@ -3,7 +3,7 @@ import re
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.code.code_models import CodeBlock, CodeLanguage, CreateCodeBlock
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -58,11 +58,11 @@ class CodeElement(BaseBlockElement):
         rich_text = []
         if code_lines:
             content = "\n".join(code_lines)
-            rich_text = [RichTextObject.for_code_block(content)]
+            rich_text = [RichText.for_code_block(content)]
 
         caption_list = []
         if caption:
-            caption_list = [RichTextObject.for_caption(caption)]
+            caption_list = [RichText.for_caption(caption)]
 
         code_block = CodeBlock(rich_text=rich_text, language=language, caption=caption_list)
 
@@ -114,12 +114,12 @@ class CodeElement(BaseBlockElement):
         return CodeLanguage.PLAIN_TEXT
 
     @staticmethod
-    def extract_content(rich_text_list: list[RichTextObject]) -> str:
+    def extract_content(rich_text_list: list[RichText]) -> str:
         """Extract code content from rich_text array."""
         return "".join(rt.plain_text for rt in rich_text_list if rt.plain_text)
 
     @staticmethod
-    def extract_caption(caption_list: list[RichTextObject]) -> str:
+    def extract_caption(caption_list: list[RichText]) -> str:
         """Extract caption text from caption array."""
         return "".join(rt.plain_text for rt in caption_list if rt.plain_text)
 

@@ -10,7 +10,7 @@ from notionary.shared.models.parent_models import (
 )
 
 if TYPE_CHECKING:
-    from notionary.data_source.data_source import NotionDataSource
+    from notionary.data_source.service import NotionDataSource
     from notionary.database.database import NotionDatabase
 
 
@@ -34,7 +34,7 @@ class ParentExtractMixin:
             return database_parent.database_id if database_parent else None
 
     async def _extract_parent_data_source(self, response: EntityDto) -> NotionDataSource | None:
-        from notionary.data_source.data_source import NotionDataSource
+        from notionary.data_source.service import NotionDataSource
 
         data_source_id = self._extract_parent_data_source_id(response)
         if not data_source_id:

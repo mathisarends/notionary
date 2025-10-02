@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 from enum import StrEnum
-from typing import Literal
+from typing import Literal, Self
 
 from pydantic import BaseModel
 
@@ -18,13 +16,12 @@ class EmojiIcon(BaseModel):
     emoji: str
 
 
-# Basically ExternalRessource, but we redefine it here for clarity and better ide support
 class ExternalIcon(BaseModel):
     type: Literal[IconType.EXTERNAL] = IconType.EXTERNAL
     external: ExternalFile
 
     @classmethod
-    def from_url(cls, url: str) -> ExternalIcon:
+    def from_url(cls, url: str) -> Self:
         return cls(external=ExternalFile(url=url))
 
 

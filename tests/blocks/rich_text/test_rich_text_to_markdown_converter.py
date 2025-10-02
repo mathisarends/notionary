@@ -14,7 +14,7 @@ from notionary.blocks.rich_text.rich_text_models import (
     MentionPageRef,
     MentionType,
     MentionUserRef,
-    RichTextObject,
+    RichText,
     RichTextType,
     TextAnnotations,
     TextContent,
@@ -60,7 +60,7 @@ class TestRichTextToMarkdownConverter:
     @pytest.mark.asyncio
     async def test_plain_text(self, converter: RichTextToMarkdownConverter) -> None:
         rich_text = [
-            RichTextObject(
+            RichText(
                 type=RichTextType.TEXT,
                 plain_text="Hello world",
                 text=TextContent(content="Hello world"),
@@ -73,7 +73,7 @@ class TestRichTextToMarkdownConverter:
     @pytest.mark.asyncio
     async def test_bold_text(self, converter: RichTextToMarkdownConverter) -> None:
         rich_text = [
-            RichTextObject(
+            RichText(
                 type=RichTextType.TEXT,
                 plain_text="Bold",
                 text=TextContent(content="Bold"),
@@ -86,7 +86,7 @@ class TestRichTextToMarkdownConverter:
     @pytest.mark.asyncio
     async def test_italic_text(self, converter: RichTextToMarkdownConverter) -> None:
         rich_text = [
-            RichTextObject(
+            RichText(
                 type=RichTextType.TEXT,
                 plain_text="Italic",
                 text=TextContent(content="Italic"),
@@ -99,7 +99,7 @@ class TestRichTextToMarkdownConverter:
     @pytest.mark.asyncio
     async def test_code_text(self, converter: RichTextToMarkdownConverter) -> None:
         rich_text = [
-            RichTextObject(
+            RichText(
                 type=RichTextType.TEXT,
                 plain_text="code",
                 text=TextContent(content="code"),
@@ -112,7 +112,7 @@ class TestRichTextToMarkdownConverter:
     @pytest.mark.asyncio
     async def test_link(self, converter: RichTextToMarkdownConverter) -> None:
         rich_text = [
-            RichTextObject(
+            RichText(
                 type=RichTextType.TEXT,
                 plain_text="Google",
                 text=TextContent(content="Google", link=LinkObject(url="https://google.com")),
@@ -125,9 +125,7 @@ class TestRichTextToMarkdownConverter:
     @pytest.mark.asyncio
     async def test_equation(self, converter: RichTextToMarkdownConverter) -> None:
         rich_text = [
-            RichTextObject(
-                type=RichTextType.EQUATION, plain_text="E=mc^2", equation=EquationObject(expression="E=mc^2")
-            )
+            RichText(type=RichTextType.EQUATION, plain_text="E=mc^2", equation=EquationObject(expression="E=mc^2"))
         ]
         result = await converter.to_markdown(rich_text)
         assert result == "$E=mc^2$"
@@ -135,7 +133,7 @@ class TestRichTextToMarkdownConverter:
     @pytest.mark.asyncio
     async def test_page_mention(self, converter: RichTextToMarkdownConverter) -> None:
         rich_text = [
-            RichTextObject(
+            RichText(
                 type=RichTextType.MENTION,
                 plain_text="Test Page",
                 mention=MentionObject(type=MentionType.PAGE, page=MentionPageRef(id="page-123")),
@@ -147,7 +145,7 @@ class TestRichTextToMarkdownConverter:
     @pytest.mark.asyncio
     async def test_user_mention(self, converter: RichTextToMarkdownConverter) -> None:
         rich_text = [
-            RichTextObject(
+            RichText(
                 type=RichTextType.MENTION,
                 plain_text="John Doe",
                 mention=MentionObject(type=MentionType.USER, user=MentionUserRef(id="user-123")),
@@ -159,7 +157,7 @@ class TestRichTextToMarkdownConverter:
     @pytest.mark.asyncio
     async def test_date_mention(self, converter: RichTextToMarkdownConverter) -> None:
         rich_text = [
-            RichTextObject(
+            RichText(
                 type=RichTextType.MENTION,
                 plain_text="2024-01-15",
                 mention=MentionObject(type=MentionType.DATE, date=MentionDate(start="2024-01-15", end="2024-01-20")),
@@ -171,13 +169,13 @@ class TestRichTextToMarkdownConverter:
     @pytest.mark.asyncio
     async def test_mixed_content(self, converter: RichTextToMarkdownConverter) -> None:
         rich_text = [
-            RichTextObject(
+            RichText(
                 type=RichTextType.TEXT,
                 plain_text="Hello ",
                 text=TextContent(content="Hello "),
                 annotations=TextAnnotations(),
             ),
-            RichTextObject(
+            RichText(
                 type=RichTextType.TEXT,
                 plain_text="world",
                 text=TextContent(content="world"),

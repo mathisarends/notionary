@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.rich_text.rich_text_models import (
-    RichTextObject,
+    RichText,
     TextAnnotations,
     TextContent,
 )
@@ -11,9 +11,9 @@ from notionary.blocks.table.table_element import TableElement
 from notionary.blocks.types import BlockType
 
 
-def create_rich_text(content: str) -> RichTextObject:
-    """Helper to create RichTextObject."""
-    return RichTextObject(
+def create_rich_text(content: str) -> RichText:
+    """Helper to create RichText."""
+    return RichText(
         type="text",
         text=TextContent(content=content),
         annotations=TextAnnotations(),
@@ -24,7 +24,7 @@ def create_rich_text(content: str) -> RichTextObject:
 @pytest.mark.asyncio
 async def test_notion_to_markdown_with_data():
     """Test conversion with actual table data."""
-    # Create real RichTextObject instances instead of dictionaries
+    # Create real RichText instances instead of dictionaries
     mock_cell_1 = [create_rich_text("John")]
     mock_cell_2 = [create_rich_text("25")]
 

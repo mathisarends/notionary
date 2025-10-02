@@ -7,7 +7,7 @@ from notionary.database.database_models import NotionDatabaseDto
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase
-    from notionary.data_source.data_source import NotionDataSource
+    from notionary.data_source.service import NotionDataSource
 
 
 class NotionDatabaseFactory:
@@ -96,7 +96,7 @@ class NotionDatabaseFactory:
         return await self._convert_rich_text_to_markdown(rich_text_objects)
 
     async def _extract_data_sources(self, response: NotionDatabaseDto) -> list[NotionDataSource]:
-        from notionary.data_source.data_source import NotionDataSource
+        from notionary.data_source.service import NotionDataSource
 
         data_source_ids = [data_source.id for data_source in response.data_sources]
 

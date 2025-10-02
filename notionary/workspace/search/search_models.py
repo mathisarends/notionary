@@ -2,7 +2,7 @@ from typing import Generic, Literal, TypeVar
 
 from pydantic import BaseModel
 
-from notionary.data_source.data_source_models import DataSourceDto
+from notionary.data_source.schemas import DataSourceDto
 from notionary.page.page_models import NotionPageDto
 
 T = TypeVar("T", bound=BaseModel)

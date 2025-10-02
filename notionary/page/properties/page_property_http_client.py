@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 from notionary.http.http_client import NotionHttpClient
 from notionary.page.page_models import NotionPageDto, PgePropertiesUpdateDto
 from notionary.page.properties.page_property_models import (
@@ -105,12 +105,12 @@ class PagePropertyHttpClient(NotionHttpClient):
         if property_type == PageTitleProperty:
             return PageTitleProperty(
                 id=property_id,
-                title=[RichTextObject(type="text", text={"content": str(value)})],
+                title=[RichText(type="text", text={"content": str(value)})],
             )
         elif property_type == PageRichTextProperty:
             return PageRichTextProperty(
                 id=property_id,
-                rich_text=[RichTextObject(type="text", text={"content": str(value)})],
+                rich_text=[RichText(type="text", text={"content": str(value)})],
             )
         elif property_type == PageURLProperty:
             return PageURLProperty(id=property_id, url=str(value))

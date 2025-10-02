@@ -3,7 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 
 
 class CodeLanguage(str, Enum):
@@ -82,8 +82,8 @@ class CodeLanguage(str, Enum):
 
 
 class CodeBlock(BaseModel):
-    caption: list[RichTextObject] = Field(default_factory=list)
-    rich_text: list[RichTextObject]
+    caption: list[RichText] = Field(default_factory=list)
+    rich_text: list[RichText]
     language: CodeLanguage = CodeLanguage.PLAIN_TEXT
 
     model_config = ConfigDict(arbitrary_types_allowed=True)

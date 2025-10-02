@@ -1,13 +1,8 @@
-from typing import Literal
-
 from pydantic import BaseModel
 
-
-class NotionUserDto(BaseModel):
-    object: Literal["user"] = "user"
-    id: str
+from notionary.user.schemas import NotionUserReferenceDto
 
 
 class UserContextMixin(BaseModel):
-    created_by: NotionUserDto
-    last_edited_by: NotionUserDto
+    created_by: NotionUserReferenceDto
+    last_edited_by: NotionUserReferenceDto

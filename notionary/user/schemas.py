@@ -33,19 +33,23 @@ class BotUserDto(BaseModel):
     workspace_limits: WorkspaceLimits | None = None
 
 
-class PersonUserResponseDto(BaseModel):
+class NotionUserBase(BaseModel):
+    object: Literal["user"] = "user"
     id: str
-    type: Literal[UserType.PERSON] = UserType.PERSON
+
+    type: UserType
+
     name: str | None = None
     avatar_url: str | None = None
+
+
+class PersonUserResponseDto(NotionUserBase):
+    type: Literal[UserType.PERSON] = UserType.PERSON
     person: PersonUserDto
 
 
 class BotUserResponseDto(BaseModel):
-    id: str
     type: Literal[UserType.BOT] = UserType.BOT
-    name: str | None = None
-    avatar_url: str | None = None
     bot: BotUserDto
 
 
@@ -56,3 +60,8 @@ class NotionUsersListResponse(BaseModel):
     results: list[UserResponseDto]
     next_cursor: str | None = None
     has_more: bool
+
+
+class NotionUserReferenceDto(BaseModel):
+    object: Literal["user"] = "user"
+    id: str

@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 
 
 class TableBlock(BaseModel):
@@ -15,7 +15,7 @@ class TableBlock(BaseModel):
 
 
 class TableRowBlock(BaseModel):
-    cells: list[list[RichTextObject]]
+    cells: list[list[RichText]]
 
 
 class CreateTableRowBlock(BaseModel):

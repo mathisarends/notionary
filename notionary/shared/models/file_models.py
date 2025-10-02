@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 from enum import StrEnum
-from typing import Literal
+from typing import Literal, Self
 
 from pydantic import BaseModel
 
@@ -11,8 +9,6 @@ class FileType(StrEnum):
 
 
 class ExternalFile(BaseModel):
-    """Represents an external file, e.g., for cover images."""
-
     url: str
 
 
@@ -21,5 +17,5 @@ class ExternalRessource(BaseModel):
     external: ExternalFile
 
     @classmethod
-    def from_url(cls, url: str) -> ExternalRessource:
+    def from_url(cls, url: str) -> Self:
         return cls(external=ExternalFile(url=url))

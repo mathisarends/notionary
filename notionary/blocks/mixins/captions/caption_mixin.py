@@ -1,7 +1,7 @@
 import re
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 
 
 class CaptionMixin:
@@ -71,15 +71,15 @@ class CaptionMixin:
         return cls.CAPTION_PATTERN.sub("", text).strip()
 
     @classmethod
-    def build_caption_rich_text(cls, caption_text: str) -> list[RichTextObject]:
+    def build_caption_rich_text(cls, caption_text: str) -> list[RichText]:
         """Return caption as canonical rich text list (with annotations)."""
         if not caption_text:
             return []
         # IMPORTANT: use the same formatter used elsewhere in the app
-        return [RichTextObject.for_caption(caption_text)]
+        return [RichText.for_caption(caption_text)]
 
     @classmethod
-    async def format_caption_for_markdown(cls, caption_list: list[RichTextObject]) -> str:
+    async def format_caption_for_markdown(cls, caption_list: list[RichText]) -> str:
         """Convert rich text caption back to markdown format."""
         if not caption_list:
             return ""

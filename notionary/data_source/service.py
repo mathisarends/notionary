@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Self
 
-from notionary.data_source.data_source_factory import load_data_source_from_id, load_data_source_from_title
+from notionary.data_source.factory import load_data_source_from_id, load_data_source_from_title
 from notionary.data_source.http.data_source_instance_client import DataSourceInstanceClient
 from notionary.data_source.properties.models import (
     DataSourceMultiSelectProperty,

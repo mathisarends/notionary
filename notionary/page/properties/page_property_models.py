@@ -2,9 +2,9 @@ from typing import Annotated, Literal, TypeVar
 
 from pydantic import BaseModel, Field
 
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
-from notionary.shared.models.user_models import NotionUser
+from notionary.blocks.rich_text.rich_text_models import RichText
 from notionary.shared.properties.property_type import PropertyType
+from notionary.user.schemas import PersonUserResponseDto
 
 
 class PageProperty(BaseModel):
@@ -45,7 +45,7 @@ class PageURLProperty(PageProperty):
 
 class PageRichTextProperty(PageProperty):
     type: Literal[PropertyType.RICH_TEXT] = PropertyType.RICH_TEXT
-    rich_text: list[RichTextObject] = Field(default_factory=list)
+    rich_text: list[RichText] = Field(default_factory=list)
 
 
 class SelectOption(BaseModel):
@@ -75,7 +75,7 @@ class PageSelectProperty(PageProperty):
 
 class PagePeopleProperty(PageProperty):
     type: Literal[PropertyType.PEOPLE] = PropertyType.PEOPLE
-    people: list[NotionUser] = Field(default_factory=list)
+    people: list[PersonUserResponseDto] = Field(default_factory=list)
 
 
 class DateValue(BaseModel):
@@ -91,7 +91,7 @@ class PageDateProperty(PageProperty):
 
 class PageTitleProperty(PageProperty):
     type: Literal[PropertyType.TITLE] = PropertyType.TITLE
-    title: list[RichTextObject] = Field(default_factory=list)
+    title: list[RichText] = Field(default_factory=list)
 
 
 class PageNumberProperty(PageProperty):

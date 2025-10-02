@@ -9,7 +9,7 @@ import pytest
 
 from notionary.blocks.image_block.image_element import ImageElement
 from notionary.blocks.image_block.image_models import CreateImageBlock
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 
 
 @pytest.mark.asyncio
@@ -121,8 +121,8 @@ async def test_notion_to_markdown_external_with_caption():
     block.image.external = Mock()
     block.image.external.url = "https://example.com/photo.jpg"
 
-    # Mock caption with real RichTextObject
-    caption_rt = RichTextObject.from_plain_text("Beautiful sunset")
+    # Mock caption with real RichText
+    caption_rt = RichText.from_plain_text("Beautiful sunset")
     block.image.caption = [caption_rt]
 
     result = await ImageElement.notion_to_markdown(block)
@@ -260,8 +260,8 @@ async def test_multiple_caption_parts():
     block.image.external.url = "https://example.com/pic.jpg"
 
     # Multiple rich text objects in caption
-    rt1 = RichTextObject.from_plain_text("Part 1 ")
-    rt2 = RichTextObject.from_plain_text("Part 2")
+    rt1 = RichText.from_plain_text("Part 1 ")
+    rt2 = RichText.from_plain_text("Part 2")
     block.image.caption = [rt1, rt2]
 
     result = await ImageElement.notion_to_markdown(block)

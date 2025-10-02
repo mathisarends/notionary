@@ -11,7 +11,7 @@ from notionary.blocks.file.file_element_models import (
 )
 from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -47,7 +47,7 @@ class EmbedElement(BaseBlockElement):
         # Build EmbedBlock
         embed_block = EmbedBlock(url=url, caption=[])
         if rich_text.strip():
-            rich_text_obj = RichTextObject.from_plain_text(rich_text.strip())
+            rich_text_obj = RichText.from_plain_text(rich_text.strip())
             embed_block.caption = [rich_text_obj]
 
         return CreateEmbedBlock(embed=embed_block)

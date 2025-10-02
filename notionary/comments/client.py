@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator
 
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 from notionary.comments.schemas import (
     CommentCreateRequest,
     CommentDto,
@@ -49,7 +49,7 @@ class CommentClient(NotionHttpClient):
 
     async def create_comment_for_page(
         self,
-        rich_text: list[RichTextObject],
+        rich_text: list[RichText],
         page_id: str,
     ) -> CommentDto:
         request = CommentCreateRequest.for_page(page_id=page_id, rich_text=rich_text)
@@ -64,7 +64,7 @@ class CommentClient(NotionHttpClient):
 
     async def create_comment_for_discussion(
         self,
-        rich_text: list[RichTextObject],
+        rich_text: list[RichText],
         discussion_id: str,
     ) -> CommentDto:
         request = CommentCreateRequest.for_discussion(discussion_id=discussion_id, rich_text=rich_text)

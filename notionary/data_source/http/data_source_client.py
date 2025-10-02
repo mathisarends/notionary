@@ -1,4 +1,4 @@
-from notionary.data_source.data_source_models import DataSourceDto
+from notionary.data_source.schemas import DataSourceDto
 from notionary.http.http_client import NotionHttpClient
 
 

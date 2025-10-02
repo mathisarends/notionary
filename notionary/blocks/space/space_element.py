@@ -7,7 +7,7 @@ from notionary.blocks.paragraph.paragraph_models import (
     ParagraphBlock,
 )
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-from notionary.blocks.rich_text.rich_text_models import RichTextObject
+from notionary.blocks.rich_text.rich_text_models import RichText
 from notionary.blocks.space.space_models import SPACE_MARKER
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.blocks.types import BlockColor, BlockType
@@ -61,5 +61,5 @@ class SpaceElement(BaseBlockElement):
         )
 
     @classmethod
-    def _is_empty_paragraph(cls, rich_text: list[RichTextObject]) -> bool:
+    def _is_empty_paragraph(cls, rich_text: list[RichText]) -> bool:
         return not len(rich_text)

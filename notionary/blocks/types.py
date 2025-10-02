@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
     from notionary.blocks.models import BlockCreateRequest
-    from notionary.blocks.rich_text.rich_text_models import RichTextObject
+    from notionary.blocks.rich_text.rich_text_models import RichText
 
 
 class BlockColor(StrEnum):
@@ -118,7 +118,7 @@ class MarkdownBlockType(StrEnum):
 
 
 class HasRichText(Protocol):
-    rich_text: list[RichTextObject]
+    rich_text: list[RichText]
 
 
 class HasChildren(Protocol):

@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import Self
 
-from notionary.data_source.data_source import NotionDataSource
+from notionary.data_source.service import NotionDataSource
 from notionary.database.database_factory import (
     load_database_from_id,
     load_database_from_title,
@@ -93,7 +93,7 @@ class NotionDatabase(Entity):
         return self._data_sources
 
     async def _load_data_sources(self) -> list[NotionDataSource]:
-        from notionary.data_source.data_source import NotionDataSource
+        from notionary.data_source.service import NotionDataSource
 
         return await asyncio.gather(
             *(NotionDataSource.from_id(data_source_id) for data_source_id in self._data_source_ids)

@@ -8,7 +8,7 @@ from notionary.blocks.rich_text.name_id_resolver.database_name_id_resolver impor
 from notionary.blocks.rich_text.name_id_resolver.name_id_resolver import NameIdResolver
 from notionary.blocks.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
 from notionary.blocks.rich_text.name_id_resolver.person_name_id_resolver import PersonNameIdResolver
-from notionary.blocks.rich_text.rich_text_models import MentionType, RichTextObject, RichTextType, TextAnnotations
+from notionary.blocks.rich_text.rich_text_models import MentionType, RichText, RichTextType, TextAnnotations
 from notionary.blocks.rich_text.rich_text_patterns import RichTextPatterns
 from notionary.blocks.types import BlockColor
 
@@ -16,7 +16,7 @@ from notionary.blocks.types import BlockColor
 @dataclass
 class PatternMatch:
     match: Match
-    handler: Callable[[Match], RichTextObject | list[RichTextObject]]
+    handler: Callable[[Match], RichText | list[RichText]]
     position: int
 
     @property
@@ -31,7 +31,7 @@ class PatternMatch:
 @dataclass
 class PatternHandler:
     pattern: str
-    handler: Callable[[Match], RichTextObject | list[RichTextObject]]
+    handler: Callable[[Match], RichText | list[RichText]]
 
 
 class MarkdownRichTextConverter:
@@ -65,25 +65,25 @@ class MarkdownRichTextConverter:
             PatternHandler(RichTextPatterns.USER_MENTION, self._handle_user_mention_pattern),
         ]
 
-    async def to_rich_text(self, text: str) -> list[RichTextObject]:
+    async def to_rich_text(self, text: str) -> list[RichText]:
         if not text:
             return []
         return await self._split_text_into_segments(text)
 
-    async def _split_text_into_segments(self, text: str) -> list[RichTextObject]:
-        segments: list[RichTextObject] = []
+    async def _split_text_into_segments(self, text: str) -> list[RichText]:
+        segments: list[RichText] = []
         remaining_text = text
 
         while remaining_text:
             pattern_match = self._find_earliest_pattern_match(remaining_text)
 
             if not pattern_match:
-                segments.append(RichTextObject.from_plain_text(remaining_text))
+                segments.append(RichText.from_plain_text(remaining_text))
                 break
 
             plain_text_before = remaining_text[: pattern_match.position]
             if plain_text_before:
-                segments.append(RichTextObject.from_plain_text(plain_text_before))
+                segments.append(RichText.from_plain_text(plain_text_before))
 
             pattern_result = await self._process_pattern_match(pattern_match)
             self._add_pattern_result_to_segments(segments, pattern_result)
@@ -105,7 +105,7 @@ class MarkdownRichTextConverter:
 
         return earliest_match
 
-    async def _process_pattern_match(self, pattern_match: PatternMatch) -> RichTextObject | list[RichTextObject]:
+    async def _process_pattern_match(self, pattern_match: PatternMatch) -> RichText | list[RichText]:
         handler_method = pattern_match.handler
 
         if self._is_async_handler(handler_method):
@@ -123,18 +123,18 @@ class MarkdownRichTextConverter:
         return handler_method in async_handlers
 
     def _add_pattern_result_to_segments(
-        self, segments: list[RichTextObject], pattern_result: RichTextObject | list[RichTextObject]
+        self, segments: list[RichText], pattern_result: RichText | list[RichText]
     ) -> None:
         if isinstance(pattern_result, list):
             segments.extend(pattern_result)
         elif pattern_result:
             segments.append(pattern_result)
 
-    async def _handle_color_pattern(self, match: Match) -> list[RichTextObject]:
+    async def _handle_color_pattern(self, match: Match) -> list[RichText]:
         color, content = match.group(1).lower(), match.group(2)
 
         if color not in self.VALID_COLORS:
-            return [RichTextObject.from_plain_text(f"({match.group(1)}:{content})")]
+            return [RichText.from_plain_text(f"({match.group(1)}:{content})")]
 
         parsed_segments = await self._split_text_into_segments(content)
 
@@ -148,7 +148,7 @@ class MarkdownRichTextConverter:
 
         return colored_segments
 
-    def _apply_color_to_text_segment(self, segment: RichTextObject, color: str) -> RichTextObject:
+    def _apply_color_to_text_segment(self, segment: RichText, color: str) -> RichText:
         if segment.type != RichTextType.TEXT:
             return segment
 
@@ -159,18 +159,18 @@ class MarkdownRichTextConverter:
         else:
             return self._apply_color_to_plain_text_segment(segment, color)
 
-    def _apply_color_to_link_segment(self, segment: RichTextObject, color: str) -> RichTextObject:
+    def _apply_color_to_link_segment(self, segment: RichText, color: str) -> RichText:
         formatting = self._extract_formatting_attributes(segment.annotations)
 
-        return RichTextObject.for_link(segment.plain_text, segment.text.link.url, color=color, **formatting)
+        return RichText.for_link(segment.plain_text, segment.text.link.url, color=color, **formatting)
 
-    def _apply_color_to_plain_text_segment(self, segment: RichTextObject, color: str) -> RichTextObject:
+    def _apply_color_to_plain_text_segment(self, segment: RichText, color: str) -> RichText:
         if segment.type != RichTextType.TEXT:
             return segment
 
         formatting = self._extract_formatting_attributes(segment.annotations)
 
-        return RichTextObject.from_plain_text(segment.plain_text, color=color, **formatting)
+        return RichText.from_plain_text(segment.plain_text, color=color, **formatting)
 
     def _extract_formatting_attributes(self, annotations: TextAnnotations) -> dict[str, bool]:
         if not annotations:
@@ -190,30 +190,30 @@ class MarkdownRichTextConverter:
             "code": annotations.code,
         }
 
-    async def _handle_page_mention_pattern(self, match: Match) -> RichTextObject:
+    async def _handle_page_mention_pattern(self, match: Match) -> RichText:
         identifier = match.group(1)
         return await self._create_mention_or_fallback(
             identifier=identifier,
             resolve_func=self.page_resolver.resolve_name_to_id,
-            create_mention_func=RichTextObject.mention_page,
+            create_mention_func=RichText.mention_page,
             mention_type=MentionType.PAGE,
         )
 
-    async def _handle_database_mention_pattern(self, match: Match) -> RichTextObject:
+    async def _handle_database_mention_pattern(self, match: Match) -> RichText:
         identifier = match.group(1)
         return await self._create_mention_or_fallback(
             identifier=identifier,
             resolve_func=self.database_resolver.resolve_name_to_id,
-            create_mention_func=RichTextObject.mention_database,
+            create_mention_func=RichText.mention_database,
             mention_type=MentionType.DATABASE,
         )
 
-    async def _handle_user_mention_pattern(self, match: Match) -> RichTextObject:
+    async def _handle_user_mention_pattern(self, match: Match) -> RichText:
         identifier = match.group(1)
         return await self._create_mention_or_fallback(
             identifier=identifier,
             resolve_func=self.person_resolver.resolve_name_to_id,
-            create_mention_func=RichTextObject.mention_user,
+            create_mention_func=RichText.mention_user,
             mention_type=MentionType.USER,
         )
 
@@ -221,9 +221,9 @@ class MarkdownRichTextConverter:
         self,
         identifier: str,
         resolve_func: Callable[[str], str | None],
-        create_mention_func: Callable[[str], RichTextObject],
+        create_mention_func: Callable[[str], RichText],
         mention_type: MentionType,
-    ) -> RichTextObject:
+    ) -> RichText:
         try:
             resolved_id = await resolve_func(identifier)
 
@@ -236,29 +236,29 @@ class MarkdownRichTextConverter:
             # If resolution throws an error, fallback to plain text
             return self._create_unresolved_mention_fallback(identifier, mention_type)
 
-    def _create_unresolved_mention_fallback(self, identifier: str, mention_type: MentionType) -> RichTextObject:
+    def _create_unresolved_mention_fallback(self, identifier: str, mention_type: MentionType) -> RichText:
         fallback_text = f"@{mention_type.value}[{identifier}]"
-        return RichTextObject.for_caption(fallback_text)
+        return RichText.for_caption(fallback_text)
 
-    def _handle_bold_pattern(self, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), bold=True)
+    def _handle_bold_pattern(self, match: Match) -> RichText:
+        return RichText.from_plain_text(match.group(1), bold=True)
 
-    def _handle_italic_pattern(self, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), italic=True)
+    def _handle_italic_pattern(self, match: Match) -> RichText:
+        return RichText.from_plain_text(match.group(1), italic=True)
 
-    def _handle_underline_pattern(self, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), underline=True)
+    def _handle_underline_pattern(self, match: Match) -> RichText:
+        return RichText.from_plain_text(match.group(1), underline=True)
 
-    def _handle_strikethrough_pattern(self, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), strikethrough=True)
+    def _handle_strikethrough_pattern(self, match: Match) -> RichText:
+        return RichText.from_plain_text(match.group(1), strikethrough=True)
 
-    def _handle_code_pattern(self, match: Match) -> RichTextObject:
-        return RichTextObject.from_plain_text(match.group(1), code=True)
+    def _handle_code_pattern(self, match: Match) -> RichText:
+        return RichText.from_plain_text(match.group(1), code=True)
 
-    def _handle_link_pattern(self, match: Match) -> RichTextObject:
+    def _handle_link_pattern(self, match: Match) -> RichText:
         link_text, url = match.group(1), match.group(2)
-        return RichTextObject.for_link(link_text, url)
+        return RichText.for_link(link_text, url)
 
-    def _handle_equation_pattern(self, match: Match) -> RichTextObject:
+    def _handle_equation_pattern(self, match: Match) -> RichText:
         expression = match.group(1)
-        return RichTextObject.equation_inline(expression)
+        return RichText.equation_inline(expression)
