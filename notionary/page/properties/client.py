@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 from notionary.blocks.rich_text.models import RichText
 from notionary.http.http_client import NotionHttpClient
-from notionary.page.page_models import NotionPageDto, PgePropertiesUpdateDto
 from notionary.page.properties.models import (
     DateValue,
     PageCheckboxProperty,
@@ -24,6 +23,7 @@ from notionary.page.properties.models import (
     SelectOption,
     StatusOption,
 )
+from notionary.page.schemas import NotionPageDto, PgePropertiesUpdateDto
 
 
 class PagePropertyHttpClient(NotionHttpClient):

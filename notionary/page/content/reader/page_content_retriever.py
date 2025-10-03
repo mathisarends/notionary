@@ -1,20 +1,16 @@
 from notionary.blocks.models import Block
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.page.reader.handler import (
-    BlockRenderingContext,
-    ColumnListRenderer,
-    ColumnRenderer,
-    LineRenderer,
-    NumberedListRenderer,
-    ToggleableHeadingRenderer,
-    ToggleRenderer,
-)
+from notionary.page.content.reader.handler.block_rendering_context import BlockRenderingContext
+from notionary.page.content.reader.handler.column_list_renderer import ColumnListRenderer
+from notionary.page.content.reader.handler.column_renderer import ColumnRenderer
+from notionary.page.content.reader.handler.line_renderer import LineRenderer
+from notionary.page.content.reader.handler.numbered_list_renderer import NumberedListRenderer
+from notionary.page.content.reader.handler.toggle_renderer import ToggleRenderer
+from notionary.page.content.reader.handler.toggleable_heading_renderer import ToggleableHeadingRenderer
 from notionary.utils.mixins.logging import LoggingMixin
 
 
 class PageContentRetriever(LoggingMixin):
-    """Retrieves Notion page content and converts it to Markdown using chain of responsibility."""
-
     def __init__(
         self,
         block_registry: BlockRegistry,
@@ -24,14 +20,9 @@ class PageContentRetriever(LoggingMixin):
         self._setup_handler_chain()
 
     async def convert_to_markdown(self, blocks: list[Block]) -> str:
-        """
-        Retrieve page content and convert it to Markdown.
-        Uses the chain of responsibility pattern for scalable block processing.
-        """
         return await self._convert_blocks_to_markdown(blocks, indent_level=0)
 
     def _setup_handler_chain(self) -> None:
-        """Setup the chain of handlers in priority order."""
         toggle_handler = ToggleRenderer()
         toggleable_heading_handler = ToggleableHeadingRenderer()
         column_list_handler = ColumnListRenderer()
@@ -47,7 +38,6 @@ class PageContentRetriever(LoggingMixin):
         self._handler_chain = toggle_handler
 
     async def _convert_blocks_to_markdown(self, blocks: list[Block], indent_level: int = 0) -> str:
-        """Convert blocks to Markdown using the handler chain."""
         if not blocks:
             return ""
 

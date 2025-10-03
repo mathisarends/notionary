@@ -10,16 +10,16 @@ from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
 from notionary.file_upload.file_upload_http_client import FileUploadHttpClient
-from notionary.page.page_content_deleting_service import PageContentDeletingService
-from notionary.page.page_content_writer import PageContentWriter
+from notionary.page.content.page_content_deleting_service import PageContentDeletingService
+from notionary.page.content.page_content_writer import PageContentWriter
+from notionary.page.content.reader.page_content_retriever import PageContentRetriever
 from notionary.page.page_context import PageContextProvider, page_context
 from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
-from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.factory import PagePropertyHandlerFactory
 from notionary.page.properties.models import PageTitleProperty
 from notionary.page.properties.service import PagePropertyHandler
-from notionary.page.reader.page_content_retriever import PageContentRetriever
+from notionary.page.schemas import NotionPageDto
 from notionary.schemas import NotionContentSchema
 from notionary.shared.entity.dto_parsers import (
     extract_cover_image_url_from_dto,
@@ -71,13 +71,11 @@ class NotionPage(Entity):
         self.block_element_registry = BlockRegistry()
 
         self._page_content_writer = PageContentWriter(
-            page_id=self._id,
-            block_registry=self.block_element_registry,
+            page_id=self._id, block_registry=self.block_element_registry, block_client=self._block_client
         )
 
         self._page_content_deleting_service = PageContentDeletingService(
-            page_id=self._id,
-            block_registry=self.block_element_registry,
+            page_id=self._id, block_registry=self.block_element_registry, block_client=self._block_client
         )
 
         self._page_content_retriever = PageContentRetriever(

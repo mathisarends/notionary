@@ -100,9 +100,9 @@ class NotionDatabase(Entity):
         rich_text_converter: RichTextToMarkdownConverter,
         client: NotionDatabaseHttpClient,
     ) -> Self:
-        title_coroutine = extract_title(response, rich_text_converter)
-        description_coroutine = extract_description(response, rich_text_converter)
-        title, description = await asyncio.gather(title_coroutine, description_coroutine)
+        title, description = await asyncio.gather(
+            extract_title(response, rich_text_converter), extract_description(response, rich_text_converter)
+        )
 
         return cls(
             id=response.id,

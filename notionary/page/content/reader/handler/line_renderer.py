@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from notionary.page.reader.handler import BlockHandler, BlockRenderingContext
+from notionary.page.content.reader.handler import BlockHandler, BlockRenderingContext
 
 
 class LineRenderer(BlockHandler):
@@ -22,7 +22,7 @@ class LineRenderer(BlockHandler):
                 return
 
             # Import here to avoid circular dependency and process children
-            from notionary.page.reader.page_content_retriever import (
+            from notionary.page.content.reader.page_content_retriever import (
                 PageContentRetriever,
             )
 
@@ -45,7 +45,7 @@ class LineRenderer(BlockHandler):
             return
 
         # Otherwise process children and combine
-        from notionary.page.reader.page_content_retriever import PageContentRetriever
+        from notionary.page.content.reader.page_content_retriever import PageContentRetriever
 
         retriever = PageContentRetriever(context.block_registry)
         children_markdown = await retriever._convert_blocks_to_markdown(

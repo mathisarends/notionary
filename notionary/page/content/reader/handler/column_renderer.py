@@ -1,15 +1,12 @@
 from notionary.blocks.column.column_element import ColumnElement
-from notionary.page.reader.handler import BlockHandler, BlockRenderingContext
+from notionary.page.content.reader.handler import BlockHandler, BlockRenderingContext
 
 
 class ColumnRenderer(BlockHandler):
-    """Handles individual column blocks with their children content."""
-
     def _can_handle(self, context: BlockRenderingContext) -> bool:
         return ColumnElement.match_notion(context.block)
 
     async def _process(self, context: BlockRenderingContext) -> None:
-        # Get the column start line with potential width ratio
         column_start = self._extract_column_start(context.block)
 
         # Apply indentation if needed
@@ -19,8 +16,7 @@ class ColumnRenderer(BlockHandler):
         # Process children if they exist
         children_markdown = ""
         if context.has_children():
-            # Import here to avoid circular dependency
-            from notionary.page.reader.page_content_retriever import (
+            from notionary.page.content.reader.page_content_retriever import (
                 PageContentRetriever,
             )
 

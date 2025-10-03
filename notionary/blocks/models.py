@@ -63,7 +63,7 @@ class BlockChildrenResponse(BaseModel):
     request_id: str
 
 
-class Block(BaseModel):
+class BaseBlock(BaseModel):
     object: Literal["block"]
     id: str
     parent: Parent | None = None
@@ -75,9 +75,10 @@ class Block(BaseModel):
     archived: bool = False
     in_trash: bool = False
     has_children: bool = False
-
     children: list[Block] | None = None
 
+
+class Block(BaseBlock):
     # Block type-specific content (only one will be populated based on type)
     audio: FileBlock | None = None
     bookmark: BookmarkBlock | None = None

@@ -10,10 +10,10 @@ from notionary.utils.mixins.logging import LoggingMixin
 
 
 class PageContentWriter(LoggingMixin):
-    def __init__(self, page_id: str, block_registry: BlockRegistry) -> None:
+    def __init__(self, page_id: str, block_registry: BlockRegistry, block_client: NotionBlockHttpClient) -> None:
         self.page_id = page_id
         self.block_registry = block_registry
-        self._block_client = NotionBlockHttpClient()
+        self._block_client = block_client
 
         self._markdown_to_notion_converter = MarkdownToNotionConverter(block_registry=block_registry)
 

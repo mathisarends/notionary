@@ -4,12 +4,11 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.utils.mixins.logging import LoggingMixin
 
 
-# TODO: Refactor those files here
 class PageContentDeletingService(LoggingMixin):
-    def __init__(self, page_id: str, block_registry: BlockRegistry) -> None:
+    def __init__(self, page_id: str, block_registry: BlockRegistry, block_client: NotionBlockHttpClient) -> None:
         self.page_id = page_id
         self.block_registry = block_registry
-        self._block_client = NotionBlockHttpClient()
+        self._block_client = block_client
 
     async def clear_page_content(self) -> None:
         children_response = await self._block_client.get_block_children(block_id=self.page_id)

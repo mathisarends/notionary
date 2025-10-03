@@ -1,5 +1,5 @@
 from notionary.blocks.toggle.toggle_element import ToggleElement
-from notionary.page.reader.handler import BlockHandler, BlockRenderingContext
+from notionary.page.content.reader.handler import BlockHandler, BlockRenderingContext
 
 
 class ToggleRenderer(BlockHandler):
@@ -26,7 +26,7 @@ class ToggleRenderer(BlockHandler):
         children_markdown = ""
         if context.has_children():
             # Import here to avoid circular dependency
-            from notionary.page.reader.page_content_retriever import (
+            from notionary.page.content.reader.page_content_retriever import (
                 PageContentRetriever,
             )
 

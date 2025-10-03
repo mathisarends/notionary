@@ -10,8 +10,6 @@ if TYPE_CHECKING:
 
 @dataclass
 class BlockElementMarkdownInformation:
-    """Metadata describing how a Notion block maps to Markdown syntax."""
-
     block_type: str
     description: str
     syntax_examples: list[str]
@@ -19,18 +17,10 @@ class BlockElementMarkdownInformation:
 
 
 class SyntaxPromptBuilder:
-    """
-    Builds a comprehensive markdown syntax reference from a block registry.
-    Iterates over all registered elements and collects their system prompt information.
-    """
-
-    def __init__(self, block_registry: BlockRegistry):
+    def __init__(self, block_registry: BlockRegistry) -> None:
         self.block_registry = block_registry
 
     def build_markdown_reference(self) -> str:
-        """
-        Build a complete markdown syntax reference string.
-        """
         sections = [
             self._build_header(),
             *self._build_element_sections(),
@@ -39,9 +29,6 @@ class SyntaxPromptBuilder:
         return "\n\n".join(sections)
 
     def build_concise_reference(self) -> str:
-        """
-        Build a more concise reference suitable for system prompts.
-        """
         lines = ["# Notionary Markdown Syntax"]
 
         for element_class in self.block_registry.get_elements():
@@ -54,7 +41,6 @@ class SyntaxPromptBuilder:
         return "\n".join(lines)
 
     def get_blocks_with_information(self) -> list[str]:
-        """Get list of block names that provide system prompt information."""
         blocks = []
 
         for element_class in self.block_registry.get_elements():
@@ -65,7 +51,6 @@ class SyntaxPromptBuilder:
         return blocks
 
     def _build_header(self) -> str:
-        """Build the header section of the reference."""
         return dedent(
             """
             # Notionary Markdown Syntax Reference
@@ -91,7 +76,6 @@ class SyntaxPromptBuilder:
         return sections
 
     def _build_element_section(self, info: BlockElementMarkdownInformation) -> str:
-        """Build a well-structured section for a single block element."""
         section_parts = [
             f"## {info.block_type}",
             "",
@@ -115,7 +99,6 @@ class SyntaxPromptBuilder:
         return "\n".join(section_parts).rstrip()
 
     def _format_syntax_examples(self, examples: list[str]) -> list[str]:
-        """Format syntax examples with proper markdown and clear structure."""
         formatted = []
 
         for i, example in enumerate(examples, 1):

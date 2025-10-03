@@ -1,5 +1,5 @@
 from notionary.http.http_client import NotionHttpClient
-from notionary.page.page_models import NotionPageDto
+from notionary.page.schemas import NotionPageDto
 
 
 class NotionPageHttpClient(NotionHttpClient):

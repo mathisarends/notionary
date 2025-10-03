@@ -2,22 +2,18 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from notionary.page.reader.handler.block_rendering_context import BlockRenderingContext
+from notionary.page.content.reader.handler.block_rendering_context import BlockRenderingContext
 
 
 class BlockHandler(ABC):
-    """Abstract base class for block handlers."""
-
     def __init__(self):
         self._next_handler: BlockHandler | None = None
 
     def set_next(self, handler: BlockHandler) -> BlockHandler:
-        """Set the next handler in the chain."""
         self._next_handler = handler
         return handler
 
     async def handle(self, context: BlockRenderingContext) -> None:
-        """Handle the block or pass to next handler."""
         if self._can_handle(context):
             await self._process(context)
         elif self._next_handler:
@@ -25,16 +21,13 @@ class BlockHandler(ABC):
 
     @abstractmethod
     def _can_handle(self, context: BlockRenderingContext) -> bool:
-        """Check if this handler can process the current block."""
         pass
 
     @abstractmethod
     async def _process(self, context: BlockRenderingContext) -> None:
-        """Process the block and update context."""
         pass
 
     def _indent_text(self, text: str, spaces: int = 4) -> str:
-        """Indent each line of text with specified number of spaces."""
         if not text:
             return text
 

@@ -1,10 +1,9 @@
 from notionary.blocks.column.column_list_element import ColumnListElement
-from notionary.page.reader.handler import BlockHandler, BlockRenderingContext
+from notionary.page.content.reader.handler import BlockHandler
+from notionary.page.content.reader.handler.block_rendering_context import BlockRenderingContext
 
 
 class ColumnListRenderer(BlockHandler):
-    """Handles column list blocks with their column children."""
-
     def _can_handle(self, context: BlockRenderingContext) -> bool:
         return ColumnListElement.match_notion(context.block)
 
@@ -20,7 +19,7 @@ class ColumnListRenderer(BlockHandler):
         children_markdown = ""
         if context.has_children():
             # Import here to avoid circular dependency
-            from notionary.page.reader.page_content_retriever import (
+            from notionary.page.content.reader.page_content_retriever import (
                 PageContentRetriever,
             )
 

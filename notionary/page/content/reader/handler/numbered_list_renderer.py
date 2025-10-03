@@ -1,6 +1,6 @@
 from notionary.blocks.models import BlockType
-from notionary.page.reader.handler.base_block_renderer import BlockHandler
-from notionary.page.reader.handler.block_rendering_context import BlockRenderingContext
+from notionary.page.content.reader.handler.base_block_renderer import BlockHandler
+from notionary.page.content.reader.handler.block_rendering_context import BlockRenderingContext
 
 
 class NumberedListRenderer(BlockHandler):

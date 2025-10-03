@@ -6,7 +6,7 @@ PAGE = "Ruff Linter"
 async def main() -> None:
     page = await NotionPage.from_title(PAGE)
 
-    user = await page.get_last_edited_by_user()
+    user = await page.get_markdown_content()
     print(user)
 
 

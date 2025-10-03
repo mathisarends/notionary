@@ -18,8 +18,8 @@ from notionary.data_source.properties.models import (
     DataSourceStatusProperty,
 )
 from notionary.data_source.schemas import DataSourceDto
-from notionary.page.page_models import NotionPageDto
 from notionary.page.properties.models import PageTitleProperty
+from notionary.page.schemas import NotionPageDto
 from notionary.shared.entity.dto_parsers import (
     extract_cover_image_url_from_dto,
     extract_database_id,
