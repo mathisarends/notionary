@@ -1,6 +1,6 @@
 import pytest
 
-from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
+from notionary.blocks.markdown.builder import MarkdownBuilder
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.page.writer.markdown_to_notion_converter import MarkdownToNotionConverter
 

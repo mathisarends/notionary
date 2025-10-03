@@ -1,6 +1,6 @@
 import re
 
-from notionary.blocks.table.table_element import TableElement
+from notionary.blocks.mappings.table import TableElement
 from notionary.page.writer.handler import LineHandler, LineProcessingContext
 
 

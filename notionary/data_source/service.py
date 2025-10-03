@@ -4,7 +4,7 @@ import asyncio
 import difflib
 from typing import TYPE_CHECKING, Self
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.data_source.http.data_source_client import DataSourceClient
 from notionary.data_source.http.data_source_instance_client import DataSourceInstanceClient
 from notionary.data_source.properties.exceptions import DataSourcePropertyNotFound, DataSourcePropertyTypeError

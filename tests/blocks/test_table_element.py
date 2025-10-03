@@ -1,14 +1,14 @@
 from unittest.mock import Mock
 
 import pytest
-from notionary.blocks.schemas_new import BlockType
 
-from notionary.blocks.rich_text.models import (
+from notionary.blocks.mappings.rich_text.models import (
     RichText,
     TextAnnotations,
     TextContent,
 )
-from notionary.blocks.table.table_element import TableElement
+from notionary.blocks.mappings.table import TableElement
+from notionary.blocks.schemas import BlockType
 
 
 def create_rich_text(content: str) -> RichText:

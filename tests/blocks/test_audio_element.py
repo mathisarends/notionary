@@ -2,8 +2,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.audio.audio_element import AudioElement
-from notionary.blocks.rich_text.models import RichText
+from notionary.blocks.mappings.audio import AudioElement
+from notionary.blocks.mappings.rich_text.models import RichText
 
 
 @pytest.mark.asyncio

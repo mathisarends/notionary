@@ -1,23 +1,14 @@
 from __future__ import annotations
 
-from typing import Literal, Protocol
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from notionary.blocks.enums import BlockColor, BlockType, CodeLanguage, FileType
-from notionary.blocks.rich_text.models import RichText
+from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.shared.models.icon_models import Icon
 from notionary.shared.models.parent_models import Parent
 from notionary.user.schemas import PartialUserDto
-
-# ============================================================================
-# Protocols
-# ============================================================================
-
-
-class HasRichText(Protocol):
-    rich_text: list[RichText]
-
 
 # ============================================================================
 # File-related models
@@ -242,7 +233,7 @@ class CreateCodeBlock(BaseModel):
 
 class ColumnData(BaseModel):
     width_ratio: float | None = None
-    children: list[BlockCreateRequest] = Field(default_factory=list)
+    children: list[BlockCreatePayload] = Field(default_factory=list)
 
 
 class ColumnBlock(BaseBlock):
@@ -670,7 +661,7 @@ class BlockChildrenResponse(BaseModel):
 
 
 # Union type for all create block requests
-BlockCreateRequest = (
+BlockCreatePayload = (
     CreateAudioBlock
     | CreateBookmarkBlock
     | CreateBreadcrumbBlock
@@ -701,4 +692,4 @@ BlockCreateRequest = (
     | CreateVideoBlock
 )
 
-BlockCreateResult = BlockCreateRequest
+BlockCreateResult = BlockCreatePayload

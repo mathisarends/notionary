@@ -2,8 +2,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.bulleted_list.bulleted_list_element import BulletedListElement
-from notionary.blocks.bulleted_list.models import (
+from notionary.blocks.mappings.bulleted_list import BulletedListElement
+from notionary.blocks.schemas import (
     BulletedListItemBlock,
     CreateBulletedListItemBlock,
 )

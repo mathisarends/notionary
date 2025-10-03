@@ -1,5 +1,5 @@
-from notionary.blocks.column.column_element import ColumnElement
-from notionary.blocks.column.column_list_element import ColumnListElement
+from notionary.blocks.mappings.column import ColumnElement
+from notionary.blocks.mappings.column_list import ColumnListElement
 from notionary.page.writer.handler import LineHandler, LineProcessingContext
 
 
@@ -54,7 +54,7 @@ class RegularLineHandler(LineHandler):
 
     async def _process_as_paragraph(self, context: LineProcessingContext) -> None:
         """Process a line as a paragraph."""
-        from notionary.blocks.paragraph.paragraph_element import ParagraphElement
+        from notionary.blocks.mappings.paragraph import ParagraphElement
 
         paragraph_element = ParagraphElement()
         result = await paragraph_element.markdown_to_notion(context.line)

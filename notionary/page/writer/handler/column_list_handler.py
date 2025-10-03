@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from notionary.blocks.column.column_list_element import ColumnListElement
+from notionary.blocks.mappings.column_list import ColumnListElement
 from notionary.page.writer.handler.line_handler import (
     LineHandler,
     LineProcessingContext,

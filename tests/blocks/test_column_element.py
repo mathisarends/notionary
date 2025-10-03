@@ -1,8 +1,7 @@
 import pytest
 
-from notionary.blocks.column.column_element import ColumnElement
-from notionary.blocks.column.models import ColumnBlock, CreateColumnBlock
-from notionary.blocks.schemas import Block
+from notionary.blocks.mappings.column import ColumnElement
+from notionary.blocks.schemas import Block, ColumnBlock, CreateColumnBlock
 
 
 def create_block_with_required_fields(**kwargs) -> Block:

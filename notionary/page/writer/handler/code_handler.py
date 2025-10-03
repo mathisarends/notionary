@@ -1,6 +1,6 @@
 import re
 
-from notionary.blocks.code.code_element import CodeElement
+from notionary.blocks.mappings.code import CodeElement
 from notionary.page.writer.handler.line_handler import (
     LineHandler,
     LineProcessingContext,

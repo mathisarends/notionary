@@ -2,14 +2,9 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.embed.embed_element import EmbedElement
-from notionary.blocks.embed.models import CreateEmbedBlock, EmbedBlock
-from notionary.blocks.file.models import (
-    ExternalFile,
-    FileUploadFile,
-    NotionHostedFile,
-)
-from notionary.blocks.rich_text.models import RichText
+from notionary.blocks.mappings.embed import EmbedElement
+from notionary.blocks.mappings.rich_text.models import RichText
+from notionary.blocks.schemas import CreateEmbedBlock, EmbedBlock, ExternalFile, FileUploadFile, NotionHostedFile
 
 
 @pytest.mark.asyncio

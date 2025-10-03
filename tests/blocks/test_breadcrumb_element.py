@@ -1,11 +1,12 @@
 import pytest
 
-from notionary.blocks.breadcrumbs.breadcrumb_element import BreadcrumbElement
-from notionary.blocks.breadcrumbs.models import (
+from notionary.blocks.mappings.breadcrumb import BreadcrumbElement
+from notionary.blocks.schemas import (
+    Block,
+    BlockType,
     BreadcrumbBlock,
     CreateBreadcrumbBlock,
 )
-from notionary.blocks.schemas import Block, BlockType
 
 
 def create_block_with_required_fields(**kwargs) -> Block:

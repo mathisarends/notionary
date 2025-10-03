@@ -2,9 +2,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.file.models import FileBlock
-from notionary.blocks.video.models import CreateVideoBlock
-from notionary.blocks.video.video_element import VideoElement
+from notionary.blocks.mappings.video import VideoElement
+from notionary.blocks.schemas import CreateVideoBlock, FileBlock
 
 
 @pytest.mark.asyncio

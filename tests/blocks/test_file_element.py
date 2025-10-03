@@ -1,17 +1,17 @@
 import pytest
 
-from notionary.blocks.file.file_element import FileElement
-from notionary.blocks.file.models import (
-    CreateFileBlock,
-    ExternalFile,
-    FileBlock,
-)
-from notionary.blocks.rich_text.models import (
+from notionary.blocks.mappings.file import FileElement
+from notionary.blocks.mappings.rich_text.models import (
     RichText,
     TextAnnotations,
     TextContent,
 )
-from notionary.blocks.schemas import Block
+from notionary.blocks.schemas import (
+    Block,
+    CreateFileBlock,
+    ExternalFile,
+    FileBlock,
+)
 
 
 def create_rich_text_object(content: str) -> RichText:

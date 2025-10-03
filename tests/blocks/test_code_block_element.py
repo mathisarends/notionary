@@ -1,13 +1,12 @@
 import pytest
 
-from notionary.blocks.code.code_element import CodeElement
-from notionary.blocks.code.models import CodeBlock, CodeLanguage, CreateCodeBlock
-from notionary.blocks.rich_text.models import (
+from notionary.blocks.mappings.code import CodeElement
+from notionary.blocks.mappings.rich_text.models import (
     RichText,
     TextAnnotations,
     TextContent,
 )
-from notionary.blocks.schemas import Block
+from notionary.blocks.schemas import Block, CodeBlock, CodeLanguage, CreateCodeBlock
 
 
 def create_rich_text_object(content: str) -> RichText:

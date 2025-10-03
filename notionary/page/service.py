@@ -2,10 +2,10 @@ import asyncio
 from collections.abc import Callable
 from typing import Self
 
-from notionary.blocks.block_http_client import NotionBlockHttpClient
-from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
+from notionary.blocks.client import NotionBlockHttpClient
+from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
+from notionary.blocks.markdown.builder import MarkdownBuilder
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.blocks.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService

@@ -2,10 +2,9 @@ from unittest.mock import Mock
 
 import pytest
 import pytest_asyncio
-from notionary.blocks.bookmark.models import BookmarkBlock, CreateBookmarkBlock
-from notionary.blocks.schemas_new import BlockType
 
-from notionary.blocks.bookmark.bookmark_element import BookmarkElement
+from notionary.blocks.mappings.bookmark import BookmarkElement
+from notionary.blocks.schemas import BlockType, BookmarkBlock, CreateBookmarkBlock
 
 
 @pytest.mark.asyncio
@@ -66,7 +65,7 @@ async def test_markdown_to_notion_with_title():
     assert len(result.bookmark.caption) >= 1
     # RichTextToMarkdownConverter erstellt Markdown aus RichText-Strukturen
     # Wir testen den Text-Inhalt über to_markdown
-    from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+    from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 
     converter = RichTextToMarkdownConverter()
     text = await converter.to_markdown(result.bookmark.caption)
@@ -85,7 +84,7 @@ async def test_markdown_to_notion_with_title_and_description():
     assert result.bookmark.url == "https://example.com"
 
     # Caption sollte "Beispiel-Titel - Eine Beschreibung" enthalten (em dash)
-    from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+    from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 
     converter = RichTextToMarkdownConverter()
     caption_text = await converter.to_markdown(result.bookmark.caption)
@@ -122,7 +121,7 @@ async def test_notion_to_markdown_simple():
 async def test_notion_to_markdown_with_title():
     """Test Konvertierung von Notion-Bookmark mit Titel."""
     # Verwende MarkdownRichTextConverter um korrekte RichText-Struktur zu erstellen
-    from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+    from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 
     converter = MarkdownRichTextConverter()
     caption = await converter.to_rich_text("Beispiel-Titel")
@@ -141,7 +140,7 @@ async def test_notion_to_markdown_with_title():
 async def test_notion_to_markdown_with_title_and_description():
     """Test Konvertierung von Notion-Bookmark mit Titel und Beschreibung."""
     # Verwende MarkdownRichTextConverter mit hyphen für korrekte Trennung
-    from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+    from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 
     converter = MarkdownRichTextConverter()
     caption = await converter.to_rich_text("Beispiel-Titel - Eine Beschreibung")
@@ -223,7 +222,7 @@ def simple_bookmark_block():
 @pytest_asyncio.fixture
 async def titled_bookmark_block():
     """Fixture für Bookmark-Block mit Titel."""
-    from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+    from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 
     converter = MarkdownRichTextConverter()
     caption = await converter.to_rich_text("Test Title")
@@ -354,8 +353,8 @@ async def test_caption_separator_behavior():
         "[bookmark](https://example.com)(caption:Title – Description)"
     )
 
-    from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-    from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+    from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+    from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 
     converter_to_md = RichTextToMarkdownConverter()
     caption_text = await converter_to_md.to_markdown(result_hyphen.bookmark.caption)

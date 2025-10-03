@@ -7,7 +7,7 @@ Base class for all Notion structured output schemas with injected MarkdownBuilde
 
 from pydantic import BaseModel
 
-from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
+from notionary.blocks.markdown.builder import MarkdownBuilder
 
 
 class NotionContentSchema(BaseModel):

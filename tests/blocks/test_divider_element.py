@@ -1,8 +1,7 @@
 import pytest
 
-from notionary.blocks.divider.divider_element import DividerElement
-from notionary.blocks.divider.models import CreateDividerBlock, DividerBlock
-from notionary.blocks.schemas import Block
+from notionary.blocks.mappings.divider import DividerElement
+from notionary.blocks.schemas import Block, CreateDividerBlock, DividerBlock
 
 
 def create_block_with_required_fields(**kwargs) -> Block:

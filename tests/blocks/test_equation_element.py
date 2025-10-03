@@ -1,8 +1,7 @@
 import pytest
 
-from notionary.blocks.equation.equation_element import EquationElement
-from notionary.blocks.equation.models import CreateEquationBlock, EquationBlock
-from notionary.blocks.schemas import Block, BlockType
+from notionary.blocks.mappings.equation import EquationElement
+from notionary.blocks.schemas import Block, BlockType, CreateEquationBlock, EquationBlock
 
 
 def create_block_with_required_fields(**kwargs) -> Block:

@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from notionary.blocks.rich_text.models import (
+from notionary.blocks.mappings.rich_text.models import (
     EquationObject,
     LinkObject,
     MentionDate,
@@ -15,10 +15,10 @@ from notionary.blocks.rich_text.models import (
     TextAnnotations,
     TextContent,
 )
-from notionary.blocks.rich_text.name_id_resolver.database_name_id_resolver import DatabaseNameIdResolver
-from notionary.blocks.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
-from notionary.blocks.rich_text.name_id_resolver.person_name_id_resolver import PersonNameIdResolver
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.mappings.rich_text.name_id_resolver.database_name_id_resolver import DatabaseNameIdResolver
+from notionary.blocks.mappings.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
+from notionary.blocks.mappings.rich_text.name_id_resolver.person_name_id_resolver import PersonNameIdResolver
+from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 
 
 @pytest.fixture

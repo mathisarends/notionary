@@ -1,1 +1,0 @@
-SPACE_MARKER = "[space]"

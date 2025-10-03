@@ -1,11 +1,10 @@
 from unittest.mock import Mock
 
 import pytest
-from notionary.blocks.heading.models import HeadingBlock
-from notionary.blocks.schemas_new import BlockType
 
-from notionary.blocks.heading.heading_element import HeadingElement
-from notionary.blocks.rich_text.models import RichText
+from notionary.blocks.mappings.heading import HeadingElement
+from notionary.blocks.mappings.rich_text.models import RichText
+from notionary.blocks.schemas import BlockType, HeadingData
 
 
 @pytest.mark.asyncio
@@ -65,7 +64,7 @@ async def test_markdown_to_notion(markdown, expected_level, expected_content):
 
     # Check heading content
     heading = getattr(result, f"heading_{expected_level}")
-    assert isinstance(heading, HeadingBlock)
+    assert isinstance(heading, HeadingData)
     assert heading.is_toggleable is False
     assert heading.color == "default"
     assert len(heading.rich_text) > 0

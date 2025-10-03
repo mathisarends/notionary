@@ -2,11 +2,11 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.numbered_list.models import (
+from notionary.blocks.mappings.numbered_list import NumberedListElement
+from notionary.blocks.schemas import (
     CreateNumberedListItemBlock,
     NumberedListItemBlock,
 )
-from notionary.blocks.numbered_list.numbered_list_element import NumberedListElement
 
 
 @pytest.mark.asyncio

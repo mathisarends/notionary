@@ -1,11 +1,9 @@
-from __future__ import annotations
-
 import re
 
-from notionary.blocks.schemas import BlockCreateRequest, BlockType
-from notionary.blocks.toggleable_heading.toggleable_heading_element import (
+from notionary.blocks.mappings.toggleable_heading import (
     ToggleableHeadingElement,
 )
+from notionary.blocks.schemas import BlockCreatePayload, BlockType
 from notionary.page.writer.handler import (
     LineHandler,
     LineProcessingContext,
@@ -135,7 +133,7 @@ class ToggleableHeadingHandler(LineHandler):
 
         return children_blocks
 
-    def _assign_heading_children(self, parent_block: BlockCreateRequest, children: list[BlockCreateRequest]) -> None:
+    def _assign_heading_children(self, parent_block: BlockCreatePayload, children: list[BlockCreatePayload]) -> None:
         """Assign children to toggleable heading blocks."""
         block_type = parent_block.type
 

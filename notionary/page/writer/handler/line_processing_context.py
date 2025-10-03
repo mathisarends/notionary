@@ -2,25 +2,25 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from notionary.blocks.base_block_element import BaseBlockElement
+from notionary.blocks.mappings.base import BaseBlockElement
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.blocks.schemas import BlockCreateRequest
+from notionary.blocks.schemas import BlockCreatePayload
 
 
 @dataclass
 class ParentBlockContext:
     """Context for a block that expects children."""
 
-    block: BlockCreateRequest
+    block: BlockCreatePayload
     element_type: BaseBlockElement
     child_lines: list[str]
-    child_blocks: list[BlockCreateRequest] = field(default_factory=list)
+    child_blocks: list[BlockCreatePayload] = field(default_factory=list)
 
     def add_child_line(self, content: str):
         """Adds a child line."""
         self.child_lines.append(content)
 
-    def add_child_block(self, block: BlockCreateRequest):
+    def add_child_block(self, block: BlockCreatePayload):
         """Adds a processed child block."""
         self.child_blocks.append(block)
 
@@ -34,7 +34,7 @@ class LineProcessingContext:
     """Context that gets passed through the handler chain."""
 
     line: str
-    result_blocks: list[BlockCreateRequest]
+    result_blocks: list[BlockCreatePayload]
     parent_stack: list[ParentBlockContext]
     block_registry: BlockRegistry
 

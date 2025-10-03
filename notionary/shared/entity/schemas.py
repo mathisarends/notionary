@@ -3,7 +3,7 @@ from typing import Protocol
 
 from pydantic import BaseModel
 
-from notionary.blocks.rich_text.models import RichText
+from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.shared.models.cover_models import NotionCover
 from notionary.shared.models.icon_models import Icon
 from notionary.shared.models.parent_models import Parent

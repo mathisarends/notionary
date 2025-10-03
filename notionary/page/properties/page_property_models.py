@@ -2,7 +2,7 @@ from typing import Annotated, Literal, TypeVar
 
 from pydantic import BaseModel, Field
 
-from notionary.blocks.rich_text.models import RichText
+from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.shared.properties.property_type import PropertyType
 from notionary.user.schemas import PersonUserResponseDto
 

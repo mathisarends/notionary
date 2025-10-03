@@ -1,4 +1,4 @@
-from .blocks.markdown.markdown_builder import MarkdownBuilder
+from .blocks.markdown.builder import MarkdownBuilder
 from .data_source.service import NotionDataSource
 from .database.service import NotionDatabase
 from .page.service import NotionPage

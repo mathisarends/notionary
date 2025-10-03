@@ -4,7 +4,7 @@ import asyncio
 import difflib
 from typing import Never
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
+from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
 from notionary.data_source.service import NotionDataSource
 from notionary.page.properties.client import PagePropertyHttpClient
 from notionary.page.properties.exceptions import (

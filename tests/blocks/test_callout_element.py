@@ -1,14 +1,14 @@
 from unittest.mock import Mock
 
 import pytest
-from notionary.blocks.schemas_new import BlockType
 
-from notionary.blocks.callout.callout_element import (
+from notionary.blocks.mappings.callout import (
     CalloutBlock,
     CalloutElement,
     EmojiIcon,
 )
-from notionary.blocks.rich_text.models import RichText
+from notionary.blocks.mappings.rich_text.models import RichText
+from notionary.blocks.schemas import BlockType
 
 
 def create_rich_text(content: str) -> RichText:

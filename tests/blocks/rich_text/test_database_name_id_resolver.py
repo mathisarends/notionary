@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from notionary.blocks.rich_text.name_id_resolver.database_name_id_resolver import DatabaseNameIdResolver
+from notionary.blocks.mappings.rich_text.name_id_resolver.database_name_id_resolver import DatabaseNameIdResolver
 
 
 @pytest.fixture

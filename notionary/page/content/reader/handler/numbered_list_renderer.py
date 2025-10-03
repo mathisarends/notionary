@@ -63,7 +63,7 @@ class NumberedListRenderer(BlockHandler):
 
     async def _process_single_item(self, context: BlockRenderingContext, number: int) -> str:
         """Process a single numbered list item with the given number."""
-        from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+        from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 
         rich_text = context.block.numbered_list_item.rich_text
         converter = RichTextToMarkdownConverter()

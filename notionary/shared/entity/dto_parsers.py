@@ -1,6 +1,6 @@
 from typing import cast
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.shared.entity.schemas import Describable, EntityResponseDto, Titled
 from notionary.shared.models.cover_models import CoverType
 from notionary.shared.models.icon_models import IconType

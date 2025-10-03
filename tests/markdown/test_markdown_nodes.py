@@ -1,38 +1,30 @@
 import pytest
 
-from notionary.blocks.audio.audio_markdown_node import AudioMarkdownNode
-from notionary.blocks.bookmark.bookmark_markdown_node import BookmarkMarkdownNode
-from notionary.blocks.breadcrumbs.breadcrumb_markdown_node import BreadcrumbMarkdownNode
-from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
+from notionary.blocks.enums import BlockColor
+from notionary.blocks.markdown.nodes import (
+    AudioMarkdownNode,
+    BookmarkMarkdownNode,
+    BreadcrumbMarkdownNode,
     BulletedListMarkdownNode,
-)
-from notionary.blocks.callout.callout_markdown_node import CalloutMarkdownNode
-from notionary.blocks.code.code_markdown_node import CodeMarkdownNode
-from notionary.blocks.column.column_markdown_node import ColumnMarkdownNode
-from notionary.blocks.divider.divider_markdown_node import DividerMarkdownNode
-from notionary.blocks.embed.embed_markdown_node import EmbedMarkdownNode
-from notionary.blocks.equation.equation_element_markdown_node import (
+    CalloutMarkdownNode,
+    CodeMarkdownNode,
+    ColumnMarkdownNode,
+    DividerMarkdownNode,
+    EmbedMarkdownNode,
     EquationMarkdownNode,
-)
-from notionary.blocks.file.file_element_markdown_node import FileMarkdownNode
-from notionary.blocks.heading.heading_markdown_node import HeadingMarkdownNode
-from notionary.blocks.image_block.image_markdown_node import ImageMarkdownNode
-from notionary.blocks.numbered_list.numbered_list_markdown_node import (
+    FileMarkdownNode,
+    HeadingMarkdownNode,
+    ImageMarkdownNode,
     NumberedListMarkdownNode,
-)
-from notionary.blocks.paragraph.paragraph_markdown_node import ParagraphMarkdownNode
-from notionary.blocks.quote.quote_markdown_node import QuoteMarkdownNode
-from notionary.blocks.table.table_markdown_node import TableMarkdownNode
-from notionary.blocks.table_of_contents.table_of_contents_markdown_node import (
+    ParagraphMarkdownNode,
+    QuoteMarkdownNode,
+    TableMarkdownNode,
     TableOfContentsMarkdownNode,
-)
-from notionary.blocks.todo.todo_markdown_node import TodoMarkdownNode
-from notionary.blocks.toggle.toggle_markdown_node import ToggleMarkdownNode
-from notionary.blocks.toggleable_heading.toggleable_heading_markdown_node import (
+    TodoMarkdownNode,
     ToggleableHeadingMarkdownNode,
+    ToggleMarkdownNode,
+    VideoMarkdownNode,
 )
-from notionary.blocks.types import BlockColor
-from notionary.blocks.video.video_markdown_node import VideoMarkdownNode
 
 
 def test_audio_markdown_node():
@@ -288,7 +280,6 @@ def test_video_markdown_node():
 
 
 def test_breadcrumb_markdown_node():
-    """Test BreadcrumbMarkdownNode"""
     breadcrumb = BreadcrumbMarkdownNode()
     expected = "[breadcrumb]"
     assert breadcrumb.to_markdown() == expected
@@ -323,7 +314,6 @@ def test_table_of_contents_markdown_node():
 
 
 def test_column_markdown_node():
-    """Test ColumnMarkdownNode - FIXED"""
     # Test ohne children
     column_empty = ColumnMarkdownNode(children=[])
     expected = "::: column\n:::"
@@ -365,7 +355,7 @@ def test_equation_markdown_node():
 
 def test_pdf_markdown_node():
     """Test PdfMarkdownNode"""
-    from notionary.blocks.pdf.pdf_markdown_node import PdfMarkdownNode
+    from notionary.blocks.markdown.nodes.pdf import PdfMarkdownNode
 
     # Test ohne Caption
     pdf = PdfMarkdownNode(url="https://example.com/document.pdf")

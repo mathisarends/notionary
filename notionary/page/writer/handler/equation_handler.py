@@ -1,6 +1,6 @@
 import re
 
-from notionary.blocks.equation.equation_element import EquationElement
+from notionary.blocks.mappings.equation import EquationElement
 from notionary.page.writer.handler.line_handler import (
     LineHandler,
     LineProcessingContext,

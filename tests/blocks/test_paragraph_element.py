@@ -2,11 +2,11 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.paragraph.models import (
+from notionary.blocks.mappings.paragraph import ParagraphElement
+from notionary.blocks.schemas import (
     CreateParagraphBlock,
     ParagraphBlock,
 )
-from notionary.blocks.paragraph.paragraph_element import ParagraphElement
 
 
 @pytest.mark.asyncio

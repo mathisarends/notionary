@@ -1,7 +1,7 @@
-from notionary.blocks.schemas import BlockType
-from notionary.blocks.toggleable_heading.toggleable_heading_element import (
+from notionary.blocks.mappings.toggleable_heading import (
     ToggleableHeadingElement,
 )
+from notionary.blocks.schemas import BlockType
 from notionary.page.content.reader.handler import BlockHandler, BlockRenderingContext
 
 

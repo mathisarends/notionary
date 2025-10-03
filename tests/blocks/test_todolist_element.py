@@ -2,8 +2,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.todo.models import CreateToDoBlock, ToDoBlock
-from notionary.blocks.todo.todo_element import TodoElement
+from notionary.blocks.mappings.todo import TodoElement
+from notionary.blocks.schemas import CreateToDoBlock, ToDoBlock
 
 
 @pytest.mark.asyncio

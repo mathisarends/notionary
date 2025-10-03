@@ -1,5 +1,5 @@
 from notionary.blocks.registry.block_registry import BlockRegistry
-from notionary.blocks.schemas import BlockCreateRequest
+from notionary.blocks.schemas import BlockCreatePayload
 from notionary.page.writer.handler import (
     CodeHandler,
     ColumnHandler,
@@ -32,7 +32,7 @@ class MarkdownToNotionConverter(LoggingMixin):
         self._text_length_post_processor = NotionTextLengthProcessor()
         self._setup_handler_chain()
 
-    async def convert(self, markdown_text: str) -> list[BlockCreateRequest]:
+    async def convert(self, markdown_text: str) -> list[BlockCreatePayload]:
         if not markdown_text.strip():
             return []
 
@@ -43,9 +43,9 @@ class MarkdownToNotionConverter(LoggingMixin):
 
         return all_blocks
 
-    async def process_lines(self, text: str) -> list[BlockCreateRequest]:
+    async def process_lines(self, text: str) -> list[BlockCreatePayload]:
         lines = text.split("\n")
-        result_blocks: list[BlockCreateRequest] = []
+        result_blocks: list[BlockCreatePayload] = []
         parent_stack: list[ParentBlockContext] = []
 
         i = 0

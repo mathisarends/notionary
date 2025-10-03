@@ -1,12 +1,16 @@
 from typing import Protocol, TypeGuard
 
-from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.schemas import BlockCreateRequest, HasRichText
+from notionary.blocks.mappings.rich_text.models import RichText
+from notionary.blocks.schemas import BlockCreatePayload
 from notionary.utils.mixins.logging import LoggingMixin
 
 
 class HasChildren(Protocol):
-    children: list[BlockCreateRequest]
+    children: list[BlockCreatePayload]
+
+
+class HasRichText(Protocol):
+    rich_text: list[RichText]
 
 
 class NotionTextLengthProcessor(LoggingMixin):
@@ -30,7 +34,7 @@ class NotionTextLengthProcessor(LoggingMixin):
 
         self.max_text_length = max_text_length
 
-    def process(self, blocks: list[BlockCreateRequest]) -> list[BlockCreateRequest]:
+    def process(self, blocks: list[BlockCreatePayload]) -> list[BlockCreatePayload]:
         """
         Process blocks to fix text length limits.
         """
@@ -40,7 +44,7 @@ class NotionTextLengthProcessor(LoggingMixin):
         flattened_blocks = self._flatten_block_list(blocks)
         return [self._process_single_block(block) for block in flattened_blocks]
 
-    def _process_single_block(self, block: BlockCreateRequest) -> BlockCreateRequest:
+    def _process_single_block(self, block: BlockCreatePayload) -> BlockCreatePayload:
         """
         Process a single block to fix text length issues.
         """
@@ -53,12 +57,12 @@ class NotionTextLengthProcessor(LoggingMixin):
 
         return block_copy
 
-    def _extract_block_content(self, block: BlockCreateRequest) -> object | None:
+    def _extract_block_content(self, block: BlockCreatePayload) -> object | None:
         """
         Extract the content object from a block using type-safe attribute access.
         """
         # Get the block's content using the block type as attribute name
-        # We assume block.type always exists as per the BlockCreateRequest structure
+        # We assume block.type always exists as per the BlockCreatePayload structure
         content = getattr(block, block.type, None)
 
         # Verify it's a valid content object (has rich_text or children)
@@ -100,11 +104,11 @@ class NotionTextLengthProcessor(LoggingMixin):
                 # Truncate the content
                 rich_text_obj.text.content = content[: self.max_text_length]
 
-    def _flatten_block_list(self, blocks: list[BlockCreateRequest | list]) -> list[BlockCreateRequest]:
+    def _flatten_block_list(self, blocks: list[BlockCreatePayload | list]) -> list[BlockCreatePayload]:
         """
         Flatten a potentially nested list of blocks.
         """
-        flattened: list[BlockCreateRequest] = []
+        flattened: list[BlockCreatePayload] = []
 
         for item in blocks:
             if isinstance(item, list):

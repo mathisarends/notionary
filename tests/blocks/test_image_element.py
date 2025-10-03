@@ -2,9 +2,9 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.image_block.image_element import ImageElement
-from notionary.blocks.image_block.models import CreateImageBlock
-from notionary.blocks.rich_text.models import RichText
+from notionary.blocks.mappings.image import ImageElement
+from notionary.blocks.mappings.rich_text.models import RichText
+from notionary.blocks.schemas import CreateImageBlock
 
 
 @pytest.mark.asyncio

@@ -1,14 +1,15 @@
 import pytest
 
-from notionary.blocks.schemas import Block, BlockType
-from notionary.blocks.table_of_contents.models import (
+from notionary.blocks.enums import BlockColor
+from notionary.blocks.mappings.table_of_contents import (
+    TableOfContentsElement,
+)
+from notionary.blocks.schemas import (
+    Block,
+    BlockType,
     CreateTableOfContentsBlock,
     TableOfContentsBlock,
 )
-from notionary.blocks.table_of_contents.table_of_contents_element import (
-    TableOfContentsElement,
-)
-from notionary.blocks.types import BlockColor
 
 
 def create_block_with_required_fields(**kwargs) -> Block:

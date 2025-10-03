@@ -1,4 +1,4 @@
-from notionary.blocks.column.column_list_element import ColumnListElement
+from notionary.blocks.mappings.column_list import ColumnListElement
 from notionary.page.content.reader.handler import BlockHandler
 from notionary.page.content.reader.handler.block_rendering_context import BlockRenderingContext
 

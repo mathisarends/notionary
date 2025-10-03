@@ -1,4 +1,4 @@
-from notionary.blocks.toggle.toggle_element import ToggleElement
+from notionary.blocks.mappings.toggle import ToggleElement
 from notionary.page.content.reader.handler import BlockHandler, BlockRenderingContext
 
 

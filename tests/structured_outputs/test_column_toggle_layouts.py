@@ -1,7 +1,7 @@
 import pytest
 from pydantic import Field
 
-from notionary.blocks.markdown.markdown_builder import MarkdownBuilder
+from notionary.blocks.markdown.builder import MarkdownBuilder
 from notionary.schemas import NotionContentSchema
 
 

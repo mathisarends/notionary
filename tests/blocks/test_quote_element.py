@@ -2,10 +2,10 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.quote.models import QuoteBlock
-from notionary.blocks.quote.quote_element import QuoteElement
-from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.types import BlockColor, BlockType
+from notionary.blocks.enums import BlockColor, BlockType
+from notionary.blocks.mappings.quote import QuoteElement
+from notionary.blocks.mappings.rich_text.models import RichText
+from notionary.blocks.schemas import QuoteBlock
 
 
 def create_rich_text(content: str) -> RichText:
