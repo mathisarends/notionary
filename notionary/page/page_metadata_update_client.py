@@ -1,6 +1,6 @@
 from typing import override
 
-from notionary.http.http_client import NotionHttpClient
+from notionary.http.client import NotionHttpClient
 from notionary.page.schemas import NotionPageDto
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.entity.schemas import NotionEntityUpdateDto

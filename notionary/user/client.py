@@ -1,6 +1,6 @@
 from pydantic import TypeAdapter
 
-from notionary.http.http_client import NotionHttpClient
+from notionary.http.client import NotionHttpClient
 from notionary.user.schemas import (
     NotionUsersListResponse,
     UserResponseDto,

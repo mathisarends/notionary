@@ -2,7 +2,7 @@ from typing import Any, override
 
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.data_source.schemas import DataSourceDto, QueryDataSourceResponse, UpdateDataSourceDto
-from notionary.http.http_client import NotionHttpClient
+from notionary.http.client import NotionHttpClient
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 
 

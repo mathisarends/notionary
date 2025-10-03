@@ -1,5 +1,5 @@
 from notionary.data_source.schemas import DataSourceDto
-from notionary.http.http_client import NotionHttpClient
+from notionary.http.client import NotionHttpClient
 
 
 class DataSourceClient(NotionHttpClient):

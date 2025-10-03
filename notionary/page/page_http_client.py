@@ -1,4 +1,4 @@
-from notionary.http.http_client import NotionHttpClient
+from notionary.http.client import NotionHttpClient
 from notionary.page.schemas import NotionPageDto
 
 

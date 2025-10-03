@@ -3,7 +3,7 @@ from notionary.database.schemas import (
     NotionDatabaseDto,
     NotionDatabaseUpdateDto,
 )
-from notionary.http.http_client import NotionHttpClient
+from notionary.http.client import NotionHttpClient
 
 
 class NotionDatabaseHttpClient(NotionHttpClient):

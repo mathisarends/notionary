@@ -7,7 +7,7 @@ from notionary.comments.schemas import (
     CommentListRequest,
     CommentListResponse,
 )
-from notionary.http.http_client import NotionHttpClient
+from notionary.http.client import NotionHttpClient
 
 
 class CommentClient(NotionHttpClient):

@@ -1,6 +1,6 @@
 import asyncio
 
-from notionary.http.http_client import NotionHttpClient
+from notionary.http.client import NotionHttpClient
 from notionary.search.filter.builder import SearchFilterBuilder, SortDirection
 from notionary.search.schemas import DataSourceSearchResponse, PageSearchResponse
 
