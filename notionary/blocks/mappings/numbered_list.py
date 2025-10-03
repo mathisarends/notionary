@@ -6,7 +6,6 @@ from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import Ric
 from notionary.blocks.schemas import (
     Block,
     BlockColor,
-    BlockCreatePayload,
     BlockType,
     CreateNumberedListItemBlock,
     NumberedListItemData,
@@ -22,8 +21,7 @@ class NumberedListMapper(NotionMarkdownMapper):
         return block.type == BlockType.NUMBERED_LIST_ITEM and block.numbered_list_item
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
-        """Convert markdown numbered list item to Notion NumberedListItemBlock."""
+    async def markdown_to_notion(cls, text: str) -> CreateNumberedListItemBlock:
         match = cls.PATTERN.match(text.strip())
         if not match:
             return None

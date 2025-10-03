@@ -5,7 +5,6 @@ from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import Mar
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import (
     Block,
-    BlockCreatePayload,
     BlockType,
     BulletedListItemData,
     CreateBulletedListItemBlock,
@@ -23,10 +22,7 @@ class BulletedListMapper(NotionMarkdownMapper):
         return block.type == BlockType.BULLETED_LIST_ITEM and block.bulleted_list_item
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
-        """
-        Convert a markdown bulleted list item into a Notion BulletedListItemBlock.
-        """
+    async def markdown_to_notion(cls, text: str) -> CreateBulletedListItemBlock:
         if not (match := cls.PATTERN.match(text.strip())):
             return None
 

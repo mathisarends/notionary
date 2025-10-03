@@ -6,7 +6,6 @@ from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import (
     Block,
-    BlockCreatePayload,
     BlockType,
     CreateTableBlock,
     CreateTableRowBlock,
@@ -32,12 +31,10 @@ class TableMapper(NotionMarkdownMapper):
 
     @classmethod
     def match_notion(cls, block: Block) -> bool:
-        """Check if block is a Notion table."""
         return block.type == BlockType.TABLE and block.table
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
-        """Convert opening table row to Notion table block."""
+    async def markdown_to_notion(cls, text: str) -> CreateTableBlock:
         if not cls.ROW_PATTERN.match(text.strip()):
             return None
 
@@ -55,7 +52,7 @@ class TableMapper(NotionMarkdownMapper):
         return CreateTableBlock(table=table_data)
 
     @classmethod
-    async def create_from_markdown_table(cls, table_lines: list[str]) -> BlockCreatePayload:
+    async def create_from_markdown_table(cls, table_lines: list[str]) -> CreateTableBlock:
         """
         Create a complete table block from markdown table lines.
         """

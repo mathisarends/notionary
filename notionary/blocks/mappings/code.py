@@ -2,7 +2,7 @@ import re
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.models import RichText
-from notionary.blocks.schemas import Block, BlockCreatePayload, BlockType, CodeData, CodeLanguage, CreateCodeBlock
+from notionary.blocks.schemas import Block, BlockType, CodeData, CodeLanguage, CreateCodeBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -23,7 +23,7 @@ class CodeMapper(NotionMarkdownMapper):
         return block.type == BlockType.CODE and block.code
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
+    async def markdown_to_notion(cls, text: str) -> CreateCodeBlock:
         if not (match := cls.CODE_START_PATTERN.match(text.strip())):
             return None
 
@@ -35,7 +35,7 @@ class CodeMapper(NotionMarkdownMapper):
         return CreateCodeBlock(code=code_block)
 
     @classmethod
-    def create_from_markdown_block(cls, opening_line: str, code_lines: list[str]) -> BlockCreatePayload:
+    def create_from_markdown_block(cls, opening_line: str, code_lines: list[str]) -> CreateCodeBlock:
         """
         Create a complete code block from markdown components.
         """

@@ -3,7 +3,6 @@ import re
 from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.schemas import (
     Block,
-    BlockCreatePayload,
     BlockType,
     BreadcrumbData,
     CreateBreadcrumbBlock,
@@ -26,7 +25,7 @@ class BreadcrumbMapper(NotionMarkdownMapper):
         return block.type == BlockType.BREADCRUMB and block.breadcrumb
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
+    async def markdown_to_notion(cls, text: str) -> CreateBreadcrumbBlock:
         if not cls.PATTERN.match(text.strip()):
             return None
         return CreateBreadcrumbBlock(breadcrumb=BreadcrumbData())

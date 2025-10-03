@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 from collections import OrderedDict
-from typing import ClassVar
+from typing import ClassVar, Self
 
 from notionary.blocks.mappings import (
     AudioMapper,
@@ -9,7 +7,6 @@ from notionary.blocks.mappings import (
     BreadcrumbMapper,
     BulletedListMapper,
     CalloutMapper,
-    ChildDatabaseMapper,
     CodeMapper,
     ColumnListMapper,
     DividerMapper,
@@ -55,7 +52,6 @@ class BlockRegistry:
         EquationMapper,
         TableOfContentsMapper,
         BreadcrumbMapper,
-        ChildDatabaseMapper,
         FileMapper,
         PdfMapper,
         SpaceMapper,
@@ -74,7 +70,7 @@ class BlockRegistry:
             if element_class not in self._excluded_elements:
                 self._elements[element_class.__name__] = element_class
 
-    def exclude_elements(self, *element_classes: type[NotionMarkdownMapper]) -> BlockRegistry:
+    def exclude_elements(self, *element_classes: type[NotionMarkdownMapper]) -> Self:
         new_excluded = self._excluded_elements.copy()
         new_excluded.update(element_classes)
         return BlockRegistry(excluded_elements=new_excluded)

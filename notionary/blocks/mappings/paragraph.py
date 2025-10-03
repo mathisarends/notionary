@@ -4,7 +4,6 @@ from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import Ric
 from notionary.blocks.schemas import (
     Block,
     BlockColor,
-    BlockCreatePayload,
     BlockType,
     CreateParagraphBlock,
     ParagraphData,
@@ -18,7 +17,7 @@ class ParagraphMapper(NotionMarkdownMapper):
         return block.type == BlockType.PARAGRAPH and block.paragraph
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
+    async def markdown_to_notion(cls, text: str) -> CreateParagraphBlock:
         """Convert markdown text to a Notion ParagraphBlock."""
         if not text.strip():
             return None

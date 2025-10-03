@@ -1,7 +1,7 @@
 import re
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
-from notionary.blocks.schemas import Block, BlockCreatePayload, BlockType, ColumnListData, CreateColumnListBlock
+from notionary.blocks.schemas import Block, BlockType, ColumnListData, CreateColumnListBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -24,7 +24,7 @@ class ColumnListMapper(NotionMarkdownMapper):
         return block.type == BlockType.COLUMN_LIST and block.column_list
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
+    async def markdown_to_notion(cls, text: str) -> CreateColumnListBlock:
         """Convert `::: columns` to Notion ColumnListBlock."""
         if not cls.COLUMNS_START.match(text.strip()):
             return None

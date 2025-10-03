@@ -4,7 +4,6 @@ from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.schemas import (
     Block,
     BlockColor,
-    BlockCreatePayload,
     BlockType,
     CreateParagraphBlock,
     ParagraphData,
@@ -28,7 +27,7 @@ class SpaceMapper(NotionMarkdownMapper):
             return True
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
+    async def markdown_to_notion(cls, text: str) -> CreateParagraphBlock | None:
         if text.strip() != cls.SPACE_MARKER:
             return None
 

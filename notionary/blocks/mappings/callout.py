@@ -3,7 +3,7 @@ import re
 from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, BlockCreatePayload, BlockType, CalloutData, CreateCalloutBlock
+from notionary.blocks.schemas import Block, BlockType, CalloutData, CreateCalloutBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.shared.models.icon_models import EmojiIcon, Icon
 
@@ -36,8 +36,7 @@ class CalloutMapper(NotionMarkdownMapper):
         return block.type == BlockType.CALLOUT and block.callout
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
-        """Convert a markdown callout into a Notion CalloutBlock."""
+    async def markdown_to_notion(cls, text: str) -> CreateCalloutBlock:
         match = cls.PATTERN.match(text.strip())
         if not match:
             return None

@@ -5,7 +5,6 @@ from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
 from notionary.blocks.mappings.mixins.file_upload_mixin import FileUploadMixin
 from notionary.blocks.schemas import (
     Block,
-    BlockCreatePayload,
     BlockType,
     CreatePdfBlock,
     ExternalFile,
@@ -39,8 +38,7 @@ class PdfMapper(NotionMarkdownMapper, CaptionMixin, FileUploadMixin):
         return block.type == BlockType.PDF and block.pdf
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload | None:
-        """Convert markdown PDF link to Notion PDF block."""
+    async def markdown_to_notion(cls, text: str) -> CreatePdfBlock | None:
         pdf_path = cls._extract_pdf_path(text.strip())
 
         if not pdf_path:

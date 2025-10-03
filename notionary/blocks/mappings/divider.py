@@ -1,7 +1,7 @@
 import re
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
-from notionary.blocks.schemas import Block, BlockCreatePayload, BlockType, CreateDividerBlock, DividerData
+from notionary.blocks.schemas import Block, BlockType, CreateDividerBlock, DividerData
 
 
 class DividerMapper(NotionMarkdownMapper):
@@ -13,7 +13,7 @@ class DividerMapper(NotionMarkdownMapper):
         return block.type == BlockType.DIVIDER and block.divider
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
+    async def markdown_to_notion(cls, text: str) -> CreateDividerBlock:
         """Convert markdown horizontal rule to Notion divider, with preceding empty paragraph."""
         if not cls.PATTERN.match(text.strip()):
             return None

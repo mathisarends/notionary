@@ -375,6 +375,8 @@ class CreateHeading3Block(BaseModel):
     heading_3: HeadingData
 
 
+CreateHeadingBlock = CreateHeading1Block | CreateHeading2Block | CreateHeading3Block
+
 # ============================================================================
 # Image Block
 # ============================================================================

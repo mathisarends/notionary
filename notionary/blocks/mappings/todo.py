@@ -3,7 +3,7 @@ import re
 from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, BlockColor, BlockCreatePayload, BlockType, CreateToDoBlock, ToDoData
+from notionary.blocks.schemas import Block, BlockColor, BlockType, CreateToDoBlock, ToDoData
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -24,8 +24,7 @@ class TodoMapper(NotionMarkdownMapper):
         return block.type == BlockType.TO_DO and block.to_do
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
-        """Convert markdown todo or done item to Notion to_do block."""
+    async def markdown_to_notion(cls, text: str) -> CreateToDoBlock:
         m_done = cls.DONE_PATTERN.match(text)
         m_todo = None if m_done else cls.PATTERN.match(text)
 

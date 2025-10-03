@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import re
 from typing import cast
 
@@ -9,11 +7,11 @@ from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import Ric
 from notionary.blocks.schemas import (
     Block,
     BlockColor,
-    BlockCreatePayload,
     BlockType,
     CreateHeading1Block,
     CreateHeading2Block,
     CreateHeading3Block,
+    CreateHeadingBlock,
     HeadingData,
 )
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
@@ -35,8 +33,7 @@ class HeadingMapper(NotionMarkdownMapper):
         )
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
-        """Convert markdown headings (#, ##, ###) to Notion HeadingBlock."""
+    async def markdown_to_notion(cls, text: str) -> CreateHeadingBlock | None:
         match = cls.PATTERN.match(text.strip())
         if not match:
             return None

@@ -4,7 +4,6 @@ from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.schemas import (
     Block,
     BlockColor,
-    BlockCreatePayload,
     BlockType,
     CreateTableOfContentsBlock,
     TableOfContentsData,
@@ -27,7 +26,7 @@ class TableOfContentsMapper(NotionMarkdownMapper):
         return block.type == BlockType.TABLE_OF_CONTENTS and block.table_of_contents
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
+    async def markdown_to_notion(cls, text: str) -> CreateTableOfContentsBlock | None:
         if not (input_match := cls.PATTERN.match(text.strip())):
             return None
 

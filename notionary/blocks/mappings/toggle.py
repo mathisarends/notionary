@@ -3,7 +3,7 @@ import re
 from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.models import RichText
-from notionary.blocks.schemas import Block, BlockColor, BlockCreatePayload, BlockType, CreateToggleBlock, ToggleBlock
+from notionary.blocks.schemas import Block, BlockColor, BlockType, CreateToggleBlock, ToggleBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -17,7 +17,7 @@ class ToggleMapper(NotionMarkdownMapper):
         return block.type == BlockType.TOGGLE
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
+    async def markdown_to_notion(cls, text: str) -> CreateToggleBlock:
         """
         Convert markdown toggle line to Notion ToggleBlock.
         Children are automatically handled by the StackBasedMarkdownConverter.

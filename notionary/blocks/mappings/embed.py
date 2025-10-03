@@ -5,7 +5,6 @@ from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import (
     Block,
-    BlockCreatePayload,
     BlockType,
     CreateEmbedBlock,
     EmbedData,
@@ -37,7 +36,7 @@ class EmbedMapper(NotionMarkdownMapper):
         return block.type == BlockType.EMBED and block.embed
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
+    async def markdown_to_notion(cls, text: str) -> CreateEmbedBlock:
         """Convert markdown embed syntax to Notion EmbedBlock."""
         match = cls.PATTERN.match(text.strip())
         if not match:

@@ -6,7 +6,6 @@ from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
 from notionary.blocks.mappings.mixins.file_upload_mixin import FileUploadMixin
 from notionary.blocks.schemas import (
     Block,
-    BlockCreatePayload,
     BlockType,
     CreateFileBlock,
     ExternalFile,
@@ -38,7 +37,7 @@ class FileMapper(NotionMarkdownMapper, CaptionMixin, FileUploadMixin):
         return bool(block.type == BlockType.FILE and block.file)
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload | None:
+    async def markdown_to_notion(cls, text: str) -> CreateFileBlock | None:
         """Convert markdown file link to Notion FileBlock."""
         file_path = cls._extract_file_path(text.strip())
         if not file_path:

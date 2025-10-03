@@ -2,7 +2,7 @@ import re
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
-from notionary.blocks.schemas import Block, BlockCreatePayload, BlockType, BookmarkData, CreateBookmarkBlock
+from notionary.blocks.schemas import Block, BlockType, BookmarkData, CreateBookmarkBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -24,11 +24,7 @@ class BookmarkMapper(NotionMarkdownMapper, CaptionMixin):
         return block.type == BlockType.BOOKMARK and block.bookmark
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
-        """
-        Convert a markdown bookmark into a Notion BookmarkBlock.
-        """
-        # First remove captions to get clean text for URL extraction
+    async def markdown_to_notion(cls, text: str) -> CreateBookmarkBlock | None:
         clean_text = cls.remove_caption(text.strip())
 
         # Use our own regex to find the bookmark URL

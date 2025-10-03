@@ -6,11 +6,11 @@ from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import Ric
 from notionary.blocks.schemas import (
     Block,
     BlockColor,
-    BlockCreatePayload,
     BlockType,
     CreateHeading1Block,
     CreateHeading2Block,
     CreateHeading3Block,
+    CreateHeadingBlock,
     HeadingData,
 )
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
@@ -38,7 +38,7 @@ class ToggleableHeadingMapper(NotionMarkdownMapper):
             return True
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
+    async def markdown_to_notion(cls, text: str) -> CreateHeadingBlock | None:
         """
         Convert markdown collapsible heading to a toggleable Notion HeadingBlock.
         Children are automatically handled by the StackBasedMarkdownConverter.

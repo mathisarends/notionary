@@ -4,8 +4,6 @@ from .bookmark import BookmarkMapper
 from .breadcrumb import BreadcrumbMapper
 from .bulleted_list import BulletedListMapper
 from .callout import CalloutMapper
-from .child_database import ChildDatabaseMapper
-from .child_page import ChildPageMapper
 from .code import CodeMapper
 from .column import ColumnMapper
 from .column_list import ColumnListMapper
@@ -33,8 +31,6 @@ __all__ = [
     "BreadcrumbMapper",
     "BulletedListMapper",
     "CalloutMapper",
-    "ChildDatabaseMapper",
-    "ChildPageMapper",
     "CodeMapper",
     "ColumnListMapper",
     "ColumnMapper",

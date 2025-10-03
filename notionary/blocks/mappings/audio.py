@@ -7,7 +7,6 @@ from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
 from notionary.blocks.mappings.mixins.file_upload_mixin import FileUploadMixin
 from notionary.blocks.schemas import (
     Block,
-    BlockCreatePayload,
     BlockType,
     CreateAudioBlock,
     ExternalFile,
@@ -19,18 +18,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class AudioMapper(NotionMarkdownMapper, FileUploadMixin, CaptionMixin):
-    r"""
-    Handles conversion between Markdown audio embeds and Notion audio blocks.
-
-    Supports both external URLs and local audio file uploads.
-
-    Markdown audio syntax:
-    - [audio](https://example.com/audio.mp3) - External URL
-    - [audio](./local/song.mp3) - Local audio file (will be uploaded)
-    - [audio](C:\Music\podcast.wav) - Absolute local path (will be uploaded)
-    - [audio](https://example.com/audio.mp3)(caption:Episode 1) - URL with caption
-    """
-
     AUDIO_PATTERN = re.compile(r"\[audio\]\(([^)]+)\)")
     SUPPORTED_EXTENSIONS: ClassVar[set[str]] = {".mp3", ".wav", ".ogg", ".oga", ".m4a"}
 
@@ -39,7 +26,7 @@ class AudioMapper(NotionMarkdownMapper, FileUploadMixin, CaptionMixin):
         return block.type == BlockType.AUDIO
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload | None:
+    async def markdown_to_notion(cls, text: str) -> CreateAudioBlock | None:
         """Convert markdown audio embed to Notion audio block."""
         # Extract the path/URL
         path = cls._extract_audio_path(text.strip())
