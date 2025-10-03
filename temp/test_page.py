@@ -1,6 +1,6 @@
 from notionary import NotionPage
 
-PAGE = "Tabaluga schnuga"
+PAGE = "Ruff Linter"
 
 
 async def main() -> None:

@@ -19,13 +19,13 @@ class SearchService:
     def __init__(self, client: SearchClient | None = None) -> None:
         self._client = client or SearchClient()
 
-    async def find_data_source(self, query: str = "", min_similarity: float = 0.6) -> NotionDataSource:
+    async def find_data_source(self, query: str, min_similarity: float = 0.6) -> NotionDataSource:
         data_sources = await self._search_data_sources(query)
         return self._get_best_match(
             data_sources, query, exception_class=DataSourceNotFound, min_similarity=min_similarity
         )
 
-    async def find_page(self, query: str = "", min_similarity: float = 0.6) -> NotionPage:
+    async def find_page(self, query: str, min_similarity: float = 0.6) -> NotionPage:
         pages = await self._search_pages(query)
         return self._get_best_match(pages, query, exception_class=PageNotFound, min_similarity=min_similarity)
 
@@ -43,7 +43,7 @@ class SearchService:
         page_search_response = await self._client.fetch_pages(query)
         return await asyncio.gather(*(NotionPage.from_id(page.id) for page in page_search_response.results))
 
-    async def _search_data_sources(self, query: str = "") -> list[NotionDataSource]:
+    async def _search_data_sources(self, query: str) -> list[NotionDataSource]:
         from notionary import NotionDataSource
 
         data_source_search_response = await self._client.fetch_data_sources(query)

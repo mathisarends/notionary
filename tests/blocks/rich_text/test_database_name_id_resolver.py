@@ -24,7 +24,7 @@ def mock_database() -> AsyncMock:
 
 @pytest.fixture
 def resolver(mock_search_client: AsyncMock) -> DatabaseNameIdResolver:
-    return DatabaseNameIdResolver(search_service=mock_search_client, search_limit=10)
+    return DatabaseNameIdResolver(search_service=mock_search_client)
 
 
 class TestDatabaseNameIdResolver:
@@ -99,8 +99,3 @@ class TestDatabaseNameIdResolver:
     def test_constructor_with_default_search_client(self) -> None:
         resolver = DatabaseNameIdResolver()
         assert resolver.search_service is not None
-        assert resolver.search_limit == 100
-
-    def test_constructor_with_custom_search_limit(self) -> None:
-        resolver = DatabaseNameIdResolver(search_limit=5)
-        assert resolver.search_limit == 5

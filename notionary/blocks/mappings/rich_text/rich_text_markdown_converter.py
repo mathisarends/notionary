@@ -6,7 +6,12 @@ from notionary.blocks.mappings.rich_text.models import (
     RichText,
     RichTextType,
 )
+from notionary.blocks.mappings.rich_text.name_id_resolver.database_name_id_resolver import (
+    DatabaseNameIdResolver,
+)
 from notionary.blocks.mappings.rich_text.name_id_resolver.name_id_resolver import NameIdResolver
+from notionary.blocks.mappings.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
+from notionary.blocks.mappings.rich_text.name_id_resolver.person_name_id_resolver import PersonNameIdResolver
 from notionary.blocks.schemas import BlockColor
 
 
@@ -20,12 +25,6 @@ class RichTextToMarkdownConverter:
         database_resolver: NameIdResolver | None = None,
         person_resolver: NameIdResolver | None = None,
     ) -> None:
-        from notionary.blocks.mappings.rich_text.name_id_resolver.database_name_id_resolver import (
-            DatabaseNameIdResolver,
-        )
-        from notionary.blocks.mappings.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
-        from notionary.blocks.mappings.rich_text.name_id_resolver.person_name_id_resolver import PersonNameIdResolver
-
         self.page_resolver = page_resolver or PageNameIdResolver()
         self.database_resolver = database_resolver or DatabaseNameIdResolver()
         self.person_resolver = person_resolver or PersonNameIdResolver()

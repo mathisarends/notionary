@@ -24,7 +24,7 @@ def mock_page() -> AsyncMock:
 
 @pytest.fixture
 def resolver(mock_search_client: AsyncMock) -> PageNameIdResolver:
-    return PageNameIdResolver(search_service=mock_search_client, search_limit=10)
+    return PageNameIdResolver(search_service=mock_search_client)
 
 
 class TestPageNameIdResolver:
@@ -97,8 +97,3 @@ class TestPageNameIdResolver:
     def test_constructor_with_default_search_client(self) -> None:
         resolver = PageNameIdResolver()
         assert resolver.search_service is not None
-        assert resolver.search_limit == 100
-
-    def test_constructor_with_custom_search_limit(self) -> None:
-        resolver = PageNameIdResolver(search_limit=5)
-        assert resolver.search_limit == 5
