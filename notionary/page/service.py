@@ -9,11 +9,9 @@ from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
-from notionary.file_upload.file_upload_http_client import FileUploadHttpClient
 from notionary.page.content.page_content_deleting_service import PageContentDeletingService
 from notionary.page.content.page_content_writer import PageContentWriter
 from notionary.page.content.reader.page_content_retriever import PageContentRetriever
-from notionary.page.page_context import PageContextProvider, page_context
 from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
 from notionary.page.properties.factory import PagePropertyHandlerFactory
@@ -82,7 +80,6 @@ class NotionPage(Entity):
             block_registry=self.block_element_registry,
         )
 
-        self.page_context_provider = self._setup_page_context_provider()
         self.properties = page_property_handler
 
         self._metadata_update_client = PageMetadataUpdateClient(page_id=id)
@@ -182,8 +179,7 @@ class NotionPage(Entity):
         self,
         content: (str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema),
     ) -> None:
-        async with page_context(self.page_context_provider):
-            _ = await self._page_content_writer.append_markdown(content=content)
+        await self._page_content_writer.append_markdown(content=content)
 
     async def replace_content(
         self,
@@ -198,9 +194,3 @@ class NotionPage(Entity):
     async def get_markdown_content(self) -> str:
         blocks = await self._block_client.get_blocks_by_page_id_recursively(page_id=self._id)
         return await self._page_content_retriever.convert_to_markdown(blocks=blocks)
-
-    def _setup_page_context_provider(self) -> PageContextProvider:
-        return PageContextProvider(
-            page_id=self._id,
-            file_upload_client=FileUploadHttpClient(),
-        )

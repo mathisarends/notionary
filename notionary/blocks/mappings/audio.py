@@ -1,10 +1,8 @@
 import re
-from pathlib import Path
 from typing import ClassVar
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
-from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
-from notionary.blocks.mappings.mixins.file_upload_mixin import FileUploadMixin
+from notionary.blocks.mappings.mixins.captions import CaptionMixin
 from notionary.blocks.schemas import (
     Block,
     BlockType,
@@ -12,12 +10,11 @@ from notionary.blocks.schemas import (
     ExternalFile,
     FileData,
     FileType,
-    FileUploadFile,
 )
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class AudioMapper(NotionMarkdownMapper, FileUploadMixin, CaptionMixin):
+class AudioMapper(NotionMarkdownMapper, CaptionMixin):
     AUDIO_PATTERN = re.compile(r"\[audio\]\(([^)]+)\)")
     SUPPORTED_EXTENSIONS: ClassVar[set[str]] = {".mp3", ".wav", ".ogg", ".oga", ".m4a"}
 
@@ -33,53 +30,18 @@ class AudioMapper(NotionMarkdownMapper, FileUploadMixin, CaptionMixin):
         if not path:
             return None
 
-        # Check if it's a local file path
-        if cls._is_local_file_path(path):
-            # Verify file exists and has supported extension
-            audio_path = Path(path)
-            if not audio_path.exists():
-                cls.logger.warning(f"Audio file not found: {path}")
-                return None
+        # Use mixin to extract caption (if present anywhere in text)
+        caption_text = cls.extract_caption(text.strip())
+        caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 
-            if audio_path.suffix.lower() not in cls.SUPPORTED_EXTENSIONS:
-                cls.logger.warning(f"Unsupported audio format: {audio_path.suffix}")
-                return None
+        # Only support external URLs - no local file upload
+        audio_content = FileData(
+            type=FileType.EXTERNAL,
+            external=ExternalFile(url=path),
+            caption=caption_rich_text,
+        )
 
-            cls.logger.info(f"Uploading local audio file: {path}")
-
-            # Upload the local audio file
-            file_upload_id = await cls._upload_local_file(path, "audio")
-            if not file_upload_id:
-                cls.logger.error(f"Failed to upload audio file: {path}")
-                return None
-
-            cls.logger.info(f"Successfully uploaded audio file with ID: {file_upload_id}")
-
-            # Use mixin to extract caption (if present anywhere in text)
-            caption_text = cls.extract_caption(text.strip())
-            caption_rich_text = cls.build_caption_rich_text(caption_text or "")
-
-            audio_content = FileData(
-                type=FileType.FILE_UPLOAD,
-                file_upload=FileUploadFile(id=file_upload_id),
-                caption=caption_rich_text,
-            )
-
-            return CreateAudioBlock(audio=audio_content)
-
-        else:
-            # Handle external URL - accept any URL (validation happens at API level)
-            # Use mixin to extract caption (if present anywhere in text)
-            caption_text = cls.extract_caption(text.strip())
-            caption_rich_text = cls.build_caption_rich_text(caption_text or "")
-
-            audio_content = FileData(
-                type=FileType.EXTERNAL,
-                external=ExternalFile(url=path),
-                caption=caption_rich_text,
-            )
-
-            return CreateAudioBlock(audio=audio_content)
+        return CreateAudioBlock(audio=audio_content)
 
     @classmethod
     async def notion_to_markdown(cls, block: Block) -> str | None:
@@ -90,11 +52,9 @@ class AudioMapper(NotionMarkdownMapper, FileUploadMixin, CaptionMixin):
         audio = block.audio
         url = None
 
-        # Handle both external URLs and uploaded files
+        # Handle external URLs
         if audio.type == FileType.EXTERNAL and audio.external is not None:
             url = audio.external.url
-        elif audio.type == FileType.FILE_UPLOAD and audio.file_upload is not None:
-            url = audio.file_upload.url
 
         if not url:
             return None
@@ -115,13 +75,11 @@ class AudioMapper(NotionMarkdownMapper, FileUploadMixin, CaptionMixin):
             description="Audio blocks embed audio files from external URLs or local files with optional captions",
             syntax_examples=[
                 "[audio](https://example.com/song.mp3)",
-                "[audio](./local/podcast.wav)",
-                "[audio](C:\\Music\\interview.mp3)",
                 "[audio](https://example.com/podcast.wav)(caption:Episode 1)",
-                "(caption:Background music)[audio](./song.mp3)",
-                "[audio](./interview.mp3)(caption:**Live** interview)",
+                "(caption:Background music)[audio](https://example.com/song.mp3)",
+                "[audio](https://example.com/interview.mp3)(caption:**Live** interview)",
             ],
-            usage_guidelines="Use for embedding audio files like music, podcasts, or sound effects. Supports both external URLs and local file uploads. Supports common audio formats (mp3, wav, ogg, m4a). Caption supports rich text formatting and is optional.",
+            usage_guidelines="Use for embedding audio files like music, podcasts, or sound effects. Supports external URLs only. Caption supports rich text formatting and is optional.",
         )
 
     @classmethod

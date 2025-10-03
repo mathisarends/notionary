@@ -5,9 +5,6 @@ from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import Ric
 
 
 class CaptionMixin:
-    """Mixin to add caption parsing functionality to block elements."""
-
-    # Generic caption pattern - finds caption anywhere in text
     CAPTION_PATTERN = re.compile(r"\(caption:([^)]*)\)")
 
     @classmethod

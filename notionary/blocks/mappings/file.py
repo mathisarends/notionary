@@ -1,9 +1,7 @@
 import re
-from pathlib import Path
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
-from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
-from notionary.blocks.mappings.mixins.file_upload_mixin import FileUploadMixin
+from notionary.blocks.mappings.mixins.captions import CaptionMixin
 from notionary.blocks.schemas import (
     Block,
     BlockType,
@@ -11,23 +9,15 @@ from notionary.blocks.schemas import (
     ExternalFile,
     FileData,
     FileType,
-    FileUploadFile,
 )
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class FileMapper(NotionMarkdownMapper, CaptionMixin, FileUploadMixin):
+class FileMapper(NotionMarkdownMapper, CaptionMixin):
     r"""
-    Handles conversion between Markdown file embeds and Notion file blocks.
-
-    Supports both external URLs and local file uploads.
-
     Markdown file syntax:
     - [file](https://example.com/document.pdf) - External URL
-    - [file](./local/document.pdf) - Local file (will be uploaded)
-    - [file](C:\Documents\report.pdf) - Absolute local path (will be uploaded)
     - [file](https://example.com/document.pdf)(caption:Annual Report) - With caption
-    - (caption:Important document)[file](./doc.pdf) - Caption before URL
     """
 
     FILE_PATTERN = re.compile(r"\[file\]\(([^)]+)\)")
@@ -43,38 +33,16 @@ class FileMapper(NotionMarkdownMapper, CaptionMixin, FileUploadMixin):
         if not file_path:
             return None
 
-        cls.logger.info(f"Processing file: {file_path}")
-
         # Extract caption
         caption_text = cls.extract_caption(text.strip())
         caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 
-        # Determine if it's a local file or external URL
-        if cls._is_local_file_path(file_path):
-            cls.logger.debug(f"Detected local file: {file_path}")
-
-            # Upload the local file using mixin method
-            file_upload_id = await cls._upload_local_file(file_path, "file")
-            if not file_upload_id:
-                cls.logger.error(f"Failed to upload file: {file_path}")
-                return None
-
-            # Create FILE_UPLOAD block
-            file_block = FileData(
-                type=FileType.FILE_UPLOAD,
-                file_upload=FileUploadFile(id=file_upload_id),
-                caption=caption_rich_text,
-                name=Path(file_path).name,
-            )
-
-        else:
-            cls.logger.debug(f"Using external URL: {file_path}")
-
-            file_block = FileData(
-                type=FileType.EXTERNAL,
-                external=ExternalFile(url=file_path),
-                caption=caption_rich_text,
-            )
+        # Only support external URLs - no local file upload
+        file_block = FileData(
+            type=FileType.EXTERNAL,
+            external=ExternalFile(url=file_path),
+            caption=caption_rich_text,
+        )
 
         return CreateFileBlock(file=file_block)
 
@@ -110,13 +78,11 @@ class FileMapper(NotionMarkdownMapper, CaptionMixin, FileUploadMixin):
             description="File blocks embed files from external URLs or upload local files with optional captions",
             syntax_examples=[
                 "[file](https://example.com/document.pdf)",
-                "[file](./local/document.pdf)",
-                "[file](C:\\Documents\\report.xlsx)",
                 "[file](https://example.com/document.pdf)(caption:Annual Report)",
-                "(caption:Q1 Data)[file](./spreadsheet.xlsx)",
-                "[file](./manual.docx)(caption:**User** manual)",
+                "(caption:Q1 Data)[file](https://example.com/spreadsheet.xlsx)",
+                "[file](https://example.com/manual.docx)(caption:**User** manual)",
             ],
-            usage_guidelines="Use for both external URLs and local files. Local files will be automatically uploaded to Notion. Supports various file formats including PDFs, documents, spreadsheets, images. Caption supports rich text formatting and should describe the file content or purpose.",
+            usage_guidelines="Use for external URLs only. Caption supports rich text formatting and should describe the file content or purpose.",
         )
 
     @classmethod

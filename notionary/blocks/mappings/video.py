@@ -1,10 +1,8 @@
 import re
-from pathlib import Path
 from typing import ClassVar
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
-from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
-from notionary.blocks.mappings.mixins.file_upload_mixin import FileUploadMixin
+from notionary.blocks.mappings.mixins.captions import CaptionMixin
 from notionary.blocks.schemas import (
     Block,
     BlockCreatePayload,
@@ -13,23 +11,15 @@ from notionary.blocks.schemas import (
     ExternalFile,
     FileData,
     FileType,
-    FileUploadFile,
 )
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class VideoMapper(NotionMarkdownMapper, CaptionMixin, FileUploadMixin):
+class VideoMapper(NotionMarkdownMapper, CaptionMixin):
     r"""
-    Handles conversion between Markdown video embeds and Notion video blocks.
-
-    Supports external URLs (YouTube, Vimeo, direct links) and local video file uploads.
-
     Markdown video syntax:
     - [video](https://example.com/video.mp4) - External URL
-    - [video](./local/movie.mp4) - Local video file (will be uploaded)
-    - [video](C:\Videos\tutorial.mov) - Absolute local path (will be uploaded)
     - [video](https://youtube.com/watch?v=abc123)(caption:Demo Video) - URL with caption
-    - (caption:Tutorial video)[video](./local.mp4) - Caption before URL
     """
 
     # Pattern matches both URLs and file paths
@@ -64,60 +54,25 @@ class VideoMapper(NotionMarkdownMapper, CaptionMixin, FileUploadMixin):
         if not path:
             return None
 
-        # Check if it's a local file path
-        if cls._is_local_file_path(path):
-            # Verify file exists and has supported extension
-            video_path = Path(path)
-            if not video_path.exists():
-                cls.logger.warning(f"Video file not found: {path}")
-                return None
+        # Handle external URL (YouTube, Vimeo, direct links)
+        url = path
 
-            if video_path.suffix.lower() not in cls.SUPPORTED_EXTENSIONS:
-                cls.logger.warning(f"Unsupported video format: {video_path.suffix}")
-                return None
+        # Check for YouTube and normalize URL
+        vid_id = cls._get_youtube_id(url)
+        if vid_id:
+            url = f"https://www.youtube.com/watch?v={vid_id}"
 
-            cls.logger.info(f"Uploading local video file: {path}")
+        # Use mixin to extract caption (if present anywhere in text)
+        caption_text = cls.extract_caption(text.strip())
+        caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 
-            # Upload the local video file
-            file_upload_id = await cls._upload_local_file(path, "video")
-            if not file_upload_id:
-                cls.logger.error(f"Failed to upload video file: {path}")
-                return None
+        video_block = FileData(
+            type=FileType.EXTERNAL,
+            external=ExternalFile(url=url),
+            caption=caption_rich_text,
+        )
 
-            cls.logger.info(f"Successfully uploaded video file with ID: {file_upload_id}")
-
-            # Use mixin to extract caption (if present anywhere in text)
-            caption_text = cls.extract_caption(text.strip())
-            caption_rich_text = cls.build_caption_rich_text(caption_text or "")
-
-            video_block = FileData(
-                type=FileType.FILE_UPLOAD,
-                file_upload=FileUploadFile(id=file_upload_id),
-                caption=caption_rich_text,
-            )
-
-            return CreateVideoBlock(video=video_block)
-
-        else:
-            # Handle external URL (YouTube, Vimeo, direct links)
-            url = path
-
-            # Check for YouTube and normalize URL
-            vid_id = cls._get_youtube_id(url)
-            if vid_id:
-                url = f"https://www.youtube.com/watch?v={vid_id}"
-
-            # Use mixin to extract caption (if present anywhere in text)
-            caption_text = cls.extract_caption(text.strip())
-            caption_rich_text = cls.build_caption_rich_text(caption_text or "")
-
-            video_block = FileData(
-                type=FileType.EXTERNAL,
-                external=ExternalFile(url=url),
-                caption=caption_rich_text,
-            )
-
-            return CreateVideoBlock(video=video_block)
+        return CreateVideoBlock(video=video_block)
 
     @classmethod
     async def notion_to_markdown(cls, block: Block) -> str | None:
@@ -162,13 +117,11 @@ class VideoMapper(NotionMarkdownMapper, CaptionMixin, FileUploadMixin):
             syntax_examples=[
                 "[video](https://youtube.com/watch?v=abc123)",
                 "[video](https://vimeo.com/123456789)",
-                "[video](./local/tutorial.mp4)",
-                "[video](C:\\Videos\\presentation.mov)",
                 "[video](https://example.com/video.mp4)(caption:Demo Video)",
-                "(caption:Tutorial)[video](./demo.mp4)",
-                "[video](./training.mp4)(caption:**Important** tutorial)",
+                "(caption:Tutorial)[video](https://example.com/demo.mp4)",
+                "[video](https://example.com/training.mp4)(caption:**Important** tutorial)",
             ],
-            usage_guidelines="Use for embedding videos from supported platforms or local video files. Supports YouTube, Vimeo, direct video URLs, and local file uploads. Supports common video formats (mp4, avi, mov, wmv, flv, webm, mkv, m4v, 3gp). Caption supports rich text formatting and describes the video content.",
+            usage_guidelines="Use for embedding videos from supported platforms. Supports YouTube, Vimeo, and direct video URLs. Caption supports rich text formatting and describes the video content.",
         )
 
     @classmethod

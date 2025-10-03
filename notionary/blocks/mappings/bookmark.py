@@ -1,7 +1,7 @@
 import re
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
-from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
+from notionary.blocks.mappings.mixins.captions import CaptionMixin
 from notionary.blocks.schemas import Block, BlockType, BookmarkData, CreateBookmarkBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 

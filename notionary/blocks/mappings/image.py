@@ -1,10 +1,7 @@
-from __future__ import annotations
-
 import re
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
-from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
-from notionary.blocks.mappings.mixins.file_upload_mixin import FileUploadMixin
+from notionary.blocks.mappings.mixins.captions import CaptionMixin
 from notionary.blocks.schemas import (
     Block,
     BlockType,
@@ -12,19 +9,15 @@ from notionary.blocks.schemas import (
     ExternalFile,
     FileData,
     FileType,
-    FileUploadFile,
 )
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class ImageMapper(NotionMarkdownMapper, CaptionMixin, FileUploadMixin):
+class ImageMapper(NotionMarkdownMapper, CaptionMixin):
     r"""
     Markdown image syntax:
     - [image](https://example.com/image.jpg) - External URL
-    - [image](./local/photo.png) - Local image file (will be uploaded)
-    - [image](C:\Pictures\avatar.jpg) - Absolute local path (will be uploaded)
     - [image](https://example.com/image.jpg)(caption:This is a caption) - URL with caption
-    - (caption:Profile picture)[image](./avatar.jpg) - Caption before URL
     """
 
     # Pattern matches both URLs and file paths
@@ -40,36 +33,16 @@ class ImageMapper(NotionMarkdownMapper, CaptionMixin, FileUploadMixin):
         if not image_path:
             return None
 
-        cls.logger.info(f"Processing image: {image_path}")
-
         # Extract caption
         caption_text = cls.extract_caption(text.strip())
         caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 
-        # Determine if it's a local file or external URL
-        if cls._is_local_file_path(image_path):
-            cls.logger.debug(f"Detected local image file: {image_path}")
-
-            # Upload the local image file using mixin method
-            file_upload_id = await cls._upload_local_file(image_path, "image")
-            if not file_upload_id:
-                cls.logger.error(f"Failed to upload image: {image_path}")
-                return None
-
-            image_block = FileData(
-                type=FileType.FILE_UPLOAD,
-                file_upload=FileUploadFile(id=file_upload_id),
-                caption=caption_rich_text,
-            )
-
-        else:
-            cls.logger.debug(f"Using external image URL: {image_path}")
-
-            image_block = FileData(
-                type=FileType.EXTERNAL,
-                external=ExternalFile(url=image_path),
-                caption=caption_rich_text,
-            )
+        # Only support external URLs - no local file upload
+        image_block = FileData(
+            type=FileType.EXTERNAL,
+            external=ExternalFile(url=image_path),
+            caption=caption_rich_text,
+        )
 
         return CreateImageBlock(image=image_block)
 
@@ -105,13 +78,11 @@ class ImageMapper(NotionMarkdownMapper, CaptionMixin, FileUploadMixin):
             description="Image blocks display images from external URLs or upload local image files with optional captions",
             syntax_examples=[
                 "[image](https://example.com/photo.jpg)",
-                "[image](./local/screenshot.png)",
-                "[image](C:\\Pictures\\avatar.jpg)",
                 "[image](https://example.com/diagram.png)(caption:Architecture Diagram)",
-                "(caption:Sales Chart)[image](./chart.svg)",
-                "[image](./screenshot.png)(caption:Dashboard **overview**)",
+                "(caption:Sales Chart)[image](https://example.com/chart.svg)",
+                "[image](https://example.com/screenshot.png)(caption:Dashboard **overview**)",
             ],
-            usage_guidelines="Use for displaying images from external URLs or local files. Local image files will be automatically uploaded to Notion. Supports common image formats (jpg, png, gif, svg, webp, bmp, tiff, heic). Caption supports rich text formatting and describes the image content.",
+            usage_guidelines="Use for displaying images from external URLs only. Caption supports rich text formatting and describes the image content.",
         )
 
     @classmethod
