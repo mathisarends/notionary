@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Self
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.data_source.http.data_source_client import DataSourceClient
 from notionary.data_source.http.data_source_instance_client import DataSourceInstanceClient
-from notionary.data_source.properties.exceptions import DataSourcePropertyNotFound, DataSourcePropertyTypeError
 from notionary.data_source.properties.models import (
     DataSourceMultiSelectProperty,
     DataSourceProperty,
@@ -18,6 +17,7 @@ from notionary.data_source.properties.models import (
     DataSourceStatusProperty,
 )
 from notionary.data_source.schemas import DataSourceDto
+from notionary.exceptions.data_source import DataSourcePropertyNotFound, DataSourcePropertyTypeError
 from notionary.page.properties.models import PageTitleProperty
 from notionary.page.schemas import NotionPageDto
 from notionary.search.service import SearchService

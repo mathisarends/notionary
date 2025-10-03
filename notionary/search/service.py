@@ -3,8 +3,8 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
+from notionary.exceptions.search import DatabaseNotFound, DataSourceNotFound, PageNotFound
 from notionary.search.client import SearchClient
-from notionary.search.exceptions import DatabaseNotFound, DataSourceNotFound, PageNotFound
 from notionary.utils.fuzzy import find_best_match
 
 if TYPE_CHECKING:

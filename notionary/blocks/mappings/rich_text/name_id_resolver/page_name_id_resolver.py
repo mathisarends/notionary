@@ -5,9 +5,8 @@ from notionary.search.service import SearchService
 
 
 class PageNameIdResolver(NameIdResolver):
-    def __init__(self, search_service: SearchService | None = None, search_limit: int = 100) -> None:
+    def __init__(self, search_service: SearchService | None = None) -> None:
         self.search_service = search_service or SearchService()
-        self.search_limit = search_limit
 
     @override
     async def resolve_name_to_id(self, name: str) -> str | None:

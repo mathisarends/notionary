@@ -4,11 +4,11 @@ import time
 from dataclasses import dataclass
 from typing import Any, override
 
-from notionary.http.exceptions import NotionApiError
+from notionary.exceptions.api import NotionApiError
 from notionary.http.http_client import NotionHttpClient
 from notionary.http.http_models import HttpMethod, HttpRequest, HttpResponse
 from notionary.http.proxy.proxy_interceptor import ProxyInterceptor
-from notionary.util import LoggingMixin
+from notionary.utils.mixins.logging import LoggingMixin
 
 
 @dataclass

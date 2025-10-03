@@ -1,4 +1,4 @@
-from notionary.infrastructure.exceptions.base import NotionaryError
+from notionary.exceptions.base import NotionaryError
 
 
 class EntityNotFound(NotionaryError):

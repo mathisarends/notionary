@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from notionary.infrastructure.exceptions.base import NotionaryError
+from notionary.exceptions.base import NotionaryError
 from notionary.shared.models.parent_models import ParentType
 
 

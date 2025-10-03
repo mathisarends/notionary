@@ -5,7 +5,7 @@ from typing import Any
 import httpx
 from dotenv import load_dotenv
 
-from notionary.http.exceptions import (
+from notionary.exceptions.api import (
     NotionApiError,
     NotionAuthenticationError,
     NotionConnectionError,
