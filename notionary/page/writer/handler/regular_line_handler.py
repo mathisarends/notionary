@@ -4,8 +4,6 @@ from notionary.page.writer.handler import LineHandler, LineProcessingContext
 
 
 class RegularLineHandler(LineHandler):
-    """Handles regular lines - respects parent contexts like columns."""
-
     def _can_handle(self, context: LineProcessingContext) -> bool:
         return context.line.strip()
 
@@ -23,7 +21,6 @@ class RegularLineHandler(LineHandler):
         context.was_processed = True
 
     def _is_in_column_context(self, context: LineProcessingContext) -> bool:
-        """Check if we're inside a Column/ColumnList context."""
         if not context.parent_stack:
             return False
 
@@ -31,11 +28,9 @@ class RegularLineHandler(LineHandler):
         return issubclass(current_parent.element_type, (ColumnListElement, ColumnElement))
 
     def _add_to_column_context(self, context: LineProcessingContext) -> None:
-        """Add line as child to the current Column context."""
         context.parent_stack[-1].add_child_line(context.line)
 
     async def _process_single_line_content(self, context: LineProcessingContext) -> bool:
-        """Process a regular line for simple elements (lists, etc.)."""
         specialized_elements = self._get_specialized_elements()
 
         for element in context.block_registry.get_elements():
@@ -61,10 +56,10 @@ class RegularLineHandler(LineHandler):
         context.result_blocks.append(result)
 
     def _get_specialized_elements(self):
-        from notionary.blocks.code import CodeElement
-        from notionary.blocks.table import TableElement
-        from notionary.blocks.toggle import ToggleElement
-        from notionary.blocks.toggleable_heading import ToggleableHeadingElement
+        from notionary.blocks.mappings.code import CodeElement
+        from notionary.blocks.mappings.table import TableElement
+        from notionary.blocks.mappings.toggle import ToggleElement
+        from notionary.blocks.mappings.toggleable_heading import ToggleableHeadingElement
 
         return (
             ColumnListElement,

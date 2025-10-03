@@ -2,7 +2,7 @@ import re
 
 from notionary.blocks.mappings.base import BaseBlockElement
 from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, BookmarkBlock, CreateBookmarkBlock
+from notionary.blocks.schemas import Block, BlockCreatePayload, BlockType, BookmarkData, CreateBookmarkBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -24,7 +24,7 @@ class BookmarkElement(BaseBlockElement, CaptionMixin):
         return block.type == BlockType.BOOKMARK and block.bookmark
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         """
         Convert a markdown bookmark into a Notion BookmarkBlock.
         """
@@ -41,7 +41,7 @@ class BookmarkElement(BaseBlockElement, CaptionMixin):
         caption_text = cls.extract_caption(text.strip())
         caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 
-        bookmark_data = BookmarkBlock(url=url, caption=caption_rich_text)
+        bookmark_data = BookmarkData(url=url, caption=caption_rich_text)
         return CreateBookmarkBlock(bookmark=bookmark_data)
 
     @classmethod

@@ -177,7 +177,7 @@ async def test_notion_to_markdown_without_caption():
 
 @pytest.mark.asyncio
 async def test_notion_to_markdown_file_type():
-    from notionary.blocks.file.models import NotionHostedFile
+    from notionary.blocks.schemas import NotionHostedFile
 
     notion_block = create_block_with_required_fields(
         type="file",

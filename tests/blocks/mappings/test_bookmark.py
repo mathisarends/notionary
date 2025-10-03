@@ -4,7 +4,8 @@ import pytest
 import pytest_asyncio
 
 from notionary.blocks.mappings.bookmark import BookmarkElement
-from notionary.blocks.schemas import BlockType, BookmarkBlock, CreateBookmarkBlock
+from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.schemas import BlockType, BookmarkData, CreateBookmarkBlock
 
 
 @pytest.mark.asyncio
@@ -107,7 +108,7 @@ async def test_markdown_to_notion_invalid():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_simple():
     """Test Konvertierung von einfachem Notion-Bookmark."""
-    bookmark_data = BookmarkBlock(url="https://example.com", caption=[])
+    bookmark_data = BookmarkData(url="https://example.com", caption=[])
 
     block = Mock()
     block.type = BlockType.BOOKMARK
@@ -120,13 +121,10 @@ async def test_notion_to_markdown_simple():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_with_title():
     """Test Konvertierung von Notion-Bookmark mit Titel."""
-    # Verwende MarkdownRichTextConverter um korrekte RichText-Struktur zu erstellen
-    from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-
     converter = MarkdownRichTextConverter()
     caption = await converter.to_rich_text("Beispiel-Titel")
 
-    bookmark_data = BookmarkBlock(url="https://example.com", caption=caption)
+    bookmark_data = BookmarkData(url="https://example.com", caption=caption)
 
     block = Mock()
     block.type = BlockType.BOOKMARK
@@ -145,7 +143,7 @@ async def test_notion_to_markdown_with_title_and_description():
     converter = MarkdownRichTextConverter()
     caption = await converter.to_rich_text("Beispiel-Titel - Eine Beschreibung")
 
-    bookmark_data = BookmarkBlock(url="https://example.com", caption=caption)
+    bookmark_data = BookmarkData(url="https://example.com", caption=caption)
 
     block = Mock()
     block.type = BlockType.BOOKMARK
@@ -173,7 +171,7 @@ async def test_notion_to_markdown_invalid():
     assert result is None
 
     # Missing URL
-    bookmark_data = BookmarkBlock(url="", caption=[])
+    bookmark_data = BookmarkData(url="", caption=[])
     no_url_block = Mock()
     no_url_block.type = BlockType.BOOKMARK
     no_url_block.bookmark = bookmark_data
@@ -211,7 +209,7 @@ async def test_url_validation(url, expected):
 @pytest.fixture
 def simple_bookmark_block():
     """Fixture für einfachen Bookmark-Block."""
-    bookmark_data = BookmarkBlock(url="https://example.com", caption=[])
+    bookmark_data = BookmarkData(url="https://example.com", caption=[])
 
     block = Mock()
     block.type = BlockType.BOOKMARK
@@ -227,7 +225,7 @@ async def titled_bookmark_block():
     converter = MarkdownRichTextConverter()
     caption = await converter.to_rich_text("Test Title")
 
-    bookmark_data = BookmarkBlock(url="https://example.com", caption=caption)
+    bookmark_data = BookmarkData(url="https://example.com", caption=caption)
 
     block = Mock()
     block.type = BlockType.BOOKMARK
@@ -363,7 +361,7 @@ async def test_caption_separator_behavior():
     # Test parsing with hyphen
     converter_from_md = MarkdownRichTextConverter()
     hyphen_caption = await converter_from_md.to_rich_text("Title - Description")
-    bookmark_data = BookmarkBlock(url="https://example.com", caption=hyphen_caption)
+    bookmark_data = BookmarkData(url="https://example.com", caption=hyphen_caption)
 
     block = Mock()
     block.type = BlockType.BOOKMARK

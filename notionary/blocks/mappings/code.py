@@ -2,7 +2,7 @@ import re
 
 from notionary.blocks.mappings.base import BaseBlockElement
 from notionary.blocks.mappings.rich_text.models import RichText
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, CodeBlock, CodeLanguage, CreateCodeBlock
+from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, CodeData, CodeLanguage, CreateCodeBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -31,7 +31,7 @@ class CodeElement(BaseBlockElement):
         language = cls._normalize_language(language)
 
         # Create empty CodeBlock - content will be added by stack processor
-        code_block = CodeBlock(rich_text=[], language=language, caption=[])
+        code_block = CodeData(rich_text=[], language=language, caption=[])
         return CreateCodeBlock(code=code_block)
 
     @classmethod
@@ -58,7 +58,7 @@ class CodeElement(BaseBlockElement):
         if caption:
             caption_list = [RichText.for_caption(caption)]
 
-        code_block = CodeBlock(rich_text=rich_text, language=language, caption=caption_list)
+        code_block = CodeData(rich_text=rich_text, language=language, caption=caption_list)
 
         return CreateCodeBlock(code=code_block)
 
