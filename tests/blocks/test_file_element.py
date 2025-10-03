@@ -6,12 +6,12 @@ from notionary.blocks.file.models import (
     ExternalFile,
     FileBlock,
 )
-from notionary.blocks.models import Block
 from notionary.blocks.rich_text.models import (
     RichText,
     TextAnnotations,
     TextContent,
 )
+from notionary.blocks.schemas import Block
 
 
 def create_rich_text_object(content: str) -> RichText:

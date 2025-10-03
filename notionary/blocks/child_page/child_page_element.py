@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.models import Block, BlockCreateResult, BlockType
+from notionary.blocks.schemas import Block, BlockCreateResult, BlockType
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.page.page_context import get_page_context
 

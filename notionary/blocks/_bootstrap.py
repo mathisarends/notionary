@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from notionary.blocks import schemas
+
 _bootstrapped = False
 
 
@@ -23,7 +25,6 @@ def bootstrap_blocks() -> None:
         file,
         heading,
         image_block,
-        models,
         numbered_list,
         paragraph,
         quote,
@@ -215,8 +216,8 @@ def bootstrap_blocks() -> None:
     )
 
     # Now rebuild with complete namespace
-    models.Block.model_rebuild(_types_namespace=ns)
-    models.BlockChildrenResponse.model_rebuild(_types_namespace=ns)
+    schemas.Block.model_rebuild(_types_namespace=ns)
+    schemas.BlockChildrenResponse.model_rebuild(_types_namespace=ns)
 
     # Rebuild all individual block models
     BookmarkBlock.model_rebuild()

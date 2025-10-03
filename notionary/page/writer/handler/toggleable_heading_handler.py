@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from notionary.blocks.models import BlockCreateRequest
+from notionary.blocks.schemas import BlockCreateRequest
 from notionary.blocks.toggleable_heading.toggleable_heading_element import (
     ToggleableHeadingElement,
 )

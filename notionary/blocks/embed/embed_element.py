@@ -9,9 +9,9 @@ from notionary.blocks.file.models import (
     FileUploadFile,
     NotionHostedFile,
 )
-from notionary.blocks.models import Block, BlockCreateResult, BlockType
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.schemas import Block, BlockCreateResult, BlockType
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 

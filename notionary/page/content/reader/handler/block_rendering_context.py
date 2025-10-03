@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from notionary.blocks.models import Block
 from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.schemas import Block
 
 
 @dataclass

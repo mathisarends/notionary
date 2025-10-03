@@ -64,7 +64,6 @@ class BlockChildrenResponse(BaseModel):
 
 
 class BaseBlock(BaseModel):
-    object: Literal["block"]
     id: str
     parent: Parent | None = None
     type: BlockType
@@ -79,7 +78,6 @@ class BaseBlock(BaseModel):
 
 
 class Block(BaseBlock):
-    # Block type-specific content (only one will be populated based on type)
     audio: FileBlock | None = None
     bookmark: BookmarkBlock | None = None
     breadcrumb: BreadcrumbBlock | None = None

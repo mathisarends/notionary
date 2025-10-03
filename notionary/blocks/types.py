@@ -4,8 +4,8 @@ from enum import StrEnum
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from notionary.blocks.models import BlockCreateRequest
     from notionary.blocks.rich_text.models import RichText
+    from notionary.blocks.schemas import BlockCreateRequest
 
 
 class BlockColor(StrEnum):

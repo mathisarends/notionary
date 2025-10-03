@@ -7,7 +7,7 @@ from notionary.blocks.breadcrumbs.models import (
     BreadcrumbBlock,
     CreateBreadcrumbBlock,
 )
-from notionary.blocks.models import Block, BlockCreateResult, BlockType
+from notionary.blocks.schemas import Block, BlockCreateResult, BlockType
 
 
 class BreadcrumbElement(BaseBlockElement):

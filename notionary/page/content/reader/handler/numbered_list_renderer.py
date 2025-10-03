@@ -1,4 +1,4 @@
-from notionary.blocks.models import BlockType
+from notionary.blocks.schemas import BlockType
 from notionary.page.content.reader.handler.base_block_renderer import BlockHandler
 from notionary.page.content.reader.handler.block_rendering_context import BlockRenderingContext
 

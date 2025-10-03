@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.models import BlockCreateRequest
 from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.schemas import BlockCreateRequest
 
 
 @dataclass

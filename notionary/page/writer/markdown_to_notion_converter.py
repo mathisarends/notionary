@@ -1,5 +1,5 @@
-from notionary.blocks.models import BlockCreateRequest
 from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.schemas import BlockCreateRequest
 from notionary.page.writer.handler import (
     CodeHandler,
     ColumnHandler,

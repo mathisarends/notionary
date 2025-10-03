@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from notionary.blocks.models import Block, BlockCreateResult
+from notionary.blocks.schemas import Block, BlockCreateResult
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 

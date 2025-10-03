@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from notionary.blocks.models import BlockCreateRequest
+from notionary.blocks.schemas import BlockCreateRequest
 from notionary.blocks.types import BlockType
 
 

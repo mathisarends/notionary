@@ -1,6 +1,6 @@
 import pytest
 
-from notionary.blocks.models import Block, BlockType
+from notionary.blocks.schemas import Block, BlockType
 from notionary.blocks.table_of_contents.models import (
     CreateTableOfContentsBlock,
     TableOfContentsBlock,
