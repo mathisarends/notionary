@@ -16,13 +16,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class VideoMapper(NotionMarkdownMapper, CaptionMixin):
-    r"""
-    Markdown video syntax:
-    - [video](https://example.com/video.mp4) - External URL
-    - [video](https://youtube.com/watch?v=abc123)(caption:Demo Video) - URL with caption
-    """
-
-    # Pattern matches both URLs and file paths
     VIDEO_PATTERN = re.compile(r"\[video\]\(([^)]+)\)")
 
     YOUTUBE_PATTERNS: ClassVar[list[re.Pattern[str]]] = [

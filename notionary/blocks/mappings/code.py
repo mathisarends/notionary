@@ -7,13 +7,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class CodeMapper(NotionMarkdownMapper):
-    """
-    Markdown code block syntax:
-    ```language
-    [code content as child lines]
-    ```
-    """
-
     DEFAULT_LANGUAGE = "plain text"
     CODE_START_PATTERN = re.compile(r"^```(\w*)\s*$")
     CODE_START_WITH_CAPTION_PATTERN = re.compile(r"^```(\w*)\s*(?:\"([^\"]*)\")?\s*$")

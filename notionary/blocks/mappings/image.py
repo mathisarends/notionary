@@ -14,12 +14,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class ImageMapper(NotionMarkdownMapper, CaptionMixin):
-    r"""
-    Markdown image syntax:
-    - [image](https://example.com/image.jpg) - External URL
-    - [image](https://example.com/image.jpg)(caption:This is a caption) - URL with caption
-    """
-
     # Pattern matches both URLs and file paths
     IMAGE_PATTERN = re.compile(r"\[image\]\(([^)]+)\)")
 

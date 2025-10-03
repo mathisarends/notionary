@@ -8,14 +8,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class TodoMapper(NotionMarkdownMapper):
-    """
-    Markdown syntax examples:
-    - [ ] Unchecked todo item
-    - [x] Checked todo item
-    * [ ] Also works with asterisk
-    + [ ] Also works with plus sign
-    """
-
     PATTERN = re.compile(r"^\s*[-*+]\s+\[ \]\s+(.+)$")
     DONE_PATTERN = re.compile(r"^\s*[-*+]\s+\[x\]\s+(.+)$", re.IGNORECASE)
 

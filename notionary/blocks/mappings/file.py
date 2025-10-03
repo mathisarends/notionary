@@ -14,12 +14,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class FileMapper(NotionMarkdownMapper, CaptionMixin):
-    r"""
-    Markdown file syntax:
-    - [file](https://example.com/document.pdf) - External URL
-    - [file](https://example.com/document.pdf)(caption:Annual Report) - With caption
-    """
-
     FILE_PATTERN = re.compile(r"\[file\]\(([^)]+)\)")
 
     @classmethod

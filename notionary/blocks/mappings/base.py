@@ -1,10 +1,14 @@
 from abc import ABC, abstractmethod
+from typing import ClassVar
 
+from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block, BlockCreatePayload
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class NotionMarkdownMapper(ABC):
+    block_type: ClassVar[BlockType | None] = None
+
     @classmethod
     @abstractmethod
     async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:

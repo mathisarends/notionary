@@ -1,4 +1,4 @@
-from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.registry.service import BlockRegistry
 from notionary.blocks.schemas import Block
 from notionary.page.content.reader.handler.block_rendering_context import BlockRenderingContext
 from notionary.page.content.reader.handler.column_list_renderer import ColumnListRenderer

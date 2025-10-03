@@ -49,7 +49,6 @@ class RegularLineHandler(LineHandler):
         return False
 
     async def _process_as_paragraph(self, context: LineProcessingContext) -> None:
-        """Process a line as a paragraph."""
         from notionary.blocks.mappings.paragraph import ParagraphMapper
 
         paragraph_element = ParagraphMapper()

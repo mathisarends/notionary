@@ -1,5 +1,5 @@
 from notionary.blocks.client import NotionBlockHttpClient
-from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.registry.service import BlockRegistry
 from notionary.blocks.schemas import Block
 from notionary.utils.mixins.logging import LoggingMixin
 

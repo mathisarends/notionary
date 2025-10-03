@@ -10,13 +10,6 @@ from notionary.blocks.schemas import (
 
 
 class BreadcrumbMapper(NotionMarkdownMapper):
-    """
-    Handles conversion between Markdown breadcrumb marker and Notion breadcrumb blocks.
-
-    Markdown syntax:
-      [breadcrumb]
-    """
-
     BREADCRUMB_MARKER = "[breadcrumb]"
     PATTERN = re.compile(r"^\[breadcrumb\]\s*$", re.IGNORECASE)
 

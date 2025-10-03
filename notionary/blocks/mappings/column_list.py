@@ -6,11 +6,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class ColumnListMapper(NotionMarkdownMapper):
-    """
-    Handles the `::: columns` container.
-    Individual columns are handled by ColumnMapper.
-    """
-
     COLUMNS_START = re.compile(r"^:::\s*columns\s*$")
 
     @classmethod

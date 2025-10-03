@@ -5,7 +5,7 @@ from textwrap import dedent
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from notionary.blocks.registry.block_registry import BlockRegistry
+    from notionary.blocks.registry.service import BlockRegistry
 
 
 @dataclass

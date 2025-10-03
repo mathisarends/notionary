@@ -14,12 +14,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class PdfMapper(NotionMarkdownMapper, CaptionMixin):
-    r"""
-    Markdown PDF syntax:
-    - [pdf](https://example.com/document.pdf) - External URL
-    - [pdf](https://example.com/document.pdf)(caption:Annual Report 2024) - With caption
-    """
-
     PDF_PATTERN = re.compile(r"\[pdf\]\(([^)]+)\)")
 
     @classmethod

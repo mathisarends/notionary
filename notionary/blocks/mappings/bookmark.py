@@ -7,14 +7,7 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class BookmarkMapper(NotionMarkdownMapper, CaptionMixin):
-    """
-    Handles conversion between Markdown bookmarks and Notion bookmark blocks.
-
-    Markdown bookmark syntax:
-    - [bookmark](https://example.com) - URL only
-    - [bookmark](https://example.com)(caption:This is a caption) - URL with caption
-    - (caption:This is a caption)[bookmark](https://example.com) - caption before URL
-    """
+    block_type = BlockType.BOOKMARK
 
     # Flexible pattern that can handle caption in any position
     BOOKMARK_PATTERN = re.compile(r"\[bookmark\]\((https?://[^\s\"]+)\)")

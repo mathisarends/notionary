@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 from notionary.blocks.client import NotionBlockHttpClient
 from notionary.blocks.markdown.builder import MarkdownBuilder
-from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.registry.service import BlockRegistry
 from notionary.page.markdown_whitespace_processor import MarkdownWhitespaceProcessor
 from notionary.page.writer.markdown_to_notion_converter import MarkdownToNotionConverter
 from notionary.schemas.base import NotionContentSchema

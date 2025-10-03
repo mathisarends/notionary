@@ -9,18 +9,6 @@ from notionary.shared.models.icon_models import EmojiIcon, Icon
 
 
 class CalloutMapper(NotionMarkdownMapper):
-    """
-    Handles conversion between Markdown callouts and Notion callout blocks.
-
-    Markdown callout syntax:
-    - [callout](Text) - Simple callout with default emoji
-    - [callout](Text "emoji") - Callout with custom emoji
-
-    Where:
-    - Text is the required callout content
-    - emoji is an optional emoji character (enclosed in quotes)
-    """
-
     PATTERN = re.compile(
         r"^\[callout\]\("  # prefix
         r"([^\"]+?)"  # content

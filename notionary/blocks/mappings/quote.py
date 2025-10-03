@@ -8,15 +8,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class QuoteMapper(NotionMarkdownMapper):
-    """
-    Handles conversion between Markdown quotes and Notion quote blocks.
-
-    Markdown quote syntax:
-    - > Simple quote text
-
-    Only single-line quotes without author metadata.
-    """
-
     PATTERN = re.compile(r"^>\s*(.+)$")
 
     @classmethod

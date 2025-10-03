@@ -12,13 +12,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class TableOfContentsMapper(NotionMarkdownMapper):
-    """
-    Markdown syntax:
-    - [toc]                        → default color (enum default)
-    - [toc](blue)                  → custom color
-    - [toc](blue_background)       → custom background color
-    """
-
     PATTERN = re.compile(r"^\[toc\](?:\((?P<color>[a-z_]+)\))?$", re.IGNORECASE)
 
     @classmethod

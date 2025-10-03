@@ -16,16 +16,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class TableMapper(NotionMarkdownMapper):
-    """
-    Handles conversion between Markdown tables and Notion table blocks.
-    Now integrated into the LineProcessor stack system.
-
-    Markdown table syntax:
-    | Header 1 | Header 2 | Header 3 |
-    | -------- | -------- | -------- |
-    | Cell 1   | Cell 2   | Cell 3   |
-    """
-
     ROW_PATTERN = re.compile(r"^\s*\|(.+)\|\s*$")
     SEPARATOR_PATTERN = re.compile(r"^\s*\|([\s\-:|]+)\|\s*$")
 

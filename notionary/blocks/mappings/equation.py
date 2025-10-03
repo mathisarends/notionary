@@ -7,15 +7,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class EquationMapper(NotionMarkdownMapper):
-    """
-    Supports standard Markdown equation syntax:
-
-      - $$E = mc^2$$                           # simple equations
-      - $$E = mc^2 + \\frac{a}{b}$$           # complex equations with LaTeX
-
-    Uses $$...$$ parsing for block equations.
-    """
-
     _EQUATION_PATTERN = re.compile(
         r"^\$\$\s*(?P<expression>.*?)\s*\$\$$",
         re.DOTALL,

@@ -1,4 +1,4 @@
-from notionary.blocks.registry.block_registry import BlockRegistry
+from notionary.blocks.registry.service import BlockRegistry
 from notionary.blocks.schemas import BlockCreatePayload
 from notionary.page.writer.handler import (
     CodeHandler,

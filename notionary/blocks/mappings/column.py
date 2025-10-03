@@ -6,16 +6,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class ColumnMapper(NotionMarkdownMapper):
-    """
-    Handles individual `::: column` blocks with optional width ratio.
-    Content is automatically added by the stack processor.
-
-    Supported syntax:
-    - `::: column` (equal width)
-    - `::: column 0.5` (50% width)
-    - `::: column 0.25` (25% width)
-    """
-
     COLUMN_START = re.compile(r"^:::\s*column(?:\s+(0?\.\d+|1\.0?))?\s*$")
 
     @classmethod

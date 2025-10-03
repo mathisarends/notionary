@@ -24,8 +24,6 @@ class AudioMapper(NotionMarkdownMapper, CaptionMixin):
 
     @classmethod
     async def markdown_to_notion(cls, text: str) -> CreateAudioBlock | None:
-        """Convert markdown audio embed to Notion audio block."""
-        # Extract the path/URL
         path = cls._extract_audio_path(text.strip())
         if not path:
             return None

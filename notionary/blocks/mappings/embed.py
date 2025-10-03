@@ -16,14 +16,6 @@ from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformati
 
 
 class EmbedMapper(NotionMarkdownMapper):
-    """
-    Handles conversion between Markdown embeds and Notion embed blocks.
-
-    Markdown embed syntax:
-    - [embed](https://example.com) - URL only
-    - [embed](https://example.com "Caption") - URL + caption
-    """
-
     PATTERN = re.compile(
         r"^\[embed\]\("  # prefix
         r"(https?://[^\s\"]+)"  # URL
