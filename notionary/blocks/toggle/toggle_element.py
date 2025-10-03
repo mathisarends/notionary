@@ -1,14 +1,10 @@
-from __future__ import annotations
-
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType
+from notionary.blocks.schemas import Block, BlockColor, BlockCreateResult, BlockType, CreateToggleBlock, ToggleBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
-from notionary.blocks.toggle.models import CreateToggleBlock, ToggleBlock
-from notionary.blocks.types import BlockColor
 
 
 class ToggleElement(BaseBlockElement):

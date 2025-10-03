@@ -1,11 +1,7 @@
-from __future__ import annotations
-
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.divider.models import CreateDividerBlock, DividerBlock
-from notionary.blocks.schemas import Block, BlockCreateResult
-from notionary.blocks.types import BlockType
+from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, CreateDividerBlock, DividerBlock
 
 
 class DividerElement(BaseBlockElement):

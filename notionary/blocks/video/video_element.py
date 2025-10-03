@@ -1,22 +1,21 @@
-from __future__ import annotations
-
 import re
 from pathlib import Path
 from typing import ClassVar
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.file.models import (
+from notionary.blocks.mixins.captions import CaptionMixin
+from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin
+from notionary.blocks.schemas import (
+    Block,
+    BlockCreateResult,
+    BlockType,
+    CreateVideoBlock,
     ExternalFile,
     FileBlock,
     FileType,
     FileUploadFile,
 )
-from notionary.blocks.mixins.captions import CaptionMixin
-from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin
-from notionary.blocks.schemas import Block, BlockCreateResult
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
-from notionary.blocks.types import BlockType
-from notionary.blocks.video.models import CreateVideoBlock
 
 
 class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):

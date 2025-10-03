@@ -1,9 +1,8 @@
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.code.models import CodeBlock, CodeLanguage, CreateCodeBlock
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType
+from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, CodeBlock, CodeLanguage, CreateCodeBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 

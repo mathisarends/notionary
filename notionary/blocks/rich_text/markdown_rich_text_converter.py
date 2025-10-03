@@ -10,7 +10,7 @@ from notionary.blocks.rich_text.name_id_resolver.name_id_resolver import NameIdR
 from notionary.blocks.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
 from notionary.blocks.rich_text.name_id_resolver.person_name_id_resolver import PersonNameIdResolver
 from notionary.blocks.rich_text.rich_text_patterns import RichTextPatterns
-from notionary.blocks.types import BlockColor
+from notionary.blocks.schemas import BlockColor
 
 
 @dataclass

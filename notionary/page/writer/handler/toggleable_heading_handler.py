@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import re
 
-from notionary.blocks.schemas import BlockCreateRequest
+from notionary.blocks.schemas import BlockCreateRequest, BlockType
 from notionary.blocks.toggleable_heading.toggleable_heading_element import (
     ToggleableHeadingElement,
 )
-from notionary.blocks.types import BlockType
 from notionary.page.writer.handler import (
     LineHandler,
     LineProcessingContext,

@@ -1,17 +1,18 @@
-from __future__ import annotations
-
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.embed.models import CreateEmbedBlock, EmbedBlock
-from notionary.blocks.file.models import (
+from notionary.blocks.rich_text.models import RichText
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.schemas import (
+    Block,
+    BlockCreateResult,
+    BlockType,
+    CreateEmbedBlock,
+    EmbedBlock,
     ExternalFile,
     FileUploadFile,
     NotionHostedFile,
 )
-from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 

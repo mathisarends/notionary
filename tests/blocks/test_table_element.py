@@ -1,6 +1,7 @@
 from unittest.mock import Mock
 
 import pytest
+from notionary.blocks.schemas_new import BlockType
 
 from notionary.blocks.rich_text.models import (
     RichText,
@@ -8,7 +9,6 @@ from notionary.blocks.rich_text.models import (
     TextContent,
 )
 from notionary.blocks.table.table_element import TableElement
-from notionary.blocks.types import BlockType
 
 
 def create_rich_text(content: str) -> RichText:

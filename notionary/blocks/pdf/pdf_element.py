@@ -1,18 +1,18 @@
-from __future__ import annotations
-
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.file.models import (
+from notionary.blocks.mixins.captions import CaptionMixin
+from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin
+from notionary.blocks.schemas import (
+    Block,
+    BlockCreateResult,
+    BlockType,
+    CreatePdfBlock,
     ExternalFile,
     FileBlock,
     FileType,
     FileUploadFile,
 )
-from notionary.blocks.mixins.captions import CaptionMixin
-from notionary.blocks.mixins.file_upload.file_upload_mixin import FileUploadMixin
-from notionary.blocks.pdf.models import CreatePdfBlock
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 

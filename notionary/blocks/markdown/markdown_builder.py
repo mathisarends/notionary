@@ -8,7 +8,7 @@ from notionary.blocks.bookmark import BookmarkMarkdownNode
 from notionary.blocks.breadcrumbs import BreadcrumbMarkdownNode
 from notionary.blocks.bulleted_list import BulletedListMarkdownNode
 from notionary.blocks.callout import CalloutMarkdownNode
-from notionary.blocks.code import CodeLanguage, CodeMarkdownNode
+from notionary.blocks.code import CodeMarkdownNode
 from notionary.blocks.column import ColumnListMarkdownNode, ColumnMarkdownNode
 from notionary.blocks.divider import DividerMarkdownNode
 from notionary.blocks.embed import EmbedMarkdownNode
@@ -21,6 +21,7 @@ from notionary.blocks.numbered_list import NumberedListMarkdownNode
 from notionary.blocks.paragraph import ParagraphMarkdownNode
 from notionary.blocks.pdf import PdfMarkdownNode
 from notionary.blocks.quote import QuoteMarkdownNode
+from notionary.blocks.schemas import CodeLanguage
 from notionary.blocks.space import SpaceMarkdownNode
 from notionary.blocks.table import TableMarkdownNode
 from notionary.blocks.table_of_contents import TableOfContentsMarkdownNode
@@ -31,10 +32,6 @@ from notionary.blocks.video import VideoMarkdownNode
 
 
 class MarkdownBuilder:
-    """
-    Fluent interface builder for creating Notion content with clean, direct methods.
-    """
-
     def __init__(self) -> None:
         self.children: list[MarkdownNode] = []
 

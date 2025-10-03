@@ -4,15 +4,16 @@ from notionary.blocks.base_block_element import BaseBlockElement
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, BlockCreateResult
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
-from notionary.blocks.table.models import (
+from notionary.blocks.schemas import (
+    Block,
+    BlockCreateResult,
+    BlockType,
     CreateTableBlock,
     CreateTableRowBlock,
     TableBlock,
     TableRowBlock,
 )
-from notionary.blocks.types import BlockType
+from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class TableElement(BaseBlockElement):

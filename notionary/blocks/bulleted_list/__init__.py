@@ -2,14 +2,8 @@ from notionary.blocks.bulleted_list.bulleted_list_element import BulletedListEle
 from notionary.blocks.bulleted_list.bulleted_list_markdown_node import (
     BulletedListMarkdownNode,
 )
-from notionary.blocks.bulleted_list.models import (
-    BulletedListItemBlock,
-    CreateBulletedListItemBlock,
-)
 
 __all__ = [
     "BulletedListElement",
-    "BulletedListItemBlock",
     "BulletedListMarkdownNode",
-    "CreateBulletedListItemBlock",
 ]

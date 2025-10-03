@@ -3,17 +3,19 @@ from __future__ import annotations
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.heading.heading_models import (
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.schemas import (
+    Block,
+    BlockColor,
+    BlockCreateResult,
+    BlockType,
     CreateHeading1Block,
     CreateHeading2Block,
     CreateHeading3Block,
-    HeadingBlock,
+    HeadingData,
 )
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
-from notionary.blocks.types import BlockColor
 
 
 class ToggleableHeadingElement(BaseBlockElement):
@@ -61,7 +63,7 @@ class ToggleableHeadingElement(BaseBlockElement):
         converter = MarkdownRichTextConverter()
         rich_text = await converter.to_rich_text(content)
 
-        heading_content = HeadingBlock(rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=True, children=[])
+        heading_content = HeadingData(rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=True, children=[])
 
         if level == 1:
             return CreateHeading1Block(heading_1=heading_content)
@@ -90,7 +92,7 @@ class ToggleableHeadingElement(BaseBlockElement):
             level = 3
 
         heading_content = getattr(block, block.type.value)
-        if not isinstance(heading_content, HeadingBlock):
+        if not isinstance(heading_content, HeadingData):
             return None
 
         converter = RichTextToMarkdownConverter()

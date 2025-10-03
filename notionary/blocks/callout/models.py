@@ -3,8 +3,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.schemas import Block
-from notionary.blocks.types import BlockColor, BlockType
+from notionary.blocks.schemas import Block, BlockColor, BlockType
 from notionary.shared.models.icon_models import Icon
 
 

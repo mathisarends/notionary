@@ -1,11 +1,11 @@
 from unittest.mock import Mock
 
 import pytest
+from notionary.blocks.heading.models import HeadingBlock
+from notionary.blocks.schemas_new import BlockType
 
 from notionary.blocks.heading.heading_element import HeadingElement
-from notionary.blocks.heading.models import HeadingBlock
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.types import BlockType
 
 
 @pytest.mark.asyncio

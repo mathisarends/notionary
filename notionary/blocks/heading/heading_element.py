@@ -4,17 +4,19 @@ import re
 from typing import cast
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.heading.models import (
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.schemas import (
+    Block,
+    BlockColor,
+    BlockCreateResult,
+    BlockType,
     CreateHeading1Block,
     CreateHeading2Block,
     CreateHeading3Block,
-    HeadingBlock,
+    HeadingData,
 )
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
-from notionary.blocks.types import BlockColor
 
 
 class HeadingElement(BaseBlockElement):
@@ -51,7 +53,7 @@ class HeadingElement(BaseBlockElement):
 
         converter = MarkdownRichTextConverter()
         rich_text = await converter.to_rich_text(content)
-        heading_content = HeadingBlock(rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=False)
+        heading_content = HeadingData(rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=False)
 
         if level == 1:
             return CreateHeading1Block(heading_1=heading_content)
@@ -82,7 +84,7 @@ class HeadingElement(BaseBlockElement):
         if not heading_obj:
             return None
 
-        heading_data = cast(HeadingBlock, heading_obj)
+        heading_data = cast(HeadingData, heading_obj)
         if not heading_data.rich_text:
             return None
 

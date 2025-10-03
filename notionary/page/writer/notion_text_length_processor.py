@@ -1,9 +1,12 @@
-from typing import TypeGuard
+from typing import Protocol, TypeGuard
 
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.schemas import BlockCreateRequest
-from notionary.blocks.types import HasChildren, HasRichText
+from notionary.blocks.schemas import BlockCreateRequest, HasRichText
 from notionary.utils.mixins.logging import LoggingMixin
+
+
+class HasChildren(Protocol):
+    children: list[BlockCreateRequest]
 
 
 class NotionTextLengthProcessor(LoggingMixin):

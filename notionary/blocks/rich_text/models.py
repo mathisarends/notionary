@@ -3,7 +3,7 @@ from typing import Self
 
 from pydantic import BaseModel
 
-from notionary.blocks.types import BlockColor
+from notionary.blocks.enums import BlockColor
 
 
 class RichTextType(StrEnum):
@@ -32,7 +32,7 @@ class TextAnnotations(BaseModel):
     strikethrough: bool = False
     underline: bool = False
     code: bool = False
-    color: str = BlockColor.DEFAULT
+    color: BlockColor | None = None
 
 
 class LinkObject(BaseModel):

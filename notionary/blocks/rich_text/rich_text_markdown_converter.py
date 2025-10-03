@@ -7,7 +7,7 @@ from notionary.blocks.rich_text.models import (
     RichTextType,
 )
 from notionary.blocks.rich_text.name_id_resolver.name_id_resolver import NameIdResolver
-from notionary.blocks.types import BlockColor
+from notionary.blocks.schemas import BlockColor
 
 
 class RichTextToMarkdownConverter:

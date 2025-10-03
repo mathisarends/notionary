@@ -1,11 +1,8 @@
-from __future__ import annotations
-
 import re
 
 from notionary.blocks.base_block_element import BaseBlockElement
-from notionary.blocks.bookmark.models import BookmarkBlock, CreateBookmarkBlock
 from notionary.blocks.mixins.captions import CaptionMixin
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType
+from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, BookmarkBlock, CreateBookmarkBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
