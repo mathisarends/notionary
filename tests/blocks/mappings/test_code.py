@@ -1,3 +1,5 @@
+from unittest.mock import Mock
+
 import pytest
 
 from notionary.blocks.mappings.code import CodeElement
@@ -6,7 +8,7 @@ from notionary.blocks.mappings.rich_text.models import (
     TextAnnotations,
     TextContent,
 )
-from notionary.blocks.schemas import Block, CodeBlock, CodeLanguage, CreateCodeBlock
+from notionary.blocks.schemas import CodeBlock, CodeData, CodeLanguage, CreateCodeBlock, PartialUserDto
 
 
 def create_rich_text_object(content: str) -> RichText:
@@ -19,18 +21,20 @@ def create_rich_text_object(content: str) -> RichText:
     )
 
 
-def create_block_with_required_fields(**kwargs) -> Block:
-    """Helper to create Block with all required fields."""
+def create_block_with_required_fields(**kwargs) -> CodeBlock:
+    """Helper to create CodeBlock with all required fields."""
     defaults = {
         "object": "block",
         "id": "test-id",
+        "type": "code",
         "created_time": "2023-01-01T00:00:00.000Z",
         "last_edited_time": "2023-01-01T00:00:00.000Z",
-        "created_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
-        "last_edited_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
+        "created_by": PartialUserDto(object="user", id="user-id"),
+        "last_edited_by": PartialUserDto(object="user", id="user-id"),
+        "code": CodeData(rich_text=[], language=CodeLanguage.PYTHON),
     }
     defaults.update(kwargs)
-    return Block(**defaults)
+    return CodeBlock(**defaults)
 
 
 @pytest.mark.asyncio
@@ -54,15 +58,19 @@ async def test_match_markdown_not_code_start():
 def test_match_notion():
     """Test recognition of Notion code blocks."""
     code_block = create_block_with_required_fields(
-        type="code",
-        code=CodeBlock(rich_text=[create_rich_text_object("print('test')")], language="python"),
+        code=CodeData(rich_text=[create_rich_text_object("print('test')")], language="python"),
     )
     assert CodeElement.match_notion(code_block)
 
-    paragraph_block = create_block_with_required_fields(type="paragraph")
+    # Use Mock for invalid blocks
+    paragraph_block = Mock()
+    paragraph_block.type = "paragraph"
+    paragraph_block.code = None
     assert not CodeElement.match_notion(paragraph_block)
 
-    callout_block = create_block_with_required_fields(type="callout")
+    callout_block = Mock()
+    callout_block.type = "callout"
+    callout_block.code = None
     assert not CodeElement.match_notion(callout_block)
 
 
@@ -104,7 +112,7 @@ async def test_notion_to_markdown_simple():
     """Test conversion of Notion code block to Markdown."""
     block = create_block_with_required_fields(
         type="code",
-        code=CodeBlock(
+        code=CodeData(
             language=CodeLanguage.PYTHON,
             rich_text=[create_rich_text_object("print('Hi')")],
         ),
@@ -119,7 +127,7 @@ async def test_notion_to_markdown_plain_text():
     """Test conversion of plain text code block."""
     block = create_block_with_required_fields(
         type="code",
-        code=CodeBlock(
+        code=CodeData(
             language=CodeLanguage.PLAIN_TEXT,
             rich_text=[create_rich_text_object("some code")],
         ),
@@ -134,7 +142,7 @@ async def test_notion_to_markdown_with_caption():
     """Test conversion of Notion code block with caption."""
     block = create_block_with_required_fields(
         type="code",
-        code=CodeBlock(
+        code=CodeData(
             language=CodeLanguage.PYTHON,
             rich_text=[create_rich_text_object("print('test')")],
             caption=[create_rich_text_object("Example")],
@@ -148,12 +156,17 @@ async def test_notion_to_markdown_with_caption():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_invalid():
     """Test invalid Notion block returns None."""
-    paragraph_block = create_block_with_required_fields(type="paragraph")
+    # Use Mock for invalid blocks
+    paragraph_block = Mock()
+    paragraph_block.type = "paragraph"
+    paragraph_block.code = None
     result = await CodeElement.notion_to_markdown(paragraph_block)
     assert result is None
 
     # Test block without code property
-    code_block_no_code = create_block_with_required_fields(type="code")
+    code_block_no_code = Mock()
+    code_block_no_code.type = "code"
+    code_block_no_code.code = None
     result = await CodeElement.notion_to_markdown(code_block_no_code)
     assert result is None
 
@@ -259,7 +272,7 @@ def simple_code_block():
     """Fixture for simple Notion code block."""
     return create_block_with_required_fields(
         type="code",
-        code=CodeBlock(
+        code=CodeData(
             language=CodeLanguage.PYTHON,
             rich_text=[create_rich_text_object("print('test')")],
         ),
@@ -271,7 +284,7 @@ def code_block_with_caption():
     """Fixture for Notion code block with caption."""
     return create_block_with_required_fields(
         type="code",
-        code=CodeBlock(
+        code=CodeData(
             language=CodeLanguage.JAVASCRIPT,
             rich_text=[create_rich_text_object("console.log('hello');")],
             caption=[create_rich_text_object("Example JS code")],
@@ -323,7 +336,7 @@ async def test_multiline_content():
 
     block = create_block_with_required_fields(
         type="code",
-        code=CodeBlock(language=CodeLanguage.PYTHON, rich_text=rich_text_list),
+        code=CodeData(language=CodeLanguage.PYTHON, rich_text=rich_text_list),
     )
 
     result = await CodeElement.notion_to_markdown(block)
@@ -336,7 +349,7 @@ async def test_empty_content():
     """Test handling of empty content."""
     block = create_block_with_required_fields(
         type="code",
-        code=CodeBlock(language=CodeLanguage.PYTHON, rich_text=[]),
+        code=CodeData(language=CodeLanguage.PYTHON, rich_text=[]),
     )
 
     result = await CodeElement.notion_to_markdown(block)

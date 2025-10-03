@@ -1,7 +1,7 @@
 import re
 
 from notionary.blocks.mappings.base import BaseBlockElement
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, ColumnListBlock, CreateColumnListBlock
+from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, ColumnListData, CreateColumnListBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -29,8 +29,8 @@ class ColumnListElement(BaseBlockElement):
         if not cls.COLUMNS_START.match(text.strip()):
             return None
 
-        # Empty ColumnListBlock - children (columns) added by stack processor
-        column_list_content = ColumnListBlock()
+        # Empty ColumnListData - children (columns) added by stack processor
+        column_list_content = ColumnListData()
         return CreateColumnListBlock(column_list=column_list_content)
 
     @classmethod

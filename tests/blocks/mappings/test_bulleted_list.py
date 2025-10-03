@@ -4,7 +4,7 @@ import pytest
 
 from notionary.blocks.mappings.bulleted_list import BulletedListElement
 from notionary.blocks.schemas import (
-    BulletedListItemBlock,
+    BulletedListItemData,
     CreateBulletedListItemBlock,
 )
 
@@ -60,7 +60,7 @@ async def test_markdown_to_notion():
 
     assert result is not None
     assert isinstance(result, CreateBulletedListItemBlock)
-    assert isinstance(result.bulleted_list_item, BulletedListItemBlock)
+    assert isinstance(result.bulleted_list_item, BulletedListItemData)
     assert result.bulleted_list_item.color == "default"
     assert isinstance(result.bulleted_list_item.rich_text, list)
 

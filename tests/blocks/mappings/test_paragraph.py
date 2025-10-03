@@ -5,7 +5,7 @@ import pytest
 from notionary.blocks.mappings.paragraph import ParagraphElement
 from notionary.blocks.schemas import (
     CreateParagraphBlock,
-    ParagraphBlock,
+    ParagraphData,
 )
 
 
@@ -60,7 +60,7 @@ async def test_markdown_to_notion():
 
     assert result is not None
     assert isinstance(result, CreateParagraphBlock)
-    assert isinstance(result.paragraph, ParagraphBlock)
+    assert isinstance(result.paragraph, ParagraphData)
     assert result.paragraph.color == "default"
     assert isinstance(result.paragraph.rich_text, list)
 

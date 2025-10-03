@@ -4,7 +4,7 @@ import pytest
 
 from notionary.blocks.mappings.embed import EmbedElement
 from notionary.blocks.mappings.rich_text.models import RichText
-from notionary.blocks.schemas import CreateEmbedBlock, EmbedBlock, ExternalFile, FileUploadFile, NotionHostedFile
+from notionary.blocks.schemas import CreateEmbedBlock, EmbedData, ExternalFile, FileUploadFile, NotionHostedFile
 
 
 @pytest.mark.asyncio
@@ -56,7 +56,7 @@ async def test_markdown_to_notion_without_caption():
     assert result is not None
     assert isinstance(result, CreateEmbedBlock)
     assert result.type == "embed"
-    assert isinstance(result.embed, EmbedBlock)
+    assert isinstance(result.embed, EmbedData)
     assert result.embed.url == "https://youtube.com/watch?v=123"
     assert result.embed.caption == []
 

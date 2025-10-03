@@ -6,7 +6,7 @@ from notionary.blocks.mappings.callout import (
     CalloutElement,
 )
 from notionary.blocks.mappings.rich_text.models import RichText
-from notionary.blocks.schemas import BlockType, CalloutBlock
+from notionary.blocks.schemas import BlockType, CalloutData
 from notionary.shared.models.icon_models import EmojiIcon
 
 
@@ -73,7 +73,7 @@ async def test_markdown_to_notion_invalid():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_simple():
     """Test einfache Notion -> Markdown Konvertierung."""
-    callout_data = CalloutBlock(
+    callout_data = CalloutData(
         rich_text=[create_rich_text("Test content")],
         icon=EmojiIcon(emoji="💡"),
         color="gray_background",
@@ -90,7 +90,7 @@ async def test_notion_to_markdown_simple():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_with_emoji():
     """Test Notion -> Markdown mit Custom Emoji."""
-    callout_data = CalloutBlock(
+    callout_data = CalloutData(
         rich_text=[create_rich_text("Warning")],
         icon=EmojiIcon(emoji="⚠️"),
         color="gray_background",

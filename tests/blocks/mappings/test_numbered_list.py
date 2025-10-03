@@ -5,7 +5,7 @@ import pytest
 from notionary.blocks.mappings.numbered_list import NumberedListElement
 from notionary.blocks.schemas import (
     CreateNumberedListItemBlock,
-    NumberedListItemBlock,
+    NumberedListItemData,
 )
 
 
@@ -62,7 +62,7 @@ async def test_markdown_to_notion():
 
     assert result is not None
     assert isinstance(result, CreateNumberedListItemBlock)
-    assert isinstance(result.numbered_list_item, NumberedListItemBlock)
+    assert isinstance(result.numbered_list_item, NumberedListItemData)
     assert result.numbered_list_item.color == "default"
     assert isinstance(result.numbered_list_item.rich_text, list)
 

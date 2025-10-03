@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.mappings.video import VideoElement
-from notionary.blocks.schemas import CreateVideoBlock, FileBlock
+from notionary.blocks.schemas import CreateVideoBlock, VideoData
 
 
 @pytest.mark.asyncio
@@ -66,7 +66,7 @@ async def test_markdown_to_notion_basic():
 
     assert result is not None
     assert isinstance(result, CreateVideoBlock)
-    assert isinstance(result.video, FileBlock)
+    assert isinstance(result.video, VideoData)
 
 
 @pytest.mark.asyncio

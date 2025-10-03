@@ -1,3 +1,5 @@
+from unittest.mock import Mock
+
 import pytest
 
 from notionary.blocks.mappings.file import FileElement
@@ -7,10 +9,11 @@ from notionary.blocks.mappings.rich_text.models import (
     TextContent,
 )
 from notionary.blocks.schemas import (
-    Block,
     CreateFileBlock,
     ExternalFile,
     FileBlock,
+    FileData,
+    PartialUserDto,
 )
 
 
@@ -24,18 +27,20 @@ def create_rich_text_object(content: str) -> RichText:
     )
 
 
-def create_block_with_required_fields(**kwargs) -> Block:
-    """Helper to create Block with all required fields."""
+def create_block_with_required_fields(**kwargs) -> FileBlock:
+    """Helper to create FileBlock with all required fields."""
     defaults = {
         "object": "block",
         "id": "test-id",
+        "type": "file",
         "created_time": "2023-01-01T00:00:00.000Z",
         "last_edited_time": "2023-01-01T00:00:00.000Z",
-        "created_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
-        "last_edited_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
+        "created_by": PartialUserDto(object="user", id="user-id"),
+        "last_edited_by": PartialUserDto(object="user", id="user-id"),
+        "file": FileData(type="external", external=ExternalFile(url="https://example.com/default.pdf")),
     }
     defaults.update(kwargs)
-    return Block(**defaults)
+    return FileBlock(**defaults)
 
 
 @pytest.mark.asyncio
@@ -89,18 +94,24 @@ async def test_match_markdown_param_invalid(text):
 
 def test_match_notion_block():
     file_block = create_block_with_required_fields(
-        type="file",
-        file=FileBlock(type="external", external=ExternalFile(url="https://example.com/file.pdf")),
+        file=FileData(type="external", external=ExternalFile(url="https://example.com/file.pdf")),
     )
     assert FileElement.match_notion(file_block)
 
-    paragraph_block = create_block_with_required_fields(type="paragraph")
+    # Use Mock for invalid blocks
+    paragraph_block = Mock()
+    paragraph_block.type = "paragraph"
+    paragraph_block.file = None
     assert not FileElement.match_notion(paragraph_block)
 
-    empty_file_block = create_block_with_required_fields(type="file")
+    empty_file_block = Mock()
+    empty_file_block.type = "file"
+    empty_file_block.file = None
     assert not FileElement.match_notion(empty_file_block)
 
-    image_block = create_block_with_required_fields(type="image")
+    image_block = Mock()
+    image_block.type = "image"
+    image_block.file = None
     assert not FileElement.match_notion(image_block)
 
 
@@ -151,7 +162,7 @@ async def test_markdown_to_notion_invalid_cases():
 async def test_notion_to_markdown_with_caption():
     notion_block = create_block_with_required_fields(
         type="file",
-        file=FileBlock(
+        file=FileData(
             type="external",
             external=ExternalFile(url="https://files.com/cv.pdf"),
             caption=[create_rich_text_object("Mein Lebenslauf")],
@@ -165,7 +176,7 @@ async def test_notion_to_markdown_with_caption():
 async def test_notion_to_markdown_without_caption():
     notion_block = create_block_with_required_fields(
         type="file",
-        file=FileBlock(
+        file=FileData(
             type="external",
             external=ExternalFile(url="https://x.com/empty.pdf"),
             caption=[],
@@ -180,8 +191,7 @@ async def test_notion_to_markdown_file_type():
     from notionary.blocks.schemas import NotionHostedFile
 
     notion_block = create_block_with_required_fields(
-        type="file",
-        file=FileBlock(
+        file=FileData(
             type="file",
             file=NotionHostedFile(url="https://notion.com/file.doc", expiry_time="2024-01-01T00:00:00Z"),
             caption=[],
@@ -193,14 +203,21 @@ async def test_notion_to_markdown_file_type():
 
 @pytest.mark.asyncio
 async def test_notion_to_markdown_invalid_cases():
-    paragraph_block = create_block_with_required_fields(type="paragraph")
+    # Use Mock for invalid blocks
+    paragraph_block = Mock()
+    paragraph_block.type = "paragraph"
+    paragraph_block.file = None
     assert await FileElement.notion_to_markdown(paragraph_block) is None
 
-    empty_file_block = create_block_with_required_fields(type="file")
+    empty_file_block = Mock()
+    empty_file_block.type = "file"
+    empty_file_block.file = None
     assert await FileElement.notion_to_markdown(empty_file_block) is None
 
     # File block without URL
-    file_block_no_url = create_block_with_required_fields(type="file", file=FileBlock(type="external"))
+    file_block_no_url = Mock()
+    file_block_no_url.type = "file"
+    file_block_no_url.file = FileData(type="external")
     assert await FileElement.notion_to_markdown(file_block_no_url) is None
 
 
@@ -352,7 +369,7 @@ def simple_file_block():
     """Fixture for simple file block."""
     return create_block_with_required_fields(
         type="file",
-        file=FileBlock(
+        file=FileData(
             type="external",
             external=ExternalFile(url="https://example.com/document.pdf"),
             caption=[],
@@ -365,7 +382,7 @@ def file_block_with_caption():
     """Fixture for file block with caption."""
     return create_block_with_required_fields(
         type="file",
-        file=FileBlock(
+        file=FileData(
             type="external",
             external=ExternalFile(url="https://docs.example.com/report.pdf"),
             caption=[create_rich_text_object("Annual Report 2024")],
@@ -389,20 +406,20 @@ def test_notion_block_validation():
     """Test validation of Notion block structure."""
     # Valid block
     valid_block = create_block_with_required_fields(
-        type="file",
-        file=FileBlock(type="external", external=ExternalFile(url="https://example.com/file.pdf")),
+        file=FileData(type="external", external=ExternalFile(url="https://example.com/file.pdf")),
     )
     assert FileElement.match_notion(valid_block)
 
-    # Block with wrong type
-    wrong_type_block = create_block_with_required_fields(
-        type="paragraph",
-        file=FileBlock(type="external", external=ExternalFile(url="https://example.com/file.pdf")),
-    )
+    # Use Mock for invalid blocks
+    wrong_type_block = Mock()
+    wrong_type_block.type = "paragraph"
+    wrong_type_block.file = None
     assert not FileElement.match_notion(wrong_type_block)
 
     # Block with correct type but no file content
-    no_content_block = create_block_with_required_fields(type="file")
+    no_content_block = Mock()
+    no_content_block.type = "file"
+    no_content_block.file = None
     assert not FileElement.match_notion(no_content_block)
 
 
@@ -416,7 +433,7 @@ async def test_file_block_structure():
     file_block = result
     assert isinstance(file_block, CreateFileBlock)
     assert file_block.type == "file"
-    assert isinstance(file_block.file, FileBlock)
+    assert isinstance(file_block.file, FileData)
     assert file_block.file.type == "external"
     assert isinstance(file_block.file.external, ExternalFile)
     assert file_block.file.external.url == "https://example.com/test.pdf"

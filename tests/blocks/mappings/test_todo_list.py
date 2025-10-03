@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.mappings.todo import TodoElement
-from notionary.blocks.schemas import CreateToDoBlock, ToDoBlock
+from notionary.blocks.schemas import CreateToDoBlock, ToDoData
 
 
 @pytest.mark.asyncio
@@ -77,7 +77,7 @@ async def test_markdown_to_notion_unchecked():
 
     assert result is not None
     assert isinstance(result, CreateToDoBlock)
-    assert isinstance(result.to_do, ToDoBlock)
+    assert isinstance(result.to_do, ToDoData)
     assert result.to_do.checked is False
     assert result.to_do.color == "default"
     assert isinstance(result.to_do.rich_text, list)

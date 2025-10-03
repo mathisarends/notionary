@@ -1,21 +1,25 @@
+from unittest.mock import Mock
+
 import pytest
 
 from notionary.blocks.mappings.column import ColumnElement
-from notionary.blocks.schemas import Block, ColumnBlock, CreateColumnBlock
+from notionary.blocks.schemas import ColumnBlock, ColumnData, CreateColumnBlock, PartialUserDto
 
 
-def create_block_with_required_fields(**kwargs) -> Block:
-    """Helper to create Block with all required fields."""
+def create_block_with_required_fields(**kwargs) -> ColumnBlock:
+    """Helper to create ColumnBlock with all required fields."""
     defaults = {
         "object": "block",
         "id": "test-id",
+        "type": "column",
         "created_time": "2023-01-01T00:00:00.000Z",
         "last_edited_time": "2023-01-01T00:00:00.000Z",
-        "created_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
-        "last_edited_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
+        "created_by": PartialUserDto(object="user", id="user-id"),
+        "last_edited_by": PartialUserDto(object="user", id="user-id"),
+        "column": ColumnData(width_ratio=None),
     }
     defaults.update(kwargs)
-    return Block(**defaults)
+    return ColumnBlock(**defaults)
 
 
 @pytest.mark.asyncio
@@ -38,12 +42,14 @@ async def test_match_markdown_invalid():
 def test_match_notion():
     """Test recognition of Notion column blocks."""
     column_block = create_block_with_required_fields(
-        type="column",
-        column=ColumnBlock(width_ratio=None),
+        column=ColumnData(width_ratio=None),
     )
     assert ColumnElement.match_notion(column_block)
 
-    paragraph_block = create_block_with_required_fields(type="paragraph")
+    # Use Mock for invalid blocks
+    paragraph_block = Mock()
+    paragraph_block.type = "paragraph"
+    paragraph_block.column = None
     assert not ColumnElement.match_notion(paragraph_block)
 
 
