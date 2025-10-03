@@ -24,7 +24,7 @@ def mock_page() -> AsyncMock:
 
 @pytest.fixture
 def resolver(mock_search_client: AsyncMock) -> PageNameIdResolver:
-    return PageNameIdResolver(search_client=mock_search_client, search_limit=10)
+    return PageNameIdResolver(search_service=mock_search_client, search_limit=10)
 
 
 class TestPageNameIdResolver:
@@ -51,7 +51,7 @@ class TestPageNameIdResolver:
     ) -> None:
         result = await resolver.resolve_name_to_id("Test Page")
         assert result == "page-123"
-        mock_search_client.find_page.assert_called_once_with(query="Test Page", limit=10)
+        mock_search_client.find_page.assert_called_once_with(query="Test Page")
 
     @pytest.mark.asyncio
     async def test_resolve_page_id_no_search_results(
@@ -92,11 +92,11 @@ class TestPageNameIdResolver:
     @pytest.mark.asyncio
     async def test_whitespace_handling(self, resolver: PageNameIdResolver, mock_search_client: AsyncMock) -> None:
         await resolver.resolve_name_to_id("  Test Page  ")
-        mock_search_client.find_page.assert_called_once_with(query="Test Page", limit=10)
+        mock_search_client.find_page.assert_called_once_with(query="Test Page")
 
     def test_constructor_with_default_search_client(self) -> None:
         resolver = PageNameIdResolver()
-        assert resolver.search_client is not None
+        assert resolver.search_service is not None
         assert resolver.search_limit == 100
 
     def test_constructor_with_custom_search_limit(self) -> None:

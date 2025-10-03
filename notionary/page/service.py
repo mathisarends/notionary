@@ -19,6 +19,7 @@ from notionary.page.properties.models import PageTitleProperty
 from notionary.page.properties.service import PagePropertyHandler
 from notionary.page.schemas import NotionPageDto
 from notionary.schemas import NotionContentSchema
+from notionary.search.service import SearchService
 from notionary.shared.entity.dto_parsers import (
     extract_cover_image_url_from_dto,
     extract_emoji_icon_from_dto,
@@ -26,7 +27,6 @@ from notionary.shared.entity.dto_parsers import (
 )
 from notionary.shared.entity.service import Entity
 from notionary.user.schemas import PartialUserDto
-from notionary.workspace.search.search_client import SearchClient
 
 
 class NotionPage(Entity):
@@ -99,10 +99,10 @@ class NotionPage(Entity):
         cls,
         page_title: str,
         min_similarity: float = 0.6,
-        search_client: SearchClient | None = None,
+        search_service: SearchService | None = None,
     ) -> Self:
-        client = search_client or SearchClient()
-        return await client.find_page(page_title, min_similarity=min_similarity)
+        service = search_service or SearchService()
+        return await service.find_page(page_title, min_similarity=min_similarity)
 
     @classmethod
     async def _fetch_page_dto(cls, page_id: str) -> NotionPageDto:

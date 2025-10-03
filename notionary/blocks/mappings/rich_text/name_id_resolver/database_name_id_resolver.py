@@ -1,12 +1,12 @@
 from typing import override
 
 from notionary.blocks.mappings.rich_text.name_id_resolver.name_id_resolver import NameIdResolver
-from notionary.workspace.search.search_client import SearchClient
+from notionary.search.service import SearchService
 
 
 class DatabaseNameIdResolver(NameIdResolver):
-    def __init__(self, search_client: SearchClient | None = None, search_limit: int = 100) -> None:
-        self.search_client = search_client or SearchClient()
+    def __init__(self, search_service: SearchService | None = None, search_limit: int = 100) -> None:
+        self.search_service = search_service or SearchService()
         self.search_limit = search_limit
 
     @override
@@ -15,7 +15,7 @@ class DatabaseNameIdResolver(NameIdResolver):
             return None
 
         cleaned_name = name.strip()
-        database = await self.search_client.find_database(query=cleaned_name, limit=self.search_limit)
+        database = await self.search_service.find_database(query=cleaned_name)
         return database.id if database else None
 
     @override

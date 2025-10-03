@@ -9,6 +9,7 @@ from notionary.data_source.service import NotionDataSource
 from notionary.database.client import NotionDatabaseHttpClient
 from notionary.database.database_metadata_update_client import DatabaseMetadataUpdateClient
 from notionary.database.schemas import NotionDatabaseDto
+from notionary.search.service import SearchService
 from notionary.shared.entity.dto_parsers import (
     extract_cover_image_url_from_dto,
     extract_description,
@@ -18,7 +19,6 @@ from notionary.shared.entity.dto_parsers import (
 )
 from notionary.shared.entity.service import Entity
 from notionary.user.schemas import PartialUserDto
-from notionary.workspace.search.search_client import SearchClient
 
 type DataSourceFactory = Callable[[str], Awaitable[NotionDataSource]]
 
@@ -87,11 +87,10 @@ class NotionDatabase(Entity):
         cls,
         database_title: str,
         min_similarity: float = 0.6,
-        search_client: SearchClient | None = None,
+        search_service: SearchService | None = None,
     ) -> Self:
-        client = search_client or SearchClient()
-        async with client:
-            return await client.find_database(database_title, min_similarity=min_similarity)
+        service = search_service or SearchService()
+        return await service.find_database(database_title, min_similarity=min_similarity)
 
     @classmethod
     async def _create_from_dto(

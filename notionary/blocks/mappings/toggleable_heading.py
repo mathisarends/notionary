@@ -11,6 +11,9 @@ from notionary.blocks.schemas import (
     CreateHeading2Block,
     CreateHeading3Block,
     CreateHeadingBlock,
+    Heading1Block,
+    Heading2Block,
+    Heading3Block,
     HeadingData,
 )
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
@@ -21,8 +24,6 @@ class ToggleableHeadingMapper(NotionMarkdownMapper):
 
     @staticmethod
     def match_notion(block: Block) -> bool:
-        """Check if block is a Notion toggleable heading."""
-        # Use BlockType enum for matching heading blocks
         if block.type not in (
             BlockType.HEADING_1,
             BlockType.HEADING_2,
@@ -30,11 +31,15 @@ class ToggleableHeadingMapper(NotionMarkdownMapper):
         ):
             return False
 
-        if block.heading_1 and block.heading_1.is_toggleable:
+        # Hier muss auch noch geprüft werden ob das hier auch wirklich toggleable ist (oder man entfernt die toggle logi)
+        # Momentan wird das hier so nicht funktionieren
+        if isinstance(block, Heading1Block):
             return True
-        if block.heading_2 and block.heading_2.is_toggleable:
+
+        if isinstance(block, Heading2Block):
             return True
-        if block.heading_3 and block.heading_3.is_toggleable:
+
+        if isinstance(block, Heading3Block):
             return True
 
     @classmethod

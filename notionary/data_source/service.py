@@ -20,6 +20,7 @@ from notionary.data_source.properties.models import (
 from notionary.data_source.schemas import DataSourceDto
 from notionary.page.properties.models import PageTitleProperty
 from notionary.page.schemas import NotionPageDto
+from notionary.search.service import SearchService
 from notionary.shared.entity.dto_parsers import (
     extract_cover_image_url_from_dto,
     extract_database_id,
@@ -31,7 +32,6 @@ from notionary.shared.entity.dto_parsers import (
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.entity.service import Entity
 from notionary.user.schemas import PartialUserDto
-from notionary.workspace.search.search_client import SearchClient
 
 if TYPE_CHECKING:
     from notionary.database.service import NotionDatabase
@@ -93,10 +93,10 @@ class NotionDataSource(Entity):
         cls,
         data_source_title: str,
         min_similarity: float = 0.6,
-        search_client: SearchClient | None = None,
+        search_service: SearchService | None = None,
     ) -> Self:
-        client = search_client or SearchClient()
-        return await client.find_data_source(data_source_title, min_similarity=min_similarity)
+        service = search_service or SearchService()
+        return await service.find_data_source(data_source_title, min_similarity=min_similarity)
 
     @classmethod
     async def _create_from_dto(
