@@ -10,8 +10,8 @@ from notionary.blocks.schemas import (
     BlockType,
     CreateTableBlock,
     CreateTableRowBlock,
-    TableBlock,
-    TableRowBlock,
+    TableData,
+    TableRowData,
 )
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
@@ -45,14 +45,14 @@ class TableElement(BaseBlockElement):
         header_cells = cls._parse_table_row(text)
         col_count = len(header_cells)
 
-        table_block = TableBlock(
+        table_data = TableData(
             table_width=col_count,
             has_column_header=True,
             has_row_header=False,
             children=[],  # Will be populated by stack processor
         )
 
-        return CreateTableBlock(table=table_block)
+        return CreateTableBlock(table=table_data)
 
     @classmethod
     async def create_from_markdown_table(cls, table_lines: list[str]) -> BlockCreateResult:
@@ -79,15 +79,15 @@ class TableElement(BaseBlockElement):
         # Process all table lines
         table_rows, separator_found = await cls._process_table_lines(table_lines)
 
-        # Create complete TableBlock
-        table_block = TableBlock(
+        # Create complete TableData
+        table_data = TableData(
             table_width=col_count,
             has_column_header=separator_found,
             has_row_header=False,
             children=table_rows,
         )
 
-        return CreateTableBlock(table=table_block)
+        return CreateTableBlock(table=table_data)
 
     @classmethod
     async def _process_table_lines(cls, table_lines: list[str]) -> tuple[list[CreateTableRowBlock], bool]:
@@ -123,7 +123,7 @@ class TableElement(BaseBlockElement):
         for cell in cells:
             rich_text_cell = await cls._convert_cell_to_rich_text(cell)
             rich_text_cells.append(rich_text_cell)
-        table_row = TableRowBlock(cells=rich_text_cells)
+        table_row = TableRowData(cells=rich_text_cells)
         return CreateTableRowBlock(table_row=table_row)
 
     @classmethod
