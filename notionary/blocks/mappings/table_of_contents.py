@@ -7,7 +7,7 @@ from notionary.blocks.schemas import (
     BlockCreateResult,
     BlockType,
     CreateTableOfContentsBlock,
-    TableOfContentsBlock,
+    TableOfContentsData,
 )
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
@@ -38,13 +38,13 @@ class TableOfContentsElement(BaseBlockElement):
             # Validate against the enum; fallback to default if unknown
             try:
                 color = BlockColor(color_str.lower())
-                toc_payload = TableOfContentsBlock(color=color)
+                toc_payload = TableOfContentsData(color=color)
             except ValueError:
                 # Unknown color → omit to use enum default
-                toc_payload = TableOfContentsBlock()
+                toc_payload = TableOfContentsData()
         else:
             # No color provided → omit to let enum default apply
-            toc_payload = TableOfContentsBlock()
+            toc_payload = TableOfContentsData()
 
         return CreateTableOfContentsBlock(table_of_contents=toc_payload)
 

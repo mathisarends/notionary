@@ -11,7 +11,7 @@ from notionary.blocks.schemas import (
     BlockType,
     CreateAudioBlock,
     ExternalFile,
-    FileBlock,
+    FileData,
     FileType,
     FileUploadFile,
 )
@@ -73,7 +73,7 @@ class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin
             caption_text = cls.extract_caption(text.strip())
             caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 
-            audio_content = FileBlock(
+            audio_content = FileData(
                 type=FileType.FILE_UPLOAD,
                 file_upload=FileUploadFile(id=file_upload_id),
                 caption=caption_rich_text,
@@ -87,7 +87,7 @@ class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin
             caption_text = cls.extract_caption(text.strip())
             caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 
-            audio_content = FileBlock(
+            audio_content = FileData(
                 type=FileType.EXTERNAL,
                 external=ExternalFile(url=path),
                 caption=caption_rich_text,

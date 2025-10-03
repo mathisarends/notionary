@@ -11,7 +11,7 @@ from notionary.blocks.schemas import (
     BlockType,
     CreateVideoBlock,
     ExternalFile,
-    FileBlock,
+    FileData,
     FileType,
     FileUploadFile,
 )
@@ -90,7 +90,7 @@ class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
             caption_text = cls.extract_caption(text.strip())
             caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 
-            video_block = FileBlock(
+            video_block = FileData(
                 type=FileType.FILE_UPLOAD,
                 file_upload=FileUploadFile(id=file_upload_id),
                 caption=caption_rich_text,
@@ -111,7 +111,7 @@ class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
             caption_text = cls.extract_caption(text.strip())
             caption_rich_text = cls.build_caption_rich_text(caption_text or "")
 
-            video_block = FileBlock(
+            video_block = FileData(
                 type=FileType.EXTERNAL,
                 external=ExternalFile(url=url),
                 caption=caption_rich_text,

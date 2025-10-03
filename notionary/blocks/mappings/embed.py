@@ -8,7 +8,7 @@ from notionary.blocks.schemas import (
     BlockCreateResult,
     BlockType,
     CreateEmbedBlock,
-    EmbedBlock,
+    EmbedData,
     ExternalFile,
     FileUploadFile,
     NotionHostedFile,
@@ -46,7 +46,7 @@ class EmbedElement(BaseBlockElement):
         url, rich_text = match.group(1), match.group(2) or ""
 
         # Build EmbedBlock
-        embed_block = EmbedBlock(url=url, caption=[])
+        embed_block = EmbedData(url=url, caption=[])
         if rich_text.strip():
             rich_text_obj = RichText.from_plain_text(rich_text.strip())
             embed_block.caption = [rich_text_obj]

@@ -12,7 +12,7 @@ from notionary.blocks.schemas import (
     BlockType,
     CreateFileBlock,
     ExternalFile,
-    FileBlock,
+    FileData,
     FileType,
     FileUploadFile,
 )
@@ -63,7 +63,7 @@ class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
                 return None
 
             # Create FILE_UPLOAD block
-            file_block = FileBlock(
+            file_block = FileData(
                 type=FileType.FILE_UPLOAD,
                 file_upload=FileUploadFile(id=file_upload_id),
                 caption=caption_rich_text,
@@ -73,7 +73,7 @@ class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         else:
             cls.logger.debug(f"Using external URL: {file_path}")
 
-            file_block = FileBlock(
+            file_block = FileData(
                 type=FileType.EXTERNAL,
                 external=ExternalFile(url=file_path),
                 caption=caption_rich_text,
@@ -86,7 +86,7 @@ class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         if block.type != BlockType.FILE or not block.file:
             return None
 
-        fb: FileBlock = block.file
+        fb: FileData = block.file
 
         # Determine the source for markdown
         if fb.type == FileType.EXTERNAL and fb.external:

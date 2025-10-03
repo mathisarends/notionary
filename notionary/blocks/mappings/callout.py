@@ -5,7 +5,7 @@ import re
 from notionary.blocks.mappings.base import BaseBlockElement
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, CalloutBlock, CreateCalloutBlock
+from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, CalloutData, CreateCalloutBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.shared.models.icon_models import EmojiIcon, Icon
 
@@ -54,7 +54,7 @@ class CalloutElement(BaseBlockElement):
         converter = MarkdownRichTextConverter()
         rich_text = await converter.to_rich_text(content.strip())
 
-        callout_content = CalloutBlock(
+        callout_content = CalloutData(
             rich_text=rich_text,
             icon=EmojiIcon(emoji=emoji),
             color=cls.DEFAULT_COLOR,

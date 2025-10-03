@@ -3,7 +3,7 @@ import re
 from notionary.blocks.mappings.base import BaseBlockElement
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, BlockColor, BlockCreateResult, BlockType, CreateQuoteBlock, QuoteBlock
+from notionary.blocks.schemas import Block, BlockColor, BlockCreateResult, BlockType, CreateQuoteBlock, QuoteData
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -41,7 +41,7 @@ class QuoteElement(BaseBlockElement):
         converter = MarkdownRichTextConverter()
         rich_text = await converter.to_rich_text(content)
 
-        quote_content = QuoteBlock(rich_text=rich_text, color=BlockColor.DEFAULT)
+        quote_content = QuoteData(rich_text=rich_text, color=BlockColor.DEFAULT)
         return CreateQuoteBlock(quote=quote_content)
 
     @classmethod

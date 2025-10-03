@@ -9,7 +9,7 @@ from notionary.blocks.schemas import (
     BlockType,
     CreatePdfBlock,
     ExternalFile,
-    FileBlock,
+    FileData,
     FileType,
     FileUploadFile,
 )
@@ -56,7 +56,7 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         if pdf_path.startswith(("notion://", "upload://")):
             # Handle special Notion schemes (existing functionality)
             cls.logger.info(f"Using special scheme: {pdf_path}")
-            pdf_block = FileBlock(
+            pdf_block = FileData(
                 type=FileType.EXTERNAL,
                 external=ExternalFile(url=pdf_path),
                 caption=caption_rich_text,
@@ -73,7 +73,7 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
                 return None
 
             # Create FILE_UPLOAD block
-            pdf_block = FileBlock(
+            pdf_block = FileData(
                 type=FileType.FILE_UPLOAD,
                 file_upload=FileUploadFile(id=file_upload_id),
                 caption=caption_rich_text,
@@ -83,7 +83,7 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
             # Handle external URL
             cls.logger.debug(f"Using external PDF URL: {pdf_path}")
 
-            pdf_block = FileBlock(
+            pdf_block = FileData(
                 type=FileType.EXTERNAL,
                 external=ExternalFile(url=pdf_path),
                 caption=caption_rich_text,
@@ -96,7 +96,7 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         if block.type != BlockType.PDF or not block.pdf:
             return None
 
-        pb: FileBlock = block.pdf
+        pb: FileData = block.pdf
 
         # Determine the source for markdown
         if pb.type == FileType.EXTERNAL and pb.external:

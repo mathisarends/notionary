@@ -5,7 +5,7 @@ from notionary.blocks.schemas import (
     Block,
     BlockCreateResult,
     BlockType,
-    BreadcrumbBlock,
+    BreadcrumbData,
     CreateBreadcrumbBlock,
 )
 
@@ -29,7 +29,7 @@ class BreadcrumbElement(BaseBlockElement):
     async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
         if not cls.PATTERN.match(text.strip()):
             return None
-        return CreateBreadcrumbBlock(breadcrumb=BreadcrumbBlock())
+        return CreateBreadcrumbBlock(breadcrumb=BreadcrumbData())
 
     @classmethod
     async def notion_to_markdown(cls, block: Block) -> str | None:

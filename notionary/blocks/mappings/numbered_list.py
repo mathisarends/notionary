@@ -9,7 +9,7 @@ from notionary.blocks.schemas import (
     BlockCreateResult,
     BlockType,
     CreateNumberedListItemBlock,
-    NumberedListItemBlock,
+    NumberedListItemData,
 )
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
@@ -34,7 +34,7 @@ class NumberedListElement(BaseBlockElement):
         converter = MarkdownRichTextConverter()
         rich_text = await converter.to_rich_text(content)
 
-        numbered_list_content = NumberedListItemBlock(rich_text=rich_text, color=BlockColor.DEFAULT)
+        numbered_list_content = NumberedListItemData(rich_text=rich_text, color=BlockColor.DEFAULT)
         return CreateNumberedListItemBlock(numbered_list_item=numbered_list_content)
 
     # FIX: Roundtrip conversions will never work this way here

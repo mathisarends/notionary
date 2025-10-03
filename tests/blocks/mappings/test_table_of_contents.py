@@ -5,25 +5,28 @@ from notionary.blocks.mappings.table_of_contents import (
     TableOfContentsElement,
 )
 from notionary.blocks.schemas import (
-    Block,
     BlockType,
     CreateTableOfContentsBlock,
+    PartialUserDto,
     TableOfContentsBlock,
+    TableOfContentsData,
 )
 
 
-def create_block_with_required_fields(**kwargs) -> Block:
-    """Helper to create Block with all required fields."""
+def create_toc_block_with_required_fields(color: BlockColor = BlockColor.DEFAULT, **kwargs) -> TableOfContentsBlock:
+    """Helper to create TableOfContentsBlock with all required BaseBlock fields."""
     defaults = {
         "object": "block",
         "id": "test-id",
+        "type": BlockType.TABLE_OF_CONTENTS,
         "created_time": "2023-01-01T00:00:00.000Z",
         "last_edited_time": "2023-01-01T00:00:00.000Z",
-        "created_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
-        "last_edited_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
+        "created_by": PartialUserDto(object="user", id="user-id"),
+        "last_edited_by": PartialUserDto(object="user", id="user-id"),
+        "table_of_contents": TableOfContentsData(color=color),
     }
     defaults.update(kwargs)
-    return Block(**defaults)
+    return TableOfContentsBlock(**defaults)
 
 
 @pytest.mark.asyncio
@@ -58,24 +61,24 @@ async def test_match_markdown_invalid():
 
 def test_match_notion_valid():
     """Test recognition of valid table of contents blocks."""
-    block = create_block_with_required_fields(
-        type=BlockType.TABLE_OF_CONTENTS,
-        table_of_contents=TableOfContentsBlock(color=BlockColor.DEFAULT),
-    )
+    block = create_toc_block_with_required_fields()
     assert TableOfContentsElement.match_notion(block)
 
 
 def test_match_notion_invalid():
     """Test rejection of invalid blocks."""
-    # Wrong type
-    paragraph_block = create_block_with_required_fields(
-        type=BlockType.PARAGRAPH,
-        table_of_contents=TableOfContentsBlock(color=BlockColor.DEFAULT),
-    )
+    # Wrong type - use Mock
+    from unittest.mock import Mock
+
+    paragraph_block = Mock()
+    paragraph_block.type = BlockType.PARAGRAPH
+    paragraph_block.table_of_contents = TableOfContentsData(color=BlockColor.DEFAULT)
     assert not TableOfContentsElement.match_notion(paragraph_block)
 
-    # Right type but no table_of_contents
-    no_toc_block = create_block_with_required_fields(type=BlockType.TABLE_OF_CONTENTS, table_of_contents=None)
+    # Right type but no table_of_contents - use Mock
+    no_toc_block = Mock()
+    no_toc_block.type = BlockType.TABLE_OF_CONTENTS
+    no_toc_block.table_of_contents = None
     assert not TableOfContentsElement.match_notion(no_toc_block)
 
 
@@ -85,7 +88,7 @@ async def test_markdown_to_notion_default():
     result = await TableOfContentsElement.markdown_to_notion("[toc]")
 
     assert isinstance(result, CreateTableOfContentsBlock)
-    assert isinstance(result.table_of_contents, TableOfContentsBlock)
+    assert isinstance(result.table_of_contents, TableOfContentsData)
     assert result.table_of_contents.color == "default"
 
 
@@ -95,7 +98,7 @@ async def test_markdown_to_notion_with_color():
     result = await TableOfContentsElement.markdown_to_notion("[toc](blue)")
 
     assert isinstance(result, CreateTableOfContentsBlock)
-    assert isinstance(result.table_of_contents, TableOfContentsBlock)
+    assert isinstance(result.table_of_contents, TableOfContentsData)
     assert result.table_of_contents.color == "blue"
 
 
@@ -105,7 +108,7 @@ async def test_markdown_to_notion_with_background_color():
     result = await TableOfContentsElement.markdown_to_notion("[toc](blue_background)")
 
     assert isinstance(result, CreateTableOfContentsBlock)
-    assert isinstance(result.table_of_contents, TableOfContentsBlock)
+    assert isinstance(result.table_of_contents, TableOfContentsData)
     assert result.table_of_contents.color == "blue_background"
 
 
@@ -130,10 +133,7 @@ async def test_markdown_to_notion_invalid():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_default():
     """Test conversion from default Notion blocks to markdown."""
-    block = create_block_with_required_fields(
-        type=BlockType.TABLE_OF_CONTENTS,
-        table_of_contents=TableOfContentsBlock(color=BlockColor.DEFAULT),
-    )
+    block = create_toc_block_with_required_fields()
 
     result = await TableOfContentsElement.notion_to_markdown(block)
     assert result == "[toc]"
@@ -142,10 +142,7 @@ async def test_notion_to_markdown_default():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_with_color():
     """Test conversion from colored Notion blocks to markdown."""
-    block = create_block_with_required_fields(
-        type=BlockType.TABLE_OF_CONTENTS,
-        table_of_contents=TableOfContentsBlock(color=BlockColor.BLUE),
-    )
+    block = create_toc_block_with_required_fields(color=BlockColor.BLUE)
 
     result = await TableOfContentsElement.notion_to_markdown(block)
     assert result == "[toc](blue)"
@@ -154,10 +151,7 @@ async def test_notion_to_markdown_with_color():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_with_background_color():
     """Test conversion with background colors."""
-    block = create_block_with_required_fields(
-        type=BlockType.TABLE_OF_CONTENTS,
-        table_of_contents=TableOfContentsBlock(color=BlockColor.BLUE_BACKGROUND),
-    )
+    block = create_toc_block_with_required_fields(color=BlockColor.BLUE_BACKGROUND)
 
     result = await TableOfContentsElement.notion_to_markdown(block)
     assert result == "[toc](blue_background)"
@@ -166,14 +160,18 @@ async def test_notion_to_markdown_with_background_color():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_invalid():
     """Test that invalid blocks return None."""
-    # Wrong type
-    paragraph_block = create_block_with_required_fields(
-        type=BlockType.PARAGRAPH, table_of_contents=TableOfContentsBlock(color=BlockColor.BLUE)
-    )
+    # Wrong type - use Mock
+    from unittest.mock import Mock
+
+    paragraph_block = Mock()
+    paragraph_block.type = BlockType.PARAGRAPH
+    paragraph_block.table_of_contents = TableOfContentsData(color=BlockColor.BLUE)
     assert await TableOfContentsElement.notion_to_markdown(paragraph_block) is None
 
-    # Right type but no table_of_contents
-    no_toc_block = create_block_with_required_fields(type=BlockType.TABLE_OF_CONTENTS, table_of_contents=None)
+    # Right type but no table_of_contents - use Mock
+    no_toc_block = Mock()
+    no_toc_block.type = BlockType.TABLE_OF_CONTENTS
+    no_toc_block.table_of_contents = None
     assert await TableOfContentsElement.notion_to_markdown(no_toc_block) is None
 
 
@@ -186,10 +184,9 @@ async def test_bidirectional_conversion():
         notion_result = await TableOfContentsElement.markdown_to_notion(original)
         assert notion_result is not None
 
-        block = create_block_with_required_fields(
-            type=BlockType.TABLE_OF_CONTENTS,
-            table_of_contents=notion_result.table_of_contents,
-        )
+        # Extract color from the notion result
+        color = notion_result.table_of_contents.color
+        block = create_toc_block_with_required_fields(color=color)
 
         # Convert back to markdown
         markdown_result = await TableOfContentsElement.notion_to_markdown(block)

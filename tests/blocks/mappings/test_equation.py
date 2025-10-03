@@ -1,21 +1,29 @@
 import pytest
 
 from notionary.blocks.mappings.equation import EquationElement
-from notionary.blocks.schemas import Block, BlockType, CreateEquationBlock, EquationBlock
+from notionary.blocks.schemas import (
+    BlockType,
+    CreateEquationBlock,
+    EquationBlock,
+    EquationData,
+    PartialUserDto,
+)
 
 
-def create_block_with_required_fields(**kwargs) -> Block:
-    """Helper to create Block with all required fields."""
+def create_equation_block_with_required_fields(expression: str = "E = mc^2", **kwargs) -> EquationBlock:
+    """Helper to create EquationBlock with all required BaseBlock fields."""
     defaults = {
         "object": "block",
         "id": "test-id",
+        "type": BlockType.EQUATION,
         "created_time": "2023-01-01T00:00:00.000Z",
         "last_edited_time": "2023-01-01T00:00:00.000Z",
-        "created_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
-        "last_edited_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
+        "created_by": PartialUserDto(object="user", id="user-id"),
+        "last_edited_by": PartialUserDto(object="user", id="user-id"),
+        "equation": EquationData(expression=expression),
     }
     defaults.update(kwargs)
-    return Block(**defaults)
+    return EquationBlock(**defaults)
 
 
 @pytest.mark.asyncio
@@ -47,20 +55,24 @@ async def test_match_markdown_invalid():
 
 def test_match_notion_valid():
     """Test recognition of valid equation blocks."""
-    block = create_block_with_required_fields(type=BlockType.EQUATION, equation=EquationBlock(expression="E = mc^2"))
+    block = create_equation_block_with_required_fields(expression="E = mc^2")
     assert EquationElement.match_notion(block)
 
 
 def test_match_notion_invalid():
     """Test rejection of invalid blocks."""
-    # Wrong type
-    paragraph_block = create_block_with_required_fields(
-        type=BlockType.PARAGRAPH, equation=EquationBlock(expression="E = mc^2")
-    )
+    # Wrong type - use Mock
+    from unittest.mock import Mock
+
+    paragraph_block = Mock()
+    paragraph_block.type = BlockType.PARAGRAPH
+    paragraph_block.equation = EquationData(expression="E = mc^2")
     assert not EquationElement.match_notion(paragraph_block)
 
-    # Right type but no equation
-    no_equation_block = create_block_with_required_fields(type=BlockType.EQUATION, equation=None)
+    # Right type but no equation - use Mock
+    no_equation_block = Mock()
+    no_equation_block.type = BlockType.EQUATION
+    no_equation_block.equation = None
     assert not EquationElement.match_notion(no_equation_block)
 
 
@@ -70,7 +82,7 @@ async def test_markdown_to_notion_simple():
     result = await EquationElement.markdown_to_notion("$$E = mc^2$$")
 
     assert isinstance(result, CreateEquationBlock)
-    assert isinstance(result.equation, EquationBlock)
+    assert isinstance(result.equation, EquationData)
     assert result.equation.expression == "E = mc^2"
 
 
@@ -80,7 +92,7 @@ async def test_markdown_to_notion_complex():
     result = await EquationElement.markdown_to_notion("$$\\frac{a}{b}$$")
 
     assert isinstance(result, CreateEquationBlock)
-    assert isinstance(result.equation, EquationBlock)
+    assert isinstance(result.equation, EquationData)
     assert result.equation.expression == "\\frac{a}{b}"
 
 
@@ -90,7 +102,7 @@ async def test_markdown_to_notion_multiline():
     result = await EquationElement.markdown_to_notion("$$a = b\nc = d$$")
 
     assert isinstance(result, CreateEquationBlock)
-    assert isinstance(result.equation, EquationBlock)
+    assert isinstance(result.equation, EquationData)
     assert result.equation.expression == "a = b\nc = d"
 
 
@@ -106,7 +118,7 @@ async def test_markdown_to_notion_invalid():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_simple():
     """Test conversion from simple Notion blocks to markdown."""
-    block = create_block_with_required_fields(type=BlockType.EQUATION, equation=EquationBlock(expression="E = mc^2"))
+    block = create_equation_block_with_required_fields(expression="E = mc^2")
 
     result = await EquationElement.notion_to_markdown(block)
     assert result == "$$E = mc^2$$"
@@ -115,9 +127,7 @@ async def test_notion_to_markdown_simple():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_complex():
     """Test conversion with complex expressions."""
-    block = create_block_with_required_fields(
-        type=BlockType.EQUATION, equation=EquationBlock(expression="\\frac{a}{b}")
-    )
+    block = create_equation_block_with_required_fields(expression="\\frac{a}{b}")
 
     result = await EquationElement.notion_to_markdown(block)
     assert result == "$$\\frac{a}{b}$$"
@@ -126,9 +136,7 @@ async def test_notion_to_markdown_complex():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_multiline():
     """Test conversion with multiline expressions."""
-    block = create_block_with_required_fields(
-        type=BlockType.EQUATION, equation=EquationBlock(expression="a = b\nc = d")
-    )
+    block = create_equation_block_with_required_fields(expression="a = b\nc = d")
 
     result = await EquationElement.notion_to_markdown(block)
     assert result == "$$a = b\nc = d$$"
@@ -137,20 +145,22 @@ async def test_notion_to_markdown_multiline():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_invalid():
     """Test that invalid blocks return None."""
-    # Wrong type
-    paragraph_block = create_block_with_required_fields(
-        type=BlockType.PARAGRAPH, equation=EquationBlock(expression="E = mc^2")
-    )
+    # Wrong type - use Mock
+    from unittest.mock import Mock
+
+    paragraph_block = Mock()
+    paragraph_block.type = BlockType.PARAGRAPH
+    paragraph_block.equation = EquationData(expression="E = mc^2")
     assert await EquationElement.notion_to_markdown(paragraph_block) is None
 
-    # Right type but no equation
-    no_equation_block = create_block_with_required_fields(type=BlockType.EQUATION, equation=None)
+    # Right type but no equation - use Mock
+    no_equation_block = Mock()
+    no_equation_block.type = BlockType.EQUATION
+    no_equation_block.equation = None
     assert await EquationElement.notion_to_markdown(no_equation_block) is None
 
     # Empty expression
-    empty_equation_block = create_block_with_required_fields(
-        type=BlockType.EQUATION, equation=EquationBlock(expression="")
-    )
+    empty_equation_block = create_equation_block_with_required_fields(expression="")
     assert await EquationElement.notion_to_markdown(empty_equation_block) is None
 
 
@@ -169,8 +179,8 @@ async def test_roundtrip_conversion():
         notion_result = await EquationElement.markdown_to_notion(markdown)
         assert notion_result is not None
 
-        # Create proper Block mock for roundtrip
-        notion_block = create_block_with_required_fields(type=BlockType.EQUATION, equation=notion_result.equation)
+        # Create proper Block with the equation data for roundtrip
+        notion_block = create_equation_block_with_required_fields(expression=notion_result.equation.expression)
 
         # Convert back to markdown
         back_to_markdown = await EquationElement.notion_to_markdown(notion_block)

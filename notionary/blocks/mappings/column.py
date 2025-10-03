@@ -1,7 +1,7 @@
 import re
 
 from notionary.blocks.mappings.base import BaseBlockElement
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, ColumnBlock, CreateColumnBlock
+from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, ColumnData, CreateColumnBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -41,7 +41,7 @@ class ColumnElement(BaseBlockElement):
             except ValueError:
                 width_ratio = None  # Invalid format, use default
 
-        column_content = ColumnBlock(width_ratio=width_ratio)
+        column_content = ColumnData(width_ratio=width_ratio)
         return CreateColumnBlock(column=column_content)
 
     @classmethod

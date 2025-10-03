@@ -1,21 +1,29 @@
 import pytest
 
 from notionary.blocks.mappings.divider import DividerElement
-from notionary.blocks.schemas import Block, CreateDividerBlock, DividerBlock
+from notionary.blocks.schemas import (
+    BlockType,
+    CreateDividerBlock,
+    DividerBlock,
+    DividerData,
+    PartialUserDto,
+)
 
 
-def create_block_with_required_fields(**kwargs) -> Block:
-    """Helper to create Block with all required fields."""
+def create_divider_block_with_required_fields(**kwargs) -> DividerBlock:
+    """Helper to create DividerBlock with all required BaseBlock fields."""
     defaults = {
         "object": "block",
         "id": "test-id",
+        "type": BlockType.DIVIDER,
         "created_time": "2023-01-01T00:00:00.000Z",
         "last_edited_time": "2023-01-01T00:00:00.000Z",
-        "created_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
-        "last_edited_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
+        "created_by": PartialUserDto(object="user", id="user-id"),
+        "last_edited_by": PartialUserDto(object="user", id="user-id"),
+        "divider": DividerData(),
     }
     defaults.update(kwargs)
-    return Block(**defaults)
+    return DividerBlock(**defaults)
 
 
 @pytest.mark.asyncio
@@ -38,17 +46,23 @@ async def test_match_markdown_invalid():
 
 def test_match_notion():
     """Test recognition of Notion divider blocks."""
-    divider_block = create_block_with_required_fields(
-        type="divider",
-        divider=DividerBlock(),
-    )
+    divider_block = create_divider_block_with_required_fields()
     assert DividerElement.match_notion(divider_block)
 
-    paragraph_block = create_block_with_required_fields(type="paragraph")
+    # Use Mock for paragraph
+    from unittest.mock import Mock
+
+    paragraph_block = Mock()
+    paragraph_block.type = BlockType.PARAGRAPH
+    paragraph_block.divider = None
     assert not DividerElement.match_notion(paragraph_block)
 
     # Test divider block without divider property
-    invalid_divider = create_block_with_required_fields(type="divider")
+    from unittest.mock import Mock
+
+    invalid_divider = Mock()
+    invalid_divider.type = BlockType.DIVIDER
+    invalid_divider.divider = None
     assert not DividerElement.match_notion(invalid_divider)
 
 
@@ -75,10 +89,7 @@ async def test_markdown_to_notion_invalid():
 @pytest.mark.asyncio
 async def test_notion_to_markdown():
     """Test conversion of Notion divider to markdown."""
-    block = create_block_with_required_fields(
-        type="divider",
-        divider=DividerBlock(),
-    )
+    block = create_divider_block_with_required_fields()
 
     result = await DividerElement.notion_to_markdown(block)
     assert result == "---"
@@ -87,12 +98,19 @@ async def test_notion_to_markdown():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_invalid():
     """Test invalid Notion block returns None."""
-    paragraph_block = create_block_with_required_fields(type="paragraph")
+    # Use Mock for paragraph
+    from unittest.mock import Mock
+
+    paragraph_block = Mock()
+    paragraph_block.type = BlockType.PARAGRAPH
+    paragraph_block.divider = None
     result = await DividerElement.notion_to_markdown(paragraph_block)
     assert result is None
 
     # Test divider block without divider property
-    invalid_divider = create_block_with_required_fields(type="divider")
+    invalid_divider = Mock()
+    invalid_divider.type = BlockType.DIVIDER
+    invalid_divider.divider = None
     result = await DividerElement.notion_to_markdown(invalid_divider)
     assert result is None
 

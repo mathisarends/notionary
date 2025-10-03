@@ -7,7 +7,7 @@ from notionary.blocks.schemas import (
     Block,
     BlockCreateResult,
     BlockType,
-    BulletedListItemBlock,
+    BulletedListItemData,
     CreateBulletedListItemBlock,
 )
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
@@ -37,7 +37,7 @@ class BulletedListElement(BaseBlockElement):
         converter = MarkdownRichTextConverter()
         rich_text = await converter.to_rich_text(content)
 
-        bulleted_list_content = BulletedListItemBlock(rich_text=rich_text)
+        bulleted_list_content = BulletedListItemData(rich_text=rich_text)
         return CreateBulletedListItemBlock(bulleted_list_item=bulleted_list_content)
 
     @classmethod

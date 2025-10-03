@@ -7,7 +7,7 @@ from notionary.blocks.schemas import (
     BlockCreateResult,
     BlockType,
     CreateParagraphBlock,
-    ParagraphBlock,
+    ParagraphData,
 )
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
@@ -34,7 +34,7 @@ class SpaceElement(BaseBlockElement):
 
         converter = MarkdownRichTextConverter()
         rich = await converter.to_rich_text("")  # create empty paragraph
-        paragraph_content = ParagraphBlock(rich_text=rich, color=BlockColor.DEFAULT)
+        paragraph_content = ParagraphData(rich_text=rich, color=BlockColor.DEFAULT)
         return CreateParagraphBlock(paragraph=paragraph_content)
 
     @classmethod

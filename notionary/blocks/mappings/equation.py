@@ -2,7 +2,7 @@ import re
 import textwrap
 
 from notionary.blocks.mappings.base import BaseBlockElement
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, CreateEquationBlock, EquationBlock
+from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, CreateEquationBlock, EquationData
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -37,7 +37,7 @@ class EquationElement(BaseBlockElement):
         if not expression:
             return None
 
-        return CreateEquationBlock(equation=EquationBlock(expression=expression))
+        return CreateEquationBlock(equation=EquationData(expression=expression))
 
     @classmethod
     def create_from_markdown_block(cls, opening_line: str, equation_lines: list[str]) -> BlockCreateResult:
@@ -68,7 +68,7 @@ class EquationElement(BaseBlockElement):
             expression = "\n".join(fixed_lines).strip()
 
             if expression:
-                return CreateEquationBlock(equation=EquationBlock(expression=expression))
+                return CreateEquationBlock(equation=EquationData(expression=expression))
 
         return None
 

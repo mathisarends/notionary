@@ -2,25 +2,28 @@ import pytest
 
 from notionary.blocks.mappings.breadcrumb import BreadcrumbElement
 from notionary.blocks.schemas import (
-    Block,
     BlockType,
     BreadcrumbBlock,
+    BreadcrumbData,
     CreateBreadcrumbBlock,
+    PartialUserDto,
 )
 
 
-def create_block_with_required_fields(**kwargs) -> Block:
-    """Helper to create Block with all required fields."""
+def create_breadcrumb_block_with_required_fields(**kwargs) -> BreadcrumbBlock:
+    """Helper to create BreadcrumbBlock with all required BaseBlock fields."""
     defaults = {
         "object": "block",
         "id": "test-id",
+        "type": BlockType.BREADCRUMB,
         "created_time": "2023-01-01T00:00:00.000Z",
         "last_edited_time": "2023-01-01T00:00:00.000Z",
-        "created_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
-        "last_edited_by": {"object": "user", "id": "user-id", "type": "person", "person": {}},
+        "created_by": PartialUserDto(object="user", id="user-id"),
+        "last_edited_by": PartialUserDto(object="user", id="user-id"),
+        "breadcrumb": BreadcrumbData(),
     }
     defaults.update(kwargs)
-    return Block(**defaults)
+    return BreadcrumbBlock(**defaults)
 
 
 @pytest.mark.asyncio
@@ -46,18 +49,24 @@ async def test_match_markdown_invalid():
 
 def test_match_notion_valid():
     """Test recognition of valid breadcrumb blocks."""
-    block = create_block_with_required_fields(type=BlockType.BREADCRUMB, breadcrumb=BreadcrumbBlock())
+    block = create_breadcrumb_block_with_required_fields()
     assert BreadcrumbElement.match_notion(block)
 
 
 def test_match_notion_invalid():
     """Test rejection of invalid blocks."""
-    # Wrong type
-    paragraph_block = create_block_with_required_fields(type=BlockType.PARAGRAPH, breadcrumb=BreadcrumbBlock())
+    # Wrong type - use Mock for paragraph
+    from unittest.mock import Mock
+
+    paragraph_block = Mock()
+    paragraph_block.type = BlockType.PARAGRAPH
+    paragraph_block.breadcrumb = BreadcrumbData()
     assert not BreadcrumbElement.match_notion(paragraph_block)
 
-    # Right type but no breadcrumb
-    no_breadcrumb_block = create_block_with_required_fields(type=BlockType.BREADCRUMB, breadcrumb=None)
+    # Right type but no breadcrumb - use Mock
+    no_breadcrumb_block = Mock()
+    no_breadcrumb_block.type = BlockType.BREADCRUMB
+    no_breadcrumb_block.breadcrumb = None
     assert not BreadcrumbElement.match_notion(no_breadcrumb_block)
 
 
@@ -67,7 +76,7 @@ async def test_markdown_to_notion_valid():
     result = await BreadcrumbElement.markdown_to_notion("[breadcrumb]")
 
     assert isinstance(result, CreateBreadcrumbBlock)
-    assert isinstance(result.breadcrumb, BreadcrumbBlock)
+    assert isinstance(result.breadcrumb, BreadcrumbData)
 
 
 @pytest.mark.asyncio
@@ -82,7 +91,7 @@ async def test_markdown_to_notion_invalid():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_valid():
     """Test conversion from valid Notion blocks to markdown."""
-    block = create_block_with_required_fields(type=BlockType.BREADCRUMB, breadcrumb=BreadcrumbBlock())
+    block = create_breadcrumb_block_with_required_fields()
 
     result = await BreadcrumbElement.notion_to_markdown(block)
     assert result == "[breadcrumb]"
@@ -91,10 +100,16 @@ async def test_notion_to_markdown_valid():
 @pytest.mark.asyncio
 async def test_notion_to_markdown_invalid():
     """Test that invalid blocks return None."""
-    # Wrong type
-    paragraph_block = create_block_with_required_fields(type=BlockType.PARAGRAPH, breadcrumb=BreadcrumbBlock())
+    # Wrong type - use Mock for paragraph
+    from unittest.mock import Mock
+
+    paragraph_block = Mock()
+    paragraph_block.type = BlockType.PARAGRAPH
+    paragraph_block.breadcrumb = BreadcrumbData()
     assert await BreadcrumbElement.notion_to_markdown(paragraph_block) is None
 
-    # Right type but no breadcrumb
-    no_breadcrumb_block = create_block_with_required_fields(type=BlockType.BREADCRUMB, breadcrumb=None)
+    # Right type but no breadcrumb - use Mock
+    no_breadcrumb_block = Mock()
+    no_breadcrumb_block.type = BlockType.BREADCRUMB
+    no_breadcrumb_block.breadcrumb = None
     assert await BreadcrumbElement.notion_to_markdown(no_breadcrumb_block) is None

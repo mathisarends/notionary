@@ -3,7 +3,7 @@ import re
 from notionary.blocks.mappings.base import BaseBlockElement
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, BlockColor, BlockCreateResult, BlockType, CreateToDoBlock, ToDoBlock
+from notionary.blocks.schemas import Block, BlockColor, BlockCreateResult, BlockType, CreateToDoBlock, ToDoData
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
@@ -44,7 +44,7 @@ class TodoElement(BaseBlockElement):
         converter = MarkdownRichTextConverter()
         rich = await converter.to_rich_text(content)
 
-        todo_content = ToDoBlock(
+        todo_content = ToDoData(
             rich_text=rich,
             checked=checked,
             color=BlockColor.DEFAULT,

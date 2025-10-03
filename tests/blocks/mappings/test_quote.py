@@ -5,7 +5,7 @@ import pytest
 from notionary.blocks.enums import BlockColor, BlockType
 from notionary.blocks.mappings.quote import QuoteElement
 from notionary.blocks.mappings.rich_text.models import RichText
-from notionary.blocks.schemas import QuoteBlock
+from notionary.blocks.schemas import QuoteData
 
 
 def create_rich_text(content: str) -> RichText:
@@ -94,7 +94,7 @@ async def test_markdown_to_notion_invalid():
 @pytest.mark.asyncio
 async def test_notion_to_markdown():
     """Test Notion -> Markdown conversion."""
-    quote_data = QuoteBlock(rich_text=[create_rich_text("Test quote")], color=BlockColor.DEFAULT)
+    quote_data = QuoteData(rich_text=[create_rich_text("Test quote")], color=BlockColor.DEFAULT)
 
     block = Mock()
     block.type = BlockType.QUOTE
@@ -119,7 +119,7 @@ async def test_notion_to_markdown_invalid():
     assert await QuoteElement.notion_to_markdown(block) is None
 
     # Empty text
-    quote_data = QuoteBlock(rich_text=[create_rich_text("")], color=BlockColor.DEFAULT)
+    quote_data = QuoteData(rich_text=[create_rich_text("")], color=BlockColor.DEFAULT)
     block.quote = quote_data
     assert await QuoteElement.notion_to_markdown(block) is None
 

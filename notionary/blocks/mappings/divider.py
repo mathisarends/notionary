@@ -1,7 +1,7 @@
 import re
 
 from notionary.blocks.mappings.base import BaseBlockElement
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, CreateDividerBlock, DividerBlock
+from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, CreateDividerBlock, DividerData
 
 
 class DividerElement(BaseBlockElement):
@@ -25,7 +25,7 @@ class DividerElement(BaseBlockElement):
         if not cls.PATTERN.match(text.strip()):
             return None
 
-        divider = DividerBlock()
+        divider = DividerData()
 
         return CreateDividerBlock(divider=divider)
 
