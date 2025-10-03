@@ -1,12 +1,12 @@
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import (
     Block,
     BlockColor,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     CreateNumberedListItemBlock,
     NumberedListItemData,
@@ -14,9 +14,7 @@ from notionary.blocks.schemas import (
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class NumberedListElement(BaseBlockElement):
-    """Converts between Markdown numbered lists and Notion numbered list items."""
-
+class NumberedListMapper(NotionMarkdownMapper):
     PATTERN = re.compile(r"^\s*(\d+)\.\s+(.+)$")
 
     @classmethod
@@ -24,7 +22,7 @@ class NumberedListElement(BaseBlockElement):
         return block.type == BlockType.NUMBERED_LIST_ITEM and block.numbered_list_item
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         """Convert markdown numbered list item to Notion NumberedListItemBlock."""
         match = cls.PATTERN.match(text.strip())
         if not match:

@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.mappings.column import ColumnElement
+from notionary.blocks.mappings.column import ColumnMapper
 from notionary.blocks.schemas import ColumnBlock, ColumnData, CreateColumnBlock, PartialUserDto
 
 
@@ -25,18 +25,18 @@ def create_block_with_required_fields(**kwargs) -> ColumnBlock:
 @pytest.mark.asyncio
 async def test_match_markdown_valid():
     """Test recognition of valid column start syntax."""
-    assert await ColumnElement.markdown_to_notion("::: column") is not None
-    assert await ColumnElement.markdown_to_notion(":::column")  # No space
-    assert await ColumnElement.markdown_to_notion("::: column ")  # Trailing space
+    assert await ColumnMapper.markdown_to_notion("::: column") is not None
+    assert await ColumnMapper.markdown_to_notion(":::column")  # No space
+    assert await ColumnMapper.markdown_to_notion("::: column ")  # Trailing space
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert await ColumnElement.markdown_to_notion("This is just text.") is None
-    assert not await ColumnElement.markdown_to_notion(":: column")  # Wrong marker
-    assert not await ColumnElement.markdown_to_notion("::: columns")  # Plural
-    assert not await ColumnElement.markdown_to_notion("text ::: column")  # Not at start
+    assert await ColumnMapper.markdown_to_notion("This is just text.") is None
+    assert not await ColumnMapper.markdown_to_notion(":: column")  # Wrong marker
+    assert not await ColumnMapper.markdown_to_notion("::: columns")  # Plural
+    assert not await ColumnMapper.markdown_to_notion("text ::: column")  # Not at start
 
 
 def test_match_notion():
@@ -44,19 +44,19 @@ def test_match_notion():
     column_block = create_block_with_required_fields(
         column=ColumnData(width_ratio=None),
     )
-    assert ColumnElement.match_notion(column_block)
+    assert ColumnMapper.match_notion(column_block)
 
     # Use Mock for invalid blocks
     paragraph_block = Mock()
     paragraph_block.type = "paragraph"
     paragraph_block.column = None
-    assert not ColumnElement.match_notion(paragraph_block)
+    assert not ColumnMapper.match_notion(paragraph_block)
 
 
 @pytest.mark.asyncio
 async def test_markdown_to_notion():
     """Test conversion of column start to Notion ColumnBlock."""
-    result = await ColumnElement.markdown_to_notion("::: column")
+    result = await ColumnMapper.markdown_to_notion("::: column")
 
     assert isinstance(result, CreateColumnBlock)
     assert result.type == "column"
@@ -66,10 +66,10 @@ async def test_markdown_to_notion():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_invalid():
     """Test invalid markdown returns None."""
-    result = await ColumnElement.markdown_to_notion("This is just text.")
+    result = await ColumnMapper.markdown_to_notion("This is just text.")
     assert result is None
 
-    result = await ColumnElement.markdown_to_notion(":: column")  # Wrong syntax
+    result = await ColumnMapper.markdown_to_notion(":: column")  # Wrong syntax
     assert result is None
 
 
@@ -88,7 +88,7 @@ async def test_markdown_to_notion_invalid():
 )
 async def test_markdown_patterns(markdown, should_match):
     """Test recognition of various column patterns."""
-    result = await ColumnElement.markdown_to_notion(markdown)
+    result = await ColumnMapper.markdown_to_notion(markdown)
     if should_match:
         assert result is not None
     else:

@@ -1,14 +1,14 @@
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, ColumnListData, CreateColumnListBlock
+from notionary.blocks.mappings.base import NotionMarkdownMapper
+from notionary.blocks.schemas import Block, BlockCreatePayload, BlockType, ColumnListData, CreateColumnListBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class ColumnListElement(BaseBlockElement):
+class ColumnListMapper(NotionMarkdownMapper):
     """
     Handles the `::: columns` container.
-    Individual columns are handled by ColumnElement.
+    Individual columns are handled by ColumnMapper.
     """
 
     COLUMNS_START = re.compile(r"^:::\s*columns\s*$")
@@ -24,7 +24,7 @@ class ColumnListElement(BaseBlockElement):
         return block.type == BlockType.COLUMN_LIST and block.column_list
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         """Convert `::: columns` to Notion ColumnListBlock."""
         if not cls.COLUMNS_START.match(text.strip()):
             return None

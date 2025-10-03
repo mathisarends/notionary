@@ -2,37 +2,37 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.mappings.video import VideoElement
+from notionary.blocks.mappings.video import VideoMapper
 from notionary.blocks.schemas import CreateVideoBlock, VideoData
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_valid():
     """Test recognition of valid video formats."""
-    assert await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
-    assert await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)(caption:Caption)")
-    assert await VideoElement.markdown_to_notion("[video](https://youtu.be/dQw4w9WgXcQ)")
-    assert await VideoElement.markdown_to_notion("[video](https://youtube.com/watch?v=dQw4w9WgXcQ)")
-    assert await VideoElement.markdown_to_notion("  [video](https://example.com/video.mov)  ")
+    assert await VideoMapper.markdown_to_notion("[video](https://example.com/video.mp4)")
+    assert await VideoMapper.markdown_to_notion("[video](https://example.com/video.mp4)(caption:Caption)")
+    assert await VideoMapper.markdown_to_notion("[video](https://youtu.be/dQw4w9WgXcQ)")
+    assert await VideoMapper.markdown_to_notion("[video](https://youtube.com/watch?v=dQw4w9WgXcQ)")
+    assert await VideoMapper.markdown_to_notion("  [video](https://example.com/video.mov)  ")
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_invalid():
     """Test rejection of invalid video formats."""
-    assert await VideoElement.markdown_to_notion("[video]") is None
-    assert not await VideoElement.markdown_to_notion("[video]()")
+    assert await VideoMapper.markdown_to_notion("[video]") is None
+    assert not await VideoMapper.markdown_to_notion("[video]()")
     # Note: With file upload support, "not-a-url" is treated as potential local file
-    result = await VideoElement.markdown_to_notion("[video](not-a-url)")
+    result = await VideoMapper.markdown_to_notion("[video](not-a-url)")
     assert result is not None  # Now works with file upload support
 
     # FTP URLs are now accepted as external URLs (validation happens at API level)
-    result_ftp = await VideoElement.markdown_to_notion("[video](ftp://example.com/video.mp4)")
+    result_ftp = await VideoMapper.markdown_to_notion("[video](ftp://example.com/video.mp4)")
     assert result_ftp is not None  # Now works with file upload support
 
-    assert not await VideoElement.markdown_to_notion("video(https://example.com/video.mp4)")  # Missing brackets
-    assert not await VideoElement.markdown_to_notion("[embed](https://example.com/video.mp4)")  # Wrong tag
-    assert await VideoElement.markdown_to_notion("") is None
-    assert await VideoElement.markdown_to_notion("Regular text") is None
+    assert not await VideoMapper.markdown_to_notion("video(https://example.com/video.mp4)")  # Missing brackets
+    assert not await VideoMapper.markdown_to_notion("[embed](https://example.com/video.mp4)")  # Wrong tag
+    assert await VideoMapper.markdown_to_notion("") is None
+    assert await VideoMapper.markdown_to_notion("Regular text") is None
 
 
 def test_match_notion_valid():
@@ -41,7 +41,7 @@ def test_match_notion_valid():
     mock_block.type = "video"
     mock_block.video = Mock()
 
-    assert VideoElement.match_notion(mock_block)
+    assert VideoMapper.match_notion(mock_block)
 
 
 def test_match_notion_invalid():
@@ -50,19 +50,19 @@ def test_match_notion_invalid():
     mock_block = Mock()
     mock_block.type = "paragraph"
     mock_block.video = Mock()
-    assert not VideoElement.match_notion(mock_block)
+    assert not VideoMapper.match_notion(mock_block)
 
     # None content
     mock_block = Mock()
     mock_block.type = "video"
     mock_block.video = None
-    assert not VideoElement.match_notion(mock_block)
+    assert not VideoMapper.match_notion(mock_block)
 
 
 @pytest.mark.asyncio
 async def test_markdown_to_notion_basic():
     """Test conversion from markdown to Notion."""
-    result = await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
+    result = await VideoMapper.markdown_to_notion("[video](https://example.com/video.mp4)")
 
     assert result is not None
     assert isinstance(result, CreateVideoBlock)
@@ -72,7 +72,7 @@ async def test_markdown_to_notion_basic():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_with_caption():
     """Test conversion with caption."""
-    result = await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)(caption:Demo video)")
+    result = await VideoMapper.markdown_to_notion("[video](https://example.com/video.mp4)(caption:Demo video)")
 
     assert result is not None
     assert isinstance(result, CreateVideoBlock)
@@ -82,7 +82,7 @@ async def test_markdown_to_notion_with_caption():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_without_caption():
     """Test conversion without caption."""
-    result = await VideoElement.markdown_to_notion("[video](https://example.com/video.mp4)")
+    result = await VideoMapper.markdown_to_notion("[video](https://example.com/video.mp4)")
 
     assert result is not None
     video_block = result
@@ -92,12 +92,12 @@ async def test_markdown_to_notion_without_caption():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_invalid():
     """Test that invalid markdown returns None."""
-    assert await VideoElement.markdown_to_notion("[video]()") is None
+    assert await VideoMapper.markdown_to_notion("[video]()") is None
     # Note: With file upload support, "not-a-url" is treated as potential local file
-    result = await VideoElement.markdown_to_notion("[video](not-a-url)")
+    result = await VideoMapper.markdown_to_notion("[video](not-a-url)")
     assert result is not None  # Now works with file upload support
-    assert await VideoElement.markdown_to_notion("Regular text") is None
-    assert await VideoElement.markdown_to_notion("") is None
+    assert await VideoMapper.markdown_to_notion("Regular text") is None
+    assert await VideoMapper.markdown_to_notion("") is None
 
 
 @pytest.mark.asyncio
@@ -112,7 +112,7 @@ async def test_notion_to_markdown_external():
     mock_block.video.external.url = "https://example.com/video.mp4"
     mock_block.video.caption = []
 
-    result = await VideoElement.notion_to_markdown(mock_block)
+    result = await VideoMapper.notion_to_markdown(mock_block)
 
     assert result is not None
     assert result == "[video](https://example.com/video.mp4)"
@@ -130,7 +130,7 @@ async def test_notion_to_markdown_file_type():
     mock_block.video.caption = []
     mock_block.video.external = None
 
-    result = await VideoElement.notion_to_markdown(mock_block)
+    result = await VideoMapper.notion_to_markdown(mock_block)
 
     assert result is not None
     assert "https://example.com/uploaded.mp4" in result
@@ -141,11 +141,11 @@ async def test_notion_to_markdown_invalid():
     """Test that invalid blocks return None."""
     mock_block = Mock()
     mock_block.type = "paragraph"
-    assert await VideoElement.notion_to_markdown(mock_block) is None
+    assert await VideoMapper.notion_to_markdown(mock_block) is None
 
     mock_block.type = "video"
     mock_block.video = None
-    assert await VideoElement.notion_to_markdown(mock_block) is None
+    assert await VideoMapper.notion_to_markdown(mock_block) is None
 
 
 def test_get_youtube_id():
@@ -160,13 +160,13 @@ def test_get_youtube_id():
     ]
 
     for url, expected_id in test_cases:
-        result = VideoElement._get_youtube_id(url)
+        result = VideoMapper._get_youtube_id(url)
         assert result == expected_id
 
 
 def test_pattern_regex_directly():
     """Test the PATTERN regex directly."""
-    pattern = VideoElement.VIDEO_PATTERN
+    pattern = VideoMapper.VIDEO_PATTERN
 
     # Valid patterns
     assert pattern.match("[video](https://example.com/video.mp4)")
@@ -182,7 +182,7 @@ def test_pattern_regex_directly():
 
 def test_youtube_patterns():
     """Test YouTube pattern matching."""
-    youtube_patterns = VideoElement.YOUTUBE_PATTERNS
+    youtube_patterns = VideoMapper.YOUTUBE_PATTERNS
 
     youtube_urls = [
         "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
@@ -215,17 +215,17 @@ async def test_video_file_extensions():
         url = f"https://example.com/video{ext}"
         markdown = f"[video]({url})"
 
-        assert await VideoElement.markdown_to_notion(markdown) is not None
-        result = await VideoElement.markdown_to_notion(markdown)
+        assert await VideoMapper.markdown_to_notion(markdown) is not None
+        result = await VideoMapper.markdown_to_notion(markdown)
         assert result is not None
 
 
 @pytest.mark.asyncio
 async def test_whitespace_handling():
     """Test handling of whitespace."""
-    assert await VideoElement.markdown_to_notion("  [video](https://example.com/video.mp4)  ")
+    assert await VideoMapper.markdown_to_notion("  [video](https://example.com/video.mp4)  ")
 
-    result = await VideoElement.markdown_to_notion("  [video](https://example.com/video.mp4)  ")
+    result = await VideoMapper.markdown_to_notion("  [video](https://example.com/video.mp4)  ")
     assert result is not None
 
 
@@ -240,10 +240,10 @@ async def test_url_protocols():
 
     for url in valid_urls:
         markdown = f"[video]({url})"
-        assert await VideoElement.markdown_to_notion(markdown) is not None
+        assert await VideoMapper.markdown_to_notion(markdown) is not None
 
     # With file upload support, FTP is now accepted as external URL
-    result_ftp = await VideoElement.markdown_to_notion("[video](ftp://example.com/video.mp4)")
+    result_ftp = await VideoMapper.markdown_to_notion("[video](ftp://example.com/video.mp4)")
     assert result_ftp is not None  # Element accepts FTP, validation happens at API level
 
     # Note: file:// URLs cause issues because they're treated as local paths that don't exist

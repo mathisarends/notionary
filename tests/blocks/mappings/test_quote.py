@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.enums import BlockColor, BlockType
-from notionary.blocks.mappings.quote import QuoteElement
+from notionary.blocks.mappings.quote import QuoteMapper
 from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.schemas import QuoteData
 
@@ -17,17 +17,17 @@ def create_rich_text(content: str) -> RichText:
 async def test_match_markdown():
     """Test Markdown pattern matching."""
     # Valid
-    assert await QuoteElement.markdown_to_notion("> Simple quote text")
-    assert await QuoteElement.markdown_to_notion("> Quote with **bold** text")
-    assert await QuoteElement.markdown_to_notion(">Quote with no space")
-    assert await QuoteElement.markdown_to_notion(">   Quote with multiple spaces")
+    assert await QuoteMapper.markdown_to_notion("> Simple quote text")
+    assert await QuoteMapper.markdown_to_notion("> Quote with **bold** text")
+    assert await QuoteMapper.markdown_to_notion(">Quote with no space")
+    assert await QuoteMapper.markdown_to_notion(">   Quote with multiple spaces")
 
     # Invalid
-    assert await QuoteElement.markdown_to_notion("[quote](Old syntax)") is None
-    assert not await QuoteElement.markdown_to_notion(">")  # Empty
-    assert not await QuoteElement.markdown_to_notion("> ")  # Whitespace only
-    assert not await QuoteElement.markdown_to_notion("> Multi\nline")  # Multiline
-    assert await QuoteElement.markdown_to_notion("Regular text") is None
+    assert await QuoteMapper.markdown_to_notion("[quote](Old syntax)") is None
+    assert not await QuoteMapper.markdown_to_notion(">")  # Empty
+    assert not await QuoteMapper.markdown_to_notion("> ")  # Whitespace only
+    assert not await QuoteMapper.markdown_to_notion("> Multi\nline")  # Multiline
+    assert await QuoteMapper.markdown_to_notion("Regular text") is None
 
 
 def test_match_notion():
@@ -36,22 +36,22 @@ def test_match_notion():
     block = Mock()
     block.type = BlockType.QUOTE
     block.quote = Mock()
-    assert QuoteElement.match_notion(block)
+    assert QuoteMapper.match_notion(block)
 
     # Invalid - wrong type
     block.type = BlockType.PARAGRAPH
-    assert not QuoteElement.match_notion(block)
+    assert not QuoteMapper.match_notion(block)
 
     # Invalid - no quote content
     block.type = BlockType.QUOTE
     block.quote = None
-    assert not QuoteElement.match_notion(block)
+    assert not QuoteMapper.match_notion(block)
 
 
 @pytest.mark.asyncio
 async def test_markdown_to_notion():
     """Test Markdown -> Notion conversion."""
-    result = await QuoteElement.markdown_to_notion("> Test quote")
+    result = await QuoteMapper.markdown_to_notion("> Test quote")
 
     assert result is not None
     assert result.type == "quote"
@@ -70,7 +70,7 @@ async def test_markdown_to_notion_with_formatting():
     ]
 
     for text in test_cases:
-        result = await QuoteElement.markdown_to_notion(text)
+        result = await QuoteMapper.markdown_to_notion(text)
         assert result is not None
         assert result.type == "quote"
 
@@ -88,7 +88,7 @@ async def test_markdown_to_notion_invalid():
     ]
 
     for text in invalid_cases:
-        assert await QuoteElement.markdown_to_notion(text) is None
+        assert await QuoteMapper.markdown_to_notion(text) is None
 
 
 @pytest.mark.asyncio
@@ -100,7 +100,7 @@ async def test_notion_to_markdown():
     block.type = BlockType.QUOTE
     block.quote = quote_data
 
-    result = await QuoteElement.notion_to_markdown(block)
+    result = await QuoteMapper.notion_to_markdown(block)
     assert result == "> Test quote"
 
 
@@ -111,17 +111,17 @@ async def test_notion_to_markdown_invalid():
     block = Mock()
     block.type = BlockType.PARAGRAPH
     block.quote = None
-    assert await QuoteElement.notion_to_markdown(block) is None
+    assert await QuoteMapper.notion_to_markdown(block) is None
 
     # No quote content
     block.type = BlockType.QUOTE
     block.quote = None
-    assert await QuoteElement.notion_to_markdown(block) is None
+    assert await QuoteMapper.notion_to_markdown(block) is None
 
     # Empty text
     quote_data = QuoteData(rich_text=[create_rich_text("")], color=BlockColor.DEFAULT)
     block.quote = quote_data
-    assert await QuoteElement.notion_to_markdown(block) is None
+    assert await QuoteMapper.notion_to_markdown(block) is None
 
 
 @pytest.mark.asyncio
@@ -135,7 +135,7 @@ async def test_roundtrip():
 
     for original in test_cases:
         # Markdown -> Notion
-        notion_result = await QuoteElement.markdown_to_notion(original)
+        notion_result = await QuoteMapper.markdown_to_notion(original)
         assert notion_result is not None
 
         # Create block for notion_to_markdown
@@ -144,13 +144,13 @@ async def test_roundtrip():
         block.quote = notion_result.quote
 
         # Notion -> Markdown
-        result = await QuoteElement.notion_to_markdown(block)
+        result = await QuoteMapper.notion_to_markdown(block)
         assert result == original
 
 
 def test_pattern_regex():
     """Test regex pattern directly."""
-    pattern = QuoteElement.PATTERN
+    pattern = QuoteMapper.PATTERN
 
     # Valid
     assert pattern.match("> Simple text")
@@ -174,8 +174,8 @@ async def test_special_characters():
     ]
 
     for text in special_cases:
-        assert await QuoteElement.markdown_to_notion(text) is not None
-        result = await QuoteElement.markdown_to_notion(text)
+        assert await QuoteMapper.markdown_to_notion(text) is not None
+        result = await QuoteMapper.markdown_to_notion(text)
         assert result is not None
 
 
@@ -183,14 +183,14 @@ async def test_special_characters():
 async def test_whitespace_handling():
     """Test whitespace handling."""
     # Content whitespace should be stripped
-    result = await QuoteElement.markdown_to_notion(">  text with spaces  ")
+    result = await QuoteMapper.markdown_to_notion(">  text with spaces  ")
     assert result is not None
     assert result.quote.rich_text[0].plain_text == "text with spaces"
 
     # Different spacing after >
-    assert await QuoteElement.markdown_to_notion("> text")
-    assert await QuoteElement.markdown_to_notion(">text")
-    assert await QuoteElement.markdown_to_notion(">  text")
+    assert await QuoteMapper.markdown_to_notion("> text")
+    assert await QuoteMapper.markdown_to_notion(">text")
+    assert await QuoteMapper.markdown_to_notion(">  text")
 
 
 @pytest.mark.asyncio
@@ -204,7 +204,7 @@ async def test_empty_content_edge_cases():
     ]
 
     for text in empty_cases:
-        assert await QuoteElement.markdown_to_notion(text) is None
+        assert await QuoteMapper.markdown_to_notion(text) is None
 
 
 @pytest.mark.asyncio
@@ -217,4 +217,4 @@ async def test_multiline_not_supported():
     ]
 
     for text in multiline_cases:
-        assert await QuoteElement.markdown_to_notion(text) is None
+        assert await QuoteMapper.markdown_to_notion(text) is None

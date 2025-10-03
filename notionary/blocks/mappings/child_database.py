@@ -1,12 +1,11 @@
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.schemas import Block, BlockType
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
-from notionary.utils.mixins.logging import LoggingMixin
 
 
-class ChildDatabaseElement(BaseBlockElement, LoggingMixin):
+class ChildDatabaseMapper(NotionMarkdownMapper):
     PATTERN_BRACKET = re.compile(r"^\[database:\s*(.+)\]$", re.IGNORECASE)
     PATTERN_EMOJI = re.compile(r"^📊\s*(.+)$")
 

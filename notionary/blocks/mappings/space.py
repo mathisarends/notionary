@@ -1,10 +1,10 @@
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.schemas import (
     Block,
     BlockColor,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     CreateParagraphBlock,
     ParagraphData,
@@ -12,7 +12,7 @@ from notionary.blocks.schemas import (
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class SpaceElement(BaseBlockElement):
+class SpaceMapper(NotionMarkdownMapper):
     SPACE_MARKER = "[SPACE]"
 
     @classmethod
@@ -28,7 +28,7 @@ class SpaceElement(BaseBlockElement):
             return True
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         if text.strip() != cls.SPACE_MARKER:
             return None
 

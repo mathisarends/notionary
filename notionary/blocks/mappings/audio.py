@@ -2,12 +2,12 @@ import re
 from pathlib import Path
 from typing import ClassVar
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
 from notionary.blocks.mappings.mixins.file_upload_mixin import FileUploadMixin
 from notionary.blocks.schemas import (
     Block,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     CreateAudioBlock,
     ExternalFile,
@@ -16,10 +16,9 @@ from notionary.blocks.schemas import (
     FileUploadFile,
 )
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
-from notionary.utils.mixins.logging import LoggingMixin
 
 
-class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin):
+class AudioMapper(NotionMarkdownMapper, FileUploadMixin, CaptionMixin):
     r"""
     Handles conversion between Markdown audio embeds and Notion audio blocks.
 
@@ -40,7 +39,7 @@ class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin
         return block.type == BlockType.AUDIO
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult | None:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload | None:
         """Convert markdown audio embed to Notion audio block."""
         # Extract the path/URL
         path = cls._extract_audio_path(text.strip())
@@ -144,7 +143,6 @@ class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin
 
     @classmethod
     def _extract_audio_path(cls, text: str) -> str | None:
-        """Extract audio path/URL from text, handling caption patterns."""
         clean_text = cls.remove_caption(text)
 
         match = cls.AUDIO_PATTERN.search(clean_text)

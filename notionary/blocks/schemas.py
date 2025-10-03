@@ -691,6 +691,3 @@ BlockCreatePayload = (
     | CreateToggleBlock
     | CreateVideoBlock
 )
-
-# TODO: Why do we rename it here (this is not even a result per se)
-BlockCreateResult = BlockCreatePayload

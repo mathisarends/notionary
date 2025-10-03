@@ -1,11 +1,11 @@
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, ColumnData, CreateColumnBlock
+from notionary.blocks.mappings.base import NotionMarkdownMapper
+from notionary.blocks.schemas import Block, BlockCreatePayload, BlockType, ColumnData, CreateColumnBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class ColumnElement(BaseBlockElement):
+class ColumnMapper(NotionMarkdownMapper):
     """
     Handles individual `::: column` blocks with optional width ratio.
     Content is automatically added by the stack processor.
@@ -24,7 +24,7 @@ class ColumnElement(BaseBlockElement):
         return block.type == BlockType.COLUMN and block.column
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         """Convert `::: column [ratio]` to Notion ColumnBlock."""
         if not (match := cls.COLUMN_START.match(text.strip())):
             return None
@@ -57,5 +57,5 @@ class ColumnElement(BaseBlockElement):
 
     @classmethod
     def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Column elements are documented via ColumnListElement - return None to avoid duplication."""
+        """Column elements are documented via ColumnListMapper - return None to avoid duplication."""
         return None

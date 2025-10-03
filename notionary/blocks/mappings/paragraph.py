@@ -1,10 +1,10 @@
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import (
     Block,
     BlockColor,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     CreateParagraphBlock,
     ParagraphData,
@@ -12,17 +12,13 @@ from notionary.blocks.schemas import (
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class ParagraphElement(BaseBlockElement):
-    """
-    Handles conversion between Markdown paragraphs and Notion paragraph blocks.
-    """
-
+class ParagraphMapper(NotionMarkdownMapper):
     @classmethod
     def match_notion(cls, block: Block) -> bool:
         return block.type == BlockType.PARAGRAPH and block.paragraph
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         """Convert markdown text to a Notion ParagraphBlock."""
         if not text.strip():
             return None

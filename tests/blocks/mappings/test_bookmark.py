@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 import pytest_asyncio
 
-from notionary.blocks.mappings.bookmark import BookmarkElement
+from notionary.blocks.mappings.bookmark import BookmarkMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.schemas import BlockType, BookmarkData, CreateBookmarkBlock
 
@@ -12,15 +12,15 @@ from notionary.blocks.schemas import BlockType, BookmarkData, CreateBookmarkBloc
 async def test_match_markdown():
     """Test die Erkennung von Markdown-Bookmarks."""
     # Gültige Bookmark-Formate
-    assert await BookmarkElement.markdown_to_notion("[bookmark](https://example.com)")
-    assert await BookmarkElement.markdown_to_notion("[bookmark](https://example.com)(caption:Titel)")
-    assert await BookmarkElement.markdown_to_notion("[bookmark](https://example.com)(caption:Titel – Beschreibung)")
+    assert await BookmarkMapper.markdown_to_notion("[bookmark](https://example.com)")
+    assert await BookmarkMapper.markdown_to_notion("[bookmark](https://example.com)(caption:Titel)")
+    assert await BookmarkMapper.markdown_to_notion("[bookmark](https://example.com)(caption:Titel – Beschreibung)")
 
     # Ungültige Formate
-    assert not await BookmarkElement.markdown_to_notion("[link](https://example.com)")
-    assert await BookmarkElement.markdown_to_notion("Dies ist kein Bookmark") is None
-    assert not await BookmarkElement.markdown_to_notion("[bookmark](nicht-url)")
-    assert not await BookmarkElement.markdown_to_notion("[bookmark](ftp://example.com)")  # Nur http/https
+    assert not await BookmarkMapper.markdown_to_notion("[link](https://example.com)")
+    assert await BookmarkMapper.markdown_to_notion("Dies ist kein Bookmark") is None
+    assert not await BookmarkMapper.markdown_to_notion("[bookmark](nicht-url)")
+    assert not await BookmarkMapper.markdown_to_notion("[bookmark](ftp://example.com)")  # Nur http/https
 
 
 def test_match_notion():
@@ -29,25 +29,25 @@ def test_match_notion():
     bookmark_block = Mock()
     bookmark_block.type = BlockType.BOOKMARK  # Verwende BlockType enum
     bookmark_block.bookmark = Mock()  # bookmark ist nicht None
-    assert BookmarkElement.match_notion(bookmark_block)
+    assert BookmarkMapper.match_notion(bookmark_block)
 
     # Invalid block type
     paragraph_block = Mock()
     paragraph_block.type = BlockType.PARAGRAPH  # Verwende BlockType enum
     paragraph_block.bookmark = None
-    assert not BookmarkElement.match_notion(paragraph_block)
+    assert not BookmarkMapper.match_notion(paragraph_block)
 
     # Bookmark type but bookmark is None
     empty_bookmark_block = Mock()
     empty_bookmark_block.type = BlockType.BOOKMARK
     empty_bookmark_block.bookmark = None
-    assert not BookmarkElement.match_notion(empty_bookmark_block)
+    assert not BookmarkMapper.match_notion(empty_bookmark_block)
 
 
 @pytest.mark.asyncio
 async def test_markdown_to_notion_simple():
     """Test einfaches Bookmark ohne Titel/Beschreibung."""
-    result = await BookmarkElement.markdown_to_notion("[bookmark](https://example.com)")
+    result = await BookmarkMapper.markdown_to_notion("[bookmark](https://example.com)")
 
     assert result is not None
     assert isinstance(result, CreateBookmarkBlock)
@@ -58,7 +58,7 @@ async def test_markdown_to_notion_simple():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_with_title():
     """Test Bookmark mit Titel."""
-    result = await BookmarkElement.markdown_to_notion("[bookmark](https://example.com)(caption:Beispiel-Titel)")
+    result = await BookmarkMapper.markdown_to_notion("[bookmark](https://example.com)(caption:Beispiel-Titel)")
 
     assert result is not None
     assert isinstance(result, CreateBookmarkBlock)
@@ -76,7 +76,7 @@ async def test_markdown_to_notion_with_title():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_with_title_and_description():
     """Test Bookmark mit Titel und Beschreibung."""
-    result = await BookmarkElement.markdown_to_notion(
+    result = await BookmarkMapper.markdown_to_notion(
         "[bookmark](https://example.com)(caption:Beispiel-Titel – Eine Beschreibung)"
     )
 
@@ -95,13 +95,13 @@ async def test_markdown_to_notion_with_title_and_description():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_invalid():
     """Test ungültiges Format."""
-    result = await BookmarkElement.markdown_to_notion("Dies ist kein Bookmark")
+    result = await BookmarkMapper.markdown_to_notion("Dies ist kein Bookmark")
     assert result is None
 
-    result = await BookmarkElement.markdown_to_notion("[bookmark]()")
+    result = await BookmarkMapper.markdown_to_notion("[bookmark]()")
     assert result is None
 
-    result = await BookmarkElement.markdown_to_notion("[bookmark](not-a-url)")
+    result = await BookmarkMapper.markdown_to_notion("[bookmark](not-a-url)")
     assert result is None
 
 
@@ -114,7 +114,7 @@ async def test_notion_to_markdown_simple():
     block.type = BlockType.BOOKMARK
     block.bookmark = bookmark_data
 
-    result = await BookmarkElement.notion_to_markdown(block)
+    result = await BookmarkMapper.notion_to_markdown(block)
     assert result == "[bookmark](https://example.com)"
 
 
@@ -130,7 +130,7 @@ async def test_notion_to_markdown_with_title():
     block.type = BlockType.BOOKMARK
     block.bookmark = bookmark_data
 
-    result = await BookmarkElement.notion_to_markdown(block)
+    result = await BookmarkMapper.notion_to_markdown(block)
     assert result == "[bookmark](https://example.com)(caption:Beispiel-Titel)"
 
 
@@ -149,7 +149,7 @@ async def test_notion_to_markdown_with_title_and_description():
     block.type = BlockType.BOOKMARK
     block.bookmark = bookmark_data
 
-    result = await BookmarkElement.notion_to_markdown(block)
+    result = await BookmarkMapper.notion_to_markdown(block)
     assert result == "[bookmark](https://example.com)(caption:Beispiel-Titel - Eine Beschreibung)"
 
 
@@ -160,14 +160,14 @@ async def test_notion_to_markdown_invalid():
     paragraph_block = Mock()
     paragraph_block.type = BlockType.PARAGRAPH
     paragraph_block.bookmark = None
-    result = await BookmarkElement.notion_to_markdown(paragraph_block)
+    result = await BookmarkMapper.notion_to_markdown(paragraph_block)
     assert result is None
 
     # Bookmark is None
     bookmark_none_block = Mock()
     bookmark_none_block.type = BlockType.BOOKMARK
     bookmark_none_block.bookmark = None
-    result = await BookmarkElement.notion_to_markdown(bookmark_none_block)
+    result = await BookmarkMapper.notion_to_markdown(bookmark_none_block)
     assert result is None
 
     # Missing URL
@@ -175,7 +175,7 @@ async def test_notion_to_markdown_invalid():
     no_url_block = Mock()
     no_url_block.type = BlockType.BOOKMARK
     no_url_block.bookmark = bookmark_data
-    result = await BookmarkElement.notion_to_markdown(no_url_block)
+    result = await BookmarkMapper.notion_to_markdown(no_url_block)
     assert result is None
 
 
@@ -198,7 +198,7 @@ async def test_notion_to_markdown_invalid():
 async def test_url_validation(url, expected):
     """Test URL-Validierung in verschiedenen Formaten."""
     markdown = f"[bookmark]({url})"
-    result = await BookmarkElement.markdown_to_notion(markdown)
+    result = await BookmarkMapper.markdown_to_notion(markdown)
     if expected:
         assert result is not None
     else:
@@ -237,11 +237,11 @@ async def titled_bookmark_block():
 async def test_with_fixtures(simple_bookmark_block, titled_bookmark_block):
     """Test mit Fixtures zur Reduzierung von Duplikation."""
     # Test einfacher Block
-    result1 = await BookmarkElement.notion_to_markdown(simple_bookmark_block)
+    result1 = await BookmarkMapper.notion_to_markdown(simple_bookmark_block)
     assert result1 == "[bookmark](https://example.com)"
 
     # Test Block mit Titel
-    result2 = await BookmarkElement.notion_to_markdown(titled_bookmark_block)
+    result2 = await BookmarkMapper.notion_to_markdown(titled_bookmark_block)
     assert result2 == "[bookmark](https://example.com)(caption:Test Title)"
 
 
@@ -251,7 +251,7 @@ async def test_roundtrip_conversion_simple():
     original = "[bookmark](https://example.com)"
 
     # Markdown -> Notion
-    notion_result = await BookmarkElement.markdown_to_notion(original)
+    notion_result = await BookmarkMapper.markdown_to_notion(original)
     assert notion_result is not None
 
     # Erstelle Mock-Block für notion_to_markdown
@@ -260,7 +260,7 @@ async def test_roundtrip_conversion_simple():
     block.bookmark = notion_result.bookmark
 
     # Notion -> Markdown
-    back = await BookmarkElement.notion_to_markdown(block)
+    back = await BookmarkMapper.notion_to_markdown(block)
     assert back == original
 
 
@@ -270,7 +270,7 @@ async def test_roundtrip_conversion_with_title():
     original = "[bookmark](https://example.com)(caption:My Title)"
 
     # Markdown -> Notion
-    notion_result = await BookmarkElement.markdown_to_notion(original)
+    notion_result = await BookmarkMapper.markdown_to_notion(original)
     assert notion_result is not None
 
     # Erstelle Mock-Block für notion_to_markdown
@@ -279,7 +279,7 @@ async def test_roundtrip_conversion_with_title():
     block.bookmark = notion_result.bookmark
 
     # Notion -> Markdown
-    back = await BookmarkElement.notion_to_markdown(block)
+    back = await BookmarkMapper.notion_to_markdown(block)
     assert back == original
 
 
@@ -293,7 +293,7 @@ async def test_unicode_in_captions():
     ]
 
     for original in test_cases:
-        notion_result = await BookmarkElement.markdown_to_notion(original)
+        notion_result = await BookmarkMapper.markdown_to_notion(original)
         assert notion_result is not None
 
         # Erstelle Mock-Block für notion_to_markdown
@@ -301,7 +301,7 @@ async def test_unicode_in_captions():
         block.type = BlockType.BOOKMARK
         block.bookmark = notion_result.bookmark
 
-        back = await BookmarkElement.notion_to_markdown(block)
+        back = await BookmarkMapper.notion_to_markdown(block)
         assert back == original
 
 
@@ -317,9 +317,9 @@ async def test_special_characters_in_urls():
 
     for url in special_urls:
         markdown = f"[bookmark]({url})"
-        assert await BookmarkElement.markdown_to_notion(markdown) is not None
+        assert await BookmarkMapper.markdown_to_notion(markdown) is not None
 
-        result = await BookmarkElement.markdown_to_notion(markdown)
+        result = await BookmarkMapper.markdown_to_notion(markdown)
         assert result is not None
         assert result.bookmark.url == url
 
@@ -329,17 +329,17 @@ async def test_edge_cases():
     """Test verschiedene Edge Cases."""
     # Sehr lange URLs
     long_url = "https://example.com/" + "a" * 1000
-    assert await BookmarkElement.markdown_to_notion(f"[bookmark]({long_url})")
+    assert await BookmarkMapper.markdown_to_notion(f"[bookmark]({long_url})")
 
     # URLs mit vielen Pfad-Segmenten
     deep_url = "https://example.com/" + "/".join(["segment"] * 50)
-    assert await BookmarkElement.markdown_to_notion(f"[bookmark]({deep_url})")
+    assert await BookmarkMapper.markdown_to_notion(f"[bookmark]({deep_url})")
 
     # Bookmark ohne schließende Klammer
-    assert await BookmarkElement.markdown_to_notion("[bookmark](https://example.com") is None
+    assert await BookmarkMapper.markdown_to_notion("[bookmark](https://example.com") is None
 
     # Bookmark ohne URL
-    assert not await BookmarkElement.markdown_to_notion("[bookmark]()")
+    assert not await BookmarkMapper.markdown_to_notion("[bookmark]()")
 
 
 @pytest.mark.asyncio
@@ -347,7 +347,7 @@ async def test_caption_separator_behavior():
     """Test das Verhalten mit verschiedenen Separatoren."""
 
     # Test mit hyphen input
-    result_hyphen = await BookmarkElement.markdown_to_notion(
+    result_hyphen = await BookmarkMapper.markdown_to_notion(
         "[bookmark](https://example.com)(caption:Title – Description)"
     )
 
@@ -367,7 +367,7 @@ async def test_caption_separator_behavior():
     block.type = BlockType.BOOKMARK
     block.bookmark = bookmark_data
 
-    result = await BookmarkElement.notion_to_markdown(block)
+    result = await BookmarkMapper.notion_to_markdown(block)
     assert result == "[bookmark](https://example.com)(caption:Title - Description)"
 
 
@@ -381,7 +381,7 @@ async def test_empty_strings_and_whitespace():
     ]
 
     for markdown in test_cases:
-        result = await BookmarkElement.markdown_to_notion(markdown)
+        result = await BookmarkMapper.markdown_to_notion(markdown)
         # Diese sollten funktionieren oder None zurückgeben
         assert result is not None or result is None  # Beide Ergebnisse sind ok
         if result:

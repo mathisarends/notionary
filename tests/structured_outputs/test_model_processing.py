@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-
-"""
-Test the refactored MarkdownBuilder with NotionContentSchema.
-"""
-
 from pydantic import Field
 
 from notionary.blocks.markdown.builder import MarkdownBuilder

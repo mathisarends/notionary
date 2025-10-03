@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from notionary.blocks.mappings.column_list import ColumnListElement
+from notionary.blocks.mappings.column_list import ColumnListMapper
 from notionary.page.writer.handler.line_handler import (
     LineHandler,
     LineProcessingContext,
@@ -57,14 +57,14 @@ class ColumnListHandler(LineHandler):
 
         # Check if top of stack is a ColumnList
         current_parent = context.parent_stack[-1]
-        return issubclass(current_parent.element_type, ColumnListElement)
+        return issubclass(current_parent.element_type, ColumnListMapper)
 
     async def _start_column_list(self, context: LineProcessingContext) -> None:
         """Start a new column list."""
         # Create ColumnList block using the element from registry
         column_list_element = None
         for element in context.block_registry.get_elements():
-            if issubclass(element, ColumnListElement):
+            if issubclass(element, ColumnListMapper):
                 column_list_element = element
                 break
 

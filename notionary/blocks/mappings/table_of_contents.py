@@ -1,10 +1,10 @@
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.schemas import (
     Block,
     BlockColor,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     CreateTableOfContentsBlock,
     TableOfContentsData,
@@ -12,10 +12,8 @@ from notionary.blocks.schemas import (
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class TableOfContentsElement(BaseBlockElement):
+class TableOfContentsMapper(NotionMarkdownMapper):
     """
-    Handles conversion between Markdown [toc] syntax and Notion table_of_contents blocks.
-
     Markdown syntax:
     - [toc]                        → default color (enum default)
     - [toc](blue)                  → custom color
@@ -29,7 +27,7 @@ class TableOfContentsElement(BaseBlockElement):
         return block.type == BlockType.TABLE_OF_CONTENTS and block.table_of_contents
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         if not (input_match := cls.PATTERN.match(text.strip())):
             return None
 

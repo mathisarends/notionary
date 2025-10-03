@@ -3,7 +3,7 @@
 =======================================
 
 A demo showing how to add custom table elements to Notion pages using MarkdownBuilder.
-Perfect for demonstrating TableElement syntax with the fluent interface!
+Perfect for demonstrating TableMapper syntax with the fluent interface!
 
 SETUP: Replace PAGE_NAME with an existing page in your Notion workspace.
 """
@@ -93,7 +93,7 @@ def create_table_examples_content() -> str:
 
 
 async def main():
-    """Demo of adding TableElement markdown to a Notion page."""
+    """Demo of adding TableMapper markdown to a Notion page."""
 
     print("🚀 Notionary Table Element Builder Demo")
     print("=" * 42)

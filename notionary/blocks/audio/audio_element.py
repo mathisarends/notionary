@@ -7,7 +7,7 @@ from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
 from notionary.blocks.mappings.mixins.file_upload_mixin import FileUploadMixin
 from notionary.blocks.schemas import (
     Block,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     CreateAudioBlock,
     ExternalFile,
@@ -40,7 +40,7 @@ class AudioElement(BaseBlockElement, FileUploadMixin, LoggingMixin, CaptionMixin
         return block.type == BlockType.AUDIO
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult | None:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload | None:
         """Convert markdown audio embed to Notion audio block."""
         # Extract the path/URL
         path = cls._extract_audio_path(text.strip())

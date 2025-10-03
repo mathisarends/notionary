@@ -1,11 +1,11 @@
-from notionary.blocks.mappings.column_list import ColumnListElement
+from notionary.blocks.mappings.column_list import ColumnListMapper
 from notionary.page.content.reader.handler import BlockHandler
 from notionary.page.content.reader.handler.block_rendering_context import BlockRenderingContext
 
 
 class ColumnListRenderer(BlockHandler):
     def _can_handle(self, context: BlockRenderingContext) -> bool:
-        return ColumnListElement.match_notion(context.block)
+        return ColumnListMapper.match_notion(context.block)
 
     async def _process(self, context: BlockRenderingContext) -> None:
         # Create column list start line

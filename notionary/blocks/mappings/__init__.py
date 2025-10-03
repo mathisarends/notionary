@@ -1,59 +1,59 @@
-from .audio import AudioElement
-from .base import BaseBlockElement
-from .bookmark import BookmarkElement
-from .breadcrumb import BreadcrumbElement
-from .bulleted_list import BulletedListElement
-from .callout import CalloutElement
-from .child_database import ChildDatabaseElement
-from .child_page import ChildPageElement
-from .code import CodeElement
-from .column import ColumnElement
-from .column_list import ColumnListElement
-from .divider import DividerElement
-from .embed import EmbedElement
-from .equation import EquationElement
-from .file import FileElement
-from .heading import HeadingElement
-from .image import ImageElement
-from .numbered_list import NumberedListElement
-from .paragraph import ParagraphElement
-from .pdf import PdfElement
-from .quote import QuoteElement
-from .space import SpaceElement
-from .table import TableElement
-from .table_of_contents import TableOfContentsElement
-from .todo import TodoElement
-from .toggle import ToggleElement
-from .toggleable_heading import ToggleableHeadingElement
-from .video import VideoElement
+from .audio import AudioMapper
+from .base import NotionMarkdownMapper
+from .bookmark import BookmarkMapper
+from .breadcrumb import BreadcrumbMapper
+from .bulleted_list import BulletedListMapper
+from .callout import CalloutMapper
+from .child_database import ChildDatabaseMapper
+from .child_page import ChildPageMapper
+from .code import CodeMapper
+from .column import ColumnMapper
+from .column_list import ColumnListMapper
+from .divider import DividerMapper
+from .embed import EmbedMapper
+from .equation import EquationMapper
+from .file import FileMapper
+from .heading import HeadingMapper
+from .image import ImageMapper
+from .numbered_list import NumberedListMapper
+from .paragraph import ParagraphMapper
+from .pdf import PdfMapper
+from .quote import QuoteMapper
+from .space import SpaceMapper
+from .table import TableMapper
+from .table_of_contents import TableOfContentsMapper
+from .todo import TodoMapper
+from .toggle import ToggleMapper
+from .toggleable_heading import ToggleableHeadingMapper
+from .video import VideoMapper
 
 __all__ = [
-    "AudioElement",
-    "BaseBlockElement",
-    "BookmarkElement",
-    "BreadcrumbElement",
-    "BulletedListElement",
-    "CalloutElement",
-    "ChildDatabaseElement",
-    "ChildPageElement",
-    "CodeElement",
-    "ColumnElement",
-    "ColumnListElement",
-    "DividerElement",
-    "EmbedElement",
-    "EquationElement",
-    "FileElement",
-    "HeadingElement",
-    "ImageElement",
-    "NumberedListElement",
-    "ParagraphElement",
-    "PdfElement",
-    "QuoteElement",
-    "SpaceElement",
-    "TableElement",
-    "TableOfContentsElement",
-    "TodoElement",
-    "ToggleElement",
-    "ToggleableHeadingElement",
-    "VideoElement",
+    "AudioMapper",
+    "BookmarkMapper",
+    "BreadcrumbMapper",
+    "BulletedListMapper",
+    "CalloutMapper",
+    "ChildDatabaseMapper",
+    "ChildPageMapper",
+    "CodeMapper",
+    "ColumnListMapper",
+    "ColumnMapper",
+    "DividerMapper",
+    "EmbedMapper",
+    "EquationMapper",
+    "FileMapper",
+    "HeadingMapper",
+    "ImageMapper",
+    "NotionMarkdownMapper",
+    "NumberedListMapper",
+    "ParagraphMapper",
+    "PdfMapper",
+    "QuoteMapper",
+    "SpaceMapper",
+    "TableMapper",
+    "TableOfContentsMapper",
+    "TodoMapper",
+    "ToggleMapper",
+    "ToggleableHeadingMapper",
+    "VideoMapper",
 ]

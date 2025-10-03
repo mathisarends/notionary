@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.mappings.numbered_list import NumberedListElement
+from notionary.blocks.mappings.numbered_list import NumberedListMapper
 from notionary.blocks.schemas import (
     CreateNumberedListItemBlock,
     NumberedListItemData,
@@ -12,23 +12,23 @@ from notionary.blocks.schemas import (
 @pytest.mark.asyncio
 async def test_match_markdown_valid():
     """Test recognition of valid numbered list formats."""
-    assert await NumberedListElement.markdown_to_notion("1. First item") is not None
-    assert await NumberedListElement.markdown_to_notion("2. Second item") is not None
-    assert await NumberedListElement.markdown_to_notion("123. Item with big number") is not None
-    assert await NumberedListElement.markdown_to_notion("  1. Indented item") is not None
-    assert await NumberedListElement.markdown_to_notion("    10. Deep indented") is not None
+    assert await NumberedListMapper.markdown_to_notion("1. First item") is not None
+    assert await NumberedListMapper.markdown_to_notion("2. Second item") is not None
+    assert await NumberedListMapper.markdown_to_notion("123. Item with big number") is not None
+    assert await NumberedListMapper.markdown_to_notion("  1. Indented item") is not None
+    assert await NumberedListMapper.markdown_to_notion("    10. Deep indented") is not None
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert await NumberedListElement.markdown_to_notion("- Bulleted item") is None
-    assert await NumberedListElement.markdown_to_notion("* Another bullet") is None
-    assert await NumberedListElement.markdown_to_notion("1 Missing dot") is None
-    assert await NumberedListElement.markdown_to_notion("1.Missing space") is None
-    assert await NumberedListElement.markdown_to_notion("a. Letter instead of number") is None
-    assert await NumberedListElement.markdown_to_notion("Regular text") is None
-    assert await NumberedListElement.markdown_to_notion("") is None
+    assert await NumberedListMapper.markdown_to_notion("- Bulleted item") is None
+    assert await NumberedListMapper.markdown_to_notion("* Another bullet") is None
+    assert await NumberedListMapper.markdown_to_notion("1 Missing dot") is None
+    assert await NumberedListMapper.markdown_to_notion("1.Missing space") is None
+    assert await NumberedListMapper.markdown_to_notion("a. Letter instead of number") is None
+    assert await NumberedListMapper.markdown_to_notion("Regular text") is None
+    assert await NumberedListMapper.markdown_to_notion("") is None
 
 
 def test_match_notion_valid():
@@ -37,7 +37,7 @@ def test_match_notion_valid():
     mock_block.type = "numbered_list_item"
     mock_block.numbered_list_item = Mock()
 
-    assert NumberedListElement.match_notion(mock_block)
+    assert NumberedListMapper.match_notion(mock_block)
 
 
 def test_match_notion_invalid():
@@ -46,19 +46,19 @@ def test_match_notion_invalid():
     mock_block = Mock()
     mock_block.type = "bulleted_list_item"
     mock_block.numbered_list_item = Mock()
-    assert not NumberedListElement.match_notion(mock_block)
+    assert not NumberedListMapper.match_notion(mock_block)
 
     # None content
     mock_block = Mock()
     mock_block.type = "numbered_list_item"
     mock_block.numbered_list_item = None
-    assert not NumberedListElement.match_notion(mock_block)
+    assert not NumberedListMapper.match_notion(mock_block)
 
 
 @pytest.mark.asyncio
 async def test_markdown_to_notion():
     """Test conversion from markdown to Notion."""
-    result = await NumberedListElement.markdown_to_notion("1. Test item")
+    result = await NumberedListMapper.markdown_to_notion("1. Test item")
 
     assert result is not None
     assert isinstance(result, CreateNumberedListItemBlock)
@@ -73,7 +73,7 @@ async def test_markdown_to_notion_different_numbers():
     test_cases = ["1. First", "5. Fifth", "100. Hundredth"]
 
     for markdown_text in test_cases:
-        result = await NumberedListElement.markdown_to_notion(markdown_text)
+        result = await NumberedListMapper.markdown_to_notion(markdown_text)
         assert result is not None
         assert isinstance(result, CreateNumberedListItemBlock)
 
@@ -81,10 +81,10 @@ async def test_markdown_to_notion_different_numbers():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_invalid():
     """Test that invalid markdown returns None."""
-    assert await NumberedListElement.markdown_to_notion("- Bullet item") is None
-    assert await NumberedListElement.markdown_to_notion("1 Missing dot") is None
-    assert await NumberedListElement.markdown_to_notion("Regular text") is None
-    assert await NumberedListElement.markdown_to_notion("") is None
+    assert await NumberedListMapper.markdown_to_notion("- Bullet item") is None
+    assert await NumberedListMapper.markdown_to_notion("1 Missing dot") is None
+    assert await NumberedListMapper.markdown_to_notion("Regular text") is None
+    assert await NumberedListMapper.markdown_to_notion("") is None
 
 
 @pytest.mark.asyncio
@@ -100,7 +100,7 @@ async def test_notion_to_markdown():
     mock_block.numbered_list_item = Mock()
     mock_block.numbered_list_item.rich_text = [mock_rich_text]
 
-    result = await NumberedListElement.notion_to_markdown(mock_block)
+    result = await NumberedListMapper.notion_to_markdown(mock_block)
 
     assert result is not None
     assert result.startswith("1. ")
@@ -111,16 +111,16 @@ async def test_notion_to_markdown_invalid():
     """Test that invalid blocks return None."""
     mock_block = Mock()
     mock_block.type = "paragraph"
-    assert await NumberedListElement.notion_to_markdown(mock_block) is None
+    assert await NumberedListMapper.notion_to_markdown(mock_block) is None
 
     mock_block.type = "numbered_list_item"
     mock_block.numbered_list_item = None
-    assert await NumberedListElement.notion_to_markdown(mock_block) is None
+    assert await NumberedListMapper.notion_to_markdown(mock_block) is None
 
 
 def test_pattern_regex_directly():
     """Test the PATTERN regex directly."""
-    pattern = NumberedListElement.PATTERN
+    pattern = NumberedListMapper.PATTERN
 
     # Valid patterns
     assert pattern.match("1. Item")
@@ -144,7 +144,7 @@ async def test_whitespace_handling():
     ]
 
     for text in whitespace_cases:
-        result = await NumberedListElement.markdown_to_notion(text)
+        result = await NumberedListMapper.markdown_to_notion(text)
         # Only the numbered list items should match
         if text.strip().startswith(("1.", "  1.", "    1.")):
             assert result is not None
@@ -163,8 +163,8 @@ async def test_special_characters():
     ]
 
     for text in test_cases:
-        assert await NumberedListElement.markdown_to_notion(text) is not None
-        result = await NumberedListElement.markdown_to_notion(text)
+        assert await NumberedListMapper.markdown_to_notion(text) is not None
+        result = await NumberedListMapper.markdown_to_notion(text)
         assert result is not None
 
 
@@ -178,8 +178,8 @@ async def test_large_numbers():
     ]
 
     for text in large_number_cases:
-        assert await NumberedListElement.markdown_to_notion(text) is not None
-        result = await NumberedListElement.markdown_to_notion(text)
+        assert await NumberedListMapper.markdown_to_notion(text) is not None
+        result = await NumberedListMapper.markdown_to_notion(text)
         assert result is not None
 
 
@@ -192,7 +192,7 @@ def test_content_extraction():
     ]
 
     for markdown_text, expected_content in test_cases:
-        match = NumberedListElement.PATTERN.match(markdown_text)
+        match = NumberedListMapper.PATTERN.match(markdown_text)
         assert match is not None
         assert match.group(2) == expected_content
 
@@ -209,8 +209,8 @@ async def test_indentation_levels():
     ]
 
     for text in indentation_cases:
-        assert await NumberedListElement.markdown_to_notion(text) is not None
-        result = await NumberedListElement.markdown_to_notion(text)
+        assert await NumberedListMapper.markdown_to_notion(text) is not None
+        result = await NumberedListMapper.markdown_to_notion(text)
         assert result is not None
 
 
@@ -225,7 +225,7 @@ async def test_roundtrip_conversion():
 
     for original in original_items:
         # Markdown -> Notion
-        notion_block = await NumberedListElement.markdown_to_notion(original)
+        notion_block = await NumberedListMapper.markdown_to_notion(original)
         assert notion_block is not None
 
         # Create mock block for reverse conversion
@@ -239,7 +239,7 @@ async def test_roundtrip_conversion():
         mock_block.numbered_list_item.rich_text = [mock_rich_text]
 
         # Notion -> Markdown
-        converted = await NumberedListElement.notion_to_markdown(mock_block)
+        converted = await NumberedListMapper.notion_to_markdown(mock_block)
         assert converted is not None
         assert converted.startswith("1. ")  # Always starts with 1. in output
 
@@ -254,12 +254,12 @@ async def test_edge_cases():
     ]
 
     for text, should_match in edge_cases:
-        match_result = await NumberedListElement.markdown_to_notion(text)
+        match_result = await NumberedListMapper.markdown_to_notion(text)
         if should_match:
             assert match_result is not None
         else:
             assert match_result is None
 
         if should_match:
-            result = await NumberedListElement.markdown_to_notion(text)
+            result = await NumberedListMapper.markdown_to_notion(text)
             assert result is not None

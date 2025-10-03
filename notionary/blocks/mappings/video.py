@@ -2,12 +2,12 @@ import re
 from pathlib import Path
 from typing import ClassVar
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
 from notionary.blocks.mappings.mixins.file_upload_mixin import FileUploadMixin
 from notionary.blocks.schemas import (
     Block,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     CreateVideoBlock,
     ExternalFile,
@@ -18,7 +18,7 @@ from notionary.blocks.schemas import (
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
+class VideoMapper(NotionMarkdownMapper, CaptionMixin, FileUploadMixin):
     r"""
     Handles conversion between Markdown video embeds and Notion video blocks.
 
@@ -57,7 +57,7 @@ class VideoElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return block.type == BlockType.VIDEO and block.video
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult | None:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload | None:
         """Convert markdown video syntax to a Notion VideoBlock."""
         # Extract the path/URL
         path = cls._extract_video_path(text.strip())

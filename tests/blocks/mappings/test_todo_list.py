@@ -2,48 +2,48 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.mappings.todo import TodoElement
+from notionary.blocks.mappings.todo import TodoMapper
 from notionary.blocks.schemas import CreateToDoBlock, ToDoData
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_unchecked():
     """Test recognition of unchecked todo formats."""
-    assert await TodoElement.markdown_to_notion("- [ ] Unchecked task") is not None
-    assert await TodoElement.markdown_to_notion("* [ ] Asterisk todo") is not None
-    assert await TodoElement.markdown_to_notion("+ [ ] Plus todo") is not None
-    assert await TodoElement.markdown_to_notion("  - [ ] Indented todo") is not None
-    assert await TodoElement.markdown_to_notion("    * [ ] Deep indented") is not None
+    assert await TodoMapper.markdown_to_notion("- [ ] Unchecked task") is not None
+    assert await TodoMapper.markdown_to_notion("* [ ] Asterisk todo") is not None
+    assert await TodoMapper.markdown_to_notion("+ [ ] Plus todo") is not None
+    assert await TodoMapper.markdown_to_notion("  - [ ] Indented todo") is not None
+    assert await TodoMapper.markdown_to_notion("    * [ ] Deep indented") is not None
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_checked():
     """Test recognition of checked todo formats."""
-    assert await TodoElement.markdown_to_notion("- [x] Checked task") is not None
-    assert await TodoElement.markdown_to_notion("* [x] Asterisk checked") is not None
-    assert await TodoElement.markdown_to_notion("+ [x] Plus checked") is not None
-    assert await TodoElement.markdown_to_notion("- [X] Uppercase X") is not None
-    assert await TodoElement.markdown_to_notion("* [X] Uppercase asterisk") is not None
+    assert await TodoMapper.markdown_to_notion("- [x] Checked task") is not None
+    assert await TodoMapper.markdown_to_notion("* [x] Asterisk checked") is not None
+    assert await TodoMapper.markdown_to_notion("+ [x] Plus checked") is not None
+    assert await TodoMapper.markdown_to_notion("- [X] Uppercase X") is not None
+    assert await TodoMapper.markdown_to_notion("* [X] Uppercase asterisk") is not None
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_invalid():
     """Test rejection of invalid todo formats."""
     # Regular bullets without checkboxes
-    assert await TodoElement.markdown_to_notion("- Regular bullet") is None
-    assert await TodoElement.markdown_to_notion("* Regular asterisk") is None
-    assert await TodoElement.markdown_to_notion("+ Regular plus") is None
+    assert await TodoMapper.markdown_to_notion("- Regular bullet") is None
+    assert await TodoMapper.markdown_to_notion("* Regular asterisk") is None
+    assert await TodoMapper.markdown_to_notion("+ Regular plus") is None
 
     # Wrong checkbox syntax
-    assert await TodoElement.markdown_to_notion("- [?] Wrong symbol") is None
-    assert await TodoElement.markdown_to_notion("- [] Missing space") is None
-    assert await TodoElement.markdown_to_notion("- [ Missing bracket") is None
-    assert await TodoElement.markdown_to_notion("- Missing checkbox") is None
+    assert await TodoMapper.markdown_to_notion("- [?] Wrong symbol") is None
+    assert await TodoMapper.markdown_to_notion("- [] Missing space") is None
+    assert await TodoMapper.markdown_to_notion("- [ Missing bracket") is None
+    assert await TodoMapper.markdown_to_notion("- Missing checkbox") is None
 
     # Other formats
-    assert await TodoElement.markdown_to_notion("1. [ ] Numbered todo") is None
-    assert await TodoElement.markdown_to_notion("Regular text") is None
-    assert await TodoElement.markdown_to_notion("") is None
+    assert await TodoMapper.markdown_to_notion("1. [ ] Numbered todo") is None
+    assert await TodoMapper.markdown_to_notion("Regular text") is None
+    assert await TodoMapper.markdown_to_notion("") is None
 
 
 def test_match_notion_valid():
@@ -52,7 +52,7 @@ def test_match_notion_valid():
     mock_block.type = "to_do"
     mock_block.to_do = Mock()
 
-    assert TodoElement.match_notion(mock_block)
+    assert TodoMapper.match_notion(mock_block)
 
 
 def test_match_notion_invalid():
@@ -61,19 +61,19 @@ def test_match_notion_invalid():
     mock_block = Mock()
     mock_block.type = "bulleted_list_item"
     mock_block.to_do = Mock()
-    assert not TodoElement.match_notion(mock_block)
+    assert not TodoMapper.match_notion(mock_block)
 
     # None content
     mock_block = Mock()
     mock_block.type = "to_do"
     mock_block.to_do = None
-    assert not TodoElement.match_notion(mock_block)
+    assert not TodoMapper.match_notion(mock_block)
 
 
 @pytest.mark.asyncio
 async def test_markdown_to_notion_unchecked():
     """Test conversion of unchecked todos to Notion."""
-    result = await TodoElement.markdown_to_notion("- [ ] Test task")
+    result = await TodoMapper.markdown_to_notion("- [ ] Test task")
 
     assert result is not None
     assert isinstance(result, CreateToDoBlock)
@@ -86,7 +86,7 @@ async def test_markdown_to_notion_unchecked():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_checked():
     """Test conversion of checked todos to Notion."""
-    result = await TodoElement.markdown_to_notion("- [x] Completed task")
+    result = await TodoMapper.markdown_to_notion("- [x] Completed task")
 
     assert result is not None
     assert isinstance(result, CreateToDoBlock)
@@ -106,7 +106,7 @@ async def test_markdown_to_notion_different_bullets():
     ]
 
     for markdown_text, expected_checked in test_cases:
-        result = await TodoElement.markdown_to_notion(markdown_text)
+        result = await TodoMapper.markdown_to_notion(markdown_text)
         assert result is not None
         assert result.to_do.checked == expected_checked
 
@@ -114,8 +114,8 @@ async def test_markdown_to_notion_different_bullets():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_case_insensitive():
     """Test that [x] and [X] both work for checked state."""
-    lower_result = await TodoElement.markdown_to_notion("- [x] lowercase")
-    upper_result = await TodoElement.markdown_to_notion("- [X] uppercase")
+    lower_result = await TodoMapper.markdown_to_notion("- [x] lowercase")
+    upper_result = await TodoMapper.markdown_to_notion("- [X] uppercase")
 
     assert lower_result is not None
     assert upper_result is not None
@@ -126,10 +126,10 @@ async def test_markdown_to_notion_case_insensitive():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_invalid():
     """Test that invalid markdown returns None."""
-    assert await TodoElement.markdown_to_notion("- Regular bullet") is None
-    assert await TodoElement.markdown_to_notion("- [?] Wrong symbol") is None
-    assert await TodoElement.markdown_to_notion("Regular text") is None
-    assert await TodoElement.markdown_to_notion("") is None
+    assert await TodoMapper.markdown_to_notion("- Regular bullet") is None
+    assert await TodoMapper.markdown_to_notion("- [?] Wrong symbol") is None
+    assert await TodoMapper.markdown_to_notion("Regular text") is None
+    assert await TodoMapper.markdown_to_notion("") is None
 
 
 @pytest.mark.asyncio
@@ -146,7 +146,7 @@ async def test_notion_to_markdown_unchecked():
     mock_block.to_do.checked = False
     mock_block.to_do.rich_text = [mock_rich_text]
 
-    result = await TodoElement.notion_to_markdown(mock_block)
+    result = await TodoMapper.notion_to_markdown(mock_block)
 
     assert result is not None
     assert result.startswith("- [ ] ")
@@ -166,7 +166,7 @@ async def test_notion_to_markdown_checked():
     mock_block.to_do.checked = True
     mock_block.to_do.rich_text = [mock_rich_text]
 
-    result = await TodoElement.notion_to_markdown(mock_block)
+    result = await TodoMapper.notion_to_markdown(mock_block)
 
     assert result is not None
     assert result.startswith("- [x] ")
@@ -177,17 +177,17 @@ async def test_notion_to_markdown_invalid():
     """Test that invalid blocks return None."""
     mock_block = Mock()
     mock_block.type = "bulleted_list_item"
-    assert await TodoElement.notion_to_markdown(mock_block) is None
+    assert await TodoMapper.notion_to_markdown(mock_block) is None
 
     mock_block.type = "to_do"
     mock_block.to_do = None
-    assert await TodoElement.notion_to_markdown(mock_block) is None
+    assert await TodoMapper.notion_to_markdown(mock_block) is None
 
 
 def test_pattern_regex_directly():
     """Test the PATTERN and DONE_PATTERN regex directly."""
-    unchecked_pattern = TodoElement.PATTERN
-    checked_pattern = TodoElement.DONE_PATTERN
+    unchecked_pattern = TodoMapper.PATTERN
+    checked_pattern = TodoMapper.DONE_PATTERN
 
     # Unchecked pattern tests
     assert unchecked_pattern.match("- [ ] Task")
@@ -213,8 +213,8 @@ async def test_whitespace_handling():
     ]
 
     for text in whitespace_cases:
-        assert await TodoElement.markdown_to_notion(text) is not None
-        result = await TodoElement.markdown_to_notion(text)
+        assert await TodoMapper.markdown_to_notion(text) is not None
+        result = await TodoMapper.markdown_to_notion(text)
         assert result is not None
 
 
@@ -229,8 +229,8 @@ async def test_inline_formatting():
     ]
 
     for text in formatting_cases:
-        assert await TodoElement.markdown_to_notion(text) is not None
-        result = await TodoElement.markdown_to_notion(text)
+        assert await TodoMapper.markdown_to_notion(text) is not None
+        result = await TodoMapper.markdown_to_notion(text)
         assert result is not None
 
 
@@ -245,8 +245,8 @@ async def test_special_characters():
     ]
 
     for text in special_cases:
-        assert await TodoElement.markdown_to_notion(text) is not None
-        result = await TodoElement.markdown_to_notion(text)
+        assert await TodoMapper.markdown_to_notion(text) is not None
+        result = await TodoMapper.markdown_to_notion(text)
         assert result is not None
 
 
@@ -260,8 +260,8 @@ def test_content_extraction():
 
     for markdown_text, expected_content in test_cases:
         # Test unchecked pattern
-        unchecked_match = TodoElement.PATTERN.match(markdown_text)
-        checked_match = TodoElement.DONE_PATTERN.match(markdown_text)
+        unchecked_match = TodoMapper.PATTERN.match(markdown_text)
+        checked_match = TodoMapper.DONE_PATTERN.match(markdown_text)
 
         if unchecked_match:
             assert unchecked_match.group(1) == expected_content
@@ -281,7 +281,7 @@ async def test_roundtrip_conversion():
 
     for original in original_todos:
         # Markdown -> Notion
-        notion_block = await TodoElement.markdown_to_notion(original)
+        notion_block = await TodoMapper.markdown_to_notion(original)
         assert notion_block is not None
 
         # Create mock block for reverse conversion
@@ -296,7 +296,7 @@ async def test_roundtrip_conversion():
         mock_block.to_do.rich_text = [mock_rich_text]
 
         # Notion -> Markdown
-        converted = await TodoElement.notion_to_markdown(mock_block)
+        converted = await TodoMapper.notion_to_markdown(mock_block)
         assert converted is not None
         assert "[ ]" in converted or "[x]" in converted
 
@@ -311,12 +311,12 @@ async def test_edge_cases():
     ]
 
     for text, should_match in edge_cases:
-        match_result = await TodoElement.markdown_to_notion(text)
+        match_result = await TodoMapper.markdown_to_notion(text)
         if should_match:
             assert match_result is not None
         else:
             assert match_result is None
 
         if should_match:
-            result = await TodoElement.markdown_to_notion(text)
+            result = await TodoMapper.markdown_to_notion(text)
             assert result is not None

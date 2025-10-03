@@ -1,12 +1,12 @@
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
 from notionary.blocks.schemas import Block, BlockCreatePayload, BlockType, BookmarkData, CreateBookmarkBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class BookmarkElement(BaseBlockElement, CaptionMixin):
+class BookmarkMapper(NotionMarkdownMapper, CaptionMixin):
     """
     Handles conversion between Markdown bookmarks and Notion bookmark blocks.
 

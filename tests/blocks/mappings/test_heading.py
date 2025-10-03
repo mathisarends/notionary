@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.mappings.heading import HeadingElement
+from notionary.blocks.mappings.heading import HeadingMapper
 from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.schemas import BlockType, HeadingData
 
@@ -10,20 +10,20 @@ from notionary.blocks.schemas import BlockType, HeadingData
 @pytest.mark.asyncio
 async def test_match_markdown_valid():
     """Test recognition of valid heading formats."""
-    assert await HeadingElement.markdown_to_notion("# Heading 1") is not None
-    assert await HeadingElement.markdown_to_notion("## Heading 2") is not None
-    assert await HeadingElement.markdown_to_notion("### Heading 3") is not None
-    assert await HeadingElement.markdown_to_notion("#  Heading with spaces") is not None
+    assert await HeadingMapper.markdown_to_notion("# Heading 1") is not None
+    assert await HeadingMapper.markdown_to_notion("## Heading 2") is not None
+    assert await HeadingMapper.markdown_to_notion("### Heading 3") is not None
+    assert await HeadingMapper.markdown_to_notion("#  Heading with spaces") is not None
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert await HeadingElement.markdown_to_notion("#### Too deep") is None
-    assert await HeadingElement.markdown_to_notion("#No space") is None
-    assert not await HeadingElement.markdown_to_notion("# ")  # No content
-    assert await HeadingElement.markdown_to_notion("Regular text") is None
-    assert await HeadingElement.markdown_to_notion("") is None
+    assert await HeadingMapper.markdown_to_notion("#### Too deep") is None
+    assert await HeadingMapper.markdown_to_notion("#No space") is None
+    assert not await HeadingMapper.markdown_to_notion("# ")  # No content
+    assert await HeadingMapper.markdown_to_notion("Regular text") is None
+    assert await HeadingMapper.markdown_to_notion("") is None
 
 
 def test_match_notion():
@@ -38,12 +38,12 @@ def test_match_notion():
         block = Mock()
         block.type = block_type  # BlockType enum statt String
         setattr(block, attr_name, Mock())  # Not None
-        assert HeadingElement.match_notion(block)
+        assert HeadingMapper.match_notion(block)
 
     # Invalid blocks
     paragraph_block = Mock()
     paragraph_block.type = BlockType.PARAGRAPH  # BlockType enum statt String
-    assert not HeadingElement.match_notion(paragraph_block)
+    assert not HeadingMapper.match_notion(paragraph_block)
 
 
 @pytest.mark.asyncio
@@ -57,7 +57,7 @@ def test_match_notion():
 )
 async def test_markdown_to_notion(markdown, expected_level, expected_content):
     """Test conversion from markdown to Notion."""
-    result = await HeadingElement.markdown_to_notion(markdown)
+    result = await HeadingMapper.markdown_to_notion(markdown)
 
     assert result is not None
     assert result.type == f"heading_{expected_level}"
@@ -74,10 +74,10 @@ async def test_markdown_to_notion(markdown, expected_level, expected_content):
 @pytest.mark.asyncio
 async def test_markdown_to_notion_invalid():
     """Test invalid markdown returns None."""
-    assert await HeadingElement.markdown_to_notion("#### Too deep") is None
-    assert await HeadingElement.markdown_to_notion("#No space") is None
-    assert await HeadingElement.markdown_to_notion("# ") is None
-    assert await HeadingElement.markdown_to_notion("text") is None
+    assert await HeadingMapper.markdown_to_notion("#### Too deep") is None
+    assert await HeadingMapper.markdown_to_notion("#No space") is None
+    assert await HeadingMapper.markdown_to_notion("# ") is None
+    assert await HeadingMapper.markdown_to_notion("text") is None
 
 
 @pytest.mark.asyncio
@@ -94,21 +94,21 @@ async def test_notion_to_markdown():
 
     block.heading_2 = heading_content
 
-    result = await HeadingElement.notion_to_markdown(block)
+    result = await HeadingMapper.notion_to_markdown(block)
     assert result == "## Test Heading"
 
 
 def test_pattern_matching():
     """Test the regex pattern directly."""
     # Valid patterns
-    assert HeadingElement.PATTERN.match("# Title")
-    assert HeadingElement.PATTERN.match("## Subtitle")
-    assert HeadingElement.PATTERN.match("### Section")
+    assert HeadingMapper.PATTERN.match("# Title")
+    assert HeadingMapper.PATTERN.match("## Subtitle")
+    assert HeadingMapper.PATTERN.match("### Section")
 
     # Invalid patterns
-    assert not HeadingElement.PATTERN.match("#### Too deep")
-    assert not HeadingElement.PATTERN.match("#NoSpace")
-    assert not HeadingElement.PATTERN.match("Regular text")
+    assert not HeadingMapper.PATTERN.match("#### Too deep")
+    assert not HeadingMapper.PATTERN.match("#NoSpace")
+    assert not HeadingMapper.PATTERN.match("Regular text")
 
 
 @pytest.mark.asyncio
@@ -127,7 +127,7 @@ def test_pattern_matching():
 )
 async def test_markdown_patterns(markdown, should_match):
     """Test various markdown patterns."""
-    result = await HeadingElement.markdown_to_notion(markdown)
+    result = await HeadingMapper.markdown_to_notion(markdown)
     if should_match:
         assert result is not None
     else:

@@ -1,12 +1,12 @@
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import (
     Block,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     CreateTableBlock,
     CreateTableRowBlock,
@@ -16,7 +16,7 @@ from notionary.blocks.schemas import (
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class TableElement(BaseBlockElement):
+class TableMapper(NotionMarkdownMapper):
     """
     Handles conversion between Markdown tables and Notion table blocks.
     Now integrated into the LineProcessor stack system.
@@ -36,7 +36,7 @@ class TableElement(BaseBlockElement):
         return block.type == BlockType.TABLE and block.table
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         """Convert opening table row to Notion table block."""
         if not cls.ROW_PATTERN.match(text.strip()):
             return None
@@ -55,7 +55,7 @@ class TableElement(BaseBlockElement):
         return CreateTableBlock(table=table_data)
 
     @classmethod
-    async def create_from_markdown_table(cls, table_lines: list[str]) -> BlockCreateResult:
+    async def create_from_markdown_table(cls, table_lines: list[str]) -> BlockCreatePayload:
         """
         Create a complete table block from markdown table lines.
         """

@@ -1,12 +1,12 @@
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.models import RichText
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, CodeData, CodeLanguage, CreateCodeBlock
+from notionary.blocks.schemas import Block, BlockCreatePayload, BlockType, CodeData, CodeLanguage, CreateCodeBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class CodeElement(BaseBlockElement):
+class CodeMapper(NotionMarkdownMapper):
     """
     Markdown code block syntax:
     ```language
@@ -23,7 +23,7 @@ class CodeElement(BaseBlockElement):
         return block.type == BlockType.CODE and block.code
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         if not (match := cls.CODE_START_PATTERN.match(text.strip())):
             return None
 
@@ -35,7 +35,7 @@ class CodeElement(BaseBlockElement):
         return CreateCodeBlock(code=code_block)
 
     @classmethod
-    def create_from_markdown_block(cls, opening_line: str, code_lines: list[str]) -> BlockCreateResult:
+    def create_from_markdown_block(cls, opening_line: str, code_lines: list[str]) -> BlockCreatePayload:
         """
         Create a complete code block from markdown components.
         """

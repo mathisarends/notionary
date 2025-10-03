@@ -1,11 +1,11 @@
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import (
     Block,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     CreateEmbedBlock,
     EmbedData,
@@ -16,7 +16,7 @@ from notionary.blocks.schemas import (
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class EmbedElement(BaseBlockElement):
+class EmbedMapper(NotionMarkdownMapper):
     """
     Handles conversion between Markdown embeds and Notion embed blocks.
 
@@ -37,7 +37,7 @@ class EmbedElement(BaseBlockElement):
         return block.type == BlockType.EMBED and block.embed
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         """Convert markdown embed syntax to Notion EmbedBlock."""
         match = cls.PATTERN.match(text.strip())
         if not match:

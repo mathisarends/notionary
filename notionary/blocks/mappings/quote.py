@@ -1,13 +1,13 @@
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, BlockColor, BlockCreateResult, BlockType, CreateQuoteBlock, QuoteData
+from notionary.blocks.schemas import Block, BlockColor, BlockCreatePayload, BlockType, CreateQuoteBlock, QuoteData
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class QuoteElement(BaseBlockElement):
+class QuoteMapper(NotionMarkdownMapper):
     """
     Handles conversion between Markdown quotes and Notion quote blocks.
 
@@ -24,7 +24,7 @@ class QuoteElement(BaseBlockElement):
         return block.type == BlockType.QUOTE and block.quote
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         """Convert markdown quote to Notion QuoteBlock."""
         match = cls.PATTERN.match(text.strip())
         if not match:

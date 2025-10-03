@@ -8,7 +8,7 @@ from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
 from notionary.blocks.mappings.mixins.file_upload_mixin import FileUploadMixin
 from notionary.blocks.schemas import (
     Block,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     CreateFileBlock,
     ExternalFile,
@@ -19,7 +19,7 @@ from notionary.blocks.schemas import (
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
+class FileElementMapper(BaseBlockElement, CaptionMixin, FileUploadMixin):
     r"""
     Handles conversion between Markdown file embeds and Notion file blocks.
 
@@ -40,7 +40,7 @@ class FileElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return bool(block.type == BlockType.FILE and block.file)
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult | None:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload | None:
         """Convert markdown file link to Notion FileBlock."""
         file_path = cls._extract_file_path(text.strip())
         if not file_path:

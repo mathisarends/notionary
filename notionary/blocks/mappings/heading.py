@@ -3,13 +3,13 @@ from __future__ import annotations
 import re
 from typing import cast
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import (
     Block,
     BlockColor,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     CreateHeading1Block,
     CreateHeading2Block,
@@ -19,9 +19,7 @@ from notionary.blocks.schemas import (
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class HeadingElement(BaseBlockElement):
-    """Handles conversion between Markdown headings and Notion heading blocks."""
-
+class HeadingMapper(NotionMarkdownMapper):
     PATTERN = re.compile(r"^(#{1,3})[ \t]+(.+)$")
 
     @classmethod
@@ -37,7 +35,7 @@ class HeadingElement(BaseBlockElement):
         )
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         """Convert markdown headings (#, ##, ###) to Notion HeadingBlock."""
         match = cls.PATTERN.match(text.strip())
         if not match:

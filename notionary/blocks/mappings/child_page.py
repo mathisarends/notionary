@@ -1,14 +1,12 @@
-from __future__ import annotations
-
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType
+from notionary.blocks.mappings.base import NotionMarkdownMapper
+from notionary.blocks.schemas import Block, BlockCreatePayload, BlockType
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.page.page_context import get_page_context
 
 
-class ChildPageElement(BaseBlockElement):
+class ChildPageMapper(NotionMarkdownMapper):
     """
     Handles conversion between Markdown page references and Notion child page blocks.
 
@@ -23,7 +21,7 @@ class ChildPageElement(BaseBlockElement):
         return block.type == BlockType.CHILD_PAGE and getattr(block, "child_page", None)
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult | None:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload | None:
         """
         Convert markdown page syntax to an actual Notion page.
         Returns None since child_page blocks are created implicitly via Pages API (not Blocks API).

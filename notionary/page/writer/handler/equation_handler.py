@@ -1,6 +1,6 @@
 import re
 
-from notionary.blocks.mappings.equation import EquationElement
+from notionary.blocks.mappings.equation import EquationMapper
 from notionary.page.writer.handler.line_handler import (
     LineHandler,
     LineProcessingContext,
@@ -42,10 +42,10 @@ class EquationHandler(LineHandler):
         return len(context.parent_stack) > 0
 
     async def _process_complete_equation_block(self, context: LineProcessingContext) -> None:
-        """Process the entire equation block in one go using EquationElement."""
+        """Process the entire equation block in one go using EquationMapper."""
         equation_lines, lines_to_consume = self._collect_equation_lines(context)
 
-        block = EquationElement.create_from_markdown_block(opening_line=context.line, equation_lines=equation_lines)
+        block = EquationMapper.create_from_markdown_block(opening_line=context.line, equation_lines=equation_lines)
 
         if block:
             context.lines_consumed = lines_to_consume

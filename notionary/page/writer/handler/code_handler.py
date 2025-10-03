@@ -1,6 +1,6 @@
 import re
 
-from notionary.blocks.mappings.code import CodeElement
+from notionary.blocks.mappings.code import CodeMapper
 from notionary.page.writer.handler.line_handler import (
     LineHandler,
     LineProcessingContext,
@@ -40,10 +40,10 @@ class CodeHandler(LineHandler):
         return len(context.parent_stack) > 0
 
     async def _process_complete_code_block(self, context: LineProcessingContext) -> None:
-        """Process the entire code block in one go using CodeElement."""
+        """Process the entire code block in one go using CodeMapper."""
         code_lines, lines_to_consume = self._collect_code_lines(context)
 
-        block = CodeElement.create_from_markdown_block(opening_line=context.line, code_lines=code_lines)
+        block = CodeMapper.create_from_markdown_block(opening_line=context.line, code_lines=code_lines)
 
         if block:
             context.lines_consumed = lines_to_consume

@@ -111,7 +111,6 @@ class TestColumnToggleLayouts:
         assert "::: columns" in markdown, "Column structure missing"
 
     def test_overall_markdown_generation(self, complex_schema):
-        """Test the complete markdown generation."""
         builder = MarkdownBuilder()
         markdown = complex_schema.to_notion_content(builder)
 

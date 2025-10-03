@@ -1,16 +1,14 @@
-from __future__ import annotations
-
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, CalloutData, CreateCalloutBlock
+from notionary.blocks.schemas import Block, BlockCreatePayload, BlockType, CalloutData, CreateCalloutBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.shared.models.icon_models import EmojiIcon, Icon
 
 
-class CalloutElement(BaseBlockElement):
+class CalloutMapper(NotionMarkdownMapper):
     """
     Handles conversion between Markdown callouts and Notion callout blocks.
 
@@ -38,7 +36,7 @@ class CalloutElement(BaseBlockElement):
         return block.type == BlockType.CALLOUT and block.callout
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         """Convert a markdown callout into a Notion CalloutBlock."""
         match = cls.PATTERN.match(text.strip())
         if not match:

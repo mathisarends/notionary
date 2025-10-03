@@ -5,7 +5,7 @@ from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
 from notionary.blocks.mappings.mixins.file_upload_mixin import FileUploadMixin
 from notionary.blocks.schemas import (
     Block,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     CreatePdfBlock,
     ExternalFile,
@@ -16,7 +16,7 @@ from notionary.blocks.schemas import (
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
+class PdfMapper(BaseBlockElement, CaptionMixin, FileUploadMixin):
     r"""
     Handles conversion between Markdown PDF embeds and Notion PDF blocks.
 
@@ -39,7 +39,7 @@ class PdfElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return block.type == BlockType.PDF and block.pdf
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult | None:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload | None:
         """Convert markdown PDF link to Notion PDF block."""
         pdf_path = cls._extract_pdf_path(text.strip())
 

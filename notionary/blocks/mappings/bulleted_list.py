@@ -1,11 +1,11 @@
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import (
     Block,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     BulletedListItemData,
     CreateBulletedListItemBlock,
@@ -13,9 +13,7 @@ from notionary.blocks.schemas import (
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class BulletedListElement(BaseBlockElement):
-    """Class for converting between Markdown bullet lists and Notion bulleted list items."""
-
+class BulletedListMapper(NotionMarkdownMapper):
     # Regex for markdown bullets (excluding todo items [ ] or [x])
     PATTERN = re.compile(r"^(\s*)[*\-+]\s+(?!\[[ x]\])(.+)$")
 
@@ -25,7 +23,7 @@ class BulletedListElement(BaseBlockElement):
         return block.type == BlockType.BULLETED_LIST_ITEM and block.bulleted_list_item
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         """
         Convert a markdown bulleted list item into a Notion BulletedListItemBlock.
         """

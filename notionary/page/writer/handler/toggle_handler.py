@@ -1,6 +1,6 @@
 import re
 
-from notionary.blocks.mappings.toggle import ToggleElement
+from notionary.blocks.mappings.toggle import ToggleMapper
 from notionary.page.writer.handler import (
     LineHandler,
     LineProcessingContext,
@@ -60,11 +60,11 @@ class ToggleHandler(LineHandler):
 
         # Check if top of stack is a Toggle
         current_parent = context.parent_stack[-1]
-        return issubclass(current_parent.element_type, ToggleElement)
+        return issubclass(current_parent.element_type, ToggleMapper)
 
     async def _start_toggle(self, context: LineProcessingContext) -> None:
         """Start a new toggle block."""
-        toggle_element = ToggleElement()
+        toggle_element = ToggleMapper()
 
         # Create the block
         result = await toggle_element.markdown_to_notion(context.line)
@@ -76,7 +76,7 @@ class ToggleHandler(LineHandler):
         # Push to parent stack
         parent_context = ParentBlockContext(
             block=block,
-            element_type=ToggleElement,
+            element_type=ToggleMapper,
             child_lines=[],
         )
         context.parent_stack.append(parent_context)
@@ -104,7 +104,7 @@ class ToggleHandler(LineHandler):
             return False
 
         current_parent = context.parent_stack[-1]
-        if not issubclass(current_parent.element_type, ToggleElement):
+        if not issubclass(current_parent.element_type, ToggleMapper):
             return False
 
         # Handle all content inside toggle (not start/end patterns)

@@ -2,17 +2,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.registry.block_registry import BlockRegistry
 from notionary.blocks.schemas import BlockCreatePayload
 
 
 @dataclass
 class ParentBlockContext:
-    """Context for a block that expects children."""
-
     block: BlockCreatePayload
-    element_type: BaseBlockElement
+    element_type: NotionMarkdownMapper
     child_lines: list[str]
     child_blocks: list[BlockCreatePayload] = field(default_factory=list)
 

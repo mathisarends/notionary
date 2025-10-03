@@ -1,10 +1,10 @@
-from notionary.blocks.mappings.column import ColumnElement
+from notionary.blocks.mappings.code import CodeMapper
 from notionary.page.content.reader.handler import BlockHandler, BlockRenderingContext
 
 
 class ColumnRenderer(BlockHandler):
     def _can_handle(self, context: BlockRenderingContext) -> bool:
-        return ColumnElement.match_notion(context.block)
+        return CodeMapper.match_notion(context.block)
 
     async def _process(self, context: BlockRenderingContext) -> None:
         column_start = self._extract_column_start(context.block)

@@ -1,7 +1,7 @@
 import re
 
 from notionary.blocks.mappings.toggleable_heading import (
-    ToggleableHeadingElement,
+    ToggleableHeadingMapper,
 )
 from notionary.blocks.schemas import BlockCreatePayload, BlockType
 from notionary.page.writer.handler import (
@@ -58,11 +58,11 @@ class ToggleableHeadingHandler(LineHandler):
 
         # Check if top of stack is a ToggleableHeading
         current_parent = context.parent_stack[-1]
-        return issubclass(current_parent.element_type, ToggleableHeadingElement)
+        return issubclass(current_parent.element_type, ToggleableHeadingMapper)
 
     async def _start_toggleable_heading(self, context: LineProcessingContext) -> None:
         """Start a new toggleable heading block."""
-        toggleable_heading_element = ToggleableHeadingElement()
+        toggleable_heading_element = ToggleableHeadingMapper()
 
         # Create the block
         result = await toggleable_heading_element.markdown_to_notion(context.line)
@@ -74,7 +74,7 @@ class ToggleableHeadingHandler(LineHandler):
         # Push to parent stack
         parent_context = ParentBlockContext(
             block=block,
-            element_type=ToggleableHeadingElement,
+            element_type=ToggleableHeadingMapper,
             child_lines=[],
         )
         context.parent_stack.append(parent_context)
@@ -85,7 +85,7 @@ class ToggleableHeadingHandler(LineHandler):
             return False
 
         current_parent = context.parent_stack[-1]
-        if not issubclass(current_parent.element_type, ToggleableHeadingElement):
+        if not issubclass(current_parent.element_type, ToggleableHeadingMapper):
             return False
 
         # Handle all content inside toggleable heading (not start/end patterns)

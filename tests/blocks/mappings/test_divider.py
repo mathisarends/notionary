@@ -1,6 +1,6 @@
 import pytest
 
-from notionary.blocks.mappings.divider import DividerElement
+from notionary.blocks.mappings.divider import DividerMapper
 from notionary.blocks.schemas import (
     BlockType,
     CreateDividerBlock,
@@ -29,25 +29,25 @@ def create_divider_block_with_required_fields(**kwargs) -> DividerBlock:
 @pytest.mark.asyncio
 async def test_match_markdown_valid():
     """Test recognition of valid divider syntax."""
-    assert await DividerElement.markdown_to_notion("---") is not None
-    assert await DividerElement.markdown_to_notion("----")  # More dashes
-    assert await DividerElement.markdown_to_notion("-----") is not None
-    assert await DividerElement.markdown_to_notion("  ---  ")  # With spaces
+    assert await DividerMapper.markdown_to_notion("---") is not None
+    assert await DividerMapper.markdown_to_notion("----")  # More dashes
+    assert await DividerMapper.markdown_to_notion("-----") is not None
+    assert await DividerMapper.markdown_to_notion("  ---  ")  # With spaces
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not await DividerElement.markdown_to_notion("--")  # Too few dashes
-    assert not await DividerElement.markdown_to_notion("text ---")  # Not alone
-    assert await DividerElement.markdown_to_notion("--- text") is None
-    assert await DividerElement.markdown_to_notion("This is just text.") is None
+    assert not await DividerMapper.markdown_to_notion("--")  # Too few dashes
+    assert not await DividerMapper.markdown_to_notion("text ---")  # Not alone
+    assert await DividerMapper.markdown_to_notion("--- text") is None
+    assert await DividerMapper.markdown_to_notion("This is just text.") is None
 
 
 def test_match_notion():
     """Test recognition of Notion divider blocks."""
     divider_block = create_divider_block_with_required_fields()
-    assert DividerElement.match_notion(divider_block)
+    assert DividerMapper.match_notion(divider_block)
 
     # Use Mock for paragraph
     from unittest.mock import Mock
@@ -55,7 +55,7 @@ def test_match_notion():
     paragraph_block = Mock()
     paragraph_block.type = BlockType.PARAGRAPH
     paragraph_block.divider = None
-    assert not DividerElement.match_notion(paragraph_block)
+    assert not DividerMapper.match_notion(paragraph_block)
 
     # Test divider block without divider property
     from unittest.mock import Mock
@@ -63,13 +63,13 @@ def test_match_notion():
     invalid_divider = Mock()
     invalid_divider.type = BlockType.DIVIDER
     invalid_divider.divider = None
-    assert not DividerElement.match_notion(invalid_divider)
+    assert not DividerMapper.match_notion(invalid_divider)
 
 
 @pytest.mark.asyncio
 async def test_markdown_to_notion():
     """Test conversion of divider to Notion blocks."""
-    result = await DividerElement.markdown_to_notion("---")
+    result = await DividerMapper.markdown_to_notion("---")
 
     # Should return just the divider block
     assert isinstance(result, CreateDividerBlock)
@@ -79,10 +79,10 @@ async def test_markdown_to_notion():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_invalid():
     """Test invalid markdown returns None."""
-    result = await DividerElement.markdown_to_notion("--")  # Too few dashes
+    result = await DividerMapper.markdown_to_notion("--")  # Too few dashes
     assert result is None
 
-    result = await DividerElement.markdown_to_notion("text ---")
+    result = await DividerMapper.markdown_to_notion("text ---")
     assert result is None
 
 
@@ -91,7 +91,7 @@ async def test_notion_to_markdown():
     """Test conversion of Notion divider to markdown."""
     block = create_divider_block_with_required_fields()
 
-    result = await DividerElement.notion_to_markdown(block)
+    result = await DividerMapper.notion_to_markdown(block)
     assert result == "---"
 
 
@@ -104,14 +104,14 @@ async def test_notion_to_markdown_invalid():
     paragraph_block = Mock()
     paragraph_block.type = BlockType.PARAGRAPH
     paragraph_block.divider = None
-    result = await DividerElement.notion_to_markdown(paragraph_block)
+    result = await DividerMapper.notion_to_markdown(paragraph_block)
     assert result is None
 
     # Test divider block without divider property
     invalid_divider = Mock()
     invalid_divider.type = BlockType.DIVIDER
     invalid_divider.divider = None
-    result = await DividerElement.notion_to_markdown(invalid_divider)
+    result = await DividerMapper.notion_to_markdown(invalid_divider)
     assert result is None
 
 
@@ -131,7 +131,7 @@ async def test_notion_to_markdown_invalid():
 )
 async def test_markdown_patterns(markdown, should_match):
     """Test recognition of various divider patterns."""
-    result = await DividerElement.markdown_to_notion(markdown)
+    result = await DividerMapper.markdown_to_notion(markdown)
     if should_match:
         assert result is not None
     else:

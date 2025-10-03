@@ -4,67 +4,65 @@ from collections import OrderedDict
 from typing import ClassVar
 
 from notionary.blocks.mappings import (
-    AudioElement,
-    BaseBlockElement,
-    BookmarkElement,
-    BreadcrumbElement,
-    BulletedListElement,
-    CalloutElement,
-    ChildDatabaseElement,
-    CodeElement,
-    ColumnElement,
-    ColumnListElement,
-    DividerElement,
-    EmbedElement,
-    EquationElement,
-    FileElement,
-    HeadingElement,
-    ImageElement,
-    NumberedListElement,
-    ParagraphElement,
-    PdfElement,
-    QuoteElement,
-    SpaceElement,
-    TableElement,
-    TableOfContentsElement,
-    TodoElement,
-    ToggleableHeadingElement,
-    ToggleElement,
-    VideoElement,
+    AudioMapper,
+    BookmarkMapper,
+    BreadcrumbMapper,
+    BulletedListMapper,
+    CalloutMapper,
+    ChildDatabaseMapper,
+    CodeMapper,
+    ColumnListMapper,
+    DividerMapper,
+    EmbedMapper,
+    EquationMapper,
+    FileMapper,
+    HeadingMapper,
+    ImageMapper,
+    NotionMarkdownMapper,
+    NumberedListMapper,
+    ParagraphMapper,
+    PdfMapper,
+    QuoteMapper,
+    SpaceMapper,
+    TableMapper,
+    TableOfContentsMapper,
+    TodoMapper,
+    ToggleableHeadingMapper,
+    ToggleMapper,
+    VideoMapper,
 )
 
 
 class BlockRegistry:
-    _DEFAULT_ELEMENTS: ClassVar[list[type[BaseBlockElement]]] = [
-        HeadingElement,
-        CalloutElement,
-        CodeElement,
-        DividerElement,
-        TableElement,
-        BulletedListElement,
-        NumberedListElement,
-        ToggleElement,
-        ToggleableHeadingElement,
-        QuoteElement,
-        TodoElement,
-        BookmarkElement,
-        ImageElement,
-        VideoElement,
-        EmbedElement,
-        AudioElement,
-        ColumnListElement,
-        ColumnElement,
-        EquationElement,
-        TableOfContentsElement,
-        BreadcrumbElement,
-        ChildDatabaseElement,
-        FileElement,
-        PdfElement,
-        SpaceElement,
-        ParagraphElement,  # Must be last as fallback!
+    _DEFAULT_ELEMENTS: ClassVar[list[type[NotionMarkdownMapper]]] = [
+        HeadingMapper,
+        CalloutMapper,
+        CodeMapper,
+        DividerMapper,
+        TableMapper,
+        BulletedListMapper,
+        NumberedListMapper,
+        ToggleMapper,
+        ToggleableHeadingMapper,
+        QuoteMapper,
+        TodoMapper,
+        BookmarkMapper,
+        ImageMapper,
+        VideoMapper,
+        EmbedMapper,
+        AudioMapper,
+        ColumnListMapper,
+        EquationMapper,
+        TableOfContentsMapper,
+        BreadcrumbMapper,
+        ChildDatabaseMapper,
+        FileMapper,
+        PdfMapper,
+        SpaceMapper,
+        ParagraphMapper,  # Must be last as fallback!
     ]
 
-    def __init__(self, excluded_elements: set[type[BaseBlockElement]] | None = None):
+    def __init__(self, excluded_elements: set[type[NotionMarkdownMapper]] | None = None):
         self._elements = OrderedDict()
         self._excluded_elements = excluded_elements or set()
 
@@ -76,26 +74,26 @@ class BlockRegistry:
             if element_class not in self._excluded_elements:
                 self._elements[element_class.__name__] = element_class
 
-    def exclude_elements(self, *element_classes: type[BaseBlockElement]) -> BlockRegistry:
+    def exclude_elements(self, *element_classes: type[NotionMarkdownMapper]) -> BlockRegistry:
         new_excluded = self._excluded_elements.copy()
         new_excluded.update(element_classes)
         return BlockRegistry(excluded_elements=new_excluded)
 
-    def register(self, element_class: type[BaseBlockElement]) -> bool:
+    def register(self, element_class: type[NotionMarkdownMapper]) -> bool:
         if element_class.__name__ in self._elements:
             return False
 
         self._elements[element_class.__name__] = element_class
         return True
 
-    def remove(self, element_class: type[BaseBlockElement]) -> bool:
+    def remove(self, element_class: type[NotionMarkdownMapper]) -> bool:
         return self._elements.pop(element_class.__name__, None) is not None
 
-    def contains(self, element_class: type[BaseBlockElement]) -> bool:
+    def contains(self, element_class: type[NotionMarkdownMapper]) -> bool:
         return element_class.__name__ in self._elements
 
-    def get_elements(self) -> list[type[BaseBlockElement]]:
+    def get_elements(self) -> list[type[NotionMarkdownMapper]]:
         return list(self._elements.values())
 
-    def is_excluded(self, element_class: type[BaseBlockElement]) -> bool:
+    def is_excluded(self, element_class: type[NotionMarkdownMapper]) -> bool:
         return element_class in self._excluded_elements

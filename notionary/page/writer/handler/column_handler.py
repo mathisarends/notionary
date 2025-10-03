@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 import re
 
-from notionary.blocks.mappings.column import ColumnElement
+from notionary.blocks.mappings.column import ColumnMapper
 from notionary.page.writer.handler.line_handler import (
     LineHandler,
     LineProcessingContext,
@@ -50,12 +48,12 @@ class ColumnHandler(LineHandler):
 
         # Check if top of stack is a Column (not ColumnList)
         current_parent = context.parent_stack[-1]
-        return issubclass(current_parent.element_type, ColumnElement)
+        return issubclass(current_parent.element_type, ColumnMapper)
 
     async def _start_column(self, context: LineProcessingContext) -> None:
         """Start a new column."""
         # Create Column block directly - much more efficient!
-        column_element = ColumnElement()
+        column_element = ColumnMapper()
         result = await column_element.markdown_to_notion(context.line)
         if not result:
             return
@@ -65,7 +63,7 @@ class ColumnHandler(LineHandler):
         # Push to parent stack
         parent_context = ParentBlockContext(
             block=block,
-            element_type=ColumnElement,
+            element_type=ColumnMapper,
             child_lines=[],
         )
         context.parent_stack.append(parent_context)
@@ -77,9 +75,9 @@ class ColumnHandler(LineHandler):
 
         if context.parent_stack:
             parent = context.parent_stack[-1]
-            from notionary.blocks.mappings.column_list import ColumnListElement
+            from notionary.blocks.mappings.column_list import ColumnListMapper
 
-            if issubclass(parent.element_type, ColumnListElement):
+            if issubclass(parent.element_type, ColumnListMapper):
                 # Add to parent using the new system
                 parent.add_child_block(column_context.block)
                 return
@@ -113,9 +111,9 @@ class ColumnHandler(LineHandler):
             return False
 
         parent = context.parent_stack[-1]
-        from notionary.blocks.mappings.column_list import ColumnListElement
+        from notionary.blocks.mappings.column_list import ColumnListMapper
 
-        if not issubclass(parent.element_type, ColumnListElement):
+        if not issubclass(parent.element_type, ColumnListMapper):
             return False
 
         parent.block.column_list.children.append(column_context.block)

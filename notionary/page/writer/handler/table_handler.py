@@ -1,6 +1,6 @@
 import re
 
-from notionary.blocks.mappings.table import TableElement
+from notionary.blocks.mappings.table import TableMapper
 from notionary.page.writer.handler import LineHandler, LineProcessingContext
 
 
@@ -34,7 +34,7 @@ class TableHandler(LineHandler):
         return self._table_row_pattern.match(context.line.strip()) is not None
 
     async def _process_complete_table(self, context: LineProcessingContext) -> None:
-        """Process the entire table in one go using TableElement."""
+        """Process the entire table in one go using TableMapper."""
         # Collect all table lines (including the current one)
         table_lines = [context.line]
         remaining_lines = context.get_remaining_lines()
@@ -57,7 +57,7 @@ class TableHandler(LineHandler):
         else:
             lines_to_consume = len(remaining_lines)
 
-        block = await TableElement.create_from_markdown_table(table_lines)
+        block = await TableMapper.create_from_markdown_table(table_lines)
 
         if block:
             context.lines_consumed = lines_to_consume

@@ -4,20 +4,10 @@ from notionary.blocks.schemas import Block, BlockCreatePayload
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class BaseBlockElement(ABC):
-    """Base class for elements that can be converted between Markdown and Notion."""
-
+class NotionMarkdownMapper(ABC):
     @classmethod
     @abstractmethod
     async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
-        """
-        Convert markdown to Notion block content.
-
-        Returns:
-            - BlockContent: Single block content (e.g., ToDoBlock, ParagraphBlock)
-            - list[BlockContent]: Multiple block contents
-            - None: Cannot convert this markdown
-        """
         pass
 
     @classmethod

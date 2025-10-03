@@ -1,4 +1,4 @@
-from notionary.blocks.mappings.toggle import ToggleElement
+from notionary.blocks.mappings.toggle import ToggleMapper
 from notionary.page.content.reader.handler import BlockHandler, BlockRenderingContext
 
 
@@ -6,7 +6,7 @@ class ToggleRenderer(BlockHandler):
     """Handles toggle blocks with their children content."""
 
     def _can_handle(self, context: BlockRenderingContext) -> bool:
-        return ToggleElement.match_notion(context.block)
+        return ToggleMapper.match_notion(context.block)
 
     async def _process(self, context: BlockRenderingContext) -> None:
         # Get the toggle title from the block

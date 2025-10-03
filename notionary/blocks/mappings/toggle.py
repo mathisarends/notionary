@@ -1,19 +1,13 @@
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.models import RichText
-from notionary.blocks.schemas import Block, BlockColor, BlockCreateResult, BlockType, CreateToggleBlock, ToggleBlock
+from notionary.blocks.schemas import Block, BlockColor, BlockCreatePayload, BlockType, CreateToggleBlock, ToggleBlock
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class ToggleElement(BaseBlockElement):
-    """
-    Simplified ToggleElement class that works with the stack-based converter.
-    Children are automatically handled by the StackBasedMarkdownConverter.
-    """
-
-    # Updated pattern for ultra-simplified +++ Title syntax (no quotes!)
+class ToggleMapper(NotionMarkdownMapper):
     TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+(.+)$", re.IGNORECASE)
     TRANSCRIPT_TOGGLE_PATTERN = re.compile(r"^[+]{3}\s+Transcript$", re.IGNORECASE)
 
@@ -23,7 +17,7 @@ class ToggleElement(BaseBlockElement):
         return block.type == BlockType.TOGGLE
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         """
         Convert markdown toggle line to Notion ToggleBlock.
         Children are automatically handled by the StackBasedMarkdownConverter.

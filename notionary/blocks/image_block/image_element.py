@@ -7,7 +7,7 @@ from notionary.blocks.mappings.mixins.caption_mixin import CaptionMixin
 from notionary.blocks.mappings.mixins.file_upload_mixin import FileUploadMixin
 from notionary.blocks.schemas import (
     Block,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     CreateImageBlock,
     ExternalFile,
@@ -18,7 +18,7 @@ from notionary.blocks.schemas import (
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class ImageElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
+class ImageMapper(BaseBlockElement, CaptionMixin, FileUploadMixin):
     r"""
     Handles conversion between Markdown images and Notion image blocks.
 
@@ -40,7 +40,7 @@ class ImageElement(BaseBlockElement, CaptionMixin, FileUploadMixin):
         return block.type == BlockType.IMAGE and block.image
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult | None:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload | None:
         """Convert markdown image syntax to Notion ImageBlock."""
         image_path = cls._extract_image_path(text.strip())
         if not image_path:

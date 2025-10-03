@@ -1,17 +1,10 @@
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, CreateDividerBlock, DividerData
+from notionary.blocks.mappings.base import NotionMarkdownMapper
+from notionary.blocks.schemas import Block, BlockCreatePayload, BlockType, CreateDividerBlock, DividerData
 
 
-class DividerElement(BaseBlockElement):
-    """
-    Handles conversion between Markdown horizontal dividers and Notion divider blocks.
-
-    Markdown divider syntax:
-    - Three or more hyphens (---) on a line by themselves
-    """
-
+class DividerMapper(NotionMarkdownMapper):
     PATTERN = re.compile(r"^\s*-{3,}\s*$")
 
     @classmethod
@@ -20,7 +13,7 @@ class DividerElement(BaseBlockElement):
         return block.type == BlockType.DIVIDER and block.divider
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         """Convert markdown horizontal rule to Notion divider, with preceding empty paragraph."""
         if not cls.PATTERN.match(text.strip()):
             return None

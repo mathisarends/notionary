@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.mappings.code import CodeElement
+from notionary.blocks.mappings.code import CodeMapper
 from notionary.blocks.mappings.rich_text.models import (
     RichText,
     TextAnnotations,
@@ -40,19 +40,19 @@ def create_block_with_required_fields(**kwargs) -> CodeBlock:
 @pytest.mark.asyncio
 async def test_match_markdown_code_start():
     """Test recognition of code block start syntax."""
-    assert await CodeElement.markdown_to_notion("```python") is not None
-    assert await CodeElement.markdown_to_notion("```js") is not None
-    assert await CodeElement.markdown_to_notion("```") is not None
-    assert await CodeElement.markdown_to_notion("```bash") is not None
+    assert await CodeMapper.markdown_to_notion("```python") is not None
+    assert await CodeMapper.markdown_to_notion("```js") is not None
+    assert await CodeMapper.markdown_to_notion("```") is not None
+    assert await CodeMapper.markdown_to_notion("```bash") is not None
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_not_code_start():
     """Test rejection of non-code-start formats."""
-    assert await CodeElement.markdown_to_notion("This is just text.") is None
-    assert await CodeElement.markdown_to_notion("`inline code`") is None
-    assert not await CodeElement.markdown_to_notion("```python\ncode content")  # Not just start
-    assert not await CodeElement.markdown_to_notion("Some text ```python")  # Not at beginning
+    assert await CodeMapper.markdown_to_notion("This is just text.") is None
+    assert await CodeMapper.markdown_to_notion("`inline code`") is None
+    assert not await CodeMapper.markdown_to_notion("```python\ncode content")  # Not just start
+    assert not await CodeMapper.markdown_to_notion("Some text ```python")  # Not at beginning
 
 
 def test_match_notion():
@@ -60,24 +60,24 @@ def test_match_notion():
     code_block = create_block_with_required_fields(
         code=CodeData(rich_text=[create_rich_text_object("print('test')")], language="python"),
     )
-    assert CodeElement.match_notion(code_block)
+    assert CodeMapper.match_notion(code_block)
 
     # Use Mock for invalid blocks
     paragraph_block = Mock()
     paragraph_block.type = "paragraph"
     paragraph_block.code = None
-    assert not CodeElement.match_notion(paragraph_block)
+    assert not CodeMapper.match_notion(paragraph_block)
 
     callout_block = Mock()
     callout_block.type = "callout"
     callout_block.code = None
-    assert not CodeElement.match_notion(callout_block)
+    assert not CodeMapper.match_notion(callout_block)
 
 
 @pytest.mark.asyncio
 async def test_markdown_to_notion_with_language():
     """Test conversion of code block start with language."""
-    result = await CodeElement.markdown_to_notion("```python")
+    result = await CodeMapper.markdown_to_notion("```python")
 
     assert isinstance(result, CreateCodeBlock)
     assert result.type == "code"
@@ -89,7 +89,7 @@ async def test_markdown_to_notion_with_language():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_without_language():
     """Test conversion of code block start without language."""
-    result = await CodeElement.markdown_to_notion("```")
+    result = await CodeMapper.markdown_to_notion("```")
 
     assert isinstance(result, CreateCodeBlock)
     assert result.code.language == "plain text"  # Default language
@@ -100,10 +100,10 @@ async def test_markdown_to_notion_without_language():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_invalid():
     """Test invalid markdown returns None."""
-    result = await CodeElement.markdown_to_notion("This is just text.")
+    result = await CodeMapper.markdown_to_notion("This is just text.")
     assert result is None
 
-    result = await CodeElement.markdown_to_notion("```python\ncode content")
+    result = await CodeMapper.markdown_to_notion("```python\ncode content")
     assert result is None  # Not just a start marker
 
 
@@ -118,7 +118,7 @@ async def test_notion_to_markdown_simple():
         ),
     )
 
-    result = await CodeElement.notion_to_markdown(block)
+    result = await CodeMapper.notion_to_markdown(block)
     assert result == "```python\nprint('Hi')\n```"
 
 
@@ -133,7 +133,7 @@ async def test_notion_to_markdown_plain_text():
         ),
     )
 
-    result = await CodeElement.notion_to_markdown(block)
+    result = await CodeMapper.notion_to_markdown(block)
     assert result == "```\nsome code\n```"  # No language for plain text
 
 
@@ -149,7 +149,7 @@ async def test_notion_to_markdown_with_caption():
         ),
     )
 
-    result = await CodeElement.notion_to_markdown(block)
+    result = await CodeMapper.notion_to_markdown(block)
     assert result == "```python\nprint('test')\n```\nCaption: Example"
 
 
@@ -160,14 +160,14 @@ async def test_notion_to_markdown_invalid():
     paragraph_block = Mock()
     paragraph_block.type = "paragraph"
     paragraph_block.code = None
-    result = await CodeElement.notion_to_markdown(paragraph_block)
+    result = await CodeMapper.notion_to_markdown(paragraph_block)
     assert result is None
 
     # Test block without code property
     code_block_no_code = Mock()
     code_block_no_code.type = "code"
     code_block_no_code.code = None
-    result = await CodeElement.notion_to_markdown(code_block_no_code)
+    result = await CodeMapper.notion_to_markdown(code_block_no_code)
     assert result is None
 
 
@@ -175,14 +175,14 @@ async def test_notion_to_markdown_invalid():
 async def test_language_normalization():
     """Test language normalization."""
     # Valid languages should pass through
-    result = await CodeElement.markdown_to_notion("```python")
+    result = await CodeMapper.markdown_to_notion("```python")
     assert result.code.language == "python"
 
-    result = await CodeElement.markdown_to_notion("```javascript")
+    result = await CodeMapper.markdown_to_notion("```javascript")
     assert result.code.language == "javascript"
 
     # Unknown language should default to "plain text"
-    result = await CodeElement.markdown_to_notion("```unknownlang")
+    result = await CodeMapper.markdown_to_notion("```unknownlang")
     assert result.code.language == "plain text"
 
 
@@ -193,7 +193,7 @@ def test_extract_content_helper():
         create_rich_text_object("line 2"),
     ]
 
-    result = CodeElement.extract_content(rich_text_list)
+    result = CodeMapper.extract_content(rich_text_list)
     assert result == "line 1\nline 2"
 
 
@@ -204,19 +204,19 @@ def test_extract_caption_helper():
         create_rich_text_object("and part 2"),
     ]
 
-    result = CodeElement.extract_caption(caption_list)
+    result = CodeMapper.extract_caption(caption_list)
     assert result == "Caption part 1 and part 2"
 
 
 def test_extract_content_empty_list():
     """Test extract_content with empty list."""
-    result = CodeElement.extract_content([])
+    result = CodeMapper.extract_content([])
     assert result == ""
 
 
 def test_extract_caption_empty_list():
     """Test extract_caption with empty list."""
-    result = CodeElement.extract_caption([])
+    result = CodeMapper.extract_caption([])
     assert result == ""
 
 
@@ -237,7 +237,7 @@ async def test_language_support(language, expected_lang):
     """Test support for different programming languages."""
     markdown = f"```{language}" if language else "```"
 
-    result = await CodeElement.markdown_to_notion(markdown)
+    result = await CodeMapper.markdown_to_notion(markdown)
 
     assert result is not None
     assert isinstance(result, CreateCodeBlock)
@@ -259,7 +259,7 @@ async def test_language_support(language, expected_lang):
 )
 async def test_markdown_patterns(markdown, should_match):
     """Test recognition of various Markdown patterns."""
-    result = await CodeElement.markdown_to_notion(markdown)
+    result = await CodeMapper.markdown_to_notion(markdown)
     if should_match:
         assert result is not None
     else:
@@ -296,11 +296,11 @@ def code_block_with_caption():
 async def test_with_fixtures(simple_code_block, code_block_with_caption):
     """Test using fixtures to reduce duplication."""
     # Test simple code block
-    result1 = await CodeElement.notion_to_markdown(simple_code_block)
+    result1 = await CodeMapper.notion_to_markdown(simple_code_block)
     assert result1 == "```python\nprint('test')\n```"
 
     # Test code block with caption
-    result2 = await CodeElement.notion_to_markdown(code_block_with_caption)
+    result2 = await CodeMapper.notion_to_markdown(code_block_with_caption)
     assert result2 == "```javascript\nconsole.log('hello');\n```\nCaption: Example JS code"
 
 
@@ -311,7 +311,7 @@ async def test_roundtrip_basic():
     original_start = "```python"
 
     # Convert to Notion
-    notion_result = await CodeElement.markdown_to_notion(original_start)
+    notion_result = await CodeMapper.markdown_to_notion(original_start)
     assert notion_result is not None
 
     # Simulate adding content (this would normally be done by the processor)
@@ -321,7 +321,7 @@ async def test_roundtrip_basic():
     block = create_block_with_required_fields(type="code", code=notion_result.code)
 
     # Convert back to Markdown
-    result_markdown = await CodeElement.notion_to_markdown(block)
+    result_markdown = await CodeMapper.notion_to_markdown(block)
     assert result_markdown == "```python\nprint('Hello')\n```"
 
 
@@ -339,7 +339,7 @@ async def test_multiline_content():
         code=CodeData(language=CodeLanguage.PYTHON, rich_text=rich_text_list),
     )
 
-    result = await CodeElement.notion_to_markdown(block)
+    result = await CodeMapper.notion_to_markdown(block)
     expected = "```python\ndef hello():\n    print('World')\n    return True\n```"
     assert result == expected
 
@@ -352,5 +352,5 @@ async def test_empty_content():
         code=CodeData(language=CodeLanguage.PYTHON, rich_text=[]),
     )
 
-    result = await CodeElement.notion_to_markdown(block)
+    result = await CodeMapper.notion_to_markdown(block)
     assert result == "```python\n\n```"

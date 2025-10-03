@@ -1,12 +1,12 @@
 import re
 import textwrap
 
-from notionary.blocks.mappings.base import BaseBlockElement
-from notionary.blocks.schemas import Block, BlockCreateResult, BlockType, CreateEquationBlock, EquationData
+from notionary.blocks.mappings.base import NotionMarkdownMapper
+from notionary.blocks.schemas import Block, BlockCreatePayload, BlockType, CreateEquationBlock, EquationData
 from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
-class EquationElement(BaseBlockElement):
+class EquationMapper(NotionMarkdownMapper):
     """
     Supports standard Markdown equation syntax:
 
@@ -26,7 +26,7 @@ class EquationElement(BaseBlockElement):
         return block.type == BlockType.EQUATION and block.equation
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         input_text = text.strip()
 
         equation_match = cls._EQUATION_PATTERN.match(input_text)
@@ -40,7 +40,7 @@ class EquationElement(BaseBlockElement):
         return CreateEquationBlock(equation=EquationData(expression=expression))
 
     @classmethod
-    def create_from_markdown_block(cls, opening_line: str, equation_lines: list[str]) -> BlockCreateResult:
+    def create_from_markdown_block(cls, opening_line: str, equation_lines: list[str]) -> BlockCreatePayload:
         """
         Create a complete equation block from markdown components.
         Handles multiline equations like:

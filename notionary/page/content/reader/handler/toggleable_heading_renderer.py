@@ -1,5 +1,5 @@
 from notionary.blocks.mappings.toggleable_heading import (
-    ToggleableHeadingElement,
+    ToggleableHeadingMapper,
 )
 from notionary.blocks.schemas import BlockType
 from notionary.page.content.reader.handler import BlockHandler, BlockRenderingContext
@@ -9,7 +9,7 @@ class ToggleableHeadingRenderer(BlockHandler):
     """Handles toggleable heading blocks with their children content."""
 
     def _can_handle(self, context: BlockRenderingContext) -> bool:
-        return ToggleableHeadingElement.match_notion(context.block)
+        return ToggleableHeadingMapper.match_notion(context.block)
 
     async def _process(self, context: BlockRenderingContext) -> None:
         # Get the heading level and title

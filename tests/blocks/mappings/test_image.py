@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.mappings.image import ImageElement
+from notionary.blocks.mappings.image import ImageMapper
 from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.schemas import CreateImageBlock
 
@@ -10,23 +10,23 @@ from notionary.blocks.schemas import CreateImageBlock
 @pytest.mark.asyncio
 async def test_match_markdown_valid():
     """Test recognition of valid image formats."""
-    assert await ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
-    assert await ImageElement.markdown_to_notion("[image](https://test.com/img.png)(caption:Caption)")
-    assert await ImageElement.markdown_to_notion("[image](http://site.org/photo.gif)")
-    assert await ImageElement.markdown_to_notion("  [image](https://example.com/img.jpg)  ")
+    assert await ImageMapper.markdown_to_notion("[image](https://example.com/pic.jpg)")
+    assert await ImageMapper.markdown_to_notion("[image](https://test.com/img.png)(caption:Caption)")
+    assert await ImageMapper.markdown_to_notion("[image](http://site.org/photo.gif)")
+    assert await ImageMapper.markdown_to_notion("  [image](https://example.com/img.jpg)  ")
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)")  # Wrong prefix
-    assert await ImageElement.markdown_to_notion("[image]()") is None  # Empty URL
-    assert await ImageElement.markdown_to_notion("Regular text") is None
-    assert await ImageElement.markdown_to_notion("") is None
+    assert not await ImageMapper.markdown_to_notion("[img](https://example.com/pic.jpg)")  # Wrong prefix
+    assert await ImageMapper.markdown_to_notion("[image]()") is None  # Empty URL
+    assert await ImageMapper.markdown_to_notion("Regular text") is None
+    assert await ImageMapper.markdown_to_notion("") is None
 
     # Note: With file upload support, "not-a-url" is treated as potential local file
     # The element will accept it and try to process it (falling back to external URL)
-    result = await ImageElement.markdown_to_notion("[image](not-a-url)")
+    result = await ImageMapper.markdown_to_notion("[image](not-a-url)")
     assert result is not None  # This now works with file upload support
 
 
@@ -36,25 +36,25 @@ def test_match_notion():
     image_block = Mock()
     image_block.type = "image"
     image_block.image = Mock()  # Not None
-    assert ImageElement.match_notion(image_block)
+    assert ImageMapper.match_notion(image_block)
 
     # Invalid blocks
     paragraph_block = Mock()
     paragraph_block.type = "paragraph"
     paragraph_block.image = None
-    assert not ImageElement.match_notion(paragraph_block)
+    assert not ImageMapper.match_notion(paragraph_block)
 
     # Image type but image is None
     empty_image_block = Mock()
     empty_image_block.type = "image"
     empty_image_block.image = None
-    assert not ImageElement.match_notion(empty_image_block)
+    assert not ImageMapper.match_notion(empty_image_block)
 
 
 @pytest.mark.asyncio
 async def test_markdown_to_notion_without_caption():
     """Test conversion from markdown to Notion without caption."""
-    result = await ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)")
+    result = await ImageMapper.markdown_to_notion("[image](https://example.com/pic.jpg)")
 
     assert result is not None
 
@@ -70,7 +70,7 @@ async def test_markdown_to_notion_without_caption():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_with_caption():
     """Test conversion from markdown to Notion with caption."""
-    result = await ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)(caption:My Photo)")
+    result = await ImageMapper.markdown_to_notion("[image](https://example.com/pic.jpg)(caption:My Photo)")
 
     assert result is not None
     image_block = result
@@ -84,9 +84,9 @@ async def test_markdown_to_notion_with_caption():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_invalid():
     """Test invalid markdown returns None."""
-    assert await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)") is None
-    assert await ImageElement.markdown_to_notion("[image]()") is None
-    assert await ImageElement.markdown_to_notion("text") is None
+    assert await ImageMapper.markdown_to_notion("[img](https://example.com/pic.jpg)") is None
+    assert await ImageMapper.markdown_to_notion("[image]()") is None
+    assert await ImageMapper.markdown_to_notion("text") is None
 
 
 @pytest.mark.asyncio
@@ -101,7 +101,7 @@ async def test_notion_to_markdown_external_without_caption():
     block.image.external.url = "https://example.com/image.png"
     block.image.caption = []
 
-    result = await ImageElement.notion_to_markdown(block)
+    result = await ImageMapper.notion_to_markdown(block)
     assert result == "[image](https://example.com/image.png)"
 
 
@@ -120,7 +120,7 @@ async def test_notion_to_markdown_external_with_caption():
     caption_rt = RichText.from_plain_text("Beautiful sunset")
     block.image.caption = [caption_rt]
 
-    result = await ImageElement.notion_to_markdown(block)
+    result = await ImageMapper.notion_to_markdown(block)
     assert result == "[image](https://example.com/photo.jpg)(caption:Beautiful sunset)"
 
 
@@ -137,7 +137,7 @@ async def test_notion_to_markdown_notion_hosted():
     block.image.file.url = "https://notion.s3.amazonaws.com/image123.png"
     block.image.caption = []
 
-    result = await ImageElement.notion_to_markdown(block)
+    result = await ImageMapper.notion_to_markdown(block)
     assert result == "[image](https://notion.s3.amazonaws.com/image123.png)"
 
 
@@ -148,13 +148,13 @@ async def test_notion_to_markdown_invalid():
     paragraph_block = Mock()
     paragraph_block.type = "paragraph"
     paragraph_block.image = None
-    assert await ImageElement.notion_to_markdown(paragraph_block) is None
+    assert await ImageMapper.notion_to_markdown(paragraph_block) is None
 
     # No image content
     image_block = Mock()
     image_block.type = "image"
     image_block.image = None
-    assert await ImageElement.notion_to_markdown(image_block) is None
+    assert await ImageMapper.notion_to_markdown(image_block) is None
 
     # Unsupported file type
     upload_block = Mock()
@@ -163,7 +163,7 @@ async def test_notion_to_markdown_invalid():
     upload_block.image.type = "file_upload"
     upload_block.image.external = None
     upload_block.image.file = None
-    assert await ImageElement.notion_to_markdown(upload_block) is None
+    assert await ImageMapper.notion_to_markdown(upload_block) is None
 
 
 @pytest.mark.asyncio
@@ -186,7 +186,7 @@ async def test_notion_to_markdown_invalid():
 )
 async def test_markdown_patterns(markdown, should_match):
     """Test various markdown patterns."""
-    result = await ImageElement.markdown_to_notion(markdown)
+    result = await ImageMapper.markdown_to_notion(markdown)
     if should_match:
         assert result is not None
     else:
@@ -197,15 +197,15 @@ async def test_markdown_patterns(markdown, should_match):
 async def test_pattern_matching():
     """Test that the element can handle various patterns."""
     # Valid patterns should work
-    assert await ImageElement.markdown_to_notion("[image](https://example.com/pic.jpg)") is not None
-    assert await ImageElement.markdown_to_notion("[image](https://test.com/img.png)(caption:Caption)") is not None
+    assert await ImageMapper.markdown_to_notion("[image](https://example.com/pic.jpg)") is not None
+    assert await ImageMapper.markdown_to_notion("[image](https://test.com/img.png)(caption:Caption)") is not None
 
     # Invalid patterns should not
-    assert await ImageElement.markdown_to_notion("[img](https://example.com/pic.jpg)") is None
+    assert await ImageMapper.markdown_to_notion("[img](https://example.com/pic.jpg)") is None
     # Note: With file upload support, "not-a-url" is now accepted
-    result = await ImageElement.markdown_to_notion("[image](not-a-url)")
+    result = await ImageMapper.markdown_to_notion("[image](not-a-url)")
     assert result is not None  # Now works with file upload support
-    assert await ImageElement.markdown_to_notion("[image]()") is None
+    assert await ImageMapper.markdown_to_notion("[image]()") is None
 
 
 @pytest.mark.asyncio
@@ -219,7 +219,7 @@ async def test_roundtrip_conversion():
 
     for markdown in test_cases:
         # Convert to notion
-        notion_result = await ImageElement.markdown_to_notion(markdown)
+        notion_result = await ImageMapper.markdown_to_notion(markdown)
         assert notion_result is not None
 
         # Create proper Block mock for roundtrip
@@ -228,7 +228,7 @@ async def test_roundtrip_conversion():
         notion_block.image = notion_result.image
 
         # Convert back to markdown
-        back_to_markdown = await ImageElement.notion_to_markdown(notion_block)
+        back_to_markdown = await ImageMapper.notion_to_markdown(notion_block)
         assert back_to_markdown == markdown
 
 
@@ -236,7 +236,7 @@ async def test_roundtrip_conversion():
 async def test_caption_with_special_characters():
     """Test captions with special characters."""
     markdown = "[image](https://example.com/pic.jpg)(caption:Photo with ümlaut & emoji 🌅)"
-    result = await ImageElement.markdown_to_notion(markdown)
+    result = await ImageMapper.markdown_to_notion(markdown)
 
     assert result is not None
     image_block = result
@@ -259,5 +259,5 @@ async def test_multiple_caption_parts():
     rt2 = RichText.from_plain_text("Part 2")
     block.image.caption = [rt1, rt2]
 
-    result = await ImageElement.notion_to_markdown(block)
+    result = await ImageMapper.notion_to_markdown(block)
     assert result == "[image](https://example.com/pic.jpg)(caption:Part 1 Part 2)"

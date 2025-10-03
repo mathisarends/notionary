@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.mappings.embed import EmbedElement
+from notionary.blocks.mappings.embed import EmbedMapper
 from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.schemas import CreateEmbedBlock, EmbedData, ExternalFile, FileUploadFile, NotionHostedFile
 
@@ -10,21 +10,21 @@ from notionary.blocks.schemas import CreateEmbedBlock, EmbedData, ExternalFile, 
 @pytest.mark.asyncio
 async def test_match_markdown_valid():
     """Test recognition of valid embed formats."""
-    assert await EmbedElement.markdown_to_notion("[embed](https://example.com)")
-    assert await EmbedElement.markdown_to_notion('[embed](https://youtube.com/watch?v=123 "Video")')
-    assert await EmbedElement.markdown_to_notion("[embed](http://site.org/content)")
-    assert await EmbedElement.markdown_to_notion("  [embed](https://example.com)  ")
+    assert await EmbedMapper.markdown_to_notion("[embed](https://example.com)")
+    assert await EmbedMapper.markdown_to_notion('[embed](https://youtube.com/watch?v=123 "Video")')
+    assert await EmbedMapper.markdown_to_notion("[embed](http://site.org/content)")
+    assert await EmbedMapper.markdown_to_notion("  [embed](https://example.com)  ")
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not await EmbedElement.markdown_to_notion("[image](https://example.com)")  # Wrong prefix
-    assert not await EmbedElement.markdown_to_notion("[embed](not-a-url)")  # Invalid URL
-    assert not await EmbedElement.markdown_to_notion("[embed]()")  # Empty URL
-    assert not await EmbedElement.markdown_to_notion("[embed](ftp://example.com)")  # Non-http protocol
-    assert await EmbedElement.markdown_to_notion("Regular text") is None
-    assert await EmbedElement.markdown_to_notion("") is None
+    assert not await EmbedMapper.markdown_to_notion("[image](https://example.com)")  # Wrong prefix
+    assert not await EmbedMapper.markdown_to_notion("[embed](not-a-url)")  # Invalid URL
+    assert not await EmbedMapper.markdown_to_notion("[embed]()")  # Empty URL
+    assert not await EmbedMapper.markdown_to_notion("[embed](ftp://example.com)")  # Non-http protocol
+    assert await EmbedMapper.markdown_to_notion("Regular text") is None
+    assert await EmbedMapper.markdown_to_notion("") is None
 
 
 def test_match_notion():
@@ -33,25 +33,25 @@ def test_match_notion():
     embed_block = Mock()
     embed_block.type = "embed"
     embed_block.embed = Mock()  # Not None
-    assert EmbedElement.match_notion(embed_block)
+    assert EmbedMapper.match_notion(embed_block)
 
     # Invalid blocks
     paragraph_block = Mock()
     paragraph_block.type = "paragraph"
     paragraph_block.embed = None
-    assert not EmbedElement.match_notion(paragraph_block)
+    assert not EmbedMapper.match_notion(paragraph_block)
 
     # Embed type but embed is None
     empty_embed_block = Mock()
     empty_embed_block.type = "embed"
     empty_embed_block.embed = None
-    assert not EmbedElement.match_notion(empty_embed_block)
+    assert not EmbedMapper.match_notion(empty_embed_block)
 
 
 @pytest.mark.asyncio
 async def test_markdown_to_notion_without_caption():
     """Test conversion from markdown to Notion without caption."""
-    result = await EmbedElement.markdown_to_notion("[embed](https://youtube.com/watch?v=123)")
+    result = await EmbedMapper.markdown_to_notion("[embed](https://youtube.com/watch?v=123)")
 
     assert result is not None
     assert isinstance(result, CreateEmbedBlock)
@@ -64,7 +64,7 @@ async def test_markdown_to_notion_without_caption():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_with_caption():
     """Test conversion from markdown to Notion with caption."""
-    result = await EmbedElement.markdown_to_notion('[embed](https://example.com "My Video")')
+    result = await EmbedMapper.markdown_to_notion('[embed](https://example.com "My Video")')
 
     assert result is not None
     assert result.embed.url == "https://example.com"
@@ -75,10 +75,10 @@ async def test_markdown_to_notion_with_caption():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_invalid():
     """Test invalid markdown returns None."""
-    assert await EmbedElement.markdown_to_notion("[image](https://example.com)") is None
-    assert await EmbedElement.markdown_to_notion("[embed]()") is None
-    assert await EmbedElement.markdown_to_notion("[embed](ftp://example.com)") is None
-    assert await EmbedElement.markdown_to_notion("text") is None
+    assert await EmbedMapper.markdown_to_notion("[image](https://example.com)") is None
+    assert await EmbedMapper.markdown_to_notion("[embed]()") is None
+    assert await EmbedMapper.markdown_to_notion("[embed](ftp://example.com)") is None
+    assert await EmbedMapper.markdown_to_notion("text") is None
 
 
 @pytest.mark.asyncio
@@ -95,7 +95,7 @@ async def test_notion_to_markdown_external_file():
 
     block.embed = external_file
 
-    result = await EmbedElement.notion_to_markdown(block)
+    result = await EmbedMapper.notion_to_markdown(block)
     assert result == "[embed](https://youtube.com/watch?v=abc123)"
 
 
@@ -115,7 +115,7 @@ async def test_notion_to_markdown_external_file_with_caption():
 
     block.embed = external_file
 
-    result = await EmbedElement.notion_to_markdown(block)
+    result = await EmbedMapper.notion_to_markdown(block)
     assert result == '[embed](https://example.com/video "Cool Video")'
 
 
@@ -132,7 +132,7 @@ async def test_notion_to_markdown_notion_hosted_file():
 
     block.embed = notion_file
 
-    result = await EmbedElement.notion_to_markdown(block)
+    result = await EmbedMapper.notion_to_markdown(block)
     assert result == "[embed](https://notion.s3.amazonaws.com/embed123)"
 
 
@@ -149,7 +149,7 @@ async def test_notion_to_markdown_file_upload_unsupported():
 
     block.embed = upload_file
 
-    result = await EmbedElement.notion_to_markdown(block)
+    result = await EmbedMapper.notion_to_markdown(block)
     assert result is None  # FileUploadFile is unsupported
 
 
@@ -160,19 +160,19 @@ async def test_notion_to_markdown_invalid():
     paragraph_block = Mock()
     paragraph_block.type = "paragraph"
     paragraph_block.embed = None
-    assert await EmbedElement.notion_to_markdown(paragraph_block) is None
+    assert await EmbedMapper.notion_to_markdown(paragraph_block) is None
 
     # No embed content
     embed_block = Mock()
     embed_block.type = "embed"
     embed_block.embed = None
-    assert await EmbedElement.notion_to_markdown(embed_block) is None
+    assert await EmbedMapper.notion_to_markdown(embed_block) is None
 
     # Unknown file object type
     unknown_block = Mock()
     unknown_block.type = "embed"
     unknown_block.embed = "unknown_type"  # Not a known FileObject
-    assert await EmbedElement.notion_to_markdown(unknown_block) is None
+    assert await EmbedMapper.notion_to_markdown(unknown_block) is None
 
 
 @pytest.mark.asyncio
@@ -193,7 +193,7 @@ async def test_notion_to_markdown_invalid():
 )
 async def test_markdown_patterns(markdown, should_match):
     """Test various markdown patterns."""
-    result = await EmbedElement.markdown_to_notion(markdown)
+    result = await EmbedMapper.markdown_to_notion(markdown)
     if should_match:
         assert result is not None
     else:
@@ -202,7 +202,7 @@ async def test_markdown_patterns(markdown, should_match):
 
 def test_pattern_matching():
     """Test the regex pattern directly."""
-    pattern = EmbedElement.PATTERN
+    pattern = EmbedMapper.PATTERN
 
     # Valid patterns
     assert pattern.match("[embed](https://example.com)")
@@ -225,8 +225,8 @@ async def test_url_protocols():
     ]
 
     for url in valid_urls:
-        assert await EmbedElement.markdown_to_notion(url) is not None
-        result = await EmbedElement.markdown_to_notion(url)
+        assert await EmbedMapper.markdown_to_notion(url) is not None
+        result = await EmbedMapper.markdown_to_notion(url)
         assert result is not None
 
     # Invalid protocols
@@ -237,7 +237,7 @@ async def test_url_protocols():
     ]
 
     for url in invalid_urls:
-        assert await EmbedElement.markdown_to_notion(url) is None
+        assert await EmbedMapper.markdown_to_notion(url) is None
 
 
 @pytest.mark.asyncio
@@ -251,7 +251,7 @@ async def test_roundtrip_conversion_external():
 
     for original_markdown in test_cases:
         # Convert to notion
-        notion_result = await EmbedElement.markdown_to_notion(original_markdown)
+        notion_result = await EmbedMapper.markdown_to_notion(original_markdown)
         assert notion_result is not None
 
         # Create mock ExternalFile block for notion_to_markdown
@@ -265,7 +265,7 @@ async def test_roundtrip_conversion_external():
         block.embed = external_file
 
         # Convert back to markdown
-        result_markdown = await EmbedElement.notion_to_markdown(block)
+        result_markdown = await EmbedMapper.notion_to_markdown(block)
         assert result_markdown == original_markdown
 
 
@@ -273,7 +273,7 @@ async def test_roundtrip_conversion_external():
 async def test_caption_with_special_characters():
     """Test captions with special characters."""
     markdown = '[embed](https://example.com "Caption with ümlaut & emoji 🎥")'
-    result = await EmbedElement.markdown_to_notion(markdown)
+    result = await EmbedMapper.markdown_to_notion(markdown)
 
     assert result is not None
     caption_text = result.embed.caption[0].plain_text
@@ -296,7 +296,7 @@ async def test_multiple_caption_parts():
 
     block.embed = external_file
 
-    result = await EmbedElement.notion_to_markdown(block)
+    result = await EmbedMapper.notion_to_markdown(block)
     assert result == '[embed](https://example.com "Part 1 Part 2")'
 
 
@@ -314,7 +314,7 @@ async def test_different_embed_types():
 
     for url in embed_urls:
         markdown = f"[embed]({url})"
-        assert await EmbedElement.markdown_to_notion(markdown) is not None
-        result = await EmbedElement.markdown_to_notion(markdown)
+        assert await EmbedMapper.markdown_to_notion(markdown) is not None
+        result = await EmbedMapper.markdown_to_notion(markdown)
         assert result is not None
         assert result.embed.url == url

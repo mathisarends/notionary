@@ -1,5 +1,6 @@
-from notionary.blocks.mappings.column import ColumnElement
-from notionary.blocks.mappings.column_list import ColumnListElement
+from notionary.blocks.mappings.code import CodeMapper
+from notionary.blocks.mappings.column import ColumnMapper
+from notionary.blocks.mappings.column_list import ColumnListMapper
 from notionary.page.writer.handler import LineHandler, LineProcessingContext
 
 
@@ -25,7 +26,7 @@ class RegularLineHandler(LineHandler):
             return False
 
         current_parent = context.parent_stack[-1]
-        return issubclass(current_parent.element_type, (ColumnListElement, ColumnElement))
+        return issubclass(current_parent.element_type, (ColumnListMapper, ColumnMapper))
 
     def _add_to_column_context(self, context: LineProcessingContext) -> None:
         context.parent_stack[-1].add_child_line(context.line)
@@ -49,23 +50,22 @@ class RegularLineHandler(LineHandler):
 
     async def _process_as_paragraph(self, context: LineProcessingContext) -> None:
         """Process a line as a paragraph."""
-        from notionary.blocks.mappings.paragraph import ParagraphElement
+        from notionary.blocks.mappings.paragraph import ParagraphMapper
 
-        paragraph_element = ParagraphElement()
+        paragraph_element = ParagraphMapper()
         result = await paragraph_element.markdown_to_notion(context.line)
         context.result_blocks.append(result)
 
     def _get_specialized_elements(self):
-        from notionary.blocks.mappings.code import CodeElement
-        from notionary.blocks.mappings.table import TableElement
-        from notionary.blocks.mappings.toggle import ToggleElement
-        from notionary.blocks.mappings.toggleable_heading import ToggleableHeadingElement
+        from notionary.blocks.mappings.table import TableMapper
+        from notionary.blocks.mappings.toggle import ToggleMapper
+        from notionary.blocks.mappings.toggleable_heading import ToggleableHeadingMapper
 
         return (
-            ColumnListElement,
-            ColumnElement,
-            ToggleElement,
-            ToggleableHeadingElement,
-            TableElement,
-            CodeElement,
+            ColumnListMapper,
+            CodeMapper,
+            ToggleMapper,
+            ToggleableHeadingMapper,
+            TableMapper,
+            CodeMapper,
         )

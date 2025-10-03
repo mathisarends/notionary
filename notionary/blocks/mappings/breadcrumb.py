@@ -1,16 +1,16 @@
 import re
 
-from notionary.blocks.mappings.base import BaseBlockElement
+from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.schemas import (
     Block,
-    BlockCreateResult,
+    BlockCreatePayload,
     BlockType,
     BreadcrumbData,
     CreateBreadcrumbBlock,
 )
 
 
-class BreadcrumbElement(BaseBlockElement):
+class BreadcrumbMapper(NotionMarkdownMapper):
     """
     Handles conversion between Markdown breadcrumb marker and Notion breadcrumb blocks.
 
@@ -26,7 +26,7 @@ class BreadcrumbElement(BaseBlockElement):
         return block.type == BlockType.BREADCRUMB and block.breadcrumb
 
     @classmethod
-    async def markdown_to_notion(cls, text: str) -> BlockCreateResult:
+    async def markdown_to_notion(cls, text: str) -> BlockCreatePayload:
         if not cls.PATTERN.match(text.strip()):
             return None
         return CreateBreadcrumbBlock(breadcrumb=BreadcrumbData())

@@ -1,6 +1,6 @@
 import pytest
 
-from notionary.blocks.mappings.breadcrumb import BreadcrumbElement
+from notionary.blocks.mappings.breadcrumb import BreadcrumbMapper
 from notionary.blocks.schemas import (
     BlockType,
     BreadcrumbBlock,
@@ -29,28 +29,28 @@ def create_breadcrumb_block_with_required_fields(**kwargs) -> BreadcrumbBlock:
 @pytest.mark.asyncio
 async def test_match_markdown_valid():
     """Test recognition of valid breadcrumb syntax."""
-    assert await BreadcrumbElement.markdown_to_notion("[breadcrumb]") is not None
-    assert await BreadcrumbElement.markdown_to_notion("[BREADCRUMB]")  # Case insensitive
-    assert await BreadcrumbElement.markdown_to_notion("  [breadcrumb]  ")  # With spaces
-    assert await BreadcrumbElement.markdown_to_notion("\t[breadcrumb]\n")  # With whitespace
+    assert await BreadcrumbMapper.markdown_to_notion("[breadcrumb]") is not None
+    assert await BreadcrumbMapper.markdown_to_notion("[BREADCRUMB]")  # Case insensitive
+    assert await BreadcrumbMapper.markdown_to_notion("  [breadcrumb]  ")  # With spaces
+    assert await BreadcrumbMapper.markdown_to_notion("\t[breadcrumb]\n")  # With whitespace
 
 
 @pytest.mark.asyncio
 async def test_match_markdown_invalid():
     """Test rejection of invalid formats."""
-    assert not await BreadcrumbElement.markdown_to_notion("breadcrumb")  # Missing brackets
-    assert not await BreadcrumbElement.markdown_to_notion("[breadcrumb")  # Missing closing bracket
-    assert not await BreadcrumbElement.markdown_to_notion("breadcrumb]")  # Missing opening bracket
-    assert not await BreadcrumbElement.markdown_to_notion("[bread crumb]")  # Space in name
-    assert not await BreadcrumbElement.markdown_to_notion("[breadcrumbs]")  # Wrong plural
-    assert not await BreadcrumbElement.markdown_to_notion("[toc]")  # Different element
-    assert not await BreadcrumbElement.markdown_to_notion("")  # Empty string
+    assert not await BreadcrumbMapper.markdown_to_notion("breadcrumb")  # Missing brackets
+    assert not await BreadcrumbMapper.markdown_to_notion("[breadcrumb")  # Missing closing bracket
+    assert not await BreadcrumbMapper.markdown_to_notion("breadcrumb]")  # Missing opening bracket
+    assert not await BreadcrumbMapper.markdown_to_notion("[bread crumb]")  # Space in name
+    assert not await BreadcrumbMapper.markdown_to_notion("[breadcrumbs]")  # Wrong plural
+    assert not await BreadcrumbMapper.markdown_to_notion("[toc]")  # Different element
+    assert not await BreadcrumbMapper.markdown_to_notion("")  # Empty string
 
 
 def test_match_notion_valid():
     """Test recognition of valid breadcrumb blocks."""
     block = create_breadcrumb_block_with_required_fields()
-    assert BreadcrumbElement.match_notion(block)
+    assert BreadcrumbMapper.match_notion(block)
 
 
 def test_match_notion_invalid():
@@ -61,19 +61,19 @@ def test_match_notion_invalid():
     paragraph_block = Mock()
     paragraph_block.type = BlockType.PARAGRAPH
     paragraph_block.breadcrumb = BreadcrumbData()
-    assert not BreadcrumbElement.match_notion(paragraph_block)
+    assert not BreadcrumbMapper.match_notion(paragraph_block)
 
     # Right type but no breadcrumb - use Mock
     no_breadcrumb_block = Mock()
     no_breadcrumb_block.type = BlockType.BREADCRUMB
     no_breadcrumb_block.breadcrumb = None
-    assert not BreadcrumbElement.match_notion(no_breadcrumb_block)
+    assert not BreadcrumbMapper.match_notion(no_breadcrumb_block)
 
 
 @pytest.mark.asyncio
 async def test_markdown_to_notion_valid():
     """Test conversion from valid markdown to Notion blocks."""
-    result = await BreadcrumbElement.markdown_to_notion("[breadcrumb]")
+    result = await BreadcrumbMapper.markdown_to_notion("[breadcrumb]")
 
     assert isinstance(result, CreateBreadcrumbBlock)
     assert isinstance(result.breadcrumb, BreadcrumbData)
@@ -82,10 +82,10 @@ async def test_markdown_to_notion_valid():
 @pytest.mark.asyncio
 async def test_markdown_to_notion_invalid():
     """Test that invalid markdown returns None."""
-    assert await BreadcrumbElement.markdown_to_notion("breadcrumb") is None
-    assert await BreadcrumbElement.markdown_to_notion("[bread crumb]") is None
-    assert await BreadcrumbElement.markdown_to_notion("[toc]") is None
-    assert await BreadcrumbElement.markdown_to_notion("") is None
+    assert await BreadcrumbMapper.markdown_to_notion("breadcrumb") is None
+    assert await BreadcrumbMapper.markdown_to_notion("[bread crumb]") is None
+    assert await BreadcrumbMapper.markdown_to_notion("[toc]") is None
+    assert await BreadcrumbMapper.markdown_to_notion("") is None
 
 
 @pytest.mark.asyncio
@@ -93,7 +93,7 @@ async def test_notion_to_markdown_valid():
     """Test conversion from valid Notion blocks to markdown."""
     block = create_breadcrumb_block_with_required_fields()
 
-    result = await BreadcrumbElement.notion_to_markdown(block)
+    result = await BreadcrumbMapper.notion_to_markdown(block)
     assert result == "[breadcrumb]"
 
 
@@ -106,10 +106,10 @@ async def test_notion_to_markdown_invalid():
     paragraph_block = Mock()
     paragraph_block.type = BlockType.PARAGRAPH
     paragraph_block.breadcrumb = BreadcrumbData()
-    assert await BreadcrumbElement.notion_to_markdown(paragraph_block) is None
+    assert await BreadcrumbMapper.notion_to_markdown(paragraph_block) is None
 
     # Right type but no breadcrumb - use Mock
     no_breadcrumb_block = Mock()
     no_breadcrumb_block.type = BlockType.BREADCRUMB
     no_breadcrumb_block.breadcrumb = None
-    assert await BreadcrumbElement.notion_to_markdown(no_breadcrumb_block) is None
+    assert await BreadcrumbMapper.notion_to_markdown(no_breadcrumb_block) is None

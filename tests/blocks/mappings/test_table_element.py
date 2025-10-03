@@ -7,7 +7,7 @@ from notionary.blocks.mappings.rich_text.models import (
     TextAnnotations,
     TextContent,
 )
-from notionary.blocks.mappings.table import TableElement
+from notionary.blocks.mappings.table import TableMapper
 from notionary.blocks.schemas import BlockType
 
 
@@ -43,7 +43,7 @@ async def test_notion_to_markdown_with_data():
     mock_block.table.has_row_header = False
     mock_block.children = [mock_row]
 
-    result = await TableElement.notion_to_markdown(mock_block)
+    result = await TableMapper.notion_to_markdown(mock_block)
 
     assert result is not None
     lines = result.split("\n")
@@ -61,13 +61,13 @@ def test_match_notion():
     block = Mock()
     block.type = BlockType.TABLE  # BlockType enum
     block.table = Mock()
-    assert TableElement.match_notion(block)
+    assert TableMapper.match_notion(block)
 
     # Invalid - wrong type
     block.type = BlockType.PARAGRAPH
-    assert not TableElement.match_notion(block)
+    assert not TableMapper.match_notion(block)
 
     # Invalid - no table content
     block.type = BlockType.TABLE
     block.table = None
-    assert not TableElement.match_notion(block)
+    assert not TableMapper.match_notion(block)
