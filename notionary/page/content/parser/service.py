@@ -92,9 +92,6 @@ class MarkdownToNotionConverter(LoggingMixin):
 
             current_line_index += 1 + context.lines_consumed
 
-            if context.should_continue:
-                continue
-
         return result_blocks
 
     def _create_line_processing_context(

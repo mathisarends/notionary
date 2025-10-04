@@ -22,14 +22,10 @@ class ColumnListParser(LineParser):
     async def _process(self, context: LineProcessingContext) -> None:
         if self._is_column_list_start(context):
             await self._start_column_list(context)
-            context.was_processed = True
-            context.should_continue = True
             return
 
         if self._is_column_list_end(context):
             await self._finalize_column_list(context)
-            context.was_processed = True
-            context.should_continue = True
 
     def _is_column_list_start(self, context: LineProcessingContext) -> bool:
         """Check if line starts a column list (::: columns)."""

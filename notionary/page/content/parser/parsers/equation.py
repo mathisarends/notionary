@@ -1,6 +1,6 @@
 import re
 
-from notionary.blocks.mappings.equation import EquationMapper
+from notionary.blocks.schemas import CreateEquationBlock, EquationData
 from notionary.page.content.parser.parsers.base import (
     LineParser,
     LineProcessingContext,
@@ -8,59 +8,75 @@ from notionary.page.content.parser.parsers.base import (
 
 
 class EquationParser(LineParser):
-    r"""Handles equation block specific logic with batching.
-
-    Markdown syntax:
-    $$
-    \sum_{i=1}^n i = \frac{n(n+1)}{2} \\
-    \sum_{i=1}^n i^2 = \frac{n(n+1)(2n+1)}{6} \\
-    \sum_{i=1}^n i^3 = \left(\frac{n(n+1)}{2}\right)^2
-    $$
-    """
+    EQUATION_DELIMITER = "$$"
 
     def __init__(self) -> None:
         super().__init__()
-        self._equation_start_pattern = re.compile(r"^\$\$\s*$")
-        self._equation_end_pattern = re.compile(r"^\$\$\s*$")
+        delimiter_pattern = rf"^{re.escape(self.EQUATION_DELIMITER)}\s*$"
+        self._equation_delimiter_pattern = re.compile(delimiter_pattern)
 
     def _can_handle(self, context: LineProcessingContext) -> bool:
-        if self._is_inside_parent_context(context):
+        if context.is_inside_parent_context():
             return False
-        return self._is_equation_start(context)
+        return self._is_equation_delimiter(context.line)
 
     async def _process(self, context: LineProcessingContext) -> None:
-        if self._is_equation_start(context):
-            await self._process_complete_equation_block(context)
-            self._mark_processed(context)
+        equation_content = self._collect_equation_content(context)
+        lines_consumed = self._count_lines_consumed(context)
 
-    def _is_equation_start(self, context: LineProcessingContext) -> bool:
-        """Check if this line starts an equation block."""
-        return self._equation_start_pattern.match(context.line.strip()) is not None
-
-    def _is_inside_parent_context(self, context: LineProcessingContext) -> bool:
-        return len(context.parent_stack) > 0
-
-    async def _process_complete_equation_block(self, context: LineProcessingContext) -> None:
-        equation_lines, lines_to_consume = self._collect_equation_lines(context)
-
-        block = EquationMapper.create_from_markdown_block(opening_line=context.line, equation_lines=equation_lines)
+        block = self._create_equation_block(opening_line=context.line, equation_lines=equation_content)
 
         if block:
-            context.lines_consumed = lines_to_consume
+            context.lines_consumed = lines_consumed
             context.result_blocks.append(block)
 
-    def _collect_equation_lines(self, context: LineProcessingContext) -> tuple[list[str], int]:
-        """Collect lines until closing $$ fence and return (lines, count_to_consume)."""
-        lines = []
-        for idx, ln in enumerate(context.get_remaining_lines()):
-            if self._equation_end_pattern.match(ln.strip()):
-                return lines, idx + 1
-            lines.append(ln)
-        # No closing fence: consume all remaining
-        rem = context.get_remaining_lines()
-        return rem, len(rem)
+    def _is_equation_delimiter(self, line: str) -> bool:
+        return self._equation_delimiter_pattern.match(line.strip()) is not None
 
-    def _mark_processed(self, context: LineProcessingContext) -> None:
-        """Mark context as processed and continue."""
-        context.was_processed = True
-        context.should_continue = True
+    def _collect_equation_content(self, context: LineProcessingContext) -> list[str]:
+        content_lines = []
+
+        for line in context.get_remaining_lines():
+            if self._is_equation_delimiter(line):
+                break
+            content_lines.append(line)
+
+        return content_lines
+
+    def _count_lines_consumed(self, context: LineProcessingContext) -> int:
+        for line_index, line in enumerate(context.get_remaining_lines()):
+            if self._is_equation_delimiter(line):
+                return line_index + 1
+
+        return len(context.get_remaining_lines())
+
+    def _create_equation_block(self, opening_line: str, equation_lines: list[str]) -> CreateEquationBlock | None:
+        if opening_line.strip() != self.EQUATION_DELIMITER:
+            return None
+
+        if not equation_lines:
+            return None
+
+        raw_content = "\n".join(equation_lines)
+        fixed_lines = self._fix_latex_line_breaks(raw_content.splitlines())
+        expression = "\n".join(fixed_lines).strip()
+
+        if expression:
+            return CreateEquationBlock(equation=EquationData(expression=expression))
+
+        return None
+
+    def _fix_latex_line_breaks(self, lines: list[str]) -> list[str]:
+        fixed_lines = []
+
+        for line in lines:
+            backslash_match = re.search(r"(\\+)$", line)
+            if backslash_match:
+                backslashes = backslash_match.group(1)
+                has_odd_backslashes = len(backslashes) % 2 == 1
+                if has_odd_backslashes:
+                    line = line + "\\"
+
+            fixed_lines.append(line)
+
+        return fixed_lines

@@ -20,12 +20,10 @@ class ColumnParser(LineParser):
     async def _process(self, context: LineProcessingContext) -> None:
         if self._is_column_start(context):
             await self._start_column(context)
-            self._mark_processed(context)
             return
 
         if self._is_column_end(context):
             await self._finalize_column(context)
-            self._mark_processed(context)
 
     def _is_column_start(self, context: LineProcessingContext) -> bool:
         """Check if line starts a column (::: column)."""
@@ -123,8 +121,3 @@ class ColumnParser(LineParser):
 
         child_converter = MarkdownToNotionConverter(block_registry)
         return await child_converter.process_lines(text)
-
-    def _mark_processed(self, context: LineProcessingContext) -> None:
-        """Mark context as processed and signal to continue."""
-        context.was_processed = True
-        context.should_continue = True

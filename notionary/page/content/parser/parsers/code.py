@@ -21,7 +21,6 @@ class CodeParser(LineParser):
     async def _process(self, context: LineProcessingContext) -> None:
         if self._is_code_start(context):
             await self._process_complete_code_block(context)
-            self._mark_processed(context)
 
     def _is_code_start(self, context: LineProcessingContext) -> bool:
         """Check if this line starts a code block."""
@@ -48,11 +47,5 @@ class CodeParser(LineParser):
             if self._code_end_pattern.match(ln.strip()):
                 return lines, idx + 1
             lines.append(ln)
-        # No closing fence: consume all remaining
         rem = context.get_remaining_lines()
         return rem, len(rem)
-
-    def _mark_processed(self, context: LineProcessingContext) -> None:
-        """Mark context as processed and continue."""
-        context.was_processed = True
-        context.should_continue = True

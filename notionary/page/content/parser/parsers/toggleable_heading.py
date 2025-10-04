@@ -33,8 +33,6 @@ class ToggleableHeadingParser(LineParser):
 
         async def _handle(action):
             await action(context)
-            context.was_processed = True
-            context.should_continue = True
             return True
 
         if self._is_toggleable_heading_start(context):

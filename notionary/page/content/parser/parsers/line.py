@@ -11,15 +11,11 @@ class RegularLineParser(LineParser):
     async def _process(self, context: LineProcessingContext) -> None:
         if self._is_in_column_context(context):
             self._add_to_column_context(context)
-            context.was_processed = True
-            context.should_continue = True
             return
 
         block_created = await self._process_single_line_content(context)
         if not block_created:
             await self._process_as_paragraph(context)
-
-        context.was_processed = True
 
     def _is_in_column_context(self, context: LineProcessingContext) -> bool:
         if not context.parent_stack:

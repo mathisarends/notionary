@@ -22,8 +22,6 @@ class TableParser(LineParser):
             return
 
         await self._process_complete_table(context)
-        context.was_processed = True
-        context.should_continue = True
 
     def _is_inside_parent_context(self, context: LineProcessingContext) -> bool:
         """Check if we're currently inside any parent context (toggle, heading, etc.)."""

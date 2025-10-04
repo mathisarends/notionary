@@ -37,9 +37,11 @@ class LineProcessingContext:
 
     # Result indicators
     was_processed: bool = False
-    should_continue: bool = False
 
     def get_remaining_lines(self) -> list[str]:
         if self.all_lines is None or self.current_line_index is None:
             return []
         return self.all_lines[self.current_line_index + 1 :]
+
+    def is_inside_parent_context(self) -> bool:
+        return len(self.parent_stack) > 0

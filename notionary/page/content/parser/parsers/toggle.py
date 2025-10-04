@@ -22,18 +22,12 @@ class ToggleParser(LineParser):
         # Explicit, readable branches (small duplication is acceptable)
         if self._is_toggle_start(context):
             await self._start_toggle(context)
-            context.was_processed = True
-            context.should_continue = True
 
         if self._is_toggle_end(context):
             await self._finalize_toggle(context)
-            context.was_processed = True
-            context.should_continue = True
 
         if self._is_toggle_content(context):
             self._add_toggle_content(context)
-            context.was_processed = True
-            context.should_continue = True
 
     def _is_toggle_start(self, context: LineProcessingContext) -> bool:
         """Check if line starts a toggle (+++ Title or +++Title)."""
