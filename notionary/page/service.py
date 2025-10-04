@@ -9,8 +9,8 @@ from notionary.blocks.registry.service import BlockRegistry
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
 from notionary.page.content.page_content_deleting_service import PageContentDeletingService
-from notionary.page.content.reader.service import NotionToMarkdownConverter
-from notionary.page.content.writer.service import PageContentWriter
+from notionary.page.content.renderer.service import NotionToMarkdownConverter
+from notionary.page.page_content_writer import PageContentWriter
 from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
 from notionary.page.properties.factory import PagePropertyHandlerFactory

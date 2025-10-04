@@ -6,11 +6,8 @@ PAGE = "Ruff Linter"
 async def main() -> None:
     page = await NotionPage.from_title(PAGE)
 
-    markdown = """
-    # Das ist ein Überschrift 1
-    das ist alles was zu tun ist
-    """
-    await page.append_markdown(markdown)
+    content = await page.get_markdown_content()
+    print("content", content)
 
 
 if __name__ == "__main__":
