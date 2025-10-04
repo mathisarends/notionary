@@ -34,9 +34,6 @@ class NotionToMarkdownConverter(LoggingMixin):
 
         self._setup_handler_chain()
 
-    async def convert_to_markdown(self, blocks: list[Block]) -> str:
-        return await self._convert_blocks_to_markdown(blocks, indent_level=0)
-
     def _setup_handler_chain(self) -> None:
         toggle_handler = self._toggle_handler or ToggleRenderer()
         toggleable_heading_handler = self._toggleable_heading_handler or ToggleableHeadingRenderer()
@@ -52,31 +49,38 @@ class NotionToMarkdownConverter(LoggingMixin):
 
         self._handler_chain = toggle_handler
 
-    async def _convert_blocks_to_markdown(self, blocks: list[Block], indent_level: int = 0) -> str:
+    async def convert(self, blocks: list[Block], indent_level: int = 0) -> str:
         if not blocks:
             return ""
 
-        markdown_parts = []
-        i = 0
+        rendered_block_parts = []
+        current_block_index = 0
 
-        while i < len(blocks):
-            block = blocks[i]
-            context = BlockRenderingContext(
-                block=block,
-                indent_level=indent_level,
-                block_registry=self._block_registry,
-                all_blocks=blocks,
-                current_block_index=i,
-                convert_children_callback=self._convert_blocks_to_markdown,
-            )
-
+        while current_block_index < len(blocks):
+            context = self._create_rendering_context(blocks, current_block_index, indent_level)
             await self._handler_chain.handle(context)
 
             if context.was_processed and context.markdown_result:
-                markdown_parts.append(context.markdown_result)
+                rendered_block_parts.append(context.markdown_result)
 
             # Skip additional blocks if they were consumed by batch processing
-            i += max(1, context.blocks_consumed)
+            current_block_index += max(1, context.blocks_consumed)
 
+        return self._join_rendered_blocks(rendered_block_parts, indent_level)
+
+    def _create_rendering_context(
+        self, blocks: list[Block], block_index: int, indent_level: int
+    ) -> BlockRenderingContext:
+        block = blocks[block_index]
+        return BlockRenderingContext(
+            block=block,
+            indent_level=indent_level,
+            block_registry=self._block_registry,
+            all_blocks=blocks,
+            current_block_index=block_index,
+            convert_children_callback=self.convert,
+        )
+
+    def _join_rendered_blocks(self, rendered_parts: list[str], indent_level: int) -> str:
         separator = "\n\n" if indent_level == 0 else "\n"
-        return separator.join(markdown_parts)
+        return separator.join(rendered_parts)

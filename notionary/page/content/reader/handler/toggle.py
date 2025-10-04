@@ -31,7 +31,7 @@ class ToggleRenderer(BlockRenderer):
 
             # Create a temporary retriever to process children
             retriever = NotionToMarkdownConverter(context.block_registry)
-            children_markdown = await retriever._convert_blocks_to_markdown(
+            children_markdown = await retriever.convert(
                 context.get_children_blocks(),
                 indent_level=0,  # No indentation for content inside toggles
             )

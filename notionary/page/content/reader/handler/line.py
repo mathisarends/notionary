@@ -26,7 +26,7 @@ class LineRenderer(BlockRenderer):
             )
 
             retriever = NotionToMarkdownConverter(context.block_registry)
-            children_markdown = await retriever._convert_blocks_to_markdown(
+            children_markdown = await retriever.convert(
                 context.get_children_blocks(), indent_level=context.indent_level + 1
             )
             context.markdown_result = children_markdown
@@ -47,7 +47,7 @@ class LineRenderer(BlockRenderer):
         from notionary.page.content.reader.service import NotionToMarkdownConverter
 
         retriever = NotionToMarkdownConverter(context.block_registry)
-        children_markdown = await retriever._convert_blocks_to_markdown(
+        children_markdown = await retriever.convert(
             context.get_children_blocks(), indent_level=context.indent_level + 1
         )
 

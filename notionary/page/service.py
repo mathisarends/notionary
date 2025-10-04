@@ -193,4 +193,4 @@ class NotionPage(Entity):
 
     async def get_markdown_content(self) -> str:
         blocks = await self._block_client.get_blocks_by_page_id_recursively(page_id=self._id)
-        return await self._page_content_retriever.convert_to_markdown(blocks=blocks)
+        return await self._page_content_retriever.convert(blocks=blocks)
