@@ -3,7 +3,6 @@ import textwrap
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.schemas import Block, BlockType, CreateEquationBlock, EquationData
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class EquationMapper(NotionMarkdownMapper):
@@ -98,18 +97,3 @@ class EquationMapper(NotionMarkdownMapper):
             return None
 
         return f"$${expression}$$"
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for equation blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Mathematical equations using standard Markdown LaTeX syntax",
-            syntax_examples=[
-                "$$E = mc^2$$",
-                "$$\\frac{a}{b} + \\sqrt{c}$$",
-                "$$\\int_0^\\infty e^{-x} dx = 1$$",
-                "$$\\sum_{i=1}^n i = \\frac{n(n+1)}{2}$$",
-            ],
-            usage_guidelines="Use for mathematical expressions and formulas. Supports LaTeX syntax. Wrap equations in double dollar signs ($$).",
-        )

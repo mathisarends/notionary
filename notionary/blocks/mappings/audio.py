@@ -11,7 +11,6 @@ from notionary.blocks.schemas import (
     FileData,
     FileType,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class AudioMapper(NotionMarkdownMapper, CaptionMixin):
@@ -65,20 +64,6 @@ class AudioMapper(NotionMarkdownMapper, CaptionMixin):
             result += caption_markdown
 
         return result
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Audio blocks embed audio files from external URLs or local files with optional captions",
-            syntax_examples=[
-                "[audio](https://example.com/song.mp3)",
-                "[audio](https://example.com/podcast.wav)(caption:Episode 1)",
-                "(caption:Background music)[audio](https://example.com/song.mp3)",
-                "[audio](https://example.com/interview.mp3)(caption:**Live** interview)",
-            ],
-            usage_guidelines="Use for embedding audio files like music, podcasts, or sound effects. Supports external URLs only. Caption supports rich text formatting and is optional.",
-        )
 
     @classmethod
     def _is_likely_audio_url(cls, url: str) -> bool:

@@ -8,7 +8,6 @@ from notionary.blocks.schemas import (
     CreateTableOfContentsBlock,
     TableOfContentsData,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class TableOfContentsMapper(NotionMarkdownMapper):
@@ -49,21 +48,3 @@ class TableOfContentsMapper(NotionMarkdownMapper):
         if color is None or color == BlockColor.DEFAULT:
             return "[toc]"
         return f"[toc]({color.value})"
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """System prompt info for table of contents blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Table of contents blocks automatically generate navigation for page headings.",
-            syntax_examples=[
-                "[toc]",
-                "[toc](blue)",
-                "[toc](blue_background)",
-                "[toc](gray_background)",
-            ],
-            usage_guidelines=(
-                "Use to auto-generate a clickable table of contents from page headings. "
-                "The color parameter is optional; if omitted, the default enum color is used."
-            ),
-        )

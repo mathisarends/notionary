@@ -4,7 +4,6 @@ from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.schemas import Block, BlockColor, BlockType, CreateToggleBlock, ToggleBlock
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class ToggleMapper(NotionMarkdownMapper):
@@ -79,18 +78,3 @@ class ToggleMapper(NotionMarkdownMapper):
                 elif "plain_text" in text_obj:
                     result += text_obj.get("plain_text", "")
         return result
-
-    @classmethod
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for toggle blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Toggle blocks create collapsible sections with expandable content",
-            syntax_examples=[
-                "+++Title\nContent goes here\n+++",
-                "+++Details\nMore information\nAdditional content\n+++",
-                "+++FAQ\nFrequently asked questions\n+++",
-            ],
-            usage_guidelines="Use for collapsible content sections. Start with +++Title, add content, end with +++. Great for FAQs, details, or organizing long content.",
-        )

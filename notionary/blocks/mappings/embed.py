@@ -12,7 +12,6 @@ from notionary.blocks.schemas import (
     FileUploadFile,
     NotionHostedFile,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class EmbedMapper(NotionMarkdownMapper):
@@ -72,17 +71,3 @@ class EmbedMapper(NotionMarkdownMapper):
         text = "".join(text_parts)
 
         return f'[embed]({url} "{text}")'
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for embed blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Embed blocks display interactive content from external URLs like videos, maps, or widgets",
-            syntax_examples=[
-                "[embed](https://youtube.com/watch?v=123)",
-                '[embed](https://maps.google.com/location "Map Location")',
-                '[embed](https://codepen.io/pen/123 "Interactive Demo")',
-            ],
-            usage_guidelines="Use for embedding interactive content that supports iframe embedding. URL must be from a supported platform. Caption describes the embedded content.",
-        )

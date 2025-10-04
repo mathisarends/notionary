@@ -10,7 +10,6 @@ from notionary.blocks.schemas import (
     CreateNumberedListItemBlock,
     NumberedListItemData,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class NumberedListMapper(NotionMarkdownMapper):
@@ -43,19 +42,3 @@ class NumberedListMapper(NotionMarkdownMapper):
         converter = RichTextToMarkdownConverter()
         content = await converter.to_markdown(rich)
         return f"1. {content}"
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for numbered list blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Numbered list items create ordered lists with sequential numbering",
-            syntax_examples=[
-                "1. First item",
-                "2. Second item",
-                "3. Third item",
-                "1. Item with **bold text**",
-                "1. Item with *italic text*",
-            ],
-            usage_guidelines="Use numbers followed by periods to create ordered lists. Supports inline formatting like bold, italic, and links. Numbering is automatically handled by Notion.",
-        )

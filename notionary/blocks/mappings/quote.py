@@ -4,7 +4,6 @@ from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import Block, BlockColor, BlockType, CreateQuoteBlock, QuoteData
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class QuoteMapper(NotionMarkdownMapper):
@@ -47,17 +46,3 @@ class QuoteMapper(NotionMarkdownMapper):
             return None
 
         return f"> {text.strip()}"
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for quote blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Quote blocks display highlighted quotations or emphasized text",
-            syntax_examples=[
-                "> This is an important quote",
-                "> The only way to do great work is to love what you do",
-                "> Innovation distinguishes between a leader and a follower",
-            ],
-            usage_guidelines="Use for quotations, important statements, or text that should be visually emphasized. Content should be meaningful and stand out from regular paragraphs.",
-        )

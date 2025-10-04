@@ -8,7 +8,6 @@ from notionary.blocks.schemas import (
     CreateParagraphBlock,
     ParagraphData,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class ParagraphMapper(NotionMarkdownMapper):
@@ -38,18 +37,3 @@ class ParagraphMapper(NotionMarkdownMapper):
         markdown = await converter.to_markdown(rich_list)
 
         return markdown or None
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for paragraph blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Paragraph blocks contain regular text content with optional inline formatting",
-            syntax_examples=[
-                "This is a simple paragraph.",
-                "Paragraph with **bold text** and *italic text*.",
-                "Paragraph with [link](https://example.com) and `code`.",
-                "Multiple sentences in one paragraph. Each sentence flows naturally.",
-            ],
-            usage_guidelines="Use for regular text content. Supports inline formatting: **bold**, *italic*, `code`, [links](url). Default block type for plain text.",
-        )

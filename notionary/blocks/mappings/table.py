@@ -12,7 +12,6 @@ from notionary.blocks.schemas import (
     TableData,
     TableRowData,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class TableMapper(NotionMarkdownMapper):
@@ -185,15 +184,3 @@ class TableMapper(NotionMarkdownMapper):
     def is_table_row(cls, line: str) -> bool:
         """Check if a line is a valid table row."""
         return bool(cls.ROW_PATTERN.match(line.strip()))
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for table blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Table blocks create structured data in rows and columns with headers",
-            syntax_examples=[
-                "| Name | Age | City |\n| -------- | -------- | -------- |\n| Alice | 25 | Berlin |\n| Bob | 30 | Munich |"
-            ],
-            usage_guidelines="Use for structured data presentation. First row is header, second row is separator with dashes, following rows are data. Cells are separated by | characters.",
-        )

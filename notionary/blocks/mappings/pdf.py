@@ -10,7 +10,6 @@ from notionary.blocks.schemas import (
     FileData,
     FileType,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class PdfMapper(NotionMarkdownMapper, CaptionMixin):
@@ -64,21 +63,6 @@ class PdfMapper(NotionMarkdownMapper, CaptionMixin):
             result += caption_markdown
 
         return result
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for PDF blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="PDF blocks embed and display PDF documents from external URLs or upload local PDF files with optional captions",
-            syntax_examples=[
-                "[pdf](https://example.com/document.pdf)",
-                "[pdf](https://example.com/report.pdf)(caption:Annual Report 2024)",
-                "(caption:User Manual)[pdf](https://example.com/manual.pdf)",
-                "[pdf](https://example.com/guide.pdf)(caption:**Important** documentation)",
-            ],
-            usage_guidelines="Use for embedding PDF documents that can be viewed inline. Supports external URLs only. Caption supports rich text formatting and should describe the PDF content.",
-        )
 
     @classmethod
     def _extract_pdf_path(cls, text: str) -> str | None:

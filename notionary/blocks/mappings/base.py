@@ -3,7 +3,6 @@ from typing import ClassVar
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block, BlockCreatePayload
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class NotionMarkdownMapper(ABC):
@@ -27,12 +26,3 @@ class NotionMarkdownMapper(ABC):
         # Default implementation - subclasses should override this method
         # Cannot call async notion_to_markdown here
         return False
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for this block element.
-
-        Subclasses should override this method to provide their specific information.
-        Return None if the element should not be included in documentation.
-        """
-        return None

@@ -2,7 +2,6 @@ import re
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.schemas import Block, BlockType, ColumnListData, CreateColumnListBlock
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class ColumnListMapper(NotionMarkdownMapper):
@@ -27,18 +26,3 @@ class ColumnListMapper(NotionMarkdownMapper):
         # Empty ColumnListData - children (columns) added by stack processor
         column_list_content = ColumnListData()
         return CreateColumnListBlock(column_list=column_list_content)
-
-    @classmethod
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for column list blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Column list containers organize multiple columns in side-by-side layouts",
-            syntax_examples=[
-                "::: columns\n::: column\nContent 1\n:::\n::: column\nContent 2\n:::\n:::",
-                "::: columns\n::: column 0.6\nMain content\n:::\n::: column 0.4\nSidebar\n:::\n:::",
-                "::: columns\n::: column 0.25\nLeft\n:::\n::: column 0.5\nCenter\n:::\n::: column 0.25\nRight\n:::\n:::",
-            ],
-            usage_guidelines="Use to create multi-column layouts with at least 2 columns. Column width ratios must add up to 1.0 when specified. Each column can contain any block content. Ends with :::.",
-        )

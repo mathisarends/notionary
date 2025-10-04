@@ -8,7 +8,6 @@ from notionary.blocks.schemas import (
     CreateParagraphBlock,
     ParagraphData,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class SpaceMapper(NotionMarkdownMapper):
@@ -42,17 +41,6 @@ class SpaceMapper(NotionMarkdownMapper):
             return None
 
         return cls.SPACE_MARKER
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Space blocks create visual spacing between content",
-            syntax_examples=[
-                cls.SPACE_MARKER,
-            ],
-            usage_guidelines=f"Use {cls.SPACE_MARKER} to create visual spacing between paragraphs or other content blocks.",
-        )
 
     @classmethod
     def _is_empty_paragraph(cls, rich_text: list[RichText]) -> bool:

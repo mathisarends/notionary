@@ -10,7 +10,6 @@ from notionary.blocks.schemas import (
     FileData,
     FileType,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class FileMapper(NotionMarkdownMapper, CaptionMixin):
@@ -63,21 +62,6 @@ class FileMapper(NotionMarkdownMapper, CaptionMixin):
             result += caption_markdown
 
         return result
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for file blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="File blocks embed files from external URLs or upload local files with optional captions",
-            syntax_examples=[
-                "[file](https://example.com/document.pdf)",
-                "[file](https://example.com/document.pdf)(caption:Annual Report)",
-                "(caption:Q1 Data)[file](https://example.com/spreadsheet.xlsx)",
-                "[file](https://example.com/manual.docx)(caption:**User** manual)",
-            ],
-            usage_guidelines="Use for external URLs only. Caption supports rich text formatting and should describe the file content or purpose.",
-        )
 
     @classmethod
     def _extract_file_path(cls, text: str) -> str | None:

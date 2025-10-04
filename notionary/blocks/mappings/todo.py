@@ -4,7 +4,6 @@ from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import Block, BlockColor, BlockType, CreateToDoBlock, ToDoData
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class TodoMapper(NotionMarkdownMapper):
@@ -51,19 +50,3 @@ class TodoMapper(NotionMarkdownMapper):
         content = await converter.to_markdown(td.rich_text)
         checkbox = "[x]" if td.checked else "[ ]"
         return f"- {checkbox} {content}"
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for todo blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Todo blocks create interactive checkboxes for task management",
-            syntax_examples=[
-                "- [ ] Unchecked todo item",
-                "- [x] Checked todo item",
-                "* [ ] Todo with asterisk",
-                "+ [ ] Todo with plus sign",
-                "- [x] Completed task",
-            ],
-            usage_guidelines="Use for task lists and checkboxes. [ ] for unchecked, [x] for checked items. Supports -, *, or + as bullet markers. Interactive in Notion interface.",
-        )

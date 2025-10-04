@@ -4,7 +4,6 @@ from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import Block, BlockType, CalloutData, CreateCalloutBlock
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 from notionary.shared.models.icon_models import EmojiIcon, Icon
 
 
@@ -64,18 +63,3 @@ class CalloutMapper(NotionMarkdownMapper):
         if emoji_char and emoji_char != cls.DEFAULT_EMOJI:
             return f'[callout]({content} "{emoji_char}")'
         return f"[callout]({content})"
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for callout blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Callout blocks create highlighted text boxes with optional custom emojis for emphasis",
-            syntax_examples=[
-                "[callout](This is important information)",
-                '[callout](Warning message "⚠️")',
-                '[callout](Success message "✅")',
-                "[callout](Note with default emoji)",
-            ],
-            usage_guidelines="Use for highlighting important information, warnings, tips, or notes. Default emoji is 💡. Custom emoji should be provided in quotes after the text content.",
-        )

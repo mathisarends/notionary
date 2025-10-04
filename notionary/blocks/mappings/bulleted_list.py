@@ -9,7 +9,6 @@ from notionary.blocks.schemas import (
     BulletedListItemData,
     CreateBulletedListItemBlock,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class BulletedListMapper(NotionMarkdownMapper):
@@ -46,19 +45,3 @@ class BulletedListMapper(NotionMarkdownMapper):
         converter = RichTextToMarkdownConverter()
         text = await converter.to_markdown(rich_list)
         return f"- {text}"
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for bulleted list blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Bulleted list items create unordered lists with bullet points",
-            syntax_examples=[
-                "- First item",
-                "* Second item",
-                "+ Third item",
-                "- Item with **bold text**",
-                "- Item with *italic text*",
-            ],
-            usage_guidelines="Use -, *, or + to create bullet points. Supports inline formatting like bold, italic, and links. Do not use for todo items (use [ ] or [x] for those).",
-        )

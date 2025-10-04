@@ -3,7 +3,6 @@ import re
 from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.schemas import Block, BlockType, CodeData, CodeLanguage, CreateCodeBlock
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class CodeMapper(NotionMarkdownMapper):
@@ -101,17 +100,3 @@ class CodeMapper(NotionMarkdownMapper):
     @staticmethod
     def extract_caption(caption_list: list[RichText]) -> str:
         return "".join(rt.plain_text for rt in caption_list if rt.plain_text)
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Code blocks display syntax-highlighted code with optional language specification and captions",
-            syntax_examples=[
-                "```\nprint('Hello World')\n```",
-                "```python\nprint('Hello World')\n```",
-                "```python \"Example code\"\nprint('Hello World')\n```",
-                "```javascript\nconsole.log('Hello');\n```",
-            ],
-            usage_guidelines="Use for displaying code snippets. Language specification enables syntax highlighting. Caption in quotes on first line provides description. Supports many programming languages.",
-        )

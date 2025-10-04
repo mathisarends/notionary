@@ -14,7 +14,6 @@ from notionary.blocks.schemas import (
     CreateHeadingBlock,
     HeadingData,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class HeadingMapper(NotionMarkdownMapper):
@@ -90,19 +89,3 @@ class HeadingMapper(NotionMarkdownMapper):
 
         # Use hash-style for all heading levels
         return f"{('#' * level)} {text}"
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for heading blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Heading blocks create hierarchical document structure with different levels",
-            syntax_examples=[
-                "# Heading Level 1",
-                "## Heading Level 2",
-                "### Heading Level 3",
-                "# Heading with **bold text**",
-                "## Heading with *italic text*",
-            ],
-            usage_guidelines="Use # for main titles, ## for sections, ### for subsections. Supports inline formatting. Only levels 1-3 are supported in Notion.",
-        )

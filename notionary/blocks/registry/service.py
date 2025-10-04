@@ -9,6 +9,7 @@ from notionary.blocks.mappings import (
     CalloutMapper,
     CodeMapper,
     ColumnListMapper,
+    ColumnMapper,
     DividerMapper,
     EmbedMapper,
     EquationMapper,
@@ -41,12 +42,13 @@ class BlockRegistry:
         ToggleMapper,
         QuoteMapper,
         TodoMapper,
+        ColumnListMapper,
+        ColumnMapper,
         BookmarkMapper,
         ImageMapper,
         VideoMapper,
         EmbedMapper,
         AudioMapper,
-        ColumnListMapper,
         EquationMapper,
         TableOfContentsMapper,
         BreadcrumbMapper,
@@ -55,15 +57,6 @@ class BlockRegistry:
         SpaceMapper,
         ParagraphMapper,  # Must be last as fallback!
     ]
-
-    """ _STRUCTURAL_BLOCKS = [
-        ColumnListMapper,
-        CodeMapper,
-        ToggleMapper,
-        ToggleableHeadingMapper,
-        TableMapper,
-        CodeMapper,
-    ] """
 
     def __init__(self, excluded_elements: set[type[NotionMarkdownMapper]] | None = None) -> None:
         self._elements = OrderedDict()

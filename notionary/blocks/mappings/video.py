@@ -12,7 +12,6 @@ from notionary.blocks.schemas import (
     FileData,
     FileType,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class VideoMapper(NotionMarkdownMapper, CaptionMixin):
@@ -100,22 +99,6 @@ class VideoMapper(NotionMarkdownMapper, CaptionMixin):
             if m:
                 return m.group(1)
         return None
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for video blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Video blocks embed videos from external URLs (YouTube, Vimeo, direct links) or upload local video files with optional captions",
-            syntax_examples=[
-                "[video](https://youtube.com/watch?v=abc123)",
-                "[video](https://vimeo.com/123456789)",
-                "[video](https://example.com/video.mp4)(caption:Demo Video)",
-                "(caption:Tutorial)[video](https://example.com/demo.mp4)",
-                "[video](https://example.com/training.mp4)(caption:**Important** tutorial)",
-            ],
-            usage_guidelines="Use for embedding videos from supported platforms. Supports YouTube, Vimeo, and direct video URLs. Caption supports rich text formatting and describes the video content.",
-        )
 
     @classmethod
     def _extract_video_path(cls, text: str) -> str | None:

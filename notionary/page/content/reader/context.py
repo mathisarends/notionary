@@ -1,7 +1,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from notionary.blocks.registry.service import BlockRegistry
 from notionary.blocks.schemas import Block
 
 
@@ -9,7 +8,6 @@ from notionary.blocks.schemas import Block
 class BlockRenderingContext:
     block: Block
     indent_level: int
-    block_registry: BlockRegistry
     convert_children_callback: Callable[[list[Block], int], str] | None = None
 
     # For batch processing

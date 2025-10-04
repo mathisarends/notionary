@@ -2,7 +2,6 @@ import re
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.schemas import Block, BlockType, ColumnData, CreateColumnBlock
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class ColumnMapper(NotionMarkdownMapper):
@@ -44,8 +43,3 @@ class ColumnMapper(NotionMarkdownMapper):
             return "::: column"
 
         return f"::: column {block.column.width_ratio}"
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Column elements are documented via ColumnListMapper - return None to avoid duplication."""
-        return None

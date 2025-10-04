@@ -59,7 +59,6 @@ class NumberedListRenderer(BlockRenderer):
                 BlockRenderingContext(
                     block=block,
                     indent_level=context.indent_level,
-                    block_registry=context.block_registry,
                     convert_children_callback=context.convert_children_callback,
                 )
             )

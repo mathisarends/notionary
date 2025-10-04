@@ -6,7 +6,6 @@ from notionary.blocks.client import NotionBlockHttpClient
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
 from notionary.blocks.markdown.builder import MarkdownBuilder
 from notionary.blocks.registry.service import BlockRegistry
-from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
 from notionary.page.content.page_content_deleting_service import PageContentDeletingService
@@ -157,10 +156,6 @@ class NotionPage(Entity):
     @property
     def url(self) -> str:
         return self._url
-
-    def get_prompt_information(self) -> str:
-        markdown_syntax_builder = SyntaxPromptBuilder()
-        return markdown_syntax_builder.build_concise_reference()
 
     async def get_comments(self) -> list[Comment]:
         return await self._comment_service.list_all_comments_for_page(page_id=self._id)

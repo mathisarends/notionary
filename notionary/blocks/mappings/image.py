@@ -10,7 +10,6 @@ from notionary.blocks.schemas import (
     FileData,
     FileType,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class ImageMapper(NotionMarkdownMapper, CaptionMixin):
@@ -63,21 +62,6 @@ class ImageMapper(NotionMarkdownMapper, CaptionMixin):
             result += caption_markdown
 
         return result
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for image blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Image blocks display images from external URLs or upload local image files with optional captions",
-            syntax_examples=[
-                "[image](https://example.com/photo.jpg)",
-                "[image](https://example.com/diagram.png)(caption:Architecture Diagram)",
-                "(caption:Sales Chart)[image](https://example.com/chart.svg)",
-                "[image](https://example.com/screenshot.png)(caption:Dashboard **overview**)",
-            ],
-            usage_guidelines="Use for displaying images from external URLs only. Caption supports rich text formatting and describes the image content.",
-        )
 
     @classmethod
     def _extract_image_path(cls, text: str) -> str | None:

@@ -16,7 +16,6 @@ from notionary.blocks.schemas import (
     Heading3Block,
     HeadingData,
 )
-from notionary.blocks.syntax_prompt_builder import BlockElementMarkdownInformation
 
 
 class ToggleableHeadingMapper(NotionMarkdownMapper):
@@ -97,17 +96,3 @@ class ToggleableHeadingMapper(NotionMarkdownMapper):
         prefix = "#" * level
 
         return f"+++{prefix} {text or ''}"
-
-    @classmethod
-    def get_system_prompt_information(cls) -> BlockElementMarkdownInformation | None:
-        """Get system prompt information for toggleable heading blocks."""
-        return BlockElementMarkdownInformation(
-            block_type=cls.__name__,
-            description="Toggleable heading blocks create collapsible sections with heading-style titles",
-            syntax_examples=[
-                "+++# Main Section\nContent goes here\n+++",
-                "+++## Subsection\nSubsection content\n+++",
-                "+++### Details\nDetailed information\n+++",
-            ],
-            usage_guidelines="Use for collapsible sections with heading structure. Combines heading levels (1-3) with toggle functionality. Great for organizing hierarchical expandable content.",
-        )
