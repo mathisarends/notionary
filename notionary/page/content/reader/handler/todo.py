@@ -33,7 +33,6 @@ class TodoRenderer(BlockRenderer):
         if context.indent_level > 0:
             todo_markdown = context.indent_text(todo_markdown)
 
-        # Process children if they exist
         children_markdown = await context.render_children_with_additional_indent(1)
 
         if children_markdown:
