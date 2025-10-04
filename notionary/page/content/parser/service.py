@@ -107,6 +107,7 @@ class MarkdownToNotionConverter(LoggingMixin):
             result_blocks=result_blocks,
             parent_stack=parent_stack,
             block_registry=self._block_registry,
+            parse_children_callback=self.process_lines,
             all_lines=lines,
             current_line_index=line_index,
             lines_consumed=0,

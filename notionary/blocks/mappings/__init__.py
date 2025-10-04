@@ -5,8 +5,6 @@ from .breadcrumb import BreadcrumbMapper
 from .bulleted_list import BulletedListMapper
 from .callout import CalloutMapper
 from .code import CodeMapper
-from .column import ColumnMapper
-from .column_list import ColumnListMapper
 from .divider import DividerMapper
 from .embed import EmbedMapper
 from .equation import EquationMapper
@@ -31,8 +29,6 @@ __all__ = [
     "BulletedListMapper",
     "CalloutMapper",
     "CodeMapper",
-    "ColumnListMapper",
-    "ColumnMapper",
     "DividerMapper",
     "EmbedMapper",
     "EquationMapper",

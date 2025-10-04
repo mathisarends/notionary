@@ -9,13 +9,14 @@ async def main() -> None:
     markdown = """
     ### Content-Plan für Social Media
 
-    |           Thema            |  Plattform  |    Status   | Veröffentlichungsdatum |
-    | -------------------------- | ----------- | ----------- | ---------------------- |
-    | Herbst-Special Ankündigung |  Instagram  | In Arbeit 🚧 |       2025-10-15       |
-    |    Neues Feature-Video     |   YouTube   |  Geplant 🗓️ |       2025-10-22       |
-    |   Wochenend-Rabattaktion   |   Facebook  |   Fertig ✅  |       2025-10-04       |
-    |      Blog-Post Teaser      | Twitter / X |  Geplant 🗓️ |       2025-10-28       |
-    |      @user[Mathis Arends]      |   LinkedIn  | In Arbeit 🚧 |       2025-11-05       |
+    ::: columns
+    ::: column 0.7
+    Main
+    :::
+    ::: column 0.3
+    Sidebar
+    :::
+    :::
 
     """
     content = await page.append_markdown(markdown)

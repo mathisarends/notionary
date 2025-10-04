@@ -1,13 +1,16 @@
+from typing import override
+
 from notionary.blocks.mappings.code import CodeMapper
-from notionary.blocks.mappings.column import ColumnMapper
-from notionary.blocks.mappings.column_list import ColumnListMapper
+from notionary.blocks.schemas import CreateColumnBlock, CreateColumnListBlock
 from notionary.page.content.parser.parsers import BlockParsingContext, LineParser
 
 
 class RegularLineParser(LineParser):
+    @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
         return context.line.strip()
 
+    @override
     async def _process(self, context: BlockParsingContext) -> None:
         if self._is_in_column_context(context):
             self._add_to_column_context(context)
@@ -22,7 +25,7 @@ class RegularLineParser(LineParser):
             return False
 
         current_parent = context.parent_stack[-1]
-        return issubclass(current_parent.element_type, (ColumnListMapper, ColumnMapper))
+        return isinstance(current_parent.block, (CreateColumnListBlock, CreateColumnBlock))
 
     def _add_to_column_context(self, context: BlockParsingContext) -> None:
         context.parent_stack[-1].add_child_line(context.line)
@@ -56,9 +59,7 @@ class RegularLineParser(LineParser):
         from notionary.blocks.mappings.toggle import ToggleMapper
 
         return (
-            ColumnListMapper,
             CodeMapper,
             ToggleMapper,
             TableMapper,
-            CodeMapper,
         )

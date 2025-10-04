@@ -1,4 +1,5 @@
 import re
+from typing import override
 
 from notionary.blocks.schemas import CreateEquationBlock, EquationData
 from notionary.page.content.parser.parsers.base import (
@@ -15,11 +16,13 @@ class EquationParser(LineParser):
         delimiter_pattern = rf"^{re.escape(self.EQUATION_DELIMITER)}\s*$"
         self._equation_delimiter_pattern = re.compile(delimiter_pattern)
 
+    @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
         if context.is_inside_parent_context():
             return False
         return self._is_equation_delimiter(context.line)
 
+    @override
     async def _process(self, context: BlockParsingContext) -> None:
         equation_content = self._collect_equation_content(context)
         lines_consumed = self._count_lines_consumed(context)

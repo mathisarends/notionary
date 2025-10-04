@@ -1,4 +1,5 @@
 import re
+from typing import override
 
 from notionary.blocks.mappings.toggleable_heading import (
     ToggleableHeadingMapper,
@@ -21,6 +22,7 @@ class ToggleableHeadingParser(LineParser):
         # +++
         self._end_pattern = re.compile(r"^[+]{3}\s*$")
 
+    @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
         return (
             self._is_toggleable_heading_start(context)
@@ -28,6 +30,7 @@ class ToggleableHeadingParser(LineParser):
             or self._is_toggleable_heading_content(context)
         )
 
+    @override
     async def _process(self, context: BlockParsingContext) -> None:
         """Process toggleable heading start, end, or content with unified handling."""
 

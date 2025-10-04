@@ -1,4 +1,5 @@
 import re
+from typing import override
 
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.models import RichText
@@ -16,11 +17,13 @@ class TableParser(LineParser):
         self._table_row_pattern = re.compile(self.TABLE_ROW_PATTERN)
         self._separator_pattern = re.compile(self.SEPARATOR_PATTERN)
 
+    @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
         if context.is_inside_parent_context():
             return False
         return self._is_table_start(context)
 
+    @override
     async def _process(self, context: BlockParsingContext) -> None:
         if not self._is_table_start(context):
             return

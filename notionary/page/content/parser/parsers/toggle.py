@@ -1,4 +1,5 @@
 import re
+from typing import override
 
 from notionary.blocks.mappings.toggle import ToggleMapper
 from notionary.page.content.parser.parsers import (
@@ -15,9 +16,11 @@ class ToggleParser(LineParser):
         self._start_pattern = re.compile(r"^[+]{3}\s*(.+)$", re.IGNORECASE)
         self._end_pattern = re.compile(r"^[+]{3}\s*$")
 
+    @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
         return self._is_toggle_start(context) or self._is_toggle_end(context) or self._is_toggle_content(context)
 
+    @override
     async def _process(self, context: BlockParsingContext) -> None:
         # Explicit, readable branches (small duplication is acceptable)
         if self._is_toggle_start(context):
