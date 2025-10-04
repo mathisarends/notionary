@@ -3,7 +3,7 @@ from typing import override
 
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import Block
-from notionary.page.content.renderer.context import BlockRenderingContext
+from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
 
 
@@ -17,7 +17,7 @@ class CaptionedBlockRenderer(BlockRenderer):
         raise NotImplementedError
 
     @override
-    async def _process(self, context: BlockRenderingContext) -> None:
+    async def _process(self, context: MarkdownRenderingContext) -> None:
         main_content = await self._render_main_content(context.block)
 
         if not main_content:

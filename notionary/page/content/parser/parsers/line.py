@@ -1,14 +1,14 @@
 from notionary.blocks.mappings.code import CodeMapper
 from notionary.blocks.mappings.column import ColumnMapper
 from notionary.blocks.mappings.column_list import ColumnListMapper
-from notionary.page.content.parser.parsers import LineParser, LineProcessingContext
+from notionary.page.content.parser.parsers import BlockParsingContext, LineParser
 
 
 class RegularLineParser(LineParser):
-    def _can_handle(self, context: LineProcessingContext) -> bool:
+    def _can_handle(self, context: BlockParsingContext) -> bool:
         return context.line.strip()
 
-    async def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: BlockParsingContext) -> None:
         if self._is_in_column_context(context):
             self._add_to_column_context(context)
             return
@@ -17,17 +17,17 @@ class RegularLineParser(LineParser):
         if not block_created:
             await self._process_as_paragraph(context)
 
-    def _is_in_column_context(self, context: LineProcessingContext) -> bool:
+    def _is_in_column_context(self, context: BlockParsingContext) -> bool:
         if not context.parent_stack:
             return False
 
         current_parent = context.parent_stack[-1]
         return issubclass(current_parent.element_type, (ColumnListMapper, ColumnMapper))
 
-    def _add_to_column_context(self, context: LineProcessingContext) -> None:
+    def _add_to_column_context(self, context: BlockParsingContext) -> None:
         context.parent_stack[-1].add_child_line(context.line)
 
-    async def _process_single_line_content(self, context: LineProcessingContext) -> bool:
+    async def _process_single_line_content(self, context: BlockParsingContext) -> bool:
         specialized_elements = self._get_specialized_elements()
 
         for element in context.block_registry.get_elements():
@@ -44,7 +44,7 @@ class RegularLineParser(LineParser):
 
         return False
 
-    async def _process_as_paragraph(self, context: LineProcessingContext) -> None:
+    async def _process_as_paragraph(self, context: BlockParsingContext) -> None:
         from notionary.blocks.mappings.paragraph import ParagraphMapper
 
         paragraph_element = ParagraphMapper()

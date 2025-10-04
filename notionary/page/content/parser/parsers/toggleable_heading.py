@@ -5,8 +5,8 @@ from notionary.blocks.mappings.toggleable_heading import (
 )
 from notionary.blocks.schemas import BlockCreatePayload, BlockType
 from notionary.page.content.parser.parsers import (
+    BlockParsingContext,
     LineParser,
-    LineProcessingContext,
     ParentBlockContext,
 )
 
@@ -21,14 +21,14 @@ class ToggleableHeadingParser(LineParser):
         # +++
         self._end_pattern = re.compile(r"^[+]{3}\s*$")
 
-    def _can_handle(self, context: LineProcessingContext) -> bool:
+    def _can_handle(self, context: BlockParsingContext) -> bool:
         return (
             self._is_toggleable_heading_start(context)
             or self._is_toggleable_heading_end(context)
             or self._is_toggleable_heading_content(context)
         )
 
-    async def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: BlockParsingContext) -> None:
         """Process toggleable heading start, end, or content with unified handling."""
 
         async def _handle(action):
@@ -42,11 +42,11 @@ class ToggleableHeadingParser(LineParser):
         if self._is_toggleable_heading_content(context):
             return await _handle(self._add_toggleable_heading_content)
 
-    def _is_toggleable_heading_start(self, context: LineProcessingContext) -> bool:
+    def _is_toggleable_heading_start(self, context: BlockParsingContext) -> bool:
         """Check if line starts a toggleable heading (+++# "Title" or +++#"Title")."""
         return self._start_pattern.match(context.line.strip()) is not None
 
-    def _is_toggleable_heading_end(self, context: LineProcessingContext) -> bool:
+    def _is_toggleable_heading_end(self, context: BlockParsingContext) -> bool:
         """Check if we need to end a toggleable heading (+++)."""
         if not self._end_pattern.match(context.line.strip()):
             return False
@@ -58,7 +58,7 @@ class ToggleableHeadingParser(LineParser):
         current_parent = context.parent_stack[-1]
         return issubclass(current_parent.element_type, ToggleableHeadingMapper)
 
-    async def _start_toggleable_heading(self, context: LineProcessingContext) -> None:
+    async def _start_toggleable_heading(self, context: BlockParsingContext) -> None:
         """Start a new toggleable heading block."""
         toggleable_heading_element = ToggleableHeadingMapper()
 
@@ -77,7 +77,7 @@ class ToggleableHeadingParser(LineParser):
         )
         context.parent_stack.append(parent_context)
 
-    def _is_toggleable_heading_content(self, context: LineProcessingContext) -> bool:
+    def _is_toggleable_heading_content(self, context: BlockParsingContext) -> bool:
         if not context.parent_stack:
             return False
 
@@ -89,11 +89,11 @@ class ToggleableHeadingParser(LineParser):
         line = context.line.strip()
         return not (self._start_pattern.match(line) or self._end_pattern.match(line))
 
-    async def _add_toggleable_heading_content(self, context: LineProcessingContext) -> None:
+    async def _add_toggleable_heading_content(self, context: BlockParsingContext) -> None:
         """Add content to the current toggleable heading context."""
         context.parent_stack[-1].add_child_line(context.line)
 
-    async def _finalize_toggleable_heading(self, context: LineProcessingContext) -> None:
+    async def _finalize_toggleable_heading(self, context: BlockParsingContext) -> None:
         """Finalize a toggleable heading block and add it to result_blocks."""
         heading_context = context.parent_stack.pop()
 

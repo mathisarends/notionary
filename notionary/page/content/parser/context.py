@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
@@ -24,19 +25,27 @@ class ParentBlockContext:
         return len(self.child_lines) > 0 or len(self.child_blocks) > 0
 
 
+ParseChildrenCallback = Callable[[list[str]], Awaitable[list[BlockCreatePayload]]]
+
+
 @dataclass
-class LineProcessingContext:
+class BlockParsingContext:
     line: str
     result_blocks: list[BlockCreatePayload]
     parent_stack: list[ParentBlockContext]
     block_registry: BlockRegistry
 
+    parse_children_callback: ParseChildrenCallback | None = None
+
     all_lines: list[str] | None = None
     current_line_index: int | None = None
     lines_consumed: int = 0
 
-    # Result indicators
-    was_processed: bool = False
+    async def parse_nested_content(self, nested_lines: list[str]) -> list[BlockCreatePayload]:
+        if not self.parse_children_callback or not nested_lines:
+            return []
+
+        return await self.parse_children_callback(nested_lines)
 
     def get_remaining_lines(self) -> list[str]:
         if self.all_lines is None or self.current_line_index is None:

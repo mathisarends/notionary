@@ -2,8 +2,8 @@ import re
 
 from notionary.blocks.mappings.toggle import ToggleMapper
 from notionary.page.content.parser.parsers import (
+    BlockParsingContext,
     LineParser,
-    LineProcessingContext,
     ParentBlockContext,
 )
 
@@ -15,10 +15,10 @@ class ToggleParser(LineParser):
         self._start_pattern = re.compile(r"^[+]{3}\s*(.+)$", re.IGNORECASE)
         self._end_pattern = re.compile(r"^[+]{3}\s*$")
 
-    def _can_handle(self, context: LineProcessingContext) -> bool:
+    def _can_handle(self, context: BlockParsingContext) -> bool:
         return self._is_toggle_start(context) or self._is_toggle_end(context) or self._is_toggle_content(context)
 
-    async def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: BlockParsingContext) -> None:
         # Explicit, readable branches (small duplication is acceptable)
         if self._is_toggle_start(context):
             await self._start_toggle(context)
@@ -29,7 +29,7 @@ class ToggleParser(LineParser):
         if self._is_toggle_content(context):
             self._add_toggle_content(context)
 
-    def _is_toggle_start(self, context: LineProcessingContext) -> bool:
+    def _is_toggle_start(self, context: BlockParsingContext) -> bool:
         """Check if line starts a toggle (+++ Title or +++Title)."""
         line = context.line.strip()
 
@@ -42,7 +42,7 @@ class ToggleParser(LineParser):
         toggleable_heading_pattern = re.compile(r"^[+]{3}\s*#{1,3}\s+.+$", re.IGNORECASE)
         return not toggleable_heading_pattern.match(line)
 
-    def _is_toggle_end(self, context: LineProcessingContext) -> bool:
+    def _is_toggle_end(self, context: BlockParsingContext) -> bool:
         """Check if we need to end a toggle (+++)."""
         if not self._end_pattern.match(context.line.strip()):
             return False
@@ -54,7 +54,7 @@ class ToggleParser(LineParser):
         current_parent = context.parent_stack[-1]
         return issubclass(current_parent.element_type, ToggleMapper)
 
-    async def _start_toggle(self, context: LineProcessingContext) -> None:
+    async def _start_toggle(self, context: BlockParsingContext) -> None:
         """Start a new toggle block."""
         toggle_element = ToggleMapper()
 
@@ -73,7 +73,7 @@ class ToggleParser(LineParser):
         )
         context.parent_stack.append(parent_context)
 
-    async def _finalize_toggle(self, context: LineProcessingContext) -> None:
+    async def _finalize_toggle(self, context: BlockParsingContext) -> None:
         """Finalize a toggle block and add it to result_blocks."""
         toggle_context = context.parent_stack.pop()
 
@@ -90,7 +90,7 @@ class ToggleParser(LineParser):
             # No parent, add to top level
             context.result_blocks.append(toggle_context.block)
 
-    def _is_toggle_content(self, context: LineProcessingContext) -> bool:
+    def _is_toggle_content(self, context: BlockParsingContext) -> bool:
         """Check if we're inside a toggle context and should handle content."""
         if not context.parent_stack:
             return False
@@ -103,7 +103,7 @@ class ToggleParser(LineParser):
         line = context.line.strip()
         return not (self._start_pattern.match(line) or self._end_pattern.match(line))
 
-    def _add_toggle_content(self, context: LineProcessingContext) -> None:
+    def _add_toggle_content(self, context: BlockParsingContext) -> None:
         """Add content to the current toggle context."""
         context.parent_stack[-1].add_child_line(context.line)
 

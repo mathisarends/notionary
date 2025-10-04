@@ -1,6 +1,6 @@
 from notionary.blocks.registry.service import BlockRegistry
 from notionary.blocks.schemas import Block
-from notionary.page.content.renderer.context import BlockRenderingContext
+from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.post_processing import NumberedListFixer
 from notionary.page.content.renderer.renderers import (
     AudioRenderer,
@@ -166,9 +166,9 @@ class NotionToMarkdownConverter(LoggingMixin):
 
     def _create_rendering_context(
         self, blocks: list[Block], block_index: int, indent_level: int
-    ) -> BlockRenderingContext:
+    ) -> MarkdownRenderingContext:
         block = blocks[block_index]
-        return BlockRenderingContext(
+        return MarkdownRenderingContext(
             block=block,
             indent_level=indent_level,
             convert_children_callback=self.convert,

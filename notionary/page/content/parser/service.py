@@ -1,11 +1,11 @@
 from notionary.blocks.registry.service import BlockRegistry
 from notionary.blocks.schemas import BlockCreatePayload
 from notionary.page.content.parser.parsers import (
+    BlockParsingContext,
     CodeParser,
     ColumnListParser,
     ColumnParser,
     EquationParser,
-    LineProcessingContext,
     ParentBlockContext,
     RegularLineParser,
     TableParser,
@@ -101,8 +101,8 @@ class MarkdownToNotionConverter(LoggingMixin):
         line_index: int,
         result_blocks: list[BlockCreatePayload],
         parent_stack: list[ParentBlockContext],
-    ) -> LineProcessingContext:
-        return LineProcessingContext(
+    ) -> BlockParsingContext:
+        return BlockParsingContext(
             line=line,
             result_blocks=result_blocks,
             parent_stack=parent_stack,

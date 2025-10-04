@@ -5,7 +5,7 @@ from notionary.blocks.schemas import Block
 ConvertChildrenCallback = Callable[[list[Block], int], Awaitable[str]]
 
 
-class BlockRenderingContext:
+class MarkdownRenderingContext:
     def __init__(
         self,
         block: Block,

@@ -2,7 +2,7 @@ from typing import override
 
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import Block, BlockType
-from notionary.page.content.renderer.context import BlockRenderingContext
+from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
 
 
@@ -18,7 +18,7 @@ class BulletedListRenderer(BlockRenderer):
         return block.type == BlockType.BULLETED_LIST_ITEM
 
     @override
-    async def _process(self, context: BlockRenderingContext) -> None:
+    async def _process(self, context: MarkdownRenderingContext) -> None:
         markdown = await self._convert_bulleted_list_to_markdown(context.block)
 
         if not markdown:

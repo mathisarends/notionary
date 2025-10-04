@@ -2,8 +2,8 @@ import re
 
 from notionary.blocks.mappings.code import CodeMapper
 from notionary.page.content.parser.parsers.base import (
+    BlockParsingContext,
     LineParser,
-    LineProcessingContext,
 )
 
 
@@ -13,24 +13,24 @@ class CodeParser(LineParser):
         self._code_start_pattern = re.compile(r"^```(\w*)\s*(?:\"([^\"]*)\")?\s*$")
         self._code_end_pattern = re.compile(r"^```\s*$")
 
-    def _can_handle(self, context: LineProcessingContext) -> bool:
+    def _can_handle(self, context: BlockParsingContext) -> bool:
         if self._is_inside_parent_context(context):
             return False
         return self._is_code_start(context)
 
-    async def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: BlockParsingContext) -> None:
         if self._is_code_start(context):
             await self._process_complete_code_block(context)
 
-    def _is_code_start(self, context: LineProcessingContext) -> bool:
+    def _is_code_start(self, context: BlockParsingContext) -> bool:
         """Check if this line starts a code block."""
         return self._code_start_pattern.match(context.line.strip()) is not None
 
-    def _is_inside_parent_context(self, context: LineProcessingContext) -> bool:
+    def _is_inside_parent_context(self, context: BlockParsingContext) -> bool:
         """Check if we're currently inside any parent context (toggle, heading, etc.)."""
         return len(context.parent_stack) > 0
 
-    async def _process_complete_code_block(self, context: LineProcessingContext) -> None:
+    async def _process_complete_code_block(self, context: BlockParsingContext) -> None:
         """Process the entire code block in one go using CodeMapper."""
         code_lines, lines_to_consume = self._collect_code_lines(context)
 
@@ -40,7 +40,7 @@ class CodeParser(LineParser):
             context.lines_consumed = lines_to_consume
             context.result_blocks.append(block)
 
-    def _collect_code_lines(self, context: LineProcessingContext) -> tuple[list[str], int]:
+    def _collect_code_lines(self, context: BlockParsingContext) -> tuple[list[str], int]:
         """Collect lines until closing fence and return (lines, count_to_consume)."""
         lines = []
         for idx, ln in enumerate(context.get_remaining_lines()):

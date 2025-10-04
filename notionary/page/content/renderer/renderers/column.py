@@ -2,7 +2,7 @@ from typing import override
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block
-from notionary.page.content.renderer.context import BlockRenderingContext
+from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
 
 
@@ -15,7 +15,7 @@ class ColumnRenderer(BlockRenderer):
         return block.type == BlockType.COLUMN
 
     @override
-    async def _process(self, context: BlockRenderingContext) -> None:
+    async def _process(self, context: MarkdownRenderingContext) -> None:
         column_start = self._extract_column_start(context.block)
 
         if context.indent_level > 0:

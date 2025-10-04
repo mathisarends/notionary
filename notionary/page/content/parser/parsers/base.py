@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from notionary.page.content.parser.context import LineProcessingContext
+from notionary.page.content.parser.context import BlockParsingContext
 
 
 class LineParser(ABC):
@@ -13,16 +13,16 @@ class LineParser(ABC):
         self._next_handler = handler
         return handler
 
-    async def handle(self, context: LineProcessingContext) -> None:
+    async def handle(self, context: BlockParsingContext) -> None:
         if self._can_handle(context):
             await self._process(context)
         elif self._next_handler:
             await self._next_handler.handle(context)
 
     @abstractmethod
-    def _can_handle(self, context: LineProcessingContext) -> bool:
+    def _can_handle(self, context: BlockParsingContext) -> bool:
         pass
 
     @abstractmethod
-    async def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: BlockParsingContext) -> None:
         pass

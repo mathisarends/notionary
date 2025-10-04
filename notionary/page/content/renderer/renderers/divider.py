@@ -2,7 +2,7 @@ from typing import override
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block
-from notionary.page.content.renderer.context import BlockRenderingContext
+from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
 
 
@@ -14,7 +14,7 @@ class DividerRenderer(BlockRenderer):
         return block.type == BlockType.DIVIDER
 
     @override
-    async def _process(self, context: BlockRenderingContext) -> None:
+    async def _process(self, context: MarkdownRenderingContext) -> None:
         divider_markdown = self.DIVIDER_MARKDOWN
 
         if context.indent_level > 0:

@@ -1,4 +1,4 @@
-from ..context import LineProcessingContext, ParentBlockContext
+from ..context import BlockParsingContext, ParentBlockContext
 from .base import LineParser
 from .code import CodeParser
 from .column import ColumnParser
@@ -10,12 +10,12 @@ from .toggle import ToggleParser
 from .toggleable_heading import ToggleableHeadingParser
 
 __all__ = [
+    "BlockParsingContext",
     "CodeParser",
     "ColumnListParser",
     "ColumnParser",
     "EquationParser",
     "LineParser",
-    "LineProcessingContext",
     "ParentBlockContext",
     "RegularLineParser",
     "TableParser",

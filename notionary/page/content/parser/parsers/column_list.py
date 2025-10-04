@@ -5,8 +5,8 @@ import re
 from notionary.blocks.mappings.column_list import ColumnListMapper
 from notionary.page.content.parser.context import ParentBlockContext
 from notionary.page.content.parser.parsers.base import (
+    BlockParsingContext,
     LineParser,
-    LineProcessingContext,
 )
 
 
@@ -16,10 +16,10 @@ class ColumnListParser(LineParser):
         self._start_pattern = re.compile(r"^:::\s*columns?\s*$", re.IGNORECASE)
         self._end_pattern = re.compile(r"^:::\s*$")
 
-    def _can_handle(self, context: LineProcessingContext) -> bool:
+    def _can_handle(self, context: BlockParsingContext) -> bool:
         return self._is_column_list_start(context) or self._is_column_list_end(context)
 
-    async def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: BlockParsingContext) -> None:
         if self._is_column_list_start(context):
             await self._start_column_list(context)
             return
@@ -27,11 +27,11 @@ class ColumnListParser(LineParser):
         if self._is_column_list_end(context):
             await self._finalize_column_list(context)
 
-    def _is_column_list_start(self, context: LineProcessingContext) -> bool:
+    def _is_column_list_start(self, context: BlockParsingContext) -> bool:
         """Check if line starts a column list (::: columns)."""
         return self._start_pattern.match(context.line.strip()) is not None
 
-    def _is_column_list_end(self, context: LineProcessingContext) -> bool:
+    def _is_column_list_end(self, context: BlockParsingContext) -> bool:
         """Check if we need to end a column list (:::)."""
         if not self._end_pattern.match(context.line.strip()):
             return False
@@ -43,7 +43,7 @@ class ColumnListParser(LineParser):
         current_parent = context.parent_stack[-1]
         return issubclass(current_parent.element_type, ColumnListMapper)
 
-    async def _start_column_list(self, context: LineProcessingContext) -> None:
+    async def _start_column_list(self, context: BlockParsingContext) -> None:
         """Start a new column list."""
         # Create ColumnList block using the element from registry
         column_list_element = None
@@ -70,7 +70,7 @@ class ColumnListParser(LineParser):
         )
         context.parent_stack.append(parent_context)
 
-    async def _finalize_column_list(self, context: LineProcessingContext) -> None:
+    async def _finalize_column_list(self, context: BlockParsingContext) -> None:
         """Finalize a column list and add it to result_blocks."""
         column_list_context = context.parent_stack.pop()
         await self._assign_column_list_children_if_any(column_list_context, context)
@@ -86,7 +86,7 @@ class ColumnListParser(LineParser):
             context.result_blocks.append(column_list_context.block)
 
     async def _assign_column_list_children_if_any(
-        self, column_list_context: ParentBlockContext, context: LineProcessingContext
+        self, column_list_context: ParentBlockContext, context: BlockParsingContext
     ) -> None:
         """Collect and assign any column children blocks inside this column list."""
         all_children = []

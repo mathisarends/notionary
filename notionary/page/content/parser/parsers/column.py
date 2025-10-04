@@ -3,8 +3,8 @@ import re
 from notionary.blocks.mappings.column import ColumnMapper
 from notionary.page.content.parser.context import ParentBlockContext
 from notionary.page.content.parser.parsers.base import (
+    BlockParsingContext,
     LineParser,
-    LineProcessingContext,
 )
 
 
@@ -14,10 +14,10 @@ class ColumnParser(LineParser):
         self._start_pattern = re.compile(r"^:::\s*column(\s+.*?)?\s*$", re.IGNORECASE)
         self._end_pattern = re.compile(r"^:::\s*$")
 
-    def _can_handle(self, context: LineProcessingContext) -> bool:
+    def _can_handle(self, context: BlockParsingContext) -> bool:
         return self._is_column_start(context) or self._is_column_end(context)
 
-    async def _process(self, context: LineProcessingContext) -> None:
+    async def _process(self, context: BlockParsingContext) -> None:
         if self._is_column_start(context):
             await self._start_column(context)
             return
@@ -25,11 +25,11 @@ class ColumnParser(LineParser):
         if self._is_column_end(context):
             await self._finalize_column(context)
 
-    def _is_column_start(self, context: LineProcessingContext) -> bool:
+    def _is_column_start(self, context: BlockParsingContext) -> bool:
         """Check if line starts a column (::: column)."""
         return self._start_pattern.match(context.line.strip()) is not None
 
-    def _is_column_end(self, context: LineProcessingContext) -> bool:
+    def _is_column_end(self, context: BlockParsingContext) -> bool:
         """Check if we need to end a single column (:::)."""
         if not self._end_pattern.match(context.line.strip()):
             return False
@@ -41,7 +41,7 @@ class ColumnParser(LineParser):
         current_parent = context.parent_stack[-1]
         return issubclass(current_parent.element_type, ColumnMapper)
 
-    async def _start_column(self, context: LineProcessingContext) -> None:
+    async def _start_column(self, context: BlockParsingContext) -> None:
         """Start a new column."""
         # Create Column block directly - much more efficient!
         column_element = ColumnMapper()
@@ -59,7 +59,7 @@ class ColumnParser(LineParser):
         )
         context.parent_stack.append(parent_context)
 
-    async def _finalize_column(self, context: LineProcessingContext) -> None:
+    async def _finalize_column(self, context: BlockParsingContext) -> None:
         """Finalize a single column and add it to the column list or result."""
         column_context = context.parent_stack.pop()
         await self._assign_column_children_if_any(column_context, context)
@@ -77,7 +77,7 @@ class ColumnParser(LineParser):
         context.result_blocks.append(column_context.block)
 
     async def _assign_column_children_if_any(
-        self, column_context: ParentBlockContext, context: LineProcessingContext
+        self, column_context: ParentBlockContext, context: BlockParsingContext
     ) -> None:
         """Collect and assign any children blocks inside this column."""
         all_children = []
@@ -94,9 +94,7 @@ class ColumnParser(LineParser):
 
         column_context.block.column.children = all_children
 
-    def _try_add_to_parent_column_list(
-        self, column_context: ParentBlockContext, context: LineProcessingContext
-    ) -> bool:
+    def _try_add_to_parent_column_list(self, column_context: ParentBlockContext, context: BlockParsingContext) -> bool:
         """If the previous stack element is a ColumnList, append column and return True."""
         if not context.parent_stack:
             return False
