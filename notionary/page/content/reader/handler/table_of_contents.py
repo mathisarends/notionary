@@ -25,5 +25,3 @@ class TableOfContentsRenderer(BlockRenderer):
             context.markdown_result = f"{toc_markdown}\n{children_markdown}"
         else:
             context.markdown_result = toc_markdown
-
-        context.was_processed = True

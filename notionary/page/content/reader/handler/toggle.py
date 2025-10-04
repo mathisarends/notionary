@@ -8,7 +8,7 @@ from notionary.page.content.reader.handler.base import BlockRenderer
 
 
 class ToggleRenderer(BlockRenderer):
-    TOGGLE_DELIMITER = "+++"
+    TOGGLE_DELIMITER = ":::"
 
     def __init__(self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None) -> None:
         super().__init__()
@@ -41,8 +41,6 @@ class ToggleRenderer(BlockRenderer):
             context.markdown_result = f"{toggle_start}\n{children_markdown}\n{toggle_end}"
         else:
             context.markdown_result = f"{toggle_start}\n{toggle_end}"
-
-        context.was_processed = True
 
     async def _extract_toggle_title(self, block: Block) -> str:
         if not block.toggle or not block.toggle.rich_text:

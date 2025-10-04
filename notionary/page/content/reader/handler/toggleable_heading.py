@@ -7,7 +7,7 @@ from notionary.page.content.reader.handler.base import BlockRenderer
 
 
 class ToggleableHeadingRenderer(BlockRenderer):
-    TOGGLE_DELIMITER = "+++"
+    TOGGLE_DELIMITER = ":::"
 
     def __init__(self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None) -> None:
         super().__init__()
@@ -32,7 +32,7 @@ class ToggleableHeadingRenderer(BlockRenderer):
         if not title or level == 0:
             return
 
-        prefix = self.TOGGLE_DELIMITER + ("#" * level)
+        prefix = self.TOGGLE_DELIMITER + " " + ("#" * level)
         heading_start = f"{prefix} {title}"
 
         if context.indent_level > 0:
@@ -48,8 +48,6 @@ class ToggleableHeadingRenderer(BlockRenderer):
             context.markdown_result = f"{heading_start}\n{children_markdown}\n{heading_end}"
         else:
             context.markdown_result = f"{heading_start}\n{heading_end}"
-
-        context.was_processed = True
 
     def _get_heading_level(self, block: Block) -> int:
         if block.type == BlockType.HEADING_1:

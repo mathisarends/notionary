@@ -23,7 +23,6 @@ class FileRenderer(BlockRenderer):
 
         if not url:
             context.markdown_result = ""
-            context.was_processed = True
             return
 
         link_text = caption or name or "file"
@@ -38,8 +37,6 @@ class FileRenderer(BlockRenderer):
             context.markdown_result = f"{file_markdown}\n{children_markdown}"
         else:
             context.markdown_result = file_markdown
-
-        context.was_processed = True
 
     def _extract_file_url(self, block: Block) -> str:
         if not block.file:

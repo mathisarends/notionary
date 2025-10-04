@@ -24,7 +24,6 @@ class BulletedListRenderer(BlockRenderer):
 
         if not markdown:
             context.markdown_result = ""
-            context.was_processed = True
             return
 
         list_item_markdown = f"{self.BULLET_MARKER}{markdown}"
@@ -38,8 +37,6 @@ class BulletedListRenderer(BlockRenderer):
             context.markdown_result = f"{list_item_markdown}\n{children_markdown}"
         else:
             context.markdown_result = list_item_markdown
-
-        context.was_processed = True
 
     async def _convert_bulleted_list_to_markdown(self, block: Block) -> str | None:
         if not block.bulleted_list_item or not block.bulleted_list_item.rich_text:

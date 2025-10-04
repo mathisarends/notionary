@@ -33,8 +33,6 @@ class ColumnRenderer(BlockRenderer):
         else:
             context.markdown_result = f"{column_start}\n{column_end}"
 
-        context.was_processed = True
-
     def _extract_column_start(self, block: Block) -> str:
         if not block.column:
             return self.BASE_START_MARKER

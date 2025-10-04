@@ -9,6 +9,7 @@ from .column_list import ColumnListRenderer
 from .divider import DividerRenderer
 from .embed import EmbedRenderer
 from .equation import EquationRenderer
+from .fallback import FallbackRenderer
 from .file import FileRenderer
 from .heading import HeadingRenderer
 from .image import ImageRenderer
@@ -35,6 +36,7 @@ __all__ = [
     "DividerRenderer",
     "EmbedRenderer",
     "EquationRenderer",
+    "FallbackRenderer",
     "FileRenderer",
     "HeadingRenderer",
     "ImageRenderer",

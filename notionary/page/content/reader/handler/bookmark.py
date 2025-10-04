@@ -22,7 +22,6 @@ class BookmarkRenderer(BlockRenderer):
 
         if not url:
             context.markdown_result = ""
-            context.was_processed = True
             return
 
         bookmark_markdown = f"[{caption}]({url})" if caption else f"<{url}>"
@@ -36,8 +35,6 @@ class BookmarkRenderer(BlockRenderer):
             context.markdown_result = f"{bookmark_markdown}\n{children_markdown}"
         else:
             context.markdown_result = bookmark_markdown
-
-        context.was_processed = True
 
     def _extract_bookmark_url(self, block: Block) -> str:
         if not block.bookmark:

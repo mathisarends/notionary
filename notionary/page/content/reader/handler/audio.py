@@ -22,7 +22,6 @@ class AudioRenderer(BlockRenderer):
 
         if not url:
             context.markdown_result = ""
-            context.was_processed = True
             return
 
         alt_text = caption or "audio"
@@ -37,8 +36,6 @@ class AudioRenderer(BlockRenderer):
             context.markdown_result = f"{audio_markdown}\n{children_markdown}"
         else:
             context.markdown_result = audio_markdown
-
-        context.was_processed = True
 
     def _extract_audio_url(self, block: Block) -> str:
         if not block.audio:

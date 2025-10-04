@@ -24,7 +24,6 @@ class QuoteRenderer(BlockRenderer):
 
         if not markdown:
             context.markdown_result = ""
-            context.was_processed = True
             return
 
         quote_lines = markdown.split("\n")
@@ -39,8 +38,6 @@ class QuoteRenderer(BlockRenderer):
             context.markdown_result = f"{quote_markdown}\n{children_markdown}"
         else:
             context.markdown_result = quote_markdown
-
-        context.was_processed = True
 
     async def _convert_quote_to_markdown(self, block: Block) -> str | None:
         if not block.quote or not block.quote.rich_text:

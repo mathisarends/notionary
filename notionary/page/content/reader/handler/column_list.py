@@ -31,5 +31,3 @@ class ColumnListRenderer(BlockRenderer):
             context.markdown_result = f"{column_list_start}\n{children_markdown}\n{column_list_end}"
         else:
             context.markdown_result = f"{column_list_start}\n{column_list_end}"
-
-        context.was_processed = True

@@ -22,7 +22,6 @@ class PdfRenderer(BlockRenderer):
 
         if not url:
             context.markdown_result = ""
-            context.was_processed = True
             return
 
         link_text = caption or "PDF"
@@ -37,8 +36,6 @@ class PdfRenderer(BlockRenderer):
             context.markdown_result = f"{pdf_markdown}\n{children_markdown}"
         else:
             context.markdown_result = pdf_markdown
-
-        context.was_processed = True
 
     def _extract_pdf_url(self, block: Block) -> str:
         if not block.pdf:

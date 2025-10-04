@@ -22,7 +22,6 @@ class VideoRenderer(BlockRenderer):
 
         if not url:
             context.markdown_result = ""
-            context.was_processed = True
             return
 
         alt_text = caption or "video"
@@ -37,8 +36,6 @@ class VideoRenderer(BlockRenderer):
             context.markdown_result = f"{video_markdown}\n{children_markdown}"
         else:
             context.markdown_result = video_markdown
-
-        context.was_processed = True
 
     def _extract_video_url(self, block: Block) -> str:
         if not block.video:

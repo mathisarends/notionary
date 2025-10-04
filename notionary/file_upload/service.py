@@ -5,7 +5,7 @@ from io import BytesIO
 from pathlib import Path
 
 from notionary.file_upload.models import FileUploadResponse, UploadMode
-from notionary.util import LoggingMixin
+from notionary.utils.mixins.logging import LoggingMixin
 
 
 class NotionFileUpload(LoggingMixin):

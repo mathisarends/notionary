@@ -1,6 +1,6 @@
 from typing import override
 
-from notionary.blocks.mappings.callout import CalloutMapper
+from notionary.blocks.enums import BlockType
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import Block
 from notionary.page.content.reader.context import BlockRenderingContext
@@ -17,15 +17,16 @@ class CalloutRenderer(BlockRenderer):
 
     @override
     def _can_handle(self, context: BlockRenderingContext) -> bool:
-        return CalloutMapper.match_notion(context.block)
+        block = context.block
+        return block.type == BlockType.CALLOUT
 
     @override
     async def _process(self, context: BlockRenderingContext) -> None:
-        icon, content = await self._extract_callout_info(context.block)
+        icon = await self._extract_callout_icon(context.block)
+        content = await self._extract_callout_content(context.block)
 
         if not content:
             context.markdown_result = ""
-            context.was_processed = True
             return
 
         # Build callout structure
@@ -49,18 +50,12 @@ class CalloutRenderer(BlockRenderer):
         else:
             context.markdown_result = f"{callout_header}\n{content}\n{callout_end}"
 
-        context.was_processed = True
+    async def _extract_callout_icon(self, block: Block) -> str:
+        if not block.callout or not block.callout.icon:
+            return ""
+        return block.callout.icon.emoji or ""
 
-    async def _extract_callout_info(self, block: Block) -> tuple[str, str]:
-        if not block.callout:
-            return "", ""
-
-        icon = ""
-        if block.callout.icon and hasattr(block.callout.icon, "emoji"):
-            icon = block.callout.icon.emoji or ""
-
-        content = ""
-        if block.callout.rich_text:
-            content = await self._rich_text_markdown_converter.to_markdown(block.callout.rich_text)
-
-        return icon, content
+    async def _extract_callout_content(self, block: Block) -> str:
+        if not block.callout or not block.callout.rich_text:
+            return ""
+        return await self._rich_text_markdown_converter.to_markdown(block.callout.rich_text)

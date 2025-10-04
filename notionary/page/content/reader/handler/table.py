@@ -21,7 +21,6 @@ class TableRenderer(BlockRenderer):
 
         if not table_markdown:
             context.markdown_result = ""
-            context.was_processed = True
             return
 
         if context.indent_level > 0:
@@ -33,8 +32,6 @@ class TableRenderer(BlockRenderer):
             context.markdown_result = f"{table_markdown}\n{children_markdown}"
         else:
             context.markdown_result = table_markdown
-
-        context.was_processed = True
 
     async def _build_table_markdown(self, block: Block) -> str:
         if not block.table or not block.has_children or not block.children:

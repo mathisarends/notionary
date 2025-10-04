@@ -16,7 +16,6 @@ class EquationRenderer(BlockRenderer):
 
         if not expression:
             context.markdown_result = ""
-            context.was_processed = True
             return
 
         equation_markdown = f"$${expression}$$"
@@ -30,8 +29,6 @@ class EquationRenderer(BlockRenderer):
             context.markdown_result = f"{equation_markdown}\n{children_markdown}"
         else:
             context.markdown_result = equation_markdown
-
-        context.was_processed = True
 
     def _extract_equation_expression(self, block: Block) -> str:
         if not block.equation:
