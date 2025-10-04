@@ -1,48 +1,42 @@
-from notionary.blocks.mappings.toggle import ToggleMapper
+from typing import override
+
+from notionary.blocks.enums import BlockType
+from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.schemas import Block
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
-from notionary.page.content.reader.handler.utils import indent_text
 
 
 class ToggleRenderer(BlockRenderer):
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
-        return ToggleMapper.match_notion(context.block)
+    TOGGLE_DELIMITER = "+++"
 
+    def __init__(self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None) -> None:
+        super().__init__()
+        self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
+
+    @override
+    def _can_handle(self, context: BlockRenderingContext) -> bool:
+        block = context.block
+        return block.type == BlockType.TOGGLE
+
+    @override
     async def _process(self, context: BlockRenderingContext) -> None:
-        # Get the toggle title from the block
-        toggle_title = self._extract_toggle_title(context.block)
+        toggle_title = await self._extract_toggle_title(context.block)
 
         if not toggle_title:
             return
 
-        # Create toggle start line
-        toggle_start = f"+++ {toggle_title}"
+        toggle_start = f"{self.TOGGLE_DELIMITER} {toggle_title}"
 
-        # Apply indentation if needed
         if context.indent_level > 0:
-            toggle_start = indent_text(toggle_start, spaces=context.indent_level * 4)
+            toggle_start = context.indent_text(toggle_start)
 
-        # Process children if they exist
-        children_markdown = ""
-        if context.has_children():
-            # Import here to avoid circular dependency
-            from notionary.page.content.reader.service import (
-                NotionToMarkdownConverter,
-            )
+        children_markdown = await context.render_children()
 
-            # Create a temporary retriever to process children
-            retriever = NotionToMarkdownConverter(context.block_registry)
-            children_markdown = await retriever.convert(
-                context.get_children_blocks(),
-                indent_level=0,  # No indentation for content inside toggles
-            )
-
-        # Create toggle end line
-        toggle_end = "+++"
+        toggle_end = self.TOGGLE_DELIMITER
         if context.indent_level > 0:
-            toggle_end = indent_text(toggle_end, spaces=context.indent_level * 4)
+            toggle_end = context.indent_text(toggle_end)
 
-        # Combine toggle with children content
         if children_markdown:
             context.markdown_result = f"{toggle_start}\n{children_markdown}\n{toggle_end}"
         else:
@@ -50,16 +44,9 @@ class ToggleRenderer(BlockRenderer):
 
         context.was_processed = True
 
-    def _extract_toggle_title(self, block) -> str:
-        """Extract toggle title from the block."""
+    async def _extract_toggle_title(self, block: Block) -> str:
         if not block.toggle or not block.toggle.rich_text:
             return ""
 
-        title = ""
-        for text_obj in block.toggle.rich_text:
-            if hasattr(text_obj, "plain_text"):
-                title += text_obj.plain_text or ""
-            elif hasattr(text_obj, "text") and hasattr(text_obj.text, "content"):
-                title += text_obj.text.content or ""
-
-        return title.strip()
+        rich_text_title = block.toggle.rich_text
+        return await self._rich_text_markdown_converter.to_markdown(rich_text_title)

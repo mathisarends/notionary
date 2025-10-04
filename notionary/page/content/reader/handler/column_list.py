@@ -1,42 +1,32 @@
-from notionary.blocks.mappings.column_list import ColumnListMapper
+from typing import override
+
+from notionary.blocks.enums import BlockType
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
-from notionary.page.content.reader.handler.utils import indent_text
 
 
 class ColumnListRenderer(BlockRenderer):
+    START_MARKER = "::: columns"
+    END_MARKER = ":::"
+
+    @override
     def _can_handle(self, context: BlockRenderingContext) -> bool:
-        return ColumnListMapper.match_notion(context.block)
+        block = context.block
+        return block.type == BlockType.COLUMN_LIST
 
+    @override
     async def _process(self, context: BlockRenderingContext) -> None:
-        # Create column list start line
-        column_list_start = "::: columns"
+        column_list_start = self.START_MARKER
 
-        # Apply indentation if needed
         if context.indent_level > 0:
-            column_list_start = indent_text(column_list_start, spaces=context.indent_level * 4)
+            column_list_start = context.indent_text(column_list_start)
 
-        # Process children if they exist
-        children_markdown = ""
-        if context.has_children():
-            # Import here to avoid circular dependency
-            from notionary.page.content.reader.service import (
-                NotionToMarkdownConverter,
-            )
+        children_markdown = await context.render_children()
 
-            # Create a temporary retriever to process children
-            retriever = NotionToMarkdownConverter(context.block_registry)
-            children_markdown = await retriever.convert(
-                context.get_children_blocks(),
-                indent_level=0,  # No indentation for content inside column lists
-            )
-
-        # Create column list end line
-        column_list_end = ":::"
+        column_list_end = self.END_MARKER
         if context.indent_level > 0:
-            column_list_end = indent_text(column_list_end, spaces=context.indent_level * 4)
+            column_list_end = context.indent_text(column_list_end)
 
-        # Combine column list with children content
         if children_markdown:
             context.markdown_result = f"{column_list_start}\n{children_markdown}\n{column_list_end}"
         else:

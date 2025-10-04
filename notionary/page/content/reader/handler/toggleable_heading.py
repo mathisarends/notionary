@@ -4,10 +4,11 @@ from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import Ric
 from notionary.blocks.schemas import Block, BlockType
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
-from notionary.page.content.reader.handler.utils import indent_text
 
 
 class ToggleableHeadingRenderer(BlockRenderer):
+    TOGGLE_DELIMITER = "+++"
+
     def __init__(self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None) -> None:
         super().__init__()
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
@@ -31,34 +32,18 @@ class ToggleableHeadingRenderer(BlockRenderer):
         if not title or level == 0:
             return
 
-        prefix = "+++" + ("#" * level)
+        prefix = self.TOGGLE_DELIMITER + ("#" * level)
         heading_start = f"{prefix} {title}"
 
-        # Apply indentation if needed
         if context.indent_level > 0:
-            heading_start = indent_text(heading_start, spaces=context.indent_level * 4)
+            heading_start = context.indent_text(heading_start)
 
-        # Process children if they exist
-        children_markdown = ""
-        if context.has_children():
-            # Import here to avoid circular dependency
-            from notionary.page.content.reader.service import (
-                NotionToMarkdownConverter,
-            )
+        children_markdown = await context.render_children()
 
-            # Create a temporary retriever to process children
-            retriever = NotionToMarkdownConverter(context.block_registry)
-            children_markdown = await retriever.convert(
-                context.get_children_blocks(),
-                indent_level=0,  # No indentation for content inside toggleable headings
-            )
-
-        # Create toggleable heading end line
-        heading_end = "+++"
+        heading_end = self.TOGGLE_DELIMITER
         if context.indent_level > 0:
-            heading_end = indent_text(heading_end, spaces=context.indent_level * 4)
+            heading_end = context.indent_text(heading_end)
 
-        # Combine heading with children content
         if children_markdown:
             context.markdown_result = f"{heading_start}\n{children_markdown}\n{heading_end}"
         else:

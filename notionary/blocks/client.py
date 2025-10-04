@@ -57,6 +57,10 @@ class NotionBlockHttpClient(NotionHttpClient):
 
         response = await self.get(f"blocks/{block_id}/children", params=params)
 
+        import json
+
+        print("Response:", json.dumps(response, indent=2))  # Debugging line
+
         if not response:
             return None
 

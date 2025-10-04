@@ -1,11 +1,8 @@
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
-from notionary.page.content.reader.handler.utils import indent_text
 
 
 class LineRenderer(BlockRenderer):
-    """Handles all regular blocks that don't need special parent/children processing."""
-
     def _can_handle(self, context: BlockRenderingContext) -> bool:
         # Always can handle - this is the fallback handler
         return True
@@ -36,7 +33,7 @@ class LineRenderer(BlockRenderer):
 
         # Apply indentation if needed
         if context.indent_level > 0:
-            block_markdown = indent_text(block_markdown, spaces=context.indent_level * 4)
+            block_markdown = context.indent_text(block_markdown)
 
         # If there are no children, return the block markdown directly
         if not context.has_children():
@@ -44,13 +41,7 @@ class LineRenderer(BlockRenderer):
             context.was_processed = True
             return
 
-        # Otherwise process children and combine
-        from notionary.page.content.reader.service import NotionToMarkdownConverter
-
-        retriever = NotionToMarkdownConverter(context.block_registry)
-        children_markdown = await retriever.convert(
-            context.get_children_blocks(), indent_level=context.indent_level + 1
-        )
+        children_markdown = await context.render_children()
 
         context.markdown_result = f"{block_markdown}\n{children_markdown}" if children_markdown else block_markdown
         context.was_processed = True

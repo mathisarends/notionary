@@ -1,74 +1,97 @@
+from typing import override
+
+from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import BlockType
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
 
 
 class NumberedListRenderer(BlockRenderer):
-    """Handles numbered list items with sequential numbering."""
+    def __init__(self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None) -> None:
+        super().__init__()
+        self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
 
+    @override
     def _can_handle(self, context: BlockRenderingContext) -> bool:
-        """Check if this is a numbered list item."""
-        return context.block.type == BlockType.NUMBERED_LIST_ITEM and context.block.numbered_list_item is not None
+        return context.block.type == BlockType.NUMBERED_LIST_ITEM
 
+    @override
     async def _process(self, context: BlockRenderingContext) -> None:
-        """Process numbered list item with sequential numbering."""
-        if context.all_blocks is None or context.current_block_index is None:
-            await self._process_single_item(context, 1)
+        if self._is_standalone_item(context):
+            await self._process_standalone_item(context)
             return
 
-        items, blocks_to_skip = self._collect_numbered_list_items(context)
+        await self._process_list_group(context)
 
-        markdown_parts = []
-        for i, item_context in enumerate(items, 1):
-            item_markdown = await self._process_single_item(item_context, i)
-            if item_markdown:
-                markdown_parts.append(item_markdown)
+    def _is_standalone_item(self, context: BlockRenderingContext) -> bool:
+        return context.all_blocks is None or context.current_block_index is None
 
-        # Set result and mark how many blocks to skip
+    async def _process_standalone_item(self, context: BlockRenderingContext) -> None:
+        item_markdown = await self._render_list_item(context, number=1)
+        context.markdown_result = item_markdown
+        context.was_processed = True
+
+    async def _process_list_group(self, context: BlockRenderingContext) -> None:
+        items = self._collect_consecutive_list_items(context)
+        markdown_parts = await self._render_all_items(items)
+
         if markdown_parts:
             context.markdown_result = "\n".join(markdown_parts)
             context.was_processed = True
-            context.blocks_consumed = blocks_to_skip
+            context.blocks_consumed = len(items) - 1
 
-    def _collect_numbered_list_items(self, context: BlockRenderingContext) -> tuple[list[BlockRenderingContext], int]:
-        """Collect all consecutive numbered list items starting from current position."""
-        items = []
-        current_index = context.current_block_index
-        all_blocks = context.all_blocks
+    def _collect_consecutive_list_items(self, context: BlockRenderingContext) -> list[BlockRenderingContext]:
+        items = [context]
 
-        # Start with current block
-        items.append(context)
-        blocks_processed = 1
+        if context.current_block_index is None or context.all_blocks is None:
+            return items
 
-        # Look ahead for more numbered list items
-        for i in range(current_index + 1, len(all_blocks)):
-            block = all_blocks[i]
+        next_index = context.current_block_index + 1
+        while next_index < len(context.all_blocks):
+            block = context.all_blocks[next_index]
 
-            # Check if it's a numbered list item
-            if block.type == BlockType.NUMBERED_LIST_ITEM and block.numbered_list_item is not None:
-                # Create context for this item
-                item_context = BlockRenderingContext(
+            if block.type != BlockType.NUMBERED_LIST_ITEM:
+                break
+
+            items.append(
+                BlockRenderingContext(
                     block=block,
                     indent_level=context.indent_level,
                     block_registry=context.block_registry,
                     convert_children_callback=context.convert_children_callback,
                 )
-                items.append(item_context)
-                blocks_processed += 1
-            else:
-                # Not a numbered list item - stop collecting
-                break
+            )
+            next_index += 1
 
-        return items, blocks_processed
+        return items
 
-    async def _process_single_item(self, context: BlockRenderingContext, number: int) -> str:
-        """Process a single numbered list item with the given number."""
-        from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+    async def _render_all_items(self, items: list[BlockRenderingContext]) -> list[str]:
+        markdown_parts = []
 
-        rich_text = context.block.numbered_list_item.rich_text
-        converter = RichTextToMarkdownConverter()
-        content = await converter.to_markdown(rich_text)
+        for number, item_context in enumerate(items, start=1):
+            item_markdown = await self._render_list_item(item_context, number)
+            if item_markdown:
+                markdown_parts.append(item_markdown)
 
-        # Apply indentation
-        indent = "  " * context.indent_level
-        return f"{indent}{number}. {content}"
+        return markdown_parts
+
+    async def _render_list_item(self, context: BlockRenderingContext, number: int) -> str:
+        """Renders a single list item, including its text and any nested child blocks."""
+        # Render the item's own text
+        list_item_data = context.block.numbered_list_item
+        rich_text = list_item_data.rich_text if list_item_data else []
+        content = await self._rich_text_markdown_converter.to_markdown(rich_text)
+
+        # Create the item line with proper indentation
+        item_line = context.indent_text(f"{number}. {content}")
+
+        # Render children with additional indent
+        children_markdown = await context.render_children_with_additional_indent(1)
+
+        # Combine the item line with its children
+        if children_markdown:
+            return f"{item_line}\n{children_markdown}"
+
+        return item_line
