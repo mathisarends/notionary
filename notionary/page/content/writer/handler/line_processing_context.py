@@ -29,8 +29,6 @@ class ParentBlockContext:
 
 @dataclass
 class LineProcessingContext:
-    """Context that gets passed through the handler chain."""
-
     line: str
     result_blocks: list[BlockCreatePayload]
     parent_stack: list[ParentBlockContext]
@@ -45,7 +43,6 @@ class LineProcessingContext:
     should_continue: bool = False
 
     def get_remaining_lines(self) -> list[str]:
-        """Get all remaining lines from current position."""
         if self.all_lines is None or self.current_line_index is None:
             return []
         return self.all_lines[self.current_line_index + 1 :]

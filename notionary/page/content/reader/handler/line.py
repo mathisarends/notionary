@@ -1,9 +1,8 @@
-from __future__ import annotations
+from notionary.page.content.reader.context import BlockRenderingContext
+from notionary.page.content.reader.handler.base import BlockRenderer
 
-from notionary.page.content.reader.handler import BlockHandler, BlockRenderingContext
 
-
-class LineRenderer(BlockHandler):
+class LineRenderer(BlockRenderer):
     """Handles all regular blocks that don't need special parent/children processing."""
 
     def _can_handle(self, context: BlockRenderingContext) -> bool:
@@ -22,11 +21,11 @@ class LineRenderer(BlockHandler):
                 return
 
             # Import here to avoid circular dependency and process children
-            from notionary.page.content.reader.page_content_retriever import (
-                PageContentRetriever,
+            from notionary.page.content.reader.service import (
+                NotionToMarkdownConverter,
             )
 
-            retriever = PageContentRetriever(context.block_registry)
+            retriever = NotionToMarkdownConverter(context.block_registry)
             children_markdown = await retriever._convert_blocks_to_markdown(
                 context.get_children_blocks(), indent_level=context.indent_level + 1
             )
@@ -45,9 +44,9 @@ class LineRenderer(BlockHandler):
             return
 
         # Otherwise process children and combine
-        from notionary.page.content.reader.page_content_retriever import PageContentRetriever
+        from notionary.page.content.reader.service import NotionToMarkdownConverter
 
-        retriever = PageContentRetriever(context.block_registry)
+        retriever = NotionToMarkdownConverter(context.block_registry)
         children_markdown = await retriever._convert_blocks_to_markdown(
             context.get_children_blocks(), indent_level=context.indent_level + 1
         )

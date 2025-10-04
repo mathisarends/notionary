@@ -1,8 +1,9 @@
 from notionary.blocks.mappings.column import ColumnMapper
-from notionary.page.content.reader.handler import BlockHandler, BlockRenderingContext
+from notionary.page.content.reader.context import BlockRenderingContext
+from notionary.page.content.reader.handler.base import BlockRenderer
 
 
-class ColumnRenderer(BlockHandler):
+class ColumnRenderer(BlockRenderer):
     def _can_handle(self, context: BlockRenderingContext) -> bool:
         return ColumnMapper.match_notion(context.block)
 
@@ -16,12 +17,12 @@ class ColumnRenderer(BlockHandler):
         # Process children if they exist
         children_markdown = ""
         if context.has_children():
-            from notionary.page.content.reader.page_content_retriever import (
-                PageContentRetriever,
+            from notionary.page.content.reader.service import (
+                NotionToMarkdownConverter,
             )
 
             # Create a temporary retriever to process children
-            retriever = PageContentRetriever(context.block_registry)
+            retriever = NotionToMarkdownConverter(context.block_registry)
             children_markdown = await retriever._convert_blocks_to_markdown(
                 context.get_children_blocks(),
                 indent_level=0,  # No indentation for content inside columns

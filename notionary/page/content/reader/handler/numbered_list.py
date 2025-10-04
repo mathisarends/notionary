@@ -1,9 +1,9 @@
 from notionary.blocks.schemas import BlockType
-from notionary.page.content.reader.handler.base_block_renderer import BlockHandler
-from notionary.page.content.reader.handler.block_rendering_context import BlockRenderingContext
+from notionary.page.content.reader.context import BlockRenderingContext
+from notionary.page.content.reader.handler.base import BlockRenderer
 
 
-class NumberedListRenderer(BlockHandler):
+class NumberedListRenderer(BlockRenderer):
     """Handles numbered list items with sequential numbering."""
 
     def _can_handle(self, context: BlockRenderingContext) -> bool:

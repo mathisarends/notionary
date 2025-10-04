@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from notionary.page.content.reader.handler.block_rendering_context import BlockRenderingContext
+from notionary.page.content.reader.context import BlockRenderingContext
 
 
-class BlockHandler(ABC):
+class BlockRenderer(ABC):
     def __init__(self):
-        self._next_handler: BlockHandler | None = None
+        self._next_handler: BlockRenderer | None = None
 
-    def set_next(self, handler: BlockHandler) -> BlockHandler:
+    def set_next(self, handler: BlockRenderer) -> BlockRenderer:
         self._next_handler = handler
         return handler
 

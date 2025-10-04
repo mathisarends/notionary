@@ -1,5 +1,4 @@
-from __future__ import annotations
-
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from notionary.blocks.registry.service import BlockRegistry
@@ -7,12 +6,16 @@ from notionary.blocks.schemas import Block
 
 
 @dataclass
-class BlockProcessingContext:
-    """Context for processing blocks during markdown conversion."""
-
+class BlockRenderingContext:
     block: Block
     indent_level: int
     block_registry: BlockRegistry
+    convert_children_callback: Callable[[list[Block], int], str] | None = None
+
+    # For batch processing
+    all_blocks: list[Block] | None = None
+    current_block_index: int | None = None
+    blocks_consumed: int = 0
 
     # Result
     markdown_result: str | None = None
@@ -28,3 +31,10 @@ class BlockProcessingContext:
         if self.has_children():
             return self.block.children
         return []
+
+    def convert_children_to_markdown(self, indent_level: int = 0) -> str:
+        """Convert children blocks to markdown using the callback."""
+        if not self.has_children() or not self.convert_children_callback:
+            return ""
+
+        return self.convert_children_callback(self.get_children_blocks(), indent_level)

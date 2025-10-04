@@ -10,8 +10,8 @@ from notionary.blocks.syntax_prompt_builder import SyntaxPromptBuilder
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
 from notionary.page.content.page_content_deleting_service import PageContentDeletingService
-from notionary.page.content.page_content_writer import PageContentWriter
-from notionary.page.content.reader.page_content_retriever import PageContentRetriever
+from notionary.page.content.reader.service import NotionToMarkdownConverter
+from notionary.page.content.writer.service import PageContentWriter
 from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
 from notionary.page.properties.factory import PagePropertyHandlerFactory
@@ -76,7 +76,7 @@ class NotionPage(Entity):
             page_id=self._id, block_registry=self.block_element_registry, block_client=self._block_client
         )
 
-        self._page_content_retriever = PageContentRetriever(
+        self._page_content_retriever = NotionToMarkdownConverter(
             block_registry=self.block_element_registry,
         )
 

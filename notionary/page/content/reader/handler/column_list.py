@@ -1,9 +1,9 @@
 from notionary.blocks.mappings.column_list import ColumnListMapper
-from notionary.page.content.reader.handler import BlockHandler
-from notionary.page.content.reader.handler.block_rendering_context import BlockRenderingContext
+from notionary.page.content.reader.context import BlockRenderingContext
+from notionary.page.content.reader.handler.base import BlockRenderer
 
 
-class ColumnListRenderer(BlockHandler):
+class ColumnListRenderer(BlockRenderer):
     def _can_handle(self, context: BlockRenderingContext) -> bool:
         return ColumnListMapper.match_notion(context.block)
 
@@ -19,12 +19,12 @@ class ColumnListRenderer(BlockHandler):
         children_markdown = ""
         if context.has_children():
             # Import here to avoid circular dependency
-            from notionary.page.content.reader.page_content_retriever import (
-                PageContentRetriever,
+            from notionary.page.content.reader.service import (
+                NotionToMarkdownConverter,
             )
 
             # Create a temporary retriever to process children
-            retriever = PageContentRetriever(context.block_registry)
+            retriever = NotionToMarkdownConverter(context.block_registry)
             children_markdown = await retriever._convert_blocks_to_markdown(
                 context.get_children_blocks(),
                 indent_level=0,  # No indentation for content inside column lists
