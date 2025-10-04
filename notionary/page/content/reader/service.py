@@ -23,6 +23,7 @@ from notionary.page.content.reader.handler import (
     QuoteRenderer,
     TableOfContentsRenderer,
     TableRenderer,
+    TableRowHandler,
     TodoRenderer,
     ToggleableHeadingRenderer,
     ToggleRenderer,
@@ -58,6 +59,7 @@ class NotionToMarkdownConverter(LoggingMixin):
         table_of_contents_handler: TableOfContentsRenderer | None = None,
         breadcrumb_handler: BreadcrumbRenderer | None = None,
         table_handler: TableRenderer | None = None,
+        table_row_handler: TableRowHandler | None = None,
         paragraph_handler: ParagraphRenderer | None = None,
         fallback_handler: FallbackRenderer | None = None,
     ) -> None:
@@ -86,6 +88,7 @@ class NotionToMarkdownConverter(LoggingMixin):
         self._table_of_contents_handler = table_of_contents_handler
         self._breadcrumb_handler = breadcrumb_handler
         self._table_handler = table_handler
+        self._table_row_handler = table_row_handler
         self._paragraph_handler = paragraph_handler
         self._fallback_handler = fallback_handler
 
@@ -115,6 +118,7 @@ class NotionToMarkdownConverter(LoggingMixin):
         table_of_contents_handler = self._table_of_contents_handler or TableOfContentsRenderer()
         breadcrumb_handler = self._breadcrumb_handler or BreadcrumbRenderer()
         table_handler = self._table_handler or TableRenderer()
+        table_row_handler = self._table_row_handler or TableRowHandler()
         paragraph_handler = self._paragraph_handler or ParagraphRenderer()
         fallback_handler = self._fallback_handler or FallbackRenderer()
 
@@ -129,7 +133,9 @@ class NotionToMarkdownConverter(LoggingMixin):
             file_handler
         ).set_next(pdf_handler).set_next(embed_handler).set_next(equation_handler).set_next(
             table_of_contents_handler
-        ).set_next(breadcrumb_handler).set_next(table_handler).set_next(paragraph_handler).set_next(fallback_handler)
+        ).set_next(breadcrumb_handler).set_next(table_handler).set_next(table_row_handler).set_next(
+            paragraph_handler
+        ).set_next(fallback_handler)
 
         self._handler_chain = toggle_handler
 
@@ -159,8 +165,6 @@ class NotionToMarkdownConverter(LoggingMixin):
         return BlockRenderingContext(
             block=block,
             indent_level=indent_level,
-            all_blocks=blocks,
-            current_block_index=block_index,
             convert_children_callback=self.convert,
         )
 

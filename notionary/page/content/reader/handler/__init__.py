@@ -19,6 +19,7 @@ from .pdf import PdfRenderer
 from .quote import QuoteRenderer
 from .table import TableRenderer
 from .table_of_contents import TableOfContentsRenderer
+from .table_row import TableRowHandler
 from .todo import TodoRenderer
 from .toggle import ToggleRenderer
 from .toggleable_heading import ToggleableHeadingRenderer
@@ -46,6 +47,7 @@ __all__ = [
     "QuoteRenderer",
     "TableOfContentsRenderer",
     "TableRenderer",
+    "TableRowHandler",
     "TodoRenderer",
     "ToggleRenderer",
     "ToggleableHeadingRenderer",
