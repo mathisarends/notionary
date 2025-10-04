@@ -1,5 +1,6 @@
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
+from notionary.page.content.reader.handler.utils import indent_text
 
 
 class LineRenderer(BlockRenderer):
@@ -35,7 +36,7 @@ class LineRenderer(BlockRenderer):
 
         # Apply indentation if needed
         if context.indent_level > 0:
-            block_markdown = self._indent_text(block_markdown, spaces=context.indent_level * 4)
+            block_markdown = indent_text(block_markdown, spaces=context.indent_level * 4)
 
         # If there are no children, return the block markdown directly
         if not context.has_children():

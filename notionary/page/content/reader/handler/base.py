@@ -6,7 +6,7 @@ from notionary.page.content.reader.context import BlockRenderingContext
 
 
 class BlockRenderer(ABC):
-    def __init__(self):
+    def __init__(self) -> None:
         self._next_handler: BlockRenderer | None = None
 
     def set_next(self, handler: BlockRenderer) -> BlockRenderer:
@@ -26,11 +26,3 @@ class BlockRenderer(ABC):
     @abstractmethod
     async def _process(self, context: BlockRenderingContext) -> None:
         pass
-
-    def _indent_text(self, text: str, spaces: int = 4) -> str:
-        if not text:
-            return text
-
-        indent = " " * spaces
-        lines = text.split("\n")
-        return "\n".join(f"{indent}{line}" if line.strip() else line for line in lines)

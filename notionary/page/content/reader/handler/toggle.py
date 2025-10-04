@@ -1,6 +1,7 @@
 from notionary.blocks.mappings.toggle import ToggleMapper
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
+from notionary.page.content.reader.handler.utils import indent_text
 
 
 class ToggleRenderer(BlockRenderer):
@@ -19,7 +20,7 @@ class ToggleRenderer(BlockRenderer):
 
         # Apply indentation if needed
         if context.indent_level > 0:
-            toggle_start = self._indent_text(toggle_start, spaces=context.indent_level * 4)
+            toggle_start = indent_text(toggle_start, spaces=context.indent_level * 4)
 
         # Process children if they exist
         children_markdown = ""
@@ -39,7 +40,7 @@ class ToggleRenderer(BlockRenderer):
         # Create toggle end line
         toggle_end = "+++"
         if context.indent_level > 0:
-            toggle_end = self._indent_text(toggle_end, spaces=context.indent_level * 4)
+            toggle_end = indent_text(toggle_end, spaces=context.indent_level * 4)
 
         # Combine toggle with children content
         if children_markdown:

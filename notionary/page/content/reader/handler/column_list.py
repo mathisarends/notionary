@@ -1,6 +1,7 @@
 from notionary.blocks.mappings.column_list import ColumnListMapper
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
+from notionary.page.content.reader.handler.utils import indent_text
 
 
 class ColumnListRenderer(BlockRenderer):
@@ -13,7 +14,7 @@ class ColumnListRenderer(BlockRenderer):
 
         # Apply indentation if needed
         if context.indent_level > 0:
-            column_list_start = self._indent_text(column_list_start, spaces=context.indent_level * 4)
+            column_list_start = indent_text(column_list_start, spaces=context.indent_level * 4)
 
         # Process children if they exist
         children_markdown = ""
@@ -33,7 +34,7 @@ class ColumnListRenderer(BlockRenderer):
         # Create column list end line
         column_list_end = ":::"
         if context.indent_level > 0:
-            column_list_end = self._indent_text(column_list_end, spaces=context.indent_level * 4)
+            column_list_end = indent_text(column_list_end, spaces=context.indent_level * 4)
 
         # Combine column list with children content
         if children_markdown:

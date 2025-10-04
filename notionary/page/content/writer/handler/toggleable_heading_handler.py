@@ -80,7 +80,6 @@ class ToggleableHeadingHandler(LineHandler):
         context.parent_stack.append(parent_context)
 
     def _is_toggleable_heading_content(self, context: LineProcessingContext) -> bool:
-        """Check if we're inside a toggleable heading context and should handle content."""
         if not context.parent_stack:
             return False
 

@@ -24,7 +24,6 @@ from notionary.blocks.mappings import (
     TableMapper,
     TableOfContentsMapper,
     TodoMapper,
-    ToggleableHeadingMapper,
     ToggleMapper,
     VideoMapper,
 )
@@ -40,7 +39,6 @@ class BlockRegistry:
         BulletedListMapper,
         NumberedListMapper,
         ToggleMapper,
-        ToggleableHeadingMapper,
         QuoteMapper,
         TodoMapper,
         BookmarkMapper,

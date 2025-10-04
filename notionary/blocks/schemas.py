@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -57,6 +57,7 @@ class BaseBlock(BaseModel):
     archived: bool = False
     in_trash: bool = False
     has_children: bool = False
+    children: list[Block] | None = None
 
 
 # ============================================================================
@@ -614,37 +615,39 @@ class CreateVideoBlock(BaseModel):
 # Block Union Type
 # ============================================================================
 
-# TODO: Make a DU out of this here
-Block = (
-    AudioBlock
-    | BookmarkBlock
-    | BreadcrumbBlock
-    | BulletedListItemBlock
-    | CalloutBlock
-    | ChildPageBlock
-    | ChildDatabaseBlock
-    | CodeBlock
-    | ColumnListBlock
-    | ColumnBlock
-    | DividerBlock
-    | EmbedBlock
-    | EquationBlock
-    | FileBlock
-    | Heading1Block
-    | Heading2Block
-    | Heading3Block
-    | ImageBlock
-    | NumberedListItemBlock
-    | ParagraphBlock
-    | PdfBlock
-    | QuoteBlock
-    | TableBlock
-    | TableRowBlock
-    | TableOfContentsBlock
-    | ToDoBlock
-    | ToggleBlock
-    | VideoBlock
-)
+Block = Annotated[
+    (
+        AudioBlock
+        | BookmarkBlock
+        | BreadcrumbBlock
+        | BulletedListItemBlock
+        | CalloutBlock
+        | ChildPageBlock
+        | ChildDatabaseBlock
+        | CodeBlock
+        | ColumnListBlock
+        | ColumnBlock
+        | DividerBlock
+        | EmbedBlock
+        | EquationBlock
+        | FileBlock
+        | Heading1Block
+        | Heading2Block
+        | Heading3Block
+        | ImageBlock
+        | NumberedListItemBlock
+        | ParagraphBlock
+        | PdfBlock
+        | QuoteBlock
+        | TableBlock
+        | TableRowBlock
+        | TableOfContentsBlock
+        | ToDoBlock
+        | ToggleBlock
+        | VideoBlock
+    ),
+    Field(discriminator="type"),
+]
 
 
 # ============================================================================

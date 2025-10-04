@@ -1,6 +1,7 @@
 from notionary.blocks.mappings.column import ColumnMapper
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
+from notionary.page.content.reader.handler.utils import indent_text
 
 
 class ColumnRenderer(BlockRenderer):
@@ -12,7 +13,7 @@ class ColumnRenderer(BlockRenderer):
 
         # Apply indentation if needed
         if context.indent_level > 0:
-            column_start = self._indent_text(column_start, spaces=context.indent_level * 4)
+            column_start = indent_text(column_start, spaces=context.indent_level * 4)
 
         # Process children if they exist
         children_markdown = ""
@@ -31,7 +32,7 @@ class ColumnRenderer(BlockRenderer):
         # Create column end line
         column_end = ":::"
         if context.indent_level > 0:
-            column_end = self._indent_text(column_end, spaces=context.indent_level * 4)
+            column_end = indent_text(column_end, spaces=context.indent_level * 4)
 
         # Combine column with children content
         if children_markdown:

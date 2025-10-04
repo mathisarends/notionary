@@ -22,7 +22,6 @@ from .table import TableMapper
 from .table_of_contents import TableOfContentsMapper
 from .todo import TodoMapper
 from .toggle import ToggleMapper
-from .toggleable_heading import ToggleableHeadingMapper
 from .video import VideoMapper
 
 __all__ = [
@@ -50,6 +49,5 @@ __all__ = [
     "TableOfContentsMapper",
     "TodoMapper",
     "ToggleMapper",
-    "ToggleableHeadingMapper",
     "VideoMapper",
 ]

@@ -58,13 +58,11 @@ class RegularLineHandler(LineHandler):
     def _get_specialized_elements(self):
         from notionary.blocks.mappings.table import TableMapper
         from notionary.blocks.mappings.toggle import ToggleMapper
-        from notionary.blocks.mappings.toggleable_heading import ToggleableHeadingMapper
 
         return (
             ColumnListMapper,
             CodeMapper,
             ToggleMapper,
-            ToggleableHeadingMapper,
             TableMapper,
             CodeMapper,
         )
