@@ -3,7 +3,7 @@ from typing import override
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import (
     RichTextToMarkdownConverter,
 )
-from notionary.blocks.schemas import BlockType
+from notionary.blocks.schemas import Block, BlockType
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
 
@@ -14,8 +14,8 @@ class NumberedListRenderer(BlockRenderer):
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
 
     @override
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
-        return context.block.type == BlockType.NUMBERED_LIST_ITEM
+    def _can_handle(self, block: Block) -> bool:
+        return block.type == BlockType.NUMBERED_LIST_ITEM
 
     @override
     async def _process(self, context: BlockRenderingContext) -> None:
@@ -31,7 +31,6 @@ class NumberedListRenderer(BlockRenderer):
     async def _process_standalone_item(self, context: BlockRenderingContext) -> None:
         item_markdown = await self._render_list_item(context, number=1)
         context.markdown_result = item_markdown
-        context.was_processed = True
 
     async def _process_list_group(self, context: BlockRenderingContext) -> None:
         items = self._collect_consecutive_list_items(context)
@@ -39,7 +38,6 @@ class NumberedListRenderer(BlockRenderer):
 
         if markdown_parts:
             context.markdown_result = "\n".join(markdown_parts)
-            context.was_processed = True
             context.blocks_consumed = len(items) - 1
 
     def _collect_consecutive_list_items(self, context: BlockRenderingContext) -> list[BlockRenderingContext]:

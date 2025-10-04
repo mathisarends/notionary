@@ -7,8 +7,8 @@ from notionary.page.content.reader.handler.base import BlockRenderer
 
 class EquationRenderer(BlockRenderer):
     @override
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
-        return context.block.type == BlockType.EQUATION
+    def _can_handle(self, block: Block) -> bool:
+        return block.type == BlockType.EQUATION
 
     @override
     async def _process(self, context: BlockRenderingContext) -> None:

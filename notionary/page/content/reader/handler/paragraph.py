@@ -1,8 +1,7 @@
 from typing import override
 
-from notionary.blocks.mappings.paragraph import ParagraphMapper
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block
+from notionary.blocks.schemas import Block, BlockType
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
 
@@ -13,8 +12,8 @@ class ParagraphRenderer(BlockRenderer):
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
 
     @override
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
-        return ParagraphMapper.match_notion(context.block)
+    def _can_handle(self, block: Block) -> bool:
+        return block.type == BlockType.PARAGRAPH
 
     @override
     async def _process(self, context: BlockRenderingContext) -> None:
@@ -22,7 +21,6 @@ class ParagraphRenderer(BlockRenderer):
 
         if not markdown:
             context.markdown_result = ""
-            context.was_processed = True
             return
 
         if context.indent_level > 0:
@@ -35,8 +33,6 @@ class ParagraphRenderer(BlockRenderer):
             context.markdown_result = f"{markdown}\n{children_markdown}"
         else:
             context.markdown_result = markdown
-
-        context.was_processed = True
 
     async def _convert_paragraph_to_markdown(self, block: Block) -> str | None:
         if not block.paragraph or not block.paragraph.rich_text:

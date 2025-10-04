@@ -1,6 +1,7 @@
 from typing import override
 
 from notionary.blocks.enums import BlockType
+from notionary.blocks.schemas import Block
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
 
@@ -10,8 +11,7 @@ class ColumnListRenderer(BlockRenderer):
     END_MARKER = ":::"
 
     @override
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
-        block = context.block
+    def _can_handle(self, block: Block) -> bool:
         return block.type == BlockType.COLUMN_LIST
 
     @override

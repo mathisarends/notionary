@@ -14,9 +14,7 @@ class HeadingRenderer(BlockRenderer):
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
 
     @override
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
-        block = context.block
-
+    def _can_handle(self, block: Block) -> bool:
         if block.type == BlockType.HEADING_1:
             return not block.heading_1.is_toggleable
         if block.type == BlockType.HEADING_2:
@@ -40,7 +38,6 @@ class HeadingRenderer(BlockRenderer):
             heading_markdown = context.indent_text(heading_markdown)
 
         context.markdown_result = heading_markdown
-        context.was_processed = True
 
     def _get_heading_level(self, block: Block) -> int:
         if block.type == BlockType.HEADING_1:

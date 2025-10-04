@@ -16,8 +16,7 @@ class TodoRenderer(BlockRenderer):
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
 
     @override
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
-        block = context.block
+    def _can_handle(self, block: Block) -> bool:
         return block.type == BlockType.TO_DO
 
     @override
@@ -26,7 +25,6 @@ class TodoRenderer(BlockRenderer):
 
         if not content:
             context.markdown_result = ""
-            context.was_processed = True
             return
 
         marker = self.CHECKED_MARKER if is_checked else self.UNCHECKED_MARKER
@@ -42,8 +40,6 @@ class TodoRenderer(BlockRenderer):
             context.markdown_result = f"{todo_markdown}\n{children_markdown}"
         else:
             context.markdown_result = todo_markdown
-
-        context.was_processed = True
 
     async def _extract_todo_info(self, block: Block) -> tuple[bool, str]:
         if not block.to_do:

@@ -12,8 +12,8 @@ class EmbedRenderer(BlockRenderer):
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
 
     @override
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
-        return context.block.type == BlockType.EMBED
+    def _can_handle(self, block: Block) -> bool:
+        return block.type == BlockType.EMBED
 
     @override
     async def _process(self, context: BlockRenderingContext) -> None:
@@ -22,7 +22,6 @@ class EmbedRenderer(BlockRenderer):
 
         if not url:
             context.markdown_result = ""
-            context.was_processed = True
             return
 
         link_text = caption or "embed"
@@ -37,8 +36,6 @@ class EmbedRenderer(BlockRenderer):
             context.markdown_result = f"{embed_markdown}\n{children_markdown}"
         else:
             context.markdown_result = embed_markdown
-
-        context.was_processed = True
 
     def _extract_embed_url(self, block: Block) -> str:
         if not block.embed:

@@ -16,8 +16,7 @@ class CalloutRenderer(BlockRenderer):
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
 
     @override
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
-        block = context.block
+    def _can_handle(self, block: Block) -> bool:
         return block.type == BlockType.CALLOUT
 
     @override

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+from notionary.blocks.schemas import Block
 from notionary.page.content.reader.context import BlockRenderingContext
 
 
@@ -14,13 +15,13 @@ class BlockRenderer(ABC):
         return handler
 
     async def handle(self, context: BlockRenderingContext) -> None:
-        if self._can_handle(context):
+        if self._can_handle(context.block):
             await self._process(context)
         elif self._next_handler:
             await self._next_handler.handle(context)
 
     @abstractmethod
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
+    def _can_handle(self, block: Block) -> bool:
         pass
 
     @abstractmethod

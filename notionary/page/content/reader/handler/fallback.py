@@ -1,5 +1,6 @@
 from typing import override
 
+from notionary.blocks.schemas import Block
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
 from notionary.utils.mixins.logging import LoggingMixin
@@ -7,7 +8,7 @@ from notionary.utils.mixins.logging import LoggingMixin
 
 class FallbackRenderer(BlockRenderer, LoggingMixin):
     @override
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
+    def _can_handle(self, block: Block) -> bool:
         return True
 
     @override

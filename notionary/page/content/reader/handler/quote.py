@@ -1,8 +1,7 @@
 from typing import override
 
-from notionary.blocks.mappings.quote import QuoteMapper
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block
+from notionary.blocks.schemas import Block, BlockType
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
 
@@ -15,8 +14,8 @@ class QuoteRenderer(BlockRenderer):
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
 
     @override
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
-        return QuoteMapper.match_notion(context.block)
+    def _can_handle(self, block: Block) -> bool:
+        return block.type == BlockType.QUOTE
 
     @override
     async def _process(self, context: BlockRenderingContext) -> None:

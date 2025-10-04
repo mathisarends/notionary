@@ -11,8 +11,7 @@ class ColumnRenderer(BlockRenderer):
     END_MARKER = ":::"
 
     @override
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
-        block = context.block
+    def _can_handle(self, block: Block) -> bool:
         return block.type == BlockType.COLUMN
 
     @override

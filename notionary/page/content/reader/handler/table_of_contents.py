@@ -1,6 +1,6 @@
 from typing import override
 
-from notionary.blocks.schemas import BlockType
+from notionary.blocks.schemas import Block, BlockType
 from notionary.page.content.reader.context import BlockRenderingContext
 from notionary.page.content.reader.handler.base import BlockRenderer
 
@@ -9,8 +9,8 @@ class TableOfContentsRenderer(BlockRenderer):
     TABLE_OF_CONTENTS_MARKDOWN = "[[TOC]]"
 
     @override
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
-        return context.block.type == BlockType.TABLE_OF_CONTENTS
+    def _can_handle(self, block: Block) -> bool:
+        return block.type == BlockType.TABLE_OF_CONTENTS
 
     @override
     async def _process(self, context: BlockRenderingContext) -> None:

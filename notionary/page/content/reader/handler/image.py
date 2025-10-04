@@ -12,8 +12,8 @@ class ImageRenderer(BlockRenderer):
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
 
     @override
-    def _can_handle(self, context: BlockRenderingContext) -> bool:
-        return context.block.type == BlockType.IMAGE
+    def _can_handle(self, block: Block) -> bool:
+        return block.type == BlockType.IMAGE
 
     @override
     async def _process(self, context: BlockRenderingContext) -> None:
@@ -22,7 +22,6 @@ class ImageRenderer(BlockRenderer):
 
         if not url:
             context.markdown_result = ""
-            context.was_processed = True
             return
 
         alt_text = caption or "image"
@@ -37,8 +36,6 @@ class ImageRenderer(BlockRenderer):
             context.markdown_result = f"{image_markdown}\n{children_markdown}"
         else:
             context.markdown_result = image_markdown
-
-        context.was_processed = True
 
     def _extract_image_url(self, block: Block) -> str:
         if not block.image:
