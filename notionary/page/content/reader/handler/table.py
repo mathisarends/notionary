@@ -7,6 +7,8 @@ from notionary.page.content.reader.handler.base import BlockRenderer
 
 
 class TableRenderer(BlockRenderer):
+    MINIMUM_COLUMN_WIDTH = 3
+
     def __init__(self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None) -> None:
         super().__init__()
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
@@ -37,8 +39,6 @@ class TableRenderer(BlockRenderer):
         if not block.table or not block.has_children or not block.children:
             return ""
 
-        has_column_header = self._has_column_header(block)
-
         rows = []
         for row_block in block.children:
             if row_block.type != BlockType.TABLE_ROW or not row_block.table_row:
@@ -50,22 +50,40 @@ class TableRenderer(BlockRenderer):
         if not rows:
             return ""
 
+        max_columns = max(len(row) for row in rows)
+        normalized_rows = self._normalize_row_lengths(rows, max_columns)
+        column_widths = self._calculate_column_widths(normalized_rows, max_columns)
+
         markdown_lines = []
 
-        # Add header row if present
-        if has_column_header and rows:
-            header_row = rows[0]
-            markdown_lines.append("| " + " | ".join(header_row) + " |")
-            markdown_lines.append("| " + " | ".join(["---"] * len(header_row)) + " |")
-            data_rows = rows[1:]
-        else:
-            data_rows = rows
+        first_row = normalized_rows[0]
+        formatted_first_row = self._format_row(first_row, column_widths)
+        markdown_lines.append(formatted_first_row)
 
-        # Add data rows
-        for row in data_rows:
-            markdown_lines.append("| " + " | ".join(row) + " |")
+        separator_line = self._create_separator_line(column_widths)
+        markdown_lines.append(separator_line)
+
+        remaining_rows = normalized_rows[1:]
+        for row in remaining_rows:
+            formatted_row = self._format_row(row, column_widths)
+            markdown_lines.append(formatted_row)
 
         return "\n".join(markdown_lines)
+
+    def _normalize_row_lengths(self, rows: list[list[str]], target_length: int) -> list[list[str]]:
+        return [row + [""] * (target_length - len(row)) for row in rows]
+
+    def _calculate_column_widths(self, rows: list[list[str]], num_columns: int) -> list[int]:
+        widths = [max(len(row[i]) for row in rows) for i in range(num_columns)]
+        return [max(width, self.MINIMUM_COLUMN_WIDTH) for width in widths]
+
+    def _format_row(self, cells: list[str], column_widths: list[int]) -> str:
+        centered_cells = [cell.center(column_widths[i]) for i, cell in enumerate(cells)]
+        return "| " + " | ".join(centered_cells) + " |"
+
+    def _create_separator_line(self, column_widths: list[int]) -> str:
+        separators = ["-" * width for width in column_widths]
+        return "| " + " | ".join(separators) + " |"
 
     def _has_column_header(self, block: Block) -> bool:
         if not block.table:
