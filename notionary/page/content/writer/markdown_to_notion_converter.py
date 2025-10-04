@@ -1,6 +1,6 @@
 from notionary.blocks.registry.service import BlockRegistry
 from notionary.blocks.schemas import BlockCreatePayload
-from notionary.page.writer.handler import (
+from notionary.page.content.writer.handler import (
     CodeHandler,
     ColumnHandler,
     ColumnListHandler,
@@ -12,15 +12,13 @@ from notionary.page.writer.handler import (
     ToggleableHeadingHandler,
     ToggleHandler,
 )
-from notionary.page.writer.notion_text_length_processor import (
+from notionary.page.content.writer.notion_text_length_processor import (
     NotionTextLengthProcessor,
 )
 from notionary.utils.mixins.logging import LoggingMixin
 
 
 class HandlerOrderValidationError(RuntimeError):
-    """Raised when handler chain order is incorrect."""
-
     pass
 
 

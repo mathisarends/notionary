@@ -9,8 +9,6 @@ from notionary.blocks.schemas import Block
 
 @dataclass
 class BlockRenderingContext:
-    """Context for processing blocks during markdown conversion."""
-
     block: Block
     indent_level: int
     block_registry: BlockRegistry

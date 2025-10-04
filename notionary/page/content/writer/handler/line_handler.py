@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from notionary.page.writer.handler.line_processing_context import LineProcessingContext
+from notionary.page.content.writer.handler.line_processing_context import LineProcessingContext
 
 
 class LineHandler(ABC):

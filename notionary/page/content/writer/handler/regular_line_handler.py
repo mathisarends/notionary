@@ -1,7 +1,7 @@
 from notionary.blocks.mappings.code import CodeMapper
 from notionary.blocks.mappings.column import ColumnMapper
 from notionary.blocks.mappings.column_list import ColumnListMapper
-from notionary.page.writer.handler import LineHandler, LineProcessingContext
+from notionary.page.content.writer.handler import LineHandler, LineProcessingContext
 
 
 class RegularLineHandler(LineHandler):

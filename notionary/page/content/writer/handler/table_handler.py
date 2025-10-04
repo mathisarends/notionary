@@ -1,7 +1,7 @@
 import re
 
 from notionary.blocks.mappings.table import TableMapper
-from notionary.page.writer.handler import LineHandler, LineProcessingContext
+from notionary.page.content.writer.handler import LineHandler, LineProcessingContext
 
 
 class TableHandler(LineHandler):

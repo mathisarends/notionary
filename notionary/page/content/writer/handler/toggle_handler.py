@@ -1,7 +1,7 @@
 import re
 
 from notionary.blocks.mappings.toggle import ToggleMapper
-from notionary.page.writer.handler import (
+from notionary.page.content.writer.handler import (
     LineHandler,
     LineProcessingContext,
     ParentBlockContext,
@@ -117,7 +117,7 @@ class ToggleHandler(LineHandler):
 
     async def _convert_children_text(self, text: str, block_registry) -> list:
         """Convert children text to blocks."""
-        from notionary.page.writer.markdown_to_notion_converter import (
+        from notionary.page.content.writer.markdown_to_notion_converter import (
             MarkdownToNotionConverter,
         )
 

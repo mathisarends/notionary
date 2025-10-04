@@ -1,7 +1,7 @@
 import re
 
 from notionary.blocks.mappings.code import CodeMapper
-from notionary.page.writer.handler.line_handler import (
+from notionary.page.content.writer.handler.line_handler import (
     LineHandler,
     LineProcessingContext,
 )

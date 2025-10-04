@@ -1,11 +1,11 @@
 import re
 
 from notionary.blocks.mappings.column import ColumnMapper
-from notionary.page.writer.handler.line_handler import (
+from notionary.page.content.writer.handler.line_handler import (
     LineHandler,
     LineProcessingContext,
 )
-from notionary.page.writer.handler.line_processing_context import ParentBlockContext
+from notionary.page.content.writer.handler.line_processing_context import ParentBlockContext
 
 
 class ColumnHandler(LineHandler):
@@ -121,7 +121,7 @@ class ColumnHandler(LineHandler):
 
     async def _convert_children_text(self, text: str, block_registry) -> list:
         """Convert children text to blocks."""
-        from notionary.page.writer.markdown_to_notion_converter import (
+        from notionary.page.content.writer.markdown_to_notion_converter import (
             MarkdownToNotionConverter,
         )
 
