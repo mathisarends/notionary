@@ -1,10 +1,10 @@
 from notionary.blocks.mappings.code import CodeMapper
 from notionary.blocks.mappings.column import ColumnMapper
 from notionary.blocks.mappings.column_list import ColumnListMapper
-from notionary.page.content.writer.handler import LineHandler, LineProcessingContext
+from notionary.page.content.writer.handler import LineParser, LineProcessingContext
 
 
-class RegularLineHandler(LineHandler):
+class RegularLineParser(LineParser):
     def _can_handle(self, context: LineProcessingContext) -> bool:
         return context.line.strip()
 

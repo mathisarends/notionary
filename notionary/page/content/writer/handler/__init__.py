@@ -1,24 +1,24 @@
-from .code_handler import CodeHandler
-from .column_handler import ColumnHandler
-from .column_list_handler import ColumnListHandler
-from .equation_handler import EquationHandler
-from .line_handler import LineHandler
-from .line_processing_context import LineProcessingContext, ParentBlockContext
-from .regular_line_handler import RegularLineHandler
-from .table_handler import TableHandler
-from .toggle_handler import ToggleHandler
-from .toggleable_heading_handler import ToggleableHeadingHandler
+from ...context import LineProcessingContext, ParentBlockContext
+from .base import LineParser
+from .code import CodeParser
+from .column import ColumnParser
+from .column_list import ColumnListParser
+from .equation import EquationParser
+from .line import RegularLineParser
+from .table import TableParser
+from .toggle import ToggleParser
+from .toggleable_heading import ToggleableHeadingParser
 
 __all__ = [
-    "CodeHandler",
-    "ColumnHandler",
-    "ColumnListHandler",
-    "EquationHandler",
-    "LineHandler",
+    "CodeParser",
+    "ColumnListParser",
+    "ColumnParser",
+    "EquationParser",
+    "LineParser",
     "LineProcessingContext",
     "ParentBlockContext",
-    "RegularLineHandler",
-    "TableHandler",
-    "ToggleHandler",
-    "ToggleableHeadingHandler",
+    "RegularLineParser",
+    "TableParser",
+    "ToggleParser",
+    "ToggleableHeadingParser",
 ]

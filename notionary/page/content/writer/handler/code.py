@@ -1,22 +1,14 @@
 import re
 
 from notionary.blocks.mappings.code import CodeMapper
-from notionary.page.content.writer.handler.line_handler import (
-    LineHandler,
+from notionary.page.content.writer.handler.base import (
+    LineParser,
     LineProcessingContext,
 )
 
 
-class CodeHandler(LineHandler):
-    """Handles code block specific logic with batching.
-
-    Markdown syntax:
-    ```language "optional caption"
-    code lines...
-    ```
-    """
-
-    def __init__(self):
+class CodeParser(LineParser):
+    def __init__(self) -> None:
         super().__init__()
         self._code_start_pattern = re.compile(r"^```(\w*)\s*(?:\"([^\"]*)\")?\s*$")
         self._code_end_pattern = re.compile(r"^```\s*$")

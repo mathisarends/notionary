@@ -3,27 +3,15 @@ from __future__ import annotations
 import re
 
 from notionary.blocks.mappings.column_list import ColumnListMapper
-from notionary.page.content.writer.handler.line_handler import (
-    LineHandler,
+from notionary.page.content.context import ParentBlockContext
+from notionary.page.content.writer.handler.base import (
+    LineParser,
     LineProcessingContext,
 )
-from notionary.page.content.writer.handler.line_processing_context import ParentBlockContext
 
 
-class ColumnListHandler(LineHandler):
-    """Handles column list elements - both start and end.
-    Syntax:
-    ::: columns     # Start column list
-    ::: column      # Individual column
-    Content here
-    :::             # End column
-    ::: column      # Another column
-    More content
-    :::             # End column
-    :::             # End column list
-    """
-
-    def __init__(self):
+class ColumnListParser(LineParser):
+    def __init__(self) -> None:
         super().__init__()
         self._start_pattern = re.compile(r"^:::\s*columns?\s*$", re.IGNORECASE)
         self._end_pattern = re.compile(r"^:::\s*$")

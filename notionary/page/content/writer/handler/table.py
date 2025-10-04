@@ -1,13 +1,13 @@
 import re
 
 from notionary.blocks.mappings.table import TableMapper
-from notionary.page.content.writer.handler import LineHandler, LineProcessingContext
+from notionary.page.content.writer.handler import LineParser, LineProcessingContext
 
 
-class TableHandler(LineHandler):
+class TableParser(LineParser):
     """Handles table specific logic with batching."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._table_row_pattern = re.compile(r"^\s*\|(.+)\|\s*$")
         self._separator_pattern = re.compile(r"^\s*\|([\s\-:|]+)\|\s*$")

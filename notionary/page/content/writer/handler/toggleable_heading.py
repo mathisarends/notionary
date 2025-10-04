@@ -5,13 +5,13 @@ from notionary.blocks.mappings.toggleable_heading import (
 )
 from notionary.blocks.schemas import BlockCreatePayload, BlockType
 from notionary.page.content.writer.handler import (
-    LineHandler,
+    LineParser,
     LineProcessingContext,
     ParentBlockContext,
 )
 
 
-class ToggleableHeadingHandler(LineHandler):
+class ToggleableHeadingParser(LineParser):
     """Handles toggleable heading blocks with +++# syntax."""
 
     def __init__(self):

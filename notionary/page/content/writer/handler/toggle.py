@@ -2,15 +2,13 @@ import re
 
 from notionary.blocks.mappings.toggle import ToggleMapper
 from notionary.page.content.writer.handler import (
-    LineHandler,
+    LineParser,
     LineProcessingContext,
     ParentBlockContext,
 )
 
 
-class ToggleHandler(LineHandler):
-    """Handles regular toggle blocks with ultra-simplified +++ syntax."""
-
+class ToggleParser(LineParser):
     def __init__(self):
         super().__init__()
         # Updated: Support both "+++title" and "+++ title"

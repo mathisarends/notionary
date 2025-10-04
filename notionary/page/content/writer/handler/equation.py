@@ -1,13 +1,13 @@
 import re
 
 from notionary.blocks.mappings.equation import EquationMapper
-from notionary.page.content.writer.handler.line_handler import (
-    LineHandler,
+from notionary.page.content.writer.handler.base import (
+    LineParser,
     LineProcessingContext,
 )
 
 
-class EquationHandler(LineHandler):
+class EquationParser(LineParser):
     r"""Handles equation block specific logic with batching.
 
     Markdown syntax:
@@ -18,7 +18,7 @@ class EquationHandler(LineHandler):
     $$
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._equation_start_pattern = re.compile(r"^\$\$\s*$")
         self._equation_end_pattern = re.compile(r"^\$\$\s*$")

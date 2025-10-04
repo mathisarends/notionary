@@ -1,22 +1,15 @@
 import re
 
 from notionary.blocks.mappings.column import ColumnMapper
-from notionary.page.content.writer.handler.line_handler import (
-    LineHandler,
+from notionary.page.content.context import ParentBlockContext
+from notionary.page.content.writer.handler.base import (
+    LineParser,
     LineProcessingContext,
 )
-from notionary.page.content.writer.handler.line_processing_context import ParentBlockContext
 
 
-class ColumnHandler(LineHandler):
-    """Handles single column elements - both start and end.
-    Syntax:
-    ::: column      # Start individual column (can have optional parameters)
-    Content here
-    :::             # End column
-    """
-
-    def __init__(self):
+class ColumnParser(LineParser):
+    def __init__(self) -> None:
         super().__init__()
         self._start_pattern = re.compile(r"^:::\s*column(\s+.*?)?\s*$", re.IGNORECASE)
         self._end_pattern = re.compile(r"^:::\s*$")

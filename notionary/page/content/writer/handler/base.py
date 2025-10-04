@@ -2,22 +2,18 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from notionary.page.content.writer.handler.line_processing_context import LineProcessingContext
+from notionary.page.content.context import LineProcessingContext
 
 
-class LineHandler(ABC):
-    """Abstract base class for line handlers."""
+class LineParser(ABC):
+    def __init__(self) -> None:
+        self._next_handler: LineParser | None = None
 
-    def __init__(self):
-        self._next_handler: LineHandler | None = None
-
-    def set_next(self, handler: LineHandler) -> LineHandler:
-        """Set the next handler in the chain."""
+    def set_next(self, handler: LineParser) -> LineParser:
         self._next_handler = handler
         return handler
 
     async def handle(self, context: LineProcessingContext) -> None:
-        """Handle the line or pass to next handler."""
         if self._can_handle(context):
             await self._process(context)
         elif self._next_handler:
@@ -25,10 +21,8 @@ class LineHandler(ABC):
 
     @abstractmethod
     def _can_handle(self, context: LineProcessingContext) -> bool:
-        """Check if this handler can process the current line."""
         pass
 
     @abstractmethod
     async def _process(self, context: LineProcessingContext) -> None:
-        """Process the line and update context."""
         pass
