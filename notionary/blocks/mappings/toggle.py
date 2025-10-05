@@ -3,7 +3,7 @@ import re
 from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.models import RichText
-from notionary.blocks.schemas import Block, BlockColor, BlockType, CreateToggleBlock, ToggleBlock
+from notionary.blocks.schemas import Block, BlockColor, BlockType, CreateToggleBlock, CreateToggleData
 
 
 class ToggleMapper(NotionMarkdownMapper):
@@ -29,7 +29,7 @@ class ToggleMapper(NotionMarkdownMapper):
         rich_text = await converter.to_rich_text(title)
 
         # Create toggle block with empty children - they will be populated automatically
-        toggle_content = ToggleBlock(rich_text=rich_text, color=BlockColor.DEFAULT, children=[])
+        toggle_content = CreateToggleData(rich_text=rich_text, color=BlockColor.DEFAULT, children=[])
 
         return CreateToggleBlock(toggle=toggle_content)
 

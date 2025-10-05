@@ -10,7 +10,7 @@ from notionary.blocks.schemas import (
     CreateHeading2Block,
     CreateHeading3Block,
     CreateHeadingBlock,
-    HeadingData,
+    CreateHeadingData,
 )
 from notionary.page.content.parser.parsers import (
     BlockParsingContext,
@@ -23,6 +23,11 @@ class ToggleableHeadingParser(LineParser):
     HEADING_START_PATTERN = r"^[+]{3}\s*(?P<level>#{1,3})\s*(.+)$"
     HEADING_END_PATTERN = r"^[+]{3}\s*$"
 
+    MIN_HEADING_LEVEL = 1
+    MAX_HEADING_LEVEL = 3
+
+    HEADING_BLOCK_TYPES = (CreateHeading1Block, CreateHeading2Block, CreateHeading3Block)
+
     def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None) -> None:
         super().__init__()
         self._start_pattern = re.compile(self.HEADING_START_PATTERN, re.IGNORECASE)
@@ -31,52 +36,43 @@ class ToggleableHeadingParser(LineParser):
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
-        return (
-            self._is_toggleable_heading_start(context)
-            or self._is_toggleable_heading_end(context)
-            or self._is_toggleable_heading_content(context)
-        )
+        return self._is_heading_start(context) or self._is_heading_end(context) or self._is_heading_content(context)
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
-        """Process toggleable heading start, end, or content with unified handling."""
+        if self._is_heading_start(context):
+            await self._start_toggleable_heading(context)
+        elif self._is_heading_end(context):
+            await self._finalize_toggleable_heading(context)
+        elif self._is_heading_content(context):
+            await self._add_heading_content(context)
 
-        async def _handle(action):
-            await action(context)
-            return True
-
-        if self._is_toggleable_heading_start(context):
-            return await _handle(self._start_toggleable_heading)
-        if self._is_toggleable_heading_end(context):
-            return await _handle(self._finalize_toggleable_heading)
-        if self._is_toggleable_heading_content(context):
-            return await _handle(self._add_toggleable_heading_content)
-
-    def _is_toggleable_heading_start(self, context: BlockParsingContext) -> bool:
-        """Check if line starts a toggleable heading (+++# "Title" or +++#"Title")."""
+    def _is_heading_start(self, context: BlockParsingContext) -> bool:
         return self._start_pattern.match(context.line.strip()) is not None
 
-    def _is_toggleable_heading_end(self, context: BlockParsingContext) -> bool:
-        """Check if we need to end a toggleable heading (+++)."""
+    def _is_heading_end(self, context: BlockParsingContext) -> bool:
         if not self._end_pattern.match(context.line.strip()):
             return False
+        return self._has_heading_on_stack(context)
 
-        if not context.parent_stack:
+    def _is_heading_content(self, context: BlockParsingContext) -> bool:
+        if not self._has_heading_on_stack(context):
             return False
 
-        # Check if top of stack is a ToggleableHeading
-        current_parent = context.parent_stack[-1]
-        return self._is_heading_block(current_parent.block)
+        line = context.line.strip()
+        return not (self._start_pattern.match(line) or self._end_pattern.match(line))
 
-    def _is_heading_block(self, block) -> bool:
-        return isinstance(block, (CreateHeading1Block, CreateHeading2Block, CreateHeading3Block))
+    def _has_heading_on_stack(self, context: BlockParsingContext) -> bool:
+        if not context.parent_stack:
+            return False
+        current_parent = context.parent_stack[-1]
+        return isinstance(current_parent.block, self.HEADING_BLOCK_TYPES)
 
     async def _start_toggleable_heading(self, context: BlockParsingContext) -> None:
-        block = await self._create_toggleable_heading_block(context.line)
+        block = await self._create_heading_block(context.line)
         if not block:
             return
 
-        # Push to parent stack
         parent_context = ParentBlockContext(
             block=block,
             element_type=type(block),
@@ -84,87 +80,75 @@ class ToggleableHeadingParser(LineParser):
         )
         context.parent_stack.append(parent_context)
 
-    async def _create_toggleable_heading_block(self, line: str) -> CreateHeadingBlock | None:
-        """Create a toggleable heading block from markdown line."""
-        if not (match := self._start_pattern.match(line.strip())):
+    async def _create_heading_block(self, line: str) -> CreateHeadingBlock | None:
+        match = self._start_pattern.match(line.strip())
+        if not match:
             return None
 
-        level = len(match.group("level"))  # Count # characters
-        content = match.group(2).strip()  # Title text
+        level = len(match.group("level"))
+        content = match.group(2).strip()
 
-        if level < 1 or level > 3 or not content:
+        if not self._is_valid_heading(level, content):
             return None
 
-        rich_text = await self._rich_text_converter.to_rich_text(content)
-        heading_content = HeadingData(rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=True, children=[])
+        heading_data = await self._build_heading_data(content)
 
         if level == 1:
-            return CreateHeading1Block(heading_1=heading_content)
+            return CreateHeading1Block(heading_1=heading_data)
         elif level == 2:
-            return CreateHeading2Block(heading_2=heading_content)
+            return CreateHeading2Block(heading_2=heading_data)
         else:
-            return CreateHeading3Block(heading_3=heading_content)
+            return CreateHeading3Block(heading_3=heading_data)
 
-    def _is_toggleable_heading_content(self, context: BlockParsingContext) -> bool:
-        if not context.parent_stack:
-            return False
+    def _is_valid_heading(self, level: int, content: str) -> bool:
+        return self.MIN_HEADING_LEVEL <= level <= self.MAX_HEADING_LEVEL and bool(content)
 
-        current_parent = context.parent_stack[-1]
-        if not self._is_heading_block(current_parent.block):
-            return False
+    async def _build_heading_data(self, content: str) -> CreateHeadingData:
+        rich_text = await self._rich_text_converter.to_rich_text(content)
+        return CreateHeadingData(rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=True, children=[])
 
-        # Handle all content inside toggleable heading (not start/end patterns)
-        line = context.line.strip()
-        return not (self._start_pattern.match(line) or self._end_pattern.match(line))
-
-    async def _add_toggleable_heading_content(self, context: BlockParsingContext) -> None:
-        """Add content to the current toggleable heading context."""
+    async def _add_heading_content(self, context: BlockParsingContext) -> None:
         context.parent_stack[-1].add_child_line(context.line)
 
     async def _finalize_toggleable_heading(self, context: BlockParsingContext) -> None:
-        """Finalize a toggleable heading block and add it to result_blocks."""
         heading_context = context.parent_stack.pop()
-        await self._assign_heading_children_if_any(heading_context, context)
+        await self._assign_children(heading_context, context)
+        self._add_to_parent_or_result(heading_context.block, context)
 
-        # Check if we have a parent context to add this heading to
-        if context.parent_stack:
-            parent_context = context.parent_stack[-1]
-            parent_context.add_child_block(heading_context.block)
-        else:
-            # No parent, add to top level
-            context.result_blocks.append(heading_context.block)
+    async def _assign_children(self, heading_context: ParentBlockContext, context: BlockParsingContext) -> None:
+        children = await self._collect_children(heading_context, context)
+        self._set_heading_children(heading_context.block, children)
 
-    async def _assign_heading_children_if_any(
+    async def _collect_children(
         self, heading_context: ParentBlockContext, context: BlockParsingContext
-    ) -> None:
-        """Collect and assign any children blocks inside this heading."""
-        all_children = []
+    ) -> list[BlockCreatePayload]:
+        children = []
 
-        # Process text lines
         if heading_context.child_lines:
-            children_text = "\n".join(heading_context.child_lines)
-            text_blocks = await self._parse_nested_content(children_text, context)
-            all_children.extend(text_blocks)
+            text = "\n".join(heading_context.child_lines)
+            text_blocks = await self._parse_nested_content(text, context)
+            children.extend(text_blocks)
 
-        # Add direct child blocks
         if heading_context.child_blocks:
-            all_children.extend(heading_context.child_blocks)
+            children.extend(heading_context.child_blocks)
 
-        self._assign_children_to_heading(heading_context.block, all_children)
+        return children
 
-    def _assign_children_to_heading(self, parent_block: BlockCreatePayload, children: list[BlockCreatePayload]) -> None:
-        """Assign children to toggleable heading blocks."""
-        block_type = parent_block.type
+    def _set_heading_children(self, block: CreateHeadingBlock, children: list[BlockCreatePayload]) -> None:
+        if block.type == BlockType.HEADING_1:
+            block.heading_1.children = children
+        elif block.type == BlockType.HEADING_2:
+            block.heading_2.children = children
+        elif block.type == BlockType.HEADING_3:
+            block.heading_3.children = children
 
-        if block_type == BlockType.HEADING_1:
-            parent_block.heading_1.children = children
-        elif block_type == BlockType.HEADING_2:
-            parent_block.heading_2.children = children
-        elif block_type == BlockType.HEADING_3:
-            parent_block.heading_3.children = children
+    def _add_to_parent_or_result(self, block: CreateHeadingBlock, context: BlockParsingContext) -> None:
+        if context.parent_stack:
+            context.parent_stack[-1].add_child_block(block)
+        else:
+            context.result_blocks.append(block)
 
     async def _parse_nested_content(self, text: str, context: BlockParsingContext) -> list:
         if not text.strip():
             return []
-
         return await context.parse_nested_content(text)

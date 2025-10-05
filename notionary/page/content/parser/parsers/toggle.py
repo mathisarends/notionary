@@ -2,7 +2,7 @@ import re
 from typing import override
 
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-from notionary.blocks.schemas import BlockColor, CreateToggleBlock, ToggleData
+from notionary.blocks.schemas import BlockColor, CreateToggleBlock, CreateToggleData
 from notionary.page.content.parser.parsers import (
     BlockParsingContext,
     LineParser,
@@ -78,7 +78,7 @@ class ToggleParser(LineParser):
         title = match.group(1).strip()
         rich_text = await self._rich_text_converter.to_rich_text(title)
 
-        toggle_content = ToggleData(rich_text=rich_text, color=BlockColor.DEFAULT, children=[])
+        toggle_content = CreateToggleData(rich_text=rich_text, color=BlockColor.DEFAULT, children=[])
         return CreateToggleBlock(toggle=toggle_content)
 
     async def _finalize_toggle(self, context: BlockParsingContext) -> None:

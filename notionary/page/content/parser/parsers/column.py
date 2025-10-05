@@ -1,7 +1,7 @@
 import re
 from typing import override
 
-from notionary.blocks.schemas import ColumnData, CreateColumnBlock, CreateColumnListBlock
+from notionary.blocks.schemas import CreateColumnBlock, CreateColumnData, CreateColumnListBlock
 from notionary.page.content.parser.context import ParentBlockContext
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
@@ -64,7 +64,7 @@ class ColumnParser(LineParser):
             return None
 
         width_ratio = self._parse_width_ratio(match.group(1))
-        column_data = ColumnData(width_ratio=width_ratio)
+        column_data = CreateColumnData(width_ratio=width_ratio)
 
         return CreateColumnBlock(column=column_data)
 

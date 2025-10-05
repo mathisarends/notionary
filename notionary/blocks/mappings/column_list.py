@@ -1,7 +1,7 @@
 import re
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
-from notionary.blocks.schemas import Block, BlockType, ColumnListData, CreateColumnListBlock
+from notionary.blocks.schemas import Block, BlockType, CreateColumnListBlock, CreateColumnListData
 
 
 class ColumnListMapper(NotionMarkdownMapper):
@@ -24,5 +24,5 @@ class ColumnListMapper(NotionMarkdownMapper):
             return None
 
         # Empty ColumnListData - children (columns) added by stack processor
-        column_list_content = ColumnListData()
+        column_list_content = CreateColumnListData()
         return CreateColumnListBlock(column_list=column_list_content)

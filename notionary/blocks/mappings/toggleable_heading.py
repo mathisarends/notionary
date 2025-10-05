@@ -11,6 +11,7 @@ from notionary.blocks.schemas import (
     CreateHeading2Block,
     CreateHeading3Block,
     CreateHeadingBlock,
+    CreateHeadingData,
     Heading1Block,
     Heading2Block,
     Heading3Block,
@@ -59,7 +60,9 @@ class ToggleableHeadingMapper(NotionMarkdownMapper):
         converter = MarkdownRichTextConverter()
         rich_text = await converter.to_rich_text(content)
 
-        heading_content = HeadingData(rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=True, children=[])
+        heading_content = CreateHeadingData(
+            rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=True, children=[]
+        )
 
         if level == 1:
             return CreateHeading1Block(heading_1=heading_content)

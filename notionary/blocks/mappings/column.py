@@ -1,7 +1,7 @@
 import re
 
 from notionary.blocks.mappings.base import NotionMarkdownMapper
-from notionary.blocks.schemas import Block, BlockType, ColumnData, CreateColumnBlock
+from notionary.blocks.schemas import Block, BlockType, CreateColumnBlock, CreateColumnData
 
 
 class ColumnMapper(NotionMarkdownMapper):
@@ -30,7 +30,7 @@ class ColumnMapper(NotionMarkdownMapper):
             except ValueError:
                 width_ratio = None  # Invalid format, use default
 
-        column_content = ColumnData(width_ratio=width_ratio)
+        column_content = CreateColumnData(width_ratio=width_ratio)
         return CreateColumnBlock(column=column_content)
 
     @classmethod

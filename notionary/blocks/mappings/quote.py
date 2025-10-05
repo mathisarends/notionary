@@ -3,7 +3,7 @@ import re
 from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, BlockColor, BlockType, CreateQuoteBlock, QuoteData
+from notionary.blocks.schemas import Block, BlockColor, BlockType, CreateQuoteBlock, CreateQuoteData
 
 
 class QuoteMapper(NotionMarkdownMapper):
@@ -30,7 +30,7 @@ class QuoteMapper(NotionMarkdownMapper):
         converter = MarkdownRichTextConverter()
         rich_text = await converter.to_rich_text(content)
 
-        quote_content = QuoteData(rich_text=rich_text, color=BlockColor.DEFAULT)
+        quote_content = CreateQuoteData(rich_text=rich_text, color=BlockColor.DEFAULT)
         return CreateQuoteBlock(quote=quote_content)
 
     @classmethod

@@ -3,7 +3,7 @@ from typing import override
 
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.models import RichText
-from notionary.blocks.schemas import CreateTableBlock, CreateTableRowBlock, TableData, TableRowData
+from notionary.blocks.schemas import CreateTableBlock, CreateTableData, CreateTableRowBlock, TableRowData
 from notionary.page.content.parser.parsers import BlockParsingContext, LineParser
 
 
@@ -80,7 +80,7 @@ class TableParser(LineParser):
 
         table_rows, has_separator = await self._process_table_rows(table_lines)
 
-        table_data = TableData(
+        table_data = CreateTableData(
             table_width=column_count,
             has_column_header=has_separator,
             has_row_header=False,

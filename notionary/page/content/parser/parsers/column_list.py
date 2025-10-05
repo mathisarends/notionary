@@ -2,7 +2,7 @@ import re
 from typing import override
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.schemas import Block, ColumnListData, CreateColumnListBlock
+from notionary.blocks.schemas import Block, CreateColumnListBlock, CreateColumnListData
 from notionary.page.content.parser.context import ParentBlockContext
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
@@ -44,7 +44,7 @@ class ColumnListParser(LineParser):
         return isinstance(current_parent.block, CreateColumnListBlock)
 
     async def _start_column_list(self, context: BlockParsingContext) -> None:
-        column_list_data = ColumnListData()
+        column_list_data = CreateColumnListData()
         block = CreateColumnListBlock(column_list=column_list_data)
 
         parent_context = ParentBlockContext(

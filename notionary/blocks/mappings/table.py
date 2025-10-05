@@ -8,8 +8,8 @@ from notionary.blocks.schemas import (
     Block,
     BlockType,
     CreateTableBlock,
+    CreateTableData,
     CreateTableRowBlock,
-    TableData,
     TableRowData,
 )
 
@@ -31,7 +31,7 @@ class TableMapper(NotionMarkdownMapper):
         header_cells = cls._parse_table_row(text)
         col_count = len(header_cells)
 
-        table_data = TableData(
+        table_data = CreateTableData(
             table_width=col_count,
             has_column_header=True,
             has_row_header=False,
@@ -66,7 +66,7 @@ class TableMapper(NotionMarkdownMapper):
         table_rows, separator_found = await cls._process_table_lines(table_lines)
 
         # Create complete TableData
-        table_data = TableData(
+        table_data = CreateTableData(
             table_width=col_count,
             has_column_header=separator_found,
             has_row_header=False,

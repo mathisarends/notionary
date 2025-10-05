@@ -149,11 +149,14 @@ class CreateBulletedListItemBlock(BaseModel):
 # ============================================================================
 
 
-class CalloutData(BaseModel):
+class BaseCalloutData(BaseModel):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
     icon: Icon | None = None
-    children: list[BlockCreatePayload] | None = None
+
+
+class CalloutData(BaseCalloutData):
+    children: list[Block] | None = None
 
 
 class CalloutBlock(BaseBlock):
@@ -161,9 +164,13 @@ class CalloutBlock(BaseBlock):
     callout: CalloutData
 
 
+class CreateCalloutData(BaseCalloutData):
+    children: list[BlockCreatePayload] | None = None
+
+
 class CreateCalloutBlock(BaseModel):
     type: Literal[BlockType.CALLOUT] = BlockType.CALLOUT
-    callout: CalloutData
+    callout: CreateCalloutData
 
 
 # ============================================================================
@@ -232,9 +239,12 @@ class CreateCodeBlock(BaseModel):
 # ============================================================================
 
 
-class ColumnData(BaseModel):
+class BaseColumnData(BaseModel):
     width_ratio: float | None = None
-    children: list[BlockCreatePayload] = Field(default_factory=list)
+
+
+class ColumnData(BaseColumnData):
+    children: list[Block] = Field(default_factory=list)
 
 
 class ColumnBlock(BaseBlock):
@@ -242,13 +252,17 @@ class ColumnBlock(BaseBlock):
     column: ColumnData
 
 
+class CreateColumnData(BaseColumnData):
+    children: list[BlockCreatePayload] = Field(default_factory=list)
+
+
 class CreateColumnBlock(BaseModel):
     type: Literal[BlockType.COLUMN] = BlockType.COLUMN
-    column: ColumnData
+    column: CreateColumnData
 
 
 class ColumnListData(BaseModel):
-    children: list[CreateColumnBlock] = Field(default_factory=list)
+    children: list[ColumnBlock] = Field(default_factory=list)
 
 
 class ColumnListBlock(BaseBlock):
@@ -256,9 +270,13 @@ class ColumnListBlock(BaseBlock):
     column_list: ColumnListData
 
 
+class CreateColumnListData(BaseModel):
+    children: list[CreateColumnBlock] = Field(default_factory=list)
+
+
 class CreateColumnListBlock(BaseModel):
     type: Literal[BlockType.COLUMN_LIST] = BlockType.COLUMN_LIST
-    column_list: ColumnListData
+    column_list: CreateColumnListData
 
 
 # ============================================================================
@@ -339,10 +357,17 @@ class CreateFileBlock(BaseModel):
 # ============================================================================
 
 
-class HeadingData(BaseModel):
+class BaseHeadingData(BaseModel):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
     is_toggleable: bool = False
+
+
+class HeadingData(BaseHeadingData):
+    children: list[Block] | None = None
+
+
+class CreateHeadingData(BaseHeadingData):
     children: list[BlockCreatePayload] | None = None
 
 
@@ -363,17 +388,17 @@ class Heading3Block(BaseBlock):
 
 class CreateHeading1Block(BaseModel):
     type: Literal[BlockType.HEADING_1] = BlockType.HEADING_1
-    heading_1: HeadingData
+    heading_1: CreateHeadingData
 
 
 class CreateHeading2Block(BaseModel):
     type: Literal[BlockType.HEADING_2] = BlockType.HEADING_2
-    heading_2: HeadingData
+    heading_2: CreateHeadingData
 
 
 class CreateHeading3Block(BaseModel):
     type: Literal[BlockType.HEADING_3] = BlockType.HEADING_3
-    heading_3: HeadingData
+    heading_3: CreateHeadingData
 
 
 CreateHeadingBlock = CreateHeading1Block | CreateHeading2Block | CreateHeading3Block
@@ -473,10 +498,13 @@ class CreatePdfBlock(BaseModel):
 # ============================================================================
 
 
-class QuoteData(BaseModel):
+class BaseQuoteData(BaseModel):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockCreatePayload] | None = None
+
+
+class QuoteData(BaseQuoteData):
+    children: list[Block] | None = None
 
 
 class QuoteBlock(BaseBlock):
@@ -484,9 +512,13 @@ class QuoteBlock(BaseBlock):
     quote: QuoteData
 
 
+class CreateQuoteData(BaseQuoteData):
+    children: list[BlockCreatePayload] | None = None
+
+
 class CreateQuoteBlock(BaseModel):
     type: Literal[BlockType.QUOTE] = BlockType.QUOTE
-    quote: QuoteData
+    quote: CreateQuoteData
 
 
 # ============================================================================
@@ -508,11 +540,14 @@ class CreateTableRowBlock(BaseModel):
     table_row: TableRowData
 
 
-class TableData(BaseModel):
+class BaseTableData(BaseModel):
     table_width: int
     has_column_header: bool = False
     has_row_header: bool = False
-    children: list[CreateTableRowBlock] = Field(default_factory=list)
+
+
+class TableData(BaseTableData):
+    children: list[TableRowBlock] = Field(default_factory=list)
 
 
 class TableBlock(BaseBlock):
@@ -520,9 +555,13 @@ class TableBlock(BaseBlock):
     table: TableData
 
 
+class CreateTableData(BaseTableData):
+    children: list[CreateTableRowBlock] = Field(default_factory=list)
+
+
 class CreateTableBlock(BaseModel):
     type: Literal[BlockType.TABLE] = BlockType.TABLE
-    table: TableData
+    table: CreateTableData
 
 
 # ============================================================================
@@ -570,10 +609,13 @@ class CreateToDoBlock(BaseModel):
 # ============================================================================
 
 
-class ToggleData(BaseModel):
+class BaseToggleData(BaseModel):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockCreatePayload] | None = None
+
+
+class ToggleData(BaseToggleData):
+    children: list[Block] | None = None
 
 
 class ToggleBlock(BaseBlock):
@@ -581,9 +623,13 @@ class ToggleBlock(BaseBlock):
     toggle: ToggleData
 
 
+class CreateToggleData(BaseToggleData):
+    children: list[BlockCreatePayload] | None = None
+
+
 class CreateToggleBlock(BaseModel):
     type: Literal[BlockType.TOGGLE] = BlockType.TOGGLE
-    toggle: ToggleData
+    toggle: CreateToggleData
 
 
 # ============================================================================

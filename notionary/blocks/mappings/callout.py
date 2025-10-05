@@ -3,7 +3,7 @@ import re
 from notionary.blocks.mappings.base import NotionMarkdownMapper
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, BlockType, CalloutData, CreateCalloutBlock
+from notionary.blocks.schemas import Block, BlockType, CreateCalloutBlock, CreateCalloutData
 from notionary.shared.models.icon_models import EmojiIcon, Icon
 
 
@@ -38,7 +38,7 @@ class CalloutMapper(NotionMarkdownMapper):
         converter = MarkdownRichTextConverter()
         rich_text = await converter.to_rich_text(content.strip())
 
-        callout_content = CalloutData(
+        callout_content = CreateCalloutData(
             rich_text=rich_text,
             icon=EmojiIcon(emoji=emoji),
             color=cls.DEFAULT_COLOR,
