@@ -28,7 +28,7 @@ class BreadcrumbParser(LineParser):
             context.result_blocks.append(block)
 
     def _is_breadcrumb(self, line: str) -> bool:
-        return self._pattern.match(line.strip()) is not None
+        return self._pattern.match(line) is not None
 
     def _create_breadcrumb_block(self) -> CreateBreadcrumbBlock:
         breadcrumb_data = BreadcrumbData()

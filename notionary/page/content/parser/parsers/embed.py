@@ -17,7 +17,7 @@ class EmbedParser(CaptionedBlockParser):
     def _can_handle(self, context: BlockParsingContext) -> bool:
         if context.is_inside_parent_context():
             return False
-        return self.EMBED_PATTERN.search(context.line.strip()) is not None
+        return self.EMBED_PATTERN.search(context.line) is not None
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
@@ -33,5 +33,5 @@ class EmbedParser(CaptionedBlockParser):
         context.result_blocks.append(block)
 
     def _extract_url(self, line: str) -> str | None:
-        match = self.EMBED_PATTERN.search(line.strip())
+        match = self.EMBED_PATTERN.search(line)
         return match.group(1) if match else None

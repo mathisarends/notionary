@@ -38,19 +38,17 @@ class ToggleParser(LineParser):
             self._add_toggle_content(context)
 
     def _is_toggle_start(self, context: BlockParsingContext) -> bool:
-        line = context.line.strip()
-
-        if not self._start_pattern.match(line):
+        if not self._start_pattern.match(context.line):
             return False
 
         # Exclude toggleable heading patterns to be more resilient to wrong order of chain
-        return not self.is_heading_start(line)
+        return not self.is_heading_start(context.line)
 
     def is_heading_start(self, line: str) -> bool:
         return self._heading_pattern.match(line)
 
     def _is_toggle_end(self, context: BlockParsingContext) -> bool:
-        if not self._end_pattern.match(context.line.strip()):
+        if not self._end_pattern.match(context.line):
             return False
 
         if not context.parent_stack:
@@ -66,13 +64,12 @@ class ToggleParser(LineParser):
 
         parent_context = ParentBlockContext(
             block=block,
-            element_type=type(block),
             child_lines=[],
         )
         context.parent_stack.append(parent_context)
 
     async def _create_toggle_block(self, line: str) -> CreateToggleBlock | None:
-        if not (match := self._start_pattern.match(line.strip())):
+        if not (match := self._start_pattern.match(line)):
             return None
 
         title = match.group(1).strip()
@@ -121,8 +118,7 @@ class ToggleParser(LineParser):
         if not isinstance(current_parent.block, CreateToggleBlock):
             return False
 
-        line = context.line.strip()
-        return not (self._start_pattern.match(line) or self._end_pattern.match(line))
+        return not (self._start_pattern.match(context.line) or self._end_pattern.match(context.line))
 
     def _add_toggle_content(self, context: BlockParsingContext) -> None:
         context.parent_stack[-1].add_child_line(context.line)

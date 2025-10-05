@@ -15,7 +15,7 @@ class PageContentWriter(LoggingMixin):
         self.block_registry = block_registry
         self._block_client = block_client
 
-        self._markdown_to_notion_converter = MarkdownToNotionConverter(block_registry=block_registry)
+        self._markdown_to_notion_converter = MarkdownToNotionConverter()
 
     async def append_markdown(
         self,

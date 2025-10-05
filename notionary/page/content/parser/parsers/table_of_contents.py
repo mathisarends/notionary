@@ -27,7 +27,7 @@ class TableOfContentsParser(LineParser):
         context.result_blocks.append(block)
 
     def _is_toc(self, line: str) -> bool:
-        return self._pattern.match(line.strip()) is not None
+        return self._pattern.match(line) is not None
 
     def _create_toc_block(self) -> CreateTableOfContentsBlock:
         toc_data = TableOfContentsData(color=BlockColor.DEFAULT)

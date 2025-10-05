@@ -22,7 +22,7 @@ class BulletedListParser(LineParser):
     def _can_handle(self, context: BlockParsingContext) -> bool:
         if context.is_inside_parent_context():
             return False
-        return self.PATTERN.match(context.line.strip()) is not None
+        return self.PATTERN.match(context.line) is not None
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
@@ -31,7 +31,7 @@ class BulletedListParser(LineParser):
             context.result_blocks.append(block)
 
     async def _create_bulleted_list_block(self, text: str) -> CreateBulletedListItemBlock | None:
-        match = self.PATTERN.match(text.strip())
+        match = self.PATTERN.match(text)
         if not match:
             return None
 

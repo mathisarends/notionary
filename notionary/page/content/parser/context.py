@@ -3,16 +3,12 @@ from __future__ import annotations
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 
-from notionary.blocks.mappings.base import NotionMarkdownMapper
-from notionary.blocks.registry.service import BlockRegistry
 from notionary.blocks.schemas import BlockCreatePayload
 
 
-# Gucken ob der hier so umfangreich sein muss wie er es jetzt ist
 @dataclass
 class ParentBlockContext:
     block: BlockCreatePayload
-    element_type: NotionMarkdownMapper
     child_lines: list[str]
     child_blocks: list[BlockCreatePayload] = field(default_factory=list)
 
@@ -21,9 +17,6 @@ class ParentBlockContext:
 
     def add_child_block(self, block: BlockCreatePayload) -> None:
         self.child_blocks.append(block)
-
-    def has_children(self) -> bool:
-        return len(self.child_lines) > 0 or len(self.child_blocks) > 0
 
 
 ParseChildrenCallback = Callable[[list[str]], Awaitable[list[BlockCreatePayload]]]
@@ -34,7 +27,6 @@ class BlockParsingContext:
     line: str
     result_blocks: list[BlockCreatePayload]
     parent_stack: list[ParentBlockContext]
-    block_registry: BlockRegistry
 
     parse_children_callback: ParseChildrenCallback | None = None
 

@@ -28,8 +28,7 @@ class TodoParser(LineParser):
         if context.is_inside_parent_context():
             return False
 
-        line = context.line.strip()
-        return self.PATTERN.match(line) is not None or self.DONE_PATTERN.match(line) is not None
+        return self.PATTERN.match(context.line) is not None or self.DONE_PATTERN.match(context.line) is not None
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:

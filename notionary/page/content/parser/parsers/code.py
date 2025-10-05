@@ -44,10 +44,10 @@ class CodeParser(CaptionedBlockParser):
         context.result_blocks.append(block)
 
     def _is_code_fence_start(self, line: str) -> bool:
-        return self._code_start_pattern.match(line.strip()) is not None
+        return self._code_start_pattern.match(line) is not None
 
     def _is_code_fence_end(self, line: str) -> bool:
-        return self._code_end_pattern.match(line.strip()) is not None
+        return self._code_end_pattern.match(line) is not None
 
     def _collect_code_lines(self, context: BlockParsingContext) -> list[str]:
         code_lines = []
@@ -64,7 +64,7 @@ class CodeParser(CaptionedBlockParser):
         return len(context.get_remaining_lines())
 
     async def _create_code_block(self, opening_line: str, code_lines: list[str]) -> CreateCodeBlock | None:
-        match = self._code_start_pattern.match(opening_line.strip())
+        match = self._code_start_pattern.match(opening_line)
         if not match:
             return None
 

@@ -31,7 +31,7 @@ class TableParser(LineParser):
         await self._process_complete_table(context)
 
     def _is_table_start(self, context: BlockParsingContext) -> bool:
-        return self._table_row_pattern.match(context.line.strip()) is not None
+        return self._table_row_pattern.match(context.line) is not None
 
     async def _process_complete_table(self, context: BlockParsingContext) -> None:
         table_lines = [context.line]

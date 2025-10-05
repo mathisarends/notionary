@@ -16,18 +16,13 @@ from notionary.page.content.parser.parsers.captioned_block_parser import (
 
 
 class VideoParser(CaptionedBlockParser):
-    """Handles video blocks with [video](url) syntax.
-
-    Supports caption on next line: [caption] Caption text
-    """
-
     VIDEO_PATTERN = re.compile(r"\[video\]\(([^)]+)\)")
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
         if context.is_inside_parent_context():
             return False
-        return self.VIDEO_PATTERN.search(context.line.strip()) is not None
+        return self.VIDEO_PATTERN.search(context.line) is not None
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
@@ -36,7 +31,6 @@ class VideoParser(CaptionedBlockParser):
         if not url:
             return
 
-        # Check if next line contains a caption
         caption_rich_text = await self._extract_caption_for_single_line_block(context)
 
         # Create the video block
@@ -49,6 +43,5 @@ class VideoParser(CaptionedBlockParser):
         context.result_blocks.append(block)
 
     def _extract_url(self, line: str) -> str | None:
-        """Extract video URL from the line."""
-        match = self.VIDEO_PATTERN.search(line.strip())
+        match = self.VIDEO_PATTERN.search(line)
         return match.group(1).strip() if match else None

@@ -19,7 +19,7 @@ class ParagraphParser(LineParser):
     def _can_handle(self, context: BlockParsingContext) -> bool:
         if context.is_inside_parent_context():
             return False
-        return bool(context.line.strip())
+        return bool(context.line)
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
@@ -28,7 +28,7 @@ class ParagraphParser(LineParser):
             context.result_blocks.append(block)
 
     async def _create_paragraph_block(self, text: str) -> CreateParagraphBlock | None:
-        if not text.strip():
+        if not text:
             return None
 
         rich_text = await self._rich_text_converter.to_rich_text(text)

@@ -34,7 +34,7 @@ class EquationParser(LineParser):
             context.result_blocks.append(block)
 
     def _is_equation_delimiter(self, line: str) -> bool:
-        return self._equation_delimiter_pattern.match(line.strip()) is not None
+        return self._equation_delimiter_pattern.match(line) is not None
 
     def _collect_equation_content(self, context: BlockParsingContext) -> list[str]:
         content_lines = []

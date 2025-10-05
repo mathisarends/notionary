@@ -42,7 +42,7 @@ class QuoteParser(LineParser):
         return quote_lines
 
     def _is_quote(self, line: str) -> bool:
-        return self._pattern.match(line.strip()) is not None
+        return self._pattern.match(line) is not None
 
     async def _create_quote_block(self, quote_lines: list[str]) -> CreateQuoteBlock | None:
         if not quote_lines:
@@ -50,7 +50,7 @@ class QuoteParser(LineParser):
 
         contents = []
         for line in quote_lines:
-            match = self._pattern.match(line.strip())
+            match = self._pattern.match(line)
             if match:
                 contents.append(match.group(1).strip())
 

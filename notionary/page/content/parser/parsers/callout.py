@@ -38,11 +38,10 @@ class CalloutParser(LineParser):
             self._add_callout_content(context)
 
     def _is_callout_start(self, context: BlockParsingContext) -> bool:
-        line = context.line.strip()
-        return self._start_pattern.match(line) is not None
+        return self._start_pattern.match(context.line) is not None
 
     def _is_callout_end(self, context: BlockParsingContext) -> bool:
-        if not self._end_pattern.match(context.line.strip()):
+        if not self._end_pattern.match(context.line):
             return False
 
         if not context.parent_stack:
@@ -58,13 +57,12 @@ class CalloutParser(LineParser):
 
         parent_context = ParentBlockContext(
             block=block,
-            element_type=type(block),
             child_lines=[],
         )
         context.parent_stack.append(parent_context)
 
     async def _create_callout_block(self, line: str) -> CreateCalloutBlock | None:
-        match = self._start_pattern.match(line.strip())
+        match = self._start_pattern.match(line)
         if not match:
             return None
 
@@ -120,8 +118,7 @@ class CalloutParser(LineParser):
         if not isinstance(current_parent.block, CreateCalloutBlock):
             return False
 
-        line = context.line.strip()
-        return not (self._start_pattern.match(line) or self._end_pattern.match(line))
+        return not (self._start_pattern.match(context.line) or self._end_pattern.match(context.line))
 
     def _add_callout_content(self, context: BlockParsingContext) -> None:
         context.parent_stack[-1].add_child_line(context.line)

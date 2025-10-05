@@ -48,10 +48,10 @@ class ToggleableHeadingParser(LineParser):
             await self._add_heading_content(context)
 
     def _is_heading_start(self, context: BlockParsingContext) -> bool:
-        return self._start_pattern.match(context.line.strip()) is not None
+        return self._start_pattern.match(context.line) is not None
 
     def _is_heading_end(self, context: BlockParsingContext) -> bool:
-        if not self._end_pattern.match(context.line.strip()):
+        if not self._end_pattern.match(context.line):
             return False
         return self._has_heading_on_stack(context)
 
@@ -59,8 +59,7 @@ class ToggleableHeadingParser(LineParser):
         if not self._has_heading_on_stack(context):
             return False
 
-        line = context.line.strip()
-        return not (self._start_pattern.match(line) or self._end_pattern.match(line))
+        return not (self._start_pattern.match(context.line) or self._end_pattern.match(context.line))
 
     def _has_heading_on_stack(self, context: BlockParsingContext) -> bool:
         if not context.parent_stack:
@@ -75,13 +74,12 @@ class ToggleableHeadingParser(LineParser):
 
         parent_context = ParentBlockContext(
             block=block,
-            element_type=type(block),
             child_lines=[],
         )
         context.parent_stack.append(parent_context)
 
     async def _create_heading_block(self, line: str) -> CreateHeadingBlock | None:
-        match = self._start_pattern.match(line.strip())
+        match = self._start_pattern.match(line)
         if not match:
             return None
 

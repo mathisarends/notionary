@@ -34,10 +34,10 @@ class ColumnParser(LineParser):
             await self._finalize_column(context)
 
     def _is_column_start(self, context: BlockParsingContext) -> bool:
-        return self._start_pattern.match(context.line.strip()) is not None
+        return self._start_pattern.match(context.line) is not None
 
     def _is_column_end(self, context: BlockParsingContext) -> bool:
-        if not self._end_pattern.match(context.line.strip()):
+        if not self._end_pattern.match(context.line):
             return False
 
         if not context.parent_stack:
@@ -53,13 +53,12 @@ class ColumnParser(LineParser):
 
         parent_context = ParentBlockContext(
             block=block,
-            element_type=type(block),
             child_lines=[],
         )
         context.parent_stack.append(parent_context)
 
     def _create_column_block(self, line: str) -> CreateColumnBlock | None:
-        match = self._start_pattern.match(line.strip())
+        match = self._start_pattern.match(line)
         if not match:
             return None
 

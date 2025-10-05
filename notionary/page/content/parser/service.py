@@ -1,7 +1,6 @@
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import (
     MarkdownRichTextConverter,
 )
-from notionary.blocks.registry.service import BlockRegistry
 from notionary.blocks.schemas import BlockCreatePayload
 from notionary.page.content.parser.parsers import (
     AudioParser,
@@ -41,17 +40,14 @@ from notionary.utils.mixins.logging import LoggingMixin
 class MarkdownToNotionConverter(LoggingMixin):
     def __init__(
         self,
-        block_registry: BlockRegistry,
         rich_text_converter: MarkdownRichTextConverter | None = None,
     ) -> None:
-        self._block_registry = block_registry
         self._text_length_post_processor = NotionTextLengthProcessor()
         self._rich_text_converter = rich_text_converter or MarkdownRichTextConverter()
 
         self._setup_handler_chain()
 
     def _setup_handler_chain(self) -> None:
-        # Create all parsers with dependencies
         code_parser = CodeParser()
         equation_parser = EquationParser()
         table_parser = TableParser()
@@ -145,7 +141,6 @@ class MarkdownToNotionConverter(LoggingMixin):
             line=line,
             result_blocks=result_blocks,
             parent_stack=parent_stack,
-            block_registry=self._block_registry,
             parse_children_callback=self.process_lines,
             all_lines=lines,
             current_line_index=line_index,
