@@ -12,8 +12,7 @@ from notionary.page.content.parser.parsers.base import (
 
 
 class BulletedListParser(LineParser):
-    # Regex for markdown bullets (excluding todo items [ ] or [x])
-    PATTERN = re.compile(r"^(\s*)[*\-+]\s+(?!\[[ x]\])(.+)$")
+    PATTERN = re.compile(r"^(\s*)-\s+(?!\[[ x]\])(.+)$")
 
     def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None) -> None:
         super().__init__()
@@ -32,7 +31,6 @@ class BulletedListParser(LineParser):
             context.result_blocks.append(block)
 
     async def _create_bulleted_list_block(self, text: str) -> CreateBulletedListItemBlock | None:
-        """Create a bulleted list block from markdown text."""
         match = self.PATTERN.match(text.strip())
         if not match:
             return None

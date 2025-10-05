@@ -38,7 +38,6 @@ class TodoParser(LineParser):
             context.result_blocks.append(block)
 
     async def _create_todo_block(self, text: str) -> CreateToDoBlock | None:
-        """Create a todo block from markdown text."""
         m_done = self.DONE_PATTERN.match(text)
         m_todo = None if m_done else self.PATTERN.match(text)
 

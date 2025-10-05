@@ -11,11 +11,8 @@ from notionary.shared.models.icon_models import EmojiIcon
 
 
 class CalloutParser(LineParser):
-    """Handles callout blocks with [callout](...) syntax."""
-
     CALLOUT_PATTERN = r'^\[callout\]\(([^"]+?)(?:\s+"([^"]+)")?\)$'
     DEFAULT_EMOJI = "💡"
-    DEFAULT_COLOR = "gray_background"
 
     def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None) -> None:
         super().__init__()
@@ -35,11 +32,9 @@ class CalloutParser(LineParser):
             context.result_blocks.append(block)
 
     def _is_callout(self, line: str) -> bool:
-        """Check if line is a callout."""
         return self._pattern.match(line.strip()) is not None
 
     async def _create_callout_block(self, line: str) -> CreateCalloutBlock | None:
-        """Create a callout block from markdown line."""
         match = self._pattern.match(line.strip())
         if not match:
             return None
@@ -57,7 +52,6 @@ class CalloutParser(LineParser):
         callout_data = CreateCalloutData(
             rich_text=rich_text,
             icon=EmojiIcon(emoji=emoji),
-            color=self.DEFAULT_COLOR,
         )
 
         return CreateCalloutBlock(callout=callout_data)

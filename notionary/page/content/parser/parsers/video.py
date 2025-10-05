@@ -3,24 +3,25 @@
 import re
 from typing import override
 
-from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.schemas import (
     CreateVideoBlock,
     ExternalFile,
     FileData,
     FileType,
 )
-from notionary.page.content.parser.parsers.base import (
-    BlockParsingContext,
-    LineParser,
+from notionary.page.content.parser.parsers.base import BlockParsingContext
+from notionary.page.content.parser.parsers.captioned_block_parser import (
+    CaptionedBlockParser,
 )
 
 
-class VideoParser(LineParser):
-    """Handles video blocks with [video](url) syntax."""
+class VideoParser(CaptionedBlockParser):
+    """Handles video blocks with [video](url) syntax.
+
+    Supports caption on next line: [caption] Caption text
+    """
 
     VIDEO_PATTERN = re.compile(r"\[video\]\(([^)]+)\)")
-    CAPTION_PATTERN = re.compile(r"\(caption:([^)]+)\)")
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
@@ -30,46 +31,24 @@ class VideoParser(LineParser):
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
-        block = await self._create_video_block(context.line)
-        if block:
-            context.result_blocks.append(block)
+        """Process video block and check for caption on next line."""
+        url = self._extract_url(context.line)
+        if not url:
+            return
 
-    async def _create_video_block(self, text: str) -> CreateVideoBlock | None:
-        """Create a video block from markdown text."""
-        video_path = self._extract_video_path(text.strip())
-        if not video_path:
-            return None
+        # Check if next line contains a caption
+        caption_rich_text = await self._extract_caption_for_single_line_block(context)
 
-        # Extract caption
-        caption_text = self._extract_caption(text.strip())
-        caption_rich_text = self._build_caption_rich_text(caption_text or "")
-
-        # Only support external URLs
+        # Create the video block
         video_data = FileData(
             type=FileType.EXTERNAL,
-            external=ExternalFile(url=video_path),
+            external=ExternalFile(url=url),
             caption=caption_rich_text,
         )
+        block = CreateVideoBlock(video=video_data)
+        context.result_blocks.append(block)
 
-        return CreateVideoBlock(video=video_data)
-
-    def _extract_video_path(self, text: str) -> str | None:
-        """Extract video path/URL from text, handling caption patterns."""
-        clean_text = self._remove_caption(text)
-        match = self.VIDEO_PATTERN.search(clean_text)
+    def _extract_url(self, line: str) -> str | None:
+        """Extract video URL from the line."""
+        match = self.VIDEO_PATTERN.search(line.strip())
         return match.group(1).strip() if match else None
-
-    def _extract_caption(self, text: str) -> str | None:
-        """Extract caption text from markdown."""
-        caption_match = self.CAPTION_PATTERN.search(text)
-        return caption_match.group(1) if caption_match else None
-
-    def _remove_caption(self, text: str) -> str:
-        """Remove caption pattern from text."""
-        return self.CAPTION_PATTERN.sub("", text).strip()
-
-    def _build_caption_rich_text(self, caption: str) -> list[RichText]:
-        """Build rich text list from caption string."""
-        if not caption or not caption.strip():
-            return []
-        return [RichText.from_plain_text(caption.strip())]

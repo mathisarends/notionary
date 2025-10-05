@@ -14,7 +14,6 @@ from .equation import EquationParser
 from .file import FileParser
 from .heading import HeadingParser
 from .image import ImageParser
-from .line import RegularLineParser
 from .numbered_list import NumberedListParser
 from .paragraph import ParagraphParser
 from .pdf import PdfParser
@@ -49,7 +48,6 @@ __all__ = [
     "ParentBlockContext",
     "PdfParser",
     "QuoteParser",
-    "RegularLineParser",
     "SpaceParser",
     "TableOfContentsParser",
     "TableParser",

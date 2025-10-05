@@ -19,7 +19,6 @@ class ParagraphParser(LineParser):
     def _can_handle(self, context: BlockParsingContext) -> bool:
         if context.is_inside_parent_context():
             return False
-        # Paragraph is the fallback - always accepts non-empty lines
         return bool(context.line.strip())
 
     @override
@@ -29,7 +28,6 @@ class ParagraphParser(LineParser):
             context.result_blocks.append(block)
 
     async def _create_paragraph_block(self, text: str) -> CreateParagraphBlock | None:
-        """Create a paragraph block from markdown text."""
         if not text.strip():
             return None
 

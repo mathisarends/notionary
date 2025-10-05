@@ -1,5 +1,3 @@
-"""Parser for numbered list items."""
-
 import re
 from typing import override
 
@@ -37,7 +35,6 @@ class NumberedListParser(LineParser):
             context.result_blocks.append(block)
 
     async def _create_numbered_list_block(self, text: str) -> CreateNumberedListItemBlock | None:
-        """Create a numbered list block from markdown text."""
         match = self.PATTERN.match(text.strip())
         if not match:
             return None

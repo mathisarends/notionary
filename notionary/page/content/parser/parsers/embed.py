@@ -3,49 +3,35 @@
 import re
 from typing import override
 
-from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.schemas import CreateEmbedBlock, EmbedData
-from notionary.page.content.parser.parsers.base import (
-    BlockParsingContext,
-    LineParser,
+from notionary.page.content.parser.parsers.base import BlockParsingContext
+from notionary.page.content.parser.parsers.captioned_block_parser import (
+    CaptionedBlockParser,
 )
 
 
-class EmbedParser(LineParser):
-    """Handles embed blocks with [embed](url) syntax."""
-
-    PATTERN = re.compile(
-        r"^\[embed\]\("  # prefix
-        r"(https?://[^\s\"]+)"  # URL
-        r"(?:\s+\"([^\"]+)\")?"  # optional caption
-        r"\)$"
-    )
+class EmbedParser(CaptionedBlockParser):
+    EMBED_PATTERN = re.compile(r"\[embed\]\((https?://[^\s\"]+)\)")
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
         if context.is_inside_parent_context():
             return False
-        return self.PATTERN.match(context.line.strip()) is not None
+        return self.EMBED_PATTERN.search(context.line.strip()) is not None
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
-        block = await self._create_embed_block(context.line)
-        if block:
-            context.result_blocks.append(block)
+        """Process embed block and check for caption on next line."""
+        url = self._extract_url(context.line)
+        if not url:
+            return
 
-    async def _create_embed_block(self, text: str) -> CreateEmbedBlock | None:
-        """Create an embed block from markdown text."""
-        match = self.PATTERN.match(text.strip())
-        if not match:
-            return None
+        caption_rich_text = await self._extract_caption_for_single_line_block(context)
 
-        url = match.group(1)
-        caption_text = match.group(2) or ""
+        embed_data = EmbedData(url=url, caption=caption_rich_text)
+        block = CreateEmbedBlock(embed=embed_data)
+        context.result_blocks.append(block)
 
-        # Build embed data
-        caption = []
-        if caption_text.strip():
-            caption = [RichText.from_plain_text(caption_text.strip())]
-
-        embed_data = EmbedData(url=url, caption=caption)
-        return CreateEmbedBlock(embed=embed_data)
+    def _extract_url(self, line: str) -> str | None:
+        match = self.EMBED_PATTERN.search(line.strip())
+        return match.group(1) if match else None

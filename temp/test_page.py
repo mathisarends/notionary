@@ -7,17 +7,13 @@ async def main() -> None:
     page = await NotionPage.from_title(PAGE)
 
     markdown = """
-    ### Content-Plan für Social Media
+```python
+ist lit
+```
+[caption] Ist eine gute Sprache
 
-    +++ ## Überschrift
-    test von der welt
-    +++
-
-    +++ normales toggle
-    super lit
-    +++
-
-    normaler text
+> some quote
+> new line
 
     """
     content = await page.append_markdown(markdown)

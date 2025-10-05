@@ -9,7 +9,7 @@ from notionary.page.content.parser.parsers.base import (
 
 
 class TableOfContentsParser(LineParser):
-    TOC_PATTERN = r"^\[toc\](?:\((?P<color>[a-z_]+)\))?$"
+    TOC_PATTERN = r"^\[toc\]$"
 
     def __init__(self) -> None:
         super().__init__()
@@ -23,26 +23,12 @@ class TableOfContentsParser(LineParser):
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
-        block = self._create_toc_block(context.line)
-        if block:
-            context.result_blocks.append(block)
+        block = self._create_toc_block()
+        context.result_blocks.append(block)
 
     def _is_toc(self, line: str) -> bool:
         return self._pattern.match(line.strip()) is not None
 
-    def _create_toc_block(self, line: str) -> CreateTableOfContentsBlock | None:
-        match = self._pattern.match(line.strip())
-        if not match:
-            return None
-
-        color_str = match.group("color")
-        color = BlockColor.DEFAULT
-
-        if color_str:
-            try:
-                color = BlockColor(color_str.lower())
-            except ValueError:
-                color = BlockColor.DEFAULT
-
-        toc_data = TableOfContentsData(color=color)
+    def _create_toc_block(self) -> CreateTableOfContentsBlock:
+        toc_data = TableOfContentsData(color=BlockColor.DEFAULT)
         return CreateTableOfContentsBlock(table_of_contents=toc_data)
