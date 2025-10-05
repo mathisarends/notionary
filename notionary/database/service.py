@@ -4,7 +4,7 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Self
 
-from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.data_source.service import NotionDataSource
 from notionary.database.client import NotionDatabaseHttpClient
 from notionary.database.database_metadata_update_client import DatabaseMetadataUpdateClient

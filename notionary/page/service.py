@@ -3,8 +3,8 @@ from collections.abc import Callable
 from typing import Self
 
 from notionary.blocks.client import NotionBlockHttpClient
-from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
 from notionary.blocks.markdown.builder import MarkdownBuilder
+from notionary.blocks.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
 from notionary.page.content.page_content_deleting_service import PageContentDeletingService

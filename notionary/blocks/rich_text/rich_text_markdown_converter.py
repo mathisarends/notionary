@@ -1,17 +1,17 @@
 from typing import ClassVar
 
-from notionary.blocks.mappings.rich_text.models import (
+from notionary.blocks.rich_text.models import (
     MentionDate,
     MentionType,
     RichText,
     RichTextType,
 )
-from notionary.blocks.mappings.rich_text.name_id_resolver.database_name_id_resolver import (
+from notionary.blocks.rich_text.name_id_resolver import (
     DatabaseNameIdResolver,
+    NameIdResolver,
+    PageNameIdResolver,
+    PersonNameIdResolver,
 )
-from notionary.blocks.mappings.rich_text.name_id_resolver.name_id_resolver import NameIdResolver
-from notionary.blocks.mappings.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
-from notionary.blocks.mappings.rich_text.name_id_resolver.person_name_id_resolver import PersonNameIdResolver
 from notionary.blocks.schemas import BlockColor
 
 

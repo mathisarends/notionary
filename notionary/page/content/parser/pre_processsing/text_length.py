@@ -1,6 +1,6 @@
 from typing import Protocol, TypeGuard
 
-from notionary.blocks.mappings.rich_text.models import RichText
+from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.schemas import BlockCreatePayload
 from notionary.utils.mixins.logging import LoggingMixin
 

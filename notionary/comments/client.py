@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator
 
-from notionary.blocks.mappings.rich_text.models import RichText
+from notionary.blocks.rich_text.models import RichText
 from notionary.comments.schemas import (
     CommentCreateRequest,
     CommentDto,

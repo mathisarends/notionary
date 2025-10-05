@@ -1,9 +1,9 @@
 import re
 
-from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import (
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
     MarkdownRichTextConverter,
 )
-from notionary.blocks.mappings.rich_text.models import RichText
+from notionary.blocks.rich_text.models import RichText
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,

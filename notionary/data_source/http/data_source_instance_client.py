@@ -1,6 +1,6 @@
 from typing import Any, override
 
-from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.data_source.schemas import DataSourceDto, QueryDataSourceResponse, UpdateDataSourceDto
 from notionary.http.client import NotionHttpClient
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
@@ -30,7 +30,7 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
         await self.patch_metadata(update_data_source_dto)
 
     async def update_description(self, description: str) -> str:
-        from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+        from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 
         markdown_rich_text_converter = MarkdownRichTextConverter()
         rich_text_description = await markdown_rich_text_converter.to_rich_text(description)

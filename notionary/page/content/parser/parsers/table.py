@@ -1,8 +1,8 @@
 import re
 from typing import override
 
-from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-from notionary.blocks.mappings.rich_text.models import RichText
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.schemas import CreateTableBlock, CreateTableData, CreateTableRowBlock, TableRowData
 from notionary.page.content.parser.parsers import BlockParsingContext, LineParser
 

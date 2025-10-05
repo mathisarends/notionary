@@ -1,7 +1,7 @@
 import re
 from typing import override
 
-from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.schemas import BlockColor, CreateQuoteBlock, CreateQuoteData
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,

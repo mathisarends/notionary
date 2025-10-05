@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from notionary.blocks.mappings.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
+from notionary.blocks.rich_text.name_id_resolver.page import PageNameIdResolver
 
 
 @pytest.fixture

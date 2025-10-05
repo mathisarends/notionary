@@ -4,12 +4,14 @@ from dataclasses import dataclass
 from re import Match
 from typing import ClassVar
 
-from notionary.blocks.mappings.rich_text.models import MentionType, RichText, RichTextType, TextAnnotations
-from notionary.blocks.mappings.rich_text.name_id_resolver.database_name_id_resolver import DatabaseNameIdResolver
-from notionary.blocks.mappings.rich_text.name_id_resolver.name_id_resolver import NameIdResolver
-from notionary.blocks.mappings.rich_text.name_id_resolver.page_name_id_resolver import PageNameIdResolver
-from notionary.blocks.mappings.rich_text.name_id_resolver.person_name_id_resolver import PersonNameIdResolver
-from notionary.blocks.mappings.rich_text.rich_text_patterns import RichTextPatterns
+from notionary.blocks.rich_text.models import MentionType, RichText, RichTextType, TextAnnotations
+from notionary.blocks.rich_text.name_id_resolver import (
+    DatabaseNameIdResolver,
+    NameIdResolver,
+    PageNameIdResolver,
+    PersonNameIdResolver,
+)
+from notionary.blocks.rich_text.rich_text_patterns import RichTextPatterns
 from notionary.blocks.schemas import BlockColor
 
 
