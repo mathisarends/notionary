@@ -153,7 +153,7 @@ class CalloutData(BaseModel):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
     icon: Icon | None = None
-    children: list[Block] | None = None
+    children: list[BlockCreatePayload] | None = None
 
 
 class CalloutBlock(BaseBlock):
@@ -343,7 +343,7 @@ class HeadingData(BaseModel):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
     is_toggleable: bool = False
-    children: list[Block] | None = None
+    children: list[BlockCreatePayload] | None = None
 
 
 class Heading1Block(BaseBlock):
@@ -476,7 +476,7 @@ class CreatePdfBlock(BaseModel):
 class QuoteData(BaseModel):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[Block] | None = None
+    children: list[BlockCreatePayload] | None = None
 
 
 class QuoteBlock(BaseBlock):
@@ -573,7 +573,7 @@ class CreateToDoBlock(BaseModel):
 class ToggleData(BaseModel):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[Block] | None = None
+    children: list[BlockCreatePayload] | None = None
 
 
 class ToggleBlock(BaseBlock):
@@ -665,34 +665,36 @@ class BlockChildrenResponse(BaseModel):
     request_id: str
 
 
-# Union type for all create block requests
-BlockCreatePayload = (
-    CreateAudioBlock
-    | CreateBookmarkBlock
-    | CreateBreadcrumbBlock
-    | CreateBulletedListItemBlock
-    | CreateCalloutBlock
-    | CreateChildPageBlock
-    | CreateChildDatabaseBlock
-    | CreateCodeBlock
-    | CreateColumnListBlock
-    | CreateColumnBlock
-    | CreateDividerBlock
-    | CreateEmbedBlock
-    | CreateEquationBlock
-    | CreateFileBlock
-    | CreateHeading1Block
-    | CreateHeading2Block
-    | CreateHeading3Block
-    | CreateImageBlock
-    | CreateNumberedListItemBlock
-    | CreateParagraphBlock
-    | CreatePdfBlock
-    | CreateQuoteBlock
-    | CreateTableBlock
-    | CreateTableRowBlock
-    | CreateTableOfContentsBlock
-    | CreateToDoBlock
-    | CreateToggleBlock
-    | CreateVideoBlock
-)
+BlockCreatePayload = Annotated[
+    (
+        CreateAudioBlock
+        | CreateBookmarkBlock
+        | CreateBreadcrumbBlock
+        | CreateBulletedListItemBlock
+        | CreateCalloutBlock
+        | CreateChildPageBlock
+        | CreateChildDatabaseBlock
+        | CreateCodeBlock
+        | CreateColumnListBlock
+        | CreateColumnBlock
+        | CreateDividerBlock
+        | CreateEmbedBlock
+        | CreateEquationBlock
+        | CreateFileBlock
+        | CreateHeading1Block
+        | CreateHeading2Block
+        | CreateHeading3Block
+        | CreateImageBlock
+        | CreateNumberedListItemBlock
+        | CreateParagraphBlock
+        | CreatePdfBlock
+        | CreateQuoteBlock
+        | CreateTableBlock
+        | CreateTableRowBlock
+        | CreateTableOfContentsBlock
+        | CreateToDoBlock
+        | CreateToggleBlock
+        | CreateVideoBlock
+    ),
+    Field(discriminator="type"),
+]

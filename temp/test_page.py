@@ -9,20 +9,18 @@ async def main() -> None:
     markdown = """
     ### Content-Plan für Social Media
 
-    ::: columns
-    ::: column 0.7
-    Main
-    :::
-    ::: column 0.3
-    Sidebar
-    :::
-    :::
+    +++ ## Überschrift
+    test von der welt
+    +++
+
+    +++ normales toggle
+    super lit
+    +++
+
+    normaler text
 
     """
     content = await page.append_markdown(markdown)
-    print("content", content)
-
-    content = await page.get_markdown_content()
     print("content", content)
 
 

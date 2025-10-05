@@ -7,7 +7,7 @@ from notionary.page.content.renderer.renderers.base import BlockRenderer
 
 
 class ToggleableHeadingRenderer(BlockRenderer):
-    TOGGLE_DELIMITER = ":::"
+    TOGGLE_DELIMITER = "+++"
 
     def __init__(self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None) -> None:
         super().__init__()

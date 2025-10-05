@@ -8,6 +8,7 @@ from notionary.blocks.registry.service import BlockRegistry
 from notionary.blocks.schemas import BlockCreatePayload
 
 
+# Gucken ob der hier so umfangreich sein muss wie er es jetzt ist
 @dataclass
 class ParentBlockContext:
     block: BlockCreatePayload

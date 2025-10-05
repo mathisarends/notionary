@@ -1,7 +1,8 @@
 import re
 from typing import override
 
-from notionary.blocks.mappings.toggle import ToggleMapper
+from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.schemas import BlockColor, CreateToggleBlock, ToggleData
 from notionary.page.content.parser.parsers import (
     BlockParsingContext,
     LineParser,
@@ -10,11 +11,16 @@ from notionary.page.content.parser.parsers import (
 
 
 class ToggleParser(LineParser):
-    def __init__(self):
+    TOGGLE_START_PATTERN = r"^[+]{3}\s*(.+)$"
+    TOGGLE_END_PATTERN = r"^[+]{3}\s*$"
+    TOGGLEABLE_HEADING_PATTERN = r"^[+]{3}\s*#{1,3}\s+.+$"
+
+    def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None) -> None:
         super().__init__()
-        # Updated: Support both "+++title" and "+++ title"
-        self._start_pattern = re.compile(r"^[+]{3}\s*(.+)$", re.IGNORECASE)
-        self._end_pattern = re.compile(r"^[+]{3}\s*$")
+        self._start_pattern = re.compile(self.TOGGLE_START_PATTERN, re.IGNORECASE)
+        self._end_pattern = re.compile(self.TOGGLE_END_PATTERN)
+        self._heading_pattern = re.compile(self.TOGGLEABLE_HEADING_PATTERN, re.IGNORECASE)
+        self._rich_text_converter = rich_text_converter or MarkdownRichTextConverter()
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
@@ -22,7 +28,6 @@ class ToggleParser(LineParser):
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
-        # Explicit, readable branches (small duplication is acceptable)
         if self._is_toggle_start(context):
             await self._start_toggle(context)
 
@@ -33,107 +38,97 @@ class ToggleParser(LineParser):
             self._add_toggle_content(context)
 
     def _is_toggle_start(self, context: BlockParsingContext) -> bool:
-        """Check if line starts a toggle (+++ Title or +++Title)."""
         line = context.line.strip()
 
-        # Must match our pattern (now allows optional space)
         if not self._start_pattern.match(line):
             return False
 
-        # But NOT match toggleable heading pattern (has # after +++)
-        # Updated: Support both "+++#title" and "+++ # title"
-        toggleable_heading_pattern = re.compile(r"^[+]{3}\s*#{1,3}\s+.+$", re.IGNORECASE)
-        return not toggleable_heading_pattern.match(line)
+        # Exclude toggleable heading patterns to be more resilient to wrong order of chain
+        return not self.is_heading_start(line)
+
+    def is_heading_start(self, line: str) -> bool:
+        return self._heading_pattern.match(line)
 
     def _is_toggle_end(self, context: BlockParsingContext) -> bool:
-        """Check if we need to end a toggle (+++)."""
         if not self._end_pattern.match(context.line.strip()):
             return False
 
         if not context.parent_stack:
             return False
 
-        # Check if top of stack is a Toggle
         current_parent = context.parent_stack[-1]
-        return issubclass(current_parent.element_type, ToggleMapper)
+        return isinstance(current_parent.block, CreateToggleBlock)
 
     async def _start_toggle(self, context: BlockParsingContext) -> None:
-        """Start a new toggle block."""
-        toggle_element = ToggleMapper()
-
-        # Create the block
-        result = await toggle_element.markdown_to_notion(context.line)
-        if not result:
+        block = await self._create_toggle_block(context.line)
+        if not block:
             return
 
-        block = result
-
-        # Push to parent stack
         parent_context = ParentBlockContext(
             block=block,
-            element_type=ToggleMapper,
+            element_type=type(block),
             child_lines=[],
         )
         context.parent_stack.append(parent_context)
 
+    async def _create_toggle_block(self, line: str) -> CreateToggleBlock | None:
+        if not (match := self._start_pattern.match(line.strip())):
+            return None
+
+        title = match.group(1).strip()
+        rich_text = await self._rich_text_converter.to_rich_text(title)
+
+        toggle_content = ToggleData(rich_text=rich_text, color=BlockColor.DEFAULT, children=[])
+        return CreateToggleBlock(toggle=toggle_content)
+
     async def _finalize_toggle(self, context: BlockParsingContext) -> None:
-        """Finalize a toggle block and add it to result_blocks."""
         toggle_context = context.parent_stack.pop()
+        await self._assign_toggle_children_if_any(toggle_context, context)
 
-        if toggle_context.has_children():
-            all_children = await self._get_all_children(toggle_context, context.block_registry)
-            toggle_context.block.toggle.children = all_children
-
-        # Check if we have a parent context to add this toggle to
-        if context.parent_stack:
-            # Add this toggle as a child block to the parent
-            parent_context = context.parent_stack[-1]
-            parent_context.add_child_block(toggle_context.block)
+        if self._is_nested_in_other_parent_context(context):
+            self._assign_to_parent_context(context, toggle_context)
         else:
-            # No parent, add to top level
             context.result_blocks.append(toggle_context.block)
 
+    def _is_nested_in_other_parent_context(self, context: BlockParsingContext) -> bool:
+        return context.parent_stack
+
+    def _assign_to_parent_context(self, context: BlockParsingContext, toggle_context: ParentBlockContext) -> None:
+        parent_context = context.parent_stack[-1]
+        parent_context.add_child_block(toggle_context.block)
+
+    async def _assign_toggle_children_if_any(
+        self, toggle_context: ParentBlockContext, context: BlockParsingContext
+    ) -> None:
+        all_children = []
+
+        # Process text lines
+        if toggle_context.child_lines:
+            children_text = "\n".join(toggle_context.child_lines)
+            text_blocks = await self._parse_nested_content(children_text, context)
+            all_children.extend(text_blocks)
+
+        if toggle_context.child_blocks:
+            all_children.extend(toggle_context.child_blocks)
+
+        toggle_context.block.toggle.children = all_children
+
     def _is_toggle_content(self, context: BlockParsingContext) -> bool:
-        """Check if we're inside a toggle context and should handle content."""
         if not context.parent_stack:
             return False
 
         current_parent = context.parent_stack[-1]
-        if not issubclass(current_parent.element_type, ToggleMapper):
+        if not isinstance(current_parent.block, CreateToggleBlock):
             return False
 
-        # Handle all content inside toggle (not start/end patterns)
         line = context.line.strip()
         return not (self._start_pattern.match(line) or self._end_pattern.match(line))
 
     def _add_toggle_content(self, context: BlockParsingContext) -> None:
-        """Add content to the current toggle context."""
         context.parent_stack[-1].add_child_line(context.line)
 
-    async def _convert_children_text(self, text: str, block_registry) -> list:
-        """Convert children text to blocks."""
-        from notionary.page.content.parser.service import (
-            MarkdownToNotionConverter,
-        )
-
+    async def _parse_nested_content(self, text: str, context: BlockParsingContext) -> list:
         if not text.strip():
             return []
 
-        child_converter = MarkdownToNotionConverter(block_registry)
-        return await child_converter.process_lines(text)
-
-    async def _get_all_children(self, parent_context, block_registry) -> list:
-        """Helper method to combine text-based and direct block children."""
-        children_blocks = []
-
-        # Process text lines
-        if parent_context.child_lines:
-            children_text = "\n".join(parent_context.child_lines)
-            text_blocks = await self._convert_children_text(children_text, block_registry)
-            children_blocks.extend(text_blocks)
-
-        # Add direct blocks (like processed columns)
-        if hasattr(parent_context, "child_blocks") and parent_context.child_blocks:
-            children_blocks.extend(parent_context.child_blocks)
-
-        return children_blocks
+        return await context.parse_nested_content(text)

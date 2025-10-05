@@ -3,8 +3,8 @@ from collections.abc import Callable
 from notionary.blocks.client import NotionBlockHttpClient
 from notionary.blocks.markdown.builder import MarkdownBuilder
 from notionary.blocks.registry.service import BlockRegistry
+from notionary.page.content.parser.pre_processsing.whitespace import MarkdownWhitespaceProcessor
 from notionary.page.content.parser.service import MarkdownToNotionConverter
-from notionary.page.markdown_whitespace_processor import MarkdownWhitespaceProcessor
 from notionary.schemas.base import NotionContentSchema
 from notionary.utils.mixins.logging import LoggingMixin
 

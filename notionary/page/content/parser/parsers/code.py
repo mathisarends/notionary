@@ -1,6 +1,7 @@
 import re
 from typing import override
 
+from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.schemas import CodeData, CodeLanguage, CreateCodeBlock
 from notionary.page.content.parser.parsers.base import (
@@ -15,10 +16,11 @@ class CodeParser(LineParser):
     CODE_END_PATTERN = r"^```\s*$"
     DEFAULT_LANGUAGE = CodeLanguage.PLAIN_TEXT
 
-    def __init__(self) -> None:
+    def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None) -> None:
         super().__init__()
         self._code_start_pattern = re.compile(self.CODE_START_PATTERN)
         self._code_end_pattern = re.compile(self.CODE_END_PATTERN)
+        self._rich_text_converter = rich_text_converter or MarkdownRichTextConverter()
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
@@ -31,7 +33,7 @@ class CodeParser(LineParser):
         code_lines = self._collect_code_lines(context)
         lines_consumed = self._count_lines_consumed(context)
 
-        block = self._create_code_block(opening_line=context.line, code_lines=code_lines)
+        block = await self._create_code_block(opening_line=context.line, code_lines=code_lines)
 
         if block:
             context.lines_consumed = lines_consumed
@@ -60,14 +62,14 @@ class CodeParser(LineParser):
 
         return len(context.get_remaining_lines())
 
-    def _create_code_block(self, opening_line: str, code_lines: list[str]) -> CreateCodeBlock | None:
+    async def _create_code_block(self, opening_line: str, code_lines: list[str]) -> CreateCodeBlock | None:
         match = self._code_start_pattern.match(opening_line.strip())
         if not match:
             return None
 
         language = self._parse_language(match.group(1))
         caption = self._parse_caption(match.group(2))
-        rich_text = self._create_rich_text_from_code(code_lines)
+        rich_text = await self._create_rich_text_from_code(code_lines)
 
         code_data = CodeData(rich_text=rich_text, language=language, caption=caption)
         return CreateCodeBlock(code=code_data)
@@ -89,9 +91,9 @@ class CodeParser(LineParser):
             return []
         return [RichText.for_caption(caption_str)]
 
-    def _create_rich_text_from_code(self, code_lines: list[str]) -> list[RichText]:
+    async def _create_rich_text_from_code(self, code_lines: list[str]) -> list[RichText]:
         if not code_lines:
             return []
 
         content = "\n".join(code_lines)
-        return [RichText.for_code_block(content)]
+        return await self._rich_text_converter.to_rich_text(content)
