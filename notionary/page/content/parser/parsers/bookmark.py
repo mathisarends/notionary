@@ -4,13 +4,10 @@ import re
 from typing import override
 
 from notionary.blocks.schemas import BookmarkData, CreateBookmarkBlock
-from notionary.page.content.parser.parsers.base import BlockParsingContext
-from notionary.page.content.parser.parsers.captioned_block_parser import (
-    CaptionedBlockParser,
-)
+from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 
 
-class BookmarkParser(CaptionedBlockParser):
+class BookmarkParser(LineParser):
     BOOKMARK_PATTERN = re.compile(r"\[bookmark\]\((https?://[^\s\"]+)\)")
 
     @override
@@ -25,9 +22,7 @@ class BookmarkParser(CaptionedBlockParser):
         if not url:
             return
 
-        caption_rich_text = await self._extract_caption_for_single_line_block(context)
-
-        bookmark_data = BookmarkData(url=url, caption=caption_rich_text)
+        bookmark_data = BookmarkData(url=url, caption=[])
         block = CreateBookmarkBlock(bookmark=bookmark_data)
         context.result_blocks.append(block)
 

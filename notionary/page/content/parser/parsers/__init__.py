@@ -5,6 +5,7 @@ from .bookmark import BookmarkParser
 from .breadcrumb import BreadcrumbParser
 from .bulleted_list import BulletedListParser
 from .callout import CalloutParser
+from .caption import CaptionParser
 from .code import CodeParser
 from .column import ColumnParser
 from .column_list import ColumnListParser
@@ -33,6 +34,7 @@ __all__ = [
     "BreadcrumbParser",
     "BulletedListParser",
     "CalloutParser",
+    "CaptionParser",
     "CodeParser",
     "ColumnListParser",
     "ColumnParser",

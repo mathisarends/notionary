@@ -4,20 +4,18 @@ from typing import override
 from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.mappings.rich_text.models import RichText
 from notionary.blocks.schemas import CodeData, CodeLanguage, CreateCodeBlock
-from notionary.page.content.parser.parsers.base import BlockParsingContext
-from notionary.page.content.parser.parsers.captioned_block_parser import (
-    CaptionedBlockParser,
-)
+from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 
 
-class CodeParser(CaptionedBlockParser):
+class CodeParser(LineParser):
     CODE_FENCE = "```"
     CODE_START_PATTERN = r"^```(\w*)\s*$"
     CODE_END_PATTERN = r"^```\s*$"
     DEFAULT_LANGUAGE = CodeLanguage.PLAIN_TEXT
 
     def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None) -> None:
-        super().__init__(rich_text_converter)
+        super().__init__()
+        self._rich_text_converter = rich_text_converter or MarkdownRichTextConverter()
         self._code_start_pattern = re.compile(self.CODE_START_PATTERN)
         self._code_end_pattern = re.compile(self.CODE_END_PATTERN)
 
@@ -37,10 +35,6 @@ class CodeParser(CaptionedBlockParser):
             return
 
         context.lines_consumed = lines_consumed
-
-        caption_rich_text = await self._extract_caption_for_multi_line_block(context, lines_consumed)
-        block.code.caption = caption_rich_text
-
         context.result_blocks.append(block)
 
     def _is_code_fence_start(self, line: str) -> bool:
@@ -92,3 +86,9 @@ class CodeParser(CaptionedBlockParser):
 
         content = "\n".join(code_lines)
         return await self._rich_text_converter.to_rich_text(content)
+
+    def _is_code_fence_start(self, line: str) -> bool:
+        return self._code_start_pattern.match(line) is not None
+
+    def _is_code_fence_end(self, line: str) -> bool:
+        return self._code_end_pattern.match(line) is not None

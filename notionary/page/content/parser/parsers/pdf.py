@@ -9,13 +9,10 @@ from notionary.blocks.schemas import (
     FileData,
     FileType,
 )
-from notionary.page.content.parser.parsers.base import BlockParsingContext
-from notionary.page.content.parser.parsers.captioned_block_parser import (
-    CaptionedBlockParser,
-)
+from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 
 
-class PdfParser(CaptionedBlockParser):
+class PdfParser(LineParser):
     PDF_PATTERN = re.compile(r"\[pdf\]\(([^)]+)\)")
 
     @override
@@ -30,12 +27,10 @@ class PdfParser(CaptionedBlockParser):
         if not url:
             return
 
-        caption_rich_text = await self._extract_caption_for_single_line_block(context)
-
         pdf_data = FileData(
             type=FileType.EXTERNAL,
             external=ExternalFile(url=url),
-            caption=caption_rich_text,
+            caption=[],
         )
         block = CreatePdfBlock(pdf=pdf_data)
         context.result_blocks.append(block)

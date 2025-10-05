@@ -7,13 +7,10 @@ from notionary.blocks.schemas import (
     FileData,
     FileType,
 )
-from notionary.page.content.parser.parsers.base import BlockParsingContext
-from notionary.page.content.parser.parsers.captioned_block_parser import (
-    CaptionedBlockParser,
-)
+from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 
 
-class AudioParser(CaptionedBlockParser):
+class AudioParser(LineParser):
     AUDIO_PATTERN = re.compile(r"\[audio\]\(([^)]+)\)")
 
     @override
@@ -28,12 +25,10 @@ class AudioParser(CaptionedBlockParser):
         if not url:
             return
 
-        caption_rich_text = await self._extract_caption_for_single_line_block(context)
-
         audio_data = FileData(
             type=FileType.EXTERNAL,
             external=ExternalFile(url=url),
-            caption=caption_rich_text,
+            caption=[],
         )
         block = CreateAudioBlock(audio=audio_data)
         context.result_blocks.append(block)

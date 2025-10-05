@@ -9,13 +9,10 @@ from notionary.blocks.schemas import (
     FileData,
     FileType,
 )
-from notionary.page.content.parser.parsers.base import BlockParsingContext
-from notionary.page.content.parser.parsers.captioned_block_parser import (
-    CaptionedBlockParser,
-)
+from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 
 
-class VideoParser(CaptionedBlockParser):
+class VideoParser(LineParser):
     VIDEO_PATTERN = re.compile(r"\[video\]\(([^)]+)\)")
 
     @override
@@ -30,13 +27,10 @@ class VideoParser(CaptionedBlockParser):
         if not url:
             return
 
-        caption_rich_text = await self._extract_caption_for_single_line_block(context)
-
-        # Create the video block
         video_data = FileData(
             type=FileType.EXTERNAL,
             external=ExternalFile(url=url),
-            caption=caption_rich_text,
+            caption=[],
         )
         block = CreateVideoBlock(video=video_data)
         context.result_blocks.append(block)

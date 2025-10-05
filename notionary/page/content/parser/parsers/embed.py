@@ -4,13 +4,10 @@ import re
 from typing import override
 
 from notionary.blocks.schemas import CreateEmbedBlock, EmbedData
-from notionary.page.content.parser.parsers.base import BlockParsingContext
-from notionary.page.content.parser.parsers.captioned_block_parser import (
-    CaptionedBlockParser,
-)
+from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 
 
-class EmbedParser(CaptionedBlockParser):
+class EmbedParser(LineParser):
     EMBED_PATTERN = re.compile(r"\[embed\]\((https?://[^\s\"]+)\)")
 
     @override
@@ -21,14 +18,11 @@ class EmbedParser(CaptionedBlockParser):
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
-        """Process embed block and check for caption on next line."""
         url = self._extract_url(context.line)
         if not url:
             return
 
-        caption_rich_text = await self._extract_caption_for_single_line_block(context)
-
-        embed_data = EmbedData(url=url, caption=caption_rich_text)
+        embed_data = EmbedData(url=url, caption=[])
         block = CreateEmbedBlock(embed=embed_data)
         context.result_blocks.append(block)
 

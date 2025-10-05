@@ -10,28 +10,7 @@ async def main() -> None:
 ```python
 ist lit
 ```
-[caption] Ist eine gute Sprache
-
-::: columns
-::: column
-test
-:::
-
-::: column
-fest nicht lit
-:::
-
-:::
-
-::: callout
-some new info
-
-```python
-hell = "world"
-```
-test
-:::
-
+[caption] Ist eine gute Sprache diese Python
     """
     content = await page.append_markdown(markdown)
     print("content", content)

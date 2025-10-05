@@ -9,6 +9,7 @@ from notionary.page.content.parser.parsers import (
     BreadcrumbParser,
     BulletedListParser,
     CalloutParser,
+    CaptionParser,
     CodeParser,
     ColumnListParser,
     ColumnParser,
@@ -74,6 +75,7 @@ class MarkdownToNotionConverter(LoggingMixin):
         audio_parser = AudioParser()
         file_parser = FileParser()
         pdf_parser = PdfParser()
+        caption_parser = CaptionParser(self._rich_text_converter)
         paragraph_parser = ParagraphParser(self._rich_text_converter)
 
         # Build the chain - order matters!
@@ -90,7 +92,10 @@ class MarkdownToNotionConverter(LoggingMixin):
         ).set_next(bookmark_parser).set_next(embed_parser).set_next(image_parser).set_next(video_parser).set_next(
             audio_parser
         ).set_next(file_parser).set_next(pdf_parser).set_next(
-            # 3. Paragraph as fallback (must be last)
+            # 3. Caption parser - handles [caption] lines for previous blocks
+            caption_parser
+        ).set_next(
+            # 4. Paragraph as fallback (must be last)
             paragraph_parser
         )
 
