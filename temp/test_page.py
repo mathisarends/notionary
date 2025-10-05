@@ -12,8 +12,14 @@ ist lit
 ```
 [caption] Ist eine gute Sprache
 
-> some quote
-> new line
+::: callout
+some new info
+
+```python
+hell = "world"
+```
+test
+:::
 
     """
     content = await page.append_markdown(markdown)
