@@ -75,9 +75,7 @@ class NotionPage(Entity):
             page_id=self._id, block_registry=self.block_element_registry, block_client=self._block_client
         )
 
-        self._page_content_retriever = NotionToMarkdownConverter(
-            block_registry=self.block_element_registry,
-        )
+        self._page_content_retriever = NotionToMarkdownConverter()
 
         self.properties = page_property_handler
 

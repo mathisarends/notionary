@@ -1,16 +1,36 @@
+from notionary.blocks.mappings.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.registry.service import BlockRegistry
 from notionary.blocks.schemas import BlockCreatePayload
 from notionary.page.content.parser.parsers import (
+    AudioParser,
     BlockParsingContext,
+    BookmarkParser,
+    BreadcrumbParser,
+    BulletedListParser,
+    CalloutParser,
     CodeParser,
     ColumnListParser,
     ColumnParser,
+    DividerParser,
+    EmbedParser,
     EquationParser,
+    FileParser,
+    HeadingParser,
+    ImageParser,
+    NumberedListParser,
+    ParagraphParser,
     ParentBlockContext,
-    RegularLineParser,
+    PdfParser,
+    QuoteParser,
+    SpaceParser,
+    TableOfContentsParser,
     TableParser,
+    TodoParser,
     ToggleableHeadingParser,
     ToggleParser,
+    VideoParser,
 )
 from notionary.page.content.parser.pre_processsing.text_length import (
     NotionTextLengthProcessor,
@@ -22,42 +42,61 @@ class MarkdownToNotionConverter(LoggingMixin):
     def __init__(
         self,
         block_registry: BlockRegistry,
-        code_parser: CodeParser | None = None,
-        equation_parser: EquationParser | None = None,
-        table_parser: TableParser | None = None,
-        column_list_parser: ColumnListParser | None = None,
-        column_parser: ColumnParser | None = None,
-        toggle_parser: ToggleParser | None = None,
-        toggleable_heading_parser: ToggleableHeadingParser | None = None,
-        regular_line_parser: RegularLineParser | None = None,
+        rich_text_converter: MarkdownRichTextConverter | None = None,
     ) -> None:
         self._block_registry = block_registry
         self._text_length_post_processor = NotionTextLengthProcessor()
-
-        self._code_parser = code_parser
-        self._equation_parser = equation_parser
-        self._table_parser = table_parser
-        self._column_list_parser = column_list_parser
-        self._column_parser = column_parser
-        self._toggle_parser = toggle_parser
-        self._toggleable_heading_parser = toggleable_heading_parser
-        self._regular_line_parser = regular_line_parser
+        self._rich_text_converter = rich_text_converter or MarkdownRichTextConverter()
 
         self._setup_handler_chain()
 
     def _setup_handler_chain(self) -> None:
-        code_parser = self._code_parser or CodeParser()
-        equation_parser = self._equation_parser or EquationParser()
-        table_parser = self._table_parser or TableParser()
-        column_list_parser = self._column_list_parser or ColumnListParser()
-        column_parser = self._column_parser or ColumnParser()
-        toggle_parser = self._toggle_parser or ToggleParser()
-        toggleable_heading_parser = self._toggleable_heading_parser or ToggleableHeadingParser()
-        regular_line_parser = self._regular_line_parser or RegularLineParser()
+        # Create all parsers with dependencies
+        code_parser = CodeParser()
+        equation_parser = EquationParser()
+        table_parser = TableParser()
+        column_parser = ColumnParser()
+        column_list_parser = ColumnListParser()
+        toggleable_heading_parser = ToggleableHeadingParser(self._rich_text_converter)
+        toggle_parser = ToggleParser(self._rich_text_converter)
 
+        # Dedicated parsers without mapper dependencies
+        divider_parser = DividerParser()
+        breadcrumb_parser = BreadcrumbParser()
+        table_of_contents_parser = TableOfContentsParser()
+        heading_parser = HeadingParser(self._rich_text_converter)
+        quote_parser = QuoteParser(self._rich_text_converter)
+        callout_parser = CalloutParser(self._rich_text_converter)
+        space_parser = SpaceParser()
+        todo_parser = TodoParser(self._rich_text_converter)
+        bulleted_list_parser = BulletedListParser(self._rich_text_converter)
+        numbered_list_parser = NumberedListParser(self._rich_text_converter)
+        bookmark_parser = BookmarkParser()
+        embed_parser = EmbedParser()
+        image_parser = ImageParser()
+        video_parser = VideoParser()
+        audio_parser = AudioParser()
+        file_parser = FileParser()
+        pdf_parser = PdfParser()
+        paragraph_parser = ParagraphParser(self._rich_text_converter)
+
+        # Build the chain - order matters!
+        # 1. Multi-line blocks first
         code_parser.set_next(equation_parser).set_next(table_parser).set_next(column_parser).set_next(
             column_list_parser
-        ).set_next(toggleable_heading_parser).set_next(toggle_parser).set_next(regular_line_parser)
+        ).set_next(toggleable_heading_parser).set_next(toggle_parser).set_next(
+            # 2. Single-line blocks with specific patterns
+            divider_parser
+        ).set_next(breadcrumb_parser).set_next(table_of_contents_parser).set_next(space_parser).set_next(
+            heading_parser
+        ).set_next(quote_parser).set_next(callout_parser).set_next(todo_parser).set_next(bulleted_list_parser).set_next(
+            numbered_list_parser
+        ).set_next(bookmark_parser).set_next(embed_parser).set_next(image_parser).set_next(video_parser).set_next(
+            audio_parser
+        ).set_next(file_parser).set_next(pdf_parser).set_next(
+            # 3. Paragraph as fallback (must be last)
+            paragraph_parser
+        )
 
         self._handler_chain = code_parser
 

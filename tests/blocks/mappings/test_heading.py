@@ -4,7 +4,7 @@ import pytest
 
 from notionary.blocks.mappings.heading import HeadingMapper
 from notionary.blocks.mappings.rich_text.models import RichText
-from notionary.blocks.schemas import BlockType, HeadingData
+from notionary.blocks.schemas import BlockType, CreateHeadingData
 
 
 @pytest.mark.asyncio
@@ -64,7 +64,7 @@ async def test_markdown_to_notion(markdown, expected_level, expected_content):
 
     # Check heading content
     heading = getattr(result, f"heading_{expected_level}")
-    assert isinstance(heading, HeadingData)
+    assert isinstance(heading, CreateHeadingData)
     assert heading.is_toggleable is False
     assert heading.color == "default"
     assert len(heading.rich_text) > 0

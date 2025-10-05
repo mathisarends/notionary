@@ -1,4 +1,3 @@
-from notionary.blocks.registry.service import BlockRegistry
 from notionary.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.post_processing import NumberedListFixer
@@ -36,7 +35,6 @@ from notionary.utils.mixins.logging import LoggingMixin
 class NotionToMarkdownConverter(LoggingMixin):
     def __init__(
         self,
-        block_registry: BlockRegistry,
         numbered_list_fixer: NumberedListFixer | None = None,
         toggle_handler: ToggleRenderer | None = None,
         toggleable_heading_handler: ToggleableHeadingRenderer | None = None,
@@ -65,7 +63,6 @@ class NotionToMarkdownConverter(LoggingMixin):
         paragraph_handler: ParagraphRenderer | None = None,
         fallback_handler: FallbackRenderer | None = None,
     ) -> None:
-        self._block_registry = block_registry
         self._numbered_list_fixer = numbered_list_fixer or NumberedListFixer()
 
         self._toggle_handler = toggle_handler
