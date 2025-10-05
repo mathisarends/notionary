@@ -2,7 +2,6 @@ from collections.abc import Callable
 
 from notionary.blocks.client import NotionBlockHttpClient
 from notionary.blocks.markdown.builder import MarkdownBuilder
-from notionary.blocks.registry.service import BlockRegistry
 from notionary.page.content.parser.pre_processsing.whitespace import MarkdownWhitespaceProcessor
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.schemas.base import NotionContentSchema
@@ -10,9 +9,8 @@ from notionary.utils.mixins.logging import LoggingMixin
 
 
 class PageContentWriter(LoggingMixin):
-    def __init__(self, page_id: str, block_registry: BlockRegistry, block_client: NotionBlockHttpClient) -> None:
+    def __init__(self, page_id: str, block_client: NotionBlockHttpClient) -> None:
         self.page_id = page_id
-        self.block_registry = block_registry
         self._block_client = block_client
 
         self._markdown_to_notion_converter = MarkdownToNotionConverter()

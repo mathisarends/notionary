@@ -50,17 +50,6 @@ class MarkdownBuilder:
         self.children.append(HeadingMarkdownNode(text=text, level=3))
         return self
 
-    def heading(self, text: str, level: int = 2) -> Self:
-        """
-        Add a heading with specified level.
-
-        Args:
-            text: The heading text content
-            level: Heading level (1-3), defaults to 2
-        """
-        self.children.append(HeadingMarkdownNode(text=text, level=level))
-        return self
-
     def paragraph(self, text: str) -> Self:
         """
         Add a paragraph block.
@@ -74,7 +63,6 @@ class MarkdownBuilder:
     def space(self) -> Self:
         """
         Add a space block.
-
         """
         self.children.append(SpaceMarkdownNode())
         return self
@@ -136,6 +124,35 @@ class MarkdownBuilder:
             emoji: Optional emoji for the callout icon
         """
         self.children.append(CalloutMarkdownNode(text=text, emoji=emoji))
+        return self
+
+    def callout_with_children(
+        self,
+        text: str,
+        emoji: str | None = None,
+        builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None,
+    ) -> Self:
+        """
+        Add a callout block with children built using the builder API.
+
+        Args:
+            text: The callout text content
+            emoji: Optional emoji for the callout icon
+            builder_func: Optional function that receives a MarkdownBuilder and returns it configured
+
+        Example:
+            builder.callout_with_children("Important note", "⚠️", lambda c:
+                c.paragraph("Additional details here")
+                .bulleted_list(["Point 1", "Point 2"])
+            )
+        """
+        if builder_func is None:
+            self.children.append(CalloutMarkdownNode(text=text, emoji=emoji))
+            return self
+
+        callout_builder = MarkdownBuilder()
+        builder_func(callout_builder)
+        self.children.append(CalloutMarkdownNode(text=text, emoji=emoji, children=callout_builder.children))
         return self
 
     def toggle(self, title: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder]) -> Self:
@@ -424,7 +441,7 @@ class MarkdownBuilder:
                 width_ratio=0.25
             )
         """
-        from notionary.blocks.markdown.nodes.column_markdown_node import ColumnMarkdownNode
+        from notionary.blocks.markdown.nodes import ColumnMarkdownNode
 
         column_node = ColumnMarkdownNode(children=list(nodes), width_ratio=width_ratio)
         self.children.append(column_node)
@@ -440,5 +457,4 @@ class MarkdownBuilder:
         return ColumnMarkdownNode(children=col_builder.children)
 
     def build(self) -> str:
-        """Build and return the final markdown string."""
         return "\n\n".join(child.to_markdown() for child in self.children if child is not None)

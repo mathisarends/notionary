@@ -12,6 +12,17 @@ ist lit
 ```
 [caption] Ist eine gute Sprache
 
+::: columns
+::: column
+test
+:::
+
+::: column
+fest nicht lit
+:::
+
+:::
+
 ::: callout
 some new info
 

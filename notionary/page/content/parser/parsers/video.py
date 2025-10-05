@@ -26,7 +26,6 @@ class VideoParser(CaptionedBlockParser):
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
-        """Process video block and check for caption on next line."""
         url = self._extract_url(context.line)
         if not url:
             return

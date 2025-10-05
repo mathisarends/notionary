@@ -5,7 +5,6 @@ from typing import Self
 from notionary.blocks.client import NotionBlockHttpClient
 from notionary.blocks.mappings.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
 from notionary.blocks.markdown.builder import MarkdownBuilder
-from notionary.blocks.registry.service import BlockRegistry
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
 from notionary.page.content.page_content_deleting_service import PageContentDeletingService
@@ -65,14 +64,10 @@ class NotionPage(Entity):
         self._block_client = NotionBlockHttpClient()
         self._comment_service = CommentService()
 
-        self.block_element_registry = BlockRegistry()
-
-        self._page_content_writer = PageContentWriter(
-            page_id=self._id, block_registry=self.block_element_registry, block_client=self._block_client
-        )
+        self._page_content_writer = PageContentWriter(page_id=self._id, block_client=self._block_client)
 
         self._page_content_deleting_service = PageContentDeletingService(
-            page_id=self._id, block_registry=self.block_element_registry, block_client=self._block_client
+            page_id=self._id, block_client=self._block_client
         )
 
         self._page_content_retriever = NotionToMarkdownConverter()
