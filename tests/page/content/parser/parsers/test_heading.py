@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import Mock
 
 import pytest
 
@@ -13,23 +13,8 @@ from notionary.page.content.parser.parsers.heading import HeadingParser
 
 
 @pytest.fixture
-def mock_rich_text_converter() -> MarkdownRichTextConverter:
-    converter: MarkdownRichTextConverter = AsyncMock(spec=MarkdownRichTextConverter)
-    converter.to_rich_text = AsyncMock(return_value=[{"type": "text", "text": {"content": "test"}}])
-    return converter
-
-
-@pytest.fixture
 def heading_parser(mock_rich_text_converter: MarkdownRichTextConverter) -> HeadingParser:
     return HeadingParser(rich_text_converter=mock_rich_text_converter)
-
-
-@pytest.fixture
-def context() -> BlockParsingContext:
-    ctx: BlockParsingContext = Mock(spec=BlockParsingContext)
-    ctx.result_blocks = []
-    ctx.is_inside_parent_context = Mock(return_value=False)
-    return ctx
 
 
 @pytest.mark.asyncio

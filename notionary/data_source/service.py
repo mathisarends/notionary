@@ -20,6 +20,7 @@ from notionary.data_source.schemas import DataSourceDto
 from notionary.exceptions.data_source import DataSourcePropertyNotFound, DataSourcePropertyTypeError
 from notionary.page.properties.models import PageTitleProperty
 from notionary.page.schemas import NotionPageDto
+from notionary.page.service import NotionPage
 from notionary.search.service import SearchService
 from notionary.shared.entity.dto_parsers import (
     extract_cover_image_url_from_dto,
@@ -153,8 +154,8 @@ class NotionDataSource(Entity):
             self._parent_database = await NotionDatabase.from_id(self._parent_database_id)
         return self._parent_database
 
-    async def create_blank_page(self, title: str | None = None) -> None:
-        await self._data_source_client.create_blank_page(title=title)
+    async def create_blank_page(self, title: str | None = None) -> NotionPage:
+        return await self._data_source_client.create_blank_page(title=title)
 
     async def set_title(self, title: str) -> None:
         data_source_dto = await self._data_source_client.update_title(title)

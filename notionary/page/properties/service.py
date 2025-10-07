@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 import difflib
-from typing import Never
+from typing import TYPE_CHECKING, Never
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
-from notionary.data_source.service import NotionDataSource
 from notionary.exceptions.properties import (
     AccessPagePropertyWithoutDataSourceError,
     PagePropertyNotFoundError,
@@ -29,6 +30,9 @@ from notionary.page.properties.models import (
     PageURLProperty,
 )
 from notionary.shared.models.parent_models import ParentType
+
+if TYPE_CHECKING:
+    from notionary import NotionDataSource
 
 
 class PagePropertyHandler:

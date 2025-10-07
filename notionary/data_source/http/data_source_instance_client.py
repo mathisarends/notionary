@@ -1,9 +1,15 @@
-from typing import Any, override
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, override
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.data_source.schemas import DataSourceDto, QueryDataSourceResponse, UpdateDataSourceDto
 from notionary.http.client import NotionHttpClient
+from notionary.page.schemas import NotionPageDto
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
+
+if TYPE_CHECKING:
+    from notionary import NotionPage
 
 
 class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
@@ -50,10 +56,14 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
         response = await self.post(f"data_sources/{self._data_source_id}/query", data=query_data)
         return QueryDataSourceResponse.model_validate(response)
 
-    async def create_blank_page(self, title: str | None = None) -> dict[str, Any]:
+    async def create_blank_page(self, title: str | None = None) -> NotionPage:
+        from notionary import NotionPage
+
         data = {"parent": {"type": "data_source_id", "data_source_id": self._data_source_id}, "properties": {}}
 
         if title:
             data["properties"]["Name"] = {"title": [{"text": {"content": title}}]}
 
-        await self.post("pages", data=data)
+        response = await self.post("pages", data=data)
+        page_creation_response = NotionPageDto.model_validate(response)
+        return await NotionPage.from_id(page_creation_response.id)
