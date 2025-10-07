@@ -12,11 +12,14 @@ from notionary.blocks.schemas import (
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.caption import CaptionParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def caption_parser(mock_rich_text_converter: MarkdownRichTextConverter) -> CaptionParser:
-    return CaptionParser(rich_text_converter=mock_rich_text_converter)
+def caption_parser(
+    mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxRegistry
+) -> CaptionParser:
+    return CaptionParser(rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry)
 
 
 @pytest.fixture

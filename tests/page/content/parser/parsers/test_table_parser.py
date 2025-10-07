@@ -7,11 +7,12 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRich
 from notionary.blocks.schemas import CreateTableBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.table import TableParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def table_parser(mock_rich_text_converter: MarkdownRichTextConverter) -> TableParser:
-    return TableParser(markdown_rich_text_converter=mock_rich_text_converter)
+def table_parser(mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxRegistry) -> TableParser:
+    return TableParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
 
 
 @pytest.mark.asyncio
@@ -156,9 +157,9 @@ async def test_table_with_empty_lines_should_stop_at_content(
 
 @pytest.mark.asyncio
 async def test_table_with_inline_markdown_should_convert_rich_text(
-    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext
+    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext, syntax_registry: SyntaxRegistry
 ) -> None:
-    parser = TableParser(markdown_rich_text_converter=mock_rich_text_converter)
+    parser = TableParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
 
     markdown = "| **Bold** | *Italic* |"
     context.line = markdown

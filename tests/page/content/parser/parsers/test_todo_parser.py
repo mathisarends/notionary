@@ -6,11 +6,12 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRich
 from notionary.blocks.schemas import CreateToDoBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.todo import TodoParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def todo_parser(mock_rich_text_converter: MarkdownRichTextConverter) -> TodoParser:
-    return TodoParser(rich_text_converter=mock_rich_text_converter)
+def todo_parser(mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxRegistry) -> TodoParser:
+    return TodoParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
 
 
 @pytest.mark.asyncio
@@ -79,9 +80,9 @@ async def test_todo_with_leading_whitespace_should_work(todo_parser: TodoParser,
 
 @pytest.mark.asyncio
 async def test_todo_with_inline_markdown_should_convert_rich_text(
-    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext
+    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext, syntax_registry: SyntaxRegistry
 ) -> None:
-    parser = TodoParser(rich_text_converter=mock_rich_text_converter)
+    parser = TodoParser(rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry)
     context.line = "- [ ] Todo with **bold** and *italic*"
 
     await parser._process(context)

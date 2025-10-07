@@ -10,11 +10,14 @@ from notionary.blocks.schemas import (
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.toggleable_heading import ToggleableHeadingParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def toggleable_heading_parser(mock_rich_text_converter: MarkdownRichTextConverter) -> ToggleableHeadingParser:
-    return ToggleableHeadingParser(rich_text_converter=mock_rich_text_converter)
+def toggleable_heading_parser(
+    mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxRegistry
+) -> ToggleableHeadingParser:
+    return ToggleableHeadingParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
 
 
 @pytest.mark.parametrize(
@@ -153,9 +156,9 @@ async def test_end_marker_without_heading_on_stack_should_not_be_handled(
 
 @pytest.mark.asyncio
 async def test_heading_with_inline_markdown_should_convert_rich_text(
-    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext
+    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext, syntax_registry: SyntaxRegistry
 ) -> None:
-    parser = ToggleableHeadingParser(rich_text_converter=mock_rich_text_converter)
+    parser = ToggleableHeadingParser(rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry)
     context.line = "+++ # **Bold** and *italic*"
 
     await parser._process(context)

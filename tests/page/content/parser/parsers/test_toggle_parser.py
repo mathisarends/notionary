@@ -6,11 +6,12 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRich
 from notionary.blocks.schemas import BlockColor, CreateToggleBlock, CreateToggleData
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.toggle import ToggleParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def toggle_parser(mock_rich_text_converter: MarkdownRichTextConverter) -> ToggleParser:
-    return ToggleParser(rich_text_converter=mock_rich_text_converter)
+def toggle_parser(mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxRegistry) -> ToggleParser:
+    return ToggleParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
 
 
 @pytest.mark.asyncio
@@ -90,9 +91,9 @@ async def test_toggleable_heading_pattern_should_not_be_handled(
 
 @pytest.mark.asyncio
 async def test_toggle_with_inline_markdown_should_convert_rich_text(
-    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext
+    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext, syntax_registry: SyntaxRegistry
 ) -> None:
-    parser = ToggleParser(rich_text_converter=mock_rich_text_converter)
+    parser = ToggleParser(rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry)
     context.line = "+++ **Bold** and *italic* title"
 
     await parser._process(context)

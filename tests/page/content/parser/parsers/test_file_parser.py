@@ -5,11 +5,12 @@ import pytest
 from notionary.blocks.schemas import CreateFileBlock, FileType
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.file import FileParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def file_parser() -> FileParser:
-    return FileParser()
+def file_parser(syntax_registry: SyntaxRegistry) -> FileParser:
+    return FileParser(syntax_registry=syntax_registry)
 
 
 @pytest.mark.asyncio

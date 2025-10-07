@@ -5,11 +5,12 @@ import pytest
 from notionary.blocks.schemas import CreateImageBlock, FileType
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.image import ImageParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def image_parser() -> ImageParser:
-    return ImageParser()
+def image_parser(syntax_registry: SyntaxRegistry) -> ImageParser:
+    return ImageParser(syntax_registry=syntax_registry)
 
 
 @pytest.mark.asyncio

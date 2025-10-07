@@ -6,11 +6,12 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRich
 from notionary.blocks.schemas import BlockColor, CreateQuoteBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.quote import QuoteParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def quote_parser(mock_rich_text_converter: MarkdownRichTextConverter) -> QuoteParser:
-    return QuoteParser(rich_text_converter=mock_rich_text_converter)
+def quote_parser(mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxRegistry) -> QuoteParser:
+    return QuoteParser(rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry)
 
 
 @pytest.mark.asyncio

@@ -5,11 +5,12 @@ import pytest
 from notionary.blocks.schemas import BlockType, CreateBreadcrumbBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.breadcrumb import BreadcrumbParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def breadcrumb_parser() -> BreadcrumbParser:
-    return BreadcrumbParser()
+def breadcrumb_parser(syntax_registry: SyntaxRegistry) -> BreadcrumbParser:
+    return BreadcrumbParser(syntax_registry=syntax_registry)
 
 
 @pytest.mark.parametrize(

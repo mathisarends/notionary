@@ -13,11 +13,22 @@ from notionary.blocks.schemas import (
 from notionary.page.content.parser.context import ParentBlockContext
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.column import ColumnParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def column_parser() -> ColumnParser:
-    return ColumnParser()
+def syntax_registry() -> SyntaxRegistry:
+    return SyntaxRegistry()
+
+
+@pytest.fixture
+def column_delimiter(syntax_registry: SyntaxRegistry) -> str:
+    return syntax_registry.MULTI_LINE_BLOCK_DELIMITER
+
+
+@pytest.fixture
+def column_parser(syntax_registry: SyntaxRegistry) -> ColumnParser:
+    return ColumnParser(syntax_registry=syntax_registry)
 
 
 @pytest.fixture
@@ -30,24 +41,25 @@ def column_list_context() -> ParentBlockContext:
 @pytest.mark.parametrize(
     "start_line,expected_width_ratio",
     [
-        ("::: column", None),
-        ("::: column 0.5", 0.5),
-        ("::: column 0.33", 0.33),
-        ("::: column 0.25", 0.25),
-        ("::: column 1.0", 1.0),
-        ("::: column 1", 1.0),
-        ("::: column .5", 0.5),
-        ("::: column 0.1", 0.1),
+        ("{column_delimiter} column", None),
+        ("{column_delimiter} column 0.5", 0.5),
+        ("{column_delimiter} column 0.33", 0.33),
+        ("{column_delimiter} column 0.25", 0.25),
+        ("{column_delimiter} column 1.0", 1.0),
+        ("{column_delimiter} column 1", 1.0),
+        ("{column_delimiter} column .5", 0.5),
+        ("{column_delimiter} column 0.1", 0.1),
     ],
 )
 @pytest.mark.asyncio
 async def test_column_start_should_push_to_parent_stack_with_correct_width_ratio(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
     start_line: str,
     expected_width_ratio: float | None,
 ) -> None:
-    context.line = start_line
+    context.line = start_line.format(column_delimiter=column_delimiter)
     context.parent_stack = []
 
     await column_parser._process(context)
@@ -60,21 +72,22 @@ async def test_column_start_should_push_to_parent_stack_with_correct_width_ratio
 @pytest.mark.parametrize(
     "start_line",
     [
-        "::: column",
-        "::: COLUMN",
-        "::: Column",
-        "::: CoLuMn",
-        ":::column",
-        "::: column ",
-        ":::  column",
+        "{column_delimiter} column",
+        "{column_delimiter} COLUMN",
+        "{column_delimiter} Column",
+        "{column_delimiter} CoLuMn",
+        "{column_delimiter}column",
+        "{column_delimiter} column ",
+        "{column_delimiter}  column",
     ],
 )
 def test_case_insensitive_column_start_should_be_handled(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
     start_line: str,
 ) -> None:
-    context.line = start_line
+    context.line = start_line.format(column_delimiter=column_delimiter)
 
     can_handle = column_parser._can_handle(context)
 
@@ -84,22 +97,23 @@ def test_case_insensitive_column_start_should_be_handled(
 @pytest.mark.parametrize(
     "invalid_ratio_line",
     [
-        "::: column 0",
-        "::: column 0.0",
-        "::: column -0.5",
-        "::: column 1.5",
-        "::: column 2.0",
-        "::: column abc",
-        "::: column 0.5.5",
+        "{column_delimiter} column 0",
+        "{column_delimiter} column 0.0",
+        "{column_delimiter} column -0.5",
+        "{column_delimiter} column 1.5",
+        "{column_delimiter} column 2.0",
+        "{column_delimiter} column abc",
+        "{column_delimiter} column 0.5.5",
     ],
 )
 @pytest.mark.asyncio
 async def test_column_start_with_invalid_width_ratio_should_create_column_with_none_ratio(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
     invalid_ratio_line: str,
 ) -> None:
-    context.line = invalid_ratio_line
+    context.line = invalid_ratio_line.format(column_delimiter=column_delimiter)
     context.parent_stack = []
 
     await column_parser._process(context)
@@ -111,13 +125,14 @@ async def test_column_start_with_invalid_width_ratio_should_create_column_with_n
 @pytest.mark.asyncio
 async def test_column_end_should_pop_from_parent_stack(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
     column_data = CreateColumnData()
     column_block = CreateColumnBlock(column=column_data)
     parent_context = ParentBlockContext(block=column_block, child_lines=[])
     context.parent_stack = [parent_context]
-    context.line = ":::"
+    context.line = column_delimiter
     context.parse_nested_content = AsyncMock(return_value=[])
 
     await column_parser._process(context)
@@ -128,13 +143,14 @@ async def test_column_end_should_pop_from_parent_stack(
 @pytest.mark.asyncio
 async def test_column_end_without_column_list_parent_should_add_to_result_blocks(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
     column_data = CreateColumnData()
     column_block = CreateColumnBlock(column=column_data)
     parent_context = ParentBlockContext(block=column_block, child_lines=[])
     context.parent_stack = [parent_context]
-    context.line = ":::"
+    context.line = column_delimiter
     context.parse_nested_content = AsyncMock(return_value=[])
 
     await column_parser._process(context)
@@ -146,6 +162,7 @@ async def test_column_end_without_column_list_parent_should_add_to_result_blocks
 @pytest.mark.asyncio
 async def test_column_end_with_column_list_parent_should_add_to_parent_child_blocks(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
     column_list_context: ParentBlockContext,
 ) -> None:
@@ -153,7 +170,7 @@ async def test_column_end_with_column_list_parent_should_add_to_parent_child_blo
     column_block = CreateColumnBlock(column=column_data)
     column_context = ParentBlockContext(block=column_block, child_lines=[])
     context.parent_stack = [column_list_context, column_context]
-    context.line = ":::"
+    context.line = column_delimiter
     context.parse_nested_content = AsyncMock(return_value=[])
 
     await column_parser._process(context)
@@ -183,6 +200,7 @@ async def test_column_content_should_be_added_to_child_lines(
 @pytest.mark.asyncio
 async def test_column_with_nested_content_should_parse_child_lines(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
     paragraph_data = ParagraphData(rich_text=[])
@@ -195,7 +213,7 @@ async def test_column_with_nested_content_should_parse_child_lines(
         child_lines=["line 1", "line 2"],
     )
     context.parent_stack = [parent_context]
-    context.line = ":::"
+    context.line = column_delimiter
     context.parse_nested_content = AsyncMock(return_value=[paragraph_block])
 
     await column_parser._process(context)
@@ -207,6 +225,7 @@ async def test_column_with_nested_content_should_parse_child_lines(
 @pytest.mark.asyncio
 async def test_column_with_both_child_lines_and_blocks_should_combine_all(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
     paragraph_block = CreateParagraphBlock(paragraph=ParagraphData(rich_text=[]))
@@ -221,7 +240,7 @@ async def test_column_with_both_child_lines_and_blocks_should_combine_all(
     parent_context.child_blocks = [nested_column_block]
 
     context.parent_stack = [parent_context]
-    context.line = ":::"
+    context.line = column_delimiter
     context.parse_nested_content = AsyncMock(return_value=[paragraph_block])
 
     await column_parser._process(context)
@@ -231,9 +250,10 @@ async def test_column_with_both_child_lines_and_blocks_should_combine_all(
 
 def test_is_column_start_should_return_true_for_valid_pattern(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
-    context.line = "::: column"
+    context.line = f"{column_delimiter} column"
 
     is_start = column_parser._is_column_start(context)
 
@@ -242,9 +262,10 @@ def test_is_column_start_should_return_true_for_valid_pattern(
 
 def test_is_column_start_with_ratio_should_return_true(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
-    context.line = "::: column 0.5"
+    context.line = f"{column_delimiter} column 0.5"
 
     is_start = column_parser._is_column_start(context)
 
@@ -253,13 +274,14 @@ def test_is_column_start_with_ratio_should_return_true(
 
 def test_is_column_end_should_return_true_for_matching_context(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
     column_data = CreateColumnData()
     column_block = CreateColumnBlock(column=column_data)
     parent_context = ParentBlockContext(block=column_block, child_lines=[])
     context.parent_stack = [parent_context]
-    context.line = ":::"
+    context.line = column_delimiter
 
     is_end = column_parser._is_column_end(context)
 
@@ -268,10 +290,11 @@ def test_is_column_end_should_return_true_for_matching_context(
 
 def test_is_column_end_without_parent_stack_should_return_false(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
     context.parent_stack = []
-    context.line = ":::"
+    context.line = column_delimiter
 
     is_end = column_parser._is_column_end(context)
 
@@ -280,13 +303,14 @@ def test_is_column_end_without_parent_stack_should_return_false(
 
 def test_is_column_end_with_different_parent_type_should_return_false(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
     paragraph_data = ParagraphData(rich_text=[])
     paragraph_block = CreateParagraphBlock(paragraph=paragraph_data)
     parent_context = ParentBlockContext(block=paragraph_block, child_lines=[])
     context.parent_stack = [parent_context]
-    context.line = ":::"
+    context.line = column_delimiter
 
     is_end = column_parser._is_column_end(context)
 
@@ -322,13 +346,14 @@ def test_is_column_content_without_parent_stack_should_return_false(
 
 def test_is_column_content_with_column_start_marker_should_return_false(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
     column_data = CreateColumnData()
     column_block = CreateColumnBlock(column=column_data)
     parent_context = ParentBlockContext(block=column_block, child_lines=[])
     context.parent_stack = [parent_context]
-    context.line = "::: column"
+    context.line = f"{column_delimiter} column"
 
     is_content = column_parser._is_column_content(context)
 
@@ -337,13 +362,14 @@ def test_is_column_content_with_column_start_marker_should_return_false(
 
 def test_is_column_content_with_end_marker_should_return_false(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
     column_data = CreateColumnData()
     column_block = CreateColumnBlock(column=column_data)
     parent_context = ParentBlockContext(block=column_block, child_lines=[])
     context.parent_stack = [parent_context]
-    context.line = ":::"
+    context.line = column_delimiter
 
     is_content = column_parser._is_column_content(context)
 
@@ -440,17 +466,19 @@ def test_has_column_list_parent_should_return_false_with_different_parent_type(
 
 def test_create_column_block_should_return_block_with_correct_ratio(
     column_parser: ColumnParser,
+    column_delimiter: str,
 ) -> None:
-    block = column_parser._create_column_block("::: column 0.5")
+    block = column_parser._create_column_block(f"{column_delimiter} column 0.5")
 
     assert isinstance(block, CreateColumnBlock)
-    assert block.column.width_ratio == 0.5
+    assert block.column.width_ratio == pytest.approx(0.5)
 
 
 def test_create_column_block_without_ratio_should_return_block_with_none_ratio(
     column_parser: ColumnParser,
+    column_delimiter: str,
 ) -> None:
-    block = column_parser._create_column_block("::: column")
+    block = column_parser._create_column_block(f"{column_delimiter} column")
 
     assert isinstance(block, CreateColumnBlock)
     assert block.column.width_ratio is None
@@ -464,37 +492,36 @@ def test_create_column_block_with_invalid_line_should_return_none(
     assert block is None
 
 
-@pytest.mark.parametrize(
-    "invalid_line",
-    [
-        ":: column",
-        ":::: column",
-        "::: col",
-        "::: columns",
-        "column :::",
-        "text ::: column",
-        "",
-    ],
-)
 def test_invalid_column_start_should_not_be_handled(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
-    invalid_line: str,
 ) -> None:
-    context.line = invalid_line
-    context.parent_stack = []
+    # Generate invalid variations based on the actual delimiter
+    invalid_variations = [
+        column_delimiter[:-1] + " column",  # Missing one character (e.g., ":: column")
+        column_delimiter + ": column",  # One too many (e.g., ":::: column")
+        f"{column_delimiter} col",  # Wrong keyword
+        f"{column_delimiter} columns",  # Wrong keyword (plural)
+        f"column {column_delimiter}",  # Wrong order
+        f"text {column_delimiter} column",  # Prefixed text
+        "",  # Empty string
+    ]
 
-    can_handle = column_parser._can_handle(context)
-
-    assert can_handle is False
+    for invalid_line in invalid_variations:
+        context.line = invalid_line
+        context.parent_stack = []
+        can_handle = column_parser._can_handle(context)
+        assert can_handle is False, f"Should not handle: {invalid_line}"
 
 
 @pytest.mark.asyncio
 async def test_column_block_should_have_correct_structure(
     column_parser: ColumnParser,
+    column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
-    context.line = "::: column 0.5"
+    context.line = f"{column_delimiter} column 0.5"
     context.parent_stack = []
 
     await column_parser._start_column(context)

@@ -51,6 +51,7 @@ class MarkdownToNotionConverter(LoggingMixin):
 
         self._setup_handler_chain()
 
+    # TODO: we need a dedicated builder here for sure
     def _setup_handler_chain(self) -> None:
         code_parser = CodeParser(syntax_registry=self._syntax_registry, rich_text_converter=self._rich_text_converter)
         table_parser = TableParser(syntax_registry=self._syntax_registry, rich_text_converter=self._rich_text_converter)

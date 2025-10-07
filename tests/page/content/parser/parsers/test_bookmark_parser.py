@@ -3,11 +3,12 @@ import pytest
 from notionary.blocks.schemas import CreateBookmarkBlock
 from notionary.page.content.parser.context import BlockParsingContext
 from notionary.page.content.parser.parsers.bookmark import BookmarkParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def bookmark_parser() -> BookmarkParser:
-    return BookmarkParser()
+def bookmark_parser(syntax_registry: SyntaxRegistry) -> BookmarkParser:
+    return BookmarkParser(syntax_registry=syntax_registry)
 
 
 @pytest.mark.asyncio

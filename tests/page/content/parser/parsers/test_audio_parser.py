@@ -5,11 +5,12 @@ import pytest
 from notionary.blocks.schemas import BlockType, CreateAudioBlock, FileType
 from notionary.page.content.parser.context import BlockParsingContext
 from notionary.page.content.parser.parsers.audio import AudioParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def audio_parser() -> AudioParser:
-    return AudioParser()
+def audio_parser(syntax_registry: SyntaxRegistry) -> AudioParser:
+    return AudioParser(syntax_registry=syntax_registry)
 
 
 @pytest.mark.parametrize(

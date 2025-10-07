@@ -5,11 +5,12 @@ import pytest
 from notionary.blocks.schemas import CreatePdfBlock, FileType
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.pdf import PdfParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def pdf_parser() -> PdfParser:
-    return PdfParser()
+def pdf_parser(syntax_registry: SyntaxRegistry) -> PdfParser:
+    return PdfParser(syntax_registry=syntax_registry)
 
 
 @pytest.mark.asyncio

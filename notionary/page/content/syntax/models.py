@@ -44,6 +44,8 @@ class SyntaxRegistryKey(StrEnum):
     SPACE = "space"
 
 
+# some elemente need closing delimiters, others not
+# either use union type or validate config in service
 @dataclass(frozen=True)
 class SyntaxDefinition:
     """

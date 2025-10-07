@@ -6,11 +6,14 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRich
 from notionary.blocks.schemas import CreateBulletedListItemBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.bulleted_list import BulletedListParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def bulleted_list_parser(mock_rich_text_converter: MarkdownRichTextConverter) -> BulletedListParser:
-    return BulletedListParser(rich_text_converter=mock_rich_text_converter)
+def bulleted_list_parser(
+    mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxRegistry
+) -> BulletedListParser:
+    return BulletedListParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
 
 
 @pytest.mark.asyncio
@@ -28,9 +31,9 @@ async def test_simple_bulleted_list_item_should_create_block(
 
 @pytest.mark.asyncio
 async def test_bulleted_list_with_inline_markdown_should_convert_rich_text(
-    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext
+    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext, syntax_registry: SyntaxRegistry
 ) -> None:
-    parser = BulletedListParser(rich_text_converter=mock_rich_text_converter)
+    parser = BulletedListParser(rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry)
     context.line = "- Item with **bold** and *italic*"
 
     await parser._process(context)

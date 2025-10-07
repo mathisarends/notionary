@@ -5,11 +5,12 @@ import pytest
 from notionary.blocks.schemas import CreateDividerBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.divider import DividerParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def divider_parser() -> DividerParser:
-    return DividerParser()
+def divider_parser(syntax_registry: SyntaxRegistry) -> DividerParser:
+    return DividerParser(syntax_registry=syntax_registry)
 
 
 @pytest.mark.asyncio

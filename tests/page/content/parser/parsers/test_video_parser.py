@@ -5,11 +5,12 @@ import pytest
 from notionary.blocks.schemas import CreateVideoBlock, FileType
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.video import VideoParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def video_parser() -> VideoParser:
-    return VideoParser()
+def video_parser(syntax_registry: SyntaxRegistry) -> VideoParser:
+    return VideoParser(syntax_registry=syntax_registry)
 
 
 @pytest.mark.asyncio

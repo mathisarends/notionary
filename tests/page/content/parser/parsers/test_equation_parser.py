@@ -5,11 +5,12 @@ import pytest
 from notionary.blocks.schemas import CreateEquationBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.equation import EquationParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def equation_parser() -> EquationParser:
-    return EquationParser()
+def equation_parser(syntax_registry: SyntaxRegistry) -> EquationParser:
+    return EquationParser(syntax_registry=syntax_registry)
 
 
 @pytest.mark.asyncio

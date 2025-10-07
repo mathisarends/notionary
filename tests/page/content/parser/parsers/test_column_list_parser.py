@@ -14,11 +14,22 @@ from notionary.blocks.schemas import (
 from notionary.page.content.parser.context import ParentBlockContext
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.column_list import ColumnListParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 @pytest.fixture
-def column_list_parser() -> ColumnListParser:
-    return ColumnListParser()
+def syntax_registry() -> SyntaxRegistry:
+    return SyntaxRegistry()
+
+
+@pytest.fixture
+def delim(syntax_registry: SyntaxRegistry) -> str:
+    return syntax_registry.MULTI_LINE_BLOCK_DELIMITER
+
+
+@pytest.fixture
+def column_list_parser(syntax_registry: SyntaxRegistry) -> ColumnListParser:
+    return ColumnListParser(syntax_registry=syntax_registry)
 
 
 @pytest.fixture
@@ -36,25 +47,26 @@ def paragraph_block() -> CreateParagraphBlock:
 @pytest.mark.parametrize(
     "start_line",
     [
-        "::: columns",
-        "::: column",
-        "::: COLUMNS",
-        "::: COLUMN",
-        "::: Columns",
-        "::: Column",
-        ":::columns",
-        ":::column",
-        "::: columns ",
-        ":::  columns",
+        "{delim} columns",
+        "{delim} column",
+        "{delim} COLUMNS",
+        "{delim} COLUMN",
+        "{delim} Columns",
+        "{delim} Column",
+        "{delim}columns",
+        "{delim}column",
+        "{delim} columns ",
+        "{delim}  columns",
     ],
 )
 @pytest.mark.asyncio
 async def test_column_list_start_should_push_to_parent_stack(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
     start_line: str,
 ) -> None:
-    context.line = start_line
+    context.line = start_line.format(delim=delim)
     context.parent_stack = []
 
     await column_list_parser._process(context)
@@ -67,17 +79,18 @@ async def test_column_list_start_should_push_to_parent_stack(
 @pytest.mark.parametrize(
     "start_line",
     [
-        "::: columns",
-        "::: column",
-        "::: COLUMNS",
+        "{delim} columns",
+        "{delim} column",
+        "{delim} COLUMNS",
     ],
 )
 def test_case_insensitive_column_list_start_should_be_handled(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
     start_line: str,
 ) -> None:
-    context.line = start_line
+    context.line = start_line.format(delim=delim)
 
     can_handle = column_list_parser._can_handle(context)
 
@@ -87,13 +100,14 @@ def test_case_insensitive_column_list_start_should_be_handled(
 @pytest.mark.asyncio
 async def test_column_list_end_should_pop_from_parent_stack(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
 ) -> None:
     column_list_data = CreateColumnListData()
     column_list_block = CreateColumnListBlock(column_list=column_list_data)
     parent_context = ParentBlockContext(block=column_list_block, child_lines=[])
     context.parent_stack = [parent_context]
-    context.line = ":::"
+    context.line = delim
     context.parse_nested_content = AsyncMock(return_value=[])
 
     await column_list_parser._process(context)
@@ -105,13 +119,14 @@ async def test_column_list_end_should_pop_from_parent_stack(
 @pytest.mark.asyncio
 async def test_column_list_end_should_add_block_to_result_blocks(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
 ) -> None:
     column_list_data = CreateColumnListData()
     column_list_block = CreateColumnListBlock(column_list=column_list_data)
     parent_context = ParentBlockContext(block=column_list_block, child_lines=[])
     context.parent_stack = [parent_context]
-    context.line = ":::"
+    context.line = delim
     context.parse_nested_content = AsyncMock(return_value=[])
 
     await column_list_parser._process(context)
@@ -123,6 +138,7 @@ async def test_column_list_end_should_add_block_to_result_blocks(
 @pytest.mark.asyncio
 async def test_column_list_with_nested_content_should_parse_child_lines(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
     column_block: CreateColumnBlock,
 ) -> None:
@@ -133,7 +149,7 @@ async def test_column_list_with_nested_content_should_parse_child_lines(
         child_lines=["line 1", "line 2"],
     )
     context.parent_stack = [parent_context]
-    context.line = ":::"
+    context.line = delim
     context.parse_nested_content = AsyncMock(return_value=[column_block])
 
     await column_list_parser._process(context)
@@ -144,6 +160,7 @@ async def test_column_list_with_nested_content_should_parse_child_lines(
 @pytest.mark.asyncio
 async def test_column_list_should_filter_only_column_blocks(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
     column_block: CreateColumnBlock,
     paragraph_block: CreateParagraphBlock,
@@ -153,7 +170,7 @@ async def test_column_list_should_filter_only_column_blocks(
     parent_context = ParentBlockContext(block=column_list_block, child_lines=[])
     parent_context.child_blocks = [column_block, paragraph_block, column_block]
     context.parent_stack = [parent_context]
-    context.line = ":::"
+    context.line = delim
     context.parse_nested_content = AsyncMock(return_value=[])
 
     await column_list_parser._process(context)
@@ -176,36 +193,35 @@ def test_filter_column_blocks_should_return_only_column_type(
     assert all(block.type == BlockType.COLUMN for block in filtered)
 
 
-@pytest.mark.parametrize(
-    "invalid_line",
-    [
-        ":: columns",
-        ":::: columns",
-        "::: column list",
-        "columns :::",
-        "::: cols",
-        "text ::: columns",
-        "",
-    ],
-)
 def test_invalid_column_list_start_should_not_be_handled(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
-    invalid_line: str,
 ) -> None:
-    context.line = invalid_line
+    # Generate invalid variations based on the actual delimiter
+    invalid_variations = [
+        delim[:-1] + " columns",  # Missing one character (e.g., ":: columns")
+        delim + ": columns",  # One too many (e.g., ":::: columns")
+        f"{delim} column list",  # Wrong keyword
+        f"columns {delim}",  # Wrong order
+        f"{delim} cols",  # Wrong keyword (abbreviated)
+        f"text {delim} columns",  # Prefixed text
+        "",  # Empty string
+    ]
 
-    can_handle = column_list_parser._can_handle(context)
-
-    assert can_handle is False
+    for invalid_line in invalid_variations:
+        context.line = invalid_line
+        can_handle = column_list_parser._can_handle(context)
+        assert can_handle is False, f"Should not handle: {invalid_line}"
 
 
 def test_end_marker_without_matching_start_should_not_be_handled(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
 ) -> None:
     context.parent_stack = []
-    context.line = ":::"
+    context.line = delim
 
     can_handle = column_list_parser._can_handle(context)
 
@@ -214,13 +230,14 @@ def test_end_marker_without_matching_start_should_not_be_handled(
 
 def test_end_marker_with_different_parent_type_should_not_be_handled(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
 ) -> None:
     paragraph_data = ParagraphData(rich_text=[])
     paragraph_block = CreateParagraphBlock(paragraph=paragraph_data)
     parent_context = ParentBlockContext(block=paragraph_block, child_lines=[])
     context.parent_stack = [parent_context]
-    context.line = ":::"
+    context.line = delim
 
     can_handle = column_list_parser._can_handle(context)
 
@@ -229,9 +246,10 @@ def test_end_marker_with_different_parent_type_should_not_be_handled(
 
 def test_is_column_list_start_should_return_true_for_valid_pattern(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
 ) -> None:
-    context.line = "::: columns"
+    context.line = f"{delim} columns"
 
     is_start = column_list_parser._is_column_list_start(context)
 
@@ -251,13 +269,14 @@ def test_is_column_list_start_should_return_false_for_invalid_pattern(
 
 def test_is_column_list_end_should_return_true_for_matching_context(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
 ) -> None:
     column_list_data = CreateColumnListData()
     column_list_block = CreateColumnListBlock(column_list=column_list_data)
     parent_context = ParentBlockContext(block=column_list_block, child_lines=[])
     context.parent_stack = [parent_context]
-    context.line = ":::"
+    context.line = delim
 
     is_end = column_list_parser._is_column_list_end(context)
 
@@ -266,10 +285,11 @@ def test_is_column_list_end_should_return_true_for_matching_context(
 
 def test_is_column_list_end_should_return_false_without_parent_stack(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
 ) -> None:
     context.parent_stack = []
-    context.line = ":::"
+    context.line = delim
 
     is_end = column_list_parser._is_column_list_end(context)
 
@@ -279,6 +299,7 @@ def test_is_column_list_end_should_return_false_without_parent_stack(
 @pytest.mark.asyncio
 async def test_nested_column_list_should_add_to_parent_context(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
 ) -> None:
     outer_column_data = CreateColumnData()
@@ -290,7 +311,7 @@ async def test_nested_column_list_should_add_to_parent_context(
     inner_context = ParentBlockContext(block=column_list_block, child_lines=[])
 
     context.parent_stack = [outer_context, inner_context]
-    context.line = ":::"
+    context.line = delim
     context.parse_nested_content = AsyncMock(return_value=[])
 
     await column_list_parser._process(context)
@@ -303,6 +324,7 @@ async def test_nested_column_list_should_add_to_parent_context(
 @pytest.mark.asyncio
 async def test_column_list_with_both_child_lines_and_blocks_should_combine_all(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
     column_block: CreateColumnBlock,
 ) -> None:
@@ -317,7 +339,7 @@ async def test_column_list_with_both_child_lines_and_blocks_should_combine_all(
     parent_context.child_blocks = [second_column_block]
 
     context.parent_stack = [parent_context]
-    context.line = ":::"
+    context.line = delim
     context.parse_nested_content = AsyncMock(return_value=[column_block])
 
     await column_list_parser._process(context)
@@ -329,9 +351,10 @@ async def test_column_list_with_both_child_lines_and_blocks_should_combine_all(
 @pytest.mark.asyncio
 async def test_start_column_list_should_create_block_with_empty_children(
     column_list_parser: ColumnListParser,
+    delim: str,
     context: BlockParsingContext,
 ) -> None:
-    context.line = "::: columns"
+    context.line = f"{delim} columns"
     context.parent_stack = []
 
     await column_list_parser._start_column_list(context)
