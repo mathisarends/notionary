@@ -16,7 +16,6 @@ from notionary.page.properties.factory import PagePropertyHandlerFactory
 from notionary.page.properties.models import PageTitleProperty
 from notionary.page.properties.service import PagePropertyHandler
 from notionary.page.schemas import NotionPageDto
-from notionary.schemas import NotionContentSchema
 from notionary.search.service import SearchService
 from notionary.shared.entity.dto_parsers import (
     extract_cover_image_url_from_dto,
@@ -165,13 +164,13 @@ class NotionPage(Entity):
 
     async def append_markdown(
         self,
-        content: (str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema),
+        content: (str | Callable[[MarkdownBuilder], MarkdownBuilder]),
     ) -> None:
         await self._page_content_writer.append_markdown(content=content)
 
     async def replace_content(
         self,
-        content: (str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema),
+        content: (str | Callable[[MarkdownBuilder], MarkdownBuilder]),
     ) -> None:
         await self._page_content_deleting_service.clear_page_content()
         await self._page_content_writer.append_markdown(content=content)

@@ -4,7 +4,6 @@ from notionary.blocks.client import NotionBlockHttpClient
 from notionary.blocks.markdown.builder import MarkdownBuilder
 from notionary.page.content.parser.pre_processsing.whitespace import process_markdown_whitespace
 from notionary.page.content.parser.service import MarkdownToNotionConverter
-from notionary.schemas.base import NotionContentSchema
 from notionary.utils.mixins.logging import LoggingMixin
 
 
@@ -23,7 +22,7 @@ class PageContentWriter(LoggingMixin):
 
     async def append_markdown(
         self,
-        content: (str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema),
+        content: (str | Callable[[MarkdownBuilder], MarkdownBuilder]),
     ) -> None:
         markdown = self._extract_markdown_from_param(content)
 
@@ -39,13 +38,10 @@ class PageContentWriter(LoggingMixin):
 
     def _extract_markdown_from_param(
         self,
-        content: (str | Callable[[MarkdownBuilder], MarkdownBuilder] | NotionContentSchema),
+        content: (str | Callable[[MarkdownBuilder], MarkdownBuilder]),
     ) -> str:
         if isinstance(content, str):
             return content
-        if isinstance(content, NotionContentSchema):
-            builder = MarkdownBuilder()
-            return content.to_notion_content(builder)
 
         if callable(content):
             builder = MarkdownBuilder()
