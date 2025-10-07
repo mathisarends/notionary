@@ -1,3 +1,4 @@
+from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -5,7 +6,7 @@ import pytest
 from notionary.blocks.enums import BlockType, CodeLanguage
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import CodeBlock, CodeData
+from notionary.blocks.schemas import Block, CodeBlock, CodeData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.code import CodeRenderer
 
@@ -21,10 +22,11 @@ def _create_code_data_with_caption(
 
 
 def _create_code_block(code_data: CodeData | None) -> CodeBlock:
-    block = Mock(spec=CodeBlock)
-    block.type = BlockType.CODE
-    block.code = code_data
-    return block
+    mock_obj = Mock(spec=Block)
+    code_block = cast(CodeBlock, mock_obj)
+    code_block.type = BlockType.CODE
+    code_block.code = code_data
+    return code_block
 
 
 @pytest.fixture

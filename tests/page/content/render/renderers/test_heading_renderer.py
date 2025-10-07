@@ -1,198 +1,324 @@
-from unittest.mock import Mock
+from typing import cast
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-from notionary.blocks.schemas import (
-    CreateHeading1Block,
-    CreateHeading2Block,
-    CreateHeading3Block,
-)
-from notionary.page.content.parser.parsers.base import BlockParsingContext
-from notionary.page.content.parser.parsers.heading import HeadingParser
+from notionary.blocks.enums import BlockType
+from notionary.blocks.rich_text.models import RichText
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.schemas import Block, Heading1Block, Heading2Block, Heading3Block, HeadingData
+from notionary.page.content.renderer.context import MarkdownRenderingContext
+from notionary.page.content.renderer.renderers.heading import HeadingRenderer
+
+
+def _create_heading_data(rich_text: list[RichText], is_toggleable: bool = False) -> HeadingData:
+    return HeadingData(rich_text=rich_text, is_toggleable=is_toggleable)
+
+
+def _create_heading_block(
+    block_type: BlockType, heading_data: HeadingData | None
+) -> Heading1Block | Heading2Block | Heading3Block:
+    mock_obj = Mock(spec=Block)
+
+    if block_type == BlockType.HEADING_1:
+        heading_block = cast(Heading1Block, mock_obj)
+        heading_block.heading_1 = heading_data
+    elif block_type == BlockType.HEADING_2:
+        heading_block = cast(Heading2Block, mock_obj)
+        heading_block.heading_2 = heading_data
+    elif block_type == BlockType.HEADING_3:
+        heading_block = cast(Heading3Block, mock_obj)
+        heading_block.heading_3 = heading_data
+    else:
+        heading_block = cast(Block, mock_obj)
+
+    heading_block.type = block_type
+    return heading_block
 
 
 @pytest.fixture
-def heading_parser(mock_rich_text_converter: MarkdownRichTextConverter) -> HeadingParser:
-    return HeadingParser(rich_text_converter=mock_rich_text_converter)
+def heading_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> HeadingRenderer:
+    return HeadingRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
 
 
 @pytest.mark.asyncio
-async def test_heading_level_1_should_create_heading1_block(
-    heading_parser: HeadingParser, context: BlockParsingContext
+async def test_heading1_block_should_be_handled(heading_renderer: HeadingRenderer) -> None:
+    heading_data = _create_heading_data([RichText.from_plain_text("Heading 1")], is_toggleable=False)
+    block = _create_heading_block(BlockType.HEADING_1, heading_data)
+
+    assert heading_renderer._can_handle(block)
+
+
+@pytest.mark.asyncio
+async def test_heading2_block_should_be_handled(heading_renderer: HeadingRenderer) -> None:
+    heading_data = _create_heading_data([RichText.from_plain_text("Heading 2")], is_toggleable=False)
+    block = _create_heading_block(BlockType.HEADING_2, heading_data)
+
+    assert heading_renderer._can_handle(block)
+
+
+@pytest.mark.asyncio
+async def test_heading3_block_should_be_handled(heading_renderer: HeadingRenderer) -> None:
+    heading_data = _create_heading_data([RichText.from_plain_text("Heading 3")], is_toggleable=False)
+    block = _create_heading_block(BlockType.HEADING_3, heading_data)
+
+    assert heading_renderer._can_handle(block)
+
+
+@pytest.mark.asyncio
+async def test_toggleable_heading1_block_should_not_be_handled(heading_renderer: HeadingRenderer) -> None:
+    heading_data = _create_heading_data([RichText.from_plain_text("Toggleable Heading 1")], is_toggleable=True)
+    block = _create_heading_block(BlockType.HEADING_1, heading_data)
+
+    assert not heading_renderer._can_handle(block)
+
+
+@pytest.mark.asyncio
+async def test_toggleable_heading2_block_should_not_be_handled(heading_renderer: HeadingRenderer) -> None:
+    heading_data = _create_heading_data([RichText.from_plain_text("Toggleable Heading 2")], is_toggleable=True)
+    block = _create_heading_block(BlockType.HEADING_2, heading_data)
+
+    assert not heading_renderer._can_handle(block)
+
+
+@pytest.mark.asyncio
+async def test_toggleable_heading3_block_should_not_be_handled(heading_renderer: HeadingRenderer) -> None:
+    heading_data = _create_heading_data([RichText.from_plain_text("Toggleable Heading 3")], is_toggleable=True)
+    block = _create_heading_block(BlockType.HEADING_3, heading_data)
+
+    assert not heading_renderer._can_handle(block)
+
+
+@pytest.mark.asyncio
+async def test_non_heading_block_should_not_be_handled(heading_renderer: HeadingRenderer, mock_block: Block) -> None:
+    mock_block.type = BlockType.PARAGRAPH
+
+    assert not heading_renderer._can_handle(mock_block)
+
+
+@pytest.mark.asyncio
+async def test_heading1_with_text_should_render_markdown(
+    heading_renderer: HeadingRenderer,
+    render_context: MarkdownRenderingContext,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    context.line = "# Heading Level 1"
+    rich_text = [RichText.from_plain_text("Main Heading")]
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Main Heading")
 
-    assert heading_parser._can_handle(context)
-    await heading_parser._process(context)
+    heading_data = _create_heading_data(rich_text)
+    block = _create_heading_block(BlockType.HEADING_1, heading_data)
+    render_context.block = block
 
-    assert len(context.result_blocks) == 1
-    assert isinstance(context.result_blocks[0], CreateHeading1Block)
+    await heading_renderer._process(render_context)
+
+    assert render_context.markdown_result == "# Main Heading"
 
 
 @pytest.mark.asyncio
-async def test_heading_level_2_should_create_heading2_block(
-    heading_parser: HeadingParser, context: BlockParsingContext
+async def test_heading2_with_text_should_render_markdown(
+    heading_renderer: HeadingRenderer,
+    render_context: MarkdownRenderingContext,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    context.line = "## Heading Level 2"
+    rich_text = [RichText.from_plain_text("Subheading")]
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Subheading")
 
-    assert heading_parser._can_handle(context)
-    await heading_parser._process(context)
+    heading_data = _create_heading_data(rich_text)
+    block = _create_heading_block(BlockType.HEADING_2, heading_data)
+    render_context.block = block
 
-    assert len(context.result_blocks) == 1
-    assert isinstance(context.result_blocks[0], CreateHeading2Block)
+    await heading_renderer._process(render_context)
+
+    assert render_context.markdown_result == "## Subheading"
 
 
 @pytest.mark.asyncio
-async def test_heading_level_3_should_create_heading3_block(
-    heading_parser: HeadingParser, context: BlockParsingContext
+async def test_heading3_with_text_should_render_markdown(
+    heading_renderer: HeadingRenderer,
+    render_context: MarkdownRenderingContext,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    context.line = "### Heading Level 3"
+    rich_text = [RichText.from_plain_text("Sub-subheading")]
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Sub-subheading")
 
-    assert heading_parser._can_handle(context)
-    await heading_parser._process(context)
+    heading_data = _create_heading_data(rich_text)
+    block = _create_heading_block(BlockType.HEADING_3, heading_data)
+    render_context.block = block
 
-    assert len(context.result_blocks) == 1
-    assert isinstance(context.result_blocks[0], CreateHeading3Block)
+    await heading_renderer._process(render_context)
+
+    assert render_context.markdown_result == "### Sub-subheading"
 
 
 @pytest.mark.asyncio
-async def test_heading_level_4_should_not_be_handled(
-    heading_parser: HeadingParser, context: BlockParsingContext
+async def test_heading_with_empty_rich_text_should_render_empty_string(
+    heading_renderer: HeadingRenderer,
+    render_context: MarkdownRenderingContext,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    context.line = "#### Heading Level 4"
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value=None)
 
-    assert not heading_parser._can_handle(context)
+    heading_data = _create_heading_data([])
+    block = _create_heading_block(BlockType.HEADING_1, heading_data)
+    render_context.block = block
+
+    await heading_renderer._process(render_context)
+
+    assert render_context.markdown_result == ""
 
 
 @pytest.mark.asyncio
-async def test_heading_with_extra_whitespace_should_work(
-    heading_parser: HeadingParser, context: BlockParsingContext
+async def test_heading_with_missing_data_should_render_empty_string(
+    heading_renderer: HeadingRenderer,
+    render_context: MarkdownRenderingContext,
 ) -> None:
-    context.line = "#   Heading with extra spaces"
+    block = _create_heading_block(BlockType.HEADING_1, None)
+    render_context.block = block
 
-    assert heading_parser._can_handle(context)
-    await heading_parser._process(context)
+    await heading_renderer._process(render_context)
 
-    assert len(context.result_blocks) == 1
+    assert render_context.markdown_result == ""
 
 
 @pytest.mark.asyncio
-async def test_heading_with_tab_separator_should_work(
-    heading_parser: HeadingParser, context: BlockParsingContext
+async def test_heading_with_indent_level_should_indent_output(
+    heading_renderer: HeadingRenderer,
+    render_context: MarkdownRenderingContext,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    context.line = "##\tHeading with tab"
+    rich_text = [RichText.from_plain_text("Indented Heading")]
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Indented Heading")
 
-    assert heading_parser._can_handle(context)
-    await heading_parser._process(context)
+    heading_data = _create_heading_data(rich_text)
+    block = _create_heading_block(BlockType.HEADING_1, heading_data)
+    render_context.block = block
+    render_context.indent_level = 1
 
-    assert len(context.result_blocks) == 1
+    await heading_renderer._process(render_context)
+
+    # Mock indent_text adds 2 spaces
+    assert render_context.markdown_result == "  # Indented Heading"
+    render_context.indent_text.assert_called_once_with("# Indented Heading")
 
 
 @pytest.mark.asyncio
-async def test_heading_without_space_should_not_be_handled(
-    heading_parser: HeadingParser, context: BlockParsingContext
+async def test_get_heading_level_for_heading1_should_return_1(heading_renderer: HeadingRenderer) -> None:
+    heading_data = _create_heading_data([RichText.from_plain_text("Test")])
+    block = _create_heading_block(BlockType.HEADING_1, heading_data)
+
+    level = heading_renderer._get_heading_level(block)
+
+    assert level == 1
+
+
+@pytest.mark.asyncio
+async def test_get_heading_level_for_heading2_should_return_2(heading_renderer: HeadingRenderer) -> None:
+    heading_data = _create_heading_data([RichText.from_plain_text("Test")])
+    block = _create_heading_block(BlockType.HEADING_2, heading_data)
+
+    level = heading_renderer._get_heading_level(block)
+
+    assert level == 2
+
+
+@pytest.mark.asyncio
+async def test_get_heading_level_for_heading3_should_return_3(heading_renderer: HeadingRenderer) -> None:
+    heading_data = _create_heading_data([RichText.from_plain_text("Test")])
+    block = _create_heading_block(BlockType.HEADING_3, heading_data)
+
+    level = heading_renderer._get_heading_level(block)
+
+    assert level == 3
+
+
+@pytest.mark.asyncio
+async def test_get_heading_level_for_invalid_type_should_return_0(heading_renderer: HeadingRenderer) -> None:
+    block = Mock(spec=Block)
+    block.type = BlockType.PARAGRAPH
+
+    level = heading_renderer._get_heading_level(block)
+
+    assert level == 0
+
+
+@pytest.mark.asyncio
+async def test_get_heading_title_for_heading1_should_return_markdown(
+    heading_renderer: HeadingRenderer,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    context.line = "#NoHeading"
+    rich_text = [RichText.from_plain_text("Heading 1 Title")]
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Heading 1 Title")
 
-    assert not heading_parser._can_handle(context)
+    heading_data = _create_heading_data(rich_text)
+    block = _create_heading_block(BlockType.HEADING_1, heading_data)
+
+    title = await heading_renderer._get_heading_title(block)
+
+    assert title == "Heading 1 Title"
 
 
 @pytest.mark.asyncio
-async def test_heading_with_only_hashes_should_not_create_block(
-    heading_parser: HeadingParser, context: BlockParsingContext
+async def test_get_heading_title_for_heading2_should_return_markdown(
+    heading_renderer: HeadingRenderer,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    context.line = "###   "
+    rich_text = [RichText.from_plain_text("Heading 2 Title")]
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Heading 2 Title")
 
-    if heading_parser._can_handle(context):
-        await heading_parser._process(context)
-        assert len(context.result_blocks) == 0
+    heading_data = _create_heading_data(rich_text)
+    block = _create_heading_block(BlockType.HEADING_2, heading_data)
+
+    title = await heading_renderer._get_heading_title(block)
+
+    assert title == "Heading 2 Title"
 
 
 @pytest.mark.asyncio
-async def test_heading_inside_parent_context_should_not_be_handled(
-    heading_parser: HeadingParser, context: BlockParsingContext
+async def test_get_heading_title_for_heading3_should_return_markdown(
+    heading_renderer: HeadingRenderer,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    context.line = "# Heading"
-    context.is_inside_parent_context = Mock(return_value=True)
+    rich_text = [RichText.from_plain_text("Heading 3 Title")]
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Heading 3 Title")
 
-    assert not heading_parser._can_handle(context)
+    heading_data = _create_heading_data(rich_text)
+    block = _create_heading_block(BlockType.HEADING_3, heading_data)
+
+    title = await heading_renderer._get_heading_title(block)
+
+    assert title == "Heading 3 Title"
 
 
 @pytest.mark.asyncio
-async def test_heading_with_inline_markdown_should_convert_rich_text(
-    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext
+async def test_get_heading_title_with_empty_rich_text_should_return_empty_string(
+    heading_renderer: HeadingRenderer,
 ) -> None:
-    parser = HeadingParser(rich_text_converter=mock_rich_text_converter)
-    context.line = "# **Bold** and *italic*"
+    heading_data = _create_heading_data([])
+    block = _create_heading_block(BlockType.HEADING_1, heading_data)
 
-    await parser._process(context)
+    title = await heading_renderer._get_heading_title(block)
 
-    mock_rich_text_converter.to_rich_text.assert_called_once_with("**Bold** and *italic*")
+    assert title == ""
 
 
 @pytest.mark.asyncio
-async def test_heading_with_trailing_whitespace_should_be_trimmed(
-    heading_parser: HeadingParser, context: BlockParsingContext
+async def test_get_heading_title_with_missing_data_should_return_empty_string(
+    heading_renderer: HeadingRenderer,
 ) -> None:
-    context.line = "## Heading with trailing spaces   "
+    block = _create_heading_block(BlockType.HEADING_1, None)
 
-    assert heading_parser._can_handle(context)
-    await heading_parser._process(context)
+    title = await heading_renderer._get_heading_title(block)
 
-    assert len(context.result_blocks) == 1
+    assert title == ""
 
 
 @pytest.mark.asyncio
-async def test_heading_with_special_characters_should_work(
-    heading_parser: HeadingParser, context: BlockParsingContext
+async def test_get_heading_title_for_invalid_type_should_return_empty_string(
+    heading_renderer: HeadingRenderer,
 ) -> None:
-    context.line = "# Heading with special chars äöü and emoji 🎉"
+    block = Mock(spec=Block)
+    block.type = BlockType.PARAGRAPH
 
-    assert heading_parser._can_handle(context)
-    await heading_parser._process(context)
+    title = await heading_renderer._get_heading_title(block)
 
-    assert len(context.result_blocks) == 1
-
-
-@pytest.mark.asyncio
-async def test_not_a_heading_should_not_be_handled(heading_parser: HeadingParser, context: BlockParsingContext) -> None:
-    context.line = "Normal text without heading"
-
-    assert not heading_parser._can_handle(context)
-
-
-@pytest.mark.asyncio
-async def test_heading_with_leading_whitespace_should_not_be_handled(
-    heading_parser: HeadingParser, context: BlockParsingContext
-) -> None:
-    context.line = "  # Heading with leading space"
-
-    assert not heading_parser._can_handle(context)
-
-
-@pytest.mark.asyncio
-async def test_multiple_hashes_in_content_should_work(
-    heading_parser: HeadingParser, context: BlockParsingContext
-) -> None:
-    context.line = "# C# and #hashtags in text"
-
-    assert heading_parser._can_handle(context)
-    await heading_parser._process(context)
-
-    assert len(context.result_blocks) == 1
-
-
-@pytest.mark.asyncio
-async def test_heading_data_should_have_correct_defaults(
-    heading_parser: HeadingParser, context: BlockParsingContext
-) -> None:
-    context.line = "# Test Heading"
-
-    await heading_parser._process(context)
-
-    block = context.result_blocks[0]
-    heading_data = block.heading_1
-
-    assert heading_data.color == "default"
-    assert heading_data.is_toggleable is False
+    assert title == ""

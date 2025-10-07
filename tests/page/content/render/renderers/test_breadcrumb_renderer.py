@@ -1,17 +1,19 @@
+from typing import cast
 from unittest.mock import Mock
 
 import pytest
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.schemas import Block
+from notionary.blocks.schemas import Block, BreadcrumbBlock
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.breadcrumb import BreadcrumbRenderer
 
 
-def _create_breadcrumb_block() -> Block:
-    block = Mock(spec=Block)
-    block.type = BlockType.BREADCRUMB
-    return block
+def _create_breadcrumb_block() -> BreadcrumbBlock:
+    mock_obj = Mock(spec=Block)
+    breadcrumb_block = cast(BreadcrumbBlock, mock_obj)
+    breadcrumb_block.type = BlockType.BREADCRUMB
+    return breadcrumb_block
 
 
 @pytest.fixture

@@ -1,3 +1,4 @@
+from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -5,7 +6,7 @@ import pytest
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, QuoteData
+from notionary.blocks.schemas import Block, QuoteBlock, QuoteData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.quote import QuoteRenderer
 
@@ -14,11 +15,12 @@ def _create_quote_data(rich_text: list[RichText]) -> QuoteData:
     return QuoteData(rich_text=rich_text)
 
 
-def _create_quote_block(quote_data: QuoteData | None) -> Block:
-    block = Mock(spec=Block)
-    block.type = BlockType.QUOTE
-    block.quote = quote_data
-    return block
+def _create_quote_block(quote_data: QuoteData | None) -> QuoteBlock:
+    mock_obj = Mock(spec=Block)
+    quote_block = cast(QuoteBlock, mock_obj)
+    quote_block.type = BlockType.QUOTE
+    quote_block.quote = quote_data
+    return quote_block
 
 
 @pytest.fixture

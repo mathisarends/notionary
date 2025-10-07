@@ -1,17 +1,19 @@
+from typing import cast
 from unittest.mock import Mock
 
 import pytest
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.schemas import Block
+from notionary.blocks.schemas import Block, DividerBlock
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.divider import DividerRenderer
 
 
-def _create_divider_block() -> Block:
-    block = Mock(spec=Block)
-    block.type = BlockType.DIVIDER
-    return block
+def _create_divider_block() -> DividerBlock:
+    mock_obj = Mock(spec=Block)
+    divider_block = cast(DividerBlock, mock_obj)
+    divider_block.type = BlockType.DIVIDER
+    return divider_block
 
 
 @pytest.fixture

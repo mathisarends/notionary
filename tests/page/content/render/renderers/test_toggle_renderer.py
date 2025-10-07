@@ -1,3 +1,4 @@
+from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -5,7 +6,7 @@ import pytest
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, ToggleData
+from notionary.blocks.schemas import Block, ToggleBlock, ToggleData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.toggle import ToggleRenderer
 
@@ -14,11 +15,12 @@ def _create_toggle_data(rich_text: list[RichText]) -> ToggleData:
     return ToggleData(rich_text=rich_text)
 
 
-def _create_toggle_block(toggle_data: ToggleData | None) -> Block:
-    block = Mock(spec=Block)
-    block.type = BlockType.TOGGLE
-    block.toggle = toggle_data
-    return block
+def _create_toggle_block(toggle_data: ToggleData | None) -> ToggleBlock:
+    mock_obj = Mock(spec=Block)
+    toggle_block = cast(ToggleBlock, mock_obj)
+    toggle_block.type = BlockType.TOGGLE
+    toggle_block.toggle = toggle_data
+    return toggle_block
 
 
 @pytest.fixture

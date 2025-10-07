@@ -1,153 +1,160 @@
-from unittest.mock import Mock
+from typing import cast
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-from notionary.blocks.schemas import CreateParagraphBlock
-from notionary.page.content.parser.parsers.base import BlockParsingContext
-from notionary.page.content.parser.parsers.paragraph import ParagraphParser
+from notionary.blocks.enums import BlockType
+from notionary.blocks.rich_text.models import RichText
+from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.schemas import Block, ParagraphBlock, ParagraphData
+from notionary.page.content.renderer.context import MarkdownRenderingContext
+from notionary.page.content.renderer.renderers.paragraph import ParagraphRenderer
+
+
+def _create_paragraph_data(rich_text: list[RichText]) -> ParagraphData:
+    return ParagraphData(rich_text=rich_text)
+
+
+def _create_paragraph_block(paragraph_data: ParagraphData | None) -> ParagraphBlock:
+    mock_obj = Mock(spec=Block)
+    paragraph_block = cast(ParagraphBlock, mock_obj)
+    paragraph_block.type = BlockType.PARAGRAPH
+    paragraph_block.paragraph = paragraph_data
+    return paragraph_block
 
 
 @pytest.fixture
-def paragraph_parser(mock_rich_text_converter: MarkdownRichTextConverter) -> ParagraphParser:
-    return ParagraphParser(rich_text_converter=mock_rich_text_converter)
+def paragraph_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> ParagraphRenderer:
+    return ParagraphRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
 
 
 @pytest.mark.asyncio
-async def test_simple_text_should_create_paragraph_block(
-    paragraph_parser: ParagraphParser, context: BlockParsingContext
-) -> None:
-    context.line = "This is a simple paragraph"
+async def test_paragraph_block_should_be_handled(paragraph_renderer: ParagraphRenderer, mock_block: Block) -> None:
+    mock_block.type = BlockType.PARAGRAPH
 
-    assert paragraph_parser._can_handle(context)
-    await paragraph_parser._process(context)
-
-    assert len(context.result_blocks) == 1
-    assert isinstance(context.result_blocks[0], CreateParagraphBlock)
+    assert paragraph_renderer._can_handle(mock_block)
 
 
 @pytest.mark.asyncio
-async def test_empty_line_should_not_be_handled(
-    paragraph_parser: ParagraphParser, context: BlockParsingContext
+async def test_non_paragraph_block_should_not_be_handled(
+    paragraph_renderer: ParagraphRenderer, mock_block: Block
 ) -> None:
-    context.line = ""
+    mock_block.type = BlockType.HEADING_1
 
-    assert not paragraph_parser._can_handle(context)
+    assert not paragraph_renderer._can_handle(mock_block)
 
 
 @pytest.mark.asyncio
-async def test_paragraph_with_inline_markdown_should_convert_rich_text(
-    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext
+async def test_paragraph_with_text_should_render_markdown(
+    paragraph_renderer: ParagraphRenderer,
+    render_context: MarkdownRenderingContext,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    parser = ParagraphParser(rich_text_converter=mock_rich_text_converter)
-    context.line = "Text with **bold** and *italic* formatting"
+    rich_text = [RichText.from_plain_text("This is a paragraph")]
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="This is a paragraph")
 
-    await parser._process(context)
+    paragraph_data = _create_paragraph_data(rich_text)
+    block = _create_paragraph_block(paragraph_data)
+    render_context.block = block
 
-    mock_rich_text_converter.to_rich_text.assert_called_once_with("Text with **bold** and *italic* formatting")
+    await paragraph_renderer._process(render_context)
+
+    assert render_context.markdown_result == "This is a paragraph"
 
 
 @pytest.mark.asyncio
-async def test_paragraph_with_special_characters_should_work(
-    paragraph_parser: ParagraphParser, context: BlockParsingContext
+async def test_paragraph_with_empty_rich_text_should_render_empty_string(
+    paragraph_renderer: ParagraphRenderer,
+    render_context: MarkdownRenderingContext,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    context.line = "Paragraph with special chars äöü and emoji 🎉"
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value=None)
 
-    assert paragraph_parser._can_handle(context)
-    await paragraph_parser._process(context)
+    paragraph_data = _create_paragraph_data([])
+    block = _create_paragraph_block(paragraph_data)
+    render_context.block = block
 
-    assert len(context.result_blocks) == 1
+    await paragraph_renderer._process(render_context)
+
+    assert render_context.markdown_result == ""
 
 
 @pytest.mark.asyncio
-async def test_paragraph_with_numbers_should_work(
-    paragraph_parser: ParagraphParser, context: BlockParsingContext
+async def test_paragraph_with_missing_data_should_render_empty_string(
+    paragraph_renderer: ParagraphRenderer,
+    render_context: MarkdownRenderingContext,
 ) -> None:
-    context.line = "Paragraph with numbers 123 and symbols @#$"
+    block = _create_paragraph_block(None)
+    render_context.block = block
 
-    assert paragraph_parser._can_handle(context)
-    await paragraph_parser._process(context)
+    await paragraph_renderer._process(render_context)
 
-    assert len(context.result_blocks) == 1
+    assert render_context.markdown_result == ""
 
 
 @pytest.mark.asyncio
-async def test_paragraph_with_leading_whitespace_should_work(
-    paragraph_parser: ParagraphParser, context: BlockParsingContext
+async def test_paragraph_with_indent_level_should_indent_output(
+    paragraph_renderer: ParagraphRenderer,
+    render_context: MarkdownRenderingContext,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    context.line = "  Paragraph with leading spaces"
+    rich_text = [RichText.from_plain_text("Indented paragraph")]
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Indented paragraph")
 
-    assert paragraph_parser._can_handle(context)
-    await paragraph_parser._process(context)
+    paragraph_data = _create_paragraph_data(rich_text)
+    block = _create_paragraph_block(paragraph_data)
+    render_context.block = block
+    render_context.indent_level = 1
 
-    assert len(context.result_blocks) == 1
+    await paragraph_renderer._process(render_context)
+
+    # Mock indent_text adds 2 spaces
+    assert render_context.markdown_result == "  Indented paragraph"
+    render_context.indent_text.assert_called_once_with("Indented paragraph")
 
 
 @pytest.mark.asyncio
-async def test_paragraph_with_trailing_whitespace_should_work(
-    paragraph_parser: ParagraphParser, context: BlockParsingContext
+async def test_paragraph_with_children_should_render_children_with_indent(
+    paragraph_renderer: ParagraphRenderer,
+    render_context: MarkdownRenderingContext,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    context.line = "Paragraph with trailing spaces   "
+    rich_text = [RichText.from_plain_text("Parent paragraph")]
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Parent paragraph")
+    render_context.render_children_with_additional_indent = AsyncMock(return_value="    Child content")
 
-    assert paragraph_parser._can_handle(context)
-    await paragraph_parser._process(context)
+    paragraph_data = _create_paragraph_data(rich_text)
+    block = _create_paragraph_block(paragraph_data)
+    render_context.block = block
 
-    assert len(context.result_blocks) == 1
+    await paragraph_renderer._process(render_context)
+
+    assert render_context.markdown_result == "Parent paragraph\n    Child content"
+    render_context.render_children_with_additional_indent.assert_called_once_with(1)
 
 
 @pytest.mark.asyncio
-async def test_paragraph_inside_parent_context_should_not_be_handled(
-    paragraph_parser: ParagraphParser, context: BlockParsingContext
+async def test_convert_paragraph_with_valid_data_should_return_markdown(
+    paragraph_renderer: ParagraphRenderer,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    context.line = "Some paragraph text"
-    context.is_inside_parent_context = Mock(return_value=True)
+    rich_text = [RichText.from_plain_text("Test paragraph")]
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Test paragraph")
 
-    assert not paragraph_parser._can_handle(context)
+    paragraph_data = _create_paragraph_data(rich_text)
+    block = _create_paragraph_block(paragraph_data)
+
+    result = await paragraph_renderer._convert_paragraph_to_markdown(block)
+
+    assert result == "Test paragraph"
 
 
 @pytest.mark.asyncio
-async def test_paragraph_with_links_should_work(
-    paragraph_parser: ParagraphParser, context: BlockParsingContext
+async def test_convert_paragraph_without_data_should_return_none(
+    paragraph_renderer: ParagraphRenderer,
 ) -> None:
-    context.line = "Check out [this link](https://example.com) for more info"
+    block = _create_paragraph_block(None)
 
-    assert paragraph_parser._can_handle(context)
-    await paragraph_parser._process(context)
+    result = await paragraph_renderer._convert_paragraph_to_markdown(block)
 
-    assert len(context.result_blocks) == 1
-
-
-@pytest.mark.asyncio
-async def test_paragraph_with_code_inline_should_work(
-    paragraph_parser: ParagraphParser, context: BlockParsingContext
-) -> None:
-    context.line = "Use the `print()` function to output text"
-
-    assert paragraph_parser._can_handle(context)
-    await paragraph_parser._process(context)
-
-    assert len(context.result_blocks) == 1
-
-
-@pytest.mark.asyncio
-async def test_paragraph_with_multiple_markdown_elements_should_work(
-    paragraph_parser: ParagraphParser, context: BlockParsingContext
-) -> None:
-    context.line = "**Bold**, *italic*, `code`, and [link](url) all together"
-
-    assert paragraph_parser._can_handle(context)
-    await paragraph_parser._process(context)
-
-    assert len(context.result_blocks) == 1
-
-
-@pytest.mark.asyncio
-async def test_paragraph_with_only_whitespace_should_be_handled(
-    paragraph_parser: ParagraphParser, context: BlockParsingContext
-) -> None:
-    context.line = "   "
-
-    assert paragraph_parser._can_handle(context)
-    await paragraph_parser._process(context)
-
-    assert len(context.result_blocks) == 1
+    assert result is None

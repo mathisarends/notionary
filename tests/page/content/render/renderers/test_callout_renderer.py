@@ -1,3 +1,4 @@
+from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -5,7 +6,7 @@ import pytest
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, CalloutData
+from notionary.blocks.schemas import Block, CalloutBlock, CalloutData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.callout import CalloutRenderer
 from notionary.shared.models.icon_models import EmojiIcon
@@ -19,11 +20,12 @@ def _create_callout_data(rich_text: list[RichText], icon: EmojiIcon | None = Non
     return CalloutData(rich_text=rich_text, icon=icon)
 
 
-def _create_callout_block(callout_data: CalloutData | None) -> Block:
-    block = Mock(spec=Block)
-    block.type = BlockType.CALLOUT
-    block.callout = callout_data
-    return block
+def _create_callout_block(callout_data: CalloutData | None) -> CalloutBlock:
+    mock_obj = Mock(spec=Block)
+    callout_block = cast(CalloutBlock, mock_obj)
+    callout_block.type = BlockType.CALLOUT
+    callout_block.callout = callout_data
+    return callout_block
 
 
 @pytest.fixture

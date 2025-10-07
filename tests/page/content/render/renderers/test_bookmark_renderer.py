@@ -1,3 +1,4 @@
+from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -19,10 +20,21 @@ def _create_bookmark_data_with_caption(url: str, caption: list[RichText]) -> Boo
 
 
 def _create_bookmark_block(bookmark_data: BookmarkData | None) -> BookmarkBlock:
-    block = Mock(spec=BookmarkBlock)
-    block.type = BlockType.BOOKMARK
-    block.bookmark = bookmark_data
-    return block
+    mock_obj = Mock(spec=BookmarkBlock)
+    bookmark_block = cast(BookmarkBlock, mock_obj)
+    bookmark_block.type = BlockType.BOOKMARK
+    bookmark_block.bookmark = bookmark_data
+    return bookmark_block
+
+
+def _create_bookmark_block_with_url(url: str) -> BookmarkBlock:
+    bookmark_data = _create_bookmark_data(url)
+    return _create_bookmark_block(bookmark_data)
+
+
+def _create_bookmark_block_with_caption(url: str, caption: list[RichText]) -> BookmarkBlock:
+    bookmark_data = _create_bookmark_data_with_caption(url, caption)
+    return _create_bookmark_block(bookmark_data)
 
 
 @pytest.fixture
@@ -49,8 +61,7 @@ async def test_bookmark_with_url_should_render_markdown_bookmark(
     bookmark_renderer: BookmarkRenderer,
     render_context: MarkdownRenderingContext,
 ) -> None:
-    bookmark_data = _create_bookmark_data("https://example.com")
-    block = _create_bookmark_block(bookmark_data)
+    block = _create_bookmark_block_with_url("https://example.com")
     render_context.block = block
 
     await bookmark_renderer._process(render_context)
@@ -67,8 +78,7 @@ async def test_bookmark_with_caption_should_include_caption_in_markdown(
     caption_rich_text = [RichText.from_plain_text("Useful resource")]
     mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Useful resource")
 
-    bookmark_data = _create_bookmark_data_with_caption("https://example.com", caption_rich_text)
-    block = _create_bookmark_block(bookmark_data)
+    block = _create_bookmark_block_with_caption("https://example.com", caption_rich_text)
     render_context.block = block
 
     await bookmark_renderer._process(render_context)
@@ -82,8 +92,7 @@ async def test_bookmark_without_url_should_render_empty_string(
     bookmark_renderer: BookmarkRenderer,
     render_context: MarkdownRenderingContext,
 ) -> None:
-    bookmark_data = _create_bookmark_data("")
-    block = _create_bookmark_block(bookmark_data)
+    block = _create_bookmark_block_with_url("")
     render_context.block = block
 
     await bookmark_renderer._process(render_context)
@@ -108,8 +117,7 @@ async def test_bookmark_with_missing_bookmark_data_should_render_empty_string(
 async def test_extract_bookmark_url_with_valid_data_should_return_url(
     bookmark_renderer: BookmarkRenderer,
 ) -> None:
-    bookmark_data = _create_bookmark_data("https://example.com")
-    block = _create_bookmark_block(bookmark_data)
+    block = _create_bookmark_block_with_url("https://example.com")
 
     url = bookmark_renderer._extract_bookmark_url(block)
 
@@ -131,8 +139,7 @@ async def test_extract_bookmark_url_without_bookmark_data_should_return_empty_st
 async def test_extract_bookmark_url_with_empty_url_should_return_empty_string(
     bookmark_renderer: BookmarkRenderer,
 ) -> None:
-    bookmark_data = _create_bookmark_data("")
-    block = _create_bookmark_block(bookmark_data)
+    block = _create_bookmark_block_with_url("")
 
     url = bookmark_renderer._extract_bookmark_url(block)
 

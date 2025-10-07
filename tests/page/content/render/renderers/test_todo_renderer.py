@@ -1,3 +1,4 @@
+from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -5,7 +6,7 @@ import pytest
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, ToDoData
+from notionary.blocks.schemas import Block, ToDoBlock, ToDoData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.todo import TodoRenderer
 
@@ -14,11 +15,12 @@ def _create_todo_data(rich_text: list[RichText], checked: bool = False) -> ToDoD
     return ToDoData(rich_text=rich_text, checked=checked)
 
 
-def _create_todo_block(todo_data: ToDoData | None) -> Block:
-    block = Mock(spec=Block)
-    block.type = BlockType.TO_DO
-    block.to_do = todo_data
-    return block
+def _create_todo_block(todo_data: ToDoData | None) -> ToDoBlock:
+    mock_obj = Mock(spec=Block)
+    todo_block = cast(ToDoBlock, mock_obj)
+    todo_block.type = BlockType.TO_DO
+    todo_block.to_do = todo_data
+    return todo_block
 
 
 @pytest.fixture

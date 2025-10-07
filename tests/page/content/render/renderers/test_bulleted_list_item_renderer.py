@@ -1,3 +1,4 @@
+from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -5,7 +6,7 @@ import pytest
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, BulletedListItemData
+from notionary.blocks.schemas import Block, BulletedListItemBlock, BulletedListItemData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.bulleted_list import BulletedListRenderer
 
@@ -14,11 +15,12 @@ def _create_bulleted_list_data(rich_text: list[RichText]) -> BulletedListItemDat
     return BulletedListItemData(rich_text=rich_text)
 
 
-def _create_bulleted_list_block(list_data: BulletedListItemData | None) -> Block:
-    block = Mock(spec=Block)
-    block.type = BlockType.BULLETED_LIST_ITEM
-    block.bulleted_list_item = list_data
-    return block
+def _create_bulleted_list_block(list_data: BulletedListItemData | None) -> BulletedListItemBlock:
+    mock_obj = Mock(spec=Block)
+    bulleted_list_item_block = cast(BulletedListItemBlock, mock_obj)
+    bulleted_list_item_block.type = BlockType.BULLETED_LIST_ITEM
+    bulleted_list_item_block.bulleted_list_item = list_data
+    return bulleted_list_item_block
 
 
 @pytest.fixture
