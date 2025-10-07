@@ -52,33 +52,47 @@ class MarkdownToNotionConverter(LoggingMixin):
         self._setup_handler_chain()
 
     def _setup_handler_chain(self) -> None:
-        code_parser = CodeParser(self._syntax_registry, self._rich_text_converter)
-        equation_parser = EquationParser(self._syntax_registry)
-        table_parser = TableParser(self._syntax_registry, self._rich_text_converter)
-        column_parser = ColumnParser(self._syntax_registry)
-        column_list_parser = ColumnListParser(self._syntax_registry)
-        toggleable_heading_parser = ToggleableHeadingParser(self._syntax_registry, self._rich_text_converter)
-        toggle_parser = ToggleParser(self._syntax_registry, self._rich_text_converter)
+        code_parser = CodeParser(syntax_registry=self._syntax_registry, rich_text_converter=self._rich_text_converter)
+        table_parser = TableParser(syntax_registry=self._syntax_registry, rich_text_converter=self._rich_text_converter)
+        equation_parser = EquationParser(syntax_registry=self._syntax_registry)
+        column_parser = ColumnParser(syntax_registry=self._syntax_registry)
+        column_list_parser = ColumnListParser(syntax_registry=self._syntax_registry)
+        toggleable_heading_parser = ToggleableHeadingParser(
+            syntax_registry=self._syntax_registry, rich_text_converter=self._rich_text_converter
+        )
+        toggle_parser = ToggleParser(
+            syntax_registry=self._syntax_registry, rich_text_converter=self._rich_text_converter
+        )
 
-        divider_parser = DividerParser(self._syntax_registry)
-        breadcrumb_parser = BreadcrumbParser(self._syntax_registry)
-        table_of_contents_parser = TableOfContentsParser(self._syntax_registry)
-        heading_parser = HeadingParser(self._syntax_registry, self._rich_text_converter)
-        quote_parser = QuoteParser(self._syntax_registry, self._rich_text_converter)
-        callout_parser = CalloutParser(self._syntax_registry, self._rich_text_converter)
-        space_parser = SpaceParser(self._syntax_registry)
-        todo_parser = TodoParser(self._syntax_registry, self._rich_text_converter)
-        bulleted_list_parser = BulletedListParser(self._syntax_registry, self._rich_text_converter)
-        numbered_list_parser = NumberedListParser(self._syntax_registry, self._rich_text_converter)
-        bookmark_parser = BookmarkParser(self._syntax_registry)
-        embed_parser = EmbedParser(self._syntax_registry)
-        image_parser = ImageParser(self._syntax_registry)
-        video_parser = VideoParser(self._syntax_registry)
-        audio_parser = AudioParser(self._syntax_registry)
-        file_parser = FileParser(self._syntax_registry)
-        pdf_parser = PdfParser(self._syntax_registry)
-        caption_parser = CaptionParser(self._syntax_registry, self._rich_text_converter)
-        paragraph_parser = ParagraphParser(self._rich_text_converter)  # No syntax_registry - fallback for any text
+        divider_parser = DividerParser(syntax_registry=self._syntax_registry)
+        breadcrumb_parser = BreadcrumbParser(syntax_registry=self._syntax_registry)
+        table_of_contents_parser = TableOfContentsParser(syntax_registry=self._syntax_registry)
+        heading_parser = HeadingParser(
+            syntax_registry=self._syntax_registry, rich_text_converter=self._rich_text_converter
+        )
+        quote_parser = QuoteParser(syntax_registry=self._syntax_registry, rich_text_converter=self._rich_text_converter)
+        callout_parser = CalloutParser(
+            syntax_registry=self._syntax_registry, rich_text_converter=self._rich_text_converter
+        )
+        space_parser = SpaceParser(syntax_registry=self._syntax_registry)
+        todo_parser = TodoParser(syntax_registry=self._syntax_registry, rich_text_converter=self._rich_text_converter)
+        bulleted_list_parser = BulletedListParser(
+            syntax_registry=self._syntax_registry, rich_text_converter=self._rich_text_converter
+        )
+        numbered_list_parser = NumberedListParser(
+            syntax_registry=self._syntax_registry, rich_text_converter=self._rich_text_converter
+        )
+        bookmark_parser = BookmarkParser(syntax_registry=self._syntax_registry)
+        embed_parser = EmbedParser(syntax_registry=self._syntax_registry)
+        image_parser = ImageParser(syntax_registry=self._syntax_registry)
+        video_parser = VideoParser(syntax_registry=self._syntax_registry)
+        audio_parser = AudioParser(syntax_registry=self._syntax_registry)
+        file_parser = FileParser(syntax_registry=self._syntax_registry)
+        pdf_parser = PdfParser(syntax_registry=self._syntax_registry)
+        caption_parser = CaptionParser(
+            syntax_registry=self._syntax_registry, rich_text_converter=self._rich_text_converter
+        )
+        paragraph_parser = ParagraphParser(rich_text_converter=self._rich_text_converter)
 
         # Build the chain - order matters!
         # 1. Multi-line blocks first

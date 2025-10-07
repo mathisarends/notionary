@@ -5,6 +5,12 @@ import pytest
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.page.content.parser.parsers.base import BlockParsingContext
+from notionary.page.content.syntax.service import SyntaxRegistry
+
+
+@pytest.fixture
+def syntax_registry() -> SyntaxRegistry:
+    return SyntaxRegistry()
 
 
 @pytest.fixture

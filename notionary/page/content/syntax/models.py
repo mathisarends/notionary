@@ -2,30 +2,54 @@ import re
 from dataclasses import dataclass
 from enum import StrEnum
 
-from notionary.blocks.enums import BlockType
+
+class SyntaxRegistryKey(StrEnum):
+    AUDIO = "audio"
+    BOOKMARK = "bookmark"
+    IMAGE = "image"
+    VIDEO = "video"
+    FILE = "file"
+    PDF = "pdf"
+
+    # List blocks
+    BULLETED_LIST = "bulleted_list"
+    NUMBERED_LIST = "numbered_list"
+    TO_DO = "todo"
+    TO_DO_DONE = "todo_done"
+
+    TOGGLE = "toggle"
+    TOGGLEABLE_HEADING = "toggleable_heading"
+    CALLOUT = "callout"
+    QUOTE = "quote"
+    CODE = "code"
+
+    COLUMN_LIST = "column_list"
+    COLUMN = "column"
+
+    # Heading blocks
+    HEADING_1 = "heading_1"
+    HEADING_2 = "heading_2"
+    HEADING_3 = "heading_3"
+    HEADING = "heading"  # Shared pattern for regular headings
+
+    DIVIDER = "divider"
+    BREADCRUMB = "breadcrumb"
+    TABLE_OF_CONTENTS = "table_of_contents"
+    EQUATION = "equation"
+    EMBED = "embed"
+    TABLE = "table"
+    TABLE_ROW = "table_row"
+
+    CAPTION = "caption"
+    SPACE = "space"
 
 
-class AdditionalSyntaxRegistryKey(StrEnum):
-    TO_DO_DONE_KEY = "todo_done"
-    TOGGLEABLE_HEADING_KEY = "toggleable_heading"
-    CAPTION_KEY = "caption"
-    SPACE_KEY = "space"
-    HEADING_KEY = "heading"
-
-
-# Special keys for syntax definitions that don't map 1:1 to BlockTypes
-# otherwise the BlockType is a good fit
-type RegistryKey = BlockType | AdditionalSyntaxRegistryKey
-
-
-# TODO: Verschiedene Modelle für multi oder inline keys (some fields mutally exclude each others) (some fileds actually dont need a name | im not sure wheter we should definie it here at all)
 @dataclass(frozen=True)
 class SyntaxDefinition:
     """
     Defines the syntax pattern for a block type.
 
     Attributes:
-        name: The block type this syntax defines
         start_delimiter: The opening delimiter (e.g., "```", "+++", ">")
         end_delimiter: The optional closing delimiter (empty string if none)
         regex_pattern: The compiled regex pattern to match this syntax
@@ -34,7 +58,6 @@ class SyntaxDefinition:
         is_inline: Whether this is an inline syntax (like [audio](url))
     """
 
-    name: BlockType
     start_delimiter: str
     end_delimiter: str
     regex_pattern: re.Pattern

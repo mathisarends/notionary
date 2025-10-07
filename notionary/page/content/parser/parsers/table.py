@@ -8,13 +8,11 @@ from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class TableParser(LineParser):
-    def __init__(
-        self, syntax_registry: SyntaxRegistry, markdown_rich_text_converter: MarkdownRichTextConverter
-    ) -> None:
+    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_table_syntax()
         self._separator_syntax = syntax_registry.get_table_row_syntax()
-        self.markdown_rich_text_converter = markdown_rich_text_converter
+        self.rich_text_converter = rich_text_converter
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
@@ -128,7 +126,7 @@ class TableParser(LineParser):
         rich_text_cells = []
 
         for cell in cells:
-            rich_text = await self.markdown_rich_text_converter.to_rich_text(cell)
+            rich_text = await self.rich_text_converter.to_rich_text(cell)
             rich_text_cells.append(rich_text)
 
         return rich_text_cells

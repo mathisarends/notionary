@@ -1,4 +1,3 @@
-import re
 from typing import override
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
@@ -13,14 +12,13 @@ from notionary.shared.models.icon_models import EmojiIcon
 
 
 class CalloutParser(LineParser):
-    CALLOUT_END_PATTERN = r"^:::\s*$"
     DEFAULT_EMOJI = "💡"
 
     def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_callout_syntax()
         self._start_pattern = self._syntax.regex_pattern
-        self._end_pattern = re.compile(self.CALLOUT_END_PATTERN)
+        self._end_pattern = self._syntax.end_regex_pattern
         self._rich_text_converter = rich_text_converter
 
     @override
