@@ -1,14 +1,15 @@
+from typing import override
+
 from notionary.blocks.markdown.nodes.base import MarkdownNode
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class QuoteMarkdownNode(MarkdownNode):
-    """
-    Enhanced Quote node with Pydantic integration.
-    Programmatic interface for creating Notion-style quote blocks.
-    Example: > This is a quote
-    """
+    def __init__(self, text: str, syntax_registry: SyntaxRegistry | None = None) -> None:
+        super().__init__(syntax_registry=syntax_registry)
+        self.text = text
 
-    text: str
-
+    @override
     def to_markdown(self) -> str:
-        return f"> {self.text}"
+        quote_syntax = self._syntax_registry.get_quote_syntax()
+        return f"{quote_syntax.start_delimiter} {self.text}"

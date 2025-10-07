@@ -1,26 +1,12 @@
 from abc import ABC, abstractmethod
 
-from pydantic import BaseModel
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
-class MarkdownNode(BaseModel, ABC):
-    """
-    Enhanced base class for all Markdown nodes with Pydantic integration.
-
-    This class serves dual purposes:
-    1. Runtime representation for markdown generation
-    2. Serializable model for structured output (LLM/API)
-
-    The 'type' field acts as a discriminator for Union types and processing.
-    """
+class MarkdownNode(ABC):
+    def __init__(self, syntax_registry: SyntaxRegistry | None = None) -> None:
+        self._syntax_registry = syntax_registry or SyntaxRegistry()
 
     @abstractmethod
     def to_markdown(self) -> str:
-        """
-        Returns the Markdown representation of the block.
-        Must be implemented by subclasses.
-        """
         pass
-
-    def __str__(self):
-        return self.to_markdown()

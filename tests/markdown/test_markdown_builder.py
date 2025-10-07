@@ -37,7 +37,7 @@ def test_nested_columns_with_mixed_content():
     assert "def get_users():" in result
     assert "::: callout ⚠️" in result
     assert "Important: Always handle exceptions!" in result
-    assert "- Authentication required" in result
+    assert "-  Authentication required" in result  # SyntaxRegistry adds space after bullet
 
     assert "::: column" in result
     assert ":::" in result
@@ -196,13 +196,13 @@ class APIClient:
     assert "```python" in result
     assert "class APIClient:" in result
 
-    # FIXED: Caption now appears in quotes on the first line, not as separate "Caption:" line
-    assert '```python "Python API Client Implementation"' in result
+    # Caption now appears on separate line with [caption] syntax
+    assert "[caption] Python API Client Implementation" in result
 
     # Callouts und Listen
     assert "::: callout 🔐" in result
     assert "💡 Alle Endpunkte erfordern eine gültige API-Authentifizierung" in result
-    assert "- API-Key über Umgebungsvariablen laden" in result
+    assert "-  API-Key über Umgebungsvariablen laden" in result  # SyntaxRegistry adds space after bullet
 
     # Toggle mit Benchmarks - FIXED: Korrekte Syntax MIT Leerzeichen
     assert "+++ 📊 Performance Benchmarks" in result

@@ -1,20 +1,18 @@
+from typing import override
+
 from notionary.blocks.markdown.nodes.base import MarkdownNode
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class BulletedListMarkdownNode(MarkdownNode):
-    """
-    Enhanced BulletedList node with Pydantic integration.
-    Programmatic interface for creating Markdown bulleted list items.
-    Example:
-    - First item
-    - Second item
-    - Third item
-    """
+    def __init__(self, texts: list[str], syntax_registry: SyntaxRegistry | None = None) -> None:
+        super().__init__(syntax_registry=syntax_registry)
+        self.texts = texts
 
-    texts: list[str]
-
+    @override
     def to_markdown(self) -> str:
+        bulleted_list_syntax = self._syntax_registry.get_bulleted_list_syntax()
         result = []
         for text in self.texts:
-            result.append(f"- {text}")
+            result.append(f"{bulleted_list_syntax.start_delimiter} {text}")
         return "\n".join(result)

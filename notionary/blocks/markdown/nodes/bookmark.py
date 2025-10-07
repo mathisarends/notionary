@@ -1,26 +1,25 @@
+from typing import override
+
 from notionary.blocks.markdown.nodes.base import MarkdownNode
-from notionary.blocks.markdown.nodes.mixins.caption_markdown_node_mixin import CaptionMarkdownNodeMixin
+from notionary.blocks.markdown.nodes.mixins import CaptionMarkdownNodeMixin
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class BookmarkMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
-    """
-    Enhanced Bookmark node with Pydantic integration.
-    Programmatic interface for creating Notion-style bookmark Markdown blocks.
-    """
+    def __init__(
+        self,
+        url: str,
+        title: str | None = None,
+        caption: str | None = None,
+        syntax_registry: SyntaxRegistry | None = None,
+    ) -> None:
+        super().__init__(syntax_registry=syntax_registry)
+        self.url = url
+        self.title = title
+        self.caption = caption
 
-    url: str
-    title: str | None = None
-    caption: str | None = None
-
+    @override
     def to_markdown(self) -> str:
-        """Return the Markdown representation.
-
-        Examples:
-        - [bookmark](https://example.com)
-        - [bookmark](https://example.com)(caption:Some caption)
-        """
-        # Use simple bookmark syntax like BookmarkElement
-        base_markdown = f"[bookmark]({self.url})"
-
-        # Append caption using mixin helper
-        return self.append_caption_to_markdown(base_markdown, self.caption)
+        bookmark_syntax = self._syntax_registry.get_bookmark_syntax()
+        base_markdown = f"{bookmark_syntax.start_delimiter}{self.url}{bookmark_syntax.end_delimiter}"
+        return self._append_caption_to_markdown(base_markdown, self.caption)

@@ -1,30 +1,35 @@
-from pydantic import Field
+from typing import override
 
 from notionary.blocks.markdown.nodes.base import MarkdownNode
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class ToggleableHeadingMarkdownNode(MarkdownNode):
-    """
-    Example syntax for a level-2 toggleable heading:
-        +++## Advanced Section
-        some content
-        +++
-    """
+    def __init__(
+        self,
+        text: str,
+        level: int,
+        children: list[MarkdownNode] | None = None,
+        syntax_registry: SyntaxRegistry | None = None,
+    ):
+        super().__init__(syntax_registry=syntax_registry)
+        self.text = text
+        self.level = max(1, min(3, level))
+        self.children = children or []
 
-    text: str
-    level: int = Field(ge=1, le=3)
-    children: list[MarkdownNode] = Field(default_factory=list)
-
+    @override
     def to_markdown(self) -> str:
-        prefix = "+++" + ("#" * self.level)
+        toggle_syntax = self._syntax_registry.get_toggle_syntax()
+        heading_syntax = self._syntax_registry.get_heading_syntax()
+        prefix = toggle_syntax.start_delimiter + (heading_syntax.start_delimiter * self.level)
         result = f"{prefix} {self.text}"
 
         if not self.children:
-            result += "\n+++"
+            result += f"\n{toggle_syntax.end_delimiter}"
             return result
 
         # Convert children to markdown
         content_parts = [child.to_markdown() for child in self.children]
         content_text = "\n\n".join(content_parts)
 
-        return result + "\n" + content_text + "\n+++"
+        return result + "\n" + content_text + f"\n{toggle_syntax.end_delimiter}"

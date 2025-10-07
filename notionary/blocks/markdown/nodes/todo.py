@@ -1,22 +1,22 @@
-from pydantic import Field
+from typing import override
 
 from notionary.blocks.markdown.nodes.base import MarkdownNode
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class TodoMarkdownNode(MarkdownNode):
-    """
-    Enhanced Todo node with Pydantic integration.
-    Programmatic interface for creating Markdown todo items (checkboxes).
-    Supports checked and unchecked states.
-    Example: - [ ] Task, - [x] Done
-    """
+    def __init__(
+        self, text: str, checked: bool = False, marker: str = "-", syntax_registry: SyntaxRegistry | None = None
+    ):
+        super().__init__(syntax_registry=syntax_registry)
+        self.text = text
+        self.checked = checked
+        self.marker = marker
 
-    text: str
-    checked: bool = False
-    marker: str = Field(default="-")
-
+    @override
     def to_markdown(self) -> str:
-        # Validate marker in to_markdown to ensure it's valid
+        # Validate marker to ensure it's valid
         valid_marker = self.marker if self.marker in {"-", "*", "+"} else "-"
-        checkbox = "[x]" if self.checked else "[ ]"
-        return f"{valid_marker} {checkbox} {self.text}"
+        todo_syntax = self._syntax_registry.get_todo_syntax()
+        checkbox_state = todo_syntax.end_delimiter if self.checked else todo_syntax.start_delimiter
+        return f"{valid_marker} {checkbox_state} {self.text}"

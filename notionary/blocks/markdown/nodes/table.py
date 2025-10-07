@@ -1,42 +1,45 @@
-from pydantic import field_validator
+from typing import override
 
 from notionary.blocks.markdown.nodes.base import MarkdownNode
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class TableMarkdownNode(MarkdownNode):
-    """
-    Enhanced Table node with Pydantic integration.
-    Programmatic interface for creating Markdown tables.
-    Example:
-        | Header 1 | Header 2 | Header 3 |
-        | -------- | -------- | -------- |
-        | Cell 1   | Cell 2   | Cell 3   |
-        | Cell 4   | Cell 5   | Cell 6   |
-    """
+    def __init__(
+        self, headers: list[str], rows: list[list[str]], syntax_registry: SyntaxRegistry | None = None
+    ) -> None:
+        super().__init__(syntax_registry=syntax_registry)
+        self._validate_input(headers, rows)
+        self.headers = headers
+        self.rows = rows
 
-    headers: list[str]
-    rows: list[list[str]]
-
-    @field_validator("headers")
-    @classmethod
-    def validate_headers(cls, v):
-        if not v:
+    def _validate_input(self, headers: list[str], rows: list[list[str]]) -> None:
+        if not headers:
             raise ValueError("headers must not be empty")
-        return v
-
-    @field_validator("rows")
-    @classmethod
-    def validate_rows(cls, v):
-        if not all(isinstance(row, list) for row in v):
+        if not all(isinstance(row, list) for row in rows):
             raise ValueError("rows must be a list of lists")
-        return v
 
+    @override
     def to_markdown(self) -> str:
-        col_count = len(self.headers)
-        # Header row
-        header = "| " + " | ".join(self.headers) + " |"
-        # Separator row
-        separator = "| " + " | ".join(["--------"] * col_count) + " |"
-        # Data rows
-        data_rows = ["| " + " | ".join(row) + " |" for row in self.rows]
+        header = self._build_header_row()
+        separator = self._build_separator_row()
+        data_rows = self._build_data_rows()
         return "\n".join([header, separator, *data_rows])
+
+    def _build_header_row(self) -> str:
+        return self._format_row(self.headers)
+
+    def _format_row(self, cells: list[str]) -> str:
+        table_syntax = self._syntax_registry.get_table_syntax()
+        delimiter = table_syntax.start_delimiter
+        joined_cells = f" {delimiter} ".join(cells)
+        return f"{delimiter} {joined_cells} {delimiter}"
+
+    def _build_separator_row(self) -> str:
+        table_syntax = self._syntax_registry.get_table_syntax()
+        col_count = len(self.headers)
+        separators = [table_syntax.end_delimiter] * col_count
+        return self._format_row(separators)
+
+    def _build_data_rows(self) -> list[str]:
+        return [self._format_row(row) for row in self.rows]

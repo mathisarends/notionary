@@ -1,23 +1,19 @@
+from typing import override
+
 from notionary.blocks.markdown.nodes.base import MarkdownNode
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class EquationMarkdownNode(MarkdownNode):
-    """
-    Enhanced Equation node with Pydantic integration.
-    Programmatic interface for creating Markdown equation blocks.
-    Uses standard Markdown equation syntax with double dollar signs.
+    def __init__(self, expression: str, syntax_registry: SyntaxRegistry | None = None) -> None:
+        super().__init__(syntax_registry=syntax_registry)
+        self.expression = expression
 
-    Examples:
-    $$E = mc^2$$
-    $$\\frac{a}{b} + \\sqrt{c}$$
-    $$\\int_0^\\infty e^{-x} dx = 1$$
-    """
-
-    expression: str
-
+    @override
     def to_markdown(self) -> str:
         expr = self.expression.strip()
+        equation_syntax = self._syntax_registry.get_equation_syntax()
         if not expr:
-            return "$$$$"
+            return f"{equation_syntax.start_delimiter}{equation_syntax.end_delimiter}"
 
-        return f"$${expr}$$"
+        return f"{equation_syntax.start_delimiter}{expr}{equation_syntax.end_delimiter}"

@@ -1,34 +1,32 @@
-from pydantic import Field
+from typing import override
 
 from notionary.blocks.markdown.nodes.base import MarkdownNode
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class CalloutMarkdownNode(MarkdownNode):
-    """
-    Enhanced Callout node with Pydantic integration.
-    Programmatic interface for creating Notion-style callout Markdown blocks.
-    Example:
-        ::: callout
-        This is important
-        :::
+    def __init__(
+        self,
+        text: str,
+        emoji: str | None = None,
+        children: list[MarkdownNode] | None = None,
+        syntax_registry: SyntaxRegistry | None = None,
+    ):
+        super().__init__(syntax_registry=syntax_registry)
+        self.text = text
+        self.emoji = emoji
+        self.children = children or []
 
-        ::: callout ⚠️
-        This is important with emoji
-        :::
-    """
-
-    text: str
-    emoji: str | None = None
-    children: list[MarkdownNode] = Field(default_factory=list)
-
+    @override
     def to_markdown(self) -> str:
-        start_tag = f"::: callout {self.emoji}" if self.emoji else "::: callout"
+        callout_syntax = self._syntax_registry.get_callout_syntax()
+        start_tag = f"{callout_syntax.start_delimiter} {self.emoji}" if self.emoji else callout_syntax.start_delimiter
 
         if not self.children:
-            return f"{start_tag}\n{self.text}\n:::"
+            return f"{start_tag}\n{self.text}\n{callout_syntax.end_delimiter}"
 
         # Convert children to markdown
         content_parts = [self.text] + [child.to_markdown() for child in self.children]
         content_text = "\n\n".join(content_parts)
 
-        return f"{start_tag}\n{content_text}\n:::"
+        return f"{start_tag}\n{content_text}\n{callout_syntax.end_delimiter}"

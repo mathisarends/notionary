@@ -1,14 +1,14 @@
+from typing import override
+
 from notionary.blocks.markdown.nodes.base import MarkdownNode
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class ParagraphMarkdownNode(MarkdownNode):
-    """
-    Enhanced Paragraph node with Pydantic integration.
-    Programmatic interface for creating Markdown paragraphs.
-    Paragraphs are standard text without special block formatting.
-    """
+    def __init__(self, text: str, syntax_registry: SyntaxRegistry | None = None):
+        super().__init__(syntax_registry=syntax_registry)
+        self.text = text
 
-    text: str
-
+    @override
     def to_markdown(self) -> str:
         return self.text

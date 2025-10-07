@@ -1,17 +1,16 @@
-from pydantic import Field
+from typing import override
 
 from notionary.blocks.markdown.nodes.base import MarkdownNode
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class HeadingMarkdownNode(MarkdownNode):
-    """
-    Enhanced Heading node with Pydantic integration.
-    Programmatic interface for creating Markdown headings (H1-H3).
-    Example: # Heading 1, ## Heading 2, ### Heading 3
-    """
+    def __init__(self, text: str, level: int = 1, syntax_registry: SyntaxRegistry | None = None) -> None:
+        super().__init__(syntax_registry=syntax_registry)
+        self.text = text
+        self.level = max(1, min(3, level))
 
-    text: str
-    level: int = Field(default=1, ge=1, le=3)
-
+    @override
     def to_markdown(self) -> str:
-        return f"{'#' * self.level} {self.text}"
+        heading_syntax = self._syntax_registry.get_heading_syntax()
+        return f"{heading_syntax.start_delimiter * self.level} {self.text}"

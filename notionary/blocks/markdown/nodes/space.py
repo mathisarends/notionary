@@ -1,11 +1,14 @@
+from typing import override
+
 from notionary.blocks.markdown.nodes.base import MarkdownNode
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class SpaceMarkdownNode(MarkdownNode):
-    """
-    Enhanced Space node with Pydantic integration.
-    Programmatic interface for creating Markdown space blocks using non-breaking space.
-    """
+    def __init__(self, syntax_registry: SyntaxRegistry | None = None) -> None:
+        super().__init__(syntax_registry=syntax_registry)
 
+    @override
     def to_markdown(self) -> str:
-        return "[SPACE]"
+        space_syntax = self._syntax_registry.get_space_syntax()
+        return space_syntax.start_delimiter

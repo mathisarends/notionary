@@ -1,22 +1,23 @@
+from typing import override
+
 from notionary.blocks.markdown.nodes.base import MarkdownNode
-from notionary.blocks.markdown.nodes.mixins.caption_markdown_node_mixin import CaptionMarkdownNodeMixin
+from notionary.blocks.markdown.nodes.mixins.caption import CaptionMarkdownNodeMixin
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class FileMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
-    """
-    Enhanced File node with Pydantic integration.
-    Programmatic interface for creating Notion-style Markdown file embeds.
-    """
+    def __init__(
+        self,
+        url: str,
+        caption: str | None = None,
+        syntax_registry: SyntaxRegistry | None = None,
+    ) -> None:
+        super().__init__(syntax_registry=syntax_registry)
+        self.url = url
+        self.caption = caption
 
-    url: str
-    caption: str | None = None
-
+    @override
     def to_markdown(self) -> str:
-        """Return the Markdown representation.
-
-        Examples:
-        - [file](https://example.com/document.pdf)
-        - [file](https://example.com/document.pdf)(caption:User manual)
-        """
-        base_markdown = f"[file]({self.url})"
-        return self.append_caption_to_markdown(base_markdown, self.caption)
+        file_syntax = self._syntax_registry.get_file_syntax()
+        base_markdown = f"{file_syntax.start_delimiter}{self.url}{file_syntax.end_delimiter}"
+        return self._append_caption_to_markdown(base_markdown, self.caption)
