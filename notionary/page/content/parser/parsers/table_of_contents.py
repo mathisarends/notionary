@@ -1,4 +1,3 @@
-import re
 from typing import override
 
 from notionary.blocks.schemas import BlockColor, CreateTableOfContentsBlock, TableOfContentsData
@@ -6,14 +5,13 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class TableOfContentsParser(LineParser):
-    TOC_PATTERN = r"^\[toc\]$"
-
-    def __init__(self) -> None:
-        super().__init__()
-        self._pattern = re.compile(self.TOC_PATTERN, re.IGNORECASE)
+    def __init__(self, syntax_registry: SyntaxRegistry) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_table_of_contents_syntax()
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
@@ -27,7 +25,7 @@ class TableOfContentsParser(LineParser):
         context.result_blocks.append(block)
 
     def _is_toc(self, line: str) -> bool:
-        return self._pattern.match(line) is not None
+        return self._syntax.regex_pattern.match(line) is not None
 
     def _create_toc_block(self) -> CreateTableOfContentsBlock:
         toc_data = TableOfContentsData(color=BlockColor.DEFAULT)

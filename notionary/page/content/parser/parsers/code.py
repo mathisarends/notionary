@@ -5,19 +5,18 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRich
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.schemas import CodeData, CodeLanguage, CreateCodeBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class CodeParser(LineParser):
-    CODE_FENCE = "```"
-    CODE_START_PATTERN = r"^```(\w*)\s*$"
-    CODE_END_PATTERN = r"^```\s*$"
     DEFAULT_LANGUAGE = CodeLanguage.PLAIN_TEXT
 
-    def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
-        super().__init__()
+    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_code_syntax()
         self._rich_text_converter = rich_text_converter
-        self._code_start_pattern = re.compile(self.CODE_START_PATTERN)
-        self._code_end_pattern = re.compile(self.CODE_END_PATTERN)
+        self._code_start_pattern = self._syntax.regex_pattern
+        self._code_end_pattern = self._syntax.end_regex_pattern or re.compile(r"^```\s*$")
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:

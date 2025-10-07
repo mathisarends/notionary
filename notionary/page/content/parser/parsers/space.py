@@ -8,7 +8,15 @@ from notionary.page.content.parser.parsers.base import (
 
 
 class SpaceParser(LineParser):
+    """
+    Parser for [space] markers that create empty paragraph blocks.
+    Does not use SyntaxRegistry as it's just a simple string comparison.
+    """
+
     SPACE_MARKER = "[space]"
+
+    def __init__(self) -> None:
+        super().__init__()
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:

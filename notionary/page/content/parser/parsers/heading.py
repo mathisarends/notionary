@@ -17,6 +17,12 @@ from notionary.page.content.parser.parsers.base import (
 
 
 class HeadingParser(LineParser):
+    """
+    Parser for regular (non-toggleable) headings.
+    Uses a shared pattern for all heading levels (#, ##, ###).
+    Does not use SyntaxRegistry as it handles multiple heading levels with one pattern.
+    """
+
     HEADING_PATTERN = r"^(#{1,3})[ \t]+(.+)$"
 
     def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:

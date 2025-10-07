@@ -1,4 +1,3 @@
-import re
 from typing import override
 
 from notionary.blocks.schemas import BreadcrumbData, CreateBreadcrumbBlock
@@ -6,14 +5,13 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class BreadcrumbParser(LineParser):
-    BREADCRUMB_PATTERN = r"^\[breadcrumb\]\s*$"
-
-    def __init__(self) -> None:
-        super().__init__()
-        self._pattern = re.compile(self.BREADCRUMB_PATTERN, re.IGNORECASE)
+    def __init__(self, syntax_registry: SyntaxRegistry) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_breadcrumb_syntax()
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
@@ -28,7 +26,7 @@ class BreadcrumbParser(LineParser):
             context.result_blocks.append(block)
 
     def _is_breadcrumb(self, line: str) -> bool:
-        return self._pattern.match(line) is not None
+        return self._syntax.regex_pattern.match(line) is not None
 
     def _create_breadcrumb_block(self) -> CreateBreadcrumbBlock:
         breadcrumb_data = BreadcrumbData()

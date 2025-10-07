@@ -11,6 +11,11 @@ from notionary.page.content.parser.parsers.base import (
 
 
 class ParagraphParser(LineParser):
+    """
+    Fallback parser for plain text lines that don't match any other block type.
+    Does not use SyntaxRegistry as it handles any non-empty line.
+    """
+
     def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
         super().__init__()
         self._rich_text_converter = rich_text_converter

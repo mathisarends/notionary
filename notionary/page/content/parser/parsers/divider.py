@@ -1,4 +1,3 @@
-import re
 from typing import override
 
 from notionary.blocks.schemas import CreateDividerBlock, DividerData
@@ -6,14 +5,13 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class DividerParser(LineParser):
-    DIVIDER_PATTERN = r"^\s*-{3,}\s*$"
-
-    def __init__(self) -> None:
-        super().__init__()
-        self._pattern = re.compile(self.DIVIDER_PATTERN)
+    def __init__(self, syntax_registry: SyntaxRegistry) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_divider_syntax()
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
@@ -28,7 +26,7 @@ class DividerParser(LineParser):
             context.result_blocks.append(block)
 
     def _is_divider(self, line: str) -> bool:
-        return self._pattern.match(line) is not None
+        return self._syntax.regex_pattern.match(line) is not None
 
     def _create_divider_block(self) -> CreateDividerBlock:
         divider_data = DividerData()

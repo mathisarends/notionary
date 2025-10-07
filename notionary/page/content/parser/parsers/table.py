@@ -1,21 +1,20 @@
-import re
 from typing import override
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.schemas import CreateTableBlock, CreateTableData, CreateTableRowBlock, TableRowData
 from notionary.page.content.parser.parsers import BlockParsingContext, LineParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class TableParser(LineParser):
-    TABLE_ROW_PATTERN = r"^\s*\|(.+)\|\s*$"
-    SEPARATOR_PATTERN = r"^\s*\|([\s\-:|]+)\|\s*$"
-
-    def __init__(self, markdown_rich_text_converter: MarkdownRichTextConverter) -> None:
-        super().__init__()
+    def __init__(
+        self, syntax_registry: SyntaxRegistry, markdown_rich_text_converter: MarkdownRichTextConverter
+    ) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_table_syntax()
+        self._separator_syntax = syntax_registry.get_table_row_syntax()
         self.markdown_rich_text_converter = markdown_rich_text_converter
-        self._table_row_pattern = re.compile(self.TABLE_ROW_PATTERN)
-        self._separator_pattern = re.compile(self.SEPARATOR_PATTERN)
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
@@ -31,7 +30,7 @@ class TableParser(LineParser):
         await self._process_complete_table(context)
 
     def _is_table_start(self, context: BlockParsingContext) -> bool:
-        return self._table_row_pattern.match(context.line) is not None
+        return self._syntax.regex_pattern.match(context.line) is not None
 
     async def _process_complete_table(self, context: BlockParsingContext) -> None:
         table_lines = [context.line]
@@ -65,7 +64,7 @@ class TableParser(LineParser):
         return lines_consumed
 
     def _is_table_line(self, line: str) -> bool:
-        return self._table_row_pattern.match(line) or self._separator_pattern.match(line)
+        return self._syntax.regex_pattern.match(line) or self._separator_syntax.regex_pattern.match(line)
 
     async def _create_table_block(self, table_lines: list[str]) -> CreateTableBlock | None:
         if not table_lines:
@@ -92,7 +91,7 @@ class TableParser(LineParser):
     def _find_first_table_row(self, table_lines: list[str]) -> str | None:
         for line in table_lines:
             line_stripped = line.strip()
-            if line_stripped and self._table_row_pattern.match(line_stripped):
+            if line_stripped and self._syntax.regex_pattern.match(line_stripped):
                 return line_stripped
         return None
 
@@ -110,14 +109,14 @@ class TableParser(LineParser):
                 has_separator = True
                 continue
 
-            if self._table_row_pattern.match(line_stripped):
+            if self._syntax.regex_pattern.match(line_stripped):
                 table_row = await self._create_table_row(line_stripped)
                 table_rows.append(table_row)
 
         return table_rows, has_separator
 
     def _is_separator_line(self, line: str) -> bool:
-        return self._separator_pattern.match(line) is not None
+        return self._separator_syntax.regex_pattern.match(line) is not None
 
     async def _create_table_row(self, line: str) -> CreateTableRowBlock:
         cells = self._parse_table_row(line)

@@ -1,6 +1,5 @@
 """Parser for file blocks."""
 
-import re
 from typing import override
 
 from notionary.blocks.schemas import (
@@ -10,16 +9,19 @@ from notionary.blocks.schemas import (
     FileType,
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class FileParser(LineParser):
-    FILE_PATTERN = re.compile(r"\[file\]\(([^)]+)\)")
+    def __init__(self, syntax_registry: SyntaxRegistry) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_file_syntax()
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
         if context.is_inside_parent_context():
             return False
-        return self.FILE_PATTERN.search(context.line) is not None
+        return self._syntax.regex_pattern.search(context.line) is not None
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
@@ -36,5 +38,5 @@ class FileParser(LineParser):
         context.result_blocks.append(block)
 
     def _extract_url(self, line: str) -> str | None:
-        match = self.FILE_PATTERN.search(line)
+        match = self._syntax.regex_pattern.search(line)
         return match.group(1).strip() if match else None

@@ -1,4 +1,3 @@
-import re
 from typing import override
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
@@ -17,21 +16,18 @@ from notionary.page.content.parser.parsers import (
     LineParser,
     ParentBlockContext,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class ToggleableHeadingParser(LineParser):
-    HEADING_START_PATTERN = r"^[+]{3}\s*(?P<level>#{1,3})(?!#)\s*(.+)$"
-    HEADING_END_PATTERN = r"^[+]{3}\s*$"
-
     MIN_HEADING_LEVEL = 1
     MAX_HEADING_LEVEL = 3
 
     HEADING_BLOCK_TYPES = (CreateHeading1Block, CreateHeading2Block, CreateHeading3Block)
 
-    def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
-        super().__init__()
-        self._start_pattern = re.compile(self.HEADING_START_PATTERN, re.IGNORECASE)
-        self._end_pattern = re.compile(self.HEADING_END_PATTERN)
+    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_toggleable_heading_syntax()
         self._rich_text_converter = rich_text_converter
 
     @override
@@ -48,10 +44,10 @@ class ToggleableHeadingParser(LineParser):
             await self._add_heading_content(context)
 
     def _is_heading_start(self, context: BlockParsingContext) -> bool:
-        return self._start_pattern.match(context.line) is not None
+        return self._syntax.regex_pattern.match(context.line) is not None
 
     def _is_heading_end(self, context: BlockParsingContext) -> bool:
-        if not self._end_pattern.match(context.line):
+        if not self._syntax.end_regex_pattern.match(context.line):
             return False
         return self._has_heading_on_stack(context)
 
@@ -59,7 +55,9 @@ class ToggleableHeadingParser(LineParser):
         if not self._has_heading_on_stack(context):
             return False
 
-        return not (self._start_pattern.match(context.line) or self._end_pattern.match(context.line))
+        return not (
+            self._syntax.regex_pattern.match(context.line) or self._syntax.end_regex_pattern.match(context.line)
+        )
 
     def _has_heading_on_stack(self, context: BlockParsingContext) -> bool:
         if not context.parent_stack:
@@ -79,7 +77,7 @@ class ToggleableHeadingParser(LineParser):
         context.parent_stack.append(parent_context)
 
     async def _create_heading_block(self, line: str) -> CreateHeadingBlock | None:
-        match = self._start_pattern.match(line)
+        match = self._syntax.regex_pattern.match(line)
         if not match:
             return None
 

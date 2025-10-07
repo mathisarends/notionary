@@ -14,6 +14,7 @@ class SyntaxDefinition:
         start_delimiter: The opening delimiter (e.g., "```", "+++", ">")
         end_delimiter: The optional closing delimiter (empty string if none)
         regex_pattern: The compiled regex pattern to match this syntax
+        end_regex_pattern: Optional compiled regex pattern for end delimiter
         supports_nesting: Whether this block can contain child blocks
         is_inline: Whether this is an inline syntax (like [audio](url))
     """
@@ -22,14 +23,19 @@ class SyntaxDefinition:
     start_delimiter: str
     end_delimiter: str
     regex_pattern: re.Pattern
+    end_regex_pattern: re.Pattern | None = None
     supports_nesting: bool = False
     is_inline: bool = False
 
 
 # TODO: Maybe make this a singleton (because this object is kinda expensive)
 class SyntaxRegistry:
+    # Special keys for syntax definitions that don't map 1:1 to BlockTypes
+    _TODO_DONE_KEY = "todo_done"
+    _TOGGLEABLE_HEADING_KEY = "toggleable_heading"
+
     def __init__(self) -> None:
-        self._definitions: dict[BlockType, SyntaxDefinition] = {}
+        self._definitions: dict[BlockType | str, SyntaxDefinition] = {}
         self._register_defaults()
 
     def get_audio_syntax(self) -> SyntaxDefinition:
@@ -68,23 +74,11 @@ class SyntaxRegistry:
     def get_file_syntax(self) -> SyntaxDefinition:
         return self._definitions[BlockType.FILE]
 
-    def get_heading_1_syntax(self) -> SyntaxDefinition:
-        return self._definitions[BlockType.HEADING_1]
-
-    def get_heading_2_syntax(self) -> SyntaxDefinition:
-        return self._definitions[BlockType.HEADING_2]
-
-    def get_heading_3_syntax(self) -> SyntaxDefinition:
-        return self._definitions[BlockType.HEADING_3]
-
     def get_image_syntax(self) -> SyntaxDefinition:
         return self._definitions[BlockType.IMAGE]
 
     def get_numbered_list_syntax(self) -> SyntaxDefinition:
         return self._definitions[BlockType.NUMBERED_LIST_ITEM]
-
-    def get_paragraph_syntax(self) -> SyntaxDefinition:
-        return self._definitions[BlockType.PARAGRAPH]
 
     def get_pdf_syntax(self) -> SyntaxDefinition:
         return self._definitions[BlockType.PDF]
@@ -95,17 +89,26 @@ class SyntaxRegistry:
     def get_table_syntax(self) -> SyntaxDefinition:
         return self._definitions[BlockType.TABLE]
 
+    def get_table_row_syntax(self) -> SyntaxDefinition:
+        return self._definitions[BlockType.TABLE_ROW]
+
     def get_table_of_contents_syntax(self) -> SyntaxDefinition:
         return self._definitions[BlockType.TABLE_OF_CONTENTS]
 
     def get_todo_syntax(self) -> SyntaxDefinition:
+        """Returns syntax for unchecked todos: - [ ] item"""
         return self._definitions[BlockType.TO_DO]
+
+    def get_todo_done_syntax(self) -> SyntaxDefinition:
+        """Returns syntax for checked todos: - [x] item"""
+        return self._definitions[self._TODO_DONE_KEY]
 
     def get_toggle_syntax(self) -> SyntaxDefinition:
         return self._definitions[BlockType.TOGGLE]
 
     def get_toggleable_heading_syntax(self) -> SyntaxDefinition:
-        return self._definitions[BlockType.TOGGLE]  # Toggleable headings reuse TOGGLE syntax
+        """Returns syntax for toggleable headings: +++ # Title"""
+        return self._definitions[self._TOGGLEABLE_HEADING_KEY]
 
     def get_video_syntax(self) -> SyntaxDefinition:
         return self._definitions[BlockType.VIDEO]
@@ -123,9 +126,11 @@ class SyntaxRegistry:
         self._register_bulleted_list_syntax()
         self._register_numbered_list_syntax()
         self._register_todo_syntax()
+        self._register_todo_done_syntax()  # Separate syntax for checked todos
 
         # Container blocks
         self._register_toggle_syntax()
+        self._register_toggleable_heading_syntax()  # Separate from toggle
         self._register_callout_syntax()
         self._register_quote_syntax()
         self._register_code_syntax()
@@ -134,11 +139,10 @@ class SyntaxRegistry:
         self._register_column_list_syntax()
         self._register_column_syntax()
 
-        # Heading blocks
+        # Heading blocks (Note: HeadingParser doesn't use registry - uses shared pattern)
         self._register_heading_1_syntax()
         self._register_heading_2_syntax()
         self._register_heading_3_syntax()
-        self._register_toggleable_heading_syntax()
 
         # Special blocks
         self._register_divider_syntax()
@@ -147,8 +151,9 @@ class SyntaxRegistry:
         self._register_equation_syntax()
         self._register_embed_syntax()
         self._register_table_syntax()
+        self._register_table_row_syntax()
 
-        # Basic blocks
+        # Basic blocks (Note: ParagraphParser doesn't need registry)
         self._register_paragraph_syntax()
 
     def _register_audio_syntax(self) -> None:
@@ -201,17 +206,20 @@ class SyntaxRegistry:
             start_delimiter="::: callout",
             end_delimiter=":::",
             regex_pattern=re.compile(r"^:::\s*callout(?:\s+(\S+))?\s*$", re.IGNORECASE),
+            end_regex_pattern=re.compile(r"^:::\s*$"),
             supports_nesting=True,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
 
     def _register_code_syntax(self) -> None:
+        code_delimiter = "```"
         definition = SyntaxDefinition(
             name=BlockType.CODE,
-            start_delimiter="```",
-            end_delimiter="```",
-            regex_pattern=re.compile(r"^```(\w*)\s*$"),
+            start_delimiter=code_delimiter,
+            end_delimiter=code_delimiter,
+            regex_pattern=re.compile("^" + re.escape(code_delimiter) + r"(\w*)\s*$"),
+            end_regex_pattern=re.compile("^" + re.escape(code_delimiter) + r"\s*$"),
             supports_nesting=False,
             is_inline=False,
         )
@@ -223,6 +231,7 @@ class SyntaxRegistry:
             start_delimiter="::: column",
             end_delimiter=":::",
             regex_pattern=re.compile(r"^:::\s*column(?:\s+(0?\.\d+|1(?:\.0?)?))??\s*$", re.IGNORECASE),
+            end_regex_pattern=re.compile(r"^:::\s*$"),
             supports_nesting=True,
             is_inline=False,
         )
@@ -234,6 +243,7 @@ class SyntaxRegistry:
             start_delimiter="::: columns",
             end_delimiter=":::",
             regex_pattern=re.compile(r"^:::\s*columns\s*$", re.IGNORECASE),
+            end_regex_pattern=re.compile(r"^:::\s*$"),
             supports_nesting=True,
             is_inline=False,
         )
@@ -387,7 +397,19 @@ class SyntaxRegistry:
             name=BlockType.TABLE,
             start_delimiter="|",
             end_delimiter="",
-            regex_pattern=re.compile(r"^\|(.+)\|$"),
+            regex_pattern=re.compile(r"^\s*\|(.+)\|\s*$"),
+            supports_nesting=False,
+            is_inline=False,
+        )
+        self._definitions[definition.name] = definition
+
+    def _register_table_row_syntax(self) -> None:
+        """Register syntax for table separator rows (e.g., |---|---|)"""
+        definition = SyntaxDefinition(
+            name=BlockType.TABLE_ROW,
+            start_delimiter="|",
+            end_delimiter="",
+            regex_pattern=re.compile(r"^\s*\|([\s\-:|]+)\|\s*$"),
             supports_nesting=False,
             is_inline=False,
         )
@@ -405,15 +427,28 @@ class SyntaxRegistry:
         self._definitions[definition.name] = definition
 
     def _register_todo_syntax(self) -> None:
+        """Register syntax for unchecked todos: - [ ] item"""
         definition = SyntaxDefinition(
             name=BlockType.TO_DO,
             start_delimiter="- [ ]",
             end_delimiter="",
-            regex_pattern=re.compile(r"^(\s*)-\s+\[([x ])\]\s+(.+)$", re.IGNORECASE),
+            regex_pattern=re.compile(r"^\s*-\s+\[ \]\s+(.+)$"),
             supports_nesting=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
+
+    def _register_todo_done_syntax(self) -> None:
+        """Register syntax for checked todos: - [x] item"""
+        definition = SyntaxDefinition(
+            name=BlockType.TO_DO,  # Same block type, different syntax
+            start_delimiter="- [x]",
+            end_delimiter="",
+            regex_pattern=re.compile(r"^\s*-\s+\[x\]\s+(.+)$", re.IGNORECASE),
+            supports_nesting=False,
+            is_inline=False,
+        )
+        self._definitions[self._TODO_DONE_KEY] = definition
 
     def _register_toggle_syntax(self) -> None:
         definition = SyntaxDefinition(
@@ -421,10 +456,24 @@ class SyntaxRegistry:
             start_delimiter="+++",
             end_delimiter="+++",
             regex_pattern=re.compile(r"^[+]{3}\s+(.+)$"),
+            end_regex_pattern=re.compile(r"^[+]{3}\s*$"),
             supports_nesting=True,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
+
+    def _register_toggleable_heading_syntax(self) -> None:
+        """Register syntax for toggleable headings: +++ # Title / +++ ## Title / +++ ### Title"""
+        definition = SyntaxDefinition(
+            name=BlockType.TOGGLE,  # Uses same block type
+            start_delimiter="+++ #",
+            end_delimiter="+++",
+            regex_pattern=re.compile(r"^[+]{3}\s*(?P<level>#{1,3})(?!#)\s*(.+)$", re.IGNORECASE),
+            end_regex_pattern=re.compile(r"^[+]{3}\s*$"),
+            supports_nesting=True,
+            is_inline=False,
+        )
+        self._definitions[self._TOGGLEABLE_HEADING_KEY] = definition
 
     def _register_video_syntax(self) -> None:
         definition = SyntaxDefinition(

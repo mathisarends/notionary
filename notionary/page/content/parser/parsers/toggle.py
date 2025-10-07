@@ -1,4 +1,3 @@
-import re
 from typing import override
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
@@ -8,18 +7,14 @@ from notionary.page.content.parser.parsers import (
     LineParser,
     ParentBlockContext,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class ToggleParser(LineParser):
-    TOGGLE_START_PATTERN = r"^[+]{3}\s*(.+)$"
-    TOGGLE_END_PATTERN = r"^[+]{3}\s*$"
-    TOGGLEABLE_HEADING_PATTERN = r"^[+]{3}\s*#{1,3}\s+.+$"
-
-    def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
-        super().__init__()
-        self._start_pattern = re.compile(self.TOGGLE_START_PATTERN, re.IGNORECASE)
-        self._end_pattern = re.compile(self.TOGGLE_END_PATTERN)
-        self._heading_pattern = re.compile(self.TOGGLEABLE_HEADING_PATTERN, re.IGNORECASE)
+    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_toggle_syntax()
+        self._heading_syntax = syntax_registry.get_toggleable_heading_syntax()
         self._rich_text_converter = rich_text_converter
 
     @override
@@ -38,17 +33,17 @@ class ToggleParser(LineParser):
             self._add_toggle_content(context)
 
     def _is_toggle_start(self, context: BlockParsingContext) -> bool:
-        if not self._start_pattern.match(context.line):
+        if not self._syntax.regex_pattern.match(context.line):
             return False
 
         # Exclude toggleable heading patterns to be more resilient to wrong order of chain
         return not self.is_heading_start(context.line)
 
     def is_heading_start(self, line: str) -> bool:
-        return self._heading_pattern.match(line)
+        return self._heading_syntax.regex_pattern.match(line) is not None
 
     def _is_toggle_end(self, context: BlockParsingContext) -> bool:
-        if not self._end_pattern.match(context.line):
+        if not self._syntax.end_regex_pattern.match(context.line):
             return False
 
         if not context.parent_stack:
@@ -69,7 +64,7 @@ class ToggleParser(LineParser):
         context.parent_stack.append(parent_context)
 
     async def _create_toggle_block(self, line: str) -> CreateToggleBlock | None:
-        if not (match := self._start_pattern.match(line)):
+        if not (match := self._syntax.regex_pattern.match(line)):
             return None
 
         title = match.group(1).strip()
@@ -118,7 +113,9 @@ class ToggleParser(LineParser):
         if not isinstance(current_parent.block, CreateToggleBlock):
             return False
 
-        return not (self._start_pattern.match(context.line) or self._end_pattern.match(context.line))
+        return not (
+            self._syntax.regex_pattern.match(context.line) or self._syntax.end_regex_pattern.match(context.line)
+        )
 
     def _add_toggle_content(self, context: BlockParsingContext) -> None:
         context.parent_stack[-1].add_child_line(context.line)

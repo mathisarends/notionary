@@ -1,4 +1,3 @@
-import re
 from typing import override
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import (
@@ -13,20 +12,20 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class NumberedListParser(LineParser):
-    PATTERN = re.compile(r"^\s*(\d+)\.\s+(.+)$")
-
-    def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
-        super().__init__()
+    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_numbered_list_syntax()
         self._rich_text_converter = rich_text_converter
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
         if context.is_inside_parent_context():
             return False
-        return self.PATTERN.match(context.line) is not None
+        return self._syntax.regex_pattern.match(context.line) is not None
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
@@ -35,7 +34,7 @@ class NumberedListParser(LineParser):
             context.result_blocks.append(block)
 
     async def _create_numbered_list_block(self, text: str) -> CreateNumberedListItemBlock | None:
-        match = self.PATTERN.match(text)
+        match = self._syntax.regex_pattern.match(text)
         if not match:
             return None
 

@@ -1,4 +1,3 @@
-import re
 from typing import override
 
 from notionary.blocks.enums import BlockType
@@ -8,16 +7,13 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class ColumnListParser(LineParser):
-    COLUMN_LIST_START_PATTERN = r"^:::\s*columns?\s*$"
-    COLUMN_LIST_END_PATTERN = r"^:::\s*$"
-
-    def __init__(self) -> None:
-        super().__init__()
-        self._start_pattern = re.compile(self.COLUMN_LIST_START_PATTERN, re.IGNORECASE)
-        self._end_pattern = re.compile(self.COLUMN_LIST_END_PATTERN)
+    def __init__(self, syntax_registry: SyntaxRegistry) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_column_list_syntax()
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
@@ -31,10 +27,10 @@ class ColumnListParser(LineParser):
             await self._finalize_column_list(context)
 
     def _is_column_list_start(self, context: BlockParsingContext) -> bool:
-        return self._start_pattern.match(context.line) is not None
+        return self._syntax.regex_pattern.match(context.line) is not None
 
     def _is_column_list_end(self, context: BlockParsingContext) -> bool:
-        if not self._end_pattern.match(context.line):
+        if not self._syntax.end_regex_pattern.match(context.line):
             return False
 
         if not context.parent_stack:

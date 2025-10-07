@@ -1,6 +1,5 @@
 """Parser for todo/checkbox blocks."""
 
-import re
 from typing import override
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import (
@@ -11,14 +10,14 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class TodoParser(LineParser):
-    PATTERN = re.compile(r"^\s*-\s+\[ \]\s+(.+)$")
-    DONE_PATTERN = re.compile(r"^\s*-\s+\[x\]\s+(.+)$", re.IGNORECASE)
-
-    def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
-        super().__init__()
+    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_todo_syntax()
+        self._syntax_done = syntax_registry.get_todo_done_syntax()
         self._rich_text_converter = rich_text_converter
 
     @override
@@ -26,7 +25,10 @@ class TodoParser(LineParser):
         if context.is_inside_parent_context():
             return False
 
-        return self.PATTERN.match(context.line) is not None or self.DONE_PATTERN.match(context.line) is not None
+        return (
+            self._syntax.regex_pattern.match(context.line) is not None
+            or self._syntax_done.regex_pattern.match(context.line) is not None
+        )
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
@@ -35,8 +37,8 @@ class TodoParser(LineParser):
             context.result_blocks.append(block)
 
     async def _create_todo_block(self, text: str) -> CreateToDoBlock | None:
-        done_match = self.DONE_PATTERN.match(text)
-        todo_match = None if done_match else self.PATTERN.match(text)
+        done_match = self._syntax_done.regex_pattern.match(text)
+        todo_match = None if done_match else self._syntax.regex_pattern.match(text)
 
         if done_match:
             content = done_match.group(1)

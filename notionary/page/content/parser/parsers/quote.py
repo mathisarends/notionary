@@ -1,4 +1,3 @@
-import re
 from typing import override
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
@@ -7,14 +6,13 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class QuoteParser(LineParser):
-    QUOTE_PATTERN = r"^>(?!>)\s*(.+)$"
-
-    def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
-        super().__init__()
-        self._pattern = re.compile(self.QUOTE_PATTERN)
+    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_quote_syntax()
         self._rich_text_converter = rich_text_converter
 
     @override
@@ -42,7 +40,7 @@ class QuoteParser(LineParser):
         return quote_lines
 
     def _is_quote(self, line: str) -> bool:
-        return self._pattern.match(line) is not None
+        return self._syntax.regex_pattern.match(line) is not None
 
     async def _create_quote_block(self, quote_lines: list[str]) -> CreateQuoteBlock | None:
         if not quote_lines:
@@ -50,7 +48,7 @@ class QuoteParser(LineParser):
 
         contents = []
         for line in quote_lines:
-            match = self._pattern.match(line)
+            match = self._syntax.regex_pattern.match(line)
             if match:
                 contents.append(match.group(1).strip())
 

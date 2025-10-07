@@ -8,17 +8,18 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 from notionary.shared.models.icon_models import EmojiIcon
 
 
 class CalloutParser(LineParser):
-    CALLOUT_START_PATTERN = r"^:::\s*callout(?:\s+(.+))?$"
     CALLOUT_END_PATTERN = r"^:::\s*$"
     DEFAULT_EMOJI = "💡"
 
-    def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
-        super().__init__()
-        self._start_pattern = re.compile(self.CALLOUT_START_PATTERN, re.IGNORECASE)
+    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_callout_syntax()
+        self._start_pattern = self._syntax.regex_pattern
         self._end_pattern = re.compile(self.CALLOUT_END_PATTERN)
         self._rich_text_converter = rich_text_converter
 

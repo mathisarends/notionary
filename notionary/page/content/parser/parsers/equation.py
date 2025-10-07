@@ -1,4 +1,3 @@
-import re
 from typing import override
 
 from notionary.blocks.schemas import CreateEquationBlock, EquationData
@@ -6,15 +5,13 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class EquationParser(LineParser):
-    EQUATION_DELIMITER = "$$"
-
-    def __init__(self) -> None:
-        super().__init__()
-        delimiter_pattern = rf"^{re.escape(self.EQUATION_DELIMITER)}\s*$"
-        self._equation_delimiter_pattern = re.compile(delimiter_pattern)
+    def __init__(self, syntax_registry: SyntaxRegistry) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_equation_syntax()
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
@@ -34,7 +31,7 @@ class EquationParser(LineParser):
             context.result_blocks.append(block)
 
     def _is_equation_delimiter(self, line: str) -> bool:
-        return self._equation_delimiter_pattern.match(line) is not None
+        return self._syntax.regex_pattern.match(line) is not None
 
     def _collect_equation_content(self, context: BlockParsingContext) -> list[str]:
         content_lines = []

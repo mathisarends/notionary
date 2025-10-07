@@ -17,6 +17,10 @@ async def main() -> None:
     :::
 
     wird hier was appended überhaupt
+
+    ```python
+    das hier ist python source code
+    ```
     """
     content = await page.append_markdown(markdown)
     print("content", content)

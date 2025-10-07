@@ -1,4 +1,3 @@
-import re
 from typing import override
 
 from notionary.blocks.schemas import CreateColumnBlock, CreateColumnData, CreateColumnListBlock
@@ -7,18 +6,16 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class ColumnParser(LineParser):
-    COLUMN_START_PATTERN = r"^:::\s*column(?:\s+(0?\.\d+|1(?:\.0?)?))??\s*$"
-    COLUMN_END_PATTERN = r"^:::\s*$"
     MIN_WIDTH_RATIO = 0
     MAX_WIDTH_RATIO = 1.0
 
-    def __init__(self) -> None:
-        super().__init__()
-        self._start_pattern = re.compile(self.COLUMN_START_PATTERN, re.IGNORECASE)
-        self._end_pattern = re.compile(self.COLUMN_END_PATTERN)
+    def __init__(self, syntax_registry: SyntaxRegistry) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_column_syntax()
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
@@ -34,10 +31,10 @@ class ColumnParser(LineParser):
             await self._add_column_content(context)
 
     def _is_column_start(self, context: BlockParsingContext) -> bool:
-        return self._start_pattern.match(context.line) is not None
+        return self._syntax.regex_pattern.match(context.line) is not None
 
     def _is_column_end(self, context: BlockParsingContext) -> bool:
-        if not self._end_pattern.match(context.line):
+        if not self._syntax.end_regex_pattern.match(context.line):
             return False
 
         if not context.parent_stack:
@@ -55,7 +52,7 @@ class ColumnParser(LineParser):
             return False
 
         line = context.line.strip()
-        return not (self._start_pattern.match(line) or self._end_pattern.match(line))
+        return not (self._syntax.regex_pattern.match(line) or self._syntax.end_regex_pattern.match(line))
 
     async def _add_column_content(self, context: BlockParsingContext) -> None:
         context.parent_stack[-1].add_child_line(context.line)
@@ -72,7 +69,7 @@ class ColumnParser(LineParser):
         context.parent_stack.append(parent_context)
 
     def _create_column_block(self, line: str) -> CreateColumnBlock | None:
-        match = self._start_pattern.match(line)
+        match = self._syntax.regex_pattern.match(line)
         if not match:
             return None
 

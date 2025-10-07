@@ -12,6 +12,11 @@ from notionary.page.content.parser.parsers.base import (
 
 
 class CaptionParser(LineParser):
+    """
+    Parser for [caption] text syntax that adds captions to previous blocks.
+    Does not use SyntaxRegistry as it's a post-processing parser that modifies existing blocks.
+    """
+
     CAPTION_PATTERN = re.compile(r"^\[caption\]\s+(\S.*)$")
 
     def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
