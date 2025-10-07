@@ -20,7 +20,7 @@ from notionary.page.content.parser.parsers import (
 
 
 class ToggleableHeadingParser(LineParser):
-    HEADING_START_PATTERN = r"^[+]{3}\s*(?P<level>#{1,3})\s*(.+)$"
+    HEADING_START_PATTERN = r"^[+]{3}\s*(?P<level>#{1,3})(?!#)\s*(.+)$"
     HEADING_END_PATTERN = r"^[+]{3}\s*$"
 
     MIN_HEADING_LEVEL = 1

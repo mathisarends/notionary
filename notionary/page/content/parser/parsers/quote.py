@@ -10,7 +10,7 @@ from notionary.page.content.parser.parsers.base import (
 
 
 class QuoteParser(LineParser):
-    QUOTE_PATTERN = r"^>\s*(.+)$"
+    QUOTE_PATTERN = r"^>(?!>)\s*(.+)$"
 
     def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None) -> None:
         super().__init__()

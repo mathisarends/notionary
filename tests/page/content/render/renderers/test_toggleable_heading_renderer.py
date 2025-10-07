@@ -1,3 +1,4 @@
+from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -5,50 +6,47 @@ import pytest
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, HeadingData
+from notionary.blocks.schemas import Heading1Block, Heading2Block, Heading3Block, HeadingData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.toggleable_heading import ToggleableHeadingRenderer
 
 
-def _create_toggleable_heading1_block(title: str) -> Block:
-    block = Mock(spec=Block)
+def _create_heading_data(title: str, is_toggleable: bool = True) -> HeadingData:
+    return HeadingData(
+        rich_text=[RichText.from_plain_text(title)],
+        is_toggleable=is_toggleable,
+    )
+
+
+def _create_toggleable_heading1_block(title: str) -> Heading1Block:
+    mock_obj = Mock(spec=Heading1Block)
+    block = cast(Heading1Block, mock_obj)
     block.type = BlockType.HEADING_1
-    block.heading_1 = Mock(spec=HeadingData)
-    block.heading_1.is_toggleable = True
-    block.heading_1.rich_text = [RichText.from_plain_text(title)]
-    block.heading_2 = None
-    block.heading_3 = None
+    block.heading_1 = _create_heading_data(title, is_toggleable=True)
     return block
 
 
-def _create_toggleable_heading2_block(title: str) -> Block:
-    block = Mock(spec=Block)
+def _create_toggleable_heading2_block(title: str) -> Heading2Block:
+    mock_obj = Mock(spec=Heading2Block)
+    block = cast(Heading2Block, mock_obj)
     block.type = BlockType.HEADING_2
-    block.heading_1 = None
-    block.heading_2 = Mock(spec=HeadingData)
-    block.heading_2.is_toggleable = True
-    block.heading_2.rich_text = [RichText.from_plain_text(title)]
-    block.heading_3 = None
+    block.heading_2 = _create_heading_data(title, is_toggleable=True)
     return block
 
 
-def _create_toggleable_heading3_block(title: str) -> Block:
-    block = Mock(spec=Block)
+def _create_toggleable_heading3_block(title: str) -> Heading3Block:
+    mock_obj = Mock(spec=Heading3Block)
+    block = cast(Heading3Block, mock_obj)
     block.type = BlockType.HEADING_3
-    block.heading_1 = None
-    block.heading_2 = None
-    block.heading_3 = Mock(spec=HeadingData)
-    block.heading_3.is_toggleable = True
-    block.heading_3.rich_text = [RichText.from_plain_text(title)]
+    block.heading_3 = _create_heading_data(title, is_toggleable=True)
     return block
 
 
-def _create_non_toggleable_heading1_block() -> Block:
-    block = Mock(spec=Block)
+def _create_non_toggleable_heading1_block(title: str = "Not toggleable") -> Heading1Block:
+    mock_obj = Mock(spec=Heading1Block)
+    block = cast(Heading1Block, mock_obj)
     block.type = BlockType.HEADING_1
-    block.heading_1 = Mock(spec=HeadingData)
-    block.heading_1.is_toggleable = False
-    block.heading_1.rich_text = [RichText.from_plain_text("Not toggleable")]
+    block.heading_1 = _create_heading_data(title, is_toggleable=False)
     return block
 
 

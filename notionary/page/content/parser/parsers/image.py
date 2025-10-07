@@ -13,7 +13,7 @@ from notionary.page.content.parser.parsers.base import BlockParsingContext, Line
 
 
 class ImageParser(LineParser):
-    IMAGE_PATTERN = re.compile(r"\[image\]\(([^)]+)\)")
+    IMAGE_PATTERN = re.compile(r"(?<!!)\[image\]\(([^)]+)\)")
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:

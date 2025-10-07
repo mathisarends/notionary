@@ -10,7 +10,7 @@ from notionary.page.content.parser.parsers.base import (
 
 
 class ColumnParser(LineParser):
-    COLUMN_START_PATTERN = r"^:::\s*column(?:\s+(0?\.\d+|1\.0?))?\s*$"
+    COLUMN_START_PATTERN = r"^:::\s*column(?:\s+(0?\.\d+|1(?:\.0?)?))??\s*$"
     COLUMN_END_PATTERN = r"^:::\s*$"
     MIN_WIDTH_RATIO = 0
     MAX_WIDTH_RATIO = 1.0

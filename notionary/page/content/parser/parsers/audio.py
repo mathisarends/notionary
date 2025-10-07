@@ -22,7 +22,7 @@ class AudioParser(LineParser):
     @override
     async def _process(self, context: BlockParsingContext) -> None:
         url = self._extract_url(context.line)
-        if not url:
+        if url is None:
             return
 
         audio_data = FileData(

@@ -20,23 +20,29 @@ def caption_parser(mock_rich_text_converter: MarkdownRichTextConverter) -> Capti
 
 
 @pytest.fixture
-def video_block_with_caption_support() -> BlockCreatePayload:
-    video_data = CreateVideoBlock(external={"url": "https://youtube.com/watch?v=test"}, caption=[])
-    block = BlockCreatePayload(type=BlockType.VIDEO, video=video_data)
+def video_block_with_caption_support() -> CreateVideoBlock:
+    from notionary.blocks.schemas import FileType, VideoData
+
+    video_data = VideoData(type=FileType.EXTERNAL, external={"url": "https://youtube.com/watch?v=test"}, caption=[])
+    block = CreateVideoBlock(type=BlockType.VIDEO, video=video_data)
     return block
 
 
 @pytest.fixture
-def image_block_with_caption_support() -> BlockCreatePayload:
-    image_data = CreateImageBlock(external={"url": "https://example.com/image.png"}, caption=[])
-    block = BlockCreatePayload(type=BlockType.IMAGE, image=image_data)
+def image_block_with_caption_support() -> CreateImageBlock:
+    from notionary.blocks.schemas import FileType, ImageData
+
+    image_data = ImageData(type=FileType.EXTERNAL, external={"url": "https://example.com/image.png"}, caption=[])
+    block = CreateImageBlock(type=BlockType.IMAGE, image=image_data)
     return block
 
 
 @pytest.fixture
-def paragraph_block_without_caption_support() -> BlockCreatePayload:
-    paragraph_data = CreateParagraphBlock(rich_text=[])
-    block = BlockCreatePayload(type=BlockType.PARAGRAPH, paragraph=paragraph_data)
+def paragraph_block_without_caption_support() -> CreateParagraphBlock:
+    from notionary.blocks.schemas import ParagraphData
+
+    paragraph_data = ParagraphData(rich_text=[])
+    block = CreateParagraphBlock(type=BlockType.PARAGRAPH, paragraph=paragraph_data)
     return block
 
 
@@ -181,9 +187,12 @@ def test_block_without_caption_attribute_should_not_support_caption(
 def test_block_with_nonexistent_type_data_should_not_support_caption(
     caption_parser: CaptionParser,
 ) -> None:
-    invalid_block = BlockCreatePayload(type=BlockType.VIDEO, video=None)
+    # Create a mock block where the video attribute is None
+    mock_block = Mock(spec=BlockCreatePayload)
+    mock_block.type = BlockType.VIDEO
+    mock_block.video = None
 
-    supports_caption = caption_parser._block_supports_caption(invalid_block)
+    supports_caption = caption_parser._block_supports_caption(mock_block)
 
     assert supports_caption is False
 

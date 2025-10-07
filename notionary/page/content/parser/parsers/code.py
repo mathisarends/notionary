@@ -69,22 +69,10 @@ class CodeParser(LineParser):
         return CreateCodeBlock(code=code_data)
 
     def _parse_language(self, language_str: str | None) -> CodeLanguage:
-        if not language_str:
-            return self.DEFAULT_LANGUAGE
-
-        normalized_language = language_str.lower()
-
-        for language_enum in CodeLanguage:
-            if language_enum.value.lower() == normalized_language:
-                return language_enum
-
-        return self.DEFAULT_LANGUAGE
+        return CodeLanguage.from_string(language_str, default=self.DEFAULT_LANGUAGE)
 
     async def _create_rich_text_from_code(self, code_lines: list[str]) -> list[RichText]:
-        if not code_lines:
-            return []
-
-        content = "\n".join(code_lines)
+        content = "\n".join(code_lines) if code_lines else ""
         return await self._rich_text_converter.to_rich_text(content)
 
     def _is_code_fence_start(self, line: str) -> bool:

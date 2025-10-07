@@ -12,7 +12,7 @@ from notionary.page.content.parser.parsers.base import (
 
 
 class BulletedListParser(LineParser):
-    PATTERN = re.compile(r"^(\s*)-\s+(?!\[[ x]\])(.+)$")
+    PATTERN = re.compile(r"^(\s*)-\s+(?!\[[ xX]\])(.+)$")
 
     def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None) -> None:
         super().__init__()

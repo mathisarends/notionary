@@ -80,4 +80,6 @@ class ColumnListParser(LineParser):
         column_list_context.block.column_list.children = column_children
 
     def _filter_column_blocks(self, blocks: list[BlockCreatePayload]) -> list:
-        return [block for block in blocks if block.column and block.type == BlockType.COLUMN]
+        return [
+            block for block in blocks if block.type == BlockType.COLUMN and hasattr(block, "column") and block.column
+        ]

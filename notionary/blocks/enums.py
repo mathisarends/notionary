@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from enum import StrEnum
+from typing import Self
 
 
 class BlockColor(StrEnum):
@@ -138,3 +141,27 @@ class CodeLanguage(StrEnum):
     XML = "xml"
     YAML = "yaml"
     JAVA_C_CPP_CSHARP = "java/c/c++/c#"
+
+    @classmethod
+    def from_string(cls, lang_str: str | None, default: Self | None = None) -> Self:
+        if not lang_str:
+            return default if default is not None else cls.PLAIN_TEXT
+
+        normalized = lang_str.lower().strip()
+
+        aliases = {
+            "cpp": cls.CPP,
+            "c++": cls.CPP,
+            "js": cls.JAVASCRIPT,
+            "py": cls.PYTHON,
+            "ts": cls.TYPESCRIPT,
+        }
+
+        if normalized in aliases:
+            return aliases[normalized]
+
+        for member in cls:
+            if member.value.lower() == normalized:
+                return member
+
+        return default if default is not None else cls.PLAIN_TEXT

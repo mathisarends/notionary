@@ -12,7 +12,7 @@ from notionary.page.content.parser.parsers.base import (
 
 
 class CaptionParser(LineParser):
-    CAPTION_PATTERN = re.compile(r"^\[caption\]\s+(.+)$")
+    CAPTION_PATTERN = re.compile(r"^\[caption\]\s+(\S.*)$")
 
     def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None) -> None:
         super().__init__()

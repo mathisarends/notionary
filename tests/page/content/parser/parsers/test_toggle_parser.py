@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
-from notionary.blocks.schemas import CreateToggleBlock
+from notionary.blocks.schemas import BlockColor, CreateToggleBlock, CreateToggleData
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.toggle import ToggleParser
 
@@ -105,7 +105,8 @@ async def test_nested_toggle_in_parent_context_should_add_to_parent(
     toggle_parser: ToggleParser, context: BlockParsingContext
 ) -> None:
     parent_toggle = Mock()
-    parent_toggle.block = CreateToggleBlock(toggle=Mock(children=[]))
+    toggle_data = CreateToggleData(rich_text=[], color=BlockColor.DEFAULT, children=[])
+    parent_toggle.block = CreateToggleBlock(toggle=toggle_data)
     parent_toggle.add_child_block = Mock()
     context.parent_stack.append(parent_toggle)
 
