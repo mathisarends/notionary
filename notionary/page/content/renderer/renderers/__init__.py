@@ -1,4 +1,5 @@
 from .audio import AudioRenderer
+from .base import BlockRenderer
 from .bookmark import BookmarkRenderer
 from .breadcrumb import BreadcrumbRenderer
 from .bulleted_list import BulletedListRenderer
@@ -27,6 +28,7 @@ from .video import VideoRenderer
 
 __all__ = [
     "AudioRenderer",
+    "BlockRenderer",
     "BookmarkRenderer",
     "BreadcrumbRenderer",
     "BulletedListRenderer",
