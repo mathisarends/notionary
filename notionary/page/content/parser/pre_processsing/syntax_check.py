@@ -1,69 +1,92 @@
 import re
 
+COLUMNS_MARKER = "::: columns"
+COLUMN_MARKER = "::: column"
+BLOCK_CLOSING = ":::"
+RATIO_TOLERANCE = 0.0001
+
 
 def validate_columns_syntax(markdown_text: str) -> None:
-    if not re.search(r"::: columns", markdown_text):
+    if not _has_columns_blocks(markdown_text):
         return
 
     columns_blocks = _extract_columns_blocks(markdown_text)
 
     for content in columns_blocks:
-        column_matches = list(re.finditer(r"::: column(?:\s+([\d.]+))?(?:\s|$)", content))
-
+        column_matches = _find_column_blocks(content)
         column_count = len(column_matches)
 
-        if column_count < 2:
-            raise ValueError(
-                f"columns Container muss mindestens 2 column Blöcke enthalten, aber nur {column_count} gefunden"
-            )
+        _validate_minimum_columns(column_count)
 
-        ratios = extract_ratios(column_matches)
-        validate_ratios(ratios, column_count)
+        ratios = _extract_ratios(column_matches)
+        _validate_ratios(ratios, column_count)
+
+
+def _has_columns_blocks(markdown_text: str) -> bool:
+    return COLUMNS_MARKER in markdown_text
 
 
 def _extract_columns_blocks(markdown_text: str) -> list[str]:
     columns_blocks = []
     lines = markdown_text.split("\n")
-    i = 0
 
-    while i < len(lines):
-        if lines[i].strip() == "::: columns":
-            # Finde den passenden closing :::
-            depth = 1
-            start = i + 1
-            i += 1
-
-            while i < len(lines) and depth > 0:
-                line = lines[i].strip()
-                if line.startswith("::: "):
-                    # Öffnet einen neuen Block
-                    depth += 1
-                elif line == ":::":
-                    # Schließt einen Block
-                    depth -= 1
-                i += 1
-
-            if depth == 0:
-                # Wir haben den passenden closing ::: gefunden
-                content = "\n".join(lines[start : i - 1])
+    for i, line in enumerate(lines):
+        if line.strip() == COLUMNS_MARKER:
+            content = _extract_block_content(lines, i + 1)
+            if content is not None:
                 columns_blocks.append(content)
-        else:
-            i += 1
 
     return columns_blocks
 
 
-def extract_ratios(column_matches) -> list[float]:
+def _extract_block_content(lines: list[str], start_index: int) -> str | None:
+    depth = 1
+    end_index = start_index
+
+    while end_index < len(lines) and depth > 0:
+        line = lines[end_index].strip()
+
+        if line.startswith("::: "):
+            depth += 1
+        elif line == BLOCK_CLOSING:
+            depth -= 1
+
+        end_index += 1
+
+    if depth == 0:
+        return "\n".join(lines[start_index : end_index - 1])
+
+    return None
+
+
+def _find_column_blocks(content: str) -> list[re.Match]:
+    pattern = r"::: column(?:\s+([\d.]+))?(?:\s|$)"
+    return list(re.finditer(pattern, content))
+
+
+def _validate_minimum_columns(column_count: int) -> None:
+    if column_count < 2:
+        raise ValueError(
+            f"columns Container muss mindestens 2 column Blöcke enthalten, aber nur {column_count} gefunden"
+        )
+
+
+def _extract_ratios(column_matches: list[re.Match]) -> list[float]:
     ratios = []
+
     for match in column_matches:
         ratio_str = match.group(1)
         if ratio_str and ratio_str != "1":
             ratios.append(float(ratio_str))
+
     return ratios
 
 
-def validate_ratios(ratios, column_count) -> None:
-    if ratios and len(ratios) == column_count:
-        total = sum(ratios)
-        if abs(total - 1.0) > 0.0001:
-            raise ValueError(f"width_ratios müssen sich zu 1.0 addieren, aber Summe ist {total}")
+def _validate_ratios(ratios: list[float], column_count: int) -> None:
+    if not ratios or len(ratios) != column_count:
+        return
+
+    total = sum(ratios)
+
+    if abs(total - 1.0) > RATIO_TOLERANCE:
+        raise ValueError(f"width_ratios müssen sich zu 1.0 addieren, aber Summe ist {total}")
