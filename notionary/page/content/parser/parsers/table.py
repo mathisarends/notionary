@@ -134,11 +134,13 @@ class TableParser(LineParser):
         return rich_text_cells
 
     def _parse_table_row(self, row_text: str) -> list[str]:
+        """Parse a table row by splitting on the table delimiter from SyntaxRegistry."""
         row_content = row_text.strip()
+        delimiter = self._syntax.start_delimiter
 
-        if row_content.startswith("|"):
+        if row_content.startswith(delimiter):
             row_content = row_content[1:]
-        if row_content.endswith("|"):
+        if row_content.endswith(delimiter):
             row_content = row_content[:-1]
 
-        return row_content.split("|")
+        return row_content.split(delimiter)

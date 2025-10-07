@@ -1,4 +1,3 @@
-import re
 from typing import override
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import (
@@ -9,18 +8,13 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class CaptionParser(LineParser):
-    """
-    Parser for [caption] text syntax that adds captions to previous blocks.
-    Does not use SyntaxRegistry as it's a post-processing parser that modifies existing blocks.
-    """
-
-    CAPTION_PATTERN = re.compile(r"^\[caption\]\s+(\S.*)$")
-
-    def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
-        super().__init__()
+    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_caption_syntax()
         self._rich_text_converter = rich_text_converter
 
     @override
@@ -28,7 +22,7 @@ class CaptionParser(LineParser):
         if context.is_inside_parent_context():
             return False
 
-        if not self.CAPTION_PATTERN.match(context.line):
+        if not self._syntax.regex_pattern.match(context.line):
             return False
 
         if not context.result_blocks:
@@ -39,7 +33,7 @@ class CaptionParser(LineParser):
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
-        caption_match = self.CAPTION_PATTERN.match(context.line)
+        caption_match = self._syntax.regex_pattern.match(context.line)
         if not caption_match:
             return
 

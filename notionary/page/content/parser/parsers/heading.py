@@ -1,4 +1,3 @@
-import re
 from typing import override
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
@@ -14,27 +13,20 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class HeadingParser(LineParser):
-    """
-    Parser for regular (non-toggleable) headings.
-    Uses a shared pattern for all heading levels (#, ##, ###).
-    Does not use SyntaxRegistry as it handles multiple heading levels with one pattern.
-    """
-
-    HEADING_PATTERN = r"^(#{1,3})[ \t]+(.+)$"
-
-    def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
-        super().__init__()
-        self._pattern = re.compile(self.HEADING_PATTERN)
+    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_heading_syntax()
         self._rich_text_converter = rich_text_converter
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
         if context.is_inside_parent_context():
             return False
-        return self._is_heading(context.line)
+        return self._syntax.regex_pattern.match(context.line) is not None
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
@@ -42,11 +34,8 @@ class HeadingParser(LineParser):
         if block:
             context.result_blocks.append(block)
 
-    def _is_heading(self, line: str) -> bool:
-        return self._pattern.match(line) is not None
-
     async def _create_heading_block(self, line: str) -> CreateHeadingBlock | None:
-        match = self._pattern.match(line)
+        match = self._syntax.regex_pattern.match(line)
         if not match:
             return None
 

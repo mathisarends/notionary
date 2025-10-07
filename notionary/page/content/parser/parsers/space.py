@@ -5,33 +5,30 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class SpaceParser(LineParser):
     """
     Parser for [space] markers that create empty paragraph blocks.
-    Does not use SyntaxRegistry as it's just a simple string comparison.
+    Uses SyntaxRegistry for centralized syntax definition.
     """
 
-    SPACE_MARKER = "[space]"
-
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, syntax_registry: SyntaxRegistry) -> None:
+        super().__init__(syntax_registry)
+        self._syntax = syntax_registry.get_space_syntax()
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
         if context.is_inside_parent_context():
             return False
-        return self._is_space(context.line)
+        return self._syntax.regex_pattern.match(context.line.strip()) is not None
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
         block = self._create_space_block()
         if block:
             context.result_blocks.append(block)
-
-    def _is_space(self, line: str) -> bool:
-        return line.strip() == self.SPACE_MARKER
 
     def _create_space_block(self) -> CreateParagraphBlock:
         paragraph_data = ParagraphData(rich_text=[], color=BlockColor.DEFAULT)

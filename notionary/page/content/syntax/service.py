@@ -1,41 +1,16 @@
 import re
-from dataclasses import dataclass
 
 from notionary.blocks.enums import BlockType
+from notionary.page.content.syntax.models import AdditionalSyntaxRegistryKey, RegistryKey, SyntaxDefinition
 
 
-@dataclass(frozen=True)
-class SyntaxDefinition:
-    """
-    Defines the syntax pattern for a block type.
-
-    Attributes:
-        name: The block type this syntax defines
-        start_delimiter: The opening delimiter (e.g., "```", "+++", ">")
-        end_delimiter: The optional closing delimiter (empty string if none)
-        regex_pattern: The compiled regex pattern to match this syntax
-        end_regex_pattern: Optional compiled regex pattern for end delimiter
-        supports_nesting: Whether this block can contain child blocks
-        is_inline: Whether this is an inline syntax (like [audio](url))
-    """
-
-    name: BlockType
-    start_delimiter: str
-    end_delimiter: str
-    regex_pattern: re.Pattern
-    end_regex_pattern: re.Pattern | None = None
-    supports_nesting: bool = False
-    is_inline: bool = False
-
-
-# TODO: Maybe make this a singleton (because this object is kinda expensive)
 class SyntaxRegistry:
-    # Special keys for syntax definitions that don't map 1:1 to BlockTypes
-    _TODO_DONE_KEY = "todo_done"
-    _TOGGLEABLE_HEADING_KEY = "toggleable_heading"
+    MULTI_LINE_BLOCK_DELIMITER = ":::"
+    TOGGLE_DELIMITER = "+++"
+    TABLE_DELIMITER = "|"
 
     def __init__(self) -> None:
-        self._definitions: dict[BlockType | str, SyntaxDefinition] = {}
+        self._definitions: dict[RegistryKey, SyntaxDefinition] = {}
         self._register_defaults()
 
     def get_audio_syntax(self) -> SyntaxDefinition:
@@ -101,17 +76,29 @@ class SyntaxRegistry:
 
     def get_todo_done_syntax(self) -> SyntaxDefinition:
         """Returns syntax for checked todos: - [x] item"""
-        return self._definitions[self._TODO_DONE_KEY]
+        return self._definitions[AdditionalSyntaxRegistryKey.TO_DO_DONE_KEY]
 
     def get_toggle_syntax(self) -> SyntaxDefinition:
         return self._definitions[BlockType.TOGGLE]
 
     def get_toggleable_heading_syntax(self) -> SyntaxDefinition:
         """Returns syntax for toggleable headings: +++ # Title"""
-        return self._definitions[self._TOGGLEABLE_HEADING_KEY]
+        return self._definitions[AdditionalSyntaxRegistryKey.TOGGLEABLE_HEADING_KEY]
 
     def get_video_syntax(self) -> SyntaxDefinition:
         return self._definitions[BlockType.VIDEO]
+
+    def get_caption_syntax(self) -> SyntaxDefinition:
+        """Returns syntax for [caption] text"""
+        return self._definitions[AdditionalSyntaxRegistryKey.CAPTION_KEY]
+
+    def get_space_syntax(self) -> SyntaxDefinition:
+        """Returns syntax for [space] markers"""
+        return self._definitions[AdditionalSyntaxRegistryKey.SPACE_KEY]
+
+    def get_heading_syntax(self) -> SyntaxDefinition:
+        """Returns syntax for regular headings: #, ##, ###"""
+        return self._definitions[AdditionalSyntaxRegistryKey.HEADING_KEY]
 
     def _register_defaults(self) -> None:
         # Inline file/media blocks
@@ -143,6 +130,7 @@ class SyntaxRegistry:
         self._register_heading_1_syntax()
         self._register_heading_2_syntax()
         self._register_heading_3_syntax()
+        self._register_heading_syntax()  # Shared pattern for regular headings
 
         # Special blocks
         self._register_divider_syntax()
@@ -153,8 +141,9 @@ class SyntaxRegistry:
         self._register_table_syntax()
         self._register_table_row_syntax()
 
-        # Basic blocks (Note: ParagraphParser doesn't need registry)
-        self._register_paragraph_syntax()
+        # Post-processing and utility blocks
+        self._register_caption_syntax()
+        self._register_space_syntax()
 
     def _register_audio_syntax(self) -> None:
         definition = SyntaxDefinition(
@@ -162,7 +151,7 @@ class SyntaxRegistry:
             start_delimiter="[audio](",
             end_delimiter=")",
             regex_pattern=re.compile(r"\[audio\]\(([^)]+)\)"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=True,
         )
         self._definitions[definition.name] = definition
@@ -173,7 +162,7 @@ class SyntaxRegistry:
             start_delimiter="[bookmark](",
             end_delimiter=")",
             regex_pattern=re.compile(r"\[bookmark\]\((https?://[^\s\"]+)\)"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=True,
         )
         self._definitions[definition.name] = definition
@@ -184,7 +173,7 @@ class SyntaxRegistry:
             start_delimiter="[breadcrumb]",
             end_delimiter="",
             regex_pattern=re.compile(r"^\[breadcrumb\]\s*$"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -195,7 +184,7 @@ class SyntaxRegistry:
             start_delimiter="- ",
             end_delimiter="",
             regex_pattern=re.compile(r"^(\s*)-\s+(?!\[[ xX]\])(.+)$"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -203,11 +192,13 @@ class SyntaxRegistry:
     def _register_callout_syntax(self) -> None:
         definition = SyntaxDefinition(
             name=BlockType.CALLOUT,
-            start_delimiter="::: callout",
-            end_delimiter=":::",
-            regex_pattern=re.compile(r"^:::\s*callout(?:\s+(\S+))?\s*$", re.IGNORECASE),
-            end_regex_pattern=re.compile(r"^:::\s*$"),
-            supports_nesting=True,
+            start_delimiter=f"{self.MULTI_LINE_BLOCK_DELIMITER} callout",
+            end_delimiter=self.MULTI_LINE_BLOCK_DELIMITER,
+            regex_pattern=re.compile(
+                rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*callout(?:\s+(\S+))?\s*$", re.IGNORECASE
+            ),
+            end_regex_pattern=re.compile(rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*$"),
+            is_multiline_block=True,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -220,7 +211,7 @@ class SyntaxRegistry:
             end_delimiter=code_delimiter,
             regex_pattern=re.compile("^" + re.escape(code_delimiter) + r"(\w*)\s*$"),
             end_regex_pattern=re.compile("^" + re.escape(code_delimiter) + r"\s*$"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -228,11 +219,14 @@ class SyntaxRegistry:
     def _register_column_syntax(self) -> None:
         definition = SyntaxDefinition(
             name=BlockType.COLUMN,
-            start_delimiter="::: column",
-            end_delimiter=":::",
-            regex_pattern=re.compile(r"^:::\s*column(?:\s+(0?\.\d+|1(?:\.0?)?))??\s*$", re.IGNORECASE),
-            end_regex_pattern=re.compile(r"^:::\s*$"),
-            supports_nesting=True,
+            start_delimiter=f"{self.MULTI_LINE_BLOCK_DELIMITER} column",
+            end_delimiter=self.MULTI_LINE_BLOCK_DELIMITER,
+            regex_pattern=re.compile(
+                rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*column(?:\s+(0?\.\d+|1(?:\.0?)?))??\s*$",
+                re.IGNORECASE,
+            ),
+            end_regex_pattern=re.compile(rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*$"),
+            is_multiline_block=True,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -240,11 +234,11 @@ class SyntaxRegistry:
     def _register_column_list_syntax(self) -> None:
         definition = SyntaxDefinition(
             name=BlockType.COLUMN_LIST,
-            start_delimiter="::: columns",
-            end_delimiter=":::",
-            regex_pattern=re.compile(r"^:::\s*columns\s*$", re.IGNORECASE),
-            end_regex_pattern=re.compile(r"^:::\s*$"),
-            supports_nesting=True,
+            start_delimiter=f"{self.MULTI_LINE_BLOCK_DELIMITER} columns",
+            end_delimiter=self.MULTI_LINE_BLOCK_DELIMITER,
+            regex_pattern=re.compile(rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*columns\s*$", re.IGNORECASE),
+            end_regex_pattern=re.compile(rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*$"),
+            is_multiline_block=True,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -255,7 +249,7 @@ class SyntaxRegistry:
             start_delimiter="---",
             end_delimiter="",
             regex_pattern=re.compile(r"^-{3,}\s*$"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -266,7 +260,7 @@ class SyntaxRegistry:
             start_delimiter="[embed](",
             end_delimiter=")",
             regex_pattern=re.compile(r"\[embed\]\(([^)]+)\)"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=True,
         )
         self._definitions[definition.name] = definition
@@ -277,7 +271,7 @@ class SyntaxRegistry:
             start_delimiter="$$",
             end_delimiter="$$",
             regex_pattern=re.compile(r"^\$\$\s*$"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -288,7 +282,7 @@ class SyntaxRegistry:
             start_delimiter="[file](",
             end_delimiter=")",
             regex_pattern=re.compile(r"\[file\]\(([^)]+)\)"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=True,
         )
         self._definitions[definition.name] = definition
@@ -299,7 +293,7 @@ class SyntaxRegistry:
             start_delimiter="# ",
             end_delimiter="",
             regex_pattern=re.compile(r"^#\s+(.+)$"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -310,7 +304,7 @@ class SyntaxRegistry:
             start_delimiter="## ",
             end_delimiter="",
             regex_pattern=re.compile(r"^#{2}\s+(.+)$"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -321,7 +315,7 @@ class SyntaxRegistry:
             start_delimiter="### ",
             end_delimiter="",
             regex_pattern=re.compile(r"^#{3}\s+(.+)$"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -332,7 +326,7 @@ class SyntaxRegistry:
             start_delimiter="+++ #",
             end_delimiter="+++",
             regex_pattern=re.compile(r"^[+]{3}\s*(?P<level>#{1,3})(?!#)\s*(.+)$", re.IGNORECASE),
-            supports_nesting=True,
+            is_multiline_block=True,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -343,7 +337,7 @@ class SyntaxRegistry:
             start_delimiter="[image](",
             end_delimiter=")",
             regex_pattern=re.compile(r"(?<!!)\[image\]\(([^)]+)\)"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=True,
         )
         self._definitions[definition.name] = definition
@@ -354,18 +348,7 @@ class SyntaxRegistry:
             start_delimiter="1. ",
             end_delimiter="",
             regex_pattern=re.compile(r"^(\s*)(\d+)\.\s+(.+)$"),
-            supports_nesting=False,
-            is_inline=False,
-        )
-        self._definitions[definition.name] = definition
-
-    def _register_paragraph_syntax(self) -> None:
-        definition = SyntaxDefinition(
-            name=BlockType.PARAGRAPH,
-            start_delimiter="",
-            end_delimiter="",
-            regex_pattern=re.compile(r"^(?!\s*$).+$"),  # Any non-empty line
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -376,7 +359,7 @@ class SyntaxRegistry:
             start_delimiter="[pdf](",
             end_delimiter=")",
             regex_pattern=re.compile(r"\[pdf\]\(([^)]+)\)"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=True,
         )
         self._definitions[definition.name] = definition
@@ -387,7 +370,7 @@ class SyntaxRegistry:
             start_delimiter="> ",
             end_delimiter="",
             regex_pattern=re.compile(r"^>(?!>)\s*(.+)$"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -395,10 +378,12 @@ class SyntaxRegistry:
     def _register_table_syntax(self) -> None:
         definition = SyntaxDefinition(
             name=BlockType.TABLE,
-            start_delimiter="|",
+            start_delimiter=self.TABLE_DELIMITER,
             end_delimiter="",
-            regex_pattern=re.compile(r"^\s*\|(.+)\|\s*$"),
-            supports_nesting=False,
+            regex_pattern=re.compile(
+                rf"^\s*{re.escape(self.TABLE_DELIMITER)}(.+){re.escape(self.TABLE_DELIMITER)}\s*$"
+            ),
+            is_multiline_block=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -407,10 +392,12 @@ class SyntaxRegistry:
         """Register syntax for table separator rows (e.g., |---|---|)"""
         definition = SyntaxDefinition(
             name=BlockType.TABLE_ROW,
-            start_delimiter="|",
+            start_delimiter=self.TABLE_DELIMITER,
             end_delimiter="",
-            regex_pattern=re.compile(r"^\s*\|([\s\-:|]+)\|\s*$"),
-            supports_nesting=False,
+            regex_pattern=re.compile(
+                rf"^\s*{re.escape(self.TABLE_DELIMITER)}([\s\-:|]+){re.escape(self.TABLE_DELIMITER)}\s*$"
+            ),
+            is_multiline_block=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -421,7 +408,7 @@ class SyntaxRegistry:
             start_delimiter="[toc]",
             end_delimiter="",
             regex_pattern=re.compile(r"^\[toc\]\s*$", re.IGNORECASE),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -433,7 +420,7 @@ class SyntaxRegistry:
             start_delimiter="- [ ]",
             end_delimiter="",
             regex_pattern=re.compile(r"^\s*-\s+\[ \]\s+(.+)$"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
@@ -441,39 +428,40 @@ class SyntaxRegistry:
     def _register_todo_done_syntax(self) -> None:
         """Register syntax for checked todos: - [x] item"""
         definition = SyntaxDefinition(
-            name=BlockType.TO_DO,  # Same block type, different syntax
+            name=BlockType.TO_DO,
             start_delimiter="- [x]",
             end_delimiter="",
             regex_pattern=re.compile(r"^\s*-\s+\[x\]\s+(.+)$", re.IGNORECASE),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=False,
         )
-        self._definitions[self._TODO_DONE_KEY] = definition
+        self._definitions[AdditionalSyntaxRegistryKey.TO_DO_DONE_KEY] = definition
 
     def _register_toggle_syntax(self) -> None:
         definition = SyntaxDefinition(
             name=BlockType.TOGGLE,
-            start_delimiter="+++",
-            end_delimiter="+++",
-            regex_pattern=re.compile(r"^[+]{3}\s+(.+)$"),
-            end_regex_pattern=re.compile(r"^[+]{3}\s*$"),
-            supports_nesting=True,
+            start_delimiter=self.TOGGLE_DELIMITER,
+            end_delimiter=self.TOGGLE_DELIMITER,
+            regex_pattern=re.compile(rf"^{re.escape(self.TOGGLE_DELIMITER)}\s+(.+)$"),
+            end_regex_pattern=re.compile(rf"^{re.escape(self.TOGGLE_DELIMITER)}\s*$"),
+            is_multiline_block=True,
             is_inline=False,
         )
         self._definitions[definition.name] = definition
 
     def _register_toggleable_heading_syntax(self) -> None:
-        """Register syntax for toggleable headings: +++ # Title / +++ ## Title / +++ ### Title"""
         definition = SyntaxDefinition(
-            name=BlockType.TOGGLE,  # Uses same block type
-            start_delimiter="+++ #",
-            end_delimiter="+++",
-            regex_pattern=re.compile(r"^[+]{3}\s*(?P<level>#{1,3})(?!#)\s*(.+)$", re.IGNORECASE),
-            end_regex_pattern=re.compile(r"^[+]{3}\s*$"),
-            supports_nesting=True,
+            name=BlockType.TOGGLE,
+            start_delimiter=f"{self.TOGGLE_DELIMITER} #",
+            end_delimiter=self.TOGGLE_DELIMITER,
+            regex_pattern=re.compile(
+                rf"^{re.escape(self.TOGGLE_DELIMITER)}\s*(?P<level>#{1, 3})(?!#)\s*(.+)$", re.IGNORECASE
+            ),
+            end_regex_pattern=re.compile(rf"^{re.escape(self.TOGGLE_DELIMITER)}\s*$"),
+            is_multiline_block=True,
             is_inline=False,
         )
-        self._definitions[self._TOGGLEABLE_HEADING_KEY] = definition
+        self._definitions[AdditionalSyntaxRegistryKey.TOGGLEABLE_HEADING_KEY] = definition
 
     def _register_video_syntax(self) -> None:
         definition = SyntaxDefinition(
@@ -481,7 +469,40 @@ class SyntaxRegistry:
             start_delimiter="[video](",
             end_delimiter=")",
             regex_pattern=re.compile(r"\[video\]\(([^)]+)\)"),
-            supports_nesting=False,
+            is_multiline_block=False,
             is_inline=True,
         )
         self._definitions[definition.name] = definition
+
+    def _register_caption_syntax(self) -> None:
+        definition = SyntaxDefinition(
+            name=BlockType.PARAGRAPH,  # Captions modify existing blocks, not a standalone type
+            start_delimiter="[caption]",
+            end_delimiter="",
+            regex_pattern=re.compile(r"^\[caption\]\s+(\S.*)$"),
+            is_multiline_block=False,
+            is_inline=False,
+        )
+        self._definitions[AdditionalSyntaxRegistryKey.CAPTION_KEY] = definition
+
+    def _register_space_syntax(self) -> None:
+        definition = SyntaxDefinition(
+            name=BlockType.PARAGRAPH,
+            start_delimiter="[space]",
+            end_delimiter="",
+            regex_pattern=re.compile(r"^\[space\]\s*$"),
+            is_multiline_block=False,
+            is_inline=False,
+        )
+        self._definitions[AdditionalSyntaxRegistryKey.SPACE_KEY] = definition
+
+    def _register_heading_syntax(self) -> None:
+        definition = SyntaxDefinition(
+            name=BlockType.HEADING_1,
+            start_delimiter="#",
+            end_delimiter="",
+            regex_pattern=re.compile(r"^(#{1,3})[ \t]+(.+)$"),
+            is_multiline_block=False,
+            is_inline=False,
+        )
+        self._definitions[AdditionalSyntaxRegistryKey.HEADING_KEY] = definition

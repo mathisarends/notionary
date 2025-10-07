@@ -63,10 +63,10 @@ class MarkdownToNotionConverter(LoggingMixin):
         divider_parser = DividerParser(self._syntax_registry)
         breadcrumb_parser = BreadcrumbParser(self._syntax_registry)
         table_of_contents_parser = TableOfContentsParser(self._syntax_registry)
-        heading_parser = HeadingParser(self._rich_text_converter)  # No syntax_registry - uses shared pattern
+        heading_parser = HeadingParser(self._syntax_registry, self._rich_text_converter)
         quote_parser = QuoteParser(self._syntax_registry, self._rich_text_converter)
         callout_parser = CalloutParser(self._syntax_registry, self._rich_text_converter)
-        space_parser = SpaceParser()  # No syntax_registry - simple string comparison
+        space_parser = SpaceParser(self._syntax_registry)
         todo_parser = TodoParser(self._syntax_registry, self._rich_text_converter)
         bulleted_list_parser = BulletedListParser(self._syntax_registry, self._rich_text_converter)
         numbered_list_parser = NumberedListParser(self._syntax_registry, self._rich_text_converter)
@@ -77,7 +77,7 @@ class MarkdownToNotionConverter(LoggingMixin):
         audio_parser = AudioParser(self._syntax_registry)
         file_parser = FileParser(self._syntax_registry)
         pdf_parser = PdfParser(self._syntax_registry)
-        caption_parser = CaptionParser(self._rich_text_converter)  # No syntax_registry - post-processes previous blocks
+        caption_parser = CaptionParser(self._syntax_registry, self._rich_text_converter)
         paragraph_parser = ParagraphParser(self._rich_text_converter)  # No syntax_registry - fallback for any text
 
         # Build the chain - order matters!
