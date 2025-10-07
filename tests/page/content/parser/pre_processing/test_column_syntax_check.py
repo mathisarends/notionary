@@ -8,14 +8,14 @@ from notionary.page.content.parser.pre_processsing.syntax_check import validate_
 def test_no_columns_block_should_pass() -> None:
     valid_markdown = dedent(
         """
-        # Normale Überschrift
+        # Normal heading
 
-        Normaler Text ohne columns.
+        Normal text without columns.
 
-        ## Weitere Überschrift
+        ## Another heading
 
-        - Liste
-        - Elemente
+        - List
+        - Items
         """
     )
     validate_columns_syntax(valid_markdown)
@@ -26,11 +26,11 @@ def test_valid_columns_with_two_columns_should_pass() -> None:
         """
         ::: columns
         ::: column
-        Linker Inhalt
+        Left content
         :::
 
         ::: column
-        Rechter Inhalt
+        Right content
         :::
         :::
         """
@@ -43,15 +43,15 @@ def test_valid_columns_with_three_columns_should_pass() -> None:
         """
         ::: columns
         ::: column
-        Erste Spalte
+        First column
         :::
 
         ::: column
-        Zweite Spalte
+        Second column
         :::
 
         ::: column
-        Dritte Spalte
+        Third column
         :::
         :::
         """
@@ -64,7 +64,7 @@ def test_columns_with_only_one_column_should_fail() -> None:
         """
         ::: columns
         ::: column
-        Nur eine Spalte
+        Only one column
         :::
         :::
         """
@@ -78,15 +78,15 @@ def test_valid_width_ratios_that_sum_to_one_should_pass() -> None:
         """
         ::: columns
         ::: column 0.5
-        Erste Spalte (50%)
+        First column (50%)
         :::
 
         ::: column 0.3
-        Zweite Spalte (30%)
+        Second column (30%)
         :::
 
         ::: column 0.2
-        Dritte Spalte (20%)
+        Third column (20%)
         :::
         :::
         """
@@ -99,11 +99,11 @@ def test_valid_width_ratios_60_40_should_pass() -> None:
         """
         ::: columns
         ::: column 0.6
-        Breitere Spalte
+        Wider column
         :::
 
         ::: column 0.4
-        Schmalere Spalte
+        Narrower column
         :::
         :::
         """
@@ -116,15 +116,15 @@ def test_invalid_width_ratios_not_summing_to_one_should_fail() -> None:
         """
         ::: columns
         ::: column 0.5
-        Erste Spalte
+        First column
         :::
 
         ::: column 0.4
-        Zweite Spalte
+        Second column
         :::
 
         ::: column 0.2
-        Dritte Spalte (Summe = 1.1)
+        Third column (sum = 1.1)
         :::
         :::
         """
@@ -138,11 +138,11 @@ def test_invalid_width_ratios_summing_to_less_than_one_should_fail() -> None:
         """
         ::: columns
         ::: column 0.3
-        Erste Spalte
+        First column
         :::
 
         ::: column 0.2
-        Zweite Spalte (Summe = 0.5)
+        Second column (sum = 0.5)
         :::
         :::
         """
@@ -156,11 +156,11 @@ def test_mixed_columns_with_and_without_ratios_should_pass() -> None:
         """
         ::: columns
         ::: column 0.6
-        Mit Ratio
+        With ratio
         :::
 
         ::: column
-        Ohne Ratio
+        Without ratio
         :::
         :::
         """
@@ -171,27 +171,27 @@ def test_mixed_columns_with_and_without_ratios_should_pass() -> None:
 def test_multiple_columns_blocks_should_validate_all() -> None:
     valid_markdown = dedent(
         """
-        # Erste Sektion
+        # First section
 
         ::: columns
         ::: column
-        Erste Spalte Block 1
+        First column block 1
         :::
 
         ::: column
-        Zweite Spalte Block 1
+        Second column block 1
         :::
         :::
 
-        # Zweite Sektion
+        # Second section
 
         ::: columns
         ::: column
-        Erste Spalte Block 2
+        First column block 2
         :::
 
         ::: column
-        Zweite Spalte Block 2
+        Second column block 2
         :::
         :::
         """
@@ -204,10 +204,10 @@ def test_nested_content_in_columns_should_pass() -> None:
         """
         ::: columns
         ::: column
-        ## Überschrift in Spalte
+        ## Heading in column
 
-        - Liste
-        - Elemente
+        - List
+        - Items
 
         ```python
         code block
@@ -215,9 +215,9 @@ def test_nested_content_in_columns_should_pass() -> None:
         :::
 
         ::: column
-        **Fetter Text**
+        **Bold text**
 
-        > Zitat
+        > Quote
         :::
         :::
         """

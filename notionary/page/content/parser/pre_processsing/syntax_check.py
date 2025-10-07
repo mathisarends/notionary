@@ -30,9 +30,9 @@ def _extract_columns_blocks(markdown_text: str) -> list[str]:
     columns_blocks = []
     lines = markdown_text.split("\n")
 
-    for i, line in enumerate(lines):
+    for index, line in enumerate(lines):
         if line.strip() == COLUMNS_MARKER:
-            content = _extract_block_content(lines, i + 1)
+            content = _extract_block_content(lines, index + 1)
             if content is not None:
                 columns_blocks.append(content)
 
