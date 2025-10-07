@@ -32,7 +32,7 @@ from notionary.page.content.parser.parsers import (
     ToggleParser,
     VideoParser,
 )
-from notionary.page.content.parser.pre_processsing.text_length import (
+from notionary.page.content.parser.post_processing.text_length import (
     NotionTextLengthProcessor,
 )
 from notionary.utils.mixins.logging import LoggingMixin
@@ -57,7 +57,6 @@ class MarkdownToNotionConverter(LoggingMixin):
         toggleable_heading_parser = ToggleableHeadingParser(self._rich_text_converter)
         toggle_parser = ToggleParser(self._rich_text_converter)
 
-        # Dedicated parsers without mapper dependencies
         divider_parser = DividerParser()
         breadcrumb_parser = BreadcrumbParser()
         table_of_contents_parser = TableOfContentsParser()

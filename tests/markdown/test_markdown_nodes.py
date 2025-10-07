@@ -1,6 +1,5 @@
 import pytest
 
-from notionary.blocks.enums import BlockColor
 from notionary.blocks.markdown.nodes import (
     AudioMarkdownNode,
     BookmarkMarkdownNode,
@@ -27,9 +26,7 @@ from notionary.blocks.markdown.nodes import (
 )
 
 
-def test_audio_markdown_node():
-    """Test AudioMarkdownNode"""
-    # Test ohne Caption
+def test_audio_markdown_node() -> None:
     audio = AudioMarkdownNode(url="https://example.com/audio.mp3")
     expected = "[audio](https://example.com/audio.mp3)"
     assert audio.to_markdown() == expected
@@ -39,9 +36,7 @@ def test_audio_markdown_node():
     assert audio_with_caption.to_markdown() == expected
 
 
-def test_bookmark_markdown_node():
-    """Test BookmarkMarkdownNode"""
-    # Test nur URL
+def test_bookmark_markdown_node() -> None:
     bookmark = BookmarkMarkdownNode(url="https://example.com")
     expected = "[bookmark](https://example.com)"
     assert bookmark.to_markdown() == expected
@@ -52,29 +47,24 @@ def test_bookmark_markdown_node():
     assert bookmark_with_caption.to_markdown() == expected
 
 
-def test_bulleted_list_markdown_node():
-    """Test BulletedListMarkdownNode"""
+def test_bulleted_list_markdown_node() -> None:
     bulleted_list = BulletedListMarkdownNode(texts=["Item 1", "Item 2", "Item 3"])
     expected = "- Item 1\n- Item 2\n- Item 3"
     assert bulleted_list.to_markdown() == expected
 
 
-def test_callout_markdown_node():
-    """Test CalloutMarkdownNode"""
-    # Test ohne Emoji (sollte default verwenden)
+def test_callout_markdown_node() -> None:
     callout = CalloutMarkdownNode(text="This is important")
-    expected = "[callout](This is important)"
+    expected = "::: callout\nThis is important\n:::"
     assert callout.to_markdown() == expected
 
     # Test mit Custom Emoji
     callout_with_emoji = CalloutMarkdownNode(text="Warning!", emoji="⚠️")
-    expected = '[callout](Warning! "⚠️")'
+    expected = "::: callout ⚠️\nWarning!\n:::"
     assert callout_with_emoji.to_markdown() == expected
 
 
-def test_code_markdown_node():
-    """Test CodeMarkdownNode - FIXED for new syntax"""
-    # Test ohne Language und Caption
+def test_code_markdown_node() -> None:
     code = CodeMarkdownNode(code="print('Hello World')")
     expected = "```\nprint('Hello World')\n```"
     assert code.to_markdown() == expected
@@ -90,42 +80,33 @@ def test_code_markdown_node():
     assert code_with_caption.to_markdown() == expected
 
 
-def test_divider_markdown_node():
-    """Test DividerMarkdownNode"""
+def test_divider_markdown_node() -> None:
     divider = DividerMarkdownNode()
     expected = "---"
     assert divider.to_markdown() == expected
 
 
-def test_file_markdown_node():
-    """Test FileMarkdownNode"""
-    # Test ohne Caption
+def test_file_markdown_node() -> None:
     file = FileMarkdownNode(url="https://example.com/doc.pdf")
     expected = "[file](https://example.com/doc.pdf)"
     assert file.to_markdown() == expected
 
-    # Test mit Caption - NEUE SYNTAX: (caption:...)
     file_with_caption = FileMarkdownNode(url="https://example.com/doc.pdf", caption="Important Document")
     expected = "[file](https://example.com/doc.pdf)(caption:Important Document)"
     assert file_with_caption.to_markdown() == expected
 
 
-def test_embed_markdown_node():
-    """Test EmbedMarkdownNode"""
-    # Test ohne Caption
+def test_embed_markdown_node() -> None:
     embed = EmbedMarkdownNode(url="https://example.com")
     expected = "[embed](https://example.com)"
     assert embed.to_markdown() == expected
 
-    # Test mit Caption
     embed_with_caption = EmbedMarkdownNode(url="https://example.com", caption="External content")
     expected = '[embed](https://example.com "External content")'
     assert embed_with_caption.to_markdown() == expected
 
 
-def test_heading_markdown_node():
-    """Test HeadingMarkdownNode"""
-    # Test verschiedene Level
+def test_heading_markdown_node() -> None:
     h1 = HeadingMarkdownNode(text="Heading 1", level=1)
     expected = "# Heading 1"
     assert h1.to_markdown() == expected
@@ -138,62 +119,53 @@ def test_heading_markdown_node():
     expected = "### Heading 3"
     assert h3.to_markdown() == expected
 
-    # Test ungültiges Level (sollte Exception werfen)
     with pytest.raises(ValueError):
         HeadingMarkdownNode(text="Invalid", level=4)
 
 
-def test_image_markdown_node():
+def test_image_markdown_node() -> None:
     """Test ImageMarkdownNode"""
-    # Test nur URL (ohne Caption)
     image = ImageMarkdownNode(url="https://example.com/image.jpg")
     expected = "[image](https://example.com/image.jpg)"
     assert image.to_markdown() == expected
 
-    # Test mit Caption - NEUE SYNTAX: (caption:...)
     image_with_caption = ImageMarkdownNode(url="https://example.com/image.jpg", caption="My Image")
     expected = "[image](https://example.com/image.jpg)(caption:My Image)"
     assert image_with_caption.to_markdown() == expected
 
-    # Test mit Caption (alt wird ignoriert)
     image_full = ImageMarkdownNode(url="https://example.com/image.jpg", caption="My Image", alt="Alternative text")
     expected = "[image](https://example.com/image.jpg)(caption:My Image)"
     assert image_full.to_markdown() == expected
 
-    # Test mit leerem Caption
     image_empty = ImageMarkdownNode(url="https://example.com/image.jpg", caption="")
     expected = "[image](https://example.com/image.jpg)"
     assert image_empty.to_markdown() == expected
 
 
-def test_numbered_list_markdown_node():
-    """Test NumberedListMarkdownNode"""
+def test_numbered_list_markdown_node() -> None:
     numbered_list = NumberedListMarkdownNode(texts=["First", "Second", "Third"])
     expected = "1. First\n2. Second\n3. Third"
     assert numbered_list.to_markdown() == expected
 
 
-def test_paragraph_markdown_node():
+def test_paragraph_markdown_node() -> None:
     """Test ParagraphMarkdownNode"""
     paragraph = ParagraphMarkdownNode(text="This is a paragraph.")
     expected = "This is a paragraph."
     assert paragraph.to_markdown() == expected
 
 
-def test_quote_markdown_node():
-    """Test QuoteMarkdownNode mit neuer Blockquote-Syntax"""
-    # Test ohne Author
+def test_quote_markdown_node() -> None:
     quote = QuoteMarkdownNode(text="This is a quote")
     expected = "> This is a quote"
     assert quote.to_markdown() == expected
 
-    # Test mit anderem Text
     quote_with_author = QuoteMarkdownNode(text="Life is beautiful")
     expected = "> Life is beautiful"
     assert quote_with_author.to_markdown() == expected
 
 
-def test_table_markdown_node():
+def test_table_markdown_node() -> None:
     """Test TableMarkdownNode"""
     table = TableMarkdownNode(
         headers=["Name", "Age", "City"],
@@ -205,25 +177,22 @@ def test_table_markdown_node():
     assert table.to_markdown() == expected
 
 
-def test_todo_markdown_node():
+def test_todo_markdown_node() -> None:
     """Test TodoMarkdownNode"""
-    # Test unchecked
     todo = TodoMarkdownNode(text="Buy groceries", checked=False)
     expected = "- [ ] Buy groceries"
     assert todo.to_markdown() == expected
 
-    # Test checked
     todo_done = TodoMarkdownNode(text="Finish homework", checked=True)
     expected = "- [x] Finish homework"
     assert todo_done.to_markdown() == expected
 
-    # Test mit anderem Marker
     todo_star = TodoMarkdownNode(text="Important task", checked=False, marker="*")
     expected = "* [ ] Important task"
     assert todo_star.to_markdown() == expected
 
 
-def test_toggle_markdown_node():
+def test_toggle_markdown_node() -> None:
     """Test ToggleMarkdownNode - FIXED"""
     # Test ohne Content - FIXED: Uses correct syntax WITH space
     toggle = ToggleMarkdownNode(title="Details", children=[])
@@ -242,9 +211,7 @@ def test_toggle_markdown_node():
     assert toggle_with_content.to_markdown() == expected
 
 
-def test_toggleable_heading_markdown_node():
-    """Test ToggleableHeadingMarkdownNode - FIXED"""
-    # Test ohne Content - korrekte Syntax mit +++
+def test_toggleable_heading_markdown_node() -> None:
     toggleable_h1 = ToggleableHeadingMarkdownNode(text="Section 1", level=1, children=[])
     expected = "+++# Section 1\n+++"
     assert toggleable_h1.to_markdown() == expected
@@ -266,7 +233,7 @@ def test_toggleable_heading_markdown_node():
         ToggleableHeadingMarkdownNode(text="Invalid", level=4, children=[])
 
 
-def test_video_markdown_node():
+def test_video_markdown_node() -> None:
     """Test VideoMarkdownNode"""
     # Test ohne Caption
     video = VideoMarkdownNode(url="https://youtube.com/watch?v=123")
@@ -292,25 +259,11 @@ def test_table_of_contents_markdown_node():
     expected = "[toc]"
     assert toc.to_markdown() == expected
 
-    # Test mit color="default"
-    toc_default = TableOfContentsMarkdownNode(color=BlockColor.DEFAULT)
+    # Simplified: TableOfContents no longer supports color parameter
+    # All variations now produce the same output
+    toc2 = TableOfContentsMarkdownNode()
     expected = "[toc]"
-    assert toc_default.to_markdown() == expected
-
-    # Test mit custom color
-    toc_blue = TableOfContentsMarkdownNode(color=BlockColor.BLUE)
-    expected = "[toc](blue)"
-    assert toc_blue.to_markdown() == expected
-
-    # Test mit background color
-    toc_bg = TableOfContentsMarkdownNode(color="blue_background")
-    expected = "[toc](blue_background)"
-    assert toc_bg.to_markdown() == expected
-
-    # Test mit None color - FIXED: None wird als String ausgegeben
-    toc_none = TableOfContentsMarkdownNode(color=None)
-    expected = "[toc](None)"
-    assert toc_none.to_markdown() == expected
+    assert toc2.to_markdown() == expected
 
 
 def test_column_markdown_node():

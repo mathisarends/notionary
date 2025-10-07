@@ -72,7 +72,8 @@ class TestColumnToggleLayouts:
         assert "+++ 📋 Project Overview" in markdown, "Main toggle title missing"
         assert "## Introduction" in markdown, "Toggle heading missing"
         assert "Feature 1: Advanced layouts" in markdown, "Toggle list item missing"
-        assert '[callout](Important: This is a nested callout inside toggle! "⚠️")' in markdown, "Toggle callout missing"
+        assert "::: callout ⚠️" in markdown, "Toggle callout missing"
+        assert "Important: This is a nested callout inside toggle!" in markdown, "Toggle callout text missing"
 
     def test_column_structure(self, complex_schema):
         """Test that column blocks are generated correctly."""
@@ -98,7 +99,8 @@ class TestColumnToggleLayouts:
         # Check nested toggle
         assert "+++ 🔧 Nested Toggle in Column" in markdown, "Nested toggle title missing"
         assert "This toggle is nested inside a column!" in markdown, "Nested toggle content missing"
-        assert '[callout](Nested structures work! "🎉")' in markdown, "Nested callout missing"
+        assert "::: callout 🎉" in markdown, "Nested callout missing"
+        assert "Nested structures work!" in markdown, "Nested callout text missing"
 
     def test_builder_structure_analysis(self, complex_schema):
         """Test the structure analysis of the builder."""
@@ -133,9 +135,18 @@ class TestColumnToggleLayouts:
         toggle_closings = markdown.count("+++") - toggle_openings  # Total +++ minus openings
 
         column_openings = markdown.count("::: columns")
-        column_closings = (
-            markdown.count(":::") - column_openings - markdown.count("::: column")
-        )  # Total ::: minus openings and column starts
+        # Count only ::: column openings (followed by space or newline)
+        # Split by lines and count lines that start with "::: column"
+        lines = markdown.split("\n")
+        column_markers = sum(1 for line in lines if line.strip().startswith("::: column"))
+
+        # Count ::: callout markers (these have their own closing :::)
+        callout_openings = markdown.count("::: callout")
+
+        # Total ::: minus all opening markers = closing markers
+        total_triple_colons = markdown.count(":::")
+        # All standalone ::: (not part of an opening)
+        column_closings = total_triple_colons - column_openings - column_markers - callout_openings
 
         # Each toggle should have opening and closing
         assert toggle_openings == toggle_closings, (
@@ -145,8 +156,11 @@ class TestColumnToggleLayouts:
         # Each column list should have proper structure
         assert column_openings == 2, f"Expected 2 column lists, got {column_openings}"
 
-        # Each column list has 2 closings: one for each column + one for the list itself
-        expected_closings = column_openings * 2
+        # Each column list should have matching closing markers
+        # Structure: ::: columns, ::: column, ::: (close column), ::: column, ::: (close column), ::: (close columns)
+        # So we have: openings (columns + columns) and closings (columns + column*2)
+        # The closing count should be: column_openings (for each ::: columns) + column_markers (for each ::: column)
+        expected_closings = column_openings + column_markers + callout_openings
         assert column_closings == expected_closings, (
             f"Column markers unbalanced: {column_openings} open, {column_closings} close (expected {expected_closings})"
         )

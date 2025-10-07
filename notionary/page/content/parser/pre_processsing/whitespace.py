@@ -1,113 +1,72 @@
-"""
-Markdown whitespace processing utilities.
-
-Handles normalization of markdown text while preserving code blocks and their indentation.
-"""
-
-
-class MarkdownWhitespaceProcessor:
+def process_markdown_whitespace(markdown_text: str) -> str:
     """
-    Processes markdown text to normalize whitespace while preserving code block formatting.
+    Normalize whitespace in markdown while preserving code block formatting.
 
-    This processor handles:
-    - Removing leading whitespace from regular lines
-    - Preserving code block structure and indentation
-    - Normalizing code block markers
+    Regular text: Leading whitespace is removed
+    Code blocks: Original indentation is preserved with common indent removed
     """
+    if not markdown_text:
+        return ""
 
-    @staticmethod
-    def process_markdown_whitespace(markdown_text: str) -> str:
-        """Process markdown text to normalize whitespace while preserving code blocks."""
-        lines = markdown_text.split("\n")
-        if not lines:
-            return ""
+    lines = markdown_text.split("\n")
+    processed_lines = []
+    code_block_lines = []
+    in_code_block = False
 
-        return MarkdownWhitespaceProcessor._process_whitespace_lines(lines)
-
-    @staticmethod
-    def _process_whitespace_lines(lines: list[str]) -> str:
-        """Process all lines and return the processed markdown."""
-        processed_lines = []
-        in_code_block = False
-        current_code_block = []
-
-        for line in lines:
-            processed_lines, in_code_block, current_code_block = MarkdownWhitespaceProcessor._process_single_line(
-                line, processed_lines, in_code_block, current_code_block
-            )
-
-        return "\n".join(processed_lines)
-
-    @staticmethod
-    def _process_single_line(
-        line: str,
-        processed_lines: list[str],
-        in_code_block: bool,
-        current_code_block: list[str],
-    ) -> tuple[list[str], bool, list[str]]:
-        """Process a single line and return updated state."""
-        if MarkdownWhitespaceProcessor._is_code_block_marker(line):
-            return MarkdownWhitespaceProcessor._handle_code_block_marker(
-                line, processed_lines, in_code_block, current_code_block
-            )
-        if in_code_block:
-            current_code_block.append(line)
-            return processed_lines, in_code_block, current_code_block
+    for line in lines:
+        if _is_code_fence(line):
+            if in_code_block:
+                processed_lines.extend(_format_code_block(code_block_lines))
+                processed_lines.append("```")
+                code_block_lines = []
+                in_code_block = False
+            else:
+                language = _extract_language(line)
+                processed_lines.append(f"```{language}")
+                in_code_block = True
+        elif in_code_block:
+            code_block_lines.append(line)
         else:
             processed_lines.append(line.lstrip())
-            return processed_lines, in_code_block, current_code_block
 
-    @staticmethod
-    def _handle_code_block_marker(
-        line: str,
-        processed_lines: list[str],
-        in_code_block: bool,
-        current_code_block: list[str],
-    ) -> tuple[list[str], bool, list[str]]:
-        """Handle code block start/end markers."""
-        if not in_code_block:
-            return MarkdownWhitespaceProcessor._start_code_block(line, processed_lines)
-        else:
-            return MarkdownWhitespaceProcessor._end_code_block(processed_lines, current_code_block)
+    return "\n".join(processed_lines)
 
-    @staticmethod
-    def _start_code_block(line: str, processed_lines: list[str]) -> tuple[list[str], bool, list[str]]:
-        """Start a new code block."""
-        processed_lines.append(MarkdownWhitespaceProcessor._normalize_code_block_start(line))
-        return processed_lines, True, []
 
-    @staticmethod
-    def _end_code_block(processed_lines: list[str], current_code_block: list[str]) -> tuple[list[str], bool, list[str]]:
-        """End the current code block."""
-        processed_lines.extend(MarkdownWhitespaceProcessor._normalize_code_block_content(current_code_block))
-        processed_lines.append("```")
-        return processed_lines, False, []
+def _is_code_fence(line: str) -> bool:
+    return line.lstrip().startswith("```")
 
-    @staticmethod
-    def _is_code_block_marker(line: str) -> bool:
-        """Check if line is a code block marker."""
-        return line.lstrip().startswith("```")
 
-    @staticmethod
-    def _normalize_code_block_start(line: str) -> str:
-        """Normalize code block opening marker."""
-        language = line.lstrip().replace("```", "", 1).strip()
-        return "```" + language
+def _extract_language(fence_line: str) -> str:
+    return fence_line.lstrip().removeprefix("```").strip()
 
-    @staticmethod
-    def _normalize_code_block_content(code_lines: list[str]) -> list[str]:
-        """Normalize code block indentation."""
-        if not code_lines:
-            return []
 
-        # Find minimum indentation from non-empty lines
-        non_empty_lines = [line for line in code_lines if line.strip()]
-        if not non_empty_lines:
-            return [""] * len(code_lines)
+def _format_code_block(lines: list[str]) -> list[str]:
+    """
+    Format code block by removing common leading whitespace.
 
-        min_indent = min(len(line) - len(line.lstrip()) for line in non_empty_lines)
-        if min_indent == 0:
-            return code_lines
+    Preserves relative indentation between lines.
+    Empty lines are preserved as-is.
+    """
+    if not lines:
+        return []
 
-        # Remove common indentation
-        return ["" if not line.strip() else line[min_indent:] for line in code_lines]
+    non_empty_lines = [line for line in lines if line.strip()]
+    if not non_empty_lines:
+        return ["" for _ in lines]
+
+    min_indent = min(_count_leading_spaces(line) for line in non_empty_lines)
+
+    if min_indent == 0:
+        return lines
+
+    return [_remove_indent(line, min_indent) for line in lines]
+
+
+def _count_leading_spaces(line: str) -> int:
+    return len(line) - len(line.lstrip())
+
+
+def _remove_indent(line: str, indent_size: int) -> str:
+    if not line.strip():
+        return ""
+    return line[indent_size:]

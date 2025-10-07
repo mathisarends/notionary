@@ -19,7 +19,7 @@ from notionary.blocks.rich_text.name_id_resolver import DatabaseNameIdResolver, 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 
 
-@pytest.fixtures
+@pytest.fixture
 def mock_page_resolver() -> AsyncMock:
     resolver: PageNameIdResolver = AsyncMock(spec=PageNameIdResolver)
     resolver.resolve_id_to_name.return_value = "Test Page"

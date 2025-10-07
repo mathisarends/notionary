@@ -10,8 +10,6 @@ from notionary.page.content.parser.parsers.base import (
 
 
 class ColumnParser(LineParser):
-    COLUMN_START_MARKER = ":::"
-    COLUMN_END_MARKER = ":::"
     COLUMN_START_PATTERN = r"^:::\s*column(?:\s+(0?\.\d+|1\.0?))?\s*$"
     COLUMN_END_PATTERN = r"^:::\s*$"
     MIN_WIDTH_RATIO = 0
@@ -24,7 +22,7 @@ class ColumnParser(LineParser):
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
-        return self._is_column_start(context) or self._is_column_end(context)
+        return self._is_column_start(context) or self._is_column_end(context) or self._is_column_content(context)
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
@@ -32,6 +30,8 @@ class ColumnParser(LineParser):
             await self._start_column(context)
         elif self._is_column_end(context):
             await self._finalize_column(context)
+        elif self._is_column_content(context):
+            await self._add_column_content(context)
 
     def _is_column_start(self, context: BlockParsingContext) -> bool:
         return self._start_pattern.match(context.line) is not None
@@ -45,6 +45,20 @@ class ColumnParser(LineParser):
 
         current_parent = context.parent_stack[-1]
         return isinstance(current_parent.block, CreateColumnBlock)
+
+    def _is_column_content(self, context: BlockParsingContext) -> bool:
+        if not context.parent_stack:
+            return False
+
+        current_parent = context.parent_stack[-1]
+        if not isinstance(current_parent.block, CreateColumnBlock):
+            return False
+
+        line = context.line.strip()
+        return not (self._start_pattern.match(line) or self._end_pattern.match(line))
+
+    async def _add_column_content(self, context: BlockParsingContext) -> None:
+        context.parent_stack[-1].add_child_line(context.line)
 
     async def _start_column(self, context: BlockParsingContext) -> None:
         block = self._create_column_block(context.line)

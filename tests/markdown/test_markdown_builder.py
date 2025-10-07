@@ -35,7 +35,8 @@ def test_nested_columns_with_mixed_content():
     assert "| Endpoint | Method | Status |" in result
     assert "```python" in result
     assert "def get_users():" in result
-    assert '[callout](Important: Always handle exceptions! "⚠️")' in result
+    assert "::: callout ⚠️" in result
+    assert "Important: Always handle exceptions!" in result
     assert "- Authentication required" in result
 
     assert "::: column" in result
@@ -87,7 +88,8 @@ def test_deeply_nested_toggles():
     assert "### Performance Tuning" in result
     assert "| Parameter | Value | Description |" in result
     assert "| max_connections | 100 | Maximum concurrent connections |" in result
-    assert '[callout](Restart required after changes "🔄")' in result
+    assert "::: callout 🔄" in result
+    assert "Restart required after changes" in result
     assert "End of database configuration" in result
 
 
@@ -198,11 +200,13 @@ class APIClient:
     assert '```python "Python API Client Implementation"' in result
 
     # Callouts und Listen
-    assert '[callout](💡 Alle Endpunkte erfordern eine gültige API-Authentifizierung "🔐")' in result
+    assert "::: callout 🔐" in result
+    assert "💡 Alle Endpunkte erfordern eine gültige API-Authentifizierung" in result
     assert "- API-Key über Umgebungsvariablen laden" in result
 
     # Toggle mit Benchmarks - FIXED: Korrekte Syntax MIT Leerzeichen
     assert "+++ 📊 Performance Benchmarks" in result
     assert "### Benchmark Results" in result
     assert "| /api/users | 45ms | 850 | 120ms |" in result
-    assert '[callout](Tests durchgeführt mit 1000 concurrent users über 5 Minuten "📈")' in result
+    assert "::: callout 📈" in result
+    assert "Tests durchgeführt mit 1000 concurrent users über 5 Minuten" in result

@@ -2,7 +2,7 @@ import re
 from typing import override
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.schemas import Block, CreateColumnListBlock, CreateColumnListData
+from notionary.blocks.schemas import BlockCreatePayload, CreateColumnListBlock, CreateColumnListData
 from notionary.page.content.parser.context import ParentBlockContext
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
@@ -79,5 +79,5 @@ class ColumnListParser(LineParser):
         column_children = self._filter_column_blocks(all_children)
         column_list_context.block.column_list.children = column_children
 
-    def _filter_column_blocks(self, blocks: list[Block]) -> list:
+    def _filter_column_blocks(self, blocks: list[BlockCreatePayload]) -> list:
         return [block for block in blocks if block.column and block.type == BlockType.COLUMN]

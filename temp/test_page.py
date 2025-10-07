@@ -7,10 +7,16 @@ async def main() -> None:
     page = await NotionPage.from_title(PAGE)
 
     markdown = """
-```python
-ist lit
-```
-[caption] Ist eine gute Sprache diese Python
+    ::: columns
+    ::: column
+    test
+    :::
+    ::: column
+    fest
+    :::
+    :::
+
+    wird hier was appended überhaupt
     """
     content = await page.append_markdown(markdown)
     print("content", content)

@@ -346,14 +346,11 @@ class MarkdownBuilder:
         self.children.append(EquationMarkdownNode(expression=expression))
         return self
 
-    def table_of_contents(self, color: str | None = None) -> Self:
+    def table_of_contents(self) -> Self:
         """
         Add a table of contents.
-
-        Args:
-            color: Optional color for the table of contents (e.g., "blue", "blue_background")
         """
-        self.children.append(TableOfContentsMarkdownNode(color=color))
+        self.children.append(TableOfContentsMarkdownNode())
         return self
 
     def columns(
