@@ -107,7 +107,7 @@ async def test_audio_with_external_url_should_render_markdown_audio_link(
 
     await audio_renderer._process(render_context)
 
-    assert render_context.markdown_result == "![audio](https://example.com/audio.mp3)"
+    assert render_context.markdown_result == "[audio](https://example.com/audio.mp3)"
 
 
 @pytest.mark.asyncio
@@ -120,7 +120,7 @@ async def test_audio_with_notion_hosted_file_should_render_markdown_audio_link(
 
     await audio_renderer._process(render_context)
 
-    assert render_context.markdown_result == "![audio](https://notion.so/file.mp3)"
+    assert render_context.markdown_result == "[audio](https://notion.so/file.mp3)"
 
 
 @pytest.mark.asyncio
@@ -137,7 +137,7 @@ async def test_audio_with_caption_should_include_caption_in_markdown(
 
     await audio_renderer._process(render_context)
 
-    assert "![audio](https://example.com/audio.mp3)" in render_context.markdown_result
+    assert "[audio](https://example.com/audio.mp3)" in render_context.markdown_result
     assert "[caption] Audio caption" in render_context.markdown_result
 
 
@@ -179,7 +179,7 @@ async def test_audio_with_indent_level_should_indent_output(
     await audio_renderer._process(render_context)
 
     render_context.indent_text.assert_called_once()
-    assert render_context.markdown_result == "  ![audio](https://example.com/audio.mp3)"
+    assert render_context.markdown_result == "  [audio](https://example.com/audio.mp3)"
 
 
 @pytest.mark.asyncio
@@ -194,7 +194,7 @@ async def test_audio_with_children_should_render_children_with_indent(
     await audio_renderer._process(render_context)
 
     render_context.render_children_with_additional_indent.assert_called_once_with(1)
-    assert "![audio](https://example.com/audio.mp3)" in render_context.markdown_result
+    assert "[audio](https://example.com/audio.mp3)" in render_context.markdown_result
     assert "Child content" in render_context.markdown_result
 
 

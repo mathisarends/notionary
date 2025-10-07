@@ -5,8 +5,6 @@ from notionary.page.content.renderer.renderers.captioned_block import CaptionedB
 
 
 class BookmarkRenderer(CaptionedBlockRenderer):
-    BOOKMARK_MARKDOWN_PATTERN = "[bookmark]({url})"
-
     @override
     def _can_handle(self, block: Block) -> bool:
         return block.type == BlockType.BOOKMARK
@@ -18,7 +16,8 @@ class BookmarkRenderer(CaptionedBlockRenderer):
         if not url:
             return ""
 
-        return self.BOOKMARK_MARKDOWN_PATTERN.format(url=url)
+        syntax = self._syntax_registry.get_bookmark_syntax()
+        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
 
     def _extract_bookmark_url(self, block: Block) -> str:
         if not block.bookmark:

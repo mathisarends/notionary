@@ -16,7 +16,8 @@ class EmbedRenderer(CaptionedBlockRenderer):
         if not url:
             return ""
 
-        return f"[embed]({url})"
+        syntax = self._syntax_registry.get_embed_syntax()
+        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
 
     def _extract_embed_url(self, block: Block) -> str:
         if not block.embed:

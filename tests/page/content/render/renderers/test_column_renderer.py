@@ -164,5 +164,7 @@ async def test_extract_column_start_without_data_should_return_base_marker(
 async def test_column_marker_constants_should_be_correct(
     column_renderer: ColumnRenderer,
 ) -> None:
-    assert column_renderer.BASE_START_MARKER == "::: column"
-    assert column_renderer.END_MARKER == ":::"
+    # The column syntax is now in SyntaxRegistry, not as a constant on the renderer
+    syntax = column_renderer._syntax_registry.get_column_syntax()
+    assert syntax.start_delimiter == "::: column"
+    assert syntax.end_delimiter == ":::"

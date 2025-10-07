@@ -16,7 +16,8 @@ class VideoRenderer(CaptionedBlockRenderer):
         if not url:
             return ""
 
-        return f"![video]({url})"
+        syntax = self._syntax_registry.get_video_syntax()
+        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
 
     def _extract_video_url(self, block: Block) -> str:
         if not block.video:

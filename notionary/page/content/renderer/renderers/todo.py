@@ -5,14 +5,16 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMa
 from notionary.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class TodoRenderer(BlockRenderer):
-    CHECKED_MARKER = "- [x] "
-    UNCHECKED_MARKER = "- [ ] "
-
-    def __init__(self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None) -> None:
-        super().__init__()
+    def __init__(
+        self,
+        syntax_registry: SyntaxRegistry | None = None,
+        rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
+    ) -> None:
+        super().__init__(syntax_registry=syntax_registry)
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
 
     @override
@@ -27,8 +29,9 @@ class TodoRenderer(BlockRenderer):
             context.markdown_result = ""
             return
 
-        marker = self.CHECKED_MARKER if is_checked else self.UNCHECKED_MARKER
-        todo_markdown = f"{marker}{content}"
+        syntax = self._syntax_registry.get_todo_done_syntax() if is_checked else self._syntax_registry.get_todo_syntax()
+
+        todo_markdown = f"{syntax.start_delimiter} {content}"
 
         if context.indent_level > 0:
             todo_markdown = context.indent_text(todo_markdown)

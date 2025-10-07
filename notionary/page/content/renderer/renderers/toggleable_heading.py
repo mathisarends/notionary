@@ -4,13 +4,17 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMa
 from notionary.blocks.schemas import Block, BlockType
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class ToggleableHeadingRenderer(BlockRenderer):
-    TOGGLE_DELIMITER = "+++"
-
-    def __init__(self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None) -> None:
-        super().__init__()
+    def __init__(
+        self,
+        syntax_registry: SyntaxRegistry | None = None,
+        rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
+    ) -> None:
+        super().__init__(syntax_registry=syntax_registry)
+        self._heading_syntax = self._syntax_registry.get_heading_syntax()
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
 
     @override
@@ -30,7 +34,8 @@ class ToggleableHeadingRenderer(BlockRenderer):
         if not title or level == 0:
             return
 
-        prefix = self.TOGGLE_DELIMITER + " " + ("#" * level)
+        syntax = self._syntax_registry.get_toggleable_heading_syntax()
+        prefix = self._syntax_registry.TOGGLE_DELIMITER + " " + (self._heading_syntax.start_delimiter * level)
         heading_start = f"{prefix} {title}"
 
         if context.indent_level > 0:
@@ -38,7 +43,7 @@ class ToggleableHeadingRenderer(BlockRenderer):
 
         children_markdown = await context.render_children()
 
-        heading_end = self.TOGGLE_DELIMITER
+        heading_end = syntax.end_delimiter
         if context.indent_level > 0:
             heading_end = context.indent_text(heading_end)
 

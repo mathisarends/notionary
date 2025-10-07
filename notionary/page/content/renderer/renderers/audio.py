@@ -16,7 +16,8 @@ class AudioRenderer(CaptionedBlockRenderer):
         if not url:
             return ""
 
-        return f"![audio]({url})"
+        syntax = self._syntax_registry.get_audio_syntax()
+        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
 
     def _extract_audio_url(self, block: Block) -> str:
         if not block.audio:

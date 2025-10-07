@@ -14,6 +14,9 @@ async def main() -> None:
     content = await page.append_markdown(markdown)
     print("content", content)
 
+    content = await page.get_markdown_content()
+    print("content", content)
+
 
 if __name__ == "__main__":
     import asyncio

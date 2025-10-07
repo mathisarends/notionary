@@ -12,6 +12,7 @@ class TableRenderer(BlockRenderer):
     def __init__(self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None) -> None:
         super().__init__()
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
+        self._table_syntax = self._syntax_registry.get_table_syntax()
 
     @override
     def _can_handle(self, block: Block) -> bool:
@@ -79,11 +80,13 @@ class TableRenderer(BlockRenderer):
 
     def _format_row(self, cells: list[str], column_widths: list[int]) -> str:
         centered_cells = [cell.center(column_widths[i]) for i, cell in enumerate(cells)]
-        return "| " + " | ".join(centered_cells) + " |"
+        delimiter = self._table_syntax.start_delimiter
+        return f"{delimiter} {f' {delimiter} '.join(centered_cells)} {delimiter}"
 
     def _create_separator_line(self, column_widths: list[int]) -> str:
         separators = ["-" * width for width in column_widths]
-        return "| " + " | ".join(separators) + " |"
+        delimiter = self._table_syntax.start_delimiter
+        return f"{delimiter} {f' {delimiter} '.join(separators)} {delimiter}"
 
     def _has_column_header(self, block: Block) -> bool:
         if not block.table:

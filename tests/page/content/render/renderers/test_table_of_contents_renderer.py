@@ -53,7 +53,7 @@ async def test_table_of_contents_should_render_toc_markdown(
 
     await table_of_contents_renderer._process(render_context)
 
-    assert "[[TOC]]" in render_context.markdown_result
+    assert "[toc]" in render_context.markdown_result
 
 
 @pytest.mark.asyncio
@@ -68,7 +68,7 @@ async def test_table_of_contents_without_children_should_render_toc_only(
     await table_of_contents_renderer._process(render_context)
 
     # TOC with no indentation (but conftest adds 2 spaces anyway when indent_level=0)
-    assert render_context.markdown_result == "[[TOC]]"
+    assert render_context.markdown_result == "[toc]"
 
 
 @pytest.mark.asyncio
@@ -83,8 +83,8 @@ async def test_table_of_contents_with_indentation_should_indent_toc(
     await table_of_contents_renderer._process(render_context)
 
     # Mock indent_text always adds 2 spaces
-    assert render_context.markdown_result == "  [[TOC]]"
-    render_context.indent_text.assert_called_once_with("[[TOC]]")
+    assert render_context.markdown_result == "  [toc]"
+    render_context.indent_text.assert_called_once_with("[toc]")
 
 
 @pytest.mark.asyncio
@@ -98,11 +98,13 @@ async def test_table_of_contents_with_children_should_render_with_newline_separa
 
     await table_of_contents_renderer._process(render_context)
 
-    assert render_context.markdown_result == "[[TOC]]\n    Child content"
+    assert render_context.markdown_result == "[toc]\n    Child content"
 
 
 @pytest.mark.asyncio
 async def test_table_of_contents_markdown_constant_should_be_correct(
     table_of_contents_renderer: TableOfContentsRenderer,
 ) -> None:
-    assert table_of_contents_renderer.TABLE_OF_CONTENTS_MARKDOWN == "[[TOC]]"
+    # The TOC syntax is now in SyntaxRegistry, not as a constant on the renderer
+    syntax = table_of_contents_renderer._syntax_registry.get_table_of_contents_syntax()
+    assert syntax.start_delimiter == "[toc]"

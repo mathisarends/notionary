@@ -7,9 +7,6 @@ from notionary.page.content.renderer.renderers.base import BlockRenderer
 
 
 class ColumnRenderer(BlockRenderer):
-    BASE_START_MARKER = "::: column"
-    END_MARKER = ":::"
-
     @override
     def _can_handle(self, block: Block) -> bool:
         return block.type == BlockType.COLUMN
@@ -23,7 +20,8 @@ class ColumnRenderer(BlockRenderer):
 
         children_markdown = await context.render_children()
 
-        column_end = self.END_MARKER
+        syntax = self._syntax_registry.get_column_syntax()
+        column_end = syntax.end_delimiter
         if context.indent_level > 0:
             column_end = context.indent_text(column_end, spaces=context.indent_level * 4)
 
@@ -33,11 +31,14 @@ class ColumnRenderer(BlockRenderer):
             context.markdown_result = f"{column_start}\n{column_end}"
 
     def _extract_column_start(self, block: Block) -> str:
+        syntax = self._syntax_registry.get_column_syntax()
+        base_start = syntax.start_delimiter
+
         if not block.column:
-            return self.BASE_START_MARKER
+            return base_start
 
         width_ratio = block.column.width_ratio
         if width_ratio:
-            return f"{self.BASE_START_MARKER} {width_ratio}"
+            return f"{base_start} {width_ratio}"
         else:
-            return self.BASE_START_MARKER
+            return base_start

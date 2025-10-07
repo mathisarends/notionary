@@ -61,7 +61,7 @@ async def test_pdf_with_external_url_should_render_markdown_link(
 
     await pdf_renderer._process(render_context)
 
-    assert render_context.markdown_result == "[PDF](https://example.com/document.pdf)"
+    assert render_context.markdown_result == "[pdf](https://example.com/document.pdf)"
 
 
 @pytest.mark.asyncio
@@ -75,7 +75,7 @@ async def test_pdf_with_notion_hosted_file_should_render_markdown_link(
 
     await pdf_renderer._process(render_context)
 
-    assert render_context.markdown_result == "[PDF](https://notion.so/document.pdf)"
+    assert render_context.markdown_result == "[pdf](https://notion.so/document.pdf)"
 
 
 @pytest.mark.asyncio
@@ -93,7 +93,7 @@ async def test_pdf_with_caption_should_include_caption_in_markdown(
 
     await pdf_renderer._process(render_context)
 
-    assert "[PDF](https://example.com/document.pdf)" in render_context.markdown_result
+    assert "[pdf](https://example.com/document.pdf)" in render_context.markdown_result
     assert "[caption] Important document" in render_context.markdown_result
 
 

@@ -12,13 +12,12 @@ class FileRenderer(CaptionedBlockRenderer):
     @override
     async def _render_main_content(self, block: Block) -> str:
         url = self._extract_file_url(block)
-        name = self._extract_file_name(block)
 
         if not url:
             return ""
 
-        link_text = name or "file"
-        return f"[{link_text}]({url})"
+        syntax = self._syntax_registry.get_file_syntax()
+        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
 
     def _extract_file_url(self, block: Block) -> str:
         if not block.file:

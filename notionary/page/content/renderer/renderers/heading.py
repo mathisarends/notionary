@@ -4,13 +4,17 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMa
 from notionary.blocks.schemas import Block, BlockType
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class HeadingRenderer(BlockRenderer):
-    HEADING_DELIMITER = "#"
-
-    def __init__(self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None) -> None:
-        super().__init__()
+    def __init__(
+        self,
+        syntax_registry: SyntaxRegistry | None = None,
+        rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
+    ) -> None:
+        super().__init__(syntax_registry=syntax_registry)
+        self._syntax = self._syntax_registry.get_heading_syntax()
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
 
     @override
@@ -32,7 +36,7 @@ class HeadingRenderer(BlockRenderer):
         if not title or level == 0:
             return
 
-        heading_markdown = f"{self.HEADING_DELIMITER * level} {title}"
+        heading_markdown = f"{self._syntax.start_delimiter * level} {title}"
 
         if context.indent_level > 0:
             heading_markdown = context.indent_text(heading_markdown)

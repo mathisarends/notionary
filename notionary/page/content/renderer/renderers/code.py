@@ -6,8 +6,6 @@ from notionary.page.content.renderer.renderers.captioned_block import CaptionedB
 
 
 class CodeRenderer(CaptionedBlockRenderer):
-    CODE_FENCE = "```"
-
     @override
     def _can_handle(self, block: Block) -> bool:
         return block.type == BlockType.CODE
@@ -20,8 +18,9 @@ class CodeRenderer(CaptionedBlockRenderer):
         if not code_content:
             return ""
 
-        code_start = f"{self.CODE_FENCE}{language}"
-        code_end = self.CODE_FENCE
+        syntax = self._syntax_registry.get_code_syntax()
+        code_start = f"{syntax.start_delimiter}{language}"
+        code_end = syntax.end_delimiter
         return f"{code_start}\n{code_content}\n{code_end}"
 
     def _extract_code_language(self, block: Block) -> str:

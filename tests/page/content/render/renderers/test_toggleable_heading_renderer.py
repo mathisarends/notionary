@@ -179,7 +179,9 @@ async def test_toggleable_heading_with_indentation_should_indent_delimiters(
 async def test_toggleable_heading_delimiter_constant_should_be_correct(
     toggleable_heading_renderer: ToggleableHeadingRenderer,
 ) -> None:
-    assert toggleable_heading_renderer.TOGGLE_DELIMITER == "+++"
+    # The toggle delimiter is now in SyntaxRegistry, not as a constant on the renderer
+    syntax = toggleable_heading_renderer._syntax_registry.get_toggleable_heading_syntax()
+    assert syntax.start_delimiter == "+++ #"
 
 
 @pytest.mark.asyncio

@@ -4,14 +4,16 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMa
 from notionary.blocks.schemas import Block, BlockType
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class CalloutRenderer(BlockRenderer):
-    CALLOUT_START = ":::"
-    CALLOUT_END = ":::"
-
-    def __init__(self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None) -> None:
-        super().__init__()
+    def __init__(
+        self,
+        syntax_registry: SyntaxRegistry | None = None,
+        rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
+    ) -> None:
+        super().__init__(syntax_registry=syntax_registry)
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
 
     @override
@@ -27,10 +29,14 @@ class CalloutRenderer(BlockRenderer):
             context.markdown_result = ""
             return
 
+        syntax = self._syntax_registry.get_callout_syntax()
+
         # Build callout structure
-        callout_header = f"{self.CALLOUT_START} callout"
+        # Extract just the base part before the regex pattern
+        callout_type = syntax.start_delimiter.split()[1]  # Gets "callout" from "::: callout"
+        callout_header = f"{self._syntax_registry.MULTI_LINE_BLOCK_DELIMITER} {callout_type}"
         if icon:
-            callout_header = f"{self.CALLOUT_START} callout {icon}"
+            callout_header = f"{self._syntax_registry.MULTI_LINE_BLOCK_DELIMITER} {callout_type} {icon}"
 
         if context.indent_level > 0:
             callout_header = context.indent_text(callout_header)
@@ -38,7 +44,7 @@ class CalloutRenderer(BlockRenderer):
         # Process children if they exist
         children_markdown = await context.render_children()
 
-        callout_end = self.CALLOUT_END
+        callout_end = syntax.end_delimiter
         if context.indent_level > 0:
             callout_end = context.indent_text(callout_end)
 

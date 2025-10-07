@@ -32,6 +32,8 @@ from notionary.page.content.parser.parsers import (
 )
 from notionary.page.content.syntax.service import SyntaxRegistry
 
+type LineParserChain = LineParser
+
 
 class ConverterChainFactory:
     def __init__(

@@ -89,5 +89,7 @@ async def test_column_list_with_indentation_should_indent_markers(
 async def test_column_list_marker_constants_should_be_correct(
     column_list_renderer: ColumnListRenderer,
 ) -> None:
-    assert column_list_renderer.START_MARKER == "::: columns"
-    assert column_list_renderer.END_MARKER == ":::"
+    # The column list syntax is now in SyntaxRegistry, not as a constant on the renderer
+    syntax = column_list_renderer._syntax_registry.get_column_list_syntax()
+    assert syntax.start_delimiter == "::: columns"
+    assert syntax.end_delimiter == ":::"

@@ -1,3 +1,6 @@
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.post_processing import NumberedListFixer
@@ -29,12 +32,15 @@ from notionary.page.content.renderer.renderers import (
     ToggleRenderer,
     VideoRenderer,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 from notionary.utils.mixins.logging import LoggingMixin
 
 
 class NotionToMarkdownConverter(LoggingMixin):
     def __init__(
         self,
+        syntax_registry: SyntaxRegistry | None = None,
+        rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
         numbered_list_fixer: NumberedListFixer | None = None,
         toggle_handler: ToggleRenderer | None = None,
         toggleable_heading_handler: ToggleableHeadingRenderer | None = None,
@@ -63,6 +69,8 @@ class NotionToMarkdownConverter(LoggingMixin):
         paragraph_handler: ParagraphRenderer | None = None,
         fallback_handler: FallbackRenderer | None = None,
     ) -> None:
+        self._syntax_registry = syntax_registry or SyntaxRegistry()
+        self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
         self._numbered_list_fixer = numbered_list_fixer or NumberedListFixer()
 
         self._toggle_handler = toggle_handler
@@ -95,31 +103,95 @@ class NotionToMarkdownConverter(LoggingMixin):
         self._setup_handler_chain()
 
     def _setup_handler_chain(self) -> None:
-        toggle_handler = self._toggle_handler or ToggleRenderer()
-        toggleable_heading_handler = self._toggleable_heading_handler or ToggleableHeadingRenderer()
-        heading_handler = self._heading_handler or HeadingRenderer()
-        callout_handler = self._callout_handler or CalloutRenderer()
-        code_handler = self._code_handler or CodeRenderer()
-        quote_handler = self._quote_handler or QuoteRenderer()
-        todo_handler = self._todo_handler or TodoRenderer()
-        bulleted_list_handler = self._bulleted_list_handler or BulletedListRenderer()
-        divider_handler = self._divider_handler or DividerRenderer()
-        column_list_handler = self._column_list_handler or ColumnListRenderer()
-        column_handler = self._column_handler or ColumnRenderer()
-        numbered_list_handler = self._numbered_list_handler or NumberedListRenderer()
-        bookmark_handler = self._bookmark_handler or BookmarkRenderer()
-        image_handler = self._image_handler or ImageRenderer()
-        video_handler = self._video_handler or VideoRenderer()
-        audio_handler = self._audio_handler or AudioRenderer()
-        file_handler = self._file_handler or FileRenderer()
-        pdf_handler = self._pdf_handler or PdfRenderer()
-        embed_handler = self._embed_handler or EmbedRenderer()
-        equation_handler = self._equation_handler or EquationRenderer()
-        table_of_contents_handler = self._table_of_contents_handler or TableOfContentsRenderer()
-        breadcrumb_handler = self._breadcrumb_handler or BreadcrumbRenderer()
-        table_handler = self._table_handler or TableRenderer()
+        toggle_handler = self._toggle_handler or ToggleRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        toggleable_heading_handler = self._toggleable_heading_handler or ToggleableHeadingRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        heading_handler = self._heading_handler or HeadingRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        callout_handler = self._callout_handler or CalloutRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        code_handler = self._code_handler or CodeRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        quote_handler = self._quote_handler or QuoteRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        todo_handler = self._todo_handler or TodoRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        bulleted_list_handler = self._bulleted_list_handler or BulletedListRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        divider_handler = self._divider_handler or DividerRenderer(
+            syntax_registry=self._syntax_registry,
+        )
+        column_list_handler = self._column_list_handler or ColumnListRenderer(
+            syntax_registry=self._syntax_registry,
+        )
+        column_handler = self._column_handler or ColumnRenderer(
+            syntax_registry=self._syntax_registry,
+        )
+        numbered_list_handler = self._numbered_list_handler or NumberedListRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        bookmark_handler = self._bookmark_handler or BookmarkRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        image_handler = self._image_handler or ImageRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        video_handler = self._video_handler or VideoRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        audio_handler = self._audio_handler or AudioRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        file_handler = self._file_handler or FileRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        pdf_handler = self._pdf_handler or PdfRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        embed_handler = self._embed_handler or EmbedRenderer(
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
+        equation_handler = self._equation_handler or EquationRenderer(
+            syntax_registry=self._syntax_registry,
+        )
+        table_of_contents_handler = self._table_of_contents_handler or TableOfContentsRenderer(
+            syntax_registry=self._syntax_registry,
+        )
+        breadcrumb_handler = self._breadcrumb_handler or BreadcrumbRenderer(
+            syntax_registry=self._syntax_registry,
+        )
+        table_handler = self._table_handler or TableRenderer(
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
         table_row_handler = self._table_row_handler or TableRowHandler()
-        paragraph_handler = self._paragraph_handler or ParagraphRenderer()
+        paragraph_handler = self._paragraph_handler or ParagraphRenderer(
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
+        )
         fallback_handler = self._fallback_handler or FallbackRenderer()
 
         # Chain handlers - most specific first, paragraph as fallback, fallback as final catch-all

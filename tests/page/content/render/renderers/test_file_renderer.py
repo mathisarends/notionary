@@ -61,7 +61,7 @@ async def test_file_with_external_url_and_name_should_render_markdown_link(
 
     await file_renderer._process(render_context)
 
-    assert render_context.markdown_result == "[document.pdf](https://example.com/document.pdf)"
+    assert render_context.markdown_result == "[file](https://example.com/document.pdf)"
 
 
 @pytest.mark.asyncio
@@ -89,7 +89,7 @@ async def test_file_with_notion_hosted_file_should_render_markdown_link(
 
     await file_renderer._process(render_context)
 
-    assert render_context.markdown_result == "[archive.zip](https://notion.so/file.zip)"
+    assert render_context.markdown_result == "[file](https://notion.so/file.zip)"
 
 
 @pytest.mark.asyncio
@@ -107,7 +107,7 @@ async def test_file_with_caption_should_include_caption_in_markdown(
 
     await file_renderer._process(render_context)
 
-    assert "[data.zip](https://example.com/file.zip)" in render_context.markdown_result
+    assert "[file](https://example.com/file.zip)" in render_context.markdown_result
     assert "[caption] Important file" in render_context.markdown_result
 
 

@@ -5,13 +5,16 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMa
 from notionary.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class ToggleRenderer(BlockRenderer):
-    TOGGLE_DELIMITER = "+++"
-
-    def __init__(self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None) -> None:
-        super().__init__()
+    def __init__(
+        self,
+        syntax_registry: SyntaxRegistry | None = None,
+        rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
+    ) -> None:
+        super().__init__(syntax_registry=syntax_registry)
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
 
     @override
@@ -25,14 +28,15 @@ class ToggleRenderer(BlockRenderer):
         if not toggle_title:
             return
 
-        toggle_start = f"{self.TOGGLE_DELIMITER} {toggle_title}"
+        syntax = self._syntax_registry.get_toggle_syntax()
+        toggle_start = f"{syntax.start_delimiter} {toggle_title}"
 
         if context.indent_level > 0:
             toggle_start = context.indent_text(toggle_start)
 
         children_markdown = await context.render_children()
 
-        toggle_end = self.TOGGLE_DELIMITER
+        toggle_end = syntax.end_delimiter
         if context.indent_level > 0:
             toggle_end = context.indent_text(toggle_end)
 

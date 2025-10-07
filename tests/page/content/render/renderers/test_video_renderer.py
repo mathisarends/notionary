@@ -61,7 +61,7 @@ async def test_video_with_external_url_should_render_markdown_video(
 
     await video_renderer._process(render_context)
 
-    assert render_context.markdown_result == "![video](https://example.com/video.mp4)"
+    assert render_context.markdown_result == "[video](https://example.com/video.mp4)"
 
 
 @pytest.mark.asyncio
@@ -75,7 +75,7 @@ async def test_video_with_notion_hosted_file_should_render_markdown_video(
 
     await video_renderer._process(render_context)
 
-    assert render_context.markdown_result == "![video](https://notion.so/video.mp4)"
+    assert render_context.markdown_result == "[video](https://notion.so/video.mp4)"
 
 
 @pytest.mark.asyncio
@@ -93,7 +93,7 @@ async def test_video_with_caption_should_include_caption_in_markdown(
 
     await video_renderer._process(render_context)
 
-    assert "![video](https://example.com/video.mp4)" in render_context.markdown_result
+    assert "[video](https://example.com/video.mp4)" in render_context.markdown_result
     assert "[caption] Video caption" in render_context.markdown_result
 
 

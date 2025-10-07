@@ -6,15 +6,14 @@ from notionary.page.content.renderer.renderers.base import BlockRenderer
 
 
 class BreadcrumbRenderer(BlockRenderer):
-    BREADCRUMB_MARKDOWN = "[breadcrumb]"
-
     @override
     def _can_handle(self, block: Block) -> bool:
         return block.type == BlockType.BREADCRUMB
 
     @override
     async def _process(self, context: MarkdownRenderingContext) -> None:
-        breadcrumb_markdown = self.BREADCRUMB_MARKDOWN
+        syntax = self._syntax_registry.get_breadcrumb_syntax()
+        breadcrumb_markdown = syntax.start_delimiter
 
         if context.indent_level > 0:
             breadcrumb_markdown = context.indent_text(breadcrumb_markdown)

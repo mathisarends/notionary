@@ -7,23 +7,21 @@ from notionary.page.content.renderer.renderers.base import BlockRenderer
 
 
 class ColumnListRenderer(BlockRenderer):
-    START_MARKER = "::: columns"
-    END_MARKER = ":::"
-
     @override
     def _can_handle(self, block: Block) -> bool:
         return block.type == BlockType.COLUMN_LIST
 
     @override
     async def _process(self, context: MarkdownRenderingContext) -> None:
-        column_list_start = self.START_MARKER
+        syntax = self._syntax_registry.get_column_list_syntax()
+        column_list_start = syntax.start_delimiter
 
         if context.indent_level > 0:
             column_list_start = context.indent_text(column_list_start)
 
         children_markdown = await context.render_children()
 
-        column_list_end = self.END_MARKER
+        column_list_end = syntax.end_delimiter
         if context.indent_level > 0:
             column_list_end = context.indent_text(column_list_end)
 

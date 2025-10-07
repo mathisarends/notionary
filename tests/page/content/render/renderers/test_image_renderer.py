@@ -61,7 +61,7 @@ async def test_image_with_external_url_should_render_markdown_image(
 
     await image_renderer._process(render_context)
 
-    assert render_context.markdown_result == "![image](https://example.com/image.png)"
+    assert render_context.markdown_result == "[image](https://example.com/image.png)"
 
 
 @pytest.mark.asyncio
@@ -75,7 +75,7 @@ async def test_image_with_notion_hosted_file_should_render_markdown_image(
 
     await image_renderer._process(render_context)
 
-    assert render_context.markdown_result == "![image](https://notion.so/image.png)"
+    assert render_context.markdown_result == "[image](https://notion.so/image.png)"
 
 
 @pytest.mark.asyncio
@@ -93,7 +93,7 @@ async def test_image_with_caption_should_include_caption_in_markdown(
 
     await image_renderer._process(render_context)
 
-    assert "![image](https://example.com/image.png)" in render_context.markdown_result
+    assert "[image](https://example.com/image.png)" in render_context.markdown_result
     assert "[caption] Image caption" in render_context.markdown_result
 
 

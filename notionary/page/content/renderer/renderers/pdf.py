@@ -16,7 +16,8 @@ class PdfRenderer(CaptionedBlockRenderer):
         if not url:
             return ""
 
-        return f"[PDF]({url})"
+        syntax = self._syntax_registry.get_pdf_syntax()
+        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
 
     def _extract_pdf_url(self, block: Block) -> str:
         if not block.pdf:

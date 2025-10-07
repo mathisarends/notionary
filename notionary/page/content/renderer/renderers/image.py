@@ -16,7 +16,8 @@ class ImageRenderer(CaptionedBlockRenderer):
         if not url:
             return ""
 
-        return f"![image]({url})"
+        syntax = self._syntax_registry.get_image_syntax()
+        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
 
     def _extract_image_url(self, block: Block) -> str:
         if not block.image:

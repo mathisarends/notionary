@@ -18,7 +18,8 @@ class EquationRenderer(BlockRenderer):
             context.markdown_result = ""
             return
 
-        equation_markdown = f"$${expression}$$"
+        syntax = self._syntax_registry.get_equation_syntax()
+        equation_markdown = f"{syntax.start_delimiter}{expression}{syntax.end_delimiter}"
 
         if context.indent_level > 0:
             equation_markdown = context.indent_text(equation_markdown)

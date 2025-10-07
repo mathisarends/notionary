@@ -6,15 +6,14 @@ from notionary.page.content.renderer.renderers.base import BlockRenderer
 
 
 class TableOfContentsRenderer(BlockRenderer):
-    TABLE_OF_CONTENTS_MARKDOWN = "[[TOC]]"
-
     @override
     def _can_handle(self, block: Block) -> bool:
         return block.type == BlockType.TABLE_OF_CONTENTS
 
     @override
     async def _process(self, context: MarkdownRenderingContext) -> None:
-        toc_markdown = self.TABLE_OF_CONTENTS_MARKDOWN
+        syntax = self._syntax_registry.get_table_of_contents_syntax()
+        toc_markdown = syntax.start_delimiter
 
         if context.indent_level > 0:
             toc_markdown = context.indent_text(toc_markdown)
