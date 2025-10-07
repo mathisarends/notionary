@@ -33,24 +33,24 @@ def test_simple_text_without_code_blocks_should_remove_leading_whitespace() -> N
 def test_code_block_should_preserve_relative_indentation() -> None:
     markdown = dedent(
         """
-        Text vor Code
+        Text before code
         ```python
             def hello():
                 print("world")
         ```
-        Text nach Code
+        Text after code
         """
     )
     result = process_markdown_whitespace(markdown)
 
     expected = dedent(
         """
-        Text vor Code
+        Text before code
         ```python
         def hello():
             print("world")
         ```
-        Text nach Code
+        Text after code
         """
     )
     assert result == expected

@@ -1,5 +1,7 @@
 import re
 
+from notionary.exceptions.block_parsing import InsufficientColumnsError, InvalidColumnRatioSumError
+
 COLUMNS_MARKER = "::: columns"
 COLUMN_MARKER = "::: column"
 BLOCK_CLOSING = ":::"
@@ -66,9 +68,7 @@ def _find_column_blocks(content: str) -> list[re.Match]:
 
 def _validate_minimum_columns(column_count: int) -> None:
     if column_count < 2:
-        raise ValueError(
-            f"columns Container muss mindestens 2 column Blöcke enthalten, aber nur {column_count} gefunden"
-        )
+        raise InsufficientColumnsError(column_count)
 
 
 def _extract_ratios(column_matches: list[re.Match]) -> list[float]:
@@ -89,4 +89,4 @@ def _validate_ratios(ratios: list[float], column_count: int) -> None:
     total = sum(ratios)
 
     if abs(total - 1.0) > RATIO_TOLERANCE:
-        raise ValueError(f"width_ratios müssen sich zu 1.0 addieren, aber Summe ist {total}")
+        raise InvalidColumnRatioSumError(f"width_ratios müssen sich zu 1.0 addieren, aber Summe ist {total}")

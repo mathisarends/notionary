@@ -2,7 +2,8 @@ from textwrap import dedent
 
 import pytest
 
-from notionary.page.content.parser.pre_processsing.syntax_check import validate_columns_syntax
+from notionary.exceptions.block_parsing import InsufficientColumnsError, InvalidColumnRatioSumError
+from notionary.page.content.parser.pre_processsing.column_syntax_check import validate_columns_syntax
 
 
 def test_no_columns_block_should_pass() -> None:
@@ -69,7 +70,7 @@ def test_columns_with_only_one_column_should_fail() -> None:
         :::
         """
     )
-    with pytest.raises(ValueError, match=r"muss mindestens 2 column Blöcke enthalten"):
+    with pytest.raises(InsufficientColumnsError):
         validate_columns_syntax(invalid_markdown)
 
 
@@ -129,7 +130,7 @@ def test_invalid_width_ratios_not_summing_to_one_should_fail() -> None:
         :::
         """
     )
-    with pytest.raises(ValueError, match=r"width_ratios müssen sich zu 1.0 addieren"):
+    with pytest.raises(InvalidColumnRatioSumError):
         validate_columns_syntax(invalid_markdown)
 
 
@@ -147,7 +148,7 @@ def test_invalid_width_ratios_summing_to_less_than_one_should_fail() -> None:
         :::
         """
     )
-    with pytest.raises(ValueError, match=r"width_ratios müssen sich zu 1.0 addieren.*aber Summe ist 0.5"):
+    with pytest.raises(InvalidColumnRatioSumError):
         validate_columns_syntax(invalid_markdown)
 
 
