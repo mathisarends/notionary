@@ -12,10 +12,6 @@ from notionary.page.content.parser.parsers.base import (
 
 
 class CaptionParser(LineParser):
-    """
-    Parser that handles caption lines and attaches them to the previous block.
-    """
-
     CAPTION_PATTERN = re.compile(r"^\[caption\]\s+(.+)$")
 
     def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None) -> None:

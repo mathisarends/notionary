@@ -14,10 +14,8 @@ from notionary.page.content.parser.parsers.base import (
 
 
 class TodoParser(LineParser):
-    """Handles todo/checkbox blocks with [ ] or [x] syntax."""
-
-    PATTERN = re.compile(r"^\s*[-*+]\s+\[ \]\s+(.+)$")
-    DONE_PATTERN = re.compile(r"^\s*[-*+]\s+\[x\]\s+(.+)$", re.IGNORECASE)
+    PATTERN = re.compile(r"^\s*-\s+\[ \]\s+(.+)$")
+    DONE_PATTERN = re.compile(r"^\s*-\s+\[x\]\s+(.+)$", re.IGNORECASE)
 
     def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None):
         super().__init__()
@@ -37,14 +35,14 @@ class TodoParser(LineParser):
             context.result_blocks.append(block)
 
     async def _create_todo_block(self, text: str) -> CreateToDoBlock | None:
-        m_done = self.DONE_PATTERN.match(text)
-        m_todo = None if m_done else self.PATTERN.match(text)
+        done_match = self.DONE_PATTERN.match(text)
+        todo_match = None if done_match else self.PATTERN.match(text)
 
-        if m_done:
-            content = m_done.group(1)
+        if done_match:
+            content = done_match.group(1)
             checked = True
-        elif m_todo:
-            content = m_todo.group(1)
+        elif todo_match:
+            content = todo_match.group(1)
             checked = False
         else:
             return None

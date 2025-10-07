@@ -17,5 +17,6 @@ def mock_rich_text_converter() -> MarkdownRichTextConverter:
 def context() -> BlockParsingContext:
     ctx: BlockParsingContext = Mock(spec=BlockParsingContext)
     ctx.result_blocks = []
+    ctx.parent_stack = []
     ctx.is_inside_parent_context = Mock(return_value=False)
     return ctx
