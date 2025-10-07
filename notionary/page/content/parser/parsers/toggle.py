@@ -15,12 +15,12 @@ class ToggleParser(LineParser):
     TOGGLE_END_PATTERN = r"^[+]{3}\s*$"
     TOGGLEABLE_HEADING_PATTERN = r"^[+]{3}\s*#{1,3}\s+.+$"
 
-    def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None) -> None:
+    def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
         super().__init__()
         self._start_pattern = re.compile(self.TOGGLE_START_PATTERN, re.IGNORECASE)
         self._end_pattern = re.compile(self.TOGGLE_END_PATTERN)
         self._heading_pattern = re.compile(self.TOGGLEABLE_HEADING_PATTERN, re.IGNORECASE)
-        self._rich_text_converter = rich_text_converter or MarkdownRichTextConverter()
+        self._rich_text_converter = rich_text_converter
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:

@@ -11,9 +11,9 @@ class TableParser(LineParser):
     TABLE_ROW_PATTERN = r"^\s*\|(.+)\|\s*$"
     SEPARATOR_PATTERN = r"^\s*\|([\s\-:|]+)\|\s*$"
 
-    def __init__(self, markdown_rich_text_converter: MarkdownRichTextConverter | None = None) -> None:
+    def __init__(self, markdown_rich_text_converter: MarkdownRichTextConverter) -> None:
         super().__init__()
-        self.markdown_rich_text_converter = markdown_rich_text_converter or MarkdownRichTextConverter()
+        self.markdown_rich_text_converter = markdown_rich_text_converter
         self._table_row_pattern = re.compile(self.TABLE_ROW_PATTERN)
         self._separator_pattern = re.compile(self.SEPARATOR_PATTERN)
 

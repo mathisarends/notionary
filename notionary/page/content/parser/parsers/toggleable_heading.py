@@ -28,11 +28,11 @@ class ToggleableHeadingParser(LineParser):
 
     HEADING_BLOCK_TYPES = (CreateHeading1Block, CreateHeading2Block, CreateHeading3Block)
 
-    def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None) -> None:
+    def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
         super().__init__()
         self._start_pattern = re.compile(self.HEADING_START_PATTERN, re.IGNORECASE)
         self._end_pattern = re.compile(self.HEADING_END_PATTERN)
-        self._rich_text_converter = rich_text_converter or MarkdownRichTextConverter()
+        self._rich_text_converter = rich_text_converter
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:

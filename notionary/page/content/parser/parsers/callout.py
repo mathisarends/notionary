@@ -16,11 +16,11 @@ class CalloutParser(LineParser):
     CALLOUT_END_PATTERN = r"^:::\s*$"
     DEFAULT_EMOJI = "💡"
 
-    def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None) -> None:
+    def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
         super().__init__()
         self._start_pattern = re.compile(self.CALLOUT_START_PATTERN, re.IGNORECASE)
         self._end_pattern = re.compile(self.CALLOUT_END_PATTERN)
-        self._rich_text_converter = rich_text_converter or MarkdownRichTextConverter()
+        self._rich_text_converter = rich_text_converter
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:

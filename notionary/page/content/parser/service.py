@@ -49,7 +49,7 @@ class MarkdownToNotionConverter(LoggingMixin):
         self._setup_handler_chain()
 
     def _setup_handler_chain(self) -> None:
-        code_parser = CodeParser()
+        code_parser = CodeParser(self._rich_text_converter)
         equation_parser = EquationParser()
         table_parser = TableParser()
         column_parser = ColumnParser()

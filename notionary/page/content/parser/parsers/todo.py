@@ -17,9 +17,9 @@ class TodoParser(LineParser):
     PATTERN = re.compile(r"^\s*-\s+\[ \]\s+(.+)$")
     DONE_PATTERN = re.compile(r"^\s*-\s+\[x\]\s+(.+)$", re.IGNORECASE)
 
-    def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None):
+    def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
         super().__init__()
-        self._rich_text_converter = rich_text_converter or MarkdownRichTextConverter()
+        self._rich_text_converter = rich_text_converter
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:

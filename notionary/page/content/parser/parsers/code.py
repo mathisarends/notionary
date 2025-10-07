@@ -13,9 +13,9 @@ class CodeParser(LineParser):
     CODE_END_PATTERN = r"^```\s*$"
     DEFAULT_LANGUAGE = CodeLanguage.PLAIN_TEXT
 
-    def __init__(self, rich_text_converter: MarkdownRichTextConverter | None = None) -> None:
+    def __init__(self, rich_text_converter: MarkdownRichTextConverter) -> None:
         super().__init__()
-        self._rich_text_converter = rich_text_converter or MarkdownRichTextConverter()
+        self._rich_text_converter = rich_text_converter
         self._code_start_pattern = re.compile(self.CODE_START_PATTERN)
         self._code_end_pattern = re.compile(self.CODE_END_PATTERN)
 
