@@ -2,10 +2,9 @@ from notionary.blocks.markdown.nodes import TableMarkdownNode
 from notionary.page.content.syntax.service import SyntaxRegistry
 
 
-def test_table_markdown_node() -> None:
+def test_table_markdown_node(syntax_registry: SyntaxRegistry) -> None:
     """Test TableMarkdownNode"""
-    registry = SyntaxRegistry()
-    table_syntax = registry.get_table_syntax()
+    table_syntax = syntax_registry.get_table_syntax()
 
     table = TableMarkdownNode(
         headers=["Name", "Age", "City"],

@@ -1,11 +1,10 @@
 from notionary.blocks.markdown.nodes import BookmarkMarkdownNode
+from notionary.page.content.syntax.models import SyntaxDefinition
 from notionary.page.content.syntax.service import SyntaxRegistry
 
 
-def test_bookmark_markdown_node() -> None:
-    registry = SyntaxRegistry()
-    bookmark_syntax = registry.get_bookmark_syntax()
-    caption_syntax = registry.get_caption_syntax()
+def test_bookmark_markdown_node(syntax_registry: SyntaxRegistry, caption_syntax: SyntaxDefinition) -> None:
+    bookmark_syntax = syntax_registry.get_bookmark_syntax()
 
     bookmark = BookmarkMarkdownNode(url="https://example.com")
     expected = f"{bookmark_syntax.start_delimiter}https://example.com)"

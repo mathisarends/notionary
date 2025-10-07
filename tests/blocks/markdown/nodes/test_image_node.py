@@ -1,11 +1,10 @@
 from notionary.blocks.markdown.nodes import ImageMarkdownNode
+from notionary.page.content.syntax.models import SyntaxDefinition
 from notionary.page.content.syntax.service import SyntaxRegistry
 
 
-def test_image_markdown_node() -> None:
-    registry = SyntaxRegistry()
-    image_syntax = registry.get_image_syntax()
-    caption_syntax = registry.get_caption_syntax()
+def test_image_markdown_node(syntax_registry: SyntaxRegistry, caption_syntax: SyntaxDefinition) -> None:
+    image_syntax = syntax_registry.get_image_syntax()
 
     image = ImageMarkdownNode(url="https://example.com/image.jpg")
     expected = f"{image_syntax.start_delimiter}https://example.com/image.jpg)"

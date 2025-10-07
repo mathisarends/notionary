@@ -2,10 +2,9 @@ from notionary.blocks.markdown.nodes import TodoMarkdownNode
 from notionary.page.content.syntax.service import SyntaxRegistry
 
 
-def test_todo_markdown_node() -> None:
+def test_todo_markdown_node(syntax_registry: SyntaxRegistry) -> None:
     """Test TodoMarkdownNode"""
-    registry = SyntaxRegistry()
-    todo_syntax = registry.get_todo_syntax()
+    todo_syntax = syntax_registry.get_todo_syntax()
 
     todo = TodoMarkdownNode(text="Buy groceries", checked=False)
     expected = f"- {todo_syntax.start_delimiter} Buy groceries"

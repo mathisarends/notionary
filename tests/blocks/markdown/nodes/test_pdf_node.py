@@ -1,11 +1,10 @@
 from notionary.blocks.markdown.nodes.pdf import PdfMarkdownNode
+from notionary.page.content.syntax.models import SyntaxDefinition
 from notionary.page.content.syntax.service import SyntaxRegistry
 
 
-def test_pdf_markdown_node() -> None:
-    registry = SyntaxRegistry()
-    pdf_syntax = registry.get_pdf_syntax()
-    caption_syntax = registry.get_caption_syntax()
+def test_pdf_markdown_node(syntax_registry: SyntaxRegistry, caption_syntax: SyntaxDefinition) -> None:
+    pdf_syntax = syntax_registry.get_pdf_syntax()
 
     pdf = PdfMarkdownNode(url="https://example.com/document.pdf")
     expected = f"{pdf_syntax.start_delimiter}https://example.com/document.pdf)"

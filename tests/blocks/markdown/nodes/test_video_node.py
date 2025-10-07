@@ -1,11 +1,10 @@
 from notionary.blocks.markdown.nodes import VideoMarkdownNode
+from notionary.page.content.syntax.models import SyntaxDefinition
 from notionary.page.content.syntax.service import SyntaxRegistry
 
 
-def test_video_markdown_node() -> None:
-    registry = SyntaxRegistry()
-    video_syntax = registry.get_video_syntax()
-    caption_syntax = registry.get_caption_syntax()
+def test_video_markdown_node(syntax_registry: SyntaxRegistry, caption_syntax: SyntaxDefinition) -> None:
+    video_syntax = syntax_registry.get_video_syntax()
 
     video = VideoMarkdownNode(url="https://youtube.com/watch?v=123")
     expected = f"{video_syntax.start_delimiter}https://youtube.com/watch?v=123)"

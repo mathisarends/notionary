@@ -10,20 +10,5 @@ def syntax_registry() -> SyntaxRegistry:
 
 
 @pytest.fixture
-def image_syntax(syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
-    return syntax_registry.get_image_syntax()
-
-
-@pytest.fixture
 def caption_syntax(syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
     return syntax_registry.get_caption_syntax()
-
-
-@pytest.fixture
-def table_syntax(syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
-    return syntax_registry.get_table_syntax()
-
-
-@pytest.fixture
-def code_syntax(syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
-    return syntax_registry.get_code_syntax()

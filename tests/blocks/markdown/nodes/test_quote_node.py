@@ -2,9 +2,8 @@ from notionary.blocks.markdown.nodes import QuoteMarkdownNode
 from notionary.page.content.syntax.service import SyntaxRegistry
 
 
-def test_quote_markdown_node() -> None:
-    registry = SyntaxRegistry()
-    quote_syntax = registry.get_quote_syntax()
+def test_quote_markdown_node(syntax_registry: SyntaxRegistry) -> None:
+    quote_syntax = syntax_registry.get_quote_syntax()
 
     quote = QuoteMarkdownNode(text="This is a quote")
     expected = f"{quote_syntax.start_delimiter} This is a quote"

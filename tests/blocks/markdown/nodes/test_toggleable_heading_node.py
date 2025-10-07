@@ -5,10 +5,9 @@ from notionary.blocks.markdown.nodes import (
 from notionary.page.content.syntax.service import SyntaxRegistry
 
 
-def test_toggleable_heading_markdown_node() -> None:
-    registry = SyntaxRegistry()
-    toggle_syntax = registry.get_toggle_syntax()
-    heading_syntax = registry.get_heading_syntax()
+def test_toggleable_heading_markdown_node(syntax_registry: SyntaxRegistry) -> None:
+    toggle_syntax = syntax_registry.get_toggle_syntax()
+    heading_syntax = syntax_registry.get_heading_syntax()
 
     toggleable_h1 = ToggleableHeadingMarkdownNode(text="Section 1", level=1, children=[])
     expected = (

@@ -1,11 +1,10 @@
 from notionary.blocks.markdown.nodes import CodeMarkdownNode
+from notionary.page.content.syntax.models import SyntaxDefinition
 from notionary.page.content.syntax.service import SyntaxRegistry
 
 
-def test_code_markdown_node() -> None:
-    registry = SyntaxRegistry()
-    code_syntax = registry.get_code_syntax()
-    caption_syntax = registry.get_caption_syntax()
+def test_code_markdown_node(syntax_registry: SyntaxRegistry, caption_syntax: SyntaxDefinition) -> None:
+    code_syntax = syntax_registry.get_code_syntax()
 
     code = CodeMarkdownNode(code="print('Hello World')")
     expected = f"{code_syntax.start_delimiter}\nprint('Hello World')\n{code_syntax.end_delimiter}"
