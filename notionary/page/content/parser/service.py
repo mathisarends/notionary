@@ -35,6 +35,7 @@ from notionary.page.content.parser.parsers import (
 from notionary.page.content.parser.post_processing.text_length import (
     NotionTextLengthProcessor,
 )
+from notionary.page.content.syntax.service import SyntaxRegistry
 from notionary.utils.mixins.logging import LoggingMixin
 
 
@@ -42,9 +43,11 @@ class MarkdownToNotionConverter(LoggingMixin):
     def __init__(
         self,
         rich_text_converter: MarkdownRichTextConverter | None = None,
+        syntax_registry: SyntaxRegistry | None = None,
     ) -> None:
         self._text_length_post_processor = NotionTextLengthProcessor()
         self._rich_text_converter = rich_text_converter or MarkdownRichTextConverter()
+        self._syntax_registry = syntax_registry or SyntaxRegistry()
 
         self._setup_handler_chain()
 
