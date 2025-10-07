@@ -51,7 +51,7 @@ class EquationParser(LineParser):
         return len(context.get_remaining_lines())
 
     def _create_equation_block(self, opening_line: str, equation_lines: list[str]) -> CreateEquationBlock | None:
-        if opening_line.strip() != self.EQUATION_DELIMITER:
+        if opening_line.strip() != self._syntax.start_delimiter:
             return None
 
         if not equation_lines:

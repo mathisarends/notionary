@@ -159,7 +159,7 @@ class SyntaxRegistry:
         definition = SyntaxDefinition(
             start_delimiter="[breadcrumb]",
             end_delimiter="",
-            regex_pattern=re.compile(r"^\[breadcrumb\]\s*$"),
+            regex_pattern=re.compile(r"^\[breadcrumb\]\s*$", re.IGNORECASE),
             is_multiline_block=False,
             is_inline=False,
         )
@@ -218,7 +218,7 @@ class SyntaxRegistry:
         definition = SyntaxDefinition(
             start_delimiter=f"{self.MULTI_LINE_BLOCK_DELIMITER} columns",
             end_delimiter=self.MULTI_LINE_BLOCK_DELIMITER,
-            regex_pattern=re.compile(rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*columns\s*$", re.IGNORECASE),
+            regex_pattern=re.compile(rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*columns?\s*$", re.IGNORECASE),
             end_regex_pattern=re.compile(rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*$"),
             is_multiline_block=True,
             is_inline=False,
@@ -229,7 +229,7 @@ class SyntaxRegistry:
         definition = SyntaxDefinition(
             start_delimiter="---",
             end_delimiter="",
-            regex_pattern=re.compile(r"^-{3,}\s*$"),
+            regex_pattern=re.compile(r"^\s*-{3,}\s*$"),
             is_multiline_block=False,
             is_inline=False,
         )
@@ -239,7 +239,7 @@ class SyntaxRegistry:
         definition = SyntaxDefinition(
             start_delimiter="[embed](",
             end_delimiter=")",
-            regex_pattern=re.compile(r"\[embed\]\(([^)]+)\)"),
+            regex_pattern=re.compile(r"\[embed\]\((https?://[^\s)]+)\)"),
             is_multiline_block=False,
             is_inline=True,
         )
@@ -363,7 +363,7 @@ class SyntaxRegistry:
         definition = SyntaxDefinition(
             start_delimiter="[toc]",
             end_delimiter="",
-            regex_pattern=re.compile(r"^\[toc\]\s*$", re.IGNORECASE),
+            regex_pattern=re.compile(r"^\[toc\]$", re.IGNORECASE),
             is_multiline_block=False,
             is_inline=False,
         )
