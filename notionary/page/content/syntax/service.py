@@ -295,16 +295,6 @@ class SyntaxRegistry:
         )
         self._definitions[SyntaxRegistryKey.HEADING_3] = definition
 
-    def _register_toggleable_heading_syntax(self) -> None:
-        definition = SyntaxDefinition(
-            start_delimiter="+++ #",
-            end_delimiter="+++",
-            regex_pattern=re.compile(r"^[+]{3}\s*(?P<level>#{1,3})(?!#)\s*(.+)$", re.IGNORECASE),
-            is_multiline_block=True,
-            is_inline=False,
-        )
-        self._definitions[SyntaxRegistryKey.TOGGLE] = definition
-
     def _register_image_syntax(self) -> None:
         definition = SyntaxDefinition(
             start_delimiter="[image](",
@@ -411,13 +401,12 @@ class SyntaxRegistry:
         self._definitions[SyntaxRegistryKey.TOGGLE] = definition
 
     def _register_toggleable_heading_syntax(self) -> None:
+        escaped_delimiter = re.escape(self.TOGGLE_DELIMITER)
         definition = SyntaxDefinition(
             start_delimiter=f"{self.TOGGLE_DELIMITER} #",
             end_delimiter=self.TOGGLE_DELIMITER,
-            regex_pattern=re.compile(
-                rf"^{re.escape(self.TOGGLE_DELIMITER)}\s*(?P<level>#{1, 3})(?!#)\s*(.+)$", re.IGNORECASE
-            ),
-            end_regex_pattern=re.compile(rf"^{re.escape(self.TOGGLE_DELIMITER)}\s*$"),
+            regex_pattern=re.compile(rf"^{escaped_delimiter}\s*(?P<level>#{{1,3}})(?!#)\s*(.+)$", re.IGNORECASE),
+            end_regex_pattern=re.compile(rf"^{escaped_delimiter}\s*$"),
             is_multiline_block=True,
             is_inline=False,
         )

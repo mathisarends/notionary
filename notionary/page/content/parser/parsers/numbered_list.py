@@ -38,7 +38,7 @@ class NumberedListParser(LineParser):
         if not match:
             return None
 
-        content = match.group(2)
+        content = match.group(3)
         rich_text = await self._rich_text_converter.to_rich_text(content)
 
         numbered_list_content = NumberedListItemData(rich_text=rich_text, color=BlockColor.DEFAULT)

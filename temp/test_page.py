@@ -7,20 +7,9 @@ async def main() -> None:
     page = await NotionPage.from_title(PAGE)
 
     markdown = """
-    ::: columns
-    ::: column
-    test
-    :::
-    ::: column
-    fest
-    :::
-    :::
-
-    wird hier was appended überhaupt
-
-    ```python
-    das hier ist python source code
-    ```
+    +++ ## heading 2
+    some text ending here.
+    +++
     """
     content = await page.append_markdown(markdown)
     print("content", content)
