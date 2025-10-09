@@ -89,9 +89,8 @@ class NotionHttpClient(LoggingMixin):
     async def patch(self, endpoint: str, data: dict[str, Any] | None = None) -> dict[str, Any] | None:
         return await self.make_request(HttpMethod.PATCH, endpoint, data)
 
-    async def delete(self, endpoint: str) -> bool:
-        result = await self.make_request(HttpMethod.DELETE, endpoint)
-        return result is not None
+    async def delete(self, endpoint: str) -> dict[str, Any] | None:
+        return await self.make_request(HttpMethod.DELETE, endpoint)
 
     async def make_request(
         self,

@@ -6,16 +6,8 @@ from notionary.http.client import NotionHttpClient
 
 class NotionBlockHttpClient(NotionHttpClient):
     async def get_block(self, block_id: str) -> Block | None:
-        self.logger.debug("Retrieving block: %s", block_id)
-
         response = await self.get(f"blocks/{block_id}")
-        if response:
-            try:
-                return Block.model_validate(response)
-            except Exception as e:
-                self.logger.error("Failed to parse block response: %s", str(e))
-                return None
-        return None
+        return Block.model_validate(response)
 
     async def get_blocks_by_page_id_recursively(self, page_id: str, parent_id: str | None = None) -> list[Block]:
         response = (
@@ -221,8 +213,5 @@ class NotionBlockHttpClient(NotionHttpClient):
         )
 
     async def delete_block(self, block_id: str) -> None:
-        """
-        Deletes (archives) a block.
-        """
         self.logger.debug("Deleting block: %s", block_id)
         await self.delete(f"blocks/{block_id}")

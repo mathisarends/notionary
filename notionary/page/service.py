@@ -6,10 +6,10 @@ from notionary.blocks.client import NotionBlockHttpClient
 from notionary.blocks.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
+from notionary.page.content.factory import PageContentServiceFactory
 from notionary.page.content.markdown.builder import MarkdownBuilder
-from notionary.page.content.page_content_deleting_service import PageContentDeletingService
 from notionary.page.content.renderer.service import NotionToMarkdownConverter
-from notionary.page.page_content_writer import PageContentWriter
+from notionary.page.content.service import PageContentService
 from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
 from notionary.page.properties.factory import PagePropertyHandlerFactory
@@ -41,8 +41,7 @@ class NotionPage(Entity):
         page_property_handler: PagePropertyHandler,
         block_client: NotionBlockHttpClient,
         comment_service: CommentService,
-        page_content_writer: PageContentWriter,
-        page_content_deleting_service: PageContentDeletingService,
+        page_content_service: PageContentService,
         page_content_retriever: NotionToMarkdownConverter,
         metadata_update_client: PageMetadataUpdateClient,
         public_url: str | None = None,
@@ -68,8 +67,7 @@ class NotionPage(Entity):
 
         self._block_client = block_client
         self._comment_service = comment_service
-        self._page_content_writer = page_content_writer
-        self._page_content_deleting_service = page_content_deleting_service
+        self._page_content_service = page_content_service
         self._page_content_retriever = page_content_retriever
         self.properties = page_property_handler
         self._metadata_update_client = metadata_update_client
@@ -147,8 +145,10 @@ class NotionPage(Entity):
     ) -> Self:
         block_client = NotionBlockHttpClient()
         comment_service = CommentService()
-        page_content_writer = PageContentWriter(page_id=id, block_client=block_client)
-        page_content_deleting_service = PageContentDeletingService(page_id=id, block_client=block_client)
+
+        page_content_service_factory = PageContentServiceFactory()
+        page_content_service = page_content_service_factory.create(page_id=id, block_client=block_client)
+
         page_content_retriever = NotionToMarkdownConverter()
         metadata_update_client = PageMetadataUpdateClient(page_id=id)
 
@@ -165,8 +165,7 @@ class NotionPage(Entity):
             page_property_handler=page_property_handler,
             block_client=block_client,
             comment_service=comment_service,
-            page_content_writer=page_content_writer,
-            page_content_deleting_service=page_content_deleting_service,
+            page_content_service=page_content_service,
             page_content_retriever=page_content_retriever,
             metadata_update_client=metadata_update_client,
             public_url=public_url,
@@ -213,17 +212,17 @@ class NotionPage(Entity):
         self,
         content: (str | Callable[[MarkdownBuilder], MarkdownBuilder]),
     ) -> None:
-        await self._page_content_writer.append_markdown(content=content)
+        await self._page_content_service.append_markdown(content=content)
 
     async def replace_content(
         self,
         content: (str | Callable[[MarkdownBuilder], MarkdownBuilder]),
     ) -> None:
-        await self._page_content_deleting_service.clear_page_content()
-        await self._page_content_writer.append_markdown(content=content)
+        await self._page_content_service.clear()
+        await self._page_content_service.append_markdown(content=content)
 
     async def clear_page_content(self) -> None:
-        await self._page_content_deleting_service.clear_page_content()
+        await self._page_content_service.clear()
 
     async def get_markdown_content(self) -> str:
         blocks = await self._block_client.get_blocks_by_page_id_recursively(page_id=self._id)

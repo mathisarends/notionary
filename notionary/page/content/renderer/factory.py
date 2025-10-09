@@ -33,7 +33,6 @@ from notionary.page.content.renderer.renderers import (
 from notionary.page.content.syntax.service import SyntaxRegistry
 
 
-# TODO: This is unused for now however we want to use this to make this more testable
 class RendererChainFactory:
     def __init__(
         self,
