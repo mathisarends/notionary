@@ -1,11 +1,18 @@
+from notionary.data_source.query.service import DataSourceFilterBuilder
+
 from notionary import NotionDataSource
 
 
 async def main() -> None:
-    data_source = await NotionDataSource.from_title("Wissen und Notizen")
+    data_source = await NotionDataSource.from_title("Test Data Source")
 
-    options = data_source.get_multi_select_options_by_property_name("Tags")
-    print("options:", options)
+    builder = DataSourceFilterBuilder()
+    filters = builder.where("TestProperty").contains("Immer").build()
+
+    pages = await data_source.get_pages(filters=filters)
+
+    for page in pages:
+        print(page.title)
 
 
 if __name__ == "__main__":

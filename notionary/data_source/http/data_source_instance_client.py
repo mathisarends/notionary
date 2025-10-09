@@ -7,6 +7,7 @@ from notionary.data_source.schemas import DataSourceDto, QueryDataSourceResponse
 from notionary.http.client import NotionHttpClient
 from notionary.page.schemas import NotionPageDto
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
+from notionary.utils.pagination import paginate_notion_api
 
 if TYPE_CHECKING:
     from notionary import NotionPage
@@ -52,8 +53,24 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
         )
         return updated_markdown_description
 
-    async def query(self, query_data: dict[str, Any] | None = None) -> QueryDataSourceResponse:
-        response = await self.post(f"data_sources/{self._data_source_id}/query", data=query_data)
+    async def query(self, filter: dict[str, Any] | None = None) -> QueryDataSourceResponse:
+        all_results = await paginate_notion_api(self._make_query_request, query_data=filter or {})
+
+        return QueryDataSourceResponse(
+            object="list",
+            results=all_results,
+            next_cursor=None,
+            has_more=False,
+        )
+
+    async def _make_query_request(
+        self, query_data: dict[str, Any], start_cursor: str | None = None
+    ) -> QueryDataSourceResponse:
+        current_query_data = query_data.copy()
+        if start_cursor:
+            current_query_data["start_cursor"] = start_cursor
+
+        response = await self.post(f"data_sources/{self._data_source_id}/query", data=current_query_data)
         return QueryDataSourceResponse.model_validate(response)
 
     async def create_blank_page(self, title: str | None = None) -> NotionPage:
