@@ -24,11 +24,8 @@ class PageContentService(LoggingMixin):
         self._notion_to_markdown_converter = notion_to_markdown_converter
 
     async def get_as_markdown(self) -> str:
-        blocks = await self._block_client.get_blocks_by_page_id_recursively(page_id=self._page_id)
+        blocks = await self._block_client.get_all_block_children(parent_block_id=self._page_id)
         return await self._notion_to_markdown_converter.convert(blocks=blocks)
-
-    async def get_as_blocks(self) -> list[Block]:
-        return await self._block_client.get_blocks_by_page_id_recursively(page_id=self._page_id)
 
     async def clear(self) -> None:
         children_response = await self._block_client.get_block_children(block_id=self._page_id)
@@ -39,7 +36,7 @@ class PageContentService(LoggingMixin):
 
         await asyncio.gather(*[self._delete_single_block(block) for block in children_response.results])
 
-    @async_retry(max_retries=5, initial_delay=0.2, backoff_factor=2.0)
+    @async_retry(max_retries=10, initial_delay=0.2, backoff_factor=1.5)
     async def _delete_single_block(self, block: Block) -> None:
         self.logger.debug("Deleting block: %s", block.id)
         await self._block_client.delete_block(block.id)

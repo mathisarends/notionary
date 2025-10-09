@@ -2,45 +2,31 @@ from typing import Any
 
 from notionary.blocks.schemas import Block, BlockChildrenResponse, BlockCreatePayload
 from notionary.http.client import NotionHttpClient
+from notionary.utils.pagination import paginate_notion_api
 
 
 class NotionBlockHttpClient(NotionHttpClient):
-    async def get_block(self, block_id: str) -> Block | None:
+    BATCH_SIZE = 100
+
+    async def get_block(self, block_id: str) -> Block:
         response = await self.get(f"blocks/{block_id}")
         return Block.model_validate(response)
 
-    async def get_blocks_by_page_id_recursively(self, page_id: str, parent_id: str | None = None) -> list[Block]:
-        response = (
-            await self.get_block_children(block_id=page_id)
-            if parent_id is None
-            else await self.get_block_children(block_id=parent_id)
-        )
+    async def delete_block(self, block_id: str) -> None:
+        self.logger.debug("Deleting block: %s", block_id)
+        await self.delete(f"blocks/{block_id}")
 
-        if not response or not response.results:
-            return []
+    async def get_all_block_children(self, parent_block_id: str) -> list[Block]:
+        self.logger.debug("Retrieving all children for block: %s", parent_block_id)
 
-        blocks = response.results
+        all_blocks = await paginate_notion_api(self.get_block_children, block_id=parent_block_id)
 
-        for block in blocks:
-            if not block.has_children:
-                continue
-
-            block_id = block.id
-            if not block_id:
-                continue
-
-            children = await self.get_blocks_by_page_id_recursively(page_id=page_id, parent_id=block_id)
-            if children:
-                block.children = children
-
-        return blocks
+        self.logger.debug("Retrieved %d total children for block %s", len(all_blocks), parent_block_id)
+        return all_blocks
 
     async def get_block_children(
         self, block_id: str, start_cursor: str | None = None, page_size: int = 100
-    ) -> BlockChildrenResponse | None:
-        """
-        Retrieves the children of a block with pagination support.
-        """
+    ) -> BlockChildrenResponse:
         self.logger.debug("Retrieving children of block: %s", block_id)
 
         params = {"page_size": min(page_size, 100)}
@@ -48,170 +34,85 @@ class NotionBlockHttpClient(NotionHttpClient):
             params["start_cursor"] = start_cursor
 
         response = await self.get(f"blocks/{block_id}/children", params=params)
-
-        if not response:
-            return None
-
-        try:
-            return BlockChildrenResponse.model_validate(response)
-        except Exception as e:
-            self.logger.error("Failed to parse block children response: %s", str(e))
-            return None
-
-    async def get_all_block_children(self, block_id: str) -> list[Block]:
-        """
-        Retrieves ALL children of a block, handling pagination automatically.
-        """
-        all_blocks = []
-        cursor = None
-
-        while True:
-            response = await self.get_block_children(block_id=block_id, start_cursor=cursor, page_size=100)
-
-            if not response:
-                break
-
-            all_blocks.extend(response.results)
-
-            if not response.has_more:
-                break
-
-            cursor = response.next_cursor
-
-        self.logger.debug("Retrieved %d total children for block %s", len(all_blocks), block_id)
-        return all_blocks
+        return BlockChildrenResponse.model_validate(response)
 
     async def append_block_children(
         self,
         block_id: str,
         children: list[BlockCreatePayload],
-        after: str | None = None,
+        insert_after_block_id: str | None = None,
     ) -> BlockChildrenResponse | None:
-        """
-        Appends new child blocks to a parent block.
-        Automatically handles batching for more than 100 blocks.
-        """
         if not children:
             self.logger.warning("No children provided to append")
             return None
 
         self.logger.debug("Appending %d children to block: %s", len(children), block_id)
 
-        # Convert Pydantic models to dictionaries for API
-        children_dicts = [block.model_dump(exclude_none=True) for block in children]
+        batches = self._split_into_batches(children)
 
-        # If 100 or fewer blocks, use single request
-        if len(children_dicts) <= 100:
-            return await self._append_single_batch(block_id, children_dicts, after)
+        if len(batches) == 1:
+            children_dicts = self._serialize_blocks(batches[0])
+            return await self._send_append_request(block_id, children_dicts, insert_after_block_id)
 
-        # For more than 100 blocks, use batch processing
-        return await self._append_multiple_batches(block_id, children_dicts, after)
+        return await self._send_batched_append_requests(block_id, batches, insert_after_block_id)
 
-    async def _append_single_batch(
-        self, block_id: str, children: list[dict[str, Any]], after: str | None = None
-    ) -> BlockChildrenResponse | None:
-        """
-        Appends a single batch of blocks (≤100).
-        """
-        data = {"children": children}
-        if after:
-            data["after"] = after
+    def _split_into_batches(self, blocks: list[BlockCreatePayload]) -> list[list[BlockCreatePayload]]:
+        batches = []
+        for i in range(0, len(blocks), self.BATCH_SIZE):
+            batch = blocks[i : i + self.BATCH_SIZE]
+            batches.append(batch)
+        return batches
 
-        response = await self.patch(f"blocks/{block_id}/children", data)
-        if response:
-            try:
-                return BlockChildrenResponse.model_validate(response)
-            except Exception as e:
-                self.logger.error("Failed to parse append response: %s", str(e))
-                return None
-        return None
+    def _serialize_blocks(self, blocks: list[BlockCreatePayload]) -> list[dict[str, Any]]:
+        return [block.model_dump(exclude_none=True) for block in blocks]
 
-    async def _append_multiple_batches(
-        self, block_id: str, children: list[dict[str, Any]], after: str | None = None
-    ) -> BlockChildrenResponse | None:
-        """
-        Appends multiple batches of blocks, handling pagination.
-        """
-        all_results = []
-        current_after = after
-        batch_size = 100
+    async def _send_append_request(
+        self, block_id: str, children: list[dict[str, Any]], after_block_id: str | None = None
+    ) -> BlockChildrenResponse:
+        payload = {"children": children}
+        if after_block_id:
+            payload["after"] = after_block_id
 
-        self.logger.info("Processing %d blocks in batches of %d", len(children), batch_size)
+        response = await self.patch(f"blocks/{block_id}/children", payload)
+        return BlockChildrenResponse.model_validate(response)
 
-        # Process blocks in chunks of 100
-        for i in range(0, len(children), batch_size):
-            batch = children[i : i + batch_size]
-            batch_num = (i // batch_size) + 1
-            total_batches = (len(children) + batch_size - 1) // batch_size
+    async def _send_batched_append_requests(
+        self, block_id: str, batches: list[list[BlockCreatePayload]], initial_after_block_id: str | None = None
+    ) -> BlockChildrenResponse:
+        total_blocks = sum(len(batch) for batch in batches)
+        self.logger.info("Appending %d blocks in %d batches", total_blocks, len(batches))
 
-            self.logger.debug(
-                "Processing batch %d/%d (%d blocks)",
-                batch_num,
-                total_batches,
-                len(batch),
-            )
+        all_responses = []
+        after_block_id = initial_after_block_id
 
-            # Append current batch
-            response = await self._append_single_batch(block_id, batch, current_after)
+        for batch_index, batch in enumerate(batches, start=1):
+            self.logger.debug("Processing batch %d/%d (%d blocks)", batch_index, len(batches), len(batch))
 
-            if not response:
-                self.logger.error("Failed to append batch %d/%d", batch_num, total_batches)
-                # Return partial results if we have any
-                if all_results:
-                    return self._combine_batch_responses(all_results)
-                return None
+            children_dicts = self._serialize_blocks(batch)
+            response = await self._send_append_request(block_id, children_dicts, after_block_id)
+            all_responses.append(response)
 
-            all_results.append(response)
-
-            # Update 'after' to the last block ID from this batch for next iteration
             if response.results:
-                current_after = response.results[-1].id
+                after_block_id = response.results[-1].id
 
-            self.logger.debug("Successfully appended batch %d/%d", batch_num, total_batches)
+            self.logger.debug("Completed batch %d/%d", batch_index, len(batches))
 
-        self.logger.info(
-            "Successfully appended all %d blocks in %d batches",
-            len(children),
-            len(all_results),
-        )
+        self.logger.info("Successfully appended all blocks in %d batches", len(batches))
+        return self._merge_responses(all_responses)
 
-        # Combine all batch responses into a single response
-        return self._combine_batch_responses(all_results)
-
-    def _combine_batch_responses(self, responses: list[BlockChildrenResponse]) -> BlockChildrenResponse:
-        """
-        Combines multiple batch responses into a single response.
-        """
+    def _merge_responses(self, responses: list[BlockChildrenResponse]) -> BlockChildrenResponse:
         if not responses:
-            # Return empty response structure
-            return BlockChildrenResponse(
-                object="list",
-                results=[],
-                next_cursor=None,
-                has_more=False,
-                type="block",
-                block={},
-                request_id="",
-            )
+            raise ValueError("Cannot merge empty response list - this should never happen")
 
-        # Use the first response as template and combine all results
-        combined = responses[0]
-        all_blocks = []
+        first_response = responses[0]
+        all_results = [block for response in responses for block in response.results]
 
-        for response in responses:
-            all_blocks.extend(response.results)
-
-        # Create new combined response
         return BlockChildrenResponse(
-            object=combined.object,
-            results=all_blocks,
-            next_cursor=None,  # No pagination in combined result
-            has_more=False,  # All blocks are included
-            type=combined.type,
-            block=combined.block,
-            request_id=responses[-1].request_id,  # Use last request ID
+            object=first_response.object,
+            results=all_results,
+            next_cursor=None,
+            has_more=False,
+            type=first_response.type,
+            block=first_response.block,
+            request_id=responses[-1].request_id,
         )
-
-    async def delete_block(self, block_id: str) -> None:
-        self.logger.debug("Deleting block: %s", block_id)
-        await self.delete(f"blocks/{block_id}")
