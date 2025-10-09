@@ -4,7 +4,7 @@ from typing import override
 from notionary.page.content.renderer.post_processing.port import PostProcessor
 
 
-class NumberedListPostProcessor(PostProcessor):
+class NumberedListPlaceholderReplaceerPostProcessor(PostProcessor):
     """
     Handles post processing of numbered lists in markdown text.
     Would otherwise require complex state management during initial rendering.

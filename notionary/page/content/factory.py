@@ -6,7 +6,7 @@ from notionary.page.content.parser.pre_processsing.handlers import ColumnSyntaxP
 from notionary.page.content.parser.pre_processsing.service import MarkdownPreProcessor
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.page.content.renderer.factory import RendererChainFactory
-from notionary.page.content.renderer.post_processing.handlers import NumberedListPostProcessor
+from notionary.page.content.renderer.post_processing.handlers import NumberedListPlaceholderReplaceerPostProcessor
 from notionary.page.content.renderer.post_processing.service import MarkdownRenderingPostProcessor
 from notionary.page.content.renderer.service import NotionToMarkdownConverter
 from notionary.page.content.service import PageContentService
@@ -64,5 +64,5 @@ class PageContentServiceFactory:
 
     def _create_markdown_rendering_post_processor(self) -> MarkdownRenderingPostProcessor:
         post_processor = MarkdownRenderingPostProcessor()
-        post_processor.register(NumberedListPostProcessor())
+        post_processor.register(NumberedListPlaceholderReplaceerPostProcessor())
         return post_processor
