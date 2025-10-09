@@ -22,9 +22,7 @@ class MarkdownToNotionConverter(LoggingMixin):
             return []
 
         markdown_text = self._pre_processor.process(markdown_text)
-
         all_blocks = await self._process_lines(markdown_text)
-
         all_blocks = self._post_processor.process(all_blocks)
 
         return all_blocks

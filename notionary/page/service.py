@@ -39,6 +39,12 @@ class NotionPage(Entity):
         archived: bool,
         in_trash: bool,
         page_property_handler: PagePropertyHandler,
+        block_client: NotionBlockHttpClient,
+        comment_service: CommentService,
+        page_content_writer: PageContentWriter,
+        page_content_deleting_service: PageContentDeletingService,
+        page_content_retriever: NotionToMarkdownConverter,
+        metadata_update_client: PageMetadataUpdateClient,
         public_url: str | None = None,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
@@ -60,20 +66,13 @@ class NotionPage(Entity):
         self._url = url
         self._public_url = public_url
 
-        self._block_client = NotionBlockHttpClient()
-        self._comment_service = CommentService()
-
-        self._page_content_writer = PageContentWriter(page_id=self._id, block_client=self._block_client)
-
-        self._page_content_deleting_service = PageContentDeletingService(
-            page_id=self._id, block_client=self._block_client
-        )
-
-        self._page_content_retriever = NotionToMarkdownConverter()
-
+        self._block_client = block_client
+        self._comment_service = comment_service
+        self._page_content_writer = page_content_writer
+        self._page_content_deleting_service = page_content_deleting_service
+        self._page_content_retriever = page_content_retriever
         self.properties = page_property_handler
-
-        self._metadata_update_client = PageMetadataUpdateClient(page_id=id)
+        self._metadata_update_client = metadata_update_client
 
     @classmethod
     async def from_id(
@@ -111,7 +110,7 @@ class NotionPage(Entity):
             page_property_handler_factory.create_from_page_response(response),
         )
 
-        return cls(
+        return cls._create_with_dependencies(
             id=response.id,
             title=title,
             created_time=response.created_time,
@@ -126,6 +125,54 @@ class NotionPage(Entity):
             emoji_icon=extract_emoji_icon_from_dto(response),
             external_icon_url=extract_external_icon_url_from_dto(response),
             cover_image_url=extract_cover_image_url_from_dto(response),
+        )
+
+    @classmethod
+    def _create_with_dependencies(
+        cls,
+        id: str,
+        title: str,
+        created_time: str,
+        created_by: PartialUserDto,
+        last_edited_time: str,
+        last_edited_by: PartialUserDto,
+        url: str,
+        archived: bool,
+        in_trash: bool,
+        page_property_handler: PagePropertyHandler,
+        public_url: str | None = None,
+        emoji_icon: str | None = None,
+        external_icon_url: str | None = None,
+        cover_image_url: str | None = None,
+    ) -> Self:
+        block_client = NotionBlockHttpClient()
+        comment_service = CommentService()
+        page_content_writer = PageContentWriter(page_id=id, block_client=block_client)
+        page_content_deleting_service = PageContentDeletingService(page_id=id, block_client=block_client)
+        page_content_retriever = NotionToMarkdownConverter()
+        metadata_update_client = PageMetadataUpdateClient(page_id=id)
+
+        return cls(
+            id=id,
+            title=title,
+            created_time=created_time,
+            created_by=created_by,
+            last_edited_time=last_edited_time,
+            last_edited_by=last_edited_by,
+            url=url,
+            archived=archived,
+            in_trash=in_trash,
+            page_property_handler=page_property_handler,
+            block_client=block_client,
+            comment_service=comment_service,
+            page_content_writer=page_content_writer,
+            page_content_deleting_service=page_content_deleting_service,
+            page_content_retriever=page_content_retriever,
+            metadata_update_client=metadata_update_client,
+            public_url=public_url,
+            emoji_icon=emoji_icon,
+            external_icon_url=external_icon_url,
+            cover_image_url=cover_image_url,
         )
 
     @staticmethod

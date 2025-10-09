@@ -56,7 +56,6 @@ class PageContentWriter(LoggingMixin):
             return
 
         blocks = await self._markdown_to_notion_converter.convert(markdown)
-
         await self._block_client.append_block_children(block_id=self.page_id, children=blocks)
 
     def _extract_markdown_from_param(

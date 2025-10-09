@@ -220,14 +220,9 @@ class NotionBlockHttpClient(NotionHttpClient):
             request_id=responses[-1].request_id,  # Use last request ID
         )
 
-    async def delete_block(self, block_id: str) -> Block | None:
+    async def delete_block(self, block_id: str) -> None:
         """
         Deletes (archives) a block.
         """
         self.logger.debug("Deleting block: %s", block_id)
-
-        success = await self.delete(f"blocks/{block_id}")
-        if success:
-            # After deletion, retrieve the block to return the updated state
-            return await self.get_block(block_id)
-        return None
+        await self.delete(f"blocks/{block_id}")
