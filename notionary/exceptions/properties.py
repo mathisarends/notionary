@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from notionary.exceptions.base import NotionaryError
-from notionary.shared.models.parent_models import ParentType
+from notionary.shared.models.parent import ParentType
 
 
 class PagePropertyNotFoundError(NotionaryError):

@@ -8,7 +8,7 @@ from notionary.page.content.parser.parsers.base import (
     LineParser,
 )
 from notionary.page.content.syntax.service import SyntaxRegistry
-from notionary.shared.models.icon_models import EmojiIcon
+from notionary.shared.models.icon import EmojiIcon
 
 
 class CalloutParser(LineParser):

@@ -29,7 +29,7 @@ from notionary.page.properties.models import (
     PageTitleProperty,
     PageURLProperty,
 )
-from notionary.shared.models.parent_models import ParentType
+from notionary.shared.models.parent import ParentType
 
 if TYPE_CHECKING:
     from notionary import NotionDataSource
@@ -204,10 +204,6 @@ class PagePropertyHandler:
         relation_ids = await self._convert_page_titles_to_ids(page_titles)
         updated_page = await self._property_http_client.patch_relation_property(property_name, relation_ids)
         self._properties = updated_page.properties
-
-    # =========================================================================
-    # Private Helper Methods
-    # =========================================================================
 
     async def _ensure_data_source_loaded(self) -> None:
         from notionary import NotionDataSource

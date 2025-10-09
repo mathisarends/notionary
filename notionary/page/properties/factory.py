@@ -3,7 +3,7 @@ from typing import cast
 from notionary.page.properties.client import PagePropertyHttpClient
 from notionary.page.properties.service import PagePropertyHandler
 from notionary.page.schemas import NotionPageDto
-from notionary.shared.models.parent_models import DataSourceParent, ParentType
+from notionary.shared.models.parent import DataSourceParent, ParentType
 
 
 class PagePropertyHandlerFactory:

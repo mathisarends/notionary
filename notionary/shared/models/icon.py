@@ -3,7 +3,7 @@ from typing import Literal, Self
 
 from pydantic import BaseModel
 
-from notionary.shared.models.file_models import ExternalFile
+from notionary.shared.models.file import ExternalFile
 
 
 class IconType(StrEnum):

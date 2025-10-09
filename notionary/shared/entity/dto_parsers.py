@@ -2,9 +2,9 @@ from typing import cast
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.shared.entity.schemas import Describable, EntityResponseDto, Titled
-from notionary.shared.models.cover_models import CoverType
-from notionary.shared.models.icon_models import IconType
-from notionary.shared.models.parent_models import DatabaseParent, DataSourceParent, ParentType
+from notionary.shared.models.cover import CoverType
+from notionary.shared.models.icon import IconType
+from notionary.shared.models.parent import DatabaseParent, DataSourceParent, ParentType
 
 
 def extract_emoji_icon_from_dto(entity_dto: EntityResponseDto) -> str | None:

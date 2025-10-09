@@ -9,7 +9,7 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMa
 from notionary.blocks.schemas import Block, CalloutBlock, CalloutData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.callout import CalloutRenderer
-from notionary.shared.models.icon_models import EmojiIcon
+from notionary.shared.models.icon import EmojiIcon
 
 
 def _create_emoji_icon(emoji: str) -> EmojiIcon:

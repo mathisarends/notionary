@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
 from notionary.shared.entity.schemas import EntityResponseDto, NotionEntityUpdateDto
-from notionary.shared.models.cover_models import NotionCover
-from notionary.shared.models.icon_models import EmojiIcon, ExternalIcon
+from notionary.shared.models.cover import NotionCover
+from notionary.shared.models.icon import EmojiIcon, ExternalIcon
 
 
 class EntityMetadataUpdateClient(ABC):

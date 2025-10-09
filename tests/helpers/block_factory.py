@@ -4,7 +4,7 @@ from datetime import datetime
 from pydantic import Field
 
 from notionary.blocks.schemas import BaseBlock
-from notionary.shared.models.parent_models import Parent
+from notionary.shared.models.parent import Parent
 from notionary.user.schemas import PartialUserDto
 
 

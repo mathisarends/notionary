@@ -6,8 +6,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from notionary.blocks.enums import BlockColor, BlockType, CodeLanguage, FileType
 from notionary.blocks.rich_text.models import RichText
-from notionary.shared.models.icon_models import Icon
-from notionary.shared.models.parent_models import Parent
+from notionary.shared.models.icon import Icon
+from notionary.shared.models.parent import Parent
 from notionary.user.schemas import PartialUserDto
 
 # ============================================================================

@@ -7,7 +7,6 @@ from notionary.page.content.parser.pre_processsing.handlers.whitespace import Wh
 
 @pytest.fixture
 def processor() -> WhitespacePreProcessor:
-    """Fixture that provides a WhitespacePreProcessor instance."""
     return WhitespacePreProcessor()
 
 
