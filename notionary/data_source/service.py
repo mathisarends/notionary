@@ -55,6 +55,7 @@ class NotionDataSource(Entity):
         cover_image_url: str | None = None,
         description: str | None = None,
         properties: dict[str, DataSourceProperty] | None = None,
+        data_source_instance_client: DataSourceInstanceClient | None = None,
     ) -> None:
         super().__init__(
             id=id,
@@ -74,7 +75,7 @@ class NotionDataSource(Entity):
         self._description = description
         self._properties = properties or {}
 
-        self._data_source_client = DataSourceInstanceClient(data_source_id=id)
+        self._data_source_client = data_source_instance_client or DataSourceInstanceClient(data_source_id=id)
 
     @classmethod
     async def from_id(
@@ -112,7 +113,7 @@ class NotionDataSource(Entity):
 
         parent_database_id = extract_database_id(response)
 
-        return cls(
+        return cls._create(
             id=response.id,
             title=title,
             description=description,
@@ -127,6 +128,43 @@ class NotionDataSource(Entity):
             emoji_icon=extract_emoji_icon_from_dto(response),
             external_icon_url=extract_external_icon_url_from_dto(response),
             cover_image_url=extract_cover_image_url_from_dto(response),
+        )
+
+    @classmethod
+    def _create(
+        cls,
+        id: str,
+        title: str,
+        created_time: str,
+        created_by: PartialUserDto,
+        last_edited_time: str,
+        last_edited_by: PartialUserDto,
+        archived: bool,
+        in_trash: bool,
+        parent_database_id: str | None,
+        emoji_icon: str | None = None,
+        external_icon_url: str | None = None,
+        cover_image_url: str | None = None,
+        description: str | None = None,
+        properties: dict[str, DataSourceProperty] | None = None,
+    ) -> Self:
+        data_source_instance_client = DataSourceInstanceClient(data_source_id=id)
+        return cls(
+            id=id,
+            title=title,
+            created_time=created_time,
+            created_by=created_by,
+            last_edited_time=last_edited_time,
+            last_edited_by=last_edited_by,
+            archived=archived,
+            in_trash=in_trash,
+            parent_database_id=parent_database_id,
+            emoji_icon=emoji_icon,
+            external_icon_url=external_icon_url,
+            cover_image_url=cover_image_url,
+            description=description,
+            properties=properties,
+            data_source_instance_client=data_source_instance_client,
         )
 
     @property
