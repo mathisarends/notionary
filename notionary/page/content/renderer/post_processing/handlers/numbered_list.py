@@ -1,11 +1,20 @@
 import re
+from typing import override
+
+from notionary.page.content.renderer.post_processing.port import PostProcessor
 
 
-class NumberedListFixer:
+class NumberedListPostProcessor(PostProcessor):
+    """
+    Handles post processing of numbered lists in markdown text.
+    Would otherwise require complex state management during initial rendering.
+    """
+
     NUMBERED_LIST_PLACEHOLDER = "__NUM__"
     LIST_ITEM_PATTERN = rf"^\s*{re.escape(NUMBERED_LIST_PLACEHOLDER)}\.\s+(.*)"
     NUMBERED_ITEM_PATTERN = r"^\d+\.\s+"
 
+    @override
     def process(self, markdown_text: str) -> str:
         lines = markdown_text.splitlines()
         processed_lines = []
