@@ -11,7 +11,7 @@ class NumberedListPostProcessor(PostProcessor):
     """
 
     NUMBERED_LIST_PLACEHOLDER = "__NUM__"
-    LIST_ITEM_PATTERN = rf"^\s*{re.escape(NUMBERED_LIST_PLACEHOLDER)}\.\s+(.*)"
+    LIST_ITEM_PATTERN = rf"^\s*{re.escape(NUMBERED_LIST_PLACEHOLDER)}\.\s*(.*)"
     NUMBERED_ITEM_PATTERN = r"^\d+\.\s+"
 
     @override
