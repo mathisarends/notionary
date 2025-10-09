@@ -1,4 +1,3 @@
-import asyncio
 from collections.abc import Callable
 from typing import Self
 
@@ -100,10 +99,10 @@ class NotionPage(Entity):
         response: NotionPageDto,
         page_property_handler_factory: PagePropertyHandlerFactory,
     ) -> Self:
-        title, page_property_handler = await asyncio.gather(
-            cls._extract_title_from_dto(response),
-            page_property_handler_factory.create_from_page_response(response),
-        )
+        title_task = cls._extract_title_from_dto(response)
+        page_property_handler = page_property_handler_factory.create_from_page_response(response)
+
+        title = await title_task
 
         return cls._create_with_dependencies(
             id=response.id,

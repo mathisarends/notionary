@@ -42,13 +42,15 @@ class PagePropertyHandler:
         parent_type: ParentType,
         page_url: str,
         page_property_http_client: PagePropertyHttpClient,
-        parent_data_source: NotionDataSource | None,
+        parent_data_source: str,
     ) -> None:
         self._properties = properties
         self._parent_type = parent_type
         self._page_url = page_url
-        self._parent_data_source = parent_data_source
         self._property_http_client = page_property_http_client
+        self._parent_data_source_id = parent_data_source
+        self._parent_data_source: NotionDataSource | None = None
+        self._data_source_loaded = False
 
     # =========================================================================
     # Reader Methods
@@ -118,24 +120,24 @@ class PagePropertyHandler:
     # Options Getters
     # =========================================================================
 
-    def get_select_options_by_property_name(self, property_name: str) -> list[str]:
-        data_source = self._get_parent_data_source_or_raise()
+    async def get_select_options_by_property_name(self, property_name: str) -> list[str]:
+        data_source = await self._get_parent_data_source_or_raise()
         return data_source.get_select_options_by_property_name(property_name)
 
-    def get_multi_select_options_by_property_name(self, property_name: str) -> list[str]:
-        data_source = self._get_parent_data_source_or_raise()
+    async def get_multi_select_options_by_property_name(self, property_name: str) -> list[str]:
+        data_source = await self._get_parent_data_source_or_raise()
         return data_source.get_multi_select_options_by_property_name(property_name)
 
-    def get_status_options_by_property_name(self, property_name: str) -> list[str]:
-        data_source = self._get_parent_data_source_or_raise()
+    async def get_status_options_by_property_name(self, property_name: str) -> list[str]:
+        data_source = await self._get_parent_data_source_or_raise()
         return data_source.get_status_options_by_property_name(property_name)
 
     async def get_relation_options_by_property_name(self, property_name: str) -> list[str]:
-        data_source = self._get_parent_data_source_or_raise()
+        data_source = await self._get_parent_data_source_or_raise()
         return await data_source.get_relation_options_by_property_name(property_name)
 
     async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
-        data_source = self._get_parent_data_source_or_raise()
+        data_source = await self._get_parent_data_source_or_raise()
         return await data_source.get_options_for_property_by_name(property_name)
 
     # =========================================================================
@@ -207,7 +209,20 @@ class PagePropertyHandler:
     # Private Helper Methods
     # =========================================================================
 
-    def _get_parent_data_source_or_raise(self) -> NotionDataSource:
+    async def _ensure_data_source_loaded(self) -> None:
+        from notionary import NotionDataSource
+
+        if self._data_source_loaded:
+            return
+
+        self._parent_data_source = (
+            await NotionDataSource.from_id(self._parent_data_source_id) if self._parent_data_source_id else None
+        )
+        self._data_source_loaded = True
+
+    async def _get_parent_data_source_or_raise(self) -> NotionDataSource:
+        await self._ensure_data_source_loaded()
+
         if not self._parent_data_source:
             raise AccessPagePropertyWithoutDataSourceError(self._parent_type)
         return self._parent_data_source
@@ -224,9 +239,6 @@ class PagePropertyHandler:
         return prop
 
     def _handle_prop_not_found(self, name: str) -> Never:
-        if self._parent_data_source is None:
-            raise AccessPagePropertyWithoutDataSourceError(self._parent_type)
-
         suggestions = self._find_closest_property_names(name)
         raise PagePropertyNotFoundError(property_name=name, page_url=self._page_url, suggestions=suggestions)
 
