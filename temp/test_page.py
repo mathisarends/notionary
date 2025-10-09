@@ -35,6 +35,10 @@ Just some random thoughts and ideas.
 +++ ## Final Section
 This is the final section with some content.
 +++
+
+1. eins
+2. zwei
+3. drei
     """
 
     print("Appending content with nested blocks...")

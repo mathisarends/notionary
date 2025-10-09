@@ -9,10 +9,10 @@ class NotionToMarkdownConverter(LoggingMixin):
     def __init__(
         self,
         renderer_chain: BlockRenderer,
-        post_processor: MarkdownRenderingPostProcessor | None = None,
+        post_processor: MarkdownRenderingPostProcessor,
     ) -> None:
         self._renderer_chain = renderer_chain
-        self._post_processor = post_processor or MarkdownRenderingPostProcessor()
+        self._post_processor = post_processor
 
     async def convert(self, blocks: list[Block], indent_level: int = 0) -> str:
         if not blocks:

@@ -6,6 +6,8 @@ from notionary.page.content.parser.pre_processsing.handlers import ColumnSyntaxP
 from notionary.page.content.parser.pre_processsing.service import MarkdownPreProcessor
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.page.content.renderer.factory import RendererChainFactory
+from notionary.page.content.renderer.post_processing.handlers import NumberedListPostProcessor
+from notionary.page.content.renderer.post_processing.service import MarkdownRenderingPostProcessor
 from notionary.page.content.renderer.service import NotionToMarkdownConverter
 from notionary.page.content.service import PageContentService
 
@@ -43,7 +45,11 @@ class PageContentServiceFactory:
 
     def _create_notion_to_markdown_converter(self) -> NotionToMarkdownConverter:
         renderer_chain = self._renderer_chain_factory.create()
-        return NotionToMarkdownConverter(renderer_chain=renderer_chain)
+        markdown_rendering_post_processor = self._create_markdown_rendering_post_processor()
+        return NotionToMarkdownConverter(
+            renderer_chain=renderer_chain,
+            post_processor=markdown_rendering_post_processor,
+        )
 
     def _create_markdown_preprocessor(self) -> MarkdownPreProcessor:
         pre_processor = MarkdownPreProcessor()
@@ -54,4 +60,9 @@ class PageContentServiceFactory:
     def _create_post_processor(self) -> BlockPostProcessor:
         post_processor = BlockPostProcessor()
         post_processor.register(RichTextLengthTruncationPostProcessor())
+        return post_processor
+
+    def _create_markdown_rendering_post_processor(self) -> MarkdownRenderingPostProcessor:
+        post_processor = MarkdownRenderingPostProcessor()
+        post_processor.register(NumberedListPostProcessor())
         return post_processor
