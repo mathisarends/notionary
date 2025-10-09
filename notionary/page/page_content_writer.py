@@ -3,7 +3,10 @@ from collections.abc import Callable
 from notionary.blocks.client import NotionBlockHttpClient
 from notionary.blocks.markdown.builder import MarkdownBuilder
 from notionary.page.content.parser.factory import ConverterChainFactory
-from notionary.page.content.parser.pre_processsing.whitespace import process_markdown_whitespace
+from notionary.page.content.parser.post_processing.handlers import TextLengthProcessor
+from notionary.page.content.parser.post_processing.service import BlockPostProcessor
+from notionary.page.content.parser.pre_processsing.handlers import ColumnSyntaxPreProcessor, WhitespacePreProcessor
+from notionary.page.content.parser.pre_processsing.service import MarkdownPreProcessor
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.utils.mixins.logging import LoggingMixin
 
@@ -23,11 +26,25 @@ class PageContentWriter(LoggingMixin):
 
     def _create_markdown_notion_converter(self) -> MarkdownToNotionConverter:
         line_parser = self._converter_chain_factory.create()
+        markdown_pre_processor = self._create_markdown_preprocessor()
+        block_post_processor = self._create_post_procesor()
 
         return MarkdownToNotionConverter(
             line_parser=line_parser,
-            whitespace_processor=process_markdown_whitespace,
+            pre_processor=markdown_pre_processor,
+            post_processor=block_post_processor,
         )
+
+    def _create_markdown_preprocessor(self) -> MarkdownPreProcessor:
+        pre_processor = MarkdownPreProcessor()
+        pre_processor.register(ColumnSyntaxPreProcessor())
+        pre_processor.register(WhitespacePreProcessor())
+        return pre_processor
+
+    def _create_post_procesor(self) -> BlockPostProcessor:
+        post_processor = BlockPostProcessor()
+        post_processor.register(TextLengthProcessor())
+        return post_processor
 
     async def append_markdown(
         self,

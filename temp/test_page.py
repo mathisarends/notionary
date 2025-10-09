@@ -11,8 +11,7 @@ async def main() -> None:
     some text ending here.
     +++
     """
-    content = await page.append_markdown(markdown)
-    print("content", content)
+    await page.append_markdown(markdown)
 
     content = await page.get_markdown_content()
     print("content", content)

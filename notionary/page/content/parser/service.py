@@ -1,40 +1,31 @@
-from collections.abc import Callable
-
 from notionary.blocks.schemas import BlockCreatePayload
 from notionary.page.content.parser.parsers import (
     BlockParsingContext,
     ParentBlockContext,
 )
 from notionary.page.content.parser.parsers.base import LineParser
-from notionary.page.content.parser.post_processing.text_length import (
-    NotionTextLengthProcessor,
-)
-from notionary.page.content.parser.pre_processsing.whitespace import (
-    process_markdown_whitespace,
-)
+from notionary.page.content.parser.post_processing.service import BlockPostProcessor
+from notionary.page.content.parser.pre_processsing.service import MarkdownPreProcessor
 from notionary.utils.mixins.logging import LoggingMixin
 
 
 class MarkdownToNotionConverter(LoggingMixin):
     def __init__(
-        self,
-        line_parser: LineParser,
-        whitespace_processor: Callable[[str], str] | None = None,
-        text_length_post_processor: NotionTextLengthProcessor | None = None,
+        self, line_parser: LineParser, pre_processor: MarkdownPreProcessor, post_processor: BlockPostProcessor
     ) -> None:
         self._line_parser = line_parser
-        self._whitespace_processor = whitespace_processor or process_markdown_whitespace
-        self._text_length_post_processor = text_length_post_processor or NotionTextLengthProcessor()
+        self._pre_processor = pre_processor
+        self._post_processor = post_processor
 
     async def convert(self, markdown_text: str) -> list[BlockCreatePayload]:
         if not markdown_text:
             return []
 
-        markdown_text = self._whitespace_processor(markdown_text)
+        markdown_text = self._pre_processor.process(markdown_text)
 
         all_blocks = await self._process_lines(markdown_text)
 
-        all_blocks = self._text_length_post_processor.process(all_blocks)
+        all_blocks = self._post_processor.process(all_blocks)
 
         return all_blocks
 

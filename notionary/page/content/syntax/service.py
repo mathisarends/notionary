@@ -206,9 +206,9 @@ class SyntaxRegistry:
             end_delimiter=self.MULTI_LINE_BLOCK_DELIMITER,
             regex_pattern=re.compile(
                 rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*column(?:\s+(0?\.\d+|1(?:\.0?)?))??\s*$",
-                re.IGNORECASE,
+                re.IGNORECASE | re.MULTILINE,
             ),
-            end_regex_pattern=re.compile(rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*$"),
+            end_regex_pattern=re.compile(rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*$", re.MULTILINE),
             is_multiline_block=True,
             is_inline=False,
         )
