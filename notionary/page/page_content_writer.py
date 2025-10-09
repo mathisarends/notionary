@@ -3,7 +3,7 @@ from collections.abc import Callable
 from notionary.blocks.client import NotionBlockHttpClient
 from notionary.blocks.markdown.builder import MarkdownBuilder
 from notionary.page.content.parser.factory import ConverterChainFactory
-from notionary.page.content.parser.post_processing.handlers import TextLengthProcessor
+from notionary.page.content.parser.post_processing.handlers import RichTextLengthTruncationPostProcessor
 from notionary.page.content.parser.post_processing.service import BlockPostProcessor
 from notionary.page.content.parser.pre_processsing.handlers import ColumnSyntaxPreProcessor, WhitespacePreProcessor
 from notionary.page.content.parser.pre_processsing.service import MarkdownPreProcessor
@@ -43,7 +43,7 @@ class PageContentWriter(LoggingMixin):
 
     def _create_post_procesor(self) -> BlockPostProcessor:
         post_processor = BlockPostProcessor()
-        post_processor.register(TextLengthProcessor())
+        post_processor.register(RichTextLengthTruncationPostProcessor())
         return post_processor
 
     async def append_markdown(

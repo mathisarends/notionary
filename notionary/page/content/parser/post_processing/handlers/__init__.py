@@ -1,5 +1,5 @@
-from .text_length import TextLengthProcessor
+from .rich_text_length_truncation import RichTextLengthTruncationPostProcessor
 
 __all__ = [
-    "TextLengthProcessor",
+    "RichTextLengthTruncationPostProcessor",
 ]

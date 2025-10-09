@@ -1,4 +1,6 @@
-from __future__ import annotations
+"""
+Handles request limits for rich texts (see https://developers.notion.com/reference/request-limits)
+"""
 
 from typing import Any, override
 
@@ -7,10 +9,10 @@ from notionary.blocks.schemas import BlockCreatePayload
 from notionary.page.content.parser.post_processing.port import PostProcessor
 from notionary.utils.mixins.logging import LoggingMixin
 
-type _NestedBlockList = BlockCreatePayload | list[_NestedBlockList]
+type _NestedBlockList = BlockCreatePayload | list["_NestedBlockList"]
 
 
-class TextLengthProcessor(PostProcessor, LoggingMixin):
+class RichTextLengthTruncationPostProcessor(PostProcessor, LoggingMixin):
     NOTION_MAX_LENGTH = 2000
 
     def __init__(self, max_text_length: int = NOTION_MAX_LENGTH) -> None:
@@ -59,6 +61,9 @@ class TextLengthProcessor(PostProcessor, LoggingMixin):
         if hasattr(content, "rich_text"):
             self._truncate_rich_text_list(content.rich_text)
 
+        if hasattr(content, "caption"):
+            self._truncate_rich_text_list(content.caption)
+
         if hasattr(content, "children"):
             for child in content.children:
                 child_content = self._get_block_content(child)
@@ -77,7 +82,12 @@ class TextLengthProcessor(PostProcessor, LoggingMixin):
                     len(content),
                     self.max_text_length,
                 )
-                rich_text.text.content = content[: self.max_text_length]
+                truncated_content = self._create_truncated_text_with_ellipsis(content)
+                rich_text.text.content = truncated_content
+
+    def _create_truncated_text_with_ellipsis(self, content: str) -> str:
+        cutoff = self.max_text_length - 3
+        return content[:cutoff] + "..."
 
     def _is_text_type(self, rich_text: RichText) -> bool:
         return rich_text.type == RichTextType.TEXT and rich_text.text and rich_text.text.content
