@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 from notionary.blocks.client import NotionBlockHttpClient
-from notionary.blocks.markdown.builder import MarkdownBuilder
+from notionary.page.content.markdown.builder import MarkdownBuilder
 from notionary.page.content.parser.factory import ConverterChainFactory
 from notionary.page.content.parser.post_processing.handlers import RichTextLengthTruncationPostProcessor
 from notionary.page.content.parser.post_processing.service import BlockPostProcessor

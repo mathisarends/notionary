@@ -3,10 +3,10 @@ from collections.abc import Callable
 from typing import Self
 
 from notionary.blocks.client import NotionBlockHttpClient
-from notionary.blocks.markdown.builder import MarkdownBuilder
 from notionary.blocks.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
+from notionary.page.content.markdown.builder import MarkdownBuilder
 from notionary.page.content.page_content_deleting_service import PageContentDeletingService
 from notionary.page.content.renderer.service import NotionToMarkdownConverter
 from notionary.page.page_content_writer import PageContentWriter
