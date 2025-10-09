@@ -1,4 +1,4 @@
-from collections.abc import Callable, Coroutine
+from collections.abc import AsyncGenerator, Callable, Coroutine
 from typing import Any
 
 from pydantic import BaseModel
@@ -10,11 +10,10 @@ class PaginatedResponse(BaseModel):
     next_cursor: str | None
 
 
-async def paginate_notion_api(
+async def _fetch_pages(
     api_call: Callable[..., Coroutine[Any, Any, PaginatedResponse]],
     **kwargs,
-) -> list[Any]:
-    all_results = []
+) -> AsyncGenerator[PaginatedResponse]:
     next_cursor = None
     has_more = True
 
@@ -24,11 +23,28 @@ async def paginate_notion_api(
             current_kwargs["start_cursor"] = next_cursor
 
         response = await api_call(**current_kwargs)
+        yield response
 
-        if response and response.results:
-            all_results.extend(response.results)
+        has_more = response.has_more
+        next_cursor = response.next_cursor
 
-        has_more = response.has_more if response else False
-        next_cursor = response.next_cursor if response else None
 
+async def paginate_notion_api(
+    api_call: Callable[..., Coroutine[Any, Any, PaginatedResponse]],
+    **kwargs,
+) -> list[Any]:
+    all_results = []
+    async for page in _fetch_pages(api_call, **kwargs):
+        if page.results:
+            all_results.extend(page.results)
     return all_results
+
+
+async def paginate_notion_api_generator(
+    api_call: Callable[..., Coroutine[Any, Any, PaginatedResponse]],
+    **kwargs,
+) -> AsyncGenerator[Any]:
+    async for page in _fetch_pages(api_call, **kwargs):
+        if page.results:
+            for item in page.results:
+                yield item

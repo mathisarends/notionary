@@ -8,6 +8,7 @@ from notionary.comments.schemas import (
     CommentListResponse,
 )
 from notionary.http.client import NotionHttpClient
+from notionary.utils.pagination import paginate_notion_api, paginate_notion_api_generator
 
 
 class CommentClient(NotionHttpClient):
@@ -20,15 +21,20 @@ class CommentClient(NotionHttpClient):
         *,
         page_size: int = 100,
     ) -> AsyncGenerator[CommentDto]:
-        cursor: str | None = None
+        """
+        Iterates through all comments for a block, yielding each comment individually.
+        Uses pagination to handle large result sets efficiently without loading everything into memory.
+        """
+        async for comment in paginate_notion_api_generator(
+            self._list_comments_page, block_id=block_id, page_size=page_size
+        ):
+            yield comment
 
-        while True:
-            page = await self._list_comments_page(block_id, start_cursor=cursor, page_size=page_size)
-            for item in page.results:
-                yield item
-            if not page.has_more:
-                break
-            cursor = page.next_cursor
+    async def get_all_comments(self, block_id: str, *, page_size: int = 100) -> list[CommentDto]:
+        all_comments = await paginate_notion_api(self._list_comments_page, block_id=block_id, page_size=page_size)
+
+        self.logger.debug("Retrieved %d total comments for block %s", len(all_comments), block_id)
+        return all_comments
 
     async def _list_comments_page(
         self,
@@ -42,9 +48,7 @@ class CommentClient(NotionHttpClient):
             start_cursor=start_cursor,
             page_size=page_size,
         )
-        resp = await self.get("comments", params=request.to_params())
-        if resp is None:
-            raise RuntimeError("Failed to list comments.")
+        resp = await self.get("comments", params=request.model_dump())
         return CommentListResponse.model_validate(resp)
 
     async def create_comment_for_page(
@@ -57,9 +61,6 @@ class CommentClient(NotionHttpClient):
         body = request.model_dump(exclude_unset=True, exclude_none=True)
 
         resp = await self.post("comments", data=body)
-        if resp is None:
-            raise RuntimeError("Failed to create CommentDto - check logs for HTTP error details.")
-
         return CommentDto.model_validate(resp)
 
     async def create_comment_for_discussion(
@@ -72,7 +73,4 @@ class CommentClient(NotionHttpClient):
         body = request.model_dump(exclude_unset=True, exclude_none=True)
 
         resp = await self.post("comments", data=body)
-        if resp is None:
-            raise RuntimeError("Failed to create CommentDto - check logs for HTTP error details.")
-
         return CommentDto.model_validate(resp)

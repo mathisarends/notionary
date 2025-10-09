@@ -16,6 +16,16 @@ class NotionBlockHttpClient(NotionHttpClient):
         self.logger.debug("Deleting block: %s", block_id)
         await self.delete(f"blocks/{block_id}")
 
+    async def get_block_tree(self, parent_block_id: str) -> list[Block]:
+        blocks_at_this_level = await self.get_all_block_children(parent_block_id)
+
+        for block in blocks_at_this_level:
+            if block.has_children:
+                nested_children = await self.get_block_tree(parent_block_id=block.id)
+                block.children = nested_children
+
+        return blocks_at_this_level
+
     async def get_all_block_children(self, parent_block_id: str) -> list[Block]:
         self.logger.debug("Retrieving all children for block: %s", parent_block_id)
 

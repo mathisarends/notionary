@@ -172,14 +172,6 @@ class CommentListRequest(BaseModel):
     start_cursor: str | None = None
     page_size: int | None = None
 
-    def to_params(self) -> dict[str, str | int]:
-        params: dict[str, str | int] = {"block_id": self.block_id}
-        if self.start_cursor:
-            params["start_cursor"] = self.start_cursor
-        if self.page_size:
-            params["page_size"] = self.page_size
-        return params
-
 
 # ---------------------------
 # User Reference
