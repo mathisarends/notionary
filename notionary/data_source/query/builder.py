@@ -1,37 +1,38 @@
+import difflib
 from typing import Self
 
+from notionary.data_source.properties.models import DataSourceProperty
 from notionary.data_source.query.schema import (
     ArrayOperator,
     BooleanOperator,
+    CompoundFilter,
+    DataSourceQueryParams,
     DateOperator,
     FieldType,
     FilterCondition,
+    NotionFilter,
     NumberOperator,
+    PropertyFilter,
     StringOperator,
 )
+from notionary.exceptions.data_source import DataSourcePropertyNotFound
 
 
 class DataSourceFilterBuilder:
-    """
-    Fluent API for building Notion filter queries.
-
-    Examples:
-        builder = DataSourceFilterBuilder()
-        filters = (
-            builder
-            .where("Status").equals("Active")
-            .and_where("Priority").greater_than(5)
-            .build()
-        )
-
-        pages = await data_source.get_pages(filters=filters)
-    """
-
-    def __init__(self) -> None:
+    def __init__(self, properties: dict[str, DataSourceProperty]) -> None:
         self._filters: list[FilterCondition] = []
         self._current_property: str | None = None
+        self._properties = properties or {}
 
     def where(self, property_name: str) -> Self:
+        if self._properties and property_name not in self._properties:
+            keys = list(self._properties.keys())
+            suggestions = difflib.get_close_matches(property_name, keys, n=5, cutoff=0.6)
+            raise DataSourcePropertyNotFound(
+                property_name=property_name,
+                suggestions=suggestions,
+            )
+
         self._current_property = property_name
         return self
 
@@ -104,8 +105,36 @@ class DataSourceFilterBuilder:
     def array_is_not_empty(self) -> Self:
         return self._add_filter(ArrayOperator.IS_NOT_EMPTY, None)
 
-    def build(self) -> list[FilterCondition]:
-        return self._filters
+    def build(self) -> DataSourceQueryParams:
+        if not self._filters:
+            return DataSourceQueryParams()
+
+        notion_filter = self._build_notion_filter()
+        return DataSourceQueryParams(filter=notion_filter)
+
+    def _build_notion_filter(self) -> NotionFilter:
+        if len(self._filters) == 1:
+            return self._build_property_filter(self._filters[0])
+
+        property_filters = [self._build_property_filter(filter) for filter in self._filters]
+        return CompoundFilter(operator="and", filters=property_filters)
+
+    def _build_property_filter(self, condition: FilterCondition) -> PropertyFilter:
+        prop = self._properties.get(condition.field)
+        if not prop:
+            keys = list(self._properties.keys())
+            suggestions = difflib.get_close_matches(condition.field, keys, n=5, cutoff=0.6)
+            raise DataSourcePropertyNotFound(
+                property_name=condition.field,
+                suggestions=suggestions,
+            )
+
+        return PropertyFilter(
+            property=condition.field,
+            property_type=prop.type,
+            operator=condition.operator,
+            value=condition.value,
+        )
 
     def _add_filter(
         self,

@@ -2,21 +2,29 @@ from __future__ import annotations
 
 import asyncio
 import difflib
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Self
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.data_source.http.client import DataSourceClient
 from notionary.data_source.http.data_source_instance_client import DataSourceInstanceClient
-from notionary.data_source.properties.models import DataSourceProperty
+from notionary.data_source.properties.models import (
+    DataSourceMultiSelectProperty,
+    DataSourceProperty,
+    DataSourcePropertyOption,
+    DataSourcePropertyT,
+    DataSourceRelationProperty,
+    DataSourceSelectProperty,
+    DataSourceStatusProperty,
+)
+from notionary.data_source.query.builder import DataSourceFilterBuilder
 from notionary.data_source.query.schema import (
-    CompoundFilter,
     DataSourceQueryParams,
-    FilterCondition,
-    NotionFilter,
-    PropertyFilter,
 )
 from notionary.data_source.schemas import DataSourceDto
-from notionary.exceptions.data_source import DataSourcePropertyNotFound
+from notionary.exceptions.data_source import DataSourcePropertyNotFound, DataSourcePropertyTypeError
+from notionary.page.properties.models import PageTitleProperty
+from notionary.page.schemas import NotionPageDto
 from notionary.search.service import SearchService
 from notionary.shared.entity.dto_parsers import (
     extract_cover_image_url_from_dto,
@@ -45,12 +53,12 @@ class NotionDataSource(Entity):
         last_edited_by: PartialUserDto,
         archived: bool,
         in_trash: bool,
+        properties: dict[str, DataSourceProperty],
         parent_database_id: str | None,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
         description: str | None = None,
-        properties: dict[str, DataSourceProperty] | None = None,
         data_source_instance_client: DataSourceInstanceClient | None = None,
     ) -> None:
         super().__init__(
@@ -210,43 +218,113 @@ class NotionDataSource(Entity):
     async def update_description(self, description: str) -> None:
         self._description = await self._data_source_client.update_description(description)
 
-    async def get_pages(self, filters: list[FilterCondition] | None = None) -> list[NotionPage]:
-        from notionary import NotionPage
+    async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
+        prop = self._properties.get(property_name)
 
-        query_params = self._build_query_params(filters)
-        query_kwargs = query_params.model_dump()
+        if prop is None:
+            return []
 
-        query_response = await self._data_source_client.query(query_kwargs)
-        return [await NotionPage.from_id(page.id) for page in query_response.results]
+        if isinstance(prop, DataSourceSelectProperty):
+            return prop.option_names
 
-    def _build_query_params(self, filters: list[FilterCondition] | None) -> DataSourceQueryParams:
-        if not filters:
-            return DataSourceQueryParams()
+        if isinstance(prop, DataSourceMultiSelectProperty):
+            return prop.option_names
 
-        notion_filter = self._build_notion_filter(filters)
-        return DataSourceQueryParams(filter=notion_filter)
+        if isinstance(prop, DataSourceStatusProperty):
+            return prop.option_names
 
-    def _build_notion_filter(self, filters: list[FilterCondition]) -> NotionFilter:
-        if len(filters) == 1:
-            return self._build_property_filter(filters[0])
+        if isinstance(prop, DataSourceRelationProperty):
+            return await self._get_relation_options(prop)
 
-        property_filters = [self._build_property_filter(f) for f in filters]
-        return CompoundFilter(operator="and", filters=property_filters)
+        return []
 
-    def _build_property_filter(self, condition: FilterCondition) -> PropertyFilter:
-        prop = self._properties.get(condition.field)
-        if not prop:
-            raise DataSourcePropertyNotFound(
-                property_name=condition.field,
-                suggestions=self._find_closest_property_names(condition.field),
+    def get_select_options_by_property_name(self, property_name: str) -> list[str]:
+        select_prop = self._get_typed_property_or_raise(property_name, DataSourceSelectProperty)
+        return select_prop.option_names
+
+    def get_multi_select_options_by_property_name(self, property_name: str) -> list[DataSourcePropertyOption]:
+        multi_select_prop = self._get_typed_property_or_raise(property_name, DataSourceMultiSelectProperty)
+        return multi_select_prop.option_names
+
+    def get_status_options_by_property_name(self, property_name: str) -> list[str]:
+        status_prop = self._get_typed_property_or_raise(property_name, DataSourceStatusProperty)
+        return status_prop.option_names
+
+    async def get_relation_options_by_property_name(self, property_name: str) -> list[str]:
+        relation_prop = self._get_typed_property_or_raise(property_name, DataSourceRelationProperty)
+        return await self._get_relation_options(relation_prop)
+
+    async def _get_relation_options(self, relation_prop: DataSourceRelationProperty) -> list[str]:
+        related_data_source_id = relation_prop.related_data_source_id
+        if not related_data_source_id:
+            return []
+
+        async with DataSourceInstanceClient(related_data_source_id) as related_client:
+            search_results = await related_client.query()
+
+        page_titles = []
+        for page_response in search_results.results:
+            title = self._extract_title_from_notion_page_dto(page_response)
+            if title:
+                page_titles.append(title)
+
+        return page_titles
+
+    def _extract_title_from_notion_page_dto(self, page: NotionPageDto) -> str | None:
+        if not page.properties:
+            return None
+
+        title_property = next(
+            (prop for prop in page.properties.values() if isinstance(prop, PageTitleProperty)),
+            None,
+        )
+
+        if not title_property:
+            return None
+
+        return "".join(item.plain_text for item in title_property.title)
+
+    def _get_typed_property_or_raise(self, name: str, property_type: type[DataSourcePropertyT]) -> DataSourcePropertyT:
+        prop = self._properties.get(name)
+
+        if prop is None:
+            suggestions = self._find_closest_property_names(name)
+            raise DataSourcePropertyNotFound(property_name=name, suggestions=suggestions)
+
+        if not isinstance(prop, property_type):
+            raise DataSourcePropertyTypeError(
+                property_name=name, expected_type=property_type.__name__, actual_type=type(prop).__name__
             )
 
-        return PropertyFilter(
-            property=condition.field,
-            property_type=prop.type,
-            operator=condition.operator,
-            value=condition.value,
-        )
+        return prop
+
+    def _find_closest_property_names(self, property_name: str, max_matches: int = 5) -> list[str]:
+        if not self._properties:
+            return []
+
+        keys = list(self._properties.keys())
+        matches = difflib.get_close_matches(property_name, keys, n=max_matches, cutoff=0.6)
+        return matches
+
+    def filter(self) -> DataSourceFilterBuilder:
+        return DataSourceFilterBuilder(properties=self._properties)
+
+    async def query(self, filter_fn: Callable[[DataSourceFilterBuilder], DataSourceFilterBuilder]) -> list[NotionPage]:
+        builder = DataSourceFilterBuilder(properties=self._properties)
+        filter_fn(builder)
+        query_params = builder.build()
+
+        return await self.get_pages(query_params)
+
+    async def get_pages(self, query_params: DataSourceQueryParams | None = None) -> list[NotionPage]:
+        from notionary import NotionPage
+
+        if query_params is None:
+            query_params = DataSourceQueryParams()
+
+        filter_dict = query_params.model_dump()
+        query_response = await self._data_source_client.query(filter=filter_dict)
+        return [await NotionPage.from_id(page.id) for page in query_response.results]
 
     def _find_closest_property_names(self, property_name: str, max_matches: int = 5) -> list[str]:
         if not self._properties:

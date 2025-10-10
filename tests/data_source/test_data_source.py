@@ -179,6 +179,5 @@ def test_properties_getter_returns_all_properties(data_source_with_properties: N
 
 
 def test_case_sensitive_property_lookup(data_source_with_properties: NotionDataSource) -> None:
-    """Test that property lookup is case-sensitive."""
     with pytest.raises(DataSourcePropertyNotFound):
         data_source_with_properties.get_select_options_by_property_name("priority")

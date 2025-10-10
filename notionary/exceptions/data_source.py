@@ -3,9 +3,12 @@ from notionary.exceptions.base import NotionaryError
 
 class DataSourcePropertyNotFound(NotionaryError):
     def __init__(self, property_name: str, suggestions: list[str] | None = None) -> None:
-        message = f"Property '{property_name}' not found."
-        if suggestions:
-            suggestions_str = "', '".join(suggestions)
+        self.property_name = property_name
+        self.suggestions = suggestions or []
+
+        message = f"Property '{self.property_name}' not found."
+        if self.suggestions:
+            suggestions_str = "', '".join(self.suggestions)
             message += f" Did you mean '{suggestions_str}'?"
         super().__init__(message)
 
