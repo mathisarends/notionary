@@ -1,3 +1,4 @@
+import difflib
 from typing import ClassVar
 
 from notionary.exceptions.base import NotionaryError
@@ -5,10 +6,26 @@ from notionary.shared.models.parent import ParentType
 
 
 class PagePropertyNotFoundError(NotionaryError):
-    def __init__(self, page_url: str, property_name: str, suggestions: list[str] | None = None) -> None:
+    def __init__(
+        self,
+        page_url: str,
+        property_name: str,
+        available_properties: list[str] | None = None,
+        max_suggestions: int = 3,
+        cutoff: float = 0.6,
+    ) -> None:
+        self.property_name = property_name
+
+        if available_properties:
+            self.suggestions = difflib.get_close_matches(
+                property_name, available_properties, n=max_suggestions, cutoff=cutoff
+            )
+        else:
+            self.suggestions = []
+
         message = f"Property '{property_name}' not found."
-        if suggestions:
-            suggestions_str = "', '".join(suggestions)
+        if self.suggestions:
+            suggestions_str = "', '".join(self.suggestions)
             message += f" Did you mean '{suggestions_str}'?"
         message += f" Please check the page at {page_url} to verify if the property exists and is correctly named."
         super().__init__(message)

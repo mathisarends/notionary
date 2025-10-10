@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import difflib
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Self
 
@@ -288,8 +287,10 @@ class NotionDataSource(Entity):
         prop = self._properties.get(name)
 
         if prop is None:
-            suggestions = self._find_closest_property_names(name)
-            raise DataSourcePropertyNotFound(property_name=name, suggestions=suggestions)
+            raise DataSourcePropertyNotFound(
+                property_name=name,
+                available_properties=list(self._properties.keys()),
+            )
 
         if not isinstance(prop, property_type):
             raise DataSourcePropertyTypeError(
@@ -297,14 +298,6 @@ class NotionDataSource(Entity):
             )
 
         return prop
-
-    def _find_closest_property_names(self, property_name: str, max_matches: int = 5) -> list[str]:
-        if not self._properties:
-            return []
-
-        keys = list(self._properties.keys())
-        matches = difflib.get_close_matches(property_name, keys, n=max_matches, cutoff=0.6)
-        return matches
 
     def filter(self) -> DataSourceFilterBuilder:
         return DataSourceFilterBuilder(properties=self._properties)
@@ -325,10 +318,3 @@ class NotionDataSource(Entity):
         filter_dict = query_params.model_dump()
         query_response = await self._data_source_client.query(filter=filter_dict)
         return [await NotionPage.from_id(page.id) for page in query_response.results]
-
-    def _find_closest_property_names(self, property_name: str, max_matches: int = 5) -> list[str]:
-        if not self._properties:
-            return []
-
-        keys = list(self._properties.keys())
-        return difflib.get_close_matches(property_name, keys, n=max_matches, cutoff=0.6)

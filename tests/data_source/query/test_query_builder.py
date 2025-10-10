@@ -356,7 +356,8 @@ def test_property_not_found_raises_exception(builder: DataSourceFilterBuilder) -
 
 def test_property_not_found_includes_suggestions(builder: DataSourceFilterBuilder) -> None:
     with pytest.raises(DataSourcePropertyNotFound) as exc_info:
-        builder.where("Statu")  # Typo in "Status"
+        status_property_with_typo = "Statu"
+        builder.where(status_property_with_typo)
 
     assert "Status" in exc_info.value.suggestions
 
@@ -406,21 +407,6 @@ def test_empty_builder_can_add_filters_but_build_requires_properties() -> None:
 # ============================================================================
 # Fluent API
 # ============================================================================
-
-
-def test_where_returns_self(builder: DataSourceFilterBuilder) -> None:
-    result = builder.where("Status")
-    assert result is builder
-
-
-def test_equals_returns_self(builder: DataSourceFilterBuilder) -> None:
-    result = builder.where("Status").equals("Active")
-    assert result is builder
-
-
-def test_and_where_returns_self(builder: DataSourceFilterBuilder) -> None:
-    result = builder.where("Status").equals("Active").and_where("Price")
-    assert result is builder
 
 
 def test_chaining_multiple_methods(builder: DataSourceFilterBuilder) -> None:

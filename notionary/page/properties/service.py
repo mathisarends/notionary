@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import difflib
 from typing import TYPE_CHECKING, Never
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
@@ -235,15 +234,11 @@ class PagePropertyHandler:
         return prop
 
     def _handle_prop_not_found(self, name: str) -> Never:
-        suggestions = self._find_closest_property_names(name)
-        raise PagePropertyNotFoundError(property_name=name, page_url=self._page_url, suggestions=suggestions)
-
-    def _find_closest_property_names(self, property_name: str, max_matches: int = 3) -> list[str]:
-        if not self._properties:
-            return []
-
-        all_names = list(self._properties.keys())
-        return difflib.get_close_matches(property_name, all_names, n=max_matches, cutoff=0.6)
+        raise PagePropertyNotFoundError(
+            property_name=name,
+            page_url=self._page_url,
+            available_properties=list(self._properties.keys()),
+        )
 
     def _handle_incorrect_type(self, property_name: str, actual_type: type) -> Never:
         raise PagePropertyTypeError(

@@ -1,4 +1,3 @@
-import difflib
 from typing import Self
 
 from notionary.data_source.properties.models import DataSourceProperty
@@ -26,11 +25,10 @@ class DataSourceFilterBuilder:
 
     def where(self, property_name: str) -> Self:
         if self._properties and property_name not in self._properties:
-            keys = list(self._properties.keys())
-            suggestions = difflib.get_close_matches(property_name, keys, n=5, cutoff=0.6)
+            availble_properties = list(self._properties.keys())
             raise DataSourcePropertyNotFound(
                 property_name=property_name,
-                suggestions=suggestions,
+                available_properties=availble_properties,
             )
 
         self._current_property = property_name
@@ -122,11 +120,9 @@ class DataSourceFilterBuilder:
     def _build_property_filter(self, condition: FilterCondition) -> PropertyFilter:
         prop = self._properties.get(condition.field)
         if not prop:
-            keys = list(self._properties.keys())
-            suggestions = difflib.get_close_matches(condition.field, keys, n=5, cutoff=0.6)
             raise DataSourcePropertyNotFound(
                 property_name=condition.field,
-                suggestions=suggestions,
+                available_properties=list(self._properties.keys()),
             )
 
         return PropertyFilter(
