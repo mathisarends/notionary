@@ -13,7 +13,6 @@ from notionary.data_source.query.schema import (
     DataSourceQueryParams,
     FilterCondition,
     NotionFilter,
-    Operator,
     PropertyFilter,
 )
 from notionary.data_source.schemas import DataSourceDto
@@ -242,28 +241,12 @@ class NotionDataSource(Entity):
                 suggestions=self._find_closest_property_names(condition.field),
             )
 
-        notion_operator = self._map_operator_to_notion(condition.operator)
-
         return PropertyFilter(
             property=condition.field,
             property_type=prop.type,
-            operator=notion_operator,
+            operator=condition.operator,
             value=condition.value,
         )
-
-    def _map_operator_to_notion(self, operator: Operator) -> str:
-        operator_str = operator.value
-
-        operator_mapping = {
-            "not_equals": "does_not_equal",
-            "not_contains": "does_not_contain",
-            "is_true": "equals",
-            "is_false": "equals",
-            "greater_than_or_equal": "on_or_after",
-            "less_than_or_equal": "on_or_before",
-        }
-
-        return operator_mapping.get(operator_str, operator_str)
 
     def _find_closest_property_names(self, property_name: str, max_matches: int = 5) -> list[str]:
         if not self._properties:

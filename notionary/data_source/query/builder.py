@@ -30,7 +30,6 @@ class DataSourceFilterBuilder:
     def __init__(self) -> None:
         self._filters: list[FilterCondition] = []
         self._current_property: str | None = None
-        self._filter_counter = 0
 
     def where(self, property_name: str) -> Self:
         self._current_property = property_name
@@ -42,14 +41,14 @@ class DataSourceFilterBuilder:
     def equals(self, value: str | int | float) -> Self:
         return self._add_filter(StringOperator.EQUALS, value)
 
-    def not_equals(self, value: str | int | float) -> Self:
-        return self._add_filter(StringOperator.NOT_EQUALS, value)
+    def does_not_equal(self, value: str | int | float) -> Self:
+        return self._add_filter(StringOperator.DOES_NOT_EQUAL, value)
 
     def contains(self, value: str) -> Self:
         return self._add_filter(StringOperator.CONTAINS, value)
 
-    def not_contains(self, value: str) -> Self:
-        return self._add_filter(StringOperator.NOT_CONTAINS, value)
+    def does_not_contain(self, value: str) -> Self:
+        return self._add_filter(StringOperator.DOES_NOT_CONTAIN, value)
 
     def starts_with(self, value: str) -> Self:
         return self._add_filter(StringOperator.STARTS_WITH, value)
@@ -66,17 +65,14 @@ class DataSourceFilterBuilder:
     def greater_than(self, value: float | int) -> Self:
         return self._add_filter(NumberOperator.GREATER_THAN, value)
 
-    def greater_than_or_equal(self, value: float | int) -> Self:
-        return self._add_filter(NumberOperator.GREATER_THAN_OR_EQUAL, value)
+    def greater_than_or_equal_to(self, value: float | int) -> Self:
+        return self._add_filter(NumberOperator.GREATER_THAN_OR_EQUAL_TO, value)
 
     def less_than(self, value: float | int) -> Self:
         return self._add_filter(NumberOperator.LESS_THAN, value)
 
-    def less_than_or_equal(self, value: float | int) -> Self:
-        return self._add_filter(NumberOperator.LESS_THAN_OR_EQUAL, value)
-
-    def between(self, min_value: float | int, max_value: float | int) -> Self:
-        return self._add_filter(NumberOperator.BETWEEN, [min_value, max_value])
+    def less_than_or_equal_to(self, value: float | int) -> Self:
+        return self._add_filter(NumberOperator.LESS_THAN_OR_EQUAL_TO, value)
 
     def is_true(self) -> Self:
         return self._add_filter(BooleanOperator.IS_TRUE, None)
@@ -90,17 +86,17 @@ class DataSourceFilterBuilder:
     def after(self, date: str) -> Self:
         return self._add_filter(DateOperator.AFTER, date)
 
+    def on_or_before(self, date: str) -> Self:
+        return self._add_filter(DateOperator.ON_OR_BEFORE, date)
+
+    def on_or_after(self, date: str) -> Self:
+        return self._add_filter(DateOperator.ON_OR_AFTER, date)
+
     def array_contains(self, value: str) -> Self:
         return self._add_filter(ArrayOperator.CONTAINS, value)
 
-    def array_not_contains(self, value: str) -> Self:
-        return self._add_filter(ArrayOperator.NOT_CONTAINS, value)
-
-    def contains_any(self, values: list[str]) -> Self:
-        return self._add_filter(ArrayOperator.CONTAINS_ANY, values)
-
-    def contains_all(self, values: list[str]) -> Self:
-        return self._add_filter(ArrayOperator.CONTAINS_ALL, values)
+    def array_does_not_contain(self, value: str) -> Self:
+        return self._add_filter(ArrayOperator.DOES_NOT_CONTAIN, value)
 
     def array_is_empty(self) -> Self:
         return self._add_filter(ArrayOperator.IS_EMPTY, None)
@@ -121,7 +117,6 @@ class DataSourceFilterBuilder:
 
         field_type = self._infer_field_type_from_operator(operator)
 
-        self._filter_counter += 1
         filter_condition = FilterCondition(
             field=self._current_property,
             field_type=field_type,

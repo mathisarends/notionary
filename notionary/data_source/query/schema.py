@@ -19,55 +19,44 @@ class FieldType(StrEnum):
 
 class StringOperator(StrEnum):
     EQUALS = "equals"
-    NOT_EQUALS = "not_equals"
+    DOES_NOT_EQUAL = "does_not_equal"
     CONTAINS = "contains"
-    NOT_CONTAINS = "not_contains"
+    DOES_NOT_CONTAIN = "does_not_contain"
     STARTS_WITH = "starts_with"
     ENDS_WITH = "ends_with"
     IS_EMPTY = "is_empty"
     IS_NOT_EMPTY = "is_not_empty"
-    IN = "in"
-    NOT_IN = "not_in"
 
 
 class NumberOperator(StrEnum):
     EQUALS = "equals"
-    NOT_EQUALS = "not_equals"
+    DOES_NOT_EQUAL = "does_not_equal"
     GREATER_THAN = "greater_than"
-    GREATER_THAN_OR_EQUAL = "greater_than_or_equal"
+    GREATER_THAN_OR_EQUAL_TO = "greater_than_or_equal_to"
     LESS_THAN = "less_than"
-    LESS_THAN_OR_EQUAL = "less_than_or_equal"
-    BETWEEN = "between"
-    IN = "in"
-    NOT_IN = "not_in"
-    IS_NULL = "is_null"
-    IS_NOT_NULL = "is_not_null"
+    LESS_THAN_OR_EQUAL_TO = "less_than_or_equal_to"
+    IS_EMPTY = "is_empty"
+    IS_NOT_EMPTY = "is_not_empty"
 
 
 class BooleanOperator(StrEnum):
     IS_TRUE = "is_true"
     IS_FALSE = "is_false"
-    IS_NULL = "is_null"
-    IS_NOT_NULL = "is_not_null"
 
 
 class DateOperator(StrEnum):
     EQUALS = "equals"
-    NOT_EQUALS = "not_equals"
     BEFORE = "before"
     AFTER = "after"
-    BETWEEN = "between"
-    IN_LAST = "in_last"
-    IN_NEXT = "in_next"
-    IS_NULL = "is_null"
-    IS_NOT_NULL = "is_not_null"
+    ON_OR_BEFORE = "on_or_before"
+    ON_OR_AFTER = "on_or_after"
+    IS_EMPTY = "is_empty"
+    IS_NOT_EMPTY = "is_not_empty"
 
 
 class ArrayOperator(StrEnum):
     CONTAINS = "contains"
-    NOT_CONTAINS = "not_contains"
-    CONTAINS_ALL = "contains_all"
-    CONTAINS_ANY = "contains_any"
+    DOES_NOT_CONTAIN = "does_not_contain"
     IS_EMPTY = "is_empty"
     IS_NOT_EMPTY = "is_not_empty"
 
@@ -85,7 +74,7 @@ class TimeUnit(StrEnum):
 
 
 type Operator = StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator
-type FilterValue = str | int | float | list[str | int | float]
+type FilterValue = str | int | float | bool | list[str | int | float]
 
 
 class FilterCondition(BaseModel):
@@ -99,9 +88,6 @@ class FilterCondition(BaseModel):
     @model_validator(mode="after")
     def validate_operator_and_value(self) -> Self:
         self._validate_no_value_operators()
-        self._validate_relative_date_operators()
-        self._validate_between_operator()
-        self._validate_list_operators()
         self._validate_value_required_operators()
         return self
 
@@ -109,73 +95,30 @@ class FilterCondition(BaseModel):
         no_value_ops = {
             StringOperator.IS_EMPTY,
             StringOperator.IS_NOT_EMPTY,
-            NumberOperator.IS_NULL,
-            NumberOperator.IS_NOT_NULL,
+            NumberOperator.IS_EMPTY,
+            NumberOperator.IS_NOT_EMPTY,
             BooleanOperator.IS_TRUE,
             BooleanOperator.IS_FALSE,
-            BooleanOperator.IS_NULL,
-            BooleanOperator.IS_NOT_NULL,
-            DateOperator.IS_NULL,
-            DateOperator.IS_NOT_NULL,
+            DateOperator.IS_EMPTY,
+            DateOperator.IS_NOT_EMPTY,
             ArrayOperator.IS_EMPTY,
             ArrayOperator.IS_NOT_EMPTY,
         }
         if self.operator in no_value_ops and self.value is not None:
             raise ValueError(f"Operator '{self.operator}' does not expect a value")
 
-    def _validate_relative_date_operators(self) -> None:
-        if self.operator not in {DateOperator.IN_LAST, DateOperator.IN_NEXT}:
-            return
-
-        if self.time_value is None or self.time_unit is None:
-            raise ValueError(f"Operator '{self.operator}' requires time_value and time_unit")
-
-    def _validate_between_operator(self) -> None:
-        if self.operator not in {NumberOperator.BETWEEN, DateOperator.BETWEEN}:
-            return
-
-        if not isinstance(self.value, list) or len(self.value) != 2:
-            raise ValueError("Operator 'between' requires a list with two values")
-
-    def _validate_list_operators(self) -> None:
-        list_ops = {
-            StringOperator.IN,
-            StringOperator.NOT_IN,
-            NumberOperator.IN,
-            NumberOperator.NOT_IN,
-            ArrayOperator.CONTAINS_ALL,
-            ArrayOperator.CONTAINS_ANY,
-        }
-        if self.operator not in list_ops:
-            return
-
-        if not isinstance(self.value, list):
-            raise ValueError(f"Operator '{self.operator}' requires a list of values")
-
     def _validate_value_required_operators(self) -> None:
         skip_ops = {
             StringOperator.IS_EMPTY,
             StringOperator.IS_NOT_EMPTY,
-            NumberOperator.IS_NULL,
-            NumberOperator.IS_NOT_NULL,
+            NumberOperator.IS_EMPTY,
+            NumberOperator.IS_NOT_EMPTY,
             BooleanOperator.IS_TRUE,
             BooleanOperator.IS_FALSE,
-            BooleanOperator.IS_NULL,
-            BooleanOperator.IS_NOT_NULL,
-            DateOperator.IS_NULL,
-            DateOperator.IS_NOT_NULL,
+            DateOperator.IS_EMPTY,
+            DateOperator.IS_NOT_EMPTY,
             ArrayOperator.IS_EMPTY,
             ArrayOperator.IS_NOT_EMPTY,
-            DateOperator.IN_LAST,
-            DateOperator.IN_NEXT,
-            NumberOperator.BETWEEN,
-            DateOperator.BETWEEN,
-            StringOperator.IN,
-            StringOperator.NOT_IN,
-            NumberOperator.IN,
-            NumberOperator.NOT_IN,
-            ArrayOperator.CONTAINS_ALL,
-            ArrayOperator.CONTAINS_ANY,
         }
 
         if self.operator not in skip_ops and self.value is None:
@@ -223,10 +166,15 @@ class PropertyFilter(BaseModel):
     def serialize_model(self) -> dict[str, Any]:
         property_type_str = self.property_type.value
         operator_str = self.operator.value
+        filter_value = self.value
+
+        if isinstance(self.operator, BooleanOperator):
+            operator_str = "equals"
+            filter_value = self.operator == BooleanOperator.IS_TRUE
 
         return {
             "property": self.property,
-            property_type_str: {operator_str: self.value if self.value is not None else True},
+            property_type_str: {operator_str: filter_value if filter_value is not None else True},
         }
 
 
