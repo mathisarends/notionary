@@ -1,6 +1,5 @@
-from notionary.data_source.query.service import DataSourceFilterBuilder
-
 from notionary import NotionDataSource
+from notionary.data_source.query.builder import DataSourceFilterBuilder
 
 
 async def main() -> None:

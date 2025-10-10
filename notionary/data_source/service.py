@@ -2,13 +2,20 @@ from __future__ import annotations
 
 import asyncio
 import difflib
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Self
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.data_source.http.client import DataSourceClient
 from notionary.data_source.http.data_source_instance_client import DataSourceInstanceClient
 from notionary.data_source.properties.models import DataSourceProperty
-from notionary.data_source.query.schema import FilterCondition
+from notionary.data_source.query.schema import (
+    CompoundFilter,
+    DataSourceQueryParams,
+    FilterCondition,
+    NotionFilter,
+    Operator,
+    PropertyFilter,
+)
 from notionary.data_source.schemas import DataSourceDto
 from notionary.exceptions.data_source import DataSourcePropertyNotFound
 from notionary.search.service import SearchService
@@ -22,7 +29,6 @@ from notionary.shared.entity.dto_parsers import (
 )
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.entity.service import Entity
-from notionary.shared.properties.property_type import PropertyType
 from notionary.user.schemas import PartialUserDto
 
 if TYPE_CHECKING:
@@ -208,68 +214,45 @@ class NotionDataSource(Entity):
     async def get_pages(self, filters: list[FilterCondition] | None = None) -> list[NotionPage]:
         from notionary import NotionPage
 
-        query_kwargs = {}
-        if filters:
-            filter_obj = self._build_notion_filter(filters)
-            query_kwargs = {"filter": filter_obj}
+        query_params = self._build_query_params(filters)
+        query_kwargs = query_params.model_dump()
 
-        query_response = await self._data_source_client.query(filter=query_kwargs)
+        query_response = await self._data_source_client.query(query_kwargs)
         return [await NotionPage.from_id(page.id) for page in query_response.results]
 
-    def _build_notion_filter(self, filters: list[FilterCondition]) -> dict[str, Any]:
+    def _build_query_params(self, filters: list[FilterCondition] | None) -> DataSourceQueryParams:
+        if not filters:
+            return DataSourceQueryParams()
+
+        notion_filter = self._build_notion_filter(filters)
+        return DataSourceQueryParams(filter=notion_filter)
+
+    def _build_notion_filter(self, filters: list[FilterCondition]) -> NotionFilter:
         if len(filters) == 1:
-            return self._build_single_filter(filters[0])
+            return self._build_property_filter(filters[0])
 
-        return {"and": [self._build_single_filter(f) for f in filters]}
+        property_filters = [self._build_property_filter(f) for f in filters]
+        return CompoundFilter(operator="and", filters=property_filters)
 
-    def _build_single_filter(self, filter_condition: FilterCondition) -> dict[str, Any]:
-        prop = self._properties.get(filter_condition.field)
+    def _build_property_filter(self, condition: FilterCondition) -> PropertyFilter:
+        prop = self._properties.get(condition.field)
         if not prop:
             raise DataSourcePropertyNotFound(
-                property_name=filter_condition.field,
-                suggestions=self._find_closest_property_names(filter_condition.field),
+                property_name=condition.field,
+                suggestions=self._find_closest_property_names(condition.field),
             )
 
-        property_type_key = self._get_notion_property_type_key_from_property(prop)
-        notion_operator = self._map_operator_to_notion(filter_condition.operator)
+        notion_operator = self._map_operator_to_notion(condition.operator)
 
-        filter_dict: dict[str, Any] = {
-            "property": filter_condition.field,
-            property_type_key: {
-                notion_operator: filter_condition.value if filter_condition.value is not None else True
-            },
-        }
+        return PropertyFilter(
+            property=condition.field,
+            property_type=prop.type,
+            operator=notion_operator,
+            value=condition.value,
+        )
 
-        return filter_dict
-
-    def _get_notion_property_type_key_from_property(self, prop: DataSourceProperty) -> str:
-        type_key_mapping = {
-            PropertyType.TITLE: "title",
-            PropertyType.RICH_TEXT: "rich_text",
-            PropertyType.SELECT: "select",
-            PropertyType.MULTI_SELECT: "multi_select",
-            PropertyType.STATUS: "status",
-            PropertyType.NUMBER: "number",
-            PropertyType.CHECKBOX: "checkbox",
-            PropertyType.DATE: "date",
-            PropertyType.CREATED_TIME: "created_time",
-            PropertyType.LAST_EDITED_TIME: "last_edited_time",
-            PropertyType.EMAIL: "email",
-            PropertyType.PHONE_NUMBER: "phone_number",
-            PropertyType.URL: "url",
-            PropertyType.PEOPLE: "people",
-            PropertyType.RELATION: "relation",
-        }
-
-        return type_key_mapping.get(prop.type, "rich_text")
-
-    def _map_operator_to_notion(self, operator: str | Any) -> str:
-        if hasattr(operator, "value"):
-            operator_str = operator.value
-        elif isinstance(operator, str):
-            operator_str = operator
-        else:
-            operator_str = str(operator)
+    def _map_operator_to_notion(self, operator: Operator) -> str:
+        operator_str = operator.value
 
         operator_mapping = {
             "not_equals": "does_not_equal",
@@ -287,5 +270,4 @@ class NotionDataSource(Entity):
             return []
 
         keys = list(self._properties.keys())
-        matches = difflib.get_close_matches(property_name, keys, n=max_matches, cutoff=0.6)
-        return matches
+        return difflib.get_close_matches(property_name, keys, n=max_matches, cutoff=0.6)

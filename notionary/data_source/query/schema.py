@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 from enum import StrEnum
 from typing import Any, Self
 
-from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
+from pydantic import BaseModel, ValidationInfo, field_validator, model_serializer, model_validator
+
+from notionary.shared.properties.property_type import PropertyType
 
 
 class FieldType(StrEnum):
@@ -53,8 +57,8 @@ class DateOperator(StrEnum):
     BEFORE = "before"
     AFTER = "after"
     BETWEEN = "between"
-    IN_LAST = "in_last"  # z.B. "in last 7 days"
-    IN_NEXT = "in_next"  # z.B. "in next 30 days"
+    IN_LAST = "in_last"
+    IN_NEXT = "in_next"
     IS_NULL = "is_null"
     IS_NOT_NULL = "is_not_null"
 
@@ -80,17 +84,20 @@ class TimeUnit(StrEnum):
     YEARS = "years"
 
 
+type Operator = StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator
+type FilterValue = str | int | float | list[str | int | float]
+
+
 class FilterCondition(BaseModel):
     field: str
     field_type: FieldType
-    operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator
-    value: Any | None = None
+    operator: Operator
+    value: FilterValue | None = None
     time_value: int | None = None
     time_unit: TimeUnit | None = None
 
     @model_validator(mode="after")
     def validate_operator_and_value(self) -> Self:
-        """Validiert die Konsistenz von Operator und Wert"""
         self._validate_no_value_operators()
         self._validate_relative_date_operators()
         self._validate_between_operator()
@@ -147,7 +154,6 @@ class FilterCondition(BaseModel):
 
     def _validate_value_required_operators(self) -> None:
         skip_ops = {
-            # No value operators
             StringOperator.IS_EMPTY,
             StringOperator.IS_NOT_EMPTY,
             NumberOperator.IS_NULL,
@@ -160,13 +166,10 @@ class FilterCondition(BaseModel):
             DateOperator.IS_NOT_NULL,
             ArrayOperator.IS_EMPTY,
             ArrayOperator.IS_NOT_EMPTY,
-            # Relative date operators
             DateOperator.IN_LAST,
             DateOperator.IN_NEXT,
-            # Between operators
             NumberOperator.BETWEEN,
             DateOperator.BETWEEN,
-            # List operators
             StringOperator.IN,
             StringOperator.NOT_IN,
             NumberOperator.IN,
@@ -181,18 +184,20 @@ class FilterCondition(BaseModel):
     @field_validator("operator")
     @classmethod
     def validate_operator_for_field_type(
-        cls, v: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator, info: ValidationInfo
-    ) -> StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator:
+        cls,
+        value: Operator,
+        info: ValidationInfo,
+    ) -> Operator:
         if "field_type" not in info.data:
-            return v
+            return value
 
         field_type: FieldType = info.data["field_type"]
-        operator_value = v if isinstance(v, str) else v.value
+        operator_value = value if isinstance(value, str) else value.value
 
         if not cls._is_operator_valid_for_field_type(operator_value, field_type):
             raise ValueError(f"Operator '{operator_value}' is not valid for field type '{field_type}'")
 
-        return v
+        return value
 
     @staticmethod
     def _is_operator_valid_for_field_type(operator: str, field_type: FieldType) -> bool:
@@ -206,3 +211,46 @@ class FilterCondition(BaseModel):
         }
 
         return operator in valid_operators.get(field_type, [])
+
+
+class PropertyFilter(BaseModel):
+    property: str
+    property_type: PropertyType
+    operator: Operator
+    value: FilterValue | None = None
+
+    @model_serializer
+    def serialize_model(self) -> dict[str, Any]:
+        property_type_str = self.property_type.value
+        operator_str = self.operator.value
+
+        return {
+            "property": self.property,
+            property_type_str: {operator_str: self.value if self.value is not None else True},
+        }
+
+
+class CompoundFilter(BaseModel):
+    operator: LogicalOperator
+    filters: list[PropertyFilter | CompoundFilter]
+
+    @model_serializer
+    def serialize_model(self) -> dict[str, Any]:
+        operator_str = self.operator.value
+        return {operator_str: [f.model_dump() for f in self.filters]}
+
+
+type NotionFilter = PropertyFilter | CompoundFilter
+
+
+class DataSourceQueryParams(BaseModel):
+    filter: NotionFilter | None = None
+
+    @model_serializer
+    def serialize_model(self) -> dict[str, Any]:
+        if self.filter is None:
+            return {}
+        return {"filter": self.filter.model_dump()}
+
+
+CompoundFilter.model_rebuild()
