@@ -12,7 +12,7 @@ from notionary.data_source.properties.models import (
     DataSourceStatusProperty,
     NumberFormat,
 )
-from notionary.data_source.query.builder import DataSourceFilterBuilder
+from notionary.data_source.query.builder import DataSourceQueryBuilder
 from notionary.data_source.query.schema import (
     ArrayOperator,
     BooleanOperator,
@@ -23,7 +23,11 @@ from notionary.data_source.query.schema import (
     FilterCondition,
     NumberOperator,
     PropertyFilter,
+    PropertySort,
+    SortDirection,
     StringOperator,
+    TimestampSort,
+    TimestampType,
 )
 from notionary.exceptions.data_source import DataSourcePropertyNotFound
 from notionary.shared.properties.property_type import PropertyType
@@ -72,16 +76,16 @@ def mock_properties() -> dict[str, DataSourceProperty]:
 
 
 @pytest.fixture
-def builder(mock_properties: dict[str, DataSourceProperty]) -> DataSourceFilterBuilder:
-    return DataSourceFilterBuilder(properties=mock_properties)
+def builder(mock_properties: dict[str, DataSourceProperty]) -> DataSourceQueryBuilder:
+    return DataSourceQueryBuilder(properties=mock_properties)
 
 
 @pytest.fixture
-def empty_builder() -> DataSourceFilterBuilder:
-    return DataSourceFilterBuilder(properties={})
+def empty_builder() -> DataSourceQueryBuilder:
+    return DataSourceQueryBuilder(properties={})
 
 
-def test_equals_filter(builder: DataSourceFilterBuilder) -> None:
+def test_equals_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Status").equals("Active").build()
 
     assert result.filter is not None
@@ -91,7 +95,7 @@ def test_equals_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.value == "Active"
 
 
-def test_does_not_equal_filter(builder: DataSourceFilterBuilder) -> None:
+def test_does_not_equal_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Status").does_not_equal("Archived").build()
 
     assert result.filter is not None
@@ -100,7 +104,7 @@ def test_does_not_equal_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.value == "Archived"
 
 
-def test_contains_filter(builder: DataSourceFilterBuilder) -> None:
+def test_contains_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Description").contains("important").build()
 
     assert result.filter is not None
@@ -109,7 +113,7 @@ def test_contains_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.value == "important"
 
 
-def test_does_not_contain_filter(builder: DataSourceFilterBuilder) -> None:
+def test_does_not_contain_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Description").does_not_contain("spam").build()
 
     assert result.filter is not None
@@ -117,7 +121,7 @@ def test_does_not_contain_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.operator == StringOperator.DOES_NOT_CONTAIN
 
 
-def test_starts_with_filter(builder: DataSourceFilterBuilder) -> None:
+def test_starts_with_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Status").starts_with("In").build()
 
     assert result.filter is not None
@@ -126,7 +130,7 @@ def test_starts_with_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.value == "In"
 
 
-def test_ends_with_filter(builder: DataSourceFilterBuilder) -> None:
+def test_ends_with_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Status").ends_with("Progress").build()
 
     assert result.filter is not None
@@ -134,7 +138,7 @@ def test_ends_with_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.operator == StringOperator.ENDS_WITH
 
 
-def test_is_empty_filter(builder: DataSourceFilterBuilder) -> None:
+def test_is_empty_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Description").is_empty().build()
 
     assert result.filter is not None
@@ -143,7 +147,7 @@ def test_is_empty_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.value is None
 
 
-def test_is_not_empty_filter(builder: DataSourceFilterBuilder) -> None:
+def test_is_not_empty_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Description").is_not_empty().build()
 
     assert result.filter is not None
@@ -157,7 +161,7 @@ def test_is_not_empty_filter(builder: DataSourceFilterBuilder) -> None:
 # ============================================================================
 
 
-def test_greater_than_filter(builder: DataSourceFilterBuilder) -> None:
+def test_greater_than_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Price").greater_than(100).build()
 
     assert result.filter is not None
@@ -166,7 +170,7 @@ def test_greater_than_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.value == 100
 
 
-def test_greater_than_or_equal_to_filter(builder: DataSourceFilterBuilder) -> None:
+def test_greater_than_or_equal_to_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Price").greater_than_or_equal_to(50.5).build()
 
     assert result.filter is not None
@@ -175,7 +179,7 @@ def test_greater_than_or_equal_to_filter(builder: DataSourceFilterBuilder) -> No
     assert result.filter.value == pytest.approx(50.5)
 
 
-def test_less_than_filter(builder: DataSourceFilterBuilder) -> None:
+def test_less_than_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Price").less_than(200).build()
 
     assert result.filter is not None
@@ -183,7 +187,7 @@ def test_less_than_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.operator == NumberOperator.LESS_THAN
 
 
-def test_less_than_or_equal_to_filter(builder: DataSourceFilterBuilder) -> None:
+def test_less_than_or_equal_to_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Price").less_than_or_equal_to(150).build()
 
     assert result.filter is not None
@@ -196,7 +200,7 @@ def test_less_than_or_equal_to_filter(builder: DataSourceFilterBuilder) -> None:
 # ============================================================================
 
 
-def test_is_true_filter(builder: DataSourceFilterBuilder) -> None:
+def test_is_true_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Completed").is_true().build()
 
     assert result.filter is not None
@@ -205,7 +209,7 @@ def test_is_true_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.value is None
 
 
-def test_is_false_filter(builder: DataSourceFilterBuilder) -> None:
+def test_is_false_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Completed").is_false().build()
 
     assert result.filter is not None
@@ -219,7 +223,7 @@ def test_is_false_filter(builder: DataSourceFilterBuilder) -> None:
 # ============================================================================
 
 
-def test_before_filter(builder: DataSourceFilterBuilder) -> None:
+def test_before_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Due Date").before("2025-12-31").build()
 
     assert result.filter is not None
@@ -228,7 +232,7 @@ def test_before_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.value == "2025-12-31"
 
 
-def test_after_filter(builder: DataSourceFilterBuilder) -> None:
+def test_after_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Due Date").after("2025-01-01").build()
 
     assert result.filter is not None
@@ -236,7 +240,7 @@ def test_after_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.operator == DateOperator.AFTER
 
 
-def test_on_or_before_filter(builder: DataSourceFilterBuilder) -> None:
+def test_on_or_before_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Due Date").on_or_before("2025-06-30").build()
 
     assert result.filter is not None
@@ -244,7 +248,7 @@ def test_on_or_before_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.operator == DateOperator.ON_OR_BEFORE
 
 
-def test_on_or_after_filter(builder: DataSourceFilterBuilder) -> None:
+def test_on_or_after_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Due Date").on_or_after("2025-03-01").build()
 
     assert result.filter is not None
@@ -257,7 +261,7 @@ def test_on_or_after_filter(builder: DataSourceFilterBuilder) -> None:
 # ============================================================================
 
 
-def test_array_contains_filter(builder: DataSourceFilterBuilder) -> None:
+def test_array_contains_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Tags").array_contains("urgent").build()
 
     assert result.filter is not None
@@ -266,7 +270,7 @@ def test_array_contains_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.value == "urgent"
 
 
-def test_array_does_not_contain_filter(builder: DataSourceFilterBuilder) -> None:
+def test_array_does_not_contain_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Tags").array_does_not_contain("archived").build()
 
     assert result.filter is not None
@@ -274,7 +278,7 @@ def test_array_does_not_contain_filter(builder: DataSourceFilterBuilder) -> None
     assert result.filter.operator == ArrayOperator.DOES_NOT_CONTAIN
 
 
-def test_array_is_empty_filter(builder: DataSourceFilterBuilder) -> None:
+def test_array_is_empty_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Tags").array_is_empty().build()
 
     assert result.filter is not None
@@ -283,7 +287,7 @@ def test_array_is_empty_filter(builder: DataSourceFilterBuilder) -> None:
     assert result.filter.value is None
 
 
-def test_array_is_not_empty_filter(builder: DataSourceFilterBuilder) -> None:
+def test_array_is_not_empty_filter(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Tags").array_is_not_empty().build()
 
     assert result.filter is not None
@@ -296,7 +300,7 @@ def test_array_is_not_empty_filter(builder: DataSourceFilterBuilder) -> None:
 # ============================================================================
 
 
-def test_multiple_conditions_with_and_where(builder: DataSourceFilterBuilder) -> None:
+def test_multiple_conditions_with_and_where(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Status").equals("Active").and_where("Price").greater_than(100).build()
 
     assert result.filter is not None
@@ -316,7 +320,7 @@ def test_multiple_conditions_with_and_where(builder: DataSourceFilterBuilder) ->
     assert second_filter.operator == NumberOperator.GREATER_THAN
 
 
-def test_three_conditions_compound_filter(builder: DataSourceFilterBuilder) -> None:
+def test_three_conditions_compound_filter(builder: DataSourceQueryBuilder) -> None:
     result = (
         builder.where("Status")
         .equals("Active")
@@ -333,7 +337,7 @@ def test_three_conditions_compound_filter(builder: DataSourceFilterBuilder) -> N
 
 
 def test_single_condition_returns_property_filter_not_compound(
-    builder: DataSourceFilterBuilder,
+    builder: DataSourceQueryBuilder,
 ) -> None:
     result = builder.where("Status").equals("Active").build()
 
@@ -347,14 +351,14 @@ def test_single_condition_returns_property_filter_not_compound(
 # ============================================================================
 
 
-def test_property_not_found_raises_exception(builder: DataSourceFilterBuilder) -> None:
+def test_property_not_found_raises_exception(builder: DataSourceQueryBuilder) -> None:
     with pytest.raises(DataSourcePropertyNotFound) as exc_info:
         builder.where("NonExistentProperty")
 
     assert exc_info.value.property_name == "NonExistentProperty"
 
 
-def test_property_not_found_includes_suggestions(builder: DataSourceFilterBuilder) -> None:
+def test_property_not_found_includes_suggestions(builder: DataSourceQueryBuilder) -> None:
     with pytest.raises(DataSourcePropertyNotFound) as exc_info:
         status_property_with_typo = "Statu"
         builder.where(status_property_with_typo)
@@ -362,12 +366,12 @@ def test_property_not_found_includes_suggestions(builder: DataSourceFilterBuilde
     assert "Status" in exc_info.value.suggestions
 
 
-def test_filter_without_where_raises_value_error(builder: DataSourceFilterBuilder) -> None:
+def test_filter_without_where_raises_value_error(builder: DataSourceQueryBuilder) -> None:
     with pytest.raises(ValueError, match="No property selected"):
         builder.equals("test")
 
 
-def test_build_property_filter_validates_property_exists(builder: DataSourceFilterBuilder) -> None:
+def test_build_property_filter_validates_property_exists(builder: DataSourceQueryBuilder) -> None:
     builder._filters.append(
         FilterCondition(
             field="InvalidProperty",
@@ -386,7 +390,7 @@ def test_build_property_filter_validates_property_exists(builder: DataSourceFilt
 # ============================================================================
 
 
-def test_build_without_filters_returns_empty_params(builder: DataSourceFilterBuilder) -> None:
+def test_build_without_filters_returns_empty_params(builder: DataSourceQueryBuilder) -> None:
     result = builder.build()
 
     assert isinstance(result, DataSourceQueryParams)
@@ -394,7 +398,7 @@ def test_build_without_filters_returns_empty_params(builder: DataSourceFilterBui
 
 
 def test_empty_builder_can_add_filters_but_build_requires_properties() -> None:
-    empty_builder = DataSourceFilterBuilder(properties={})
+    empty_builder = DataSourceQueryBuilder(properties={})
 
     empty_builder._current_property = "AnyProperty"
     empty_builder._add_filter(StringOperator.EQUALS, "test")
@@ -409,7 +413,7 @@ def test_empty_builder_can_add_filters_but_build_requires_properties() -> None:
 # ============================================================================
 
 
-def test_chaining_multiple_methods(builder: DataSourceFilterBuilder) -> None:
+def test_chaining_multiple_methods(builder: DataSourceQueryBuilder) -> None:
     result = (
         builder.where("Status")
         .equals("Active")
@@ -429,13 +433,161 @@ def test_chaining_multiple_methods(builder: DataSourceFilterBuilder) -> None:
 # ============================================================================
 
 
-def test_current_property_reset_after_filter(builder: DataSourceFilterBuilder) -> None:
+def test_current_property_reset_after_filter(builder: DataSourceQueryBuilder) -> None:
     builder.where("Status").equals("Active")
 
     assert builder._current_property is None
 
 
-def test_can_chain_multiple_filters_with_property_reset(builder: DataSourceFilterBuilder) -> None:
+def test_can_chain_multiple_filters_with_property_reset(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Status").equals("Active").and_where("Price").greater_than(100).build()
 
     assert result.filter is not None
+
+
+# ============================================================================
+# Sort Tests
+# ============================================================================
+
+
+def test_order_by_property_ascending(builder: DataSourceQueryBuilder) -> None:
+    result = builder.order_by("Price", SortDirection.ASCENDING).build()
+
+    assert result.sorts is not None
+    assert len(result.sorts) == 1
+    assert isinstance(result.sorts[0], PropertySort)
+    assert result.sorts[0].property == "Price"
+    assert result.sorts[0].direction == SortDirection.ASCENDING
+
+
+def test_order_by_property_descending(builder: DataSourceQueryBuilder) -> None:
+    result = builder.order_by("Price", SortDirection.DESCENDING).build()
+
+    assert result.sorts is not None
+    assert len(result.sorts) == 1
+    assert result.sorts[0].direction == SortDirection.DESCENDING
+
+
+def test_order_by_ascending_shorthand(builder: DataSourceQueryBuilder) -> None:
+    result = builder.order_by_ascending("Status").build()
+
+    assert result.sorts is not None
+    assert len(result.sorts) == 1
+    assert isinstance(result.sorts[0], PropertySort)
+    assert result.sorts[0].property == "Status"
+    assert result.sorts[0].direction == SortDirection.ASCENDING
+
+
+def test_order_by_descending_shorthand(builder: DataSourceQueryBuilder) -> None:
+    result = builder.order_by_descending("Status").build()
+
+    assert result.sorts is not None
+    assert result.sorts[0].direction == SortDirection.DESCENDING
+
+
+def test_order_by_created_time(builder: DataSourceQueryBuilder) -> None:
+    result = builder.order_by_created_time(SortDirection.ASCENDING).build()
+
+    assert result.sorts is not None
+    assert len(result.sorts) == 1
+    assert isinstance(result.sorts[0], TimestampSort)
+    assert result.sorts[0].timestamp == TimestampType.CREATED_TIME
+    assert result.sorts[0].direction == SortDirection.ASCENDING
+
+
+def test_order_by_created_time_default_descending(builder: DataSourceQueryBuilder) -> None:
+    result = builder.order_by_created_time().build()
+
+    assert result.sorts is not None
+    assert result.sorts[0].direction == SortDirection.DESCENDING
+
+
+def test_order_by_last_edited_time(builder: DataSourceQueryBuilder) -> None:
+    result = builder.order_by_last_edited_time(SortDirection.ASCENDING).build()
+
+    assert result.sorts is not None
+    assert len(result.sorts) == 1
+    assert isinstance(result.sorts[0], TimestampSort)
+    assert result.sorts[0].timestamp == TimestampType.LAST_EDITED_TIME
+    assert result.sorts[0].direction == SortDirection.ASCENDING
+
+
+def test_multiple_sorts_nested(builder: DataSourceQueryBuilder) -> None:
+    result = (
+        builder.order_by_descending("Priority")
+        .order_by_ascending("Status")
+        .order_by_created_time(SortDirection.ASCENDING)
+        .build()
+    )
+
+    assert result.sorts is not None
+    assert len(result.sorts) == 3
+
+    assert result.sorts[0].property == "Priority"
+    assert result.sorts[0].direction == SortDirection.DESCENDING
+
+    assert result.sorts[1].property == "Status"
+    assert result.sorts[1].direction == SortDirection.ASCENDING
+
+    assert isinstance(result.sorts[2], TimestampSort)
+    assert result.sorts[2].timestamp == TimestampType.CREATED_TIME
+
+
+def test_filter_and_sort_combined(builder: DataSourceQueryBuilder) -> None:
+    result = (
+        builder.where("Status")
+        .equals("Active")
+        .and_where("Price")
+        .greater_than(100)
+        .order_by_descending("Price")
+        .order_by_created_time()
+        .build()
+    )
+
+    assert result.filter is not None
+    assert result.sorts is not None
+    assert len(result.sorts) == 2
+    assert isinstance(result.filter, CompoundFilter)
+
+
+def test_sort_validates_property_exists(builder: DataSourceQueryBuilder) -> None:
+    with pytest.raises(DataSourcePropertyNotFound) as exc_info:
+        builder.order_by("NonExistentProperty")
+
+    assert exc_info.value.property_name == "NonExistentProperty"
+
+
+def test_build_without_sorts_returns_none(builder: DataSourceQueryBuilder) -> None:
+    result = builder.where("Status").equals("Active").build()
+
+    assert result.filter is not None
+    assert result.sorts is None
+
+
+def test_build_with_only_sorts_no_filter(builder: DataSourceQueryBuilder) -> None:
+    result = builder.order_by_ascending("Price").build()
+
+    assert result.filter is None
+    assert result.sorts is not None
+    assert len(result.sorts) == 1
+
+
+def test_sort_serialization(builder: DataSourceQueryBuilder) -> None:
+    result = builder.order_by_descending("Price").order_by_created_time().build()
+
+    serialized = result.model_dump()
+
+    assert "sorts" in serialized
+    assert len(serialized["sorts"]) == 2
+    assert serialized["sorts"][0] == {"property": "Price", "direction": "descending"}
+    assert serialized["sorts"][1] == {"timestamp": "created_time", "direction": "descending"}
+
+
+def test_filter_and_sort_serialization(builder: DataSourceQueryBuilder) -> None:
+    result = builder.where("Status").equals("Active").order_by_ascending("Price").build()
+
+    serialized = result.model_dump()
+
+    assert "filter" in serialized
+    assert "sorts" in serialized
+    assert serialized["sorts"][0] == {"property": "Price", "direction": "ascending"}

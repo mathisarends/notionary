@@ -11,40 +11,36 @@ from notionary.data_source.query.schema import (
     FilterCondition,
     LogicalOperator,
     NotionFilter,
+    NotionSort,
     NumberOperator,
     PropertyFilter,
+    PropertySort,
+    SortDirection,
     StringOperator,
+    TimestampSort,
+    TimestampType,
 )
 from notionary.exceptions.data_source import DataSourcePropertyNotFound
 
 
-class DataSourceFilterBuilder:
+class DataSourceQueryBuilder:
     def __init__(self, properties: dict[str, DataSourceProperty]) -> None:
         self._filters: list[FilterCondition] = []
+        self._sorts: list[NotionSort] = []
         self._current_property: str | None = None
         self._properties = properties or {}
         self._negate_next = False
         self._or_group: list[FilterCondition] | None = None
 
     def where(self, property_name: str) -> Self:
-        if self._properties and property_name not in self._properties:
-            availble_properties = list(self._properties.keys())
-            raise DataSourcePropertyNotFound(
-                property_name=property_name,
-                available_properties=availble_properties,
-            )
+        self._validate_property_exists(property_name)
 
         self._current_property = property_name
         self._negate_next = False
         return self
 
     def where_not(self, property_name: str) -> Self:
-        if self._properties and property_name not in self._properties:
-            availble_properties = list(self._properties.keys())
-            raise DataSourcePropertyNotFound(
-                property_name=property_name,
-                available_properties=availble_properties,
-            )
+        self._validate_property_exists(property_name)
 
         self._current_property = property_name
         self._negate_next = True
@@ -60,12 +56,7 @@ class DataSourceFilterBuilder:
         if self._or_group is None:
             self._or_group = []
 
-        if self._properties and property_name not in self._properties:
-            availble_properties = list(self._properties.keys())
-            raise DataSourcePropertyNotFound(
-                property_name=property_name,
-                available_properties=availble_properties,
-            )
+        self._validate_property_exists(property_name)
 
         self._current_property = property_name
         self._negate_next = False
@@ -75,16 +66,19 @@ class DataSourceFilterBuilder:
         if self._or_group is None:
             self._or_group = []
 
-        if self._properties and property_name not in self._properties:
-            availble_properties = list(self._properties.keys())
-            raise DataSourcePropertyNotFound(
-                property_name=property_name,
-                available_properties=availble_properties,
-            )
+        self._validate_property_exists(property_name)
 
         self._current_property = property_name
         self._negate_next = True
         return self
+
+    def _validate_property_exists(self, property_name: str) -> None:
+        if self._properties and property_name not in self._properties:
+            available_properties = list(self._properties.keys())
+            raise DataSourcePropertyNotFound(
+                property_name=property_name,
+                available_properties=available_properties,
+            )
 
     def equals(self, value: str | int | float) -> Self:
         return self._add_filter(StringOperator.EQUALS, value)
@@ -152,14 +146,33 @@ class DataSourceFilterBuilder:
     def array_is_not_empty(self) -> Self:
         return self._add_filter(ArrayOperator.IS_NOT_EMPTY, None)
 
+    def order_by(self, property_name: str, direction: SortDirection = SortDirection.ASCENDING) -> Self:
+        self._validate_property_exists(property_name)
+
+        self._sorts.append(PropertySort(property=property_name, direction=direction))
+        return self
+
+    def order_by_ascending(self, property_name: str) -> Self:
+        return self.order_by(property_name, SortDirection.ASCENDING)
+
+    def order_by_descending(self, property_name: str) -> Self:
+        return self.order_by(property_name, SortDirection.DESCENDING)
+
+    def order_by_created_time(self, direction: SortDirection = SortDirection.DESCENDING) -> Self:
+        self._sorts.append(TimestampSort(timestamp=TimestampType.CREATED_TIME, direction=direction))
+        return self
+
+    def order_by_last_edited_time(self, direction: SortDirection = SortDirection.DESCENDING) -> Self:
+        self._sorts.append(TimestampSort(timestamp=TimestampType.LAST_EDITED_TIME, direction=direction))
+        return self
+
     def build(self) -> DataSourceQueryParams:
         self._close_or_group()
 
-        if not self._filters:
-            return DataSourceQueryParams()
+        notion_filter = self._build_notion_filter() if self._filters else None
+        sorts = self._sorts if self._sorts else None
 
-        notion_filter = self._build_notion_filter()
-        return DataSourceQueryParams(filter=notion_filter)
+        return DataSourceQueryParams(filter=notion_filter, sorts=sorts)
 
     def _build_notion_filter(self) -> NotionFilter:
         if len(self._filters) == 1:

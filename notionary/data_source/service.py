@@ -16,7 +16,7 @@ from notionary.data_source.properties.models import (
     DataSourceSelectProperty,
     DataSourceStatusProperty,
 )
-from notionary.data_source.query.builder import DataSourceFilterBuilder
+from notionary.data_source.query.builder import DataSourceQueryBuilder
 from notionary.data_source.query.schema import (
     DataSourceQueryParams,
 )
@@ -299,11 +299,11 @@ class NotionDataSource(Entity):
 
         return prop
 
-    def filter(self) -> DataSourceFilterBuilder:
-        return DataSourceFilterBuilder(properties=self._properties)
+    def filter(self) -> DataSourceQueryBuilder:
+        return DataSourceQueryBuilder(properties=self._properties)
 
-    async def query(self, filter_fn: Callable[[DataSourceFilterBuilder], DataSourceFilterBuilder]) -> list[NotionPage]:
-        builder = DataSourceFilterBuilder(properties=self._properties)
+    async def query(self, filter_fn: Callable[[DataSourceQueryBuilder], DataSourceQueryBuilder]) -> list[NotionPage]:
+        builder = DataSourceQueryBuilder(properties=self._properties)
         filter_fn(builder)
         query_params = builder.build()
 

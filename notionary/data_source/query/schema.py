@@ -66,6 +66,16 @@ class LogicalOperator(StrEnum):
     OR = "or"
 
 
+class SortDirection(StrEnum):
+    ASCENDING = "ascending"
+    DESCENDING = "descending"
+
+
+class TimestampType(StrEnum):
+    CREATED_TIME = "created_time"
+    LAST_EDITED_TIME = "last_edited_time"
+
+
 class TimeUnit(StrEnum):
     DAYS = "days"
     WEEKS = "weeks"
@@ -191,14 +201,31 @@ class CompoundFilter(BaseModel):
 type NotionFilter = PropertyFilter | CompoundFilter
 
 
+class PropertySort(BaseModel):
+    property: str
+    direction: SortDirection
+
+
+class TimestampSort(BaseModel):
+    timestamp: TimestampType
+    direction: SortDirection
+
+
+type NotionSort = PropertySort | TimestampSort
+
+
 class DataSourceQueryParams(BaseModel):
     filter: NotionFilter | None = None
+    sorts: list[NotionSort] | None = None
 
     @model_serializer
     def serialize_model(self) -> dict[str, Any]:
-        if self.filter is None:
-            return {}
-        return {"filter": self.filter.model_dump()}
+        result: dict[str, Any] = {}
 
+        if self.filter is not None:
+            result["filter"] = self.filter.model_dump()
 
-CompoundFilter.model_rebuild()
+        if self.sorts is not None and len(self.sorts) > 0:
+            result["sorts"] = [sort.model_dump() for sort in self.sorts]
+
+        return result
