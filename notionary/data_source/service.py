@@ -312,9 +312,5 @@ class NotionDataSource(Entity):
     async def get_pages(self, query_params: DataSourceQueryParams | None = None) -> list[NotionPage]:
         from notionary import NotionPage
 
-        if query_params is None:
-            query_params = DataSourceQueryParams()
-
-        filter_dict = query_params.model_dump()
-        query_response = await self._data_source_client.query(filter=filter_dict)
+        query_response = await self._data_source_client.query(query_params=query_params)
         return [await NotionPage.from_id(page.id) for page in query_response.results]

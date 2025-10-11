@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, override
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.data_source.query.schema import DataSourceQueryParams
 from notionary.data_source.schemas import DataSourceDto, QueryDataSourceResponse, UpdateDataSourceDto
 from notionary.http.client import NotionHttpClient
 from notionary.page.schemas import NotionPageDto
@@ -53,8 +54,9 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
         )
         return updated_markdown_description
 
-    async def query(self, filter: dict[str, Any] | None = None) -> QueryDataSourceResponse:
-        all_results = await paginate_notion_api(self._make_query_request, query_data=filter or {})
+    async def query(self, query_params: DataSourceQueryParams | None = None) -> QueryDataSourceResponse:
+        query_params_dict = query_params.model_dump() if query_params else {}
+        all_results = await paginate_notion_api(self._make_query_request, query_data=query_params_dict or {})
 
         return QueryDataSourceResponse(
             object="list",
