@@ -9,10 +9,12 @@ from notionary.data_source.query.schema import (
     DateOperator,
     FieldType,
     FilterCondition,
+    InternalFilterCondition,
     LogicalOperator,
     NotionFilter,
     NotionSort,
     NumberOperator,
+    OrGroupMarker,
     PropertyFilter,
     PropertySort,
     SortDirection,
@@ -25,7 +27,7 @@ from notionary.exceptions.data_source import DataSourcePropertyNotFound
 
 class DataSourceQueryBuilder:
     def __init__(self, properties: dict[str, DataSourceProperty]) -> None:
-        self._filters: list[FilterCondition] = []
+        self._filters: list[InternalFilterCondition] = []
         self._sorts: list[NotionSort] = []
         self._current_property: str | None = None
         self._properties = properties or {}
@@ -33,17 +35,15 @@ class DataSourceQueryBuilder:
         self._or_group: list[FilterCondition] | None = None
 
     def where(self, property_name: str) -> Self:
-        self._validate_property_exists(property_name)
-
-        self._current_property = property_name
-        self._negate_next = False
+        self._finalize_current_or_group()
+        self._ensure_property_exists(property_name)
+        self._select_property_without_negation(property_name)
         return self
 
     def where_not(self, property_name: str) -> Self:
-        self._validate_property_exists(property_name)
-
-        self._current_property = property_name
-        self._negate_next = True
+        self._finalize_current_or_group()
+        self._ensure_property_exists(property_name)
+        self._select_property_with_negation(property_name)
         return self
 
     def and_where(self, property_name: str) -> Self:
@@ -53,32 +53,16 @@ class DataSourceQueryBuilder:
         return self.where_not(property_name)
 
     def or_where(self, property_name: str) -> Self:
-        if self._or_group is None:
-            self._or_group = []
-
-        self._validate_property_exists(property_name)
-
-        self._current_property = property_name
-        self._negate_next = False
+        self._ensure_or_group_exists()
+        self._ensure_property_exists(property_name)
+        self._select_property_without_negation(property_name)
         return self
 
     def or_where_not(self, property_name: str) -> Self:
-        if self._or_group is None:
-            self._or_group = []
-
-        self._validate_property_exists(property_name)
-
-        self._current_property = property_name
-        self._negate_next = True
+        self._ensure_or_group_exists()
+        self._ensure_property_exists(property_name)
+        self._select_property_with_negation(property_name)
         return self
-
-    def _validate_property_exists(self, property_name: str) -> None:
-        if self._properties and property_name not in self._properties:
-            available_properties = list(self._properties.keys())
-            raise DataSourcePropertyNotFound(
-                property_name=property_name,
-                available_properties=available_properties,
-            )
 
     def equals(self, value: str | int | float) -> Self:
         return self._add_filter(StringOperator.EQUALS, value)
@@ -147,9 +131,9 @@ class DataSourceQueryBuilder:
         return self._add_filter(ArrayOperator.IS_NOT_EMPTY, None)
 
     def order_by(self, property_name: str, direction: SortDirection = SortDirection.ASCENDING) -> Self:
-        self._validate_property_exists(property_name)
-
-        self._sorts.append(PropertySort(property=property_name, direction=direction))
+        self._ensure_property_exists(property_name)
+        sort = PropertySort(property=property_name, direction=direction)
+        self._sorts.append(sort)
         return self
 
     def order_by_ascending(self, property_name: str) -> Self:
@@ -159,112 +143,204 @@ class DataSourceQueryBuilder:
         return self.order_by(property_name, SortDirection.DESCENDING)
 
     def order_by_created_time(self, direction: SortDirection = SortDirection.DESCENDING) -> Self:
-        self._sorts.append(TimestampSort(timestamp=TimestampType.CREATED_TIME, direction=direction))
+        sort = TimestampSort(timestamp=TimestampType.CREATED_TIME, direction=direction)
+        self._sorts.append(sort)
         return self
 
     def order_by_last_edited_time(self, direction: SortDirection = SortDirection.DESCENDING) -> Self:
-        self._sorts.append(TimestampSort(timestamp=TimestampType.LAST_EDITED_TIME, direction=direction))
+        sort = TimestampSort(timestamp=TimestampType.LAST_EDITED_TIME, direction=direction)
+        self._sorts.append(sort)
         return self
 
     def build(self) -> DataSourceQueryParams:
-        self._close_or_group()
-
-        notion_filter = self._build_notion_filter() if self._filters else None
-        sorts = self._sorts if self._sorts else None
-
+        self._finalize_current_or_group()
+        notion_filter = self._create_notion_filter_if_needed()
+        sorts = self._create_sorts_if_needed()
         return DataSourceQueryParams(filter=notion_filter, sorts=sorts)
 
-    def _build_notion_filter(self) -> NotionFilter:
-        if len(self._filters) == 1:
-            return self._build_property_filter(self._filters[0])
+    def _select_property_without_negation(self, property_name: str) -> None:
+        self._current_property = property_name
+        self._negate_next = False
 
-        property_filters = [self._build_property_filter(filter) for filter in self._filters]
-        return CompoundFilter(operator=LogicalOperator.AND, filters=property_filters)
+    def _select_property_with_negation(self, property_name: str) -> None:
+        self._current_property = property_name
+        self._negate_next = True
 
-    def _build_property_filter(self, condition: FilterCondition) -> PropertyFilter:
-        if hasattr(condition, "_is_or_group") and condition._is_or_group:
-            # This is a pseudo-condition that contains OR group filters
-            or_filters = getattr(condition, "_or_filters", [])
-            property_filters = [self._build_single_property_filter(f) for f in or_filters]
-            return CompoundFilter(operator=LogicalOperator.OR, filters=property_filters)
+    def _ensure_property_exists(self, property_name: str) -> None:
+        if self._has_no_properties():
+            return
 
-        return self._build_single_property_filter(condition)
+        if self._property_is_unknown(property_name):
+            self._raise_property_not_found_error(property_name)
 
-    def _build_single_property_filter(self, condition: FilterCondition) -> PropertyFilter:
-        prop = self._properties.get(condition.field)
-        if not prop:
-            raise DataSourcePropertyNotFound(
-                property_name=condition.field,
-                available_properties=list(self._properties.keys()),
-            )
+    def _has_no_properties(self) -> bool:
+        return not self._properties
 
-        return PropertyFilter(
-            property=condition.field,
-            property_type=prop.type,
-            operator=condition.operator,
-            value=condition.value,
+    def _property_is_unknown(self, property_name: str) -> bool:
+        return property_name not in self._properties
+
+    def _raise_property_not_found_error(self, property_name: str) -> None:
+        available_properties = list(self._properties.keys())
+        raise DataSourcePropertyNotFound(
+            property_name=property_name,
+            available_properties=available_properties,
         )
+
+    def _ensure_or_group_exists(self) -> None:
+        if self._or_group_is_not_active():
+            self._start_new_or_group()
+
+    def _or_group_is_not_active(self) -> bool:
+        return self._or_group is None
+
+    def _start_new_or_group(self) -> None:
+        self._or_group = []
+        self._move_last_filter_to_or_group()
+
+    def _move_last_filter_to_or_group(self) -> None:
+        if self._has_no_filters():
+            return
+
+        last_filter = self._filters.pop()
+        if self._is_regular_filter_condition(last_filter):
+            self._or_group.append(last_filter)
+
+    def _has_no_filters(self) -> bool:
+        return not self._filters
+
+    def _is_regular_filter_condition(self, filter_item: InternalFilterCondition) -> bool:
+        return isinstance(filter_item, FilterCondition)
+
+    def _finalize_current_or_group(self) -> None:
+        if self._should_finalize_or_group():
+            self._convert_or_group_to_marker()
+            self._clear_or_group()
+
+    def _should_finalize_or_group(self) -> bool:
+        return self._or_group is not None and len(self._or_group) > 0
+
+    def _convert_or_group_to_marker(self) -> None:
+        or_marker = OrGroupMarker(conditions=self._or_group)
+        self._filters.append(or_marker)
+
+    def _clear_or_group(self) -> None:
+        self._or_group = None
 
     def _add_filter(
         self,
         operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
         value: str | int | float | list[str | int | float] | None,
     ) -> Self:
-        if self._current_property is None:
+        self._ensure_property_is_selected()
+        final_operator = self._apply_negation_if_needed(operator)
+        filter_condition = self._create_filter_condition(final_operator, value)
+        self._store_filter_condition(filter_condition)
+        self._reset_current_property()
+        return self
+
+    def _ensure_property_is_selected(self) -> None:
+        if self._no_property_is_selected():
             raise ValueError("No property selected. Use .where(property_name) first.")
 
-        # Apply negation if needed
-        if self._negate_next:
-            operator = self._negate_operator(operator)
-            self._negate_next = False
+    def _no_property_is_selected(self) -> bool:
+        return self._current_property is None
 
-        field_type = self._infer_field_type_from_operator(operator)
+    def _apply_negation_if_needed(
+        self,
+        operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
+    ) -> StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator:
+        if not self._negate_next:
+            return operator
 
-        filter_condition = FilterCondition(
+        negated_operator = self._negate_operator(operator)
+        self._negate_next = False
+        return negated_operator
+
+    def _create_filter_condition(
+        self,
+        operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
+        value: str | int | float | list[str | int | float] | None,
+    ) -> FilterCondition:
+        field_type = self._determine_field_type_from_operator(operator)
+        return FilterCondition(
             field=self._current_property,
             field_type=field_type,
             operator=operator,
             value=value,
         )
 
-        # Add to OR group if active, otherwise to main filters
-        if self._or_group is not None:
+    def _store_filter_condition(self, filter_condition: FilterCondition) -> None:
+        if self._or_group_is_active():
             self._or_group.append(filter_condition)
         else:
             self._filters.append(filter_condition)
 
+    def _or_group_is_active(self) -> bool:
+        return self._or_group is not None
+
+    def _reset_current_property(self) -> None:
         self._current_property = None
-        return self
 
-    def _close_or_group(self) -> None:
-        if self._or_group is not None and len(self._or_group) > 0:
-            # Create a pseudo-condition to mark this as an OR group
-            or_group_marker = FilterCondition(
-                field="__or_group__",
-                field_type=FieldType.STRING,
-                operator=StringOperator.EQUALS,
-                value=None,
-            )
-            # Add metadata to identify this as an OR group
-            or_group_marker._is_or_group = True
-            or_group_marker._or_filters = self._or_group
+    def _create_notion_filter_if_needed(self) -> NotionFilter | None:
+        if self._has_no_filters():
+            return None
+        return self._build_notion_filter()
 
-            self._filters.append(or_group_marker)
-            self._or_group = None
+    def _create_sorts_if_needed(self) -> list[NotionSort] | None:
+        if not self._sorts:
+            return None
+        return self._sorts
+
+    def _build_notion_filter(self) -> NotionFilter:
+        if self._has_single_filter():
+            return self._build_single_filter()
+        return self._build_compound_and_filter()
+
+    def _has_single_filter(self) -> bool:
+        return len(self._filters) == 1
+
+    def _build_single_filter(self) -> NotionFilter:
+        return self._build_filter(self._filters[0])
+
+    def _build_compound_and_filter(self) -> CompoundFilter:
+        property_filters = [self._build_filter(f) for f in self._filters]
+        return CompoundFilter(operator=LogicalOperator.AND, filters=property_filters)
+
+    def _build_filter(self, condition: InternalFilterCondition) -> PropertyFilter | CompoundFilter:
+        if isinstance(condition, OrGroupMarker):
+            return self._build_or_compound_filter(condition)
+        return self._build_property_filter(condition)
+
+    def _build_or_compound_filter(self, or_marker: OrGroupMarker) -> CompoundFilter:
+        property_filters = [self._build_property_filter(c) for c in or_marker.conditions]
+        return CompoundFilter(operator=LogicalOperator.OR, filters=property_filters)
+
+    def _build_property_filter(self, condition: FilterCondition) -> PropertyFilter:
+        property_definition = self._get_property_definition(condition.field)
+        return PropertyFilter(
+            property=condition.field,
+            property_type=property_definition.type,
+            operator=condition.operator,
+            value=condition.value,
+        )
+
+    def _get_property_definition(self, property_name: str) -> DataSourceProperty:
+        property_definition = self._properties.get(property_name)
+        if property_definition is None:
+            self._raise_property_not_found_error(property_name)
+        return property_definition
 
     def _negate_operator(
         self,
         operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
     ) -> StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator:
         negation_map = {
-            # String operators
             StringOperator.EQUALS: StringOperator.DOES_NOT_EQUAL,
             StringOperator.DOES_NOT_EQUAL: StringOperator.EQUALS,
             StringOperator.CONTAINS: StringOperator.DOES_NOT_CONTAIN,
             StringOperator.DOES_NOT_CONTAIN: StringOperator.CONTAINS,
             StringOperator.IS_EMPTY: StringOperator.IS_NOT_EMPTY,
             StringOperator.IS_NOT_EMPTY: StringOperator.IS_EMPTY,
-            # Number operators
             NumberOperator.EQUALS: NumberOperator.DOES_NOT_EQUAL,
             NumberOperator.DOES_NOT_EQUAL: NumberOperator.EQUALS,
             NumberOperator.GREATER_THAN: NumberOperator.LESS_THAN_OR_EQUAL_TO,
@@ -273,41 +349,43 @@ class DataSourceQueryBuilder:
             NumberOperator.LESS_THAN_OR_EQUAL_TO: NumberOperator.GREATER_THAN,
             NumberOperator.IS_EMPTY: NumberOperator.IS_NOT_EMPTY,
             NumberOperator.IS_NOT_EMPTY: NumberOperator.IS_EMPTY,
-            # Boolean operators
             BooleanOperator.IS_TRUE: BooleanOperator.IS_FALSE,
             BooleanOperator.IS_FALSE: BooleanOperator.IS_TRUE,
-            # Date operators
             DateOperator.BEFORE: DateOperator.ON_OR_AFTER,
             DateOperator.AFTER: DateOperator.ON_OR_BEFORE,
             DateOperator.ON_OR_BEFORE: DateOperator.AFTER,
             DateOperator.ON_OR_AFTER: DateOperator.BEFORE,
             DateOperator.IS_EMPTY: DateOperator.IS_NOT_EMPTY,
             DateOperator.IS_NOT_EMPTY: DateOperator.IS_EMPTY,
-            # Array operators
             ArrayOperator.CONTAINS: ArrayOperator.DOES_NOT_CONTAIN,
             ArrayOperator.DOES_NOT_CONTAIN: ArrayOperator.CONTAINS,
             ArrayOperator.IS_EMPTY: ArrayOperator.IS_NOT_EMPTY,
             ArrayOperator.IS_NOT_EMPTY: ArrayOperator.IS_EMPTY,
         }
 
-        if operator in negation_map:
-            return negation_map[operator]
+        if operator not in negation_map:
+            self._raise_operator_cannot_be_negated_error(operator)
 
+        return negation_map[operator]
+
+    def _raise_operator_cannot_be_negated_error(
+        self,
+        operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
+    ) -> None:
         raise ValueError(f"Operator '{operator}' cannot be negated. This should not happen - please report this issue.")
 
-    def _infer_field_type_from_operator(
+    def _determine_field_type_from_operator(
         self,
         operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
     ) -> FieldType:
         if isinstance(operator, StringOperator):
             return FieldType.STRING
-        elif isinstance(operator, NumberOperator):
+        if isinstance(operator, NumberOperator):
             return FieldType.NUMBER
-        elif isinstance(operator, BooleanOperator):
+        if isinstance(operator, BooleanOperator):
             return FieldType.BOOLEAN
-        elif isinstance(operator, DateOperator):
+        if isinstance(operator, DateOperator):
             return FieldType.DATE
-        elif isinstance(operator, ArrayOperator):
+        if isinstance(operator, ArrayOperator):
             return FieldType.ARRAY
-
         return FieldType.STRING

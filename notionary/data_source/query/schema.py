@@ -166,6 +166,15 @@ class FilterCondition(BaseModel):
         return operator in valid_operators.get(field_type, [])
 
 
+class OrGroupMarker(BaseModel):
+    """Marker to represent an OR group of filter conditions."""
+
+    conditions: list[FilterCondition]
+
+
+type InternalFilterCondition = FilterCondition | OrGroupMarker
+
+
 class PropertyFilter(BaseModel):
     property: str
     property_type: PropertyType
