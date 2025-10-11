@@ -21,7 +21,7 @@ from notionary.data_source.query.schema import (
     DataSourceQueryParams,
 )
 from notionary.data_source.schemas import DataSourceDto
-from notionary.exceptions.data_source import DataSourcePropertyNotFound, DataSourcePropertyTypeError
+from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound, DataSourcePropertyTypeError
 from notionary.page.properties.models import PageTitleProperty
 from notionary.page.schemas import NotionPageDto
 from notionary.search.service import SearchService

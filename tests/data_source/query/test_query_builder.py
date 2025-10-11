@@ -29,7 +29,7 @@ from notionary.data_source.query.schema import (
     TimestampSort,
     TimestampType,
 )
-from notionary.exceptions.data_source import DataSourcePropertyNotFound
+from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound
 from notionary.shared.properties.property_type import PropertyType
 
 
@@ -254,6 +254,86 @@ def test_on_or_after_filter(builder: DataSourceQueryBuilder) -> None:
     assert result.filter is not None
     assert isinstance(result.filter, PropertyFilter)
     assert result.filter.operator == DateOperator.ON_OR_AFTER
+
+
+# ============================================================================
+# Date Format Parsing
+# ============================================================================
+
+
+def test_before_filter_german_format(builder: DataSourceQueryBuilder) -> None:
+    result = builder.where("Due Date").before("31.12.2024").build()
+
+    assert result.filter is not None
+    assert isinstance(result.filter, PropertyFilter)
+    assert result.filter.operator == DateOperator.BEFORE
+    assert result.filter.value == "2024-12-31"
+
+
+def test_after_filter_us_format_slash(builder: DataSourceQueryBuilder) -> None:
+    result = builder.where("Due Date").after("12/25/2024").build()
+
+    assert result.filter is not None
+    assert isinstance(result.filter, PropertyFilter)
+    assert result.filter.operator == DateOperator.AFTER
+    assert result.filter.value == "2024-12-25"
+
+
+def test_on_or_before_filter_us_format_dash(builder: DataSourceQueryBuilder) -> None:
+    result = builder.where("Due Date").on_or_before("12-25-2024").build()
+
+    assert result.filter is not None
+    assert isinstance(result.filter, PropertyFilter)
+    assert result.filter.operator == DateOperator.ON_OR_BEFORE
+    assert result.filter.value == "2024-12-25"
+
+
+def test_on_or_after_filter_mixed_format_slash(builder: DataSourceQueryBuilder) -> None:
+    result = builder.where("Due Date").on_or_after("25/12/2024").build()
+
+    assert result.filter is not None
+    assert isinstance(result.filter, PropertyFilter)
+    assert result.filter.operator == DateOperator.ON_OR_AFTER
+    assert result.filter.value == "2024-12-25"
+
+
+def test_before_filter_text_month_format(builder: DataSourceQueryBuilder) -> None:
+    result = builder.where("Due Date").before("31-Dec-2024").build()
+
+    assert result.filter is not None
+    assert isinstance(result.filter, PropertyFilter)
+    assert result.filter.operator == DateOperator.BEFORE
+    assert result.filter.value == "2024-12-31"
+
+
+def test_after_filter_text_month_with_space(builder: DataSourceQueryBuilder) -> None:
+    result = builder.where("Due Date").after("25 Dec 2024").build()
+
+    assert result.filter is not None
+    assert isinstance(result.filter, PropertyFilter)
+    assert result.filter.operator == DateOperator.AFTER
+    assert result.filter.value == "2024-12-25"
+
+
+def test_before_filter_full_month_name(builder: DataSourceQueryBuilder) -> None:
+    result = builder.where("Due Date").before("31-December-2024").build()
+
+    assert result.filter is not None
+    assert isinstance(result.filter, PropertyFilter)
+    assert result.filter.operator == DateOperator.BEFORE
+    assert result.filter.value == "2024-12-31"
+
+
+def test_invalid_date_format_raises_error(builder: DataSourceQueryBuilder) -> None:
+    with pytest.raises(ValueError, match="Invalid date format"):
+        builder.where("Due Date").before("invalid-date")
+
+
+def test_iso_format_still_works(builder: DataSourceQueryBuilder) -> None:
+    result = builder.where("Due Date").before("2024-12-31").build()
+
+    assert result.filter is not None
+    assert result.filter.value == "2024-12-31"
 
 
 # ============================================================================

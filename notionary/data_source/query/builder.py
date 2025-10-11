@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import Self
 
 from notionary.data_source.properties.models import DataSourceProperty
@@ -22,17 +23,21 @@ from notionary.data_source.query.schema import (
     TimestampSort,
     TimestampType,
 )
-from notionary.exceptions.data_source import DataSourcePropertyNotFound
+from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound
+from notionary.utils.date import parse_date
 
 
 class DataSourceQueryBuilder:
-    def __init__(self, properties: dict[str, DataSourceProperty]) -> None:
+    def __init__(
+        self, properties: dict[str, DataSourceProperty], date_parser: Callable[[str], str] = parse_date
+    ) -> None:
         self._filters: list[InternalFilterCondition] = []
         self._sorts: list[NotionSort] = []
         self._current_property: str | None = None
         self._properties = properties or {}
         self._negate_next = False
         self._or_group: list[FilterCondition] | None = None
+        self._date_parser = date_parser
 
     def where(self, property_name: str) -> Self:
         self._finalize_current_or_group()
@@ -107,16 +112,20 @@ class DataSourceQueryBuilder:
         return self._add_filter(BooleanOperator.IS_FALSE, None)
 
     def before(self, date: str) -> Self:
-        return self._add_filter(DateOperator.BEFORE, date)
+        parsed_date = self._date_parser(date)
+        return self._add_filter(DateOperator.BEFORE, parsed_date)
 
     def after(self, date: str) -> Self:
-        return self._add_filter(DateOperator.AFTER, date)
+        parsed_date = self._date_parser(date)
+        return self._add_filter(DateOperator.AFTER, parsed_date)
 
     def on_or_before(self, date: str) -> Self:
-        return self._add_filter(DateOperator.ON_OR_BEFORE, date)
+        parsed_date = self._date_parser(date)
+        return self._add_filter(DateOperator.ON_OR_BEFORE, parsed_date)
 
     def on_or_after(self, date: str) -> Self:
-        return self._add_filter(DateOperator.ON_OR_AFTER, date)
+        parsed_date = self._date_parser(date)
+        return self._add_filter(DateOperator.ON_OR_AFTER, parsed_date)
 
     def array_contains(self, value: str) -> Self:
         return self._add_filter(ArrayOperator.CONTAINS, value)

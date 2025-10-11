@@ -5,9 +5,11 @@ from notionary.data_source.query.schema import (
     BooleanOperator,
     DateOperator,
     NumberOperator,
+    Operator,
     StringOperator,
 )
 from notionary.exceptions.base import NotionaryError
+from notionary.shared.properties.property_type import PropertyType
 
 
 class QueryBuilderError(NotionaryError):
@@ -17,14 +19,12 @@ class QueryBuilderError(NotionaryError):
 
 
 class InvalidOperatorForPropertyType(QueryBuilderError):
-    """Raised when an operator is used on a property type that doesn't support it."""
-
     def __init__(
         self,
         property_name: str,
-        property_type: str,
-        operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
-        valid_operators: list[StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator],
+        property_type: PropertyType,
+        operator: Operator,
+        valid_operators: list[Operator],
     ) -> None:
         self.property_type = property_type
         self.operator = operator
@@ -39,12 +39,10 @@ class InvalidOperatorForPropertyType(QueryBuilderError):
 
 
 class InvalidValueForOperator(QueryBuilderError):
-    """Raised when a value is incompatible with the operator being used."""
-
     def __init__(
         self,
         property_name: str,
-        operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
+        operator: Operator,
         provided_value: Any,
         expected_value_type: str,
         example_value: Any | None = None,
@@ -66,8 +64,6 @@ class InvalidValueForOperator(QueryBuilderError):
 
 
 class MissingRequiredValue(QueryBuilderError):
-    """Raised when an operator requires a value but none was provided."""
-
     def __init__(
         self,
         property_name: str,
@@ -80,8 +76,6 @@ class MissingRequiredValue(QueryBuilderError):
 
 
 class ValueNotAllowedForOperator(QueryBuilderError):
-    """Raised when a value is provided for an operator that doesn't accept values."""
-
     def __init__(
         self,
         property_name: str,
@@ -97,8 +91,6 @@ class ValueNotAllowedForOperator(QueryBuilderError):
 
 
 class InvalidDateFormat(QueryBuilderError):
-    """Raised when a date string is in an invalid format."""
-
     def __init__(
         self,
         property_name: str,
@@ -116,8 +108,6 @@ class InvalidDateFormat(QueryBuilderError):
 
 
 class InvalidNumberValue(QueryBuilderError):
-    """Raised when a numeric value is invalid for the operation."""
-
     def __init__(
         self,
         property_name: str,
@@ -132,8 +122,6 @@ class InvalidNumberValue(QueryBuilderError):
 
 
 class PropertyNotConfigured(QueryBuilderError):
-    """Raised when attempting to filter on a property that has no configuration."""
-
     def __init__(
         self,
         property_name: str,
@@ -146,8 +134,6 @@ class PropertyNotConfigured(QueryBuilderError):
 
 
 class NoPropertySelected(QueryBuilderError):
-    """Raised when an operator method is called without first selecting a property."""
-
     def __init__(self) -> None:
         message = (
             "No property selected. Use .where('property_name') or .where_not('property_name') "
@@ -157,8 +143,6 @@ class NoPropertySelected(QueryBuilderError):
 
 
 class EmptyOrGroupError(QueryBuilderError):
-    """Raised when attempting to create an OR group with no conditions."""
-
     def __init__(self) -> None:
         message = (
             "Cannot create an OR group with no conditions. Add at least one filter condition before using .or_where()"
@@ -167,8 +151,6 @@ class EmptyOrGroupError(QueryBuilderError):
 
 
 class ConflictingFiltersError(QueryBuilderError):
-    """Raised when filters are logically contradictory."""
-
     def __init__(
         self,
         property_name: str,
@@ -182,8 +164,6 @@ class ConflictingFiltersError(QueryBuilderError):
 
 
 class InvalidSortProperty(QueryBuilderError):
-    """Raised when attempting to sort by a property that doesn't exist or can't be sorted."""
-
     def __init__(
         self,
         property_name: str,
