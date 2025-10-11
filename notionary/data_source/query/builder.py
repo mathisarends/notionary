@@ -15,6 +15,7 @@ from notionary.data_source.query.schema import (
     NotionFilter,
     NotionSort,
     NumberOperator,
+    Operator,
     OrGroupMarker,
     PropertyFilter,
     PropertySort,
@@ -23,21 +24,27 @@ from notionary.data_source.query.schema import (
     TimestampSort,
     TimestampType,
 )
+from notionary.data_source.query.validator import OperatorValidator
 from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound
 from notionary.utils.date import parse_date
 
 
 class DataSourceQueryBuilder:
     def __init__(
-        self, properties: dict[str, DataSourceProperty], date_parser: Callable[[str], str] = parse_date
+        self,
+        properties: dict[str, DataSourceProperty],
+        operator_validator: OperatorValidator | None = None,
+        date_parser: Callable[[str], str] = parse_date,
     ) -> None:
+        self._properties = properties
+        self._operator_validator = operator_validator or OperatorValidator()
+        self._date_parser = date_parser
+
         self._filters: list[InternalFilterCondition] = []
         self._sorts: list[NotionSort] = []
         self._current_property: str | None = None
-        self._properties = properties or {}
         self._negate_next = False
         self._or_group: list[FilterCondition] | None = None
-        self._date_parser = date_parser
 
     def where(self, property_name: str) -> Self:
         self._finalize_current_or_group()
@@ -241,10 +248,20 @@ class DataSourceQueryBuilder:
         value: str | int | float | list[str | int | float] | None,
     ) -> Self:
         self._ensure_property_is_selected()
+        self._validate_operator_for_current_property(operator)
         final_operator = self._apply_negation_if_needed(operator)
         filter_condition = self._create_filter_condition(final_operator, value)
         self._store_filter_condition(filter_condition)
         self._reset_current_property()
+        return self
+
+    def _validate_operator_for_current_property(self, operator: Operator) -> None:
+        if not self._current_property or not self._properties:
+            return
+
+        property_obj = self._properties.get(self._current_property)
+        if property_obj:
+            self._operator_validator.validate_operator_for_property(self._current_property, property_obj, operator)
         return self
 
     def _ensure_property_is_selected(self) -> None:

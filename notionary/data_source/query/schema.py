@@ -44,6 +44,13 @@ class BooleanOperator(StrEnum):
     IS_FALSE = "is_false"
 
 
+class StatusOperator(StrEnum):
+    EQUALS = "equals"
+    DOES_NOT_EQUAL = "does_not_equal"
+    IS_EMPTY = "is_empty"
+    IS_NOT_EMPTY = "is_not_empty"
+
+
 class DateOperator(StrEnum):
     EQUALS = "equals"
     BEFORE = "before"
