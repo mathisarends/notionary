@@ -52,12 +52,6 @@ https://github.com/user-attachments/assets/da8b4691-bee4-4b0f-801e-dccacb630398
 
 _Create styled project pages with properties, content, and rich formatting_
 
-### Local File Uploads (Videos & Images)
-
-https://github.com/user-attachments/assets/a079ec01-bb56-4c65-8260-7b1fca42ac68
-
-_Upload videos and images using simple markdown syntax - files are automatically uploaded to Notion_
-
 ---
 
 ## Quick Start

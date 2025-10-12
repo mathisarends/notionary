@@ -96,6 +96,7 @@ class TestDatabaseNameIdResolver:
         await resolver.resolve_name_to_id("  Test Database  ")
         mock_search_client.find_database.assert_called_once_with(query="Test Database")
 
+    @pytest.mark.skip("Requires NOTION_TOKEN environment variable")
     def test_constructor_with_default_search_client(self) -> None:
         resolver = DatabaseNameIdResolver()
         assert resolver.search_service is not None
