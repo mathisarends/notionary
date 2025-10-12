@@ -15,7 +15,8 @@ class FieldType(StrEnum):
     DATE = "date"
     DATETIME = "datetime"
     ARRAY = "array"
-
+    RELATION = "relation"
+    PEOPLE = "people"
 
 class StringOperator(StrEnum):
     EQUALS = "equals"
@@ -67,6 +68,17 @@ class ArrayOperator(StrEnum):
     IS_EMPTY = "is_empty"
     IS_NOT_EMPTY = "is_not_empty"
 
+class RelationOperator(StrEnum):
+    CONTAINS = "contains"
+    DOES_NOT_CONTAIN = "does_not_contain"
+    IS_EMPTY = "is_empty"
+    IS_NOT_EMPTY = "is_not_empty"
+
+class PeopleOperator(StrEnum):
+    CONTAINS = "contains"
+    DOES_NOT_CONTAIN = "does_not_contain"
+    IS_EMPTY = "is_empty"
+    IS_NOT_EMPTY = "is_not_empty"
 
 class LogicalOperator(StrEnum):
     AND = "and"
@@ -94,6 +106,7 @@ type Operator = StringOperator | NumberOperator | BooleanOperator | DateOperator
 type FilterValue = str | int | float | bool | list[str | int | float]
 
 
+# Hier vllt. auch die übergebenen Werte direkt validieren dann muss man das nicht im resolver machen
 class FilterCondition(BaseModel):
     field: str
     field_type: FieldType
@@ -168,14 +181,14 @@ class FilterCondition(BaseModel):
             FieldType.DATE: [op.value for op in DateOperator],
             FieldType.DATETIME: [op.value for op in DateOperator],
             FieldType.ARRAY: [op.value for op in ArrayOperator],
+            FieldType.RELATION: [op.value for op in RelationOperator],
+            FieldType.PEOPLE: [op.value for op in PeopleOperator],
         }
 
         return operator in valid_operators.get(field_type, [])
 
 
 class OrGroupMarker(BaseModel):
-    """Marker to represent an OR group of filter conditions."""
-
     conditions: list[FilterCondition]
 
 
