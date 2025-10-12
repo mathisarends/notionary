@@ -122,7 +122,7 @@ def test_does_not_contain_filter(builder: DataSourceQueryBuilder) -> None:
 
 
 def test_starts_with_filter(builder: DataSourceQueryBuilder) -> None:
-    result = builder.where("Status").starts_with("In").build()
+    result = builder.where("Description").starts_with("In").build()
 
     assert result.filter is not None
     assert isinstance(result.filter, PropertyFilter)
@@ -131,7 +131,7 @@ def test_starts_with_filter(builder: DataSourceQueryBuilder) -> None:
 
 
 def test_ends_with_filter(builder: DataSourceQueryBuilder) -> None:
-    result = builder.where("Status").ends_with("Progress").build()
+    result = builder.where("Description").ends_with("Progress").build()
 
     assert result.filter is not None
     assert isinstance(result.filter, PropertyFilter)
