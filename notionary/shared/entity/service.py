@@ -2,19 +2,17 @@ from __future__ import annotations
 
 import random
 from abc import ABC, abstractmethod
-from collections.abc import Awaitable, Callable, Sequence
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Self
 
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
-from notionary.user.factory import create_user_from_id
 from notionary.user.schemas import PartialUserDto
+from notionary.user.service import UserService
 from notionary.utils.mixins.logging import LoggingMixin
 from notionary.utils.uuid_utils import extract_uuid
 
 if TYPE_CHECKING:
     from notionary.user.base import BaseUser
-
-type UserFactory = Callable[[str], Awaitable["BaseUser"]]
 
 
 class Entity(LoggingMixin, ABC):
@@ -29,6 +27,7 @@ class Entity(LoggingMixin, ABC):
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
+        user_service: UserService | None = None,
     ) -> None:
         self._id = id
         self._created_time = created_time
@@ -39,6 +38,7 @@ class Entity(LoggingMixin, ABC):
         self._external_icon_url = external_icon_url
         self._cover_image_url = cover_image_url
         self._in_trash = in_trash
+        self._user_service = user_service or UserService()
 
     @classmethod
     @abstractmethod
@@ -100,17 +100,11 @@ class Entity(LoggingMixin, ABC):
     def last_edited_by(self) -> PartialUserDto:
         return self._last_edited_by
 
-    async def get_created_by_user(
-        self,
-        user_factory: UserFactory = create_user_from_id,
-    ) -> BaseUser:
-        return await user_factory(self._created_by.id)
+    async def get_created_by_user(self) -> BaseUser | None:
+        return await self._user_service.get_user_by_id(self._created_by.id)
 
-    async def get_last_edited_by_user(
-        self,
-        user_factory: UserFactory = create_user_from_id,
-    ) -> BaseUser:
-        return await user_factory(self._last_edited_by.id)
+    async def get_last_edited_by_user(self) -> BaseUser | None:
+        return await self._user_service.get_user_by_id(self._last_edited_by.id)
 
     async def set_emoji_icon(self, emoji: str) -> None:
         entity_response = await self._entity_metadata_update_client.patch_emoji_icon(emoji)

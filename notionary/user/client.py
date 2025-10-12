@@ -10,7 +10,7 @@ from notionary.utils.pagination import paginate_notion_api
 
 
 class UserHttpClient(NotionHttpClient):
-    async def get_user_by_id(self, user_id: str) -> UserResponseDto | None:
+    async def get_user_by_id(self, user_id: str) -> UserResponseDto:
         response = await self.get(f"users/{user_id}")
 
         adapter = TypeAdapter(UserResponseDto)

@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
-from typing import TYPE_CHECKING
 
+from notionary.user import BotUser, PersonUser
 from notionary.user.client import UserHttpClient
 from notionary.user.schemas import UserType
-
-if TYPE_CHECKING:
-    from notionary.user import BotUser, PersonUser
 
 
 class UserService:
@@ -15,44 +12,28 @@ class UserService:
         self._client = client or UserHttpClient()
 
     async def list_users(self) -> list[PersonUser]:
-        from notionary.user import PersonUser
-
         all_users = await self._client.get_all_workspace_users()
         person_users = [user for user in all_users if user.type == UserType.PERSON]
 
         return [PersonUser.from_dto(user) for user in person_users]
 
     async def list_users_stream(self) -> AsyncIterator[PersonUser]:
-        from notionary.user import PersonUser
-
         all_users = await self._client.get_all_workspace_users()
         for user in all_users:
             if user.type == UserType.PERSON:
                 yield PersonUser.from_dto(user)
 
-    # ============================================================================
-    # BOT USERS - List
-    # ============================================================================
-
     async def list_bot_users(self) -> list[BotUser]:
-        from notionary.user import BotUser
-
         all_users = await self._client.get_all_workspace_users()
         bot_users = [user for user in all_users if user.type == UserType.BOT]
 
         return [BotUser.from_dto(user) for user in bot_users]
 
     async def list_bot_users_stream(self) -> AsyncIterator[BotUser]:
-        from notionary.user import BotUser
-
         all_users = await self._client.get_all_workspace_users()
         for user in all_users:
             if user.type == UserType.BOT:
                 yield BotUser.from_dto(user)
-
-    # ============================================================================
-    # PERSON USERS - Search
-    # ============================================================================
 
     async def search_users(self, query: str) -> list[PersonUser]:
         all_person_users = await self.list_users()
@@ -72,17 +53,11 @@ class UserService:
                 yield user
 
     async def get_current_bot(self) -> BotUser:
-        from notionary.user import BotUser
-
         bot_dto = await self._client.get_current_integration_bot()
         return BotUser.from_dto(bot_dto)
 
     async def get_user_by_id(self, user_id: str) -> PersonUser | BotUser | None:
-        from notionary.user import BotUser, PersonUser
-
         user_dto = await self._client.get_user_by_id(user_id)
-        if user_dto is None:
-            return None
 
         if user_dto.type == UserType.PERSON:
             return PersonUser.from_dto(user_dto)
