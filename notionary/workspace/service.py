@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Self
 
+from notionary.user.service import UserService
 from notionary.workspace.query.service import WorkspaceQueryService
 
 if TYPE_CHECKING:
@@ -15,6 +16,7 @@ class NotionWorkspace:
     def __init__(self, name: str | None = None) -> None:
         self._name = name
         self._query_service = WorkspaceQueryService()
+        self._user_service = UserService()
 
     @classmethod
     async def from_current_integration(cls) -> Self:
@@ -56,14 +58,23 @@ class NotionWorkspace:
         async for page in self._query_service.search_pages_stream(query):
             yield page
 
-    async def list_users(self) -> list[PersonUser]: ...
+    async def list_users(self) -> list[PersonUser]:
+        return await self._user_service.list_users()
 
-    async def list_users_stream(self) -> AsyncIterator[PersonUser]: ...
+    async def list_users_stream(self) -> AsyncIterator[PersonUser]:
+        async for user in self._user_service.list_users_stream():
+            yield user
 
-    async def list_bot_users(self) -> list[BotUser]: ...
+    async def list_bot_users(self) -> list[BotUser]:
+        return await self._user_service.list_bot_users()
 
-    async def list_bot_users_stream(self) -> AsyncIterator[BotUser]: ...
+    async def list_bot_users_stream(self) -> AsyncIterator[BotUser]:
+        async for user in self._user_service.list_bot_users_stream():
+            yield user
 
-    async def search_users(self, query: str) -> list[PersonUser]: ...
+    async def search_users(self, query: str) -> list[PersonUser]:
+        return await self._user_service.search_users(query)
 
-    async def search_users_stream(self, query: str) -> AsyncIterator[PersonUser]: ...
+    async def search_users_stream(self, query: str) -> AsyncIterator[PersonUser]:
+        async for user in self._user_service.search_users_stream(query):
+            yield user
