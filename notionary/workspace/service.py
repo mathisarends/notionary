@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Self
 
 from notionary.user.service import UserService
 from notionary.workspace.query.builder import WorkspaceQueryConfigBuilder
+from notionary.workspace.query.models import WorkspaceQueryConfig, WorkspaceQueryObjectType
 from notionary.workspace.query.service import WorkspaceQueryService
 
 if TYPE_CHECKING:
@@ -12,8 +13,9 @@ if TYPE_CHECKING:
     from notionary.page.service import NotionPage
     from notionary.user import BotUser, PersonUser
 
+type _QueryConfigInput = WorkspaceQueryConfig | Callable[[WorkspaceQueryConfigBuilder], WorkspaceQueryConfigBuilder]
 
-# TODO: Make this here less redundant and allow for querying options (the query builder should not be used in client at all but rather its result)
+
 class NotionWorkspace:
     def __init__(
         self,
@@ -37,76 +39,60 @@ class NotionWorkspace:
     def name(self) -> str:
         return self._name
 
-    def filter(self) -> WorkspaceQueryConfigBuilder:
-        return WorkspaceQueryConfigBuilder()
-
-    async def query_pages(
-        self, filter_fn: Callable[[WorkspaceQueryConfigBuilder], WorkspaceQueryConfigBuilder]
+    async def get_pages(
+        self,
+        config: _QueryConfigInput | None = None,
     ) -> list[NotionPage]:
-        builder = WorkspaceQueryConfigBuilder()
-        filter_fn(builder)
-        search_config = builder.config
+        query_config = self._resolve_config(config, default_object_type_to_query=WorkspaceQueryObjectType.PAGE)
+        return await self._query_service.get_pages(query_config)
 
-        return [page async for page in self._query_service.query_pages_stream(search_config)]
-
-    async def query_pages_stream(
-        self, filter_fn: Callable[[WorkspaceQueryConfigBuilder], WorkspaceQueryConfigBuilder]
+    async def get_pages_stream(
+        self,
+        config: _QueryConfigInput | None = None,
     ) -> AsyncIterator[NotionPage]:
-        builder = WorkspaceQueryConfigBuilder()
-        filter_fn(builder)
-        search_config = builder.config
-
-        async for page in self._query_service.query_pages_stream(search_config):
+        query_config = self._resolve_config(config, default_object_type_to_query=WorkspaceQueryObjectType.PAGE)
+        async for page in self._query_service.get_pages_stream(query_config):
             yield page
 
-    async def query_data_sources(
-        self, filter_fn: Callable[[WorkspaceQueryConfigBuilder], WorkspaceQueryConfigBuilder]
+    async def get_data_sources(
+        self,
+        config: _QueryConfigInput | None = None,
     ) -> list[NotionDataSource]:
-        builder = WorkspaceQueryConfigBuilder()
-        filter_fn(builder)
-        search_config = builder.config
+        query_config = self._resolve_config(config, default_object_type_to_query=WorkspaceQueryObjectType.DATA_SOURCE)
+        return await self._query_service.get_data_sources(query_config)
 
-        return [data_source async for data_source in self._query_service.query_data_sources_stream(search_config)]
-
-    async def query_data_sources_stream(
-        self, filter_fn: Callable[[WorkspaceQueryConfigBuilder], WorkspaceQueryConfigBuilder]
+    async def get_data_sources_stream(
+        self,
+        config: _QueryConfigInput | None = None,
     ) -> AsyncIterator[NotionDataSource]:
+        query_config = self._resolve_config(config, default_object_type_to_query=WorkspaceQueryObjectType.DATA_SOURCE)
+        async for data_source in self._query_service.get_data_sources_stream(query_config):
+            yield data_source
+
+    def _resolve_config(
+        self,
+        config: _QueryConfigInput | None,
+        default_object_type_to_query: WorkspaceQueryObjectType,
+    ) -> WorkspaceQueryConfig:
+        if isinstance(config, WorkspaceQueryConfig):
+            return config
+
+        builder = self._create_builder_with_defaults(default_object_type_to_query)
+
+        if callable(config):
+            config(builder)
+
+        return builder.build()
+
+    def _create_builder_with_defaults(self, object_type: WorkspaceQueryObjectType) -> WorkspaceQueryConfigBuilder:
         builder = WorkspaceQueryConfigBuilder()
-        filter_fn(builder)
-        search_config = builder.config
 
-        async for data_source in self._query_service.query_data_sources_stream(search_config):
-            yield data_source
+        if object_type == WorkspaceQueryObjectType.PAGE:
+            builder.with_pages_only()
+        else:
+            builder.with_data_sources_only()
 
-    async def get_data_sources(self, page_size: int | None = None) -> list[NotionDataSource]:
-        return [data_source async for data_source in self._query_service.get_data_sources_stream(page_size=page_size)]
-
-    async def get_data_sources_stream(self, page_size: int | None = None) -> AsyncIterator[NotionDataSource]:
-        async for data_source in self._query_service.get_data_sources_stream(page_size=page_size):
-            yield data_source
-
-    async def search_data_sources(self, query: str, page_size: int | None = None) -> list[NotionDataSource]:
-        return [ds async for ds in self._query_service.search_data_sources_stream(query, page_size=page_size)]
-
-    async def search_data_sources_stream(
-        self, query: str, page_size: int | None = None
-    ) -> AsyncIterator[NotionDataSource]:
-        async for data_source in self._query_service.search_data_sources_stream(query, page_size=page_size):
-            yield data_source
-
-    async def get_pages(self, page_size: int | None = None) -> list[NotionPage]:
-        return [page async for page in self._query_service.get_pages_stream(page_size=page_size)]
-
-    async def get_pages_stream(self, page_size: int | None = None) -> AsyncIterator[NotionPage]:
-        async for page in self._query_service.get_pages_stream(page_size=page_size):
-            yield page
-
-    async def search_pages(self, query: str, page_size: int | None = None) -> list[NotionPage]:
-        return [page async for page in self._query_service.search_pages_stream(query, page_size=page_size)]
-
-    async def search_pages_stream(self, query: str, page_size: int | None = None) -> AsyncIterator[NotionPage]:
-        async for page in self._query_service.search_pages_stream(query, page_size=page_size):
-            yield page
+        return builder
 
     async def get_users(self) -> list[PersonUser]:
         return [user async for user in self._user_service.list_users_stream()]

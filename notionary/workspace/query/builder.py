@@ -4,7 +4,7 @@ from notionary.workspace.query.models import (
     SortDirection,
     SortTimestamp,
     WorkspaceQueryConfig,
-    WorkspaceSearchObjectType,
+    WorkspaceQueryObjectType,
 )
 
 
@@ -17,11 +17,11 @@ class WorkspaceQueryConfigBuilder:
         return self
 
     def with_pages_only(self) -> Self:
-        self.config.object_type = WorkspaceSearchObjectType.PAGE
+        self.config.object_type = WorkspaceQueryObjectType.PAGE
         return self
 
     def with_data_sources_only(self) -> Self:
-        self.config.object_type = WorkspaceSearchObjectType.DATA_SOURCE
+        self.config.object_type = WorkspaceQueryObjectType.DATA_SOURCE
         return self
 
     def with_sort_direction(self, direction: SortDirection) -> Self:
