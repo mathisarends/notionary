@@ -19,7 +19,6 @@ class WorkspaceClient:
         self,
         search_config: WorkspaceQueryConfig,
     ) -> AsyncGenerator[NotionPageDto]:
-        """Query pages with the given configuration."""
         async for page in paginate_notion_api_generator(
             self._query_pages,
             search_config=search_config,
@@ -30,7 +29,6 @@ class WorkspaceClient:
         self,
         search_config: WorkspaceQueryConfig,
     ) -> AsyncGenerator[DataSourceDto]:
-        """Query data sources with the given configuration."""
         async for data_source in paginate_notion_api_generator(
             self._query_data_sources,
             search_config=search_config,

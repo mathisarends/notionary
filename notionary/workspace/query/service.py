@@ -8,10 +8,10 @@ from notionary.exceptions.search import DatabaseNotFound, DataSourceNotFound, Pa
 from notionary.utils.fuzzy import find_best_match
 from notionary.workspace.client import WorkspaceClient
 from notionary.workspace.query.builder import WorkspaceQueryConfigBuilder
+from notionary.workspace.query.models import WorkspaceQueryConfig
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase, NotionDataSource, NotionPage
-    from notionary.workspace.query.models import WorkspaceQueryConfig
 
 
 class SearchableEntity(Protocol):
@@ -49,7 +49,7 @@ class WorkspaceQueryService:
         return await asyncio.gather(*data_source_tasks)
 
     async def find_data_source(self, query: str, min_similarity: float = 0.6) -> NotionDataSource:
-        config = WorkspaceQueryConfigBuilder().with_query(query).with_data_sources_only().with_page_size(100).build()
+        config = WorkspaceQueryConfigBuilder().with_query(query).with_data_sources_only().with_page_size(5).build()
         data_sources = await self.get_data_sources(config)
 
         return self._get_best_match(
@@ -57,14 +57,12 @@ class WorkspaceQueryService:
         )
 
     async def find_page(self, query: str, min_similarity: float = 0.6) -> NotionPage:
-        config = WorkspaceQueryConfigBuilder().with_query(query).with_pages_only().with_page_size(100).build()
+        config = WorkspaceQueryConfigBuilder().with_query(query).with_pages_only().with_page_size(5).build()
         pages = await self.get_pages(config)
 
         return self._get_best_match(pages, query, exception_class=PageNotFound, min_similarity=min_similarity)
 
     async def find_database(self, query: str = "") -> NotionDatabase:
-        from notionary.workspace.query.builder import WorkspaceQueryConfigBuilder
-
         config = WorkspaceQueryConfigBuilder().with_query(query).with_data_sources_only().with_page_size(100).build()
         data_sources = await self.get_data_sources(config)
 
