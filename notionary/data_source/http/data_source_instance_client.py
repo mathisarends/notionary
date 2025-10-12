@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Any, override
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
@@ -8,7 +9,7 @@ from notionary.data_source.schemas import DataSourceDto, QueryDataSourceResponse
 from notionary.http.client import NotionHttpClient
 from notionary.page.schemas import NotionPageDto
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
-from notionary.utils.pagination import paginate_notion_api
+from notionary.utils.pagination import paginate_notion_api, paginate_notion_api_generator
 
 if TYPE_CHECKING:
     from notionary import NotionPage
@@ -59,11 +60,16 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
         all_results = await paginate_notion_api(self._make_query_request, query_data=query_params_dict or {})
 
         return QueryDataSourceResponse(
-            object="list",
             results=all_results,
             next_cursor=None,
             has_more=False,
         )
+
+    async def query_stream(self, query_params: DataSourceQueryParams | None = None) -> AsyncIterator[Any]:
+        query_params_dict = query_params.model_dump() if query_params else {}
+
+        async for result in paginate_notion_api_generator(self._make_query_request, query_data=query_params_dict or {}):
+            yield result
 
     async def _make_query_request(
         self, query_data: dict[str, Any], start_cursor: str | None = None

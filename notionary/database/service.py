@@ -9,7 +9,6 @@ from notionary.data_source.service import NotionDataSource
 from notionary.database.client import NotionDatabaseHttpClient
 from notionary.database.database_metadata_update_client import DatabaseMetadataUpdateClient
 from notionary.database.schemas import NotionDatabaseDto
-from notionary.search.service import SearchService
 from notionary.shared.entity.dto_parsers import (
     extract_cover_image_url_from_dto,
     extract_description,
@@ -19,6 +18,7 @@ from notionary.shared.entity.dto_parsers import (
 )
 from notionary.shared.entity.service import Entity
 from notionary.user.schemas import PartialUserDto
+from notionary.workspace.search.service import SearchService
 
 type DataSourceFactory = Callable[[str], Awaitable[NotionDataSource]]
 

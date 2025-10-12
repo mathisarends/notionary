@@ -1,5 +1,3 @@
-from typing import Literal
-
 from pydantic import BaseModel
 
 from notionary.blocks.rich_text.models import RichText
@@ -16,7 +14,6 @@ class UpdateDataSourceDto(NotionEntityUpdateDto):
 
 
 class QueryDataSourceResponse(BaseModel):
-    object: Literal["list"]
     results: list[NotionPageDto]
     next_cursor: str | None = None
     has_more: bool

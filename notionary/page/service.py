@@ -14,7 +14,6 @@ from notionary.page.properties.factory import PagePropertyHandlerFactory
 from notionary.page.properties.models import PageTitleProperty
 from notionary.page.properties.service import PagePropertyHandler
 from notionary.page.schemas import NotionPageDto
-from notionary.search.service import SearchService
 from notionary.shared.entity.dto_parsers import (
     extract_cover_image_url_from_dto,
     extract_emoji_icon_from_dto,
@@ -22,6 +21,7 @@ from notionary.shared.entity.dto_parsers import (
 )
 from notionary.shared.entity.service import Entity
 from notionary.user.schemas import PartialUserDto
+from notionary.workspace.search.service import SearchService
 
 
 class NotionPage(Entity):

@@ -12,14 +12,11 @@ async def main() -> None:
         .equals("Abgeschlossen")
         .or_where("Dozent")
         .equals("Dr. Angela Yu")
-        .where("people")
-        .contains("Mathis Arends")
         .order_by_created_time()
         .build()
     )
-    pages = await data_source.get_pages(query_params=query_params)
 
-    for page in pages:
+    async for page in data_source.get_pages_stream(query_params):
         print(page.title)
 
 

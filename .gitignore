@@ -87,7 +87,6 @@ desktop.ini
 
 # dotenv files
 .env
-.env.*
 
 docs/node_modules/
 

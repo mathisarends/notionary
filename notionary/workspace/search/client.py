@@ -1,8 +1,8 @@
 import asyncio
 
 from notionary.http.client import NotionHttpClient
-from notionary.search.filter.builder import SearchFilterBuilder, SortDirection
-from notionary.search.schemas import DataSourceSearchResponse, PageSearchResponse
+from notionary.workspace.search.filter.builder import SearchFilterBuilder, SortDirection
+from notionary.workspace.search.schemas import DataSourceSearchResponse, PageSearchResponse
 
 
 class SearchableEntity(asyncio.Protocol):

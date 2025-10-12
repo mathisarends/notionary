@@ -4,8 +4,8 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from notionary.exceptions.search import DatabaseNotFound, DataSourceNotFound, PageNotFound
-from notionary.search.client import SearchClient
 from notionary.utils.fuzzy import find_best_match
+from notionary.workspace.search.client import SearchClient
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase, NotionDataSource, NotionPage

@@ -1,7 +1,8 @@
 from typing import Self, cast
 
 from notionary.user.base import BaseUser
-from notionary.user.schemas import BotUserResponseDto, UserResponseDto, UserType, WorkspaceOwnerType
+from notionary.user.client import UserHttpClient
+from notionary.user.schemas import BotUserDto, BotUserResponseDto, UserResponseDto, UserType, WorkspaceOwnerType
 
 
 class BotUser(BaseUser):
@@ -24,9 +25,18 @@ class BotUser(BaseUser):
         return UserType.BOT
 
     @classmethod
+    async def from_current_integration(
+        cls,
+        http_client: UserHttpClient | None = None,
+    ) -> Self | None:
+        client = http_client or UserHttpClient()
+        user_dto = await client.get_current_integration_bot()
+        return cls.from_dto(user_dto)
+
+    @classmethod
     def from_dto(cls, user_dto: UserResponseDto) -> Self:
         bot_dto = cast(BotUserResponseDto, user_dto)
-        bot_data = bot_dto.bot
+        bot_data: BotUserDto = bot_dto.bot
 
         owner_type = bot_data.owner.type if bot_data and bot_data.owner else None
         workspace_name = bot_data.workspace_name if bot_data else None
@@ -57,4 +67,4 @@ class BotUser(BaseUser):
         return self._owner_type
 
     def __repr__(self) -> str:
-        return f"BotUser(id={self._id!r}, name={self._name!r}, workspace_name={self._workspace_name!r})"
+        return f"BotUser(id={self._id!r}, name={self._name!r}, avatar_url={self._avatar_url!r}, workspace_name={self._workspace_name!r}, workspace_file_upload_limit_in_bytes={self._workspace_file_upload_limit_in_bytes!r}, owner_type={self._owner_type!r})"

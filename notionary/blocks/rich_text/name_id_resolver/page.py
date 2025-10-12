@@ -1,7 +1,7 @@
 from typing import override
 
 from notionary.blocks.rich_text.name_id_resolver.port import NameIdResolver
-from notionary.search.service import SearchService
+from notionary.workspace.search.service import SearchService
 
 
 class PageNameIdResolver(NameIdResolver):

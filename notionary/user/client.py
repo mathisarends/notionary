@@ -2,6 +2,7 @@ from pydantic import TypeAdapter
 
 from notionary.http.client import NotionHttpClient
 from notionary.user.schemas import (
+    BotUserResponseDto,
     NotionUsersListResponse,
     UserResponseDto,
 )
@@ -31,3 +32,8 @@ class UserHttpClient(NotionHttpClient):
         response = await self.get("users", params=params)
 
         return NotionUsersListResponse.model_validate(response)
+
+    async def get_current_integration_bot(self) -> BotUserResponseDto:
+        response = await self.get("users/me")
+
+        return BotUserResponseDto.model_validate(response)

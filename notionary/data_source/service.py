@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import AsyncIterator, Callable
 from typing import TYPE_CHECKING, Self
 
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
@@ -25,7 +25,6 @@ from notionary.data_source.schemas import DataSourceDto
 from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound, DataSourcePropertyTypeError
 from notionary.page.properties.models import PageTitleProperty
 from notionary.page.schemas import NotionPageDto
-from notionary.search.service import SearchService
 from notionary.shared.entity.dto_parsers import (
     extract_cover_image_url_from_dto,
     extract_database_id,
@@ -37,6 +36,7 @@ from notionary.shared.entity.dto_parsers import (
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.entity.service import Entity
 from notionary.user.schemas import PartialUserDto
+from notionary.workspace.search.service import SearchService
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase, NotionPage
@@ -60,6 +60,7 @@ class NotionDataSource(Entity):
         cover_image_url: str | None = None,
         description: str | None = None,
         data_source_instance_client: DataSourceInstanceClient | None = None,
+        query_resolver: QueryResolver | None = None,
     ) -> None:
         super().__init__(
             id=id,
@@ -79,6 +80,7 @@ class NotionDataSource(Entity):
         self._description = description
         self._properties = properties or {}
         self._data_source_client = data_source_instance_client or DataSourceInstanceClient(data_source_id=id)
+        self.query_resolver = query_resolver or QueryResolver()
 
     @classmethod
     async def from_id(
@@ -310,24 +312,42 @@ class NotionDataSource(Entity):
 
         return await self.get_pages(query_params)
 
+    async def query_stream(
+        self, filter_fn: Callable[[DataSourceQueryBuilder], DataSourceQueryBuilder]
+    ) -> AsyncIterator[NotionPage]:
+        builder = DataSourceQueryBuilder(properties=self._properties)
+        filter_fn(builder)
+        query_params = builder.build()
+
+        async for page in self.get_pages_stream(query_params):
+            yield page
+
     async def get_pages(
         self,
         query_params: DataSourceQueryParams | None = None,
-        query_resolver: QueryResolver | None = None,
     ) -> list[NotionPage]:
         from notionary import NotionPage
 
-        resolved_params = await self._resolve_query_params_if_needed(query_params, query_resolver)
+        resolved_params = await self._resolve_query_params_if_needed(query_params)
         query_response = await self._data_source_client.query(query_params=resolved_params)
         return [await NotionPage.from_id(page.id) for page in query_response.results]
+
+    async def get_pages_stream(
+        self,
+        query_params: DataSourceQueryParams | None = None,
+    ) -> AsyncIterator[NotionPage]:
+        from notionary import NotionPage
+
+        resolved_params = await self._resolve_query_params_if_needed(query_params)
+
+        async for page in self._data_source_client.query_stream(query_params=resolved_params):
+            yield await NotionPage.from_id(page.id)
 
     async def _resolve_query_params_if_needed(
         self,
         query_params: DataSourceQueryParams | None,
-        query_resolver: QueryResolver | None,
     ) -> DataSourceQueryParams | None:
         if query_params is None:
             return None
 
-        query_resolver = query_resolver or QueryResolver()
-        return await query_resolver.resolve_params(query_params)
+        return await self.query_resolver.resolve_params(query_params)
