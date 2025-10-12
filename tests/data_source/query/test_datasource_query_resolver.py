@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -10,9 +10,9 @@ from notionary.data_source.query.schema import (
     CompoundFilter,
     DataSourceQueryParams,
     LogicalOperator,
+    NumberOperator,
     PropertyFilter,
     StringOperator,
-    NumberOperator,
 )
 from notionary.shared.properties.property_type import PropertyType
 
@@ -81,45 +81,51 @@ class TestQueryResolverWithoutFilter:
         query_resolver: QueryResolver,
     ) -> None:
         params = DataSourceQueryParams(filter=None, sorts=None)
-        
+
         result = await query_resolver.resolve_params(params)
-        
+
         assert result == params
         assert result.filter is None
 
 
 class TestUuidDetection:
-    @pytest.mark.parametrize("uuid_value", [
-        "6c574cee-ca68-41c8-86e0-1b9e992689fb",
-        "6c574ceeca6841c886e01b9e992689fb",
-        "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
-        "a1b2c3d4e5f678901234567890abcdef",
-    ])
+    @pytest.mark.parametrize(
+        "uuid_value",
+        [
+            "6c574cee-ca68-41c8-86e0-1b9e992689fb",
+            "6c574ceeca6841c886e01b9e992689fb",
+            "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+            "a1b2c3d4e5f678901234567890abcdef",
+        ],
+    )
     def test_should_recognize_valid_uuid_formats(
         self,
         query_resolver: QueryResolver,
         uuid_value: str,
     ) -> None:
         result = query_resolver._is_uuid(uuid_value)
-        
+
         assert result is True
 
-    @pytest.mark.parametrize("non_uuid_value", [
-        "John Doe",
-        "not-a-uuid",
-        "12345",
-        "",
-        "6c574cee-ca68-41c8",
-        123,
-        None,
-    ])
+    @pytest.mark.parametrize(
+        "non_uuid_value",
+        [
+            "John Doe",
+            "not-a-uuid",
+            "12345",
+            "",
+            "6c574cee-ca68-41c8",
+            123,
+            None,
+        ],
+    )
     def test_should_not_recognize_invalid_uuid_formats(
         self,
         query_resolver: QueryResolver,
         non_uuid_value: str | int | None,
     ) -> None:
         result = query_resolver._is_uuid(non_uuid_value)
-        
+
         assert result is False
 
 
@@ -137,9 +143,9 @@ class TestPeoplePropertyResolution:
             value="John Doe",
         )
         params = _create_query_params(filter)
-        
+
         result = await query_resolver.resolve_params(params)
-        
+
         mock_user_resolver.resolve_name_to_id.assert_called_once_with("John Doe")
         assert result.filter.value == "user-uuid-123"
 
@@ -157,9 +163,9 @@ class TestPeoplePropertyResolution:
             value=valid_uuid,
         )
         params = _create_query_params(filter)
-        
+
         result = await query_resolver.resolve_params(params)
-        
+
         mock_user_resolver.resolve_name_to_id.assert_not_called()
         assert result.filter.value == valid_uuid
 
@@ -170,7 +176,7 @@ class TestPeoplePropertyResolution:
         mock_user_resolver: PersonNameIdResolver,
     ) -> None:
         mock_user_resolver.resolve_name_to_id = AsyncMock(return_value=None)
-        
+
         filter = _create_property_filter(
             property_name="Assigned To",
             property_type=PropertyType.PEOPLE,
@@ -178,7 +184,7 @@ class TestPeoplePropertyResolution:
             value="Unknown User",
         )
         params = _create_query_params(filter)
-        
+
         with pytest.raises(ValueError, match="Could not resolve user name 'Unknown User' to ID"):
             await query_resolver.resolve_params(params)
 
@@ -197,9 +203,9 @@ class TestRelationPropertyResolution:
             value="Task Title",
         )
         params = _create_query_params(filter)
-        
+
         result = await query_resolver.resolve_params(params)
-        
+
         mock_page_resolver.resolve_name_to_id.assert_called_once_with("Task Title")
         assert result.filter.value == "page-uuid-456"
 
@@ -217,9 +223,9 @@ class TestRelationPropertyResolution:
             value=valid_uuid_without_dashes,
         )
         params = _create_query_params(filter)
-        
+
         result = await query_resolver.resolve_params(params)
-        
+
         mock_page_resolver.resolve_name_to_id.assert_not_called()
         assert result.filter.value == valid_uuid_without_dashes
 
@@ -230,7 +236,7 @@ class TestRelationPropertyResolution:
         mock_page_resolver: PageNameIdResolver,
     ) -> None:
         mock_page_resolver.resolve_name_to_id = AsyncMock(return_value=None)
-        
+
         filter = _create_property_filter(
             property_name="Related Tasks",
             property_type=PropertyType.RELATION,
@@ -238,7 +244,7 @@ class TestRelationPropertyResolution:
             value="Unknown Page",
         )
         params = _create_query_params(filter)
-        
+
         with pytest.raises(ValueError, match="Could not resolve page name 'Unknown Page' to ID"):
             await query_resolver.resolve_params(params)
 
@@ -259,9 +265,9 @@ class TestNonResolvableProperties:
             value="Active",
         )
         params = _create_query_params(filter)
-        
+
         result = await query_resolver.resolve_params(params)
-        
+
         mock_user_resolver.resolve_name_to_id.assert_not_called()
         assert result.filter.value == "Active"
 
@@ -277,9 +283,9 @@ class TestNonResolvableProperties:
             value=5,
         )
         params = _create_query_params(filter)
-        
+
         result = await query_resolver.resolve_params(params)
-        
+
         assert result.filter.value == 5
 
     @pytest.mark.asyncio
@@ -295,9 +301,9 @@ class TestNonResolvableProperties:
             value=None,
         )
         params = _create_query_params(filter)
-        
+
         result = await query_resolver.resolve_params(params)
-        
+
         mock_user_resolver.resolve_name_to_id.assert_not_called()
         assert result.filter.value is None
 
@@ -327,9 +333,9 @@ class TestCompoundFilterResolution:
             filters=[filter1, filter2],
         )
         params = _create_query_params(compound_filter)
-        
+
         result = await query_resolver.resolve_params(params)
-        
+
         mock_user_resolver.resolve_name_to_id.assert_called_once_with("John Doe")
         mock_page_resolver.resolve_name_to_id.assert_called_once_with("Task Title")
         assert result.filter.filters[0].value == "user-uuid-123"
@@ -367,7 +373,7 @@ class TestCompoundFilterResolution:
             operator=StringOperator.CONTAINS,
             value=valid_uuid,
         )
-        
+
         inner_and = CompoundFilter(
             operator=LogicalOperator.AND,
             filters=[filter2, filter3],
@@ -377,9 +383,9 @@ class TestCompoundFilterResolution:
             filters=[filter1, inner_and],
         )
         params = _create_query_params(outer_or)
-        
+
         result = await query_resolver.resolve_params(params)
-        
+
         # John Doe should be resolved
         assert result.filter.filters[0].value == "user-uuid-123"
         # Jane Doe should be resolved in nested filter
@@ -396,29 +402,25 @@ class TestErrorHandling:
         self,
         query_resolver: QueryResolver,
     ) -> None:
-        filter = _create_property_filter(
-            property_name="Assigned To",
-            property_type=PropertyType.PEOPLE,
-            operator=StringOperator.CONTAINS,
-            value=123,  # Invalid: number instead of string
-        )
-        params = _create_query_params(filter)
-        
-        with pytest.raises(ValueError, match="Cannot resolve non-string value: 123"):
-            await query_resolver.resolve_params(params)
+        # Validation now happens in PropertyFilter creation
+        with pytest.raises(ValueError, match="must be a string"):
+            _create_property_filter(
+                property_name="Assigned To",
+                property_type=PropertyType.PEOPLE,
+                operator=StringOperator.CONTAINS,
+                value=123,  # Invalid: number instead of string
+            )
 
     @pytest.mark.asyncio
     async def test_should_raise_error_for_non_string_value_in_relation_property(
         self,
         query_resolver: QueryResolver,
     ) -> None:
-        filter = _create_property_filter(
-            property_name="Related Tasks",
-            property_type=PropertyType.RELATION,
-            operator=StringOperator.CONTAINS,
-            value=["not", "a", "string"],  # Invalid: list instead of string
-        )
-        params = _create_query_params(filter)
-        
-        with pytest.raises(ValueError, match="Cannot resolve non-string value"):
-            await query_resolver.resolve_params(params)
+        # Validation now happens in PropertyFilter creation
+        with pytest.raises(ValueError, match="must be a string"):
+            _create_property_filter(
+                property_name="Related Tasks",
+                property_type=PropertyType.RELATION,
+                operator=StringOperator.CONTAINS,
+                value=["not", "a", "string"],  # Invalid: list instead of string
+            )

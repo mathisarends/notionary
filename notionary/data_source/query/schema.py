@@ -18,6 +18,7 @@ class FieldType(StrEnum):
     RELATION = "relation"
     PEOPLE = "people"
 
+
 class StringOperator(StrEnum):
     EQUALS = "equals"
     DOES_NOT_EQUAL = "does_not_equal"
@@ -68,17 +69,10 @@ class ArrayOperator(StrEnum):
     IS_EMPTY = "is_empty"
     IS_NOT_EMPTY = "is_not_empty"
 
-class RelationOperator(StrEnum):
-    CONTAINS = "contains"
-    DOES_NOT_CONTAIN = "does_not_contain"
-    IS_EMPTY = "is_empty"
-    IS_NOT_EMPTY = "is_not_empty"
 
-class PeopleOperator(StrEnum):
-    CONTAINS = "contains"
-    DOES_NOT_CONTAIN = "does_not_contain"
-    IS_EMPTY = "is_empty"
-    IS_NOT_EMPTY = "is_not_empty"
+RelationOperator = ArrayOperator
+PeopleOperator = ArrayOperator
+
 
 class LogicalOperator(StrEnum):
     AND = "and"
@@ -106,7 +100,6 @@ type Operator = StringOperator | NumberOperator | BooleanOperator | DateOperator
 type FilterValue = str | int | float | bool | list[str | int | float]
 
 
-# Hier vllt. auch die übergebenen Werte direkt validieren dann muss man das nicht im resolver machen
 class FilterCondition(BaseModel):
     field: str
     field_type: FieldType
@@ -119,6 +112,7 @@ class FilterCondition(BaseModel):
     def validate_operator_and_value(self) -> Self:
         self._validate_no_value_operators()
         self._validate_value_required_operators()
+        self._validate_value_type_matches_field_type()
         return self
 
     def _validate_no_value_operators(self) -> None:
@@ -138,7 +132,7 @@ class FilterCondition(BaseModel):
             raise ValueError(f"Operator '{self.operator}' does not expect a value")
 
     def _validate_value_required_operators(self) -> None:
-        skip_ops = {
+        operators_to_skip = {
             StringOperator.IS_EMPTY,
             StringOperator.IS_NOT_EMPTY,
             NumberOperator.IS_EMPTY,
@@ -151,8 +145,45 @@ class FilterCondition(BaseModel):
             ArrayOperator.IS_NOT_EMPTY,
         }
 
-        if self.operator not in skip_ops and self.value is None:
+        is_skipped_operator = self.operator in operators_to_skip
+        if not is_skipped_operator and self.value is None:
             raise ValueError(f"Operator '{self.operator}' requires a value")
+
+    def _validate_value_type_matches_field_type(self) -> None:
+        if self.value is None:
+            return
+
+        if self.field_type == FieldType.STRING:
+            self._ensure_value_is_string()
+        elif self.field_type == FieldType.NUMBER:
+            self._ensure_value_is_number()
+        elif self.field_type == FieldType.BOOLEAN:
+            self._ensure_value_is_boolean()
+        elif self.field_type in (FieldType.DATE, FieldType.DATETIME) or self.field_type in (
+            FieldType.ARRAY,
+            FieldType.RELATION,
+            FieldType.PEOPLE,
+        ):
+            self._ensure_value_is_string()
+
+    def _ensure_value_is_string(self) -> None:
+        if not isinstance(self.value, str):
+            raise ValueError(
+                f"Value for field type '{self.field_type}' must be a string, got {type(self.value).__name__}"
+            )
+
+    def _ensure_value_is_number(self) -> None:
+        if not isinstance(self.value, (int, float)):
+            raise ValueError(
+                f"Value for field type '{self.field_type}' must be a number (int or float), "
+                f"got {type(self.value).__name__}"
+            )
+
+    def _ensure_value_is_boolean(self) -> None:
+        if not isinstance(self.value, bool):
+            raise ValueError(
+                f"Value for field type '{self.field_type}' must be a boolean, got {type(self.value).__name__}"
+            )
 
     @field_validator("operator")
     @classmethod
@@ -181,8 +212,8 @@ class FilterCondition(BaseModel):
             FieldType.DATE: [op.value for op in DateOperator],
             FieldType.DATETIME: [op.value for op in DateOperator],
             FieldType.ARRAY: [op.value for op in ArrayOperator],
-            FieldType.RELATION: [op.value for op in RelationOperator],
-            FieldType.PEOPLE: [op.value for op in PeopleOperator],
+            FieldType.RELATION: [op.value for op in ArrayOperator],
+            FieldType.PEOPLE: [op.value for op in ArrayOperator],
         }
 
         return operator in valid_operators.get(field_type, [])
@@ -200,6 +231,19 @@ class PropertyFilter(BaseModel):
     property_type: PropertyType
     operator: Operator
     value: FilterValue | None = None
+
+    @model_validator(mode="after")
+    def validate_value_type(self) -> Self:
+        if self.value is None:
+            return self
+
+        if self.property_type in (PropertyType.PEOPLE, PropertyType.RELATION) and not isinstance(self.value, str):
+            raise ValueError(
+                f"Value for property type '{self.property_type.value}' must be a string, "
+                f"got {type(self.value).__name__}"
+            )
+
+        return self
 
     @model_serializer
     def serialize_model(self) -> dict[str, Any]:

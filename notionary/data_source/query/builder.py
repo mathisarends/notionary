@@ -17,10 +17,8 @@ from notionary.data_source.query.schema import (
     NumberOperator,
     Operator,
     OrGroupMarker,
-    PeopleOperator,
     PropertyFilter,
     PropertySort,
-    RelationOperator,
     SortDirection,
     StringOperator,
     TimestampSort,
@@ -147,18 +145,18 @@ class DataSourceQueryBuilder:
 
     def array_is_not_empty(self) -> Self:
         return self._add_filter(ArrayOperator.IS_NOT_EMPTY, None)
-    
+
     def relation_contains(self, uuid: str) -> Self:
-        return self._add_filter(RelationOperator.CONTAINS, uuid)
+        return self._add_filter(ArrayOperator.CONTAINS, uuid)
 
     def relation_is_empty(self) -> Self:
-        return self._add_filter(RelationOperator.IS_EMPTY, None)
+        return self._add_filter(ArrayOperator.IS_EMPTY, None)
 
     def people_contains(self, uuid: str) -> Self:
-        return self._add_filter(PeopleOperator.CONTAINS, uuid)
+        return self._add_filter(ArrayOperator.CONTAINS, uuid)
 
     def people_is_empty(self) -> Self:
-        return self._add_filter(PeopleOperator.IS_EMPTY, None)
+        return self._add_filter(ArrayOperator.IS_EMPTY, None)
 
     def order_by(self, property_name: str, direction: SortDirection = SortDirection.ASCENDING) -> Self:
         self._ensure_property_exists(property_name)

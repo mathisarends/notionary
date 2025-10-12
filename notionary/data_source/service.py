@@ -311,7 +311,7 @@ class NotionDataSource(Entity):
         return await self.get_pages(query_params)
 
     async def get_pages(
-        self, 
+        self,
         query_params: DataSourceQueryParams | None = None,
         query_resolver: QueryResolver | None = None,
     ) -> list[NotionPage]:
@@ -328,6 +328,6 @@ class NotionDataSource(Entity):
     ) -> DataSourceQueryParams | None:
         if query_params is None:
             return None
-        
+
         query_resolver = query_resolver or QueryResolver()
         return await query_resolver.resolve_params(query_params)
