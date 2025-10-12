@@ -34,4 +34,5 @@ class PersonNameIdResolver(NameIdResolver):
             user = await self.person_user_factory.from_id(user_id.strip(), self.http_client)
             return user.name if user else None
         except Exception:
+            # test commit
             return None
