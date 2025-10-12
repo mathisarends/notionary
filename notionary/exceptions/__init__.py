@@ -8,7 +8,7 @@ from .api import (
     NotionValidationError,
 )
 from .base import NotionaryError
-from .data_source.properties import DataSourcePropertyNotFound, DataSourcePropertyTypeError
+from .data_source import DataSourcePropertyNotFound, DataSourcePropertyTypeError
 from .properties import AccessPagePropertyWithoutDataSourceError, PagePropertyNotFoundError, PagePropertyTypeError
 from .search import DatabaseNotFound, DataSourceNotFound, EntityNotFound, PageNotFound
 

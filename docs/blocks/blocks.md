@@ -41,6 +41,26 @@ classDiagram
 
 > The public API surface for content is intentionally small: you only need `page.append_markdown()` and optionally the `MarkdownBuilder` functions.
 
+### Captions
+
+Some blocks support captions. In Markdown, add a `[caption]` line immediately below the block. The following block types support captions:
+
+- Audio
+- Bookmark
+- Code
+- Embed
+- File
+- Image
+- PDF
+- Video
+
+Example:
+
+```markdown
+[image](./assets/screenshot.png)
+[caption] Main dashboard view
+```
+
 ## Philosophy
 
 - Predictable authoring: The builder is explicit and type‑guided.

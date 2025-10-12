@@ -59,30 +59,29 @@ await data_source.update_description("Contains all upcoming features.")
 
 All operations are async and update the in‑memory fields after a successful API response.
 
-## Typed Property Reader
+## Property Options
 
-Every data source exposes a `property_reader` that lets you inspect allowed option values for properties. This is the authoritative place to discover what values downstream pages (rows) are allowed to use.
+Every data source lets you inspect allowed option values for properties. This is the authoritative place to discover what values downstream pages (rows) are allowed to use.
 
-```python
-reader = data_source.property_reader
-```
-
-### Get all allowed option labels (generic)
+### Get all allowed option labels
 
 Use this when you do not care about the concrete property category and just want the permissible labels.
 
 ```python
-options = await reader.get_options_for_property_by_name("Status")
+options = await data_source.get_options_for_property_by_name("Status")
 print(options)  # e.g. ['Todo', 'In Progress', 'Done']
 ```
 
 ### Specific helpers per property kind
 
 ```python
-select_options = reader.get_select_options_by_property_name("Phase")
-multi_select_options = reader.get_multi_select_options_by_property_name("Labels")
-status_options = reader.get_status_options_by_property_name("Status")
-relation_target_titles = await reader.get_relation_options_by_property_name("Epic")
+select_options = data_source.get_select_options_by_property_name("Phase")
+
+multi_select_options = data_source.get_multi_select_options_by_property_name("Labels")
+
+status_options = data_source.get_status_options_by_property_name("Status")
+
+relation_target_titles = await data_source.get_relation_options_by_property_name("Epic")
 ```
 
 Notes:
@@ -92,13 +91,55 @@ Notes:
 
 ### Relation option discovery
 
-For relation properties the reader fetches all current target page titles from the related data source. This allows you to pre‑validate user input and present an autocomplete for cross‑workspace linking. The titles you get here are what you pass later (on the page layer) to the relation‑setting helper which resolves them internally to page IDs.
+For relation properties the method fetches all current target page titles from the related data source. This allows you to pre‑validate user input and present an autocomplete for cross‑workspace linking. The titles you get here are what you pass later (on the page layer) to the relation‑setting helper which resolves them internally to page IDs.
 
 ```python
-related_titles = await reader.get_relation_options_by_property_name("Epic")
-for t in related_titles:
-    print("Possible related page:", t)
+related_titles = await data_source.get_relation_options_by_property_name("Epic")
+for title in related_titles:
+    print("Possible related page:", title)
 ```
+
+## Querying pages
+
+The `NotionDataSource` exposes top-level query helpers to find pages (rows) that belong to a data source. You can build filters with the `DataSourceQueryBuilder` and run them synchronously (collecting results) or as an async stream.
+
+### Using the builder directly
+
+```python
+builder = data_source.filter()
+params = builder.where("Status").equals("In Progress").order_by_last_edited_time().build()
+
+pages = await data_source.get_pages(query_params=params)
+```
+
+### Convenient helpers
+
+`NotionDataSource` provides convenience helpers that accept a small builder function:
+
+```python
+pages = await data_source.query(lambda b: b.where("Status").equals("In Progress").order_by("Effort"))
+
+async for page in data_source.query_stream(lambda b: b.where("Tags").array_contains("API")):
+    print(page.title)
+
+builder = data_source.filter()
+params = builder.where("Phase").equals("Design").build()
+pages = await data_source.get_pages(query_params=params)
+
+all_pages = await data_source.get_pages()
+
+async for p in data_source.get_pages_stream():
+    print(p.title)
+```
+
+Stream methods (like `query_stream` and `get_pages_stream`) return an async generator that yields `NotionPage` objects as they are fetched from the API. This approach is memory-efficient because it does not load the entire result set into memory, and it works well for automated pipelines or streaming processing where you can consume pages one-by-one.
+
+Notes:
+
+- `filter()` returns a pre-seeded `DataSourceQueryBuilder` using the data source's property definitions.
+- `query()` accepts a function that receives a builder and should return the configured builder; it resolves the params and returns a list of `NotionPage` objects.
+- `query_stream()` works similarly but yields pages asynchronously as they are fetched.
+- `get_pages()` and `get_pages_stream()` also accept an optional `query_params` object if you already built the params yourself.
 
 ## Reference
 

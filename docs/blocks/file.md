@@ -4,16 +4,21 @@ Attach and reference files. Supports uploads and external links.
 
 ## Syntax
 
+Captions are supported by adding a `[caption]` line immediately below the block.
+
 ```markdown
 [file](path/to/file.pdf)
-[file](https://example.com/document.pdf "User manual")
+[caption] User manual
 ```
 
 ## Examples
 
 ```markdown
 [file](./assets/specification.pdf)
-[file](https://docs.example.com/api.pdf "API Reference")
+[caption] Technical specification
+
+[file](https://docs.example.com/api.pdf)
+[caption] API Reference
 ```
 
 ## Builder

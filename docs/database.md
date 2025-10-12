@@ -43,7 +43,14 @@ from notionary import NotionDatabase
 db = await NotionDatabase.from_url("https://www.notion.so/your-workspace/your-database-id")
 ```
 
-Most likely you want to use `from_title` when working interactively.
+!!! warning "Limitation with `from_title` since API version 2025-09-03"
+    Starting with Notion API version `2025-09-03`, databases are no longer directly searchable through the Notion search API. The `from_title` method now works by searching for data sources linked to databases and inferring the database from those connections. This means:
+
+    - Finding a database by title is **not guaranteed** to work
+    - The method may fail if no linked data sources are found
+    - **Recommendation**: Use `from_id` or `from_url` whenever possible for reliable database access
+
+    If you need to work with databases interactively and don't have the ID handy, consider first locating a data source that belongs to the database using `NotionDataSource.from_title()`, then accessing its parent database.
 
 ## Setting Metadata
 
@@ -56,8 +63,6 @@ You can update database‑level metadata similar to pages:
 - Move to trash / restore
 
 ### Examples
-
-p
 
 ```python
 await db.set_title("Project Tracker")
@@ -85,4 +90,4 @@ Each data source exposes its own properties and can yield pages / rows through i
 ## Reference
 
 !!! info "Notion API Reference"
-For the official Notion API reference on databases, see [https://developers.notion.com/reference/database](https://developers.notion.com/reference/database)
+    For the official Notion API reference on databases, see [https://developers.notion.com/reference/database](https://developers.notion.com/reference/database)

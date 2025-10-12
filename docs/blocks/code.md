@@ -4,21 +4,24 @@ Multi-line, syntax-highlighted code blocks and diagrams (Mermaid). For short inl
 
 ## Syntax
 
+Captions are supported by adding a `[caption]` line immediately below the block.
+
 ````markdown
 ```python
 print("Hello")
 ```
+[caption] Basic
 
-```bash "Install"
+```bash
 pip install notionary
 ```
+[caption] Install
 
 ```mermaid
 graph TD; A-->B; B-->C;
 ```
+[caption] Flow
 ````
-
-Caption: optional text in quotes after the language.
 
 ## Common Languages
 
@@ -39,7 +42,7 @@ from notionary.markdown import MarkdownBuilder
 markdown = (MarkdownBuilder()
     .h2("Examples")
     .code('print("Hello")', 'python', 'Basic')
-    .code('pip install notionary', 'bash')
+    .code('pip install notionary', 'bash', 'Install')
     .mermaid('graph TD; A-->B; B-->C;', 'Flow')
     .build())
 ```

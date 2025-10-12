@@ -4,16 +4,21 @@ Display PDF documents inline with optional captions.
 
 ## Syntax
 
+Captions are supported by adding a `[caption]` line immediately below the block.
+
 ```markdown
 [pdf](path/to/document.pdf)
-[pdf](https://example.com/manual.pdf "User guide")
+[caption] User guide
 ```
 
 ## Examples
 
 ```markdown
 [pdf](./assets/specification.pdf)
-[pdf](https://docs.example.com/api.pdf "Complete API reference")
+[caption] Complete API reference
+
+[pdf](https://docs.example.com/api.pdf)
+[caption] Complete API reference
 ```
 
 ## Builder

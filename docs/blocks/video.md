@@ -4,9 +4,12 @@ Display video content from URLs or uploaded files with optional captions.
 
 ## Syntax
 
+Captions are supported by adding a `[caption]` line immediately below the block.
+
 ```markdown
 [video](https://example.com/video.mp4)
-[video](./local/tutorial.mov "Setup walkthrough")
+[caption] Setup walkthrough
+
 [video](https://youtube.com/watch?v=abc123)
 ```
 
@@ -14,8 +17,13 @@ Display video content from URLs or uploaded files with optional captions.
 
 ```markdown
 [video](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
-[video](./assets/demo.mp4 "Product demonstration")
-[video](https://vimeo.com/123456789 "Conference talk")
+[caption] Product demonstration
+
+[video](./assets/demo.mp4)
+[caption] Product demonstration
+
+[video](https://vimeo.com/123456789)
+[caption] Conference talk
 ```
 
 ## Builder

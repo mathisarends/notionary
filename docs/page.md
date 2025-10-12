@@ -102,6 +102,12 @@ Remove content:
 await page.clear_page_content()
 ```
 
+Replace content:
+
+```python
+await page.replace_content("This is some new content")
+```
+
 ## Working with Comments
 
 You can list existing comments on a page and create new ones.
@@ -121,68 +127,87 @@ Post a new CommentDto:
 await page.post_comment("This page will be reviewed tomorrow")
 ```
 
-## Accessing Properties
+## Reading properties and discovering options
 
-A page exposes two coordinated helpers:
+Note: the current API exposes a helper object `page.properties` for reading and writing page properties. Older examples used `page.property_reader` / `page.property_writer` — this has been simplified.
 
-- `page.property_reader` – read current property values on the page (rich text, status, select, multi-select, numbers, etc.)
-- `page.property_reader.data_source_reader` – (if the page belongs to a data source) access the data source level configuration to discover valid option labels for select / multi‑select / status / relation properties.
-
-Under the hood the page keeps a reference to its parent data source (if any). That reference is what drives option validation and relation resolution when you write properties.
+`page.properties` provides synchronous reader methods and asynchronous writer methods (the writers are `async`). If the page belongs to a DataSource, `page.properties` can also load valid options from that DataSource (for select/status/relation properties).
 
 ### Reading current values
 
-```python
-status = page.property_reader.get_value_of_status_property("Status")
-labels = page.property_reader.get_values_of_multiselect_property("Tags")
-url = page.property_reader.get_value_of_url_property("Repository")
-number = page.property_reader.get_value_of_number_property("Effort")
-rich_text = await page.property_reader.get_value_of_rich_text_property("Description")
-```
-
-### Discovering allowed option names (from the data source)
+Examples for reading property values (space between lines for readability):
 
 ```python
-select_options = page.property_reader.get_select_options_by_property_name("Phase")
-status_options = page.property_reader.get_status_options_by_property_name("Status")
-labels_options = page.property_reader.get_multi_select_options_by_property_name("Tags")
-relation_titles = await page.property_reader.get_relation_options_by_property_name("Epic")
+status = page.properties.get_value_of_status_property("Status")
+
+labels = page.properties.get_values_of_multiselect_property("Tags")
+
+url = page.properties.get_value_of_url_property("Repository")
+
+number = page.properties.get_value_of_number_property("Effort")
+
+description = await page.properties.get_value_of_rich_text_property("Description")
 ```
 
-These methods return plain human‑readable strings – exactly what the writer methods expect when setting values.
+All reader methods return plain Python types (strings, floats, lists). Rich text fields are returned as Markdown strings.
 
-## Setting Properties
+### Discovering allowed option names from the DataSource
 
-Property writing is intentionally explicit – there is no generic "guess the type" method. Each property type has a dedicated async setter on `page.property_writer`:
+If the page belongs to a DataSource, you can query the allowed option labels from the DataSource (useful for validation or autocomplete):
 
 ```python
-await page.property_writer.set_rich_text_property("Description", "Refined spec")
-await page.property_writer.set_url_property("Repository", "https://github.com/org/repo")
-await page.property_writer.set_number_property("Effort", 5)
-await page.property_writer.set_checkbox_property("Approved", True)
-await page.property_writer.set_select_property_by_option_name("Phase", "Design")
-await page.property_writer.set_multi_select_property_by_option_names("Tags", ["Backend", "API"])
-await page.property_writer.set_status_property_by_option_name("Status", "In Progress")
-await page.property_writer.set_date_property("Due", {"start": "2025-10-01"})
+select_options = page.properties.get_select_options_by_property_name("Phase")
+
+status_options = page.properties.get_status_options_by_property_name("Status")
+
+labels_options = page.properties.get_multi_select_options_by_property_name("Tags")
+
+relation_titles = await page.properties.get_relation_options_by_property_name("Epic")
 ```
+
+These methods return readable strings (e.g. "Design", "In Progress") — exactly the values you should use when calling the `page.properties.set_*` writers.
+
+## Setting properties
+
+Property writes are intentionally explicit — there is no automatic type inference. Use the dedicated asynchronous setters on `page.properties` (the writers are `async`).
+
+```python
+await page.properties.set_rich_text_property("Description", "Refined spec")
+
+await page.properties.set_url_property("Repository", "https://github.com/org/repo")
+
+await page.properties.set_number_property("Effort", 5)
+
+await page.properties.set_checkbox_property("Approved", True)
+
+await page.properties.set_select_property_by_option_name("Phase", "Design")
+
+await page.properties.set_multi_select_property_by_option_names("Tags", ["Backend", "API"])
+
+await page.properties.set_status_property_by_option_name("Status", "In Progress")
+
+await page.properties.set_date_property("Due", {"start": "2025-10-01"})
+```
+
+These setters expect human-readable values (for example, select labels). If the page belongs to a DataSource, the backend validates the supplied values against the allowed options from that DataSource.
 
 ### Relations
 
-For relation properties you pass page titles. The writer resolves those titles to page IDs by consulting the related data source:
+For relation properties you provide page titles; the API resolves those titles to the corresponding page IDs:
 
 ```python
-await page.property_writer.set_relation_property_by_page_titles(
+await page.properties.set_relation_property_by_page_titles(
     "Epic",
     ["Platform Revamp", "Search Overhaul"],
 )
 ```
 
-Internally:
+Briefly, what happens under the hood:
 
-1. Option discovery happens via the parent data source's `property_reader` (relation target titles)
-2. Titles -> Page objects (resolved by loading pages by title)
-3. Page IDs are sent in the PATCH request
-4. The in‑memory page properties are updated with the response
+1. The possible relation targets / options are queried from the associated DataSource if needed.
+2. Titles are resolved to Page objects (pages are loaded by title).
+3. The IDs of those pages are sent in the PATCH request to Notion.
+4. After a successful patch the in-memory object (`page.properties`) is updated with the values returned by the API.
 
 ## Reference
 

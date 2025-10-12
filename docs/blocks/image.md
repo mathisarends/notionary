@@ -4,16 +4,21 @@ Display images with optional captions and alt text.
 
 ## Syntax
 
+Captions are supported by adding a `[caption]` line immediately below the block.
+
 ```markdown
 [image](path/to/image.jpg)
-[image](https://example.com/photo.jpg "Caption text")
+[caption] Caption text
 ```
 
 ## Examples
 
 ```markdown
 [image](./assets/screenshot.png)
-[image](https://example.com/diagram.svg "System architecture")
+[caption] Main dashboard view
+
+[image](https://example.com/diagram.svg)
+[caption] System architecture
 ```
 
 ## Builder

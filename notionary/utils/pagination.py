@@ -10,7 +10,7 @@ class PaginatedResponse(BaseModel):
     next_cursor: str | None
 
 
-async def _fetch_pages(
+async def _fetch_data(
     api_call: Callable[..., Coroutine[Any, Any, PaginatedResponse]],
     **kwargs,
 ) -> AsyncGenerator[PaginatedResponse]:
@@ -34,7 +34,7 @@ async def paginate_notion_api(
     **kwargs,
 ) -> list[Any]:
     all_results = []
-    async for page in _fetch_pages(api_call, **kwargs):
+    async for page in _fetch_data(api_call, **kwargs):
         if page.results:
             all_results.extend(page.results)
     return all_results
@@ -44,7 +44,7 @@ async def paginate_notion_api_generator(
     api_call: Callable[..., Coroutine[Any, Any, PaginatedResponse]],
     **kwargs,
 ) -> AsyncGenerator[Any]:
-    async for page in _fetch_pages(api_call, **kwargs):
+    async for page in _fetch_data(api_call, **kwargs):
         if page.results:
             for item in page.results:
                 yield item

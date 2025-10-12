@@ -31,8 +31,9 @@ nav:
 
   - Documentation:
       - Page: page.md
-      - Database: database.md
       - Datasource: data_source.md
+      - Workspace: workspace.md
+      - Database: database.md
 
       - Blocks:
           - Overview: blocks/blocks.md
