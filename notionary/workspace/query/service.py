@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 from notionary.exceptions.search import DatabaseNotFound, DataSourceNotFound, PageNotFound
 from notionary.utils.fuzzy import find_best_match
@@ -10,9 +10,10 @@ from notionary.workspace.client import WorkspaceClient
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase, NotionDataSource, NotionPage
+    from notionary.workspace.query.models import WorkspaceQueryConfig
 
 
-class SearchableEntity(asyncio.Protocol):
+class SearchableEntity(Protocol):
     title: str
 
 
@@ -20,28 +21,42 @@ class WorkspaceQueryService:
     def __init__(self, client: WorkspaceClient | None = None) -> None:
         self._client = client or WorkspaceClient()
 
-    async def get_pages_stream(self) -> AsyncIterator[NotionPage]:
+    async def get_pages_stream(self, page_size: int | None = None) -> AsyncIterator[NotionPage]:
         from notionary import NotionPage
 
-        async for page_dto in self._client.get_pages_stream():
+        async for page_dto in self._client.get_pages_stream(page_size=page_size):
             yield await NotionPage.from_id(page_dto.id)
 
-    async def search_pages_stream(self, query: str) -> AsyncIterator[NotionPage]:
+    async def search_pages_stream(self, query: str, page_size: int | None = None) -> AsyncIterator[NotionPage]:
         from notionary import NotionPage
 
-        async for page_dto in self._client.search_pages_stream(query):
+        async for page_dto in self._client.search_pages_stream(query, page_size=page_size):
             yield await NotionPage.from_id(page_dto.id)
 
-    async def get_data_sources_stream(self) -> AsyncIterator[NotionDataSource]:
+    async def query_pages_stream(self, search_config: WorkspaceQueryConfig) -> AsyncIterator[NotionPage]:
+        from notionary import NotionPage
+
+        async for page_dto in self._client.query_stream(search_config):
+            yield await NotionPage.from_id(page_dto.id)
+
+    async def get_data_sources_stream(self, page_size: int | None = None) -> AsyncIterator[NotionDataSource]:
         from notionary import NotionDataSource
 
-        async for data_source_dto in self._client.get_data_sources_stream():
+        async for data_source_dto in self._client.get_data_sources_stream(page_size=page_size):
             yield await NotionDataSource.from_id(data_source_dto.id)
 
-    async def search_data_sources_stream(self, query: str) -> AsyncIterator[NotionDataSource]:
+    async def search_data_sources_stream(
+        self, query: str, page_size: int | None = None
+    ) -> AsyncIterator[NotionDataSource]:
         from notionary import NotionDataSource
 
-        async for data_source_dto in self._client.search_data_sources_stream(query):
+        async for data_source_dto in self._client.search_data_sources_stream(query, page_size=page_size):
+            yield await NotionDataSource.from_id(data_source_dto.id)
+
+    async def query_data_sources_stream(self, search_config: WorkspaceQueryConfig) -> AsyncIterator[NotionDataSource]:
+        from notionary import NotionDataSource
+
+        async for data_source_dto in self._client.query_stream(search_config):
             yield await NotionDataSource.from_id(data_source_dto.id)
 
     async def find_data_source(self, query: str, min_similarity: float = 0.6) -> NotionDataSource:

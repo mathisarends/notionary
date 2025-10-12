@@ -10,14 +10,14 @@ from notionary.shared.models.parent import Parent
 from notionary.user.schemas import PartialUserDto
 
 
-class EntityObjectType(StrEnum):
+class EntityWorkspaceSearchObjectType(StrEnum):
     PAGE = "page"
     DATA_SOURCE = "data_source"
     DATABASE = "database"
 
 
 class EntityResponseDto(BaseModel):
-    object: EntityObjectType
+    object: EntityWorkspaceSearchObjectType
     id: str
     created_time: str
     created_by: PartialUserDto

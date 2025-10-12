@@ -14,14 +14,14 @@ class SortTimestamp(StrEnum):
     CREATED_TIME = "created_time"
 
 
-class ObjectType(StrEnum):
+class WorkspaceSearchObjectType(StrEnum):
     PAGE = "page"
     DATA_SOURCE = "data_source"
 
 
-class SearchConfig(BaseModel):
+class WorkspaceQueryConfig(BaseModel):
     query: str | None = None
-    object_type: ObjectType | None = None
+    object_type: WorkspaceSearchObjectType | None = None
     sort_direction: SortDirection = SortDirection.DESCENDING
     sort_timestamp: SortTimestamp = SortTimestamp.LAST_EDITED_TIME
     page_size: int = Field(default=100, ge=1, le=100)

@@ -1,22 +1,27 @@
-from typing import Any, Self
+from typing import Self
 
-from notionary.workspace.query.models import ObjectType, SearchConfig, SortDirection, SortTimestamp
+from notionary.workspace.query.models import (
+    SortDirection,
+    SortTimestamp,
+    WorkspaceQueryConfig,
+    WorkspaceSearchObjectType,
+)
 
 
-class WorkspaceQueryBuilder:
-    def __init__(self, config: SearchConfig = None) -> None:
-        self.config = config or SearchConfig()
+class WorkspaceQueryConfigBuilder:
+    def __init__(self, config: WorkspaceQueryConfig = None) -> None:
+        self.config = config or WorkspaceQueryConfig()
 
     def with_query(self, query: str) -> Self:
         self.config.query = query
         return self
 
     def with_pages_only(self) -> Self:
-        self.config.object_type = ObjectType.PAGE
+        self.config.object_type = WorkspaceSearchObjectType.PAGE
         return self
 
     def with_data_sources_only(self) -> Self:
-        self.config.object_type = ObjectType.DATA_SOURCE
+        self.config.object_type = WorkspaceSearchObjectType.DATA_SOURCE
         return self
 
     def with_sort_direction(self, direction: SortDirection) -> Self:
@@ -51,5 +56,5 @@ class WorkspaceQueryBuilder:
         self.config.start_cursor = None
         return self
 
-    def build(self) -> dict[str, Any]:
-        return self.config.model_dump()
+    def build(self) -> WorkspaceQueryConfig:
+        return self.config
