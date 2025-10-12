@@ -18,7 +18,7 @@ from notionary.shared.entity.dto_parsers import (
 )
 from notionary.shared.entity.service import Entity
 from notionary.user.schemas import PartialUserDto
-from notionary.workspace.search.service import SearchService
+from notionary.workspace.query.service import WorkspaceQueryService
 
 type DataSourceFactory = Callable[[str], Awaitable[NotionDataSource]]
 
@@ -87,9 +87,9 @@ class NotionDatabase(Entity):
         cls,
         database_title: str,
         min_similarity: float = 0.6,
-        search_service: SearchService | None = None,
+        search_service: WorkspaceQueryService | None = None,
     ) -> Self:
-        service = search_service or SearchService()
+        service = search_service or WorkspaceQueryService()
         return await service.find_database(database_title, min_similarity=min_similarity)
 
     @classmethod

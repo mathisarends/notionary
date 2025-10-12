@@ -1,12 +1,12 @@
 from typing import override
 
 from notionary.blocks.rich_text.name_id_resolver.port import NameIdResolver
-from notionary.workspace.search.service import SearchService
+from notionary.workspace.query.service import WorkspaceQueryService
 
 
 class PageNameIdResolver(NameIdResolver):
-    def __init__(self, search_service: SearchService | None = None) -> None:
-        self.search_service = search_service or SearchService()
+    def __init__(self, search_service: WorkspaceQueryService | None = None) -> None:
+        self.search_service = search_service or WorkspaceQueryService()
 
     @override
     async def resolve_name_to_id(self, name: str) -> str | None:

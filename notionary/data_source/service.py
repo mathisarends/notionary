@@ -36,7 +36,7 @@ from notionary.shared.entity.dto_parsers import (
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.entity.service import Entity
 from notionary.user.schemas import PartialUserDto
-from notionary.workspace.search.service import SearchService
+from notionary.workspace.query.service import WorkspaceQueryService
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase, NotionPage
@@ -99,9 +99,9 @@ class NotionDataSource(Entity):
         cls,
         data_source_title: str,
         min_similarity: float = 0.6,
-        search_service: SearchService | None = None,
+        search_service: WorkspaceQueryService | None = None,
     ) -> Self:
-        service = search_service or SearchService()
+        service = search_service or WorkspaceQueryService()
         return await service.find_data_source(data_source_title, min_similarity=min_similarity)
 
     @classmethod

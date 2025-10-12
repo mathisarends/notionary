@@ -98,7 +98,7 @@ class SearchFilterBuilder:
         self.config.page_size = min(size, 100)
         return self
 
-    def with_cursor(self, cursor: str | None) -> Self:
+    def with_start_cursor(self, cursor: str | None) -> Self:
         self.config.start_cursor = cursor
         return self
 
