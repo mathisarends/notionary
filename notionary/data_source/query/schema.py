@@ -5,7 +5,7 @@ from typing import Any, Self
 
 from pydantic import BaseModel, ValidationInfo, field_validator, model_serializer, model_validator
 
-from notionary.shared.properties.property_type import PropertyType
+from notionary.shared.properties.type import PropertyType
 
 
 class FieldType(StrEnum):

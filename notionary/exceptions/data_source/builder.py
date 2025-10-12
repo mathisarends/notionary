@@ -9,7 +9,7 @@ from notionary.data_source.query.schema import (
     StringOperator,
 )
 from notionary.exceptions.base import NotionaryError
-from notionary.shared.properties.property_type import PropertyType
+from notionary.shared.properties.type import PropertyType
 
 
 class QueryBuilderError(NotionaryError):

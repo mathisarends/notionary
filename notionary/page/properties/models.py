@@ -1,10 +1,15 @@
-from typing import Annotated, Literal, TypeVar
+from enum import StrEnum
+from typing import Annotated, Any, Literal, TypeVar
 
 from pydantic import BaseModel, Field
 
 from notionary.blocks.rich_text.models import RichText
-from notionary.shared.properties.property_type import PropertyType
-from notionary.user.schemas import PersonUserResponseDto
+from notionary.shared.properties.type import PropertyType
+from notionary.user.schemas import PersonUserResponseDto, UserResponseDto
+
+# ============================================================================
+# Base Models
+# ============================================================================
 
 
 class PageProperty(BaseModel):
@@ -17,8 +22,126 @@ class StatusOption(BaseModel):
     name: str
 
 
-class PageStatusProperty(PageProperty):
+class SelectOption(BaseModel):
     id: str
+    name: str
+
+
+class RelationItem(BaseModel):
+    id: str
+
+
+class DateValue(BaseModel):
+    start: str
+    end: str | None = None
+    time_zone: str | None = None
+
+
+# ============================================================================
+# File Models
+# ============================================================================
+
+
+class FileType(StrEnum):
+    EXTERNAL = "external"
+    FILE = "file"
+
+
+class ExternalFile(BaseModel):
+    """External file hosted outside of Notion."""
+
+    url: str
+
+
+class NotionFile(BaseModel):
+    """File uploaded to Notion with expiration."""
+
+    url: str
+    expiry_time: str
+
+
+class FileObject(BaseModel):
+    """File object can be external or uploaded to Notion."""
+
+    name: str
+    type: FileType
+    external: ExternalFile | None = None
+    file: NotionFile | None = None
+
+
+# ============================================================================
+# Formula Models
+# ============================================================================
+
+
+class FormulaValueType(StrEnum):
+    BOOLEAN = "boolean"
+    DATE = "date"
+    NUMBER = "number"
+    STRING = "string"
+
+
+class FormulaValue(BaseModel):
+    type: FormulaValueType
+    boolean: bool | None = None
+    date: DateValue | None = None
+    number: float | None = None
+    string: str | None = None
+
+
+# ============================================================================
+# Rollup Models
+# ============================================================================
+
+
+class RollupValueType(StrEnum):
+    NUMBER = "number"
+    DATE = "date"
+    ARRAY = "array"
+    INCOMPLETE = "incomplete"
+    UNSUPPORTED = "unsupported"
+
+
+class RollupValue(BaseModel):
+    type: RollupValueType
+    function: str  # e.g., "sum", "count", "average", "max", "min", etc.
+    number: float | None = None
+    date: DateValue | None = None
+    array: list[Any] | None = None
+
+
+# ============================================================================
+# Unique ID Models
+# ============================================================================
+
+
+class UniqueIdValue(BaseModel):
+    number: int  # Auto-incrementing count
+    prefix: str | None = None  # Optional prefix like "RL"
+
+
+# ============================================================================
+# Verification Models
+# ============================================================================
+
+
+class VerificationState(StrEnum):
+    VERIFIED = "verified"
+    UNVERIFIED = "unverified"
+
+
+class VerificationValue(BaseModel):
+    state: VerificationState
+    verified_by: UserResponseDto | None = None
+    date: DateValue | None = None  # start = verification date, end = expiration
+
+
+# ============================================================================
+# Page Property Classes
+# ============================================================================
+
+
+class PageStatusProperty(PageProperty):
     type: Literal[PropertyType.STATUS] = PropertyType.STATUS
     status: StatusOption | None = None
     options: list[StatusOption] = Field(default_factory=list)
@@ -26,10 +149,6 @@ class PageStatusProperty(PageProperty):
     @property
     def option_names(self) -> list[str]:
         return [option.name for option in self.options]
-
-
-class RelationItem(BaseModel):
-    id: str
 
 
 class PageRelationProperty(PageProperty):
@@ -46,11 +165,6 @@ class PageURLProperty(PageProperty):
 class PageRichTextProperty(PageProperty):
     type: Literal[PropertyType.RICH_TEXT] = PropertyType.RICH_TEXT
     rich_text: list[RichText] = Field(default_factory=list)
-
-
-class SelectOption(BaseModel):
-    id: str
-    name: str
 
 
 class PageMultiSelectProperty(PageProperty):
@@ -76,12 +190,6 @@ class PageSelectProperty(PageProperty):
 class PagePeopleProperty(PageProperty):
     type: Literal[PropertyType.PEOPLE] = PropertyType.PEOPLE
     people: list[PersonUserResponseDto] = Field(default_factory=list)
-
-
-class DateValue(BaseModel):
-    start: str
-    end: str | None = None
-    time_zone: str | None = None
 
 
 class PageDateProperty(PageProperty):
@@ -116,7 +224,57 @@ class PagePhoneNumberProperty(PageProperty):
 
 class PageCreatedTimeProperty(PageProperty):
     type: Literal[PropertyType.CREATED_TIME] = PropertyType.CREATED_TIME
-    created_time: str | None = None
+    created_time: str  # ISO 8601 datetime - read-only
+
+
+class PageLastEditedTimeProperty(PageProperty):
+    type: Literal[PropertyType.LAST_EDITED_TIME] = PropertyType.LAST_EDITED_TIME
+    last_edited_time: str  # ISO 8601 datetime - read-only
+
+
+class PageCreatedByProperty(PageProperty):
+    type: Literal[PropertyType.CREATED_BY] = PropertyType.CREATED_BY
+    created_by: UserResponseDto  # User object - read-only
+
+
+class PageLastEditedByProperty(PageProperty):
+    type: Literal[PropertyType.LAST_EDITED_BY] = PropertyType.LAST_EDITED_BY
+    last_edited_by: UserResponseDto  # User object - read-only
+
+
+class PageFilesProperty(PageProperty):
+    type: Literal[PropertyType.FILES] = PropertyType.FILES
+    files: list[FileObject] = Field(default_factory=list)
+
+
+class PageFormulaProperty(PageProperty):
+    type: Literal[PropertyType.FORMULA] = PropertyType.FORMULA
+    formula: FormulaValue
+
+
+class PageRollupProperty(PageProperty):
+    type: Literal[PropertyType.ROLLUP] = PropertyType.ROLLUP
+    rollup: RollupValue
+
+
+class PageUniqueIdProperty(PageProperty):
+    type: Literal[PropertyType.UNIQUE_ID] = PropertyType.UNIQUE_ID
+    unique_id: UniqueIdValue
+
+
+class PageVerificationProperty(PageProperty):
+    type: Literal[PropertyType.VERIFICATION] = PropertyType.VERIFICATION
+    verification: VerificationValue
+
+
+class PageButtonProperty(PageProperty):
+    type: Literal[PropertyType.BUTTON] = PropertyType.BUTTON
+    button: dict[str, Any] = Field(default_factory=dict)
+
+
+# ============================================================================
+# Discriminated Union
+# ============================================================================
 
 
 DiscriminatedPageProperty = Annotated[
@@ -133,7 +291,16 @@ DiscriminatedPageProperty = Annotated[
     | PageCheckboxProperty
     | PageEmailProperty
     | PagePhoneNumberProperty
-    | PageCreatedTimeProperty,
+    | PageCreatedTimeProperty
+    | PageLastEditedTimeProperty
+    | PageCreatedByProperty
+    | PageLastEditedByProperty
+    | PageFilesProperty
+    | PageFormulaProperty
+    | PageRollupProperty
+    | PageUniqueIdProperty
+    | PageVerificationProperty
+    | PageButtonProperty,
     Field(discriminator="type"),
 ]
 

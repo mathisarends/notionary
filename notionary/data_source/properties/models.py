@@ -3,7 +3,7 @@ from typing import Annotated, Any, Literal, TypeVar
 
 from pydantic import BaseModel, Field
 
-from notionary.shared.properties.property_type import PropertyType
+from notionary.shared.properties.type import PropertyType
 
 # ============================================================================
 # Base Model

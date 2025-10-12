@@ -10,7 +10,7 @@ from notionary.data_source.properties.models import (
 )
 from notionary.data_source.service import NotionDataSource
 from notionary.exceptions.data_source import DataSourcePropertyNotFound, DataSourcePropertyTypeError
-from notionary.shared.properties.property_type import PropertyType
+from notionary.shared.properties.type import PropertyType
 from notionary.user.schemas import PartialUserDto
 
 

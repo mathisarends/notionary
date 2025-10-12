@@ -9,7 +9,7 @@ from notionary.data_source.query.schema import (
     NotionFilter,
     PropertyFilter,
 )
-from notionary.shared.properties.property_type import PropertyType
+from notionary.shared.properties.type import PropertyType
 from notionary.utils.mixins.logging import LoggingMixin
 
 

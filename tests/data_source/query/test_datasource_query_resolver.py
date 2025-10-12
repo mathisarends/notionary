@@ -14,7 +14,7 @@ from notionary.data_source.query.schema import (
     PropertyFilter,
     StringOperator,
 )
-from notionary.shared.properties.property_type import PropertyType
+from notionary.shared.properties.type import PropertyType
 
 
 @pytest.fixture

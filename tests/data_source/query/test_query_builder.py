@@ -30,7 +30,7 @@ from notionary.data_source.query.schema import (
     TimestampType,
 )
 from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound
-from notionary.shared.properties.property_type import PropertyType
+from notionary.shared.properties.type import PropertyType
 
 
 @pytest.fixture

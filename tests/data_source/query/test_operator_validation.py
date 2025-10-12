@@ -10,7 +10,7 @@ from notionary.data_source.properties.models import (
 )
 from notionary.data_source.query.builder import DataSourceQueryBuilder
 from notionary.exceptions.data_source.builder import InvalidOperatorForPropertyType
-from notionary.shared.properties.property_type import PropertyType
+from notionary.shared.properties.type import PropertyType
 
 
 @pytest.fixture

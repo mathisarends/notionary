@@ -28,7 +28,7 @@ class BotUser(BaseUser):
     async def from_current_integration(
         cls,
         http_client: UserHttpClient | None = None,
-    ) -> Self | None:
+    ) -> Self:
         client = http_client or UserHttpClient()
         user_dto = await client.get_current_integration_bot()
         return cls.from_dto(user_dto)

@@ -11,7 +11,7 @@ from notionary.data_source.query.schema import (
     StringOperator,
 )
 from notionary.exceptions.data_source.builder import InvalidOperatorForPropertyType
-from notionary.shared.properties.property_type import PropertyType
+from notionary.shared.properties.type import PropertyType
 
 
 class OperatorValidator:

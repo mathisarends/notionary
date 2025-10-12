@@ -12,21 +12,21 @@ if TYPE_CHECKING:
 
 
 class NotionWorkspace:
-    def __init__(self, name: str, file_upload_limit_in_bytes: int) -> None:
+    def __init__(self, name: str | None = None) -> None:
         self._name = name
-        self._file_upload_limit_in_bytes = file_upload_limit_in_bytes
         self._query_service = WorkspaceQueryService()
+
+    @classmethod
+    async def from_current_integration(cls) -> Self:
+        from notionary.user import BotUser
+
+        bot_user = await BotUser.from_current_integration()
+
+        return cls(name=bot_user.workspace_name)
 
     @property
     def name(self) -> str:
         return self._name
-
-    @property
-    def file_upload_limit_in_bytes(self) -> int:
-        return self._file_upload_limit_in_bytes
-
-    @classmethod
-    async def from_current_integration(cls) -> Self: ...
 
     async def list_data_sources(self) -> list[NotionDataSource]:
         return await self._query_service.list_data_sources()
