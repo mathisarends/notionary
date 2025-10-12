@@ -117,7 +117,7 @@ class QueryResolver(LoggingMixin):
 
 
     async def _resolve_user_name_to_id(self, name: str) -> str:
-        resolved = await self._user_resolver.resolve_id_to_name(name)
+        resolved = await self._user_resolver.resolve_name_to_id(name)
         
         if not resolved:
             raise ValueError(f"Could not resolve user name '{name}' to ID")

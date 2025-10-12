@@ -17,6 +17,7 @@ from notionary.data_source.properties.models import (
     DataSourceStatusProperty,
 )
 from notionary.data_source.query.builder import DataSourceQueryBuilder
+from notionary.data_source.query.resolver import QueryResolver
 from notionary.data_source.query.schema import (
     DataSourceQueryParams,
 )
@@ -309,8 +310,24 @@ class NotionDataSource(Entity):
 
         return await self.get_pages(query_params)
 
-    async def get_pages(self, query_params: DataSourceQueryParams | None = None) -> list[NotionPage]:
+    async def get_pages(
+        self, 
+        query_params: DataSourceQueryParams | None = None,
+        query_resolver: QueryResolver | None = None,
+    ) -> list[NotionPage]:
         from notionary import NotionPage
 
-        query_response = await self._data_source_client.query(query_params=query_params)
+        resolved_params = await self._resolve_query_params_if_needed(query_params, query_resolver)
+        query_response = await self._data_source_client.query(query_params=resolved_params)
         return [await NotionPage.from_id(page.id) for page in query_response.results]
+
+    async def _resolve_query_params_if_needed(
+        self,
+        query_params: DataSourceQueryParams | None,
+        query_resolver: QueryResolver | None,
+    ) -> DataSourceQueryParams | None:
+        if query_params is None:
+            return None
+        
+        query_resolver = query_resolver or QueryResolver()
+        return await query_resolver.resolve_params(query_params)

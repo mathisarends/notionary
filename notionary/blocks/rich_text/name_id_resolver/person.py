@@ -6,11 +6,10 @@ from notionary.user.person import PersonUser
 
 
 class PersonNameIdResolver(NameIdResolver):
-    def __init__(self, person_user_factory=None, http_client: UserHttpClient | None = None) -> None:
+    def __init__(self, person_user_factory=None) -> None:
         if person_user_factory is None:
             person_user_factory = PersonUser
         self.person_user_factory = person_user_factory
-        self.http_client = http_client
 
     @override
     async def resolve_name_to_id(self, name: str | None) -> str | None:
@@ -20,7 +19,7 @@ class PersonNameIdResolver(NameIdResolver):
         name = name.strip()
 
         try:
-            user = await self.person_user_factory.from_name(name, self.http_client)
+            user = await self.person_user_factory.from_name(name)
             return user.id if user else None
         except Exception:
             return None
@@ -31,7 +30,7 @@ class PersonNameIdResolver(NameIdResolver):
             return None
 
         try:
-            user = await self.person_user_factory.from_id(user_id.strip(), self.http_client)
+            user = await self.person_user_factory.from_id(user_id.strip())
             return user.name if user else None
         except Exception:
             return None

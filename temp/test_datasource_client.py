@@ -12,6 +12,8 @@ async def main() -> None:
         .equals("Abgeschlossen")
         .or_where("Dozent")
         .equals("Dr. Angela Yu")
+        .where("people")
+        .contains("Mathis Arends")
         .order_by_created_time()
         .build()
     )
