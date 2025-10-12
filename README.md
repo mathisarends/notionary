@@ -46,11 +46,9 @@ export NOTION_SECRET=your_integration_key
 
 ## See It in Action
 
-### Creating Rich Database Entries
-
 https://github.com/user-attachments/assets/da8b4691-bee4-4b0f-801e-dccacb630398
 
-_Create styled project pages with properties, content, and rich formatting_
+_Create rich database entries with properties, content, and beautiful formatting_
 
 ---
 
@@ -59,50 +57,30 @@ _Create styled project pages with properties, content, and rich formatting_
 ### Find → Create → Update Flow
 
 ```python
-import asyncio
-from notionary import NotionPage, NotionDatabase
+from notionary import NotionPage
 
-async def main():
-    # Find pages by name - fuzzy matching included!
-    page = await NotionPage.from_title("Meeting Notes")
+# Find pages by name with fuzzy matching
+page = await NotionPage.from_title("Meeting Notes")
 
-    # Option 1: Direct Extended Markdown
-    await page.append_markdown("""
-    ## Action Items
-    - [x] Review project proposal
-    - [ ] Schedule team meeting
-    - [ ] Update documentation
+# Define rich content with extended markdown
+content = """
+## Action Items
+- [x] Review proposal
+- [ ] Schedule meeting
 
-    [callout](Meeting decisions require follow-up "💡")
+[callout](Key decision made! "💡")
 
-    +++ Details
-    Additional context and next steps...
-    +++
-    """)
+| Task | Owner | Deadline |
+|------|-------|----------|
+| Design Review | Alice | 2024-03-15 |
+| Implementation | Bob | 2024-03-22 |
 
-    # Option 2: Type-Safe Builder (maps to same markdown internally)
-    await page.append_markdown(lambda builder: (
-        builder
-        .h2("Project Status")
-        .callout("Milestone reached!", "🎉")
-        .columns(
-            lambda col: col.h3("Completed").bulleted_list([
-                "API design", "Database setup", "Authentication"
-            ]),
-            lambda col: col.h3("In Progress").bulleted_list([
-                "Frontend UI", "Testing", "Documentation"
-            ]),
-            width_ratios=[0.6, 0.4]
-        )
-        .toggle("Budget Details", lambda t: t
-            .table(["Item", "Cost", "Status"], [
-                ["Development", "$15,000", "Paid"],
-                ["Design", "$8,000", "Pending"]
-            ])
-        )
-    ))
++++ Budget Details
+See attached spreadsheet...
++++
+"""
 
-asyncio.run(main())
+await page.append_markdown(content)
 ```
 
 ### Complete Block Support
@@ -111,36 +89,13 @@ Every Notion block type with extended syntax:
 
 | Block Type    | Markdown Syntax                              | Use Case                     |
 | ------------- | -------------------------------------------- | ---------------------------- |
-| **Callouts**  | `[callout](Text "🔥")`                       | Highlighting key information |
 | **Toggles**   | `+++ Title\nContent\n+++`                    | Collapsible sections         |
 | **Columns**   | `::: columns\n::: column\nContent\n:::\n:::` | Side-by-side layouts         |
 | **Tables**    | Standard markdown tables                     | Structured data              |
 | **Media**     | `[video](./file.mp4)(caption:Description)`   | Auto-uploading files         |
 | **Code**      | Standard code fences with captions           | Code snippets                |
 | **Equations** | `$LaTeX$`                                    | Mathematical expressions     |
-| **TOC**       | `[toc](blue_background)`                     | Auto-generated navigation    |
-
----
-
-## What You Can Build 💡
-
-### **AI Content Systems**
-
-- **Report Generation**: AI agents that create structured reports, documentation, and analysis
-- **Content Pipelines**: Automated workflows that process data and generate Notion pages
-- **Knowledge Management**: AI-powered documentation systems with smart categorization
-
-### **Workflow Automation**
-
-- **Project Management**: Sync project status, update timelines, generate progress reports
-- **Data Integration**: Connect external APIs and databases to Notion workspaces
-- **Template Systems**: Dynamic page generation from templates and data sources
-
-### **Content Management**
-
-- **Bulk Operations**: Mass page updates, content migration, and database management
-- **Media Handling**: Automated image/video uploads with proper organization
-- **Cross-Platform**: Sync content between Notion and other platforms
+| **TOC**       | `[toc]`                     | Auto-generated navigation    |
 
 ---
 
@@ -200,29 +155,6 @@ Every Notion block type with extended syntax:
 ### Full Documentation
 
 [**mathisarends.github.io/notionary**](https://mathisarends.github.io/notionary/) - Complete API reference, guides, and tutorials
-
-### Quick Links
-
-- [**Getting Started**](https://mathisarends.github.io/notionary/get-started/) - Setup and first steps
-- [**Page Management**](https://mathisarends.github.io/notionary/page/) - Content and properties
-- [**Database Operations**](https://mathisarends.github.io/notionary/database/) - Queries and management
-- [**Block Types Reference**](https://mathisarends.github.io/notionary/blocks/) - Complete syntax guide
-
-### Hands-On Examples
-
-**Core Functionality:**
-
-- [Page Management](examples/page_example.py) - Create, update, and manage pages
-- [Database Operations](examples/database.py) - Connect and query databases
-- [Workspace Discovery](examples/workspace_discovery.py) - Explore your workspace
-
-**Extended Markdown:**
-
-- [Basic Formatting](examples/markdown/basic.py) - Text, lists, and links
-- [Callouts & Highlights](examples/markdown/callout.py) - Information boxes
-- [Toggle Sections](examples/markdown/toggle.py) - Collapsible content
-- [Multi-Column Layouts](examples/markdown/columns.py) - Side-by-side design
-- [Tables & Data](examples/markdown/table.py) - Structured presentations
 
 ---
 
