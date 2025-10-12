@@ -84,6 +84,33 @@ class RelationType(StrEnum):
     DUAL_PROPERTY = "dual_property"
 
 
+class RollupFunction(StrEnum):
+    AVERAGE = "average"
+    CHECKED = "checked"
+    COUNT_PER_GROUP = "count_per_group"
+    COUNT = "count"
+    COUNT_VALUES = "count_values"
+    DATE_RANGE = "date_range"
+    EARLIEST_DATE = "earliest_date"
+    EMPTY = "empty"
+    LATEST_DATE = "latest_date"
+    MAX = "max"
+    MEDIAN = "median"
+    MIN = "min"
+    NOT_EMPTY = "not_empty"
+    PERCENT_CHECKED = "percent_checked"
+    PERCENT_EMPTY = "percent_empty"
+    PERCENT_NOT_EMPTY = "percent_not_empty"
+    PERCENT_PER_GROUP = "percent_per_group"
+    PERCENT_UNCHECKED = "percent_unchecked"
+    RANGE = "range"
+    UNCHECKED = "unchecked"
+    UNIQUE = "unique"
+    SHOW_ORIGINAL = "show_original"
+    SHOW_UNIQUE = "show_unique"
+    SUM = "sum"
+
+
 class DataSourcePropertyOption(BaseModel):
     id: str
     name: str
@@ -135,6 +162,14 @@ class DataSourceUniqueIdConfig(BaseModel):
     prefix: str | None = None
 
 
+class DataSourceRollupConfig(BaseModel):
+    function: RollupFunction
+    relation_property_id: str
+    relation_property_name: str
+    rollup_property_id: str
+    rollup_property_name: str
+
+
 class DataSourceDateConfig(BaseModel): ...
 
 
@@ -142,6 +177,9 @@ class DataSourceCreatedTimeConfig(BaseModel): ...
 
 
 class DataSourceCreatedByConfig(BaseModel): ...
+
+
+class DataSourceLastEditedTimeConfig(BaseModel): ...
 
 
 class DataSourceLastEditedByConfig(BaseModel): ...
@@ -169,6 +207,9 @@ class DataSourceEmailConfig(BaseModel): ...
 
 
 class DataSourcePhoneNumberConfig(BaseModel): ...
+
+
+class DataSourceFilesConfig(BaseModel): ...
 
 
 class DataSourceButtonConfig(BaseModel): ...
@@ -242,6 +283,21 @@ class DataSourceCreatedTimeProperty(DataSourceProperty):
     created_time: DataSourceCreatedTimeConfig = Field(default_factory=DataSourceCreatedTimeConfig)
 
 
+class DataSourceCreatedByProperty(DataSourceProperty):
+    type: Literal[PropertyType.CREATED_BY] = PropertyType.CREATED_BY
+    created_by: DataSourceCreatedByConfig = Field(default_factory=DataSourceCreatedByConfig)
+
+
+class DataSourceLastEditedTimeProperty(DataSourceProperty):
+    type: Literal[PropertyType.LAST_EDITED_TIME] = PropertyType.LAST_EDITED_TIME
+    last_edited_time: DataSourceLastEditedTimeConfig = Field(default_factory=DataSourceLastEditedTimeConfig)
+
+
+class DataSourceLastEditedByProperty(DataSourceProperty):
+    type: Literal[PropertyType.LAST_EDITED_BY] = PropertyType.LAST_EDITED_BY
+    last_edited_by: DataSourceLastEditedByConfig = Field(default_factory=DataSourceLastEditedByConfig)
+
+
 class DataSourceTitleProperty(DataSourceProperty):
     type: Literal[PropertyType.TITLE] = PropertyType.TITLE
     title: DataSourceTitleConfig = Field(default_factory=DataSourceTitleConfig)
@@ -286,6 +342,38 @@ class DataSourcePhoneNumberProperty(DataSourceProperty):
     phone_number: DataSourcePhoneNumberConfig = Field(default_factory=DataSourcePhoneNumberConfig)
 
 
+class DataSourceFilesProperty(DataSourceProperty):
+    type: Literal[PropertyType.FILES] = PropertyType.FILES
+    files: DataSourceFilesConfig = Field(default_factory=DataSourceFilesConfig)
+
+
+class DataSourceFormulaProperty(DataSourceProperty):
+    type: Literal[PropertyType.FORMULA] = PropertyType.FORMULA
+    formula: DataSourceFormulaConfig
+
+    @property
+    def expression(self) -> str:
+        return self.formula.expression
+
+
+class DataSourceRollupProperty(DataSourceProperty):
+    type: Literal[PropertyType.ROLLUP] = PropertyType.ROLLUP
+    rollup: DataSourceRollupConfig
+
+    @property
+    def rollup_function(self) -> RollupFunction:
+        return self.rollup.function
+
+
+class DataSourceUniqueIdProperty(DataSourceProperty):
+    type: Literal[PropertyType.UNIQUE_ID] = PropertyType.UNIQUE_ID
+    unique_id: DataSourceUniqueIdConfig = Field(default_factory=DataSourceUniqueIdConfig)
+
+    @property
+    def prefix(self) -> str | None:
+        return self.unique_id.prefix
+
+
 # ============================================================================
 # Discriminated Union
 # ============================================================================
@@ -297,6 +385,9 @@ DiscriminatedDataSourceProperty = Annotated[
     | DataSourceRelationProperty
     | DataSourceDateProperty
     | DataSourceCreatedTimeProperty
+    | DataSourceCreatedByProperty
+    | DataSourceLastEditedTimeProperty
+    | DataSourceLastEditedByProperty
     | DataSourceTitleProperty
     | DataSourceRichTextProperty
     | DataSourceURLProperty
@@ -304,7 +395,11 @@ DiscriminatedDataSourceProperty = Annotated[
     | DataSourceNumberProperty
     | DataSourceCheckboxProperty
     | DataSourceEmailProperty
-    | DataSourcePhoneNumberProperty,
+    | DataSourcePhoneNumberProperty
+    | DataSourceFilesProperty
+    | DataSourceFormulaProperty
+    | DataSourceRollupProperty
+    | DataSourceUniqueIdProperty,
     Field(discriminator="type"),
 ]
 
