@@ -9,8 +9,8 @@ license = { text = "MIT" }
 dependencies = [
     "httpx>=0.28.0",
     "pydantic>=2.11.4",
-    "aiofiles(>=24.1.0,<25.0.0)",
-    "python-dotenv(>=1.1.1,<2.0.0)",
+    "aiofiles>=24.1.0,<25.0.0",
+    "python-dotenv>=1.0.1,<2.0.0",
 ]
 
 [project.urls]
@@ -19,6 +19,12 @@ Homepage = "https://github.com/mathisarends/notionary"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = ["/notionary", "/README.md"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["notionary"]
 
 [dependency-groups]
 dev = [
@@ -33,7 +39,7 @@ dev = [
     "mypy>=1.17.1,<2",
     "ruff>=0.13.1",
     "pre-commit>=4.3.0",
-    "twine>=5.1.1,<6",
+    "twine>=6.0.0",
 ]
 
 
