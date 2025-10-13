@@ -1,6 +1,6 @@
 import pytest
 
-from notionary.data_source.properties.models import (
+from notionary.data_source.properties.schemas import (
     DataSourceCheckboxProperty,
     DataSourceMultiSelectProperty,
     DataSourceNumberProperty,

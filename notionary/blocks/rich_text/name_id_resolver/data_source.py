@@ -4,6 +4,7 @@ from notionary.blocks.rich_text.name_id_resolver.port import NameIdResolver
 from notionary.workspace.query.service import WorkspaceQueryService
 
 
+# !!! in the notion api mentions that reference datasources are not provided yet (it's a limiation of the API as of now)
 class DataSourceNameIdResolver(NameIdResolver):
     def __init__(self, workspace_query_service: WorkspaceQueryService | None = None) -> None:
         self._workspace_query_service = workspace_query_service or WorkspaceQueryService()

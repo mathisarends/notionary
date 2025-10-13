@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from typing import Self
 
-from notionary.data_source.properties.models import DataSourceProperty
+from notionary.data_source.properties.schemas import DataSourceProperty
 from notionary.data_source.query.schema import (
     ArrayOperator,
     BooleanOperator,

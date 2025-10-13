@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Self
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.data_source.http.client import DataSourceClient
 from notionary.data_source.http.data_source_instance_client import DataSourceInstanceClient
-from notionary.data_source.properties.models import (
+from notionary.data_source.properties.schemas import (
     DataSourceMultiSelectProperty,
     DataSourceProperty,
     DataSourcePropertyOption,
@@ -21,7 +21,7 @@ from notionary.data_source.query.resolver import QueryResolver
 from notionary.data_source.query.schema import (
     DataSourceQueryParams,
 )
-from notionary.data_source.schema.service import NaturalLanguageSchemaFormatter
+from notionary.data_source.schema.service import DataSourcePropertySchemaFormatter
 from notionary.data_source.schemas import DataSourceDto
 from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound, DataSourcePropertyTypeError
 from notionary.page.properties.models import PageTitleProperty
@@ -353,8 +353,6 @@ class NotionDataSource(Entity):
 
         return await self.query_resolver.resolve_params(query_params)
 
-    async def get_metadata(self) -> dict: ...
-
-    async def get_schema(self) -> str:
-        formatter = NaturalLanguageSchemaFormatter(relation_options_fetcher=self._get_relation_options)
+    async def get_schema_description(self) -> str:
+        formatter = DataSourcePropertySchemaFormatter(relation_options_fetcher=self._get_relation_options)
         return await formatter.format(title=self._title, description=self._description, properties=self._properties)

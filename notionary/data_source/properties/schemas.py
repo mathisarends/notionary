@@ -144,8 +144,7 @@ class DataSourceMultiSelectConfig(BaseModel):
 
 
 class DataSourceRelationConfig(BaseModel):
-    database_id: str | None = None
-    data_source_id: str | None = None
+    data_source_id: str
     type: RelationType = RelationType.SINGLE_PROPERTY
     single_property: dict[str, Any] = Field(default_factory=dict)
 
@@ -263,10 +262,6 @@ class DataSourceMultiSelectProperty(DataSourceProperty):
 class DataSourceRelationProperty(DataSourceProperty):
     type: Literal[PropertyType.RELATION] = PropertyType.RELATION
     relation: DataSourceRelationConfig = Field(default_factory=DataSourceRelationConfig)
-
-    @property
-    def related_database_id(self) -> str | None:
-        return self.relation.database_id
 
     @property
     def related_data_source_id(self) -> str | None:

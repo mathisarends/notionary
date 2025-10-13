@@ -1,7 +1,7 @@
 from collections.abc import Awaitable, Callable
 
 from notionary.blocks.rich_text.name_id_resolver import DataSourceNameIdResolver
-from notionary.data_source.properties.models import (
+from notionary.data_source.properties.schemas import (
     DataSourceMultiSelectProperty,
     DataSourceProperty,
     DataSourceRelationProperty,
@@ -85,7 +85,7 @@ class PropertyFormatter:
             return None
 
 
-class NaturalLanguageSchemaFormatter:
+class DataSourcePropertySchemaFormatter:
     def __init__(
         self,
         relation_options_fetcher: Callable[[DataSourceRelationProperty], Awaitable[list[str]]] | None = None,
