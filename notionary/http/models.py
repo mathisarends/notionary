@@ -3,7 +3,8 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any
+
+from notionary.shared.typings import JsonDict
 
 
 class HttpMethod(StrEnum):
@@ -17,8 +18,8 @@ class HttpMethod(StrEnum):
 class HttpRequest:
     method: HttpMethod
     endpoint: str
-    data: dict[str, Any] | None = None
-    params: dict[str, Any] | None = None
+    data: JsonDict | None = None
+    params: JsonDict | None = None
     timestamp: float = field(default_factory=time.time)
     cached_response: HttpResponse | None = None
 
@@ -38,7 +39,7 @@ class HttpRequest:
 
 @dataclass
 class HttpResponse:
-    data: dict[str, Any] | None
+    data: JsonDict | None
     status_code: int = 200
     headers: dict[str, str] = field(default_factory=dict)
     timestamp: float = field(default_factory=time.time)

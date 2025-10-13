@@ -9,6 +9,7 @@ from notionary.data_source.schemas import DataSourceDto, QueryDataSourceResponse
 from notionary.http.client import NotionHttpClient
 from notionary.page.schemas import NotionPageDto
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
+from notionary.shared.typings import JsonDict
 from notionary.utils.pagination import paginate_notion_api, paginate_notion_api_generator
 
 if TYPE_CHECKING:
@@ -72,7 +73,7 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
             yield result
 
     async def _make_query_request(
-        self, query_data: dict[str, Any], start_cursor: str | None = None
+        self, query_data: JsonDict, start_cursor: str | None = None
     ) -> QueryDataSourceResponse:
         current_query_data = query_data.copy()
         if start_cursor:

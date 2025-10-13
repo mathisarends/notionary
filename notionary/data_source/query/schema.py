@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Any, Self
+from typing import Self
 
 from pydantic import BaseModel, ValidationInfo, field_validator, model_serializer, model_validator
 
 from notionary.shared.properties.type import PropertyType
+from notionary.shared.typings import JsonDict
 
 
 class FieldType(StrEnum):
@@ -246,7 +247,7 @@ class PropertyFilter(BaseModel):
         return self
 
     @model_serializer
-    def serialize_model(self) -> dict[str, Any]:
+    def serialize_model(self) -> JsonDict:
         property_type_str = self.property_type.value
         operator_str = self.operator.value
         filter_value = self.value
@@ -266,7 +267,7 @@ class CompoundFilter(BaseModel):
     filters: list[PropertyFilter | CompoundFilter]
 
     @model_serializer
-    def serialize_model(self) -> dict[str, Any]:
+    def serialize_model(self) -> JsonDict:
         operator_str = self.operator.value
         return {operator_str: [f.model_dump() for f in self.filters]}
 
@@ -292,8 +293,8 @@ class DataSourceQueryParams(BaseModel):
     sorts: list[NotionSort] | None = None
 
     @model_serializer
-    def serialize_model(self) -> dict[str, Any]:
-        result: dict[str, Any] = {}
+    def serialize_model(self) -> JsonDict:
+        result: JsonDict = {}
 
         if self.filter is not None:
             result["filter"] = self.filter.model_dump()

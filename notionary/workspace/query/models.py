@@ -1,7 +1,8 @@
 from enum import StrEnum
-from typing import Any
 
 from pydantic import BaseModel, Field, field_validator, model_serializer
+
+from notionary.shared.typings import JsonDict
 
 
 class SortDirection(StrEnum):
@@ -35,8 +36,8 @@ class WorkspaceQueryConfig(BaseModel):
         return value
 
     @model_serializer
-    def serialize_model(self) -> dict[str, Any]:
-        search_dict: dict[str, Any] = {}
+    def serialize_model(self) -> JsonDict:
+        search_dict: JsonDict = {}
 
         if self.query:
             search_dict["query"] = self.query

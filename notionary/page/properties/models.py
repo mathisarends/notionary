@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from notionary.blocks.rich_text.models import RichText
 from notionary.shared.properties.type import PropertyType
+from notionary.shared.typings import JsonDict
 from notionary.user.schemas import PersonUserResponseDto, UserResponseDto
 
 # ============================================================================
@@ -269,7 +270,7 @@ class PageVerificationProperty(PageProperty):
 
 class PageButtonProperty(PageProperty):
     type: Literal[PropertyType.BUTTON] = PropertyType.BUTTON
-    button: dict[str, Any] = Field(default_factory=dict)
+    button: JsonDict = Field(default_factory=dict)
 
 
 # ============================================================================

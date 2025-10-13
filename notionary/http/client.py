@@ -1,6 +1,5 @@
 import asyncio
 import os
-from typing import Any
 
 import httpx
 from dotenv import load_dotenv
@@ -16,6 +15,7 @@ from notionary.exceptions.api import (
     NotionValidationError,
 )
 from notionary.http.models import HttpMethod
+from notionary.shared.typings import JsonDict
 from notionary.utils.mixins.logging import LoggingMixin
 
 load_dotenv()
@@ -80,25 +80,25 @@ class NotionHttpClient(LoggingMixin):
         self._is_initialized = False
         self.logger.debug("NotionHttpClient closed")
 
-    async def get(self, endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any] | None:
+    async def get(self, endpoint: str, params: JsonDict | None = None) -> JsonDict | None:
         return await self.make_request(HttpMethod.GET, endpoint, params=params)
 
-    async def post(self, endpoint: str, data: dict[str, Any] | None = None) -> dict[str, Any] | None:
+    async def post(self, endpoint: str, data: JsonDict | None = None) -> JsonDict | None:
         return await self.make_request(HttpMethod.POST, endpoint, data)
 
-    async def patch(self, endpoint: str, data: dict[str, Any] | None = None) -> dict[str, Any] | None:
+    async def patch(self, endpoint: str, data: JsonDict | None = None) -> JsonDict | None:
         return await self.make_request(HttpMethod.PATCH, endpoint, data)
 
-    async def delete(self, endpoint: str) -> dict[str, Any] | None:
+    async def delete(self, endpoint: str) -> JsonDict | None:
         return await self.make_request(HttpMethod.DELETE, endpoint)
 
     async def make_request(
         self,
         method: HttpMethod,
         endpoint: str,
-        data: dict[str, Any] | None = None,
-        params: dict[str, Any] | None = None,
-    ) -> dict[str, Any] | None:
+        data: JsonDict | None = None,
+        params: JsonDict | None = None,
+    ) -> JsonDict | None:
         """
         Executes an HTTP request and returns the data or None on error.
 

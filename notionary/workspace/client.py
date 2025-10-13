@@ -1,9 +1,9 @@
 from collections.abc import AsyncGenerator
-from typing import Any
 
 from notionary.data_source.schemas import DataSourceDto
 from notionary.http.client import NotionHttpClient
 from notionary.page.schemas import NotionPageDto
+from notionary.shared.typings import JsonDict
 from notionary.utils.pagination import paginate_notion_api_generator
 from notionary.workspace.query.models import WorkspaceQueryConfig
 from notionary.workspace.schemas import DataSourceSearchResponse, PageSearchResponse
@@ -57,6 +57,6 @@ class WorkspaceClient:
         response = await self._execute_search(search_config)
         return DataSourceSearchResponse.model_validate(response)
 
-    async def _execute_search(self, config: WorkspaceQueryConfig) -> dict[str, Any]:
+    async def _execute_search(self, config: WorkspaceQueryConfig) -> JsonDict:
         serialized_config = config.model_dump(exclude_none=True, by_alias=True)
         return await self._http_client.post("search", serialized_config)

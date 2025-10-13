@@ -1,7 +1,6 @@
-from typing import Any
-
 from notionary.blocks.schemas import Block, BlockChildrenResponse, BlockCreatePayload
 from notionary.http.client import NotionHttpClient
+from notionary.shared.typings import JsonDict
 from notionary.utils.pagination import paginate_notion_api
 
 
@@ -73,11 +72,11 @@ class NotionBlockHttpClient(NotionHttpClient):
             batches.append(batch)
         return batches
 
-    def _serialize_blocks(self, blocks: list[BlockCreatePayload]) -> list[dict[str, Any]]:
+    def _serialize_blocks(self, blocks: list[BlockCreatePayload]) -> list[JsonDict]:
         return [block.model_dump(exclude_none=True) for block in blocks]
 
     async def _send_append_request(
-        self, block_id: str, children: list[dict[str, Any]], after_block_id: str | None = None
+        self, block_id: str, children: list[JsonDict], after_block_id: str | None = None
     ) -> BlockChildrenResponse:
         payload = {"children": children}
         if after_block_id:

@@ -1,9 +1,10 @@
 from enum import StrEnum
-from typing import Annotated, Any, Literal, TypeVar
+from typing import Annotated, Literal, TypeVar
 
 from pydantic import BaseModel, Field
 
 from notionary.shared.properties.type import PropertyType
+from notionary.shared.typings import JsonDict
 
 # ============================================================================
 # Base Model
@@ -146,7 +147,7 @@ class DataSourceMultiSelectConfig(BaseModel):
 class DataSourceRelationConfig(BaseModel):
     data_source_id: str
     type: RelationType = RelationType.SINGLE_PROPERTY
-    single_property: dict[str, Any] = Field(default_factory=dict)
+    single_property: JsonDict = Field(default_factory=dict)
 
 
 class DataSourceNumberConfig(BaseModel):
