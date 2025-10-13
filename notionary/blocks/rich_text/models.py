@@ -16,6 +16,7 @@ class MentionType(StrEnum):
     USER = "user"
     PAGE = "page"
     DATABASE = "database"
+    DATASOURCE = "data_source"
     DATE = "date"
     LINK_PREVIEW = "link_preview"
     TEMPLATE_MENTION = "template_mention"
@@ -60,6 +61,10 @@ class MentionDatabaseRef(BaseModel):
     id: str
 
 
+class MentionDataSourceRef(BaseModel):
+    id: str
+
+
 class MentionLinkPreview(BaseModel):
     url: str
 
@@ -81,6 +86,7 @@ class MentionObject(BaseModel):
     user: MentionUserRef | None = None
     page: MentionPageRef | None = None
     database: MentionDatabaseRef | None = None
+    data_source: MentionDataSourceRef | None = None
     date: MentionDate | None = None
     link_preview: MentionLinkPreview | None = None
     template_mention: MentionTemplateMention | None = None
@@ -151,6 +157,14 @@ class RichText(BaseModel):
         return cls(
             type=RichTextType.MENTION,
             mention=MentionObject(type=MentionType.DATABASE, database=MentionDatabaseRef(id=database_id)),
+            annotations=TextAnnotations(),
+        )
+
+    @classmethod
+    def mention_data_source(cls, data_source_id: str) -> Self:
+        return cls(
+            type=RichTextType.MENTION,
+            mention=MentionObject(type=MentionType.DATASOURCE, data_source=MentionDataSourceRef(id=data_source_id)),
             annotations=TextAnnotations(),
         )
 

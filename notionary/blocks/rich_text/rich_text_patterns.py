@@ -35,5 +35,8 @@ class RichTextPatterns(StrEnum):
     DATABASE_MENTION = r"@database\[([^\]]+)\]"
     """Matches a Notion database mention by name or ID. Example: `@database[Tasks]`."""
 
+    DATASOURCE_MENTION = r"@datasource\[([^\]]+)\]"
+    """Matches a Notion data source mention by name or ID. Example: `@datasource[My Data]`."""
+
     USER_MENTION = r"@user\[([^\]]+)\]"
     """Matches a Notion user mention by name or ID. Example: `@user[Some Person]`."""

@@ -7,6 +7,7 @@ from typing import ClassVar
 from notionary.blocks.rich_text.models import MentionType, RichText, RichTextType, TextAnnotations
 from notionary.blocks.rich_text.name_id_resolver import (
     DatabaseNameIdResolver,
+    DataSourceNameIdResolver,
     NameIdResolver,
     PageNameIdResolver,
     PersonNameIdResolver,
@@ -44,10 +45,12 @@ class MarkdownRichTextConverter:
         *,
         page_resolver: NameIdResolver | None = None,
         database_resolver: NameIdResolver | None = None,
+        data_source_resolver: NameIdResolver | None = None,
         person_resolver: NameIdResolver | None = None,
     ):
         self.page_resolver = page_resolver or PageNameIdResolver()
         self.database_resolver = database_resolver or DatabaseNameIdResolver()
+        self.data_source_resolver = data_source_resolver or DataSourceNameIdResolver()
         self.person_resolver = person_resolver or PersonNameIdResolver()
         self.format_handlers = self._setup_format_handlers()
 
@@ -64,6 +67,7 @@ class MarkdownRichTextConverter:
             PatternHandler(RichTextPatterns.COLOR, self._handle_color_pattern),
             PatternHandler(RichTextPatterns.PAGE_MENTION, self._handle_page_mention_pattern),
             PatternHandler(RichTextPatterns.DATABASE_MENTION, self._handle_database_mention_pattern),
+            PatternHandler(RichTextPatterns.DATASOURCE_MENTION, self._handle_data_source_mention_pattern),
             PatternHandler(RichTextPatterns.USER_MENTION, self._handle_user_mention_pattern),
         ]
 
@@ -119,6 +123,7 @@ class MarkdownRichTextConverter:
         async_handlers = {
             self._handle_page_mention_pattern,
             self._handle_database_mention_pattern,
+            self._handle_data_source_mention_pattern,
             self._handle_color_pattern,  # Color pattern needs async for recursive parsing
             self._handle_user_mention_pattern,
         }
@@ -208,6 +213,15 @@ class MarkdownRichTextConverter:
             resolve_func=self.database_resolver.resolve_name_to_id,
             create_mention_func=RichText.mention_database,
             mention_type=MentionType.DATABASE,
+        )
+
+    async def _handle_data_source_mention_pattern(self, match: Match) -> RichText:
+        identifier = match.group(1)
+        return await self._create_mention_or_fallback(
+            identifier=identifier,
+            resolve_func=self.data_source_resolver.resolve_name_to_id,
+            create_mention_func=RichText.mention_data_source,
+            mention_type=MentionType.DATASOURCE,
         )
 
     async def _handle_user_mention_pattern(self, match: Match) -> RichText:

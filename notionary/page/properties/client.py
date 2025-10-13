@@ -123,7 +123,7 @@ class PagePropertyHttpClient(NotionHttpClient):
         elif property_type == PageCheckboxProperty:
             return PageCheckboxProperty(id=property_id, checkbox=bool(value))
         elif property_type == PageSelectProperty:
-            select_option = SelectOption(id="", name=str(value))
+            select_option = SelectOption(name=str(value))
             return PageSelectProperty(id=property_id, select=select_option)
         elif property_type == PageMultiSelectProperty:
             multi_select_options = [SelectOption(id="", name=str(item)) for item in value]

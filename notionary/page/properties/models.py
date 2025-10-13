@@ -23,7 +23,7 @@ class StatusOption(BaseModel):
 
 
 class SelectOption(BaseModel):
-    id: str
+    id: str | None = None
     name: str
 
 

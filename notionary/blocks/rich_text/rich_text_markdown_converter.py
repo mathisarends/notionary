@@ -8,6 +8,7 @@ from notionary.blocks.rich_text.models import (
 )
 from notionary.blocks.rich_text.name_id_resolver import (
     DatabaseNameIdResolver,
+    DataSourceNameIdResolver,
     NameIdResolver,
     PageNameIdResolver,
     PersonNameIdResolver,
@@ -23,10 +24,12 @@ class RichTextToMarkdownConverter:
         *,
         page_resolver: NameIdResolver | None = None,
         database_resolver: NameIdResolver | None = None,
+        data_source_resolver: NameIdResolver | None = None,
         person_resolver: NameIdResolver | None = None,
     ) -> None:
         self.page_resolver = page_resolver or PageNameIdResolver()
         self.database_resolver = database_resolver or DatabaseNameIdResolver()
+        self.data_source_resolver = data_source_resolver or DataSourceNameIdResolver()
         self.person_resolver = person_resolver or PersonNameIdResolver()
 
     async def to_markdown(self, rich_text: list[RichText]) -> str:
@@ -65,6 +68,9 @@ class RichTextToMarkdownConverter:
         elif mention.type == MentionType.DATABASE and mention.database:
             return await self._extract_database_mention_markdown(mention.database.id)
 
+        elif mention.type == MentionType.DATASOURCE and mention.data_source:
+            return await self._extract_data_source_mention_markdown(mention.data_source.id)
+
         elif mention.type == MentionType.USER and mention.user:
             return await self._extract_user_mention_markdown(mention.user.id)
 
@@ -80,6 +86,10 @@ class RichTextToMarkdownConverter:
     async def _extract_database_mention_markdown(self, database_id: str) -> str:
         database_name = await self.database_resolver.resolve_id_to_name(database_id)
         return f"@database[{database_name or database_id}]"
+
+    async def _extract_data_source_mention_markdown(self, data_source_id: str) -> str:
+        data_source_name = await self.data_source_resolver.resolve_id_to_name(data_source_id)
+        return f"@datasource[{data_source_name or data_source_id}]"
 
     async def _extract_user_mention_markdown(self, user_id: str) -> str:
         user_name = await self.person_resolver.resolve_id_to_name(user_id)
@@ -122,11 +132,13 @@ async def convert_rich_text_to_markdown(
     *,
     page_resolver: NameIdResolver | None = None,
     database_resolver: NameIdResolver | None = None,
+    data_source_resolver: NameIdResolver | None = None,
     person_resolver: NameIdResolver | None = None,
 ) -> str:
     converter = RichTextToMarkdownConverter(
         page_resolver=page_resolver,
         database_resolver=database_resolver,
+        data_source_resolver=data_source_resolver,
         person_resolver=person_resolver,
     )
     return await converter.to_markdown(rich_text)

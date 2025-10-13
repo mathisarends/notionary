@@ -21,6 +21,7 @@ from notionary.data_source.query.resolver import QueryResolver
 from notionary.data_source.query.schema import (
     DataSourceQueryParams,
 )
+from notionary.data_source.schema.service import NaturalLanguageSchemaFormatter
 from notionary.data_source.schemas import DataSourceDto
 from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound, DataSourcePropertyTypeError
 from notionary.page.properties.models import PageTitleProperty
@@ -351,3 +352,9 @@ class NotionDataSource(Entity):
             return None
 
         return await self.query_resolver.resolve_params(query_params)
+
+    async def get_metadata(self) -> dict: ...
+
+    async def get_schema(self) -> str:
+        formatter = NaturalLanguageSchemaFormatter(relation_options_fetcher=self._get_relation_options)
+        return await formatter.format(title=self._title, description=self._description, properties=self._properties)
