@@ -44,6 +44,7 @@ nav:
           - Code: blocks/code.md
           - Quote: blocks/quote.md
           - Divider: blocks/divider.md
+          - Space: blocks/space.md
           - Columns: blocks/column.md
           - Toggle: blocks/toggle.md
           - Table: blocks/table.md

@@ -11,28 +11,10 @@ and ~~strikethrough~~ text.
 Blank line → new paragraph.
 ```
 
+
 ## Visual Spacing
 
-Create extra vertical space between content using two consecutive empty lines. The second empty line creates a space block (an empty paragraph for visual separation).
-
-```markdown
-First paragraph
-
-Second paragraph (normal spacing)
-
-
-Third paragraph (extra space above from double empty lines)
-```
-
-You can also use the explicit `[space]` marker:
-
-```markdown
-First paragraph
-
-[space]
-
-Second paragraph (extra space above)
-```
+Spacing is a cross-cutting concept in Notionary. You can add extra vertical space between content using either two consecutive empty lines or the explicit `[space]` marker. See the dedicated [Spacing documentation](./space.md) for details and examples.
 
 ## Mentions & Inline Rich Text
 
