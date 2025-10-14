@@ -160,3 +160,43 @@ async def test_convert_bulleted_list_without_data_should_return_none(
     result = await bulleted_list_renderer._convert_bulleted_list_to_markdown(block)
 
     assert result is None
+
+
+@pytest.mark.asyncio
+async def test_bulleted_list_with_nested_bulleted_list_child_should_indent_correctly(
+    bulleted_list_renderer: BulletedListRenderer,
+    render_context: MarkdownRenderingContext,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> None:
+    parent_rich_text = [RichText.from_plain_text("Parent item")]
+    child_rich_text = [RichText.from_plain_text("Child item")]
+
+    child_block = _create_bulleted_list_block(_create_bulleted_list_data(child_rich_text))
+
+    parent_data = _create_bulleted_list_data(parent_rich_text)
+    parent_block = _create_bulleted_list_block(parent_data)
+    parent_block.has_children = True
+    parent_block.children = [child_block]
+
+    async def mock_converter_side_effect(rich_text_list):
+        if rich_text_list == parent_rich_text:
+            return "Parent item"
+        elif rich_text_list == child_rich_text:
+            return "Child item"
+        return ""
+
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(side_effect=mock_converter_side_effect)
+
+    async def render_children_mock(indent_increase):
+        # Simulate rendering the child with increased indent
+        return "  - Child item"
+
+    render_context.block = parent_block
+    render_context.render_children_with_additional_indent = AsyncMock(side_effect=render_children_mock)
+
+    await bulleted_list_renderer._process(render_context)
+
+    # Assert
+    expected = "- Parent item\n  - Child item"
+    assert render_context.markdown_result == expected
+    render_context.render_children_with_additional_indent.assert_called_once_with(1)
