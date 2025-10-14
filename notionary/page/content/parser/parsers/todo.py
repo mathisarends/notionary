@@ -5,7 +5,7 @@ from typing import override
 from notionary.blocks.rich_text.markdown_rich_text_converter import (
     MarkdownRichTextConverter,
 )
-from notionary.blocks.schemas import BlockColor, CreateToDoBlock, ToDoData
+from notionary.blocks.schemas import BlockColor, CreateToDoBlock, CreateToDoData
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
@@ -50,7 +50,7 @@ class TodoParser(LineParser):
             return None
 
         rich_text = await self._rich_text_converter.to_rich_text(content)
-        todo_content = ToDoData(
+        todo_content = CreateToDoData(
             rich_text=rich_text,
             checked=checked,
             color=BlockColor.DEFAULT,

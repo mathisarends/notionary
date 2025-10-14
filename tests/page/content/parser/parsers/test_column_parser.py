@@ -8,7 +8,7 @@ from notionary.blocks.schemas import (
     CreateColumnListBlock,
     CreateColumnListData,
     CreateParagraphBlock,
-    ParagraphData,
+    CreateParagraphData,
 )
 from notionary.page.content.parser.context import ParentBlockContext
 from notionary.page.content.parser.parsers.base import BlockParsingContext
@@ -203,7 +203,7 @@ async def test_column_with_nested_content_should_parse_child_lines(
     column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
-    paragraph_data = ParagraphData(rich_text=[])
+    paragraph_data = CreateParagraphData(rich_text=[])
     paragraph_block = CreateParagraphBlock(paragraph=paragraph_data)
 
     column_data = CreateColumnData()
@@ -228,7 +228,7 @@ async def test_column_with_both_child_lines_and_blocks_should_combine_all(
     column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
-    paragraph_block = CreateParagraphBlock(paragraph=ParagraphData(rich_text=[]))
+    paragraph_block = CreateParagraphBlock(paragraph=CreateParagraphData(rich_text=[]))
     nested_column_block = CreateColumnBlock(column=CreateColumnData())
 
     column_data = CreateColumnData()
@@ -306,7 +306,7 @@ def test_is_column_end_with_different_parent_type_should_return_false(
     column_delimiter: str,
     context: BlockParsingContext,
 ) -> None:
-    paragraph_data = ParagraphData(rich_text=[])
+    paragraph_data = CreateParagraphData(rich_text=[])
     paragraph_block = CreateParagraphBlock(paragraph=paragraph_data)
     parent_context = ParentBlockContext(block=paragraph_block, child_lines=[])
     context.parent_stack = [parent_context]

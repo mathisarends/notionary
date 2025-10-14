@@ -65,10 +65,12 @@ class RichTextLengthTruncationPostProcessor(PostProcessor, LoggingMixin):
             self._truncate_rich_text_list(content.caption)
 
         if hasattr(content, "children"):
-            for child in content.children:
-                child_content = self._get_block_content(child)
-                if child_content:
-                    self._truncate_content(child_content)
+            children = getattr(content, "children", None)
+            if children:
+                for child in children:
+                    child_content = self._get_block_content(child)
+                    if child_content:
+                        self._truncate_content(child_content)
 
     def _truncate_rich_text_list(self, rich_text_list: list[RichText]) -> None:
         for rich_text in rich_text_list:

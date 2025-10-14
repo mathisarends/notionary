@@ -129,9 +129,13 @@ class CreateBreadcrumbBlock(BaseModel):
 # ============================================================================
 
 
-class BulletedListItemData(BaseModel):
+class BaseBulletedListItemData(BaseModel):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
+
+
+class BulletedListItemData(BaseBulletedListItemData):
+    children: list[Block] | None = None
 
 
 class BulletedListItemBlock(BaseBlock):
@@ -139,9 +143,13 @@ class BulletedListItemBlock(BaseBlock):
     bulleted_list_item: BulletedListItemData
 
 
+class CreateBulletedListItemData(BaseBulletedListItemData):
+    children: list[BlockCreatePayload] | None = None
+
+
 class CreateBulletedListItemBlock(BaseModel):
     type: Literal[BlockType.BULLETED_LIST_ITEM] = BlockType.BULLETED_LIST_ITEM
-    bulleted_list_item: BulletedListItemData
+    bulleted_list_item: CreateBulletedListItemData
 
 
 # ============================================================================
@@ -433,9 +441,13 @@ class CreateImageBlock(BaseModel):
 # ============================================================================
 
 
-class NumberedListItemData(BaseModel):
+class BaseNumberedListItemData(BaseModel):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
+
+
+class NumberedListItemData(BaseNumberedListItemData):
+    children: list[Block] | None = None
 
 
 class NumberedListItemBlock(BaseBlock):
@@ -443,9 +455,13 @@ class NumberedListItemBlock(BaseBlock):
     numbered_list_item: NumberedListItemData
 
 
+class CreateNumberedListItemData(BaseNumberedListItemData):
+    children: list[BlockCreatePayload] | None = None
+
+
 class CreateNumberedListItemBlock(BaseModel):
     type: Literal[BlockType.NUMBERED_LIST_ITEM] = BlockType.NUMBERED_LIST_ITEM
-    numbered_list_item: NumberedListItemData
+    numbered_list_item: CreateNumberedListItemData
 
 
 # ============================================================================
@@ -453,9 +469,13 @@ class CreateNumberedListItemBlock(BaseModel):
 # ============================================================================
 
 
-class ParagraphData(BaseModel):
+class BaseParagraphData(BaseModel):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
+
+
+class ParagraphData(BaseParagraphData):
+    children: list[Block] | None = None
 
 
 class ParagraphBlock(BaseBlock):
@@ -463,9 +483,13 @@ class ParagraphBlock(BaseBlock):
     paragraph: ParagraphData
 
 
+class CreateParagraphData(BaseParagraphData):
+    children: list[BlockCreatePayload] | None = None
+
+
 class CreateParagraphBlock(BaseModel):
     type: Literal[BlockType.PARAGRAPH] = BlockType.PARAGRAPH
-    paragraph: ParagraphData
+    paragraph: CreateParagraphData
 
 
 # ============================================================================
@@ -588,10 +612,14 @@ class CreateTableOfContentsBlock(BaseModel):
 # ============================================================================
 
 
-class ToDoData(BaseModel):
+class BaseToDoData(BaseModel):
     rich_text: list[RichText]
     checked: bool = False
     color: BlockColor = BlockColor.DEFAULT
+
+
+class ToDoData(BaseToDoData):
+    children: list[Block] | None = None
 
 
 class ToDoBlock(BaseBlock):
@@ -599,9 +627,13 @@ class ToDoBlock(BaseBlock):
     to_do: ToDoData
 
 
+class CreateToDoData(BaseToDoData):
+    children: list[BlockCreatePayload] | None = None
+
+
 class CreateToDoBlock(BaseModel):
     type: Literal[BlockType.TO_DO] = BlockType.TO_DO
-    to_do: ToDoData
+    to_do: CreateToDoData
 
 
 # ============================================================================

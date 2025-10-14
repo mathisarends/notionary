@@ -1,6 +1,7 @@
 from typing import override
 
-from notionary.blocks.schemas import BlockColor, CreateParagraphBlock, ParagraphData
+from notionary.blocks.enums import BlockColor
+from notionary.blocks.schemas import CreateParagraphBlock, CreateParagraphData
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
@@ -36,5 +37,5 @@ class SpaceParser(LineParser):
             context.result_blocks.append(block)
 
     def _create_space_block(self) -> CreateParagraphBlock:
-        paragraph_data = ParagraphData(rich_text=[], color=BlockColor.DEFAULT)
+        paragraph_data = CreateParagraphData(rich_text=[], color=BlockColor.DEFAULT)
         return CreateParagraphBlock(paragraph=paragraph_data)

@@ -42,9 +42,9 @@ def image_block_with_caption_support() -> CreateImageBlock:
 
 @pytest.fixture
 def paragraph_block_without_caption_support() -> CreateParagraphBlock:
-    from notionary.blocks.schemas import ParagraphData
+    from notionary.blocks.schemas import CreateParagraphData
 
-    paragraph_data = ParagraphData(rich_text=[])
+    paragraph_data = CreateParagraphData(rich_text=[])
     block = CreateParagraphBlock(type=BlockType.PARAGRAPH, paragraph=paragraph_data)
     return block
 

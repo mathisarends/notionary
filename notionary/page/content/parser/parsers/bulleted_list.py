@@ -3,7 +3,7 @@ from typing import override
 from notionary.blocks.rich_text.markdown_rich_text_converter import (
     MarkdownRichTextConverter,
 )
-from notionary.blocks.schemas import BulletedListItemData, CreateBulletedListItemBlock
+from notionary.blocks.schemas import CreateBulletedListItemBlock, CreateBulletedListItemData
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
@@ -37,5 +37,5 @@ class BulletedListParser(LineParser):
         content = match.group(2)
         rich_text = await self._rich_text_converter.to_rich_text(content)
 
-        bulleted_list_content = BulletedListItemData(rich_text=rich_text)
+        bulleted_list_content = CreateBulletedListItemData(rich_text=rich_text)
         return CreateBulletedListItemBlock(bulleted_list_item=bulleted_list_content)

@@ -2,15 +2,7 @@
 Handles request limits for rich texts (see https://developers.notion.com/reference/request-limits)
 """
 
-from typing import Any, Protocol, override, runtime_checkable
-
-
-@runtime_checkable
-class BlockContentProtocol(Protocol):
-    rich_text: Any
-    caption: Any
-    children: Any
-
+from typing import Any, override
 
 from notionary.blocks.rich_text.models import RichText, RichTextType
 from notionary.blocks.schemas import BlockCreatePayload

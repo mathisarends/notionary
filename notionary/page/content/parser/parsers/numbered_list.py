@@ -6,7 +6,7 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import (
 from notionary.blocks.schemas import (
     BlockColor,
     CreateNumberedListItemBlock,
-    NumberedListItemData,
+    CreateNumberedListItemData,
 )
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
@@ -41,5 +41,5 @@ class NumberedListParser(LineParser):
         content = match.group(3)
         rich_text = await self._rich_text_converter.to_rich_text(content)
 
-        numbered_list_content = NumberedListItemData(rich_text=rich_text, color=BlockColor.DEFAULT)
+        numbered_list_content = CreateNumberedListItemData(rich_text=rich_text, color=BlockColor.DEFAULT)
         return CreateNumberedListItemBlock(numbered_list_item=numbered_list_content)

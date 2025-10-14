@@ -9,7 +9,7 @@ from notionary.blocks.schemas import (
     CreateColumnListBlock,
     CreateColumnListData,
     CreateParagraphBlock,
-    ParagraphData,
+    CreateParagraphData,
 )
 from notionary.page.content.parser.context import ParentBlockContext
 from notionary.page.content.parser.parsers.base import BlockParsingContext
@@ -40,7 +40,7 @@ def column_block() -> CreateColumnBlock:
 
 @pytest.fixture
 def paragraph_block() -> CreateParagraphBlock:
-    paragraph_data = ParagraphData(rich_text=[])
+    paragraph_data = CreateParagraphData(rich_text=[])
     return CreateParagraphBlock(paragraph=paragraph_data)
 
 
@@ -233,7 +233,7 @@ def test_end_marker_with_different_parent_type_should_not_be_handled(
     delim: str,
     context: BlockParsingContext,
 ) -> None:
-    paragraph_data = ParagraphData(rich_text=[])
+    paragraph_data = CreateParagraphData(rich_text=[])
     paragraph_block = CreateParagraphBlock(paragraph=paragraph_data)
     parent_context = ParentBlockContext(block=paragraph_block, child_lines=[])
     context.parent_stack = [parent_context]

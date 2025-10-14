@@ -9,12 +9,12 @@ from notionary.blocks.schemas import (
     CreateCodeBlock,
     CreateDividerBlock,
     CreateParagraphBlock,
+    CreateParagraphData,
     CreateQuoteBlock,
     CreateQuoteData,
     DividerData,
-    ParagraphData,
 )
-from notionary.page.content.parser.post_processing.handlers.rich_text_length import (
+from notionary.page.content.parser.post_processing.handlers.rich_text_length_truncation import (
     RichTextLengthTruncationPostProcessor,
 )
 
@@ -36,7 +36,7 @@ def test_empty_blocks_should_return_empty(processor: RichTextLengthTruncationPos
 def test_short_text_should_remain_unchanged(processor: RichTextLengthTruncationPostProcessor) -> None:
     block = CreateParagraphBlock(
         type=BlockType.PARAGRAPH,
-        paragraph=ParagraphData(rich_text=[create_rich_text("Short text")]),
+        paragraph=CreateParagraphData(rich_text=[create_rich_text("Short text")]),
     )
 
     result = processor.process([block])
@@ -48,7 +48,7 @@ def test_text_over_limit_should_be_truncated(processor: RichTextLengthTruncation
     long_text = "x" * 2500
     block = CreateParagraphBlock(
         type=BlockType.PARAGRAPH,
-        paragraph=ParagraphData(rich_text=[create_rich_text(long_text)]),
+        paragraph=CreateParagraphData(rich_text=[create_rich_text(long_text)]),
     )
 
     result = processor.process([block])
@@ -60,15 +60,15 @@ def test_multiple_blocks_processed_independently(processor: RichTextLengthTrunca
     blocks = [
         CreateParagraphBlock(
             type=BlockType.PARAGRAPH,
-            paragraph=ParagraphData(rich_text=[create_rich_text("x" * 2500)]),
+            paragraph=CreateParagraphData(rich_text=[create_rich_text("x" * 2500)]),
         ),
         CreateParagraphBlock(
             type=BlockType.PARAGRAPH,
-            paragraph=ParagraphData(rich_text=[create_rich_text("short")]),
+            paragraph=CreateParagraphData(rich_text=[create_rich_text("short")]),
         ),
         CreateParagraphBlock(
             type=BlockType.PARAGRAPH,
-            paragraph=ParagraphData(rich_text=[create_rich_text("y" * 3000)]),
+            paragraph=CreateParagraphData(rich_text=[create_rich_text("y" * 3000)]),
         ),
     ]
 
@@ -82,7 +82,7 @@ def test_multiple_blocks_processed_independently(processor: RichTextLengthTrunca
 def test_multiple_rich_texts_in_block_truncated_individually(processor: RichTextLengthTruncationPostProcessor) -> None:
     block = CreateParagraphBlock(
         type=BlockType.PARAGRAPH,
-        paragraph=ParagraphData(
+        paragraph=CreateParagraphData(
             rich_text=[
                 create_rich_text("x" * 2500),
                 create_rich_text("short"),
@@ -126,7 +126,7 @@ def test_children_processed_recursively(processor: RichTextLengthTruncationPostP
                         children=[
                             CreateParagraphBlock(
                                 type=BlockType.PARAGRAPH,
-                                paragraph=ParagraphData(rich_text=[create_rich_text("c" * 2500)]),
+                                paragraph=CreateParagraphData(rich_text=[create_rich_text("c" * 2500)]),
                             )
                         ],
                     ),
@@ -145,7 +145,7 @@ def test_children_processed_recursively(processor: RichTextLengthTruncationPostP
 def test_non_text_types_ignored(processor: RichTextLengthTruncationPostProcessor) -> None:
     block = CreateParagraphBlock(
         type=BlockType.PARAGRAPH,
-        paragraph=ParagraphData(
+        paragraph=CreateParagraphData(
             rich_text=[
                 RichText.equation_inline("x^2"),
                 RichText.mention_user("user-123"),
@@ -173,7 +173,7 @@ def test_blocks_without_rich_text_unchanged(processor: RichTextLengthTruncationP
 def test_original_block_not_modified(processor: RichTextLengthTruncationPostProcessor) -> None:
     original_block = CreateParagraphBlock(
         type=BlockType.PARAGRAPH,
-        paragraph=ParagraphData(rich_text=[create_rich_text("x" * 2500)]),
+        paragraph=CreateParagraphData(rich_text=[create_rich_text("x" * 2500)]),
     )
 
     processor.process([original_block])
@@ -185,17 +185,17 @@ def test_nested_list_structure_flattened(processor: RichTextLengthTruncationPost
     blocks = [
         CreateParagraphBlock(
             type=BlockType.PARAGRAPH,
-            paragraph=ParagraphData(rich_text=[create_rich_text("x" * 2500)]),
+            paragraph=CreateParagraphData(rich_text=[create_rich_text("x" * 2500)]),
         ),
         [
             CreateParagraphBlock(
                 type=BlockType.PARAGRAPH,
-                paragraph=ParagraphData(rich_text=[create_rich_text("y" * 2500)]),
+                paragraph=CreateParagraphData(rich_text=[create_rich_text("y" * 2500)]),
             ),
             [
                 CreateParagraphBlock(
                     type=BlockType.PARAGRAPH,
-                    paragraph=ParagraphData(rich_text=[create_rich_text("z" * 2500)]),
+                    paragraph=CreateParagraphData(rich_text=[create_rich_text("z" * 2500)]),
                 )
             ],
         ],
@@ -210,7 +210,7 @@ def test_nested_list_structure_flattened(processor: RichTextLengthTruncationPost
 def test_empty_rich_text_list_should_be_handled(processor: RichTextLengthTruncationPostProcessor) -> None:
     block = CreateParagraphBlock(
         type=BlockType.PARAGRAPH,
-        paragraph=ParagraphData(rich_text=[]),
+        paragraph=CreateParagraphData(rich_text=[]),
     )
 
     result = processor.process([block])
@@ -223,15 +223,15 @@ def test_mixed_empty_and_filled_rich_text_lists(processor: RichTextLengthTruncat
     blocks = [
         CreateParagraphBlock(
             type=BlockType.PARAGRAPH,
-            paragraph=ParagraphData(rich_text=[]),
+            paragraph=CreateParagraphData(rich_text=[]),
         ),
         CreateParagraphBlock(
             type=BlockType.PARAGRAPH,
-            paragraph=ParagraphData(rich_text=[create_rich_text("x" * 2500)]),
+            paragraph=CreateParagraphData(rich_text=[create_rich_text("x" * 2500)]),
         ),
         CreateParagraphBlock(
             type=BlockType.PARAGRAPH,
-            paragraph=ParagraphData(rich_text=[]),
+            paragraph=CreateParagraphData(rich_text=[]),
         ),
     ]
 
