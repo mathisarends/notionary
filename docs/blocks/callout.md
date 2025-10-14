@@ -6,7 +6,7 @@ Visually highlight important information (tips, warnings, notes, emphasis). Supp
 
 ```markdown
 [callout](Message text)
-[callout](Message text "🔥") // with custom emoji
+[callout](Message text "🔥")  // with custom emoji
 ```
 
 If no emoji is provided a default (💡) is used.
@@ -17,6 +17,7 @@ If no emoji is provided a default (💡) is used.
 [callout](Remember to back up your data "⚠️")
 [callout](Install **version 1.4** first "🚀")
 [callout](Docs: [Reference](https://example.com) "📚")
+[callout](This is a simple note)  // uses default emoji 💡
 ```
 
 ## Builder

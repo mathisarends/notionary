@@ -177,14 +177,11 @@ class SyntaxRegistry:
 
     def _register_callout_syntax(self) -> None:
         definition = SyntaxDefinition(
-            start_delimiter=f"{self.MULTI_LINE_BLOCK_DELIMITER} callout",
-            end_delimiter=self.MULTI_LINE_BLOCK_DELIMITER,
-            regex_pattern=re.compile(
-                rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*callout(?:\s+(\S+))?\s*$", re.IGNORECASE
-            ),
-            end_regex_pattern=re.compile(rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*$"),
-            is_multiline_block=True,
-            is_inline=False,
+            start_delimiter="[callout](",
+            end_delimiter=")",
+            regex_pattern=re.compile(r'\[callout\]\(([^")]+?)(?:\s+"([^"]+)")?\)'),
+            is_multiline_block=False,
+            is_inline=True,
         )
         self._definitions[SyntaxRegistryKey.CALLOUT] = definition
 

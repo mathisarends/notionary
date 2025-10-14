@@ -62,9 +62,9 @@ async def test_callout_with_text_should_render_markdown_callout(
 
     await callout_renderer._process(render_context)
 
-    assert "::: callout" in render_context.markdown_result
+    assert "[callout](" in render_context.markdown_result
     assert "Important note" in render_context.markdown_result
-    assert ":::" in render_context.markdown_result
+    assert ")" in render_context.markdown_result
 
 
 @pytest.mark.asyncio
@@ -83,8 +83,7 @@ async def test_callout_with_emoji_should_include_emoji_in_markdown(
 
     await callout_renderer._process(render_context)
 
-    assert "::: callout ⚠️" in render_context.markdown_result
-    assert "Warning message" in render_context.markdown_result
+    assert render_context.markdown_result == '[callout](Warning message "⚠️")'
 
 
 @pytest.mark.asyncio
@@ -123,6 +122,7 @@ async def test_callout_with_children_should_render_children(
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
+    # Callout is now a single-line block, so it should NOT render children
     rich_text = [RichText.from_plain_text("Parent content")]
     mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Parent content")
 
@@ -133,11 +133,11 @@ async def test_callout_with_children_should_render_children(
 
     await callout_renderer._process(render_context)
 
-    render_context.render_children.assert_called_once()
-    assert "::: callout" in render_context.markdown_result
+    # Children should NOT be rendered since callout is now single-line
+    render_context.render_children.assert_not_called()
+    assert "[callout](" in render_context.markdown_result
     assert "Parent content" in render_context.markdown_result
-    assert "Child content" in render_context.markdown_result
-    assert ":::" in render_context.markdown_result
+    assert "Child content" not in render_context.markdown_result
 
 
 @pytest.mark.asyncio

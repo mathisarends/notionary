@@ -22,37 +22,25 @@ class CalloutRenderer(BlockRenderer):
 
     @override
     async def _process(self, context: MarkdownRenderingContext) -> None:
-        icon = await self._extract_callout_icon(context.block)
         content = await self._extract_callout_content(context.block)
 
         if not content:
             context.markdown_result = ""
             return
 
+        icon = await self._extract_callout_icon(context.block)
         syntax = self._syntax_registry.get_callout_syntax()
 
-        # Build callout structure
-        # Extract just the base part before the regex pattern
-        callout_type = syntax.start_delimiter.split()[1]  # Gets "callout" from "::: callout"
-        callout_header = f"{self._syntax_registry.MULTI_LINE_BLOCK_DELIMITER} {callout_type}"
+        # Build callout using syntax service delimiters
         if icon:
-            callout_header = f"{self._syntax_registry.MULTI_LINE_BLOCK_DELIMITER} {callout_type} {icon}"
-
-        if context.indent_level > 0:
-            callout_header = context.indent_text(callout_header)
-
-        # Process children if they exist
-        children_markdown = await context.render_children()
-
-        callout_end = syntax.end_delimiter
-        if context.indent_level > 0:
-            callout_end = context.indent_text(callout_end)
-
-        # Combine content
-        if children_markdown:
-            context.markdown_result = f"{callout_header}\n{content}\n{children_markdown}\n{callout_end}"
+            result = f'{syntax.start_delimiter}{content} "{icon}"{syntax.end_delimiter}'
         else:
-            context.markdown_result = f"{callout_header}\n{content}\n{callout_end}"
+            result = f"{syntax.start_delimiter}{content}{syntax.end_delimiter}"
+
+        if context.indent_level > 0:
+            result = context.indent_text(result)
+
+        context.markdown_result = result
 
     async def _extract_callout_icon(self, block: Block) -> str:
         if not block.callout or not block.callout.icon:
