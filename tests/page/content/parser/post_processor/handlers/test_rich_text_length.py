@@ -205,3 +205,54 @@ def test_nested_list_structure_flattened(processor: RichTextLengthTruncationPost
 
     assert len(result) == 3
     assert all(len(block.paragraph.rich_text[0].text.content) == 2000 for block in result)
+
+
+def test_empty_rich_text_list_should_be_handled(processor: RichTextLengthTruncationPostProcessor) -> None:
+    block = CreateParagraphBlock(
+        type=BlockType.PARAGRAPH,
+        paragraph=ParagraphData(rich_text=[]),
+    )
+
+    result = processor.process([block])
+
+    assert len(result) == 1
+    assert result[0].paragraph.rich_text == []
+
+
+def test_mixed_empty_and_filled_rich_text_lists(processor: RichTextLengthTruncationPostProcessor) -> None:
+    blocks = [
+        CreateParagraphBlock(
+            type=BlockType.PARAGRAPH,
+            paragraph=ParagraphData(rich_text=[]),
+        ),
+        CreateParagraphBlock(
+            type=BlockType.PARAGRAPH,
+            paragraph=ParagraphData(rich_text=[create_rich_text("x" * 2500)]),
+        ),
+        CreateParagraphBlock(
+            type=BlockType.PARAGRAPH,
+            paragraph=ParagraphData(rich_text=[]),
+        ),
+    ]
+
+    result = processor.process(blocks)
+
+    assert len(result) == 3
+    assert result[0].paragraph.rich_text == []
+    assert len(result[1].paragraph.rich_text[0].text.content) == 2000
+    assert result[2].paragraph.rich_text == []
+
+
+def test_empty_caption_should_be_handled(processor: RichTextLengthTruncationPostProcessor) -> None:
+    block = CreateCodeBlock(
+        type=BlockType.CODE,
+        code=CodeData(
+            rich_text=[create_rich_text("print('hello')")],
+            caption=[],
+        ),
+    )
+
+    result = processor.process([block])
+
+    assert result[0].code.caption == []
+    assert result[0].code.rich_text[0].text.content == "print('hello')"

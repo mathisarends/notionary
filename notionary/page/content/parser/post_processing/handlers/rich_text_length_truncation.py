@@ -2,7 +2,15 @@
 Handles request limits for rich texts (see https://developers.notion.com/reference/request-limits)
 """
 
-from typing import Any, override
+from typing import Any, Protocol, override, runtime_checkable
+
+
+@runtime_checkable
+class BlockContentProtocol(Protocol):
+    rich_text: Any
+    caption: Any
+    children: Any
+
 
 from notionary.blocks.rich_text.models import RichText, RichTextType
 from notionary.blocks.schemas import BlockCreatePayload
@@ -14,6 +22,7 @@ type _NestedBlockList = BlockCreatePayload | list["_NestedBlockList"]
 
 class RichTextLengthTruncationPostProcessor(PostProcessor, LoggingMixin):
     NOTION_MAX_LENGTH = 2000
+    ELLIPSIS = "..."
 
     def __init__(self, max_text_length: int = NOTION_MAX_LENGTH) -> None:
         self.max_text_length = max_text_length
@@ -58,36 +67,56 @@ class RichTextLengthTruncationPostProcessor(PostProcessor, LoggingMixin):
         return None
 
     def _truncate_content(self, content: object) -> None:
+        self._truncate_rich_text_fields(content)
+        self._truncate_children_recursively(content)
+
+    def _truncate_rich_text_fields(self, content: object) -> None:
         if hasattr(content, "rich_text"):
             self._truncate_rich_text_list(content.rich_text)
 
         if hasattr(content, "caption"):
             self._truncate_rich_text_list(content.caption)
 
-        if hasattr(content, "children"):
-            for child in content.children:
-                child_content = self._get_block_content(child)
-                if child_content:
-                    self._truncate_content(child_content)
+    def _truncate_children_recursively(self, content: object) -> None:
+        if not hasattr(content, "children"):
+            return
+
+        children = getattr(content, "children", None)
+        if not children:
+            return
+
+        for child in children:
+            self._truncate_child_content(child)
+
+    def _truncate_child_content(self, child: Any) -> None:
+        child_content = self._get_block_content(child)
+        if child_content:
+            self._truncate_content(child_content)
 
     def _truncate_rich_text_list(self, rich_text_list: list[RichText]) -> None:
         for rich_text in rich_text_list:
-            if not self._is_text_type(rich_text):
-                continue
+            if self._should_truncate(rich_text):
+                self._truncate_single_rich_text(rich_text)
 
-            content = rich_text.text.content
-            if len(content) > self.max_text_length:
-                self.logger.warning(
-                    "Truncating text content from %d to %d characters",
-                    len(content),
-                    self.max_text_length,
-                )
-                truncated_content = self._create_truncated_text_with_ellipsis(content)
-                rich_text.text.content = truncated_content
+    def _should_truncate(self, rich_text: RichText) -> bool:
+        if not self._is_text_type(rich_text):
+            return False
 
-    def _create_truncated_text_with_ellipsis(self, content: str) -> str:
-        cutoff = self.max_text_length - 3
-        return content[:cutoff] + "..."
+        return len(rich_text.text.content) > self.max_text_length
+
+    def _truncate_single_rich_text(self, rich_text: RichText) -> None:
+        original_length = len(rich_text.text.content)
+        rich_text.text.content = self._create_truncated_text(rich_text.text.content)
+
+        self.logger.warning(
+            "Truncating text content from %d to %d characters",
+            original_length,
+            self.max_text_length,
+        )
+
+    def _create_truncated_text(self, content: str) -> str:
+        cutoff = self.max_text_length - len(self.ELLIPSIS)
+        return content[:cutoff] + self.ELLIPSIS
 
     def _is_text_type(self, rich_text: RichText) -> bool:
-        return rich_text.type == RichTextType.TEXT and rich_text.text and rich_text.text.content
+        return rich_text.type == RichTextType.TEXT and rich_text.text is not None and rich_text.text.content

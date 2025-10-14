@@ -6,6 +6,8 @@ ConvertChildrenCallback = Callable[[list[Block], int], Awaitable[str]]
 
 
 class MarkdownRenderingContext:
+    MARKDOWN_INDENTATION_MULTIPLIER = 4
+
     def __init__(
         self,
         block: Block,
@@ -17,7 +19,6 @@ class MarkdownRenderingContext:
         self.convert_children_callback = convert_children_callback
 
         self.markdown_result: str | None = None
-        self._markdown_indentation_multiplier = 4
 
     async def render_children(self) -> str:
         return await self._convert_children_to_markdown(self.indent_level)
@@ -43,6 +44,6 @@ class MarkdownRenderingContext:
         if not text:
             return text
 
-        spaces = " " * self._markdown_indentation_multiplier * self.indent_level
+        spaces = " " * self.MARKDOWN_INDENTATION_MULTIPLIER * self.indent_level
         lines = text.split("\n")
         return "\n".join(f"{spaces}{line}" if line.strip() else line for line in lines)

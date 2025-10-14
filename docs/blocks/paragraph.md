@@ -11,6 +11,29 @@ and ~~strikethrough~~ text.
 Blank line → new paragraph.
 ```
 
+## Visual Spacing
+
+Create extra vertical space between content using two consecutive empty lines. The second empty line creates a space block (an empty paragraph for visual separation).
+
+```markdown
+First paragraph
+
+Second paragraph (normal spacing)
+
+
+Third paragraph (extra space above from double empty lines)
+```
+
+You can also use the explicit `[space]` marker:
+
+```markdown
+First paragraph
+
+[space]
+
+Second paragraph (extra space above)
+```
+
 ## Mentions & Inline Rich Text
 
 You can drop mentions directly inside paragraphs:

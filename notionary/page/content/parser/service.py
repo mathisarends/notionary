@@ -33,6 +33,8 @@ class MarkdownToNotionConverter(LoggingMixin):
         parent_stack: list[ParentBlockContext] = []
 
         current_line_index = 0
+        previous_line_was_empty = False
+
         while current_line_index < len(lines):
             line = lines[current_line_index]
 
@@ -42,9 +44,11 @@ class MarkdownToNotionConverter(LoggingMixin):
                 line_index=current_line_index,
                 result_blocks=result_blocks,
                 parent_stack=parent_stack,
+                is_previous_line_empty=previous_line_was_empty,
             )
 
             await self._line_parser.handle(context)
+            previous_line_was_empty = self._is_processed_line_empty(line)
 
             current_line_index += 1 + context.lines_consumed
 
@@ -57,6 +61,7 @@ class MarkdownToNotionConverter(LoggingMixin):
         line_index: int,
         result_blocks: list[BlockCreatePayload],
         parent_stack: list[ParentBlockContext],
+        is_previous_line_empty: bool = False,
     ) -> BlockParsingContext:
         return BlockParsingContext(
             line=line,
@@ -66,4 +71,8 @@ class MarkdownToNotionConverter(LoggingMixin):
             all_lines=lines,
             current_line_index=line_index,
             lines_consumed=0,
+            is_previous_line_empty=is_previous_line_empty,
         )
+
+    def _is_processed_line_empty(self, line: str) -> bool:
+        return line.strip() == ""
