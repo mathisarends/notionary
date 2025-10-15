@@ -18,7 +18,7 @@ class MarkdownToNotionConverter(LoggingMixin):
         self._pre_processor = pre_processor
         self._post_processor = post_processor
 
-    @time_execution_async("MarkdownToNotionConverter.convert")
+    @time_execution_async()
     async def convert(self, markdown_text: str) -> list[BlockCreatePayload]:
         if not markdown_text:
             return []

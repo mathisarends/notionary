@@ -32,6 +32,7 @@ def time_execution_async(
     return decorator
 
 
+# you can adjust the threshold as needed for performance logging
 def _should_log_execution(execution_time: float, threshold: float) -> bool:
     return execution_time > threshold
 
