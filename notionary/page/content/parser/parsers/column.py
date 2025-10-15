@@ -1,7 +1,6 @@
 from typing import override
 
-from notionary.blocks.schemas import CreateColumnBlock, CreateColumnData, CreateColumnListBlock
-from notionary.page.content.parser.context import ParentBlockContext
+from notionary.blocks.schemas import CreateColumnBlock, CreateColumnData
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
@@ -19,54 +18,23 @@ class ColumnParser(LineParser):
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
-        return self._is_column_start(context) or self._is_column_end(context) or self._is_column_content(context)
+        return self._is_column_start(context)
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
         if self._is_column_start(context):
-            await self._start_column(context)
-        elif self._is_column_end(context):
-            await self._finalize_column(context)
-        elif self._is_column_content(context):
-            await self._add_column_content(context)
+            await self._process_column(context)
 
     def _is_column_start(self, context: BlockParsingContext) -> bool:
         return self._syntax.regex_pattern.match(context.line) is not None
 
-    def _is_column_end(self, context: BlockParsingContext) -> bool:
-        if not self._syntax.end_regex_pattern.match(context.line):
-            return False
-
-        if not context.parent_stack:
-            return False
-
-        current_parent = context.parent_stack[-1]
-        return isinstance(current_parent.block, CreateColumnBlock)
-
-    def _is_column_content(self, context: BlockParsingContext) -> bool:
-        if not context.parent_stack:
-            return False
-
-        current_parent = context.parent_stack[-1]
-        if not isinstance(current_parent.block, CreateColumnBlock):
-            return False
-
-        line = context.line.strip()
-        return not (self._syntax.regex_pattern.match(line) or self._syntax.end_regex_pattern.match(line))
-
-    async def _add_column_content(self, context: BlockParsingContext) -> None:
-        context.parent_stack[-1].add_child_line(context.line)
-
-    async def _start_column(self, context: BlockParsingContext) -> None:
+    async def _process_column(self, context: BlockParsingContext) -> None:
         block = self._create_column_block(context.line)
         if not block:
             return
 
-        parent_context = ParentBlockContext(
-            block=block,
-            child_lines=[],
-        )
-        context.parent_stack.append(parent_context)
+        await self._populate_children(block, context)
+        context.result_blocks.append(block)
 
     def _create_column_block(self, line: str) -> CreateColumnBlock | None:
         match = self._syntax.regex_pattern.match(line)
@@ -74,7 +42,7 @@ class ColumnParser(LineParser):
             return None
 
         width_ratio = self._parse_width_ratio(match.group(1))
-        column_data = CreateColumnData(width_ratio=width_ratio)
+        column_data = CreateColumnData(width_ratio=width_ratio, children=[])
 
         return CreateColumnBlock(column=column_data)
 
@@ -84,34 +52,25 @@ class ColumnParser(LineParser):
 
         try:
             width_ratio = float(ratio_str)
-            return width_ratio if self.MIN_WIDTH_RATIO < width_ratio <= self.MAX_WIDTH_RATIO else None
+            return width_ratio if self._is_valid_width_ratio(width_ratio) else None
         except ValueError:
             return None
 
-    async def _finalize_column(self, context: BlockParsingContext) -> None:
-        column_context = context.parent_stack.pop()
-        await self._assign_column_children(column_context, context)
+    def _is_valid_width_ratio(self, width_ratio: float) -> bool:
+        return self.MIN_WIDTH_RATIO < width_ratio <= self.MAX_WIDTH_RATIO
 
-        if self._has_column_list_parent(context):
-            parent = context.parent_stack[-1]
-            parent.add_child_block(column_context.block)
-        else:
-            context.result_blocks.append(column_context.block)
+    async def _populate_children(self, block: CreateColumnBlock, context: BlockParsingContext) -> None:
+        parent_indent_level = context.get_line_indentation_level()
+        child_lines = context.collect_indented_child_lines(parent_indent_level)
 
-    def _has_column_list_parent(self, context: BlockParsingContext) -> bool:
-        if not context.parent_stack:
-            return False
-        return isinstance(context.parent_stack[-1].block, CreateColumnListBlock)
+        if not child_lines:
+            return
 
-    async def _assign_column_children(self, column_context: ParentBlockContext, context: BlockParsingContext) -> None:
-        all_children = []
+        child_blocks = await self._parse_indented_children(child_lines, context)
+        block.column.children = child_blocks
+        context.lines_consumed = len(child_lines)
 
-        if column_context.child_lines:
-            children_text = "\n".join(column_context.child_lines)
-            text_blocks = await context.parse_nested_markdown(children_text)
-            all_children.extend(text_blocks)
-
-        if column_context.child_blocks:
-            all_children.extend(column_context.child_blocks)
-
-        column_context.block.column.children = all_children
+    async def _parse_indented_children(self, child_lines: list[str], context: BlockParsingContext) -> list:
+        stripped_lines = context.strip_indentation_level(child_lines, levels=1)
+        child_markdown = "\n".join(stripped_lines)
+        return await context.parse_nested_markdown(child_markdown)

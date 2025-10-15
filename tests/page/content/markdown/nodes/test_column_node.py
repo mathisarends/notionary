@@ -1,36 +1,56 @@
-from notionary.page.content.markdown.nodes import (
-    ColumnMarkdownNode,
-    HeadingMarkdownNode,
-    ParagraphMarkdownNode,
-)
+from notionary.page.content.markdown.nodes import ColumnMarkdownNode, ParagraphMarkdownNode
+from notionary.page.content.markdown.nodes.columns import ColumnListMarkdownNode
 from notionary.page.content.syntax.service import SyntaxRegistry
 
 
-def test_column_markdown_node(syntax_registry: SyntaxRegistry) -> None:
-    column_syntax = syntax_registry.get_column_syntax()
-    heading_syntax = syntax_registry.get_heading_syntax()
+def test_column_without_width_ratio(syntax_registry: SyntaxRegistry) -> None:
+    column = ColumnMarkdownNode(syntax_registry=syntax_registry)
 
-    column_empty = ColumnMarkdownNode(children=[])
-    expected = f"{column_syntax.start_delimiter}\n{column_syntax.end_delimiter}"
-    assert column_empty.to_markdown() == expected
+    delimiter = syntax_registry.get_column_syntax().start_delimiter
+    expected = delimiter
 
-    children = [
-        HeadingMarkdownNode(text="Column Title", level=2),
-        ParagraphMarkdownNode(text="Column content here"),
-    ]
-    column_with_content = ColumnMarkdownNode(children=children)
-    expected = f"{column_syntax.start_delimiter}\n{heading_syntax.start_delimiter * 2} Column Title\n\nColumn content here\n{column_syntax.end_delimiter}"
-    assert column_with_content.to_markdown() == expected
+    assert column.to_markdown() == expected
 
 
-def test_column_markdown_node_with_width_ratio(syntax_registry: SyntaxRegistry) -> None:
-    column_syntax = syntax_registry.get_column_syntax()
+def test_column_with_width_ratio(syntax_registry: SyntaxRegistry) -> None:
+    column = ColumnMarkdownNode(width_ratio=0.5, syntax_registry=syntax_registry)
 
-    column_with_ratio = ColumnMarkdownNode(children=[], width_ratio=0.5)
-    expected = f"{column_syntax.start_delimiter} 0.5\n{column_syntax.end_delimiter}"
-    assert column_with_ratio.to_markdown() == expected
+    delimiter = syntax_registry.get_column_syntax().start_delimiter
+    expected = f"{delimiter} 0.5"
 
-    children = [ParagraphMarkdownNode(text="Half width column")]
-    column_with_ratio_and_content = ColumnMarkdownNode(children=children, width_ratio=0.3)
-    expected = f"{column_syntax.start_delimiter} 0.3\nHalf width column\n{column_syntax.end_delimiter}"
-    assert column_with_ratio_and_content.to_markdown() == expected
+    assert column.to_markdown() == expected
+
+
+def test_column_with_children(syntax_registry: SyntaxRegistry) -> None:
+    child = ParagraphMarkdownNode(text="Column content", syntax_registry=syntax_registry)
+
+    column = ColumnMarkdownNode(children=[child], syntax_registry=syntax_registry)
+
+    result = column.to_markdown()
+    delimiter = syntax_registry.get_column_syntax().start_delimiter
+
+    assert result.startswith(delimiter)
+    assert "    Column content" in result
+
+
+def test_column_list_without_columns(syntax_registry: SyntaxRegistry) -> None:
+    column_list = ColumnListMarkdownNode(syntax_registry=syntax_registry)
+
+    delimiter = syntax_registry.get_column_list_syntax().start_delimiter
+    expected = delimiter
+
+    assert column_list.to_markdown() == expected
+
+
+def test_column_list_with_columns(syntax_registry: SyntaxRegistry) -> None:
+    column1 = ColumnMarkdownNode(width_ratio=0.5, syntax_registry=syntax_registry)
+    column2 = ColumnMarkdownNode(width_ratio=0.5, syntax_registry=syntax_registry)
+
+    column_list = ColumnListMarkdownNode(columns=[column1, column2], syntax_registry=syntax_registry)
+
+    result = column_list.to_markdown()
+    delimiter = syntax_registry.get_column_list_syntax().start_delimiter
+    column_delimiter = syntax_registry.get_column_syntax().start_delimiter
+
+    assert result.startswith(delimiter)
+    assert f"    {column_delimiter} 0.5" in result

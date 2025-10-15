@@ -13,19 +13,32 @@ class ColumnListRenderer(BlockRenderer):
 
     @override
     async def _process(self, context: MarkdownRenderingContext) -> None:
-        syntax = self._syntax_registry.get_column_list_syntax()
-        column_list_start = syntax.start_delimiter
+        column_list_start = self._format_column_list_start(context.indent_level)
+        children_markdown = await self._render_children_with_indentation(context)
 
-        if context.indent_level > 0:
-            column_list_start = context.indent_text(column_list_start)
+        if children_markdown:
+            context.markdown_result = f"{column_list_start}\n{children_markdown}"
+        else:
+            context.markdown_result = column_list_start
+
+    def _format_column_list_start(self, indent_level: int) -> str:
+        delimiter = self._get_column_list_delimiter()
+
+        if indent_level > 0:
+            indent = "    " * indent_level
+            return f"{indent}{delimiter}"
+
+        return delimiter
+
+    def _get_column_list_delimiter(self) -> str:
+        return self._syntax_registry.get_column_list_syntax().start_delimiter
+
+    async def _render_children_with_indentation(self, context: MarkdownRenderingContext) -> str:
+        original_indent = context.indent_level
+        context.indent_level += 1
 
         children_markdown = await context.render_children()
 
-        column_list_end = syntax.end_delimiter
-        if context.indent_level > 0:
-            column_list_end = context.indent_text(column_list_end)
+        context.indent_level = original_indent
 
-        if children_markdown:
-            context.markdown_result = f"{column_list_start}\n{children_markdown}\n{column_list_end}"
-        else:
-            context.markdown_result = f"{column_list_start}\n{column_list_end}"
+        return children_markdown

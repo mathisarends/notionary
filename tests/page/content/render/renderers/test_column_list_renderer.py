@@ -8,6 +8,7 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMa
 from notionary.blocks.schemas import Block, ColumnListBlock
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.column_list import ColumnListRenderer
+from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 def _create_column_list_block() -> ColumnListBlock:
@@ -21,6 +22,11 @@ def _create_column_list_block() -> ColumnListBlock:
 @pytest.fixture
 def column_list_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> ColumnListRenderer:
     return ColumnListRenderer()
+
+
+@pytest.fixture
+def syntax_registry() -> SyntaxRegistry:
+    return SyntaxRegistry()
 
 
 @pytest.mark.asyncio
@@ -40,38 +46,45 @@ async def test_non_column_list_block_should_not_be_handled(
 
 
 @pytest.mark.asyncio
-async def test_column_list_without_children_should_render_markers(
+async def test_column_list_without_children_should_render_start_marker(
     column_list_renderer: ColumnListRenderer,
     render_context: MarkdownRenderingContext,
+    syntax_registry: SyntaxRegistry,
 ) -> None:
     render_context.render_children = AsyncMock(return_value="")
     block = _create_column_list_block()
     render_context.block = block
+    render_context.indent_level = 0
 
     await column_list_renderer._process(render_context)
 
-    assert render_context.markdown_result == "::: columns\n:::"
+    expected_delimiter = syntax_registry.get_column_list_syntax().start_delimiter
+    assert render_context.markdown_result == expected_delimiter
 
 
 @pytest.mark.asyncio
-async def test_column_list_with_children_should_render_children_between_markers(
+async def test_column_list_with_children_should_render_children_below_marker(
     column_list_renderer: ColumnListRenderer,
     render_context: MarkdownRenderingContext,
+    syntax_registry: SyntaxRegistry,
 ) -> None:
-    render_context.render_children = AsyncMock(return_value="::: column\nColumn 1\n:::\n::: column\nColumn 2\n:::")
+    render_context.render_children = AsyncMock(return_value="::: column\nColumn 1\n::: column\nColumn 2")
     block = _create_column_list_block()
     render_context.block = block
+    render_context.indent_level = 0
 
     await column_list_renderer._process(render_context)
 
-    expected = "::: columns\n::: column\nColumn 1\n:::\n::: column\nColumn 2\n:::\n:::"
+    delimiter = syntax_registry.get_column_list_syntax().start_delimiter
+    expected = f"{delimiter}\n::: column\nColumn 1\n::: column\nColumn 2"
     assert render_context.markdown_result == expected
 
 
 @pytest.mark.asyncio
-async def test_column_list_with_indentation_should_indent_markers(
+async def test_column_list_with_indentation_should_indent_start_marker(
     column_list_renderer: ColumnListRenderer,
     render_context: MarkdownRenderingContext,
+    syntax_registry: SyntaxRegistry,
 ) -> None:
     render_context.render_children = AsyncMock(return_value="")
     render_context.indent_level = 1
@@ -80,16 +93,35 @@ async def test_column_list_with_indentation_should_indent_markers(
 
     await column_list_renderer._process(render_context)
 
-    # Mock indent_text adds 2 spaces
-    assert render_context.markdown_result == "  ::: columns\n  :::"
-    assert render_context.indent_text.call_count == 2
+    delimiter = syntax_registry.get_column_list_syntax().start_delimiter
+    assert render_context.markdown_result == f"    {delimiter}"
 
 
 @pytest.mark.asyncio
-async def test_column_list_marker_constants_should_be_correct(
+async def test_column_list_should_increase_indent_level_for_children(
     column_list_renderer: ColumnListRenderer,
+    render_context: MarkdownRenderingContext,
 ) -> None:
-    # The column list syntax is now in SyntaxRegistry, not as a constant on the renderer
-    syntax = column_list_renderer._syntax_registry.get_column_list_syntax()
-    assert syntax.start_delimiter == "::: columns"
-    assert syntax.end_delimiter == ":::"
+    original_indent = 0
+    render_context.indent_level = original_indent
+
+    async def mock_render_children():
+        assert render_context.indent_level == original_indent + 1
+        return "child content"
+
+    render_context.render_children = AsyncMock(side_effect=mock_render_children)
+    block = _create_column_list_block()
+    render_context.block = block
+
+    await column_list_renderer._process(render_context)
+
+    assert render_context.indent_level == original_indent
+
+
+@pytest.mark.asyncio
+async def test_column_list_marker_should_be_from_syntax_registry(
+    column_list_renderer: ColumnListRenderer,
+    syntax_registry: SyntaxRegistry,
+) -> None:
+    syntax = syntax_registry.get_column_list_syntax()
+    assert syntax.start_delimiter == f"{syntax_registry.MULTI_LINE_BLOCK_DELIMITER} columns"

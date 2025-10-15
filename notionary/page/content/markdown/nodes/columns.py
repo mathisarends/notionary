@@ -1,10 +1,11 @@
 from typing import override
 
 from notionary.page.content.markdown.nodes.base import MarkdownNode
+from notionary.page.content.markdown.nodes.mixins import ChildrenRenderMixin
 from notionary.page.content.syntax.service import SyntaxRegistry
 
 
-class ColumnMarkdownNode(MarkdownNode):
+class ColumnMarkdownNode(ChildrenRenderMixin, MarkdownNode):
     def __init__(
         self,
         children: list[MarkdownNode] | None = None,
@@ -17,35 +18,52 @@ class ColumnMarkdownNode(MarkdownNode):
 
     @override
     def to_markdown(self) -> str:
-        column_syntax = self._syntax_registry.get_column_syntax()
-        start_tag = (
-            f"{column_syntax.start_delimiter} {self.width_ratio}"
-            if self.width_ratio is not None
-            else column_syntax.start_delimiter
-        )
+        start_tag = self._format_column_start_tag()
+        result = start_tag + self.render_children()
+        return result
 
-        if not self.children:
-            return f"{start_tag}\n{column_syntax.end_delimiter}"
+    def _format_column_start_tag(self) -> str:
+        delimiter = self._syntax_registry.get_column_syntax().start_delimiter
 
-        # Convert children to markdown
-        content_parts = [child.to_markdown() for child in self.children]
-        content_text = "\n\n".join(content_parts)
-
-        return f"{start_tag}\n{content_text}\n{column_syntax.end_delimiter}"
+        if self.width_ratio is not None:
+            return f"{delimiter} {self.width_ratio}"
+        return delimiter
 
 
 class ColumnListMarkdownNode(MarkdownNode):
-    def __init__(self, columns: list[ColumnMarkdownNode] | None = None, syntax_registry: SyntaxRegistry | None = None):
+    def __init__(
+        self,
+        columns: list[ColumnMarkdownNode] | None = None,
+        syntax_registry: SyntaxRegistry | None = None,
+    ):
         super().__init__(syntax_registry=syntax_registry)
         self.columns = columns or []
 
     @override
     def to_markdown(self) -> str:
-        column_list_syntax = self._syntax_registry.get_column_list_syntax()
+        start_delimiter = self._get_column_list_delimiter()
+
         if not self.columns:
-            return f"{column_list_syntax.start_delimiter}\n{column_list_syntax.end_delimiter}"
+            return start_delimiter
 
-        column_parts = [column.to_markdown() for column in self.columns]
-        columns_content = "\n\n".join(column_parts)
+        result = start_delimiter + self._render_columns()
+        return result
 
-        return f"{column_list_syntax.start_delimiter}\n{columns_content}\n{column_list_syntax.end_delimiter}"
+    def _get_column_list_delimiter(self) -> str:
+        return self._syntax_registry.get_column_list_syntax().start_delimiter
+
+    def _render_columns(self) -> str:
+        rendered_columns = []
+
+        for column in self.columns:
+            column_markdown = column.to_markdown()
+            if column_markdown:
+                indented = self._indent_column(column_markdown)
+                rendered_columns.append(indented)
+
+        return "\n" + "\n".join(rendered_columns) if rendered_columns else ""
+
+    @staticmethod
+    def _indent_column(text: str, indent: str = "    ") -> str:
+        lines = text.split("\n")
+        return "\n".join(f"{indent}{line}" if line.strip() else line for line in lines)
