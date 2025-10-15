@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -97,3 +97,58 @@ async def test_bulleted_list_inside_parent_context_should_not_be_handled(
     context.is_inside_parent_context = Mock(return_value=True)
 
     assert not bulleted_list_parser._can_handle(context)
+
+
+@pytest.mark.asyncio
+async def test_bulleted_list_with_indented_children_should_parse_children(
+    bulleted_list_parser: BulletedListParser, context: BlockParsingContext
+) -> None:
+    context.line = "- Parent item"
+    context.all_lines = [
+        "- Parent item",
+        "    - Child item 1",
+        "    - Child item 2",
+    ]
+    context.current_line_index = 0
+
+    # Mock the indentation detection
+    context.get_line_indentation_level = Mock(return_value=0)
+    context.collect_indented_child_lines = Mock(
+        return_value=[
+            "    - Child item 1",
+            "    - Child item 2",
+        ]
+    )
+    context.strip_indentation_level = Mock(
+        return_value=[
+            "- Child item 1",
+            "- Child item 2",
+        ]
+    )
+
+    # Mock child block creation
+    from notionary.blocks.schemas import CreateBulletedListItemBlock, CreateBulletedListItemData
+
+    child_block = CreateBulletedListItemBlock(bulleted_list_item=CreateBulletedListItemData(rich_text=[]))
+    context.parse_nested_markdown = AsyncMock(return_value=[child_block, child_block])
+
+    await bulleted_list_parser._process(context)
+
+    assert len(context.result_blocks) == 1
+    assert context.result_blocks[0].bulleted_list_item.children == [child_block, child_block]
+    assert context.lines_consumed == 2
+
+
+@pytest.mark.asyncio
+async def test_bulleted_list_without_indented_children_should_not_have_children(
+    bulleted_list_parser: BulletedListParser, context: BlockParsingContext
+) -> None:
+    context.line = "- Simple item"
+    context.get_line_indentation_level = Mock(return_value=0)
+    context.collect_indented_child_lines = Mock(return_value=[])
+
+    await bulleted_list_parser._process(context)
+
+    assert len(context.result_blocks) == 1
+    assert context.result_blocks[0].bulleted_list_item.children is None
+    assert context.lines_consumed == 0

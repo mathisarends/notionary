@@ -12,23 +12,34 @@ class WhitespacePreProcessor(PreProcessor):
         lines = markdown_text.split("\n")
         processed_lines = []
         code_block_lines = []
+        non_code_lines = []
         in_code_block = False
 
         for line in lines:
             if self._is_code_fence(line):
                 if in_code_block:
+                    # Format and add code block
                     processed_lines.extend(self._format_code_block(code_block_lines))
                     processed_lines.append("```")
                     code_block_lines = []
                     in_code_block = False
                 else:
+                    # Format accumulated non-code lines before starting code block
+                    if non_code_lines:
+                        processed_lines.extend(self._format_code_block(non_code_lines))
+                        non_code_lines = []
+
                     language = self._extract_language(line)
                     processed_lines.append(f"```{language}")
                     in_code_block = True
             elif in_code_block:
                 code_block_lines.append(line)
             else:
-                processed_lines.append(line.lstrip())
+                non_code_lines.append(line)
+
+        # Format remaining non-code lines at the end
+        if non_code_lines:
+            processed_lines.extend(self._format_code_block(non_code_lines))
 
         return "\n".join(processed_lines)
 
@@ -39,12 +50,6 @@ class WhitespacePreProcessor(PreProcessor):
         return fence_line.lstrip().removeprefix("```").strip()
 
     def _format_code_block(self, lines: list[str]) -> list[str]:
-        """
-        Format code block by removing common leading whitespace.
-
-        Preserves relative indentation between lines.
-        Empty lines are preserved as-is.
-        """
         if not lines:
             return []
 

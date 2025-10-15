@@ -145,7 +145,7 @@ async def test_end_marker_without_toggle_on_stack_should_not_be_handled(
 
 @pytest.mark.asyncio
 async def test_nested_content_should_be_parsed(toggle_parser: ToggleParser, context: BlockParsingContext) -> None:
-    context.parse_nested_content = AsyncMock(return_value=[Mock()])
+    context.parse_nested_markdown = AsyncMock(return_value=[Mock()])
 
     context.line = "+++ Toggle Title"
     await toggle_parser._process(context)
@@ -156,14 +156,14 @@ async def test_nested_content_should_be_parsed(toggle_parser: ToggleParser, cont
     context.line = "+++"
     await toggle_parser._process(context)
 
-    context.parse_nested_content.assert_called_once()
+    context.parse_nested_markdown.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_toggle_with_empty_content_should_have_empty_children(
     toggle_parser: ToggleParser, context: BlockParsingContext
 ) -> None:
-    context.parse_nested_content = AsyncMock(return_value=[])
+    context.parse_nested_markdown = AsyncMock(return_value=[])
 
     context.line = "+++ Toggle Title"
     await toggle_parser._process(context)

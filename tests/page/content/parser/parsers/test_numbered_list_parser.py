@@ -1,11 +1,11 @@
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import (
     MarkdownRichTextConverter,
 )
-from notionary.blocks.schemas import BlockColor, CreateNumberedListItemBlock
+from notionary.blocks.schemas import BlockColor, CreateNumberedListItemBlock, CreateNumberedListItemData
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.numbered_list import NumberedListParser
 from notionary.page.content.syntax.service import SyntaxRegistry
@@ -189,3 +189,49 @@ async def test_numbered_list_with_special_characters_should_create_block(
     await numbered_list_parser._process(context)
 
     mock_rich_text_converter.to_rich_text.assert_called_once_with("Item with special chars: @#$%^&*()")
+
+
+@pytest.mark.asyncio
+async def test_numbered_list_with_indented_children_should_parse_children(
+    numbered_list_parser: NumberedListParser, context: BlockParsingContext
+) -> None:
+    context.line = "1. Parent item"
+    context.get_line_indentation_level = Mock(return_value=0)
+    context.collect_indented_child_lines = Mock(
+        return_value=[
+            "    - Child item 1",
+            "    - Child item 2",
+        ]
+    )
+    context.strip_indentation_level = Mock(
+        return_value=[
+            "- Child item 1",
+            "- Child item 2",
+        ]
+    )
+
+    child_block = CreateNumberedListItemBlock(
+        numbered_list_item=CreateNumberedListItemData(rich_text=[], color=BlockColor.DEFAULT)
+    )
+    context.parse_nested_markdown = AsyncMock(return_value=[child_block, child_block])
+
+    await numbered_list_parser._process(context)
+
+    assert len(context.result_blocks) == 1
+    assert context.result_blocks[0].numbered_list_item.children == [child_block, child_block]
+    assert context.lines_consumed == 2
+
+
+@pytest.mark.asyncio
+async def test_numbered_list_without_indented_children_should_not_have_children(
+    numbered_list_parser: NumberedListParser, context: BlockParsingContext
+) -> None:
+    context.line = "1. Simple item"
+    context.get_line_indentation_level = Mock(return_value=0)
+    context.collect_indented_child_lines = Mock(return_value=[])
+
+    await numbered_list_parser._process(context)
+
+    assert len(context.result_blocks) == 1
+    assert context.result_blocks[0].numbered_list_item.children is None
+    assert context.lines_consumed == 0

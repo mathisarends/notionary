@@ -108,7 +108,7 @@ class ColumnParser(LineParser):
 
         if column_context.child_lines:
             children_text = "\n".join(column_context.child_lines)
-            text_blocks = await context.parse_nested_content(children_text)
+            text_blocks = await context.parse_nested_markdown(children_text)
             all_children.extend(text_blocks)
 
         if column_context.child_blocks:

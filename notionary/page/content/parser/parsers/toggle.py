@@ -97,7 +97,7 @@ class ToggleParser(LineParser):
         # Process text lines
         if toggle_context.child_lines:
             children_text = "\n".join(toggle_context.child_lines)
-            text_blocks = await self._parse_nested_content(children_text, context)
+            text_blocks = await self._parse_nested_markdown(children_text, context)
             all_children.extend(text_blocks)
 
         if toggle_context.child_blocks:
@@ -120,8 +120,8 @@ class ToggleParser(LineParser):
     def _add_toggle_content(self, context: BlockParsingContext) -> None:
         context.parent_stack[-1].add_child_line(context.line)
 
-    async def _parse_nested_content(self, text: str, context: BlockParsingContext) -> list:
+    async def _parse_nested_markdown(self, text: str, context: BlockParsingContext) -> list:
         if not text.strip():
             return []
 
-        return await context.parse_nested_content(text)
+        return await context.parse_nested_markdown(text)

@@ -6,7 +6,7 @@ from notionary.blocks.schemas import Block
 from notionary.page.content.markdown.builder import MarkdownBuilder
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.page.content.renderer.service import NotionToMarkdownConverter
-from notionary.utils.decorators import async_retry
+from notionary.utils.decorators import async_retry, time_execution_async
 from notionary.utils.mixins.logging import LoggingMixin
 
 
@@ -23,10 +23,12 @@ class PageContentService(LoggingMixin):
         self._markdown_converter = markdown_converter
         self._notion_to_markdown_converter = notion_to_markdown_converter
 
+    @time_execution_async()
     async def get_as_markdown(self) -> str:
         blocks = await self._block_client.get_block_tree(parent_block_id=self._page_id)
         return await self._notion_to_markdown_converter.convert(blocks=blocks)
 
+    @time_execution_async()
     async def clear(self) -> None:
         children_response = await self._block_client.get_block_children(block_id=self._page_id)
 
@@ -41,6 +43,7 @@ class PageContentService(LoggingMixin):
         self.logger.debug("Deleting block: %s", block.id)
         await self._block_client.delete_block(block.id)
 
+    @time_execution_async()
     async def append_markdown(self, content: str | Callable[[MarkdownBuilder], MarkdownBuilder]) -> None:
         markdown = self._extract_markdown(content)
         if not markdown:

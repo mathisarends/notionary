@@ -7,11 +7,23 @@ from typing import Any, ParamSpec, TypeVar
 
 P = ParamSpec("P")
 R = TypeVar("R")
+T = TypeVar("T")
 
 type SyncFunc = Callable[P, R]
 type AsyncFunc = Callable[P, Coroutine[Any, Any, R]]
 type SyncDecorator = Callable[[SyncFunc], SyncFunc]
 type AsyncDecorator = Callable[[AsyncFunc], AsyncFunc]
+
+
+def singleton(cls):
+    instance = [None]
+
+    def wrapper(*args, **kwargs):
+        if instance[0] is None:
+            instance[0] = cls(*args, **kwargs)
+        return instance[0]
+
+    return wrapper
 
 
 def time_execution_sync(additional_text: str = "", min_duration_to_log: float = 0.25) -> SyncDecorator:

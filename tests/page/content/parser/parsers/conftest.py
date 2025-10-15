@@ -28,4 +28,10 @@ def context() -> BlockParsingContext:
     context.result_blocks = []
     context.parent_stack = []
     context.is_inside_parent_context = Mock(return_value=False)
+    context.get_line_indentation_level = Mock(return_value=0)
+    context.collect_indented_child_lines = Mock(return_value=[])
+    context.strip_indentation_level = Mock(return_value=[])
+    context.parse_nested_markdown = AsyncMock(return_value=[])
+    context.get_remaining_lines = Mock(return_value=[])
+    context.lines_consumed = 0
     return context

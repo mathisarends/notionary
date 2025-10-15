@@ -122,7 +122,7 @@ class ToggleableHeadingParser(LineParser):
 
         if heading_context.child_lines:
             text = "\n".join(heading_context.child_lines)
-            text_blocks = await self._parse_nested_content(text, context)
+            text_blocks = await self._parse_nested_markdown(text, context)
             children.extend(text_blocks)
 
         if heading_context.child_blocks:
@@ -144,7 +144,7 @@ class ToggleableHeadingParser(LineParser):
         else:
             context.result_blocks.append(block)
 
-    async def _parse_nested_content(self, text: str, context: BlockParsingContext) -> list:
+    async def _parse_nested_markdown(self, text: str, context: BlockParsingContext) -> list:
         if not text.strip():
             return []
-        return await context.parse_nested_content(text)
+        return await context.parse_nested_markdown(text)

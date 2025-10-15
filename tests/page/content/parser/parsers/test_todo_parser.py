@@ -2,6 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from notionary.blocks.enums import BlockColor
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.schemas import CreateToDoBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
@@ -162,3 +163,51 @@ async def test_todo_with_multiple_spaces_after_marker_should_work(
     await todo_parser._process(context)
 
     assert len(context.result_blocks) == 1
+
+
+@pytest.mark.asyncio
+async def test_todo_with_indented_children_should_parse_children(
+    todo_parser: TodoParser, context: BlockParsingContext
+) -> None:
+    from unittest.mock import AsyncMock
+
+    from notionary.blocks.schemas import CreateToDoBlock, CreateToDoData
+
+    context.line = "- [ ] Parent todo"
+    context.get_line_indentation_level = Mock(return_value=0)
+    context.collect_indented_child_lines = Mock(
+        return_value=[
+            "    - Child item 1",
+            "    - Child item 2",
+        ]
+    )
+    context.strip_indentation_level = Mock(
+        return_value=[
+            "- Child item 1",
+            "- Child item 2",
+        ]
+    )
+
+    child_block = CreateToDoBlock(to_do=CreateToDoData(rich_text=[], checked=False, color=BlockColor.DEFAULT))
+    context.parse_nested_markdown = AsyncMock(return_value=[child_block, child_block])
+
+    await todo_parser._process(context)
+
+    assert len(context.result_blocks) == 1
+    assert context.result_blocks[0].to_do.children == [child_block, child_block]
+    assert context.lines_consumed == 2
+
+
+@pytest.mark.asyncio
+async def test_todo_without_indented_children_should_not_have_children(
+    todo_parser: TodoParser, context: BlockParsingContext
+) -> None:
+    context.line = "- [ ] Simple todo"
+    context.get_line_indentation_level = Mock(return_value=0)
+    context.collect_indented_child_lines = Mock(return_value=[])
+
+    await todo_parser._process(context)
+
+    assert len(context.result_blocks) == 1
+    assert context.result_blocks[0].to_do.children is None
+    assert context.lines_consumed == 0

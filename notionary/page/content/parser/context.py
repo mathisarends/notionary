@@ -23,10 +23,12 @@ class ParentBlockContext:
         self.child_blocks.append(block)
 
 
-ParseChildrenCallback = Callable[[list[str]], Awaitable[list[BlockCreatePayload]]]
+ParseChildrenCallback = Callable[[str], Awaitable[list[BlockCreatePayload]]]
 
 
 class BlockParsingContext:
+    MARKDOWN_INDENTATION_MULTIPLIER = 4
+
     def __init__(
         self,
         line: str,
@@ -45,19 +47,78 @@ class BlockParsingContext:
         self.all_lines = all_lines
         self.current_line_index = current_line_index
         self.lines_consumed = lines_consumed
-
         self.is_previous_line_empty = is_previous_line_empty
 
-    async def parse_nested_content(self, nested_lines: list[str]) -> list[BlockCreatePayload]:
-        if not self.parse_children_callback or not nested_lines:
+    async def parse_nested_markdown(self, text: str) -> list[BlockCreatePayload]:
+        if not self._can_parse_children(text):
             return []
 
-        return await self.parse_children_callback(nested_lines)
+        return await self.parse_children_callback(text)
+
+    def _can_parse_children(self, text: str) -> bool:
+        return self.parse_children_callback is not None and bool(text)
 
     def get_remaining_lines(self) -> list[str]:
-        if self.all_lines is None or self.current_line_index is None:
+        if not self._has_remaining_lines():
             return []
         return self.all_lines[self.current_line_index + 1 :]
 
+    def _has_remaining_lines(self) -> bool:
+        return self.all_lines is not None and self.current_line_index is not None
+
     def is_inside_parent_context(self) -> bool:
         return len(self.parent_stack) > 0
+
+    def get_line_indentation_level(self, line: str | None = None) -> int:
+        target_line = self._get_target_line(line)
+        leading_spaces = self._count_leading_spaces(target_line)
+        return self._calculate_indentation_level(leading_spaces)
+
+    def _get_target_line(self, line: str | None) -> str:
+        return line if line is not None else self.line
+
+    def _count_leading_spaces(self, line: str) -> int:
+        return len(line) - len(line.lstrip())
+
+    def _calculate_indentation_level(self, leading_spaces: int) -> int:
+        return leading_spaces // self.MARKDOWN_INDENTATION_MULTIPLIER
+
+    def collect_indented_child_lines(self, parent_indent_level: int) -> list[str]:
+        child_lines = []
+        expected_child_indent = parent_indent_level + 1
+
+        for line in self.get_remaining_lines():
+            if self._should_include_line_as_child(line, expected_child_indent):
+                child_lines.append(line)
+            else:
+                break
+
+        return child_lines
+
+    def _should_include_line_as_child(self, line: str, expected_indent: int) -> bool:
+        if self._is_empty_line(line):
+            return True
+
+        line_indent = self.get_line_indentation_level(line)
+        return line_indent >= expected_indent
+
+    def _is_empty_line(self, line: str) -> bool:
+        return not line.strip()
+
+    def strip_indentation_level(self, lines: list[str], levels: int = 1) -> list[str]:
+        return [self._strip_line_indentation(line, levels) for line in lines]
+
+    def _strip_line_indentation(self, line: str, levels: int) -> str:
+        if self._is_empty_line(line):
+            return line
+
+        spaces_to_remove = self._calculate_spaces_to_remove(levels)
+        return self._remove_leading_spaces(line, spaces_to_remove)
+
+    def _calculate_spaces_to_remove(self, levels: int) -> int:
+        return self.MARKDOWN_INDENTATION_MULTIPLIER * levels
+
+    def _remove_leading_spaces(self, line: str, spaces: int) -> str:
+        if len(line) < spaces:
+            return line
+        return line[spaces:]

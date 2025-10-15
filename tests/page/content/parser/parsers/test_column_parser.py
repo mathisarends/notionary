@@ -133,7 +133,7 @@ async def test_column_end_should_pop_from_parent_stack(
     parent_context = ParentBlockContext(block=column_block, child_lines=[])
     context.parent_stack = [parent_context]
     context.line = column_delimiter
-    context.parse_nested_content = AsyncMock(return_value=[])
+    context.parse_nested_markdown = AsyncMock(return_value=[])
 
     await column_parser._process(context)
 
@@ -151,7 +151,7 @@ async def test_column_end_without_column_list_parent_should_add_to_result_blocks
     parent_context = ParentBlockContext(block=column_block, child_lines=[])
     context.parent_stack = [parent_context]
     context.line = column_delimiter
-    context.parse_nested_content = AsyncMock(return_value=[])
+    context.parse_nested_markdown = AsyncMock(return_value=[])
 
     await column_parser._process(context)
 
@@ -171,7 +171,7 @@ async def test_column_end_with_column_list_parent_should_add_to_parent_child_blo
     column_context = ParentBlockContext(block=column_block, child_lines=[])
     context.parent_stack = [column_list_context, column_context]
     context.line = column_delimiter
-    context.parse_nested_content = AsyncMock(return_value=[])
+    context.parse_nested_markdown = AsyncMock(return_value=[])
 
     await column_parser._process(context)
 
@@ -214,11 +214,11 @@ async def test_column_with_nested_content_should_parse_child_lines(
     )
     context.parent_stack = [parent_context]
     context.line = column_delimiter
-    context.parse_nested_content = AsyncMock(return_value=[paragraph_block])
+    context.parse_nested_markdown = AsyncMock(return_value=[paragraph_block])
 
     await column_parser._process(context)
 
-    context.parse_nested_content.assert_called_once_with("line 1\nline 2")
+    context.parse_nested_markdown.assert_called_once_with("line 1\nline 2")
     assert len(context.result_blocks[0].column.children) == 1
 
 
@@ -241,7 +241,7 @@ async def test_column_with_both_child_lines_and_blocks_should_combine_all(
 
     context.parent_stack = [parent_context]
     context.line = column_delimiter
-    context.parse_nested_content = AsyncMock(return_value=[paragraph_block])
+    context.parse_nested_markdown = AsyncMock(return_value=[paragraph_block])
 
     await column_parser._process(context)
 

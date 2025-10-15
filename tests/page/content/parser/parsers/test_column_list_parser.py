@@ -108,7 +108,7 @@ async def test_column_list_end_should_pop_from_parent_stack(
     parent_context = ParentBlockContext(block=column_list_block, child_lines=[])
     context.parent_stack = [parent_context]
     context.line = delim
-    context.parse_nested_content = AsyncMock(return_value=[])
+    context.parse_nested_markdown = AsyncMock(return_value=[])
 
     await column_list_parser._process(context)
 
@@ -127,7 +127,7 @@ async def test_column_list_end_should_add_block_to_result_blocks(
     parent_context = ParentBlockContext(block=column_list_block, child_lines=[])
     context.parent_stack = [parent_context]
     context.line = delim
-    context.parse_nested_content = AsyncMock(return_value=[])
+    context.parse_nested_markdown = AsyncMock(return_value=[])
 
     await column_list_parser._process(context)
 
@@ -150,11 +150,11 @@ async def test_column_list_with_nested_content_should_parse_child_lines(
     )
     context.parent_stack = [parent_context]
     context.line = delim
-    context.parse_nested_content = AsyncMock(return_value=[column_block])
+    context.parse_nested_markdown = AsyncMock(return_value=[column_block])
 
     await column_list_parser._process(context)
 
-    context.parse_nested_content.assert_called_once_with("line 1\nline 2")
+    context.parse_nested_markdown.assert_called_once_with("line 1\nline 2")
 
 
 @pytest.mark.asyncio
@@ -171,7 +171,7 @@ async def test_column_list_should_filter_only_column_blocks(
     parent_context.child_blocks = [column_block, paragraph_block, column_block]
     context.parent_stack = [parent_context]
     context.line = delim
-    context.parse_nested_content = AsyncMock(return_value=[])
+    context.parse_nested_markdown = AsyncMock(return_value=[])
 
     await column_list_parser._process(context)
 
@@ -312,7 +312,7 @@ async def test_nested_column_list_should_add_to_parent_context(
 
     context.parent_stack = [outer_context, inner_context]
     context.line = delim
-    context.parse_nested_content = AsyncMock(return_value=[])
+    context.parse_nested_markdown = AsyncMock(return_value=[])
 
     await column_list_parser._process(context)
 
@@ -340,7 +340,7 @@ async def test_column_list_with_both_child_lines_and_blocks_should_combine_all(
 
     context.parent_stack = [parent_context]
     context.line = delim
-    context.parse_nested_content = AsyncMock(return_value=[column_block])
+    context.parse_nested_markdown = AsyncMock(return_value=[column_block])
 
     await column_list_parser._process(context)
 

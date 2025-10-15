@@ -1,6 +1,7 @@
 from notionary.blocks.schemas import Block, BlockChildrenResponse, BlockCreatePayload
 from notionary.http.client import NotionHttpClient
 from notionary.shared.typings import JsonDict
+from notionary.utils.decorators import time_execution_async
 from notionary.utils.pagination import paginate_notion_api
 
 
@@ -15,6 +16,7 @@ class NotionBlockHttpClient(NotionHttpClient):
         self.logger.debug("Deleting block: %s", block_id)
         await self.delete(f"blocks/{block_id}")
 
+    @time_execution_async()
     async def get_block_tree(self, parent_block_id: str) -> list[Block]:
         blocks_at_this_level = await self.get_all_block_children(parent_block_id)
 
@@ -25,6 +27,7 @@ class NotionBlockHttpClient(NotionHttpClient):
 
         return blocks_at_this_level
 
+    @time_execution_async()
     async def get_all_block_children(self, parent_block_id: str) -> list[Block]:
         self.logger.debug("Retrieving all children for block: %s", parent_block_id)
 

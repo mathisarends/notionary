@@ -192,7 +192,7 @@ async def test_heading_with_empty_content_should_not_create_block(
 async def test_nested_content_should_be_parsed(
     toggleable_heading_parser: ToggleableHeadingParser, context: BlockParsingContext
 ) -> None:
-    context.parse_nested_content = AsyncMock(return_value=[Mock()])
+    context.parse_nested_markdown = AsyncMock(return_value=[Mock()])
 
     context.line = "+++ # Heading"
     await toggleable_heading_parser._process(context)
@@ -203,7 +203,7 @@ async def test_nested_content_should_be_parsed(
     context.line = "+++"
     await toggleable_heading_parser._process(context)
 
-    context.parse_nested_content.assert_called_once()
+    context.parse_nested_markdown.assert_called_once()
 
 
 @pytest.mark.asyncio

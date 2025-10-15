@@ -15,7 +15,7 @@ def test_empty_string_should_return_empty(processor: WhitespacePreProcessor) -> 
     assert result == ""
 
 
-def test_text_without_code_removes_leading_whitespace(processor: WhitespacePreProcessor) -> None:
+def test_text_without_code_keeps_indentation_when_min_indent_is_zero(processor: WhitespacePreProcessor) -> None:
     markdown = dedent(
         """
         # Heading
@@ -29,9 +29,27 @@ def test_text_without_code_removes_leading_whitespace(processor: WhitespacePrePr
     expected = dedent(
         """
         # Heading
-        Indented text
-        Less indented
+            Indented text
+          Less indented
         Normal
+        """
+    )
+    assert result == expected
+
+
+def test_text_with_common_indentation_removes_it(processor: WhitespacePreProcessor) -> None:
+    markdown = """
+    # Heading
+        Indented text
+      Less indented
+    """
+    result = processor.process(markdown)
+
+    expected = dedent(
+        """
+        # Heading
+            Indented text
+          Less indented
         """
     )
     assert result == expected
@@ -81,6 +99,28 @@ def test_code_block_with_different_indentation_levels(processor: WhitespacePrePr
         if True:
             print("nested")
         print("less nested")
+        ```
+        """
+    )
+    assert result == expected
+
+
+def test_code_block_with_zero_indentation_preserves_content(processor: WhitespacePreProcessor) -> None:
+    markdown = dedent(
+        """
+        ```python
+        def hello():
+            print("world")
+        ```
+        """
+    )
+    result = processor.process(markdown)
+
+    expected = dedent(
+        """
+        ```python
+        def hello():
+            print("world")
         ```
         """
     )
@@ -208,7 +248,7 @@ def test_mixed_content_with_text_lists_and_code(processor: WhitespacePreProcesso
         # Heading
 
         - List item
-        - Nested item
+          - Nested item
 
         ```python
         def example():
@@ -216,6 +256,93 @@ def test_mixed_content_with_text_lists_and_code(processor: WhitespacePreProcesso
         ```
 
         Further text
+        """
+    )
+    assert result == expected
+
+
+def test_text_with_consistent_indentation_gets_normalized(processor: WhitespacePreProcessor) -> None:
+    markdown = """
+  # Heading
+    Indented
+      More indented
+  Back to base
+"""
+    result = processor.process(markdown)
+
+    expected = dedent(
+        """
+        # Heading
+          Indented
+            More indented
+        Back to base
+        """
+    )
+    assert result == expected
+
+
+def test_preserves_indentation_in_lists_with_no_base_indent(processor: WhitespacePreProcessor) -> None:
+    markdown = dedent(
+        """
+        - Item 1
+          - Nested 1
+            - Double nested
+          - Nested 2
+        - Item 2
+        """
+    )
+    result = processor.process(markdown)
+
+    expected = dedent(
+        """
+        - Item 1
+          - Nested 1
+            - Double nested
+          - Nested 2
+        - Item 2
+        """
+    )
+    assert result == expected
+
+
+def test_only_empty_lines_returns_empty_strings(processor: WhitespacePreProcessor) -> None:
+    markdown = """
+
+
+
+"""
+    result = processor.process(markdown)
+
+    assert result == "\n\n\n\n"
+
+
+def test_mixed_tabs_and_spaces_counted_correctly(processor: WhitespacePreProcessor) -> None:
+    markdown = "  Line with spaces\n\tLine with tab\nNo indent"
+    result = processor.process(markdown)
+
+    expected = "  Line with spaces\n\tLine with tab\nNo indent"
+    assert result == expected
+
+
+def test_code_fence_with_indentation_is_detected(processor: WhitespacePreProcessor) -> None:
+    markdown = dedent(
+        """
+        Text
+          ```python
+            code here
+          ```
+        More text
+        """
+    )
+    result = processor.process(markdown)
+
+    expected = dedent(
+        """
+        Text
+        ```python
+        code here
+        ```
+        More text
         """
     )
     assert result == expected
