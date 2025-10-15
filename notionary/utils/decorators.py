@@ -8,22 +8,24 @@ from typing import Any, ParamSpec, TypeVar
 P = ParamSpec("P")
 R = TypeVar("R")
 
+type SyncFunc = Callable[P, R]
+type AsyncFunc = Callable[P, Coroutine[Any, Any, R]]
+type SyncDecorator = Callable[[SyncFunc], SyncFunc]
+type AsyncDecorator = Callable[[AsyncFunc], AsyncFunc]
 
-def time_execution_async(
-    additional_text: str = "",
-    threshold: float = 0.25,
-) -> Callable[[Callable[P, Coroutine[Any, Any, R]]], Callable[P, Coroutine[Any, Any, R]]]:
-    def decorator(func: Callable[P, Coroutine[Any, Any, R]]) -> Callable[P, Coroutine[Any, Any, R]]:
+
+def time_execution_sync(additional_text: str = "", min_duration_to_log: float = 0.25) -> SyncDecorator:
+    def decorator(func: SyncFunc) -> SyncFunc:
         @functools.wraps(func)
-        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             start_time = time.perf_counter()
-            result = await func(*args, **kwargs)
+            result = func(*args, **kwargs)
             execution_time = time.perf_counter() - start_time
 
-            if _should_log_execution(execution_time, threshold):
+            if execution_time > min_duration_to_log:
                 logger = _get_logger_from_context(args, func)
                 function_name = additional_text.strip("-") or func.__name__
-                logger.info(f"⏳ {function_name}() took {execution_time:.2f}s")
+                logger.debug(f"⏳ {function_name}() took {execution_time:.2f}s")
 
             return result
 
@@ -32,9 +34,27 @@ def time_execution_async(
     return decorator
 
 
-# you can adjust the threshold as needed for performance logging
-def _should_log_execution(execution_time: float, threshold: float) -> bool:
-    return execution_time > threshold
+def time_execution_async(
+    additional_text: str = "",
+    min_duration_to_log: float = 0.25,
+) -> AsyncDecorator:
+    def decorator(func: AsyncFunc) -> AsyncFunc:
+        @functools.wraps(func)
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            start_time = time.perf_counter()
+            result = await func(*args, **kwargs)
+            execution_time = time.perf_counter() - start_time
+
+            if execution_time > min_duration_to_log:
+                logger = _get_logger_from_context(args, func)
+                function_name = additional_text.strip("-") or func.__name__
+                logger.debug(f"⏳ {function_name}() took {execution_time:.2f}s")
+
+            return result
+
+        return wrapper
+
+    return decorator
 
 
 def _get_logger_from_context(args: tuple, func: Callable) -> logging.Logger:
@@ -74,7 +94,6 @@ def async_retry(
                 except Exception as e:
                     last_exception = e
 
-                    # If specific exceptions are defined, only retry those
                     if retry_on_exceptions is not None and not isinstance(e, retry_on_exceptions):
                         raise
 
