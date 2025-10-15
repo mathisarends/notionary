@@ -177,9 +177,11 @@ class SyntaxRegistry:
 
     def _register_callout_syntax(self) -> None:
         definition = SyntaxDefinition(
-            start_delimiter="[callout](",
+            start_delimiter="[callout]",
             end_delimiter=")",
-            regex_pattern=re.compile(r'\[callout\]\(([^")]+?)(?:\s+"([^"]+)")?\)'),
+            regex_pattern=re.compile(
+                r'\[callout\](?:\(([^")]+?)(?:\s+"([^"]+)")?\)|(?:\s+([^"\n]+?)(?:\s+"([^"]+)")?)(?:\n|$))'
+            ),
             is_multiline_block=False,
             is_inline=True,
         )

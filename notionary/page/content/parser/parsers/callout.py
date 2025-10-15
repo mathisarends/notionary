@@ -1,3 +1,4 @@
+import re
 from typing import override
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
@@ -69,16 +70,20 @@ class CalloutParser(LineParser):
         if not match:
             return None
 
-        content = match.group(1).strip()
-        emoji = self._extract_emoji(match)
-
+        content, emoji = self._extract_content_and_emoji(match)
         rich_text = await self._convert_to_rich_text(content)
         return self._build_block(rich_text, emoji)
 
-    def _extract_emoji(self, match) -> str:
-        if match.lastindex >= 2 and match.group(2):
-            return match.group(2)
-        return self.DEFAULT_EMOJI
+    def _extract_content_and_emoji(self, match: re.Match[str]) -> tuple[str, str]:
+        inline_content = match.group(1)
+        if inline_content:
+            return inline_content.strip(), match.group(2) or self.DEFAULT_EMOJI
+
+        block_content = match.group(3)
+        if block_content:
+            return block_content.strip(), match.group(4) or self.DEFAULT_EMOJI
+
+        return "", self.DEFAULT_EMOJI
 
     async def _convert_to_rich_text(self, content: str):
         return await self._rich_text_converter.to_rich_text(content)

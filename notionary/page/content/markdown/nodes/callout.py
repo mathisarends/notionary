@@ -1,26 +1,34 @@
 from typing import override
 
 from notionary.page.content.markdown.nodes.base import MarkdownNode
+from notionary.page.content.markdown.nodes.mixins import ChildrenRenderMixin
 from notionary.page.content.syntax.service import SyntaxRegistry
 
 
-class CalloutMarkdownNode(MarkdownNode):
+class CalloutMarkdownNode(ChildrenRenderMixin, MarkdownNode):
     def __init__(
         self,
         text: str,
         emoji: str | None = None,
+        children: list[MarkdownNode] | None = None,
         syntax_registry: SyntaxRegistry | None = None,
     ):
         super().__init__(syntax_registry=syntax_registry)
         self.text = text
         self.emoji = emoji
+        self.children = children or []
 
     @override
     def to_markdown(self) -> str:
-        syntax = self._syntax_registry.get_callout_syntax()
+        callout_content = self._format_callout_content()
+        start_delimiter = self._syntax_registry.get_callout_syntax().start_delimiter
+        result = f"{start_delimiter}({callout_content})"
 
-        # Build callout using syntax service delimiters
+        result += self.render_children()
+
+        return result
+
+    def _format_callout_content(self) -> str:
         if self.emoji:
-            return f'{syntax.start_delimiter}{self.text} "{self.emoji}"{syntax.end_delimiter}'
-        else:
-            return f"{syntax.start_delimiter}{self.text}{syntax.end_delimiter}"
+            return f'{self.text} "{self.emoji}"'
+        return self.text

@@ -29,13 +29,10 @@ class CalloutRenderer(BlockRenderer):
             return
 
         icon = await self._extract_callout_icon(context.block)
-        syntax = self._syntax_registry.get_callout_syntax()
 
-        # Build callout using syntax service delimiters
-        if icon:
-            result = f'{syntax.start_delimiter}{content} "{icon}"{syntax.end_delimiter}'
-        else:
-            result = f"{syntax.start_delimiter}{content}{syntax.end_delimiter}"
+        callout_start_delimiter = self._syntax_registry.get_callout_syntax().start_delimiter
+
+        result = f'{callout_start_delimiter}({content} "{icon}")' if icon else f"{callout_start_delimiter}({content})"
 
         if context.indent_level > 0:
             result = context.indent_text(result)
