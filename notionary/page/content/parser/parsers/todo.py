@@ -1,5 +1,3 @@
-"""Parser for todo/checkbox blocks."""
-
 from typing import override
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import (

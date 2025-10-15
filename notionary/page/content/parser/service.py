@@ -28,7 +28,6 @@ class MarkdownToNotionConverter(LoggingMixin):
         return all_blocks
 
     async def _process_lines(self, text: str) -> list[BlockCreatePayload]:
-        print("text", text)
         lines = text.split("\n")
         result_blocks: list[BlockCreatePayload] = []
         parent_stack: list[ParentBlockContext] = []

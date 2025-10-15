@@ -1,38 +1,34 @@
 # Toggle
 
-Collapsible content section with a title. Click to expand/collapse nested blocks.
+Collapsible content section with a title. Content is nested using indentation.
 
 ## Syntax
 
 ```markdown
 +++ Toggle Title
-Content inside toggle.
-More paragraphs, lists, etc.
-+++
+    Content inside toggle.
+    More paragraphs, lists, etc.
 ```
 
 ## Examples
 
 ```markdown
 +++ Advanced Configuration
-These settings are for power users only.
+    These settings are for power users only.
 
-- Enable debug mode
-- Set custom timeouts
-- Configure logging
-+++
+    - Enable debug mode
+    - Set custom timeouts
+    - Configure logging
 ```
 
 Multiple toggles:
 
 ```markdown
 +++ FAQ: Installation
-Download and run the installer.
-+++
+    Download and run the installer.
 
 +++ FAQ: Troubleshooting
-Check system requirements first.
-+++
+    Check system requirements first.
 ```
 
 ## Builder

@@ -34,16 +34,15 @@ class ToggleRenderer(BlockRenderer):
         if context.indent_level > 0:
             toggle_start = context.indent_text(toggle_start)
 
+        original_indent = context.indent_level
+        context.indent_level += 1
         children_markdown = await context.render_children()
-
-        toggle_end = syntax.end_delimiter
-        if context.indent_level > 0:
-            toggle_end = context.indent_text(toggle_end)
+        context.indent_level = original_indent
 
         if children_markdown:
-            context.markdown_result = f"{toggle_start}\n{children_markdown}\n{toggle_end}"
+            context.markdown_result = f"{toggle_start}\n{children_markdown}"
         else:
-            context.markdown_result = f"{toggle_start}\n{toggle_end}"
+            context.markdown_result = toggle_start
 
     async def _extract_toggle_title(self, block: Block) -> str:
         if not block.toggle or not block.toggle.rich_text:

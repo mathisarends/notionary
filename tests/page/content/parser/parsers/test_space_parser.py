@@ -171,10 +171,7 @@ async def test_empty_lines_at_end_create_space_blocks(parser: MarkdownToNotionCo
 async def test_space_blocks_with_toggle_syntax(parser: MarkdownToNotionConverter):
     markdown = dedent("""
         +++ Toggle Title
-
-
-        Content inside toggle
-        +++
+            Content inside toggle
     """)
 
     blocks = await parser.convert(markdown)

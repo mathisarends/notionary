@@ -57,8 +57,9 @@ async def test_toggle_with_title_should_render_markdown_toggle(
 
     await toggle_renderer._process(render_context)
 
+    # Should only have start delimiter without end delimiter
     assert "+++ Toggle Title" in render_context.markdown_result
-    assert "+++" in render_context.markdown_result
+    assert not render_context.markdown_result.strip().endswith("+++")
 
 
 @pytest.mark.asyncio
@@ -80,7 +81,8 @@ async def test_toggle_with_children_should_render_children_between_delimiters(
     render_context.render_children.assert_called_once()
     assert "+++ Toggle with content" in render_context.markdown_result
     assert "Child content" in render_context.markdown_result
-    assert render_context.markdown_result.endswith("+++")
+    # No end delimiter expected
+    assert not render_context.markdown_result.strip().endswith("+++")
 
 
 @pytest.mark.asyncio
@@ -131,8 +133,8 @@ async def test_toggle_with_indent_level_should_indent_delimiters(
 
     await toggle_renderer._process(render_context)
 
-    # Should be called twice: once for start, once for end
-    assert render_context.indent_text.call_count == 2
+    # Should be called once for the start delimiter only
+    assert render_context.indent_text.call_count == 1
 
 
 @pytest.mark.asyncio
