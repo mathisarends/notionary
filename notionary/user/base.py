@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Self
 
+from notionary.exceptions.search import NoUsersInWorkspace, UserNotFound
 from notionary.user.client import UserHttpClient
 from notionary.user.schemas import UserResponseDto, UserType
-from notionary.utils.fuzzy import find_best_match
+from notionary.utils.fuzzy import find_all_matches
 
 
 class BaseUser(ABC):
@@ -41,16 +42,39 @@ class BaseUser(ABC):
         client = http_client or UserHttpClient()
         all_users = await cls._get_all_users_of_type(client)
 
+        user_type = cls._get_expected_user_type().value
+
         if not all_users:
-            user_type = cls._get_expected_user_type().value
-            raise ValueError(f"No '{user_type}' users found in the workspace")
+            raise NoUsersInWorkspace(user_type)
 
-        best_match = find_best_match(query=name, items=all_users, text_extractor=cls._get_name_extractor())
-        if not best_match:
-            user_type = cls._get_expected_user_type().value
-            raise ValueError(f"No '{user_type}' user found with name similar to '{name}'")
+        exact_match = cls._find_exact_match(all_users, name)
+        if exact_match:
+            return exact_match
 
-        return best_match
+        suggestions = cls._get_fuzzy_suggestions(all_users, name)
+        raise UserNotFound(user_type, name, suggestions)
+
+    @classmethod
+    def _find_exact_match(cls, users: list[Self], query: str) -> Self | None:
+        query_lower = query.lower()
+        for user in users:
+            if user.name and user.name.lower() == query_lower:
+                return user
+        return None
+
+    @classmethod
+    def _get_fuzzy_suggestions(cls, users: list[Self], query: str) -> list[str]:
+        sorted_by_similarity = find_all_matches(
+            query=query,
+            items=users,
+            text_extractor=cls._get_name_extractor(),
+            min_similarity=0.6,
+        )
+
+        if sorted_by_similarity:
+            return [user.name for user in sorted_by_similarity[:5] if user.name]
+
+        return [user.name for user in users[:5] if user.name]
 
     @classmethod
     async def _get_all_users_of_type(cls, http_client: UserHttpClient) -> list[Self]:
