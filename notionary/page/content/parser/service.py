@@ -6,6 +6,7 @@ from notionary.page.content.parser.parsers import (
 from notionary.page.content.parser.parsers.base import LineParser
 from notionary.page.content.parser.post_processing.service import BlockPostProcessor
 from notionary.page.content.parser.pre_processsing.service import MarkdownPreProcessor
+from notionary.utils.decorators import time_execution_async
 from notionary.utils.mixins.logging import LoggingMixin
 
 
@@ -17,6 +18,7 @@ class MarkdownToNotionConverter(LoggingMixin):
         self._pre_processor = pre_processor
         self._post_processor = post_processor
 
+    @time_execution_async("MarkdownToNotionConverter.convert")
     async def convert(self, markdown_text: str) -> list[BlockCreatePayload]:
         if not markdown_text:
             return []

@@ -6,7 +6,7 @@ from notionary.blocks.schemas import Block
 from notionary.page.content.markdown.builder import MarkdownBuilder
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.page.content.renderer.service import NotionToMarkdownConverter
-from notionary.utils.async_retry import async_retry
+from notionary.utils.decorators import async_retry
 from notionary.utils.mixins.logging import LoggingMixin
 
 

@@ -193,7 +193,6 @@ class NotionHttpClient(LoggingMixin):
             None,
         )
         if token:
-            self.logger.debug("Found token in environment variable.")
             return token
         self.logger.warning("No Notion API token found in environment variables")
         return None
