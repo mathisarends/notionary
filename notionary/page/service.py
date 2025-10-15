@@ -82,11 +82,10 @@ class NotionPage(Entity):
     async def from_title(
         cls,
         page_title: str,
-        min_similarity: float = 0.6,
         search_service: WorkspaceQueryService | None = None,
     ) -> Self:
         service = search_service or WorkspaceQueryService()
-        return await service.find_page(page_title, min_similarity=min_similarity)
+        return await service.find_page(page_title)
 
     @classmethod
     async def _fetch_page_dto(cls, page_id: str) -> NotionPageDto:

@@ -99,11 +99,10 @@ class NotionDataSource(Entity):
     async def from_title(
         cls,
         data_source_title: str,
-        min_similarity: float = 0.6,
         search_service: WorkspaceQueryService | None = None,
     ) -> Self:
         service = search_service or WorkspaceQueryService()
-        return await service.find_data_source(data_source_title, min_similarity=min_similarity)
+        return await service.find_data_source(data_source_title)
 
     @classmethod
     async def _create_from_dto(

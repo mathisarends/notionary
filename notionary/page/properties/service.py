@@ -139,6 +139,10 @@ class PagePropertyHandler:
         data_source = await self._get_parent_data_source_or_raise()
         return await data_source.get_options_for_property_by_name(property_name)
 
+    async def get_schema_description(self, property_name: str) -> str:
+        data_source = await self._get_parent_data_source_or_raise()
+        return await data_source.get_schema_description(property_name)
+
     # =========================================================================
     # Writer Methods
     # =========================================================================

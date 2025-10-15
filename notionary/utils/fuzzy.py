@@ -1,14 +1,14 @@
 import difflib
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Generic, TypeVar
+from typing import Generic, TypeVar
 
 T = TypeVar("T")
 
 
 @dataclass(frozen=True)
 class _MatchResult(Generic[T]):
-    item: Any
+    item: T
     similarity: float
 
 
@@ -16,12 +16,20 @@ def find_best_match(
     query: str,
     items: list[T],
     text_extractor: Callable[[T], str],
-    min_similarity: float | None = 0.0,
+    min_similarity: float,
 ) -> T | None:
-    min_similarity = 0.0 if min_similarity is None else min_similarity
-
     matches = _find_best_matches(query, items, text_extractor, min_similarity, limit=1)
     return matches[0].item if matches else None
+
+
+def find_all_matches(
+    query: str,
+    items: list[T],
+    text_extractor: Callable[[T], str],
+    min_similarity: float,
+) -> list[T]:
+    matches = _find_best_matches(query, items, text_extractor, min_similarity, limit=None)
+    return [match.item for match in matches]
 
 
 def _find_best_matches(
@@ -53,4 +61,8 @@ def _sort_by_highest_similarity_first(results: list[_MatchResult]) -> list[_Matc
 
 
 def _calculate_similarity(query: str, target: str) -> float:
-    return difflib.SequenceMatcher(None, query.lower().strip(), target.lower().strip()).ratio()
+    return difflib.SequenceMatcher(
+        isjunk=None,
+        a=query.lower().strip(),
+        b=target.lower().strip(),
+    ).ratio()

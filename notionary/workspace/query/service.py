@@ -5,7 +5,7 @@ from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Protocol
 
 from notionary.exceptions.search import DatabaseNotFound, DataSourceNotFound, PageNotFound
-from notionary.utils.fuzzy import find_best_match
+from notionary.utils.fuzzy import find_all_matches
 from notionary.workspace.client import WorkspaceClient
 from notionary.workspace.query.builder import WorkspaceQueryConfigBuilder
 from notionary.workspace.query.models import WorkspaceQueryConfig
@@ -48,21 +48,17 @@ class WorkspaceQueryService:
         data_source_tasks = [NotionDataSource.from_id(dto.id) for dto in data_source_dtos]
         return await asyncio.gather(*data_source_tasks)
 
-    async def find_data_source(self, query: str, min_similarity: float = 0.6) -> NotionDataSource:
-        config = WorkspaceQueryConfigBuilder().with_query(query).with_data_sources_only().with_page_size(5).build()
+    async def find_data_source(self, query: str) -> NotionDataSource:
+        config = WorkspaceQueryConfigBuilder().with_query(query).with_data_sources_only().with_page_size(100).build()
         data_sources = await self.get_data_sources(config)
+        return self._find_exact_match(data_sources, query, DataSourceNotFound)
 
-        return self._get_best_match(
-            data_sources, query, exception_class=DataSourceNotFound, min_similarity=min_similarity
-        )
-
-    async def find_page(self, query: str, min_similarity: float = 0.6) -> NotionPage:
-        config = WorkspaceQueryConfigBuilder().with_query(query).with_pages_only().with_page_size(5).build()
+    async def find_page(self, query: str) -> NotionPage:
+        config = WorkspaceQueryConfigBuilder().with_query(query).with_pages_only().with_page_size(100).build()
         pages = await self.get_pages(config)
+        return self._find_exact_match(pages, query, PageNotFound)
 
-        return self._get_best_match(pages, query, exception_class=PageNotFound, min_similarity=min_similarity)
-
-    async def find_database(self, query: str = "") -> NotionDatabase:
+    async def find_database(self, query: str) -> NotionDatabase:
         config = WorkspaceQueryConfigBuilder().with_query(query).with_data_sources_only().with_page_size(100).build()
         data_sources = await self.get_data_sources(config)
 
@@ -70,24 +66,35 @@ class WorkspaceQueryService:
         parent_databases = await asyncio.gather(*parent_database_tasks)
         potential_databases = [database for database in parent_databases if database is not None]
 
-        return self._get_best_match(potential_databases, query, exception_class=DatabaseNotFound)
+        return self._find_exact_match(potential_databases, query, DatabaseNotFound)
 
-    def _get_best_match(
+    def _find_exact_match(
         self,
         search_results: list[SearchableEntity],
         query: str,
         exception_class: type[Exception],
-        min_similarity: float | None = None,
     ) -> SearchableEntity:
-        best_match = find_best_match(
+        if not search_results:
+            raise exception_class(query, [])
+
+        query_lower = query.lower()
+        exact_matches = [result for result in search_results if result.title.lower() == query_lower]
+
+        if exact_matches:
+            return exact_matches[0]
+
+        suggestions = self._get_fuzzy_suggestions(search_results, query)
+        raise exception_class(query, suggestions)
+
+    def _get_fuzzy_suggestions(self, search_results: list[SearchableEntity], query: str) -> list[str]:
+        sorted_by_similarity = find_all_matches(
             query=query,
             items=search_results,
-            text_extractor=lambda searchable_entity: searchable_entity.title,
-            min_similarity=min_similarity,
+            text_extractor=lambda entity: entity.title,
+            min_similarity=0.6,
         )
 
-        if not best_match:
-            available_titles = [result.title for result in search_results[:5]]
-            raise exception_class(query, available_titles)
+        if sorted_by_similarity:
+            return [result.title for result in sorted_by_similarity[:5]]
 
-        return best_match
+        return [result.title for result in search_results[:5]]
