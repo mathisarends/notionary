@@ -7,32 +7,32 @@ from notionary.data_source.query.schema import (
     DateOperator,
     NumberOperator,
     Operator,
-    StatusOperator,
+    SelectOperator,
     StringOperator,
 )
 from notionary.exceptions.data_source.builder import InvalidOperatorForPropertyType
 from notionary.shared.properties.type import PropertyType
 
 
-class OperatorValidator:
+class QueryValidator:
     _PROPERTY_TYPE_OPERATORS: ClassVar[dict[PropertyType, list[type[Operator]]]] = {
         PropertyType.TITLE: [StringOperator],
         PropertyType.RICH_TEXT: [StringOperator],
-        PropertyType.NUMBER: [NumberOperator],
-        PropertyType.SELECT: [StringOperator],
-        PropertyType.MULTI_SELECT: [ArrayOperator],
-        PropertyType.STATUS: [StatusOperator],
-        PropertyType.DATE: [DateOperator],
-        PropertyType.PEOPLE: [ArrayOperator],
-        PropertyType.CHECKBOX: [BooleanOperator],
         PropertyType.URL: [StringOperator],
         PropertyType.EMAIL: [StringOperator],
         PropertyType.PHONE_NUMBER: [StringOperator],
+        PropertyType.SELECT: [SelectOperator],
+        PropertyType.STATUS: [SelectOperator],
+        PropertyType.MULTI_SELECT: [ArrayOperator],
+        PropertyType.NUMBER: [NumberOperator],
+        PropertyType.DATE: [DateOperator],
         PropertyType.CREATED_TIME: [DateOperator],
-        PropertyType.CREATED_BY: [ArrayOperator],
         PropertyType.LAST_EDITED_TIME: [DateOperator],
+        PropertyType.PEOPLE: [ArrayOperator],
+        PropertyType.CREATED_BY: [ArrayOperator],
         PropertyType.LAST_EDITED_BY: [ArrayOperator],
         PropertyType.RELATION: [ArrayOperator],
+        PropertyType.CHECKBOX: [BooleanOperator],
     }
 
     def validate_operator_for_property(

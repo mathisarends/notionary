@@ -305,19 +305,21 @@ class NotionDataSource(Entity):
     def filter(self) -> DataSourceQueryBuilder:
         return DataSourceQueryBuilder(properties=self._properties)
 
-    async def query(self, filter_fn: Callable[[DataSourceQueryBuilder], DataSourceQueryBuilder]) -> list[NotionPage]:
+    async def query_pages(
+        self, filter_fn: Callable[[DataSourceQueryBuilder], DataSourceQueryBuilder]
+    ) -> list[NotionPage]:
         builder = DataSourceQueryBuilder(properties=self._properties)
-        filter_fn(builder)
-        query_params = builder.build()
+        configured_builder = filter_fn(builder)
+        query_params = configured_builder.build()
 
         return await self.get_pages(query_params)
 
-    async def query_stream(
+    async def query_pages_stream(
         self, filter_fn: Callable[[DataSourceQueryBuilder], DataSourceQueryBuilder]
     ) -> AsyncIterator[NotionPage]:
         builder = DataSourceQueryBuilder(properties=self._properties)
-        filter_fn(builder)
-        query_params = builder.build()
+        configured_builder = filter_fn(builder)
+        query_params = configured_builder.build()
 
         async for page in self.get_pages_stream(query_params):
             yield page

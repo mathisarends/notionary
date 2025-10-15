@@ -117,9 +117,9 @@ pages = await data_source.get_pages(query_params=params)
 `NotionDataSource` provides convenience helpers that accept a small builder function:
 
 ```python
-pages = await data_source.query(lambda b: b.where("Status").equals("In Progress").order_by("Effort"))
+pages = await data_source.query_pages(lambda b: b.where("Status").equals("In Progress").order_by("Effort"))
 
-async for page in data_source.query_stream(lambda b: b.where("Tags").array_contains("API")):
+async for page in data_source.query_pages_stream(lambda b: b.where("Tags").array_contains("API")):
     print(page.title)
 
 builder = data_source.filter()

@@ -24,7 +24,7 @@ from notionary.data_source.query.schema import (
     TimestampSort,
     TimestampType,
 )
-from notionary.data_source.query.validator import OperatorValidator
+from notionary.data_source.query.validator import QueryValidator
 from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound
 from notionary.utils.date import parse_date
 
@@ -33,11 +33,11 @@ class DataSourceQueryBuilder:
     def __init__(
         self,
         properties: dict[str, DataSourceProperty],
-        operator_validator: OperatorValidator | None = None,
+        query_validator: QueryValidator | None = None,
         date_parser: Callable[[str], str] = parse_date,
     ) -> None:
         self._properties = properties
-        self._operator_validator = operator_validator or OperatorValidator()
+        self._query_validator = query_validator or QueryValidator()
         self._date_parser = date_parser
 
         self._filters: list[InternalFilterCondition] = []
@@ -273,7 +273,7 @@ class DataSourceQueryBuilder:
 
         property_obj = self._properties.get(self._current_property)
         if property_obj:
-            self._operator_validator.validate_operator_for_property(self._current_property, property_obj, operator)
+            self._query_validator.validate_operator_for_property(self._current_property, property_obj, operator)
         return self
 
     def _ensure_property_is_selected(self) -> None:

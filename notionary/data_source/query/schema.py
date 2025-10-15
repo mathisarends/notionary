@@ -47,7 +47,7 @@ class BooleanOperator(StrEnum):
     IS_FALSE = "is_false"
 
 
-class StatusOperator(StrEnum):
+class SelectOperator(StrEnum):
     EQUALS = "equals"
     DOES_NOT_EQUAL = "does_not_equal"
     IS_EMPTY = "is_empty"
@@ -69,10 +69,6 @@ class ArrayOperator(StrEnum):
     DOES_NOT_CONTAIN = "does_not_contain"
     IS_EMPTY = "is_empty"
     IS_NOT_EMPTY = "is_not_empty"
-
-
-RelationOperator = ArrayOperator
-PeopleOperator = ArrayOperator
 
 
 class LogicalOperator(StrEnum):
