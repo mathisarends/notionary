@@ -26,7 +26,6 @@ from notionary.page.content.parser.parsers import (
     TableOfContentsParser,
     TableParser,
     TodoParser,
-    ToggleableHeadingParser,
     ToggleParser,
     VideoParser,
 )
@@ -49,7 +48,6 @@ class ConverterChainFactory:
         table_parser = self._create_table_parser()
         column_parser = self._create_column_parser()
         column_list_parser = self._create_column_list_parser()
-        toggleable_heading_parser = self._create_toggleable_heading_parser()
         toggle_parser = self._create_toggle_parser()
 
         # Single-line blocks
@@ -82,7 +80,6 @@ class ConverterChainFactory:
             .set_next(table_parser)
             .set_next(column_parser)
             .set_next(column_list_parser)
-            .set_next(toggleable_heading_parser)
             .set_next(toggle_parser)
             .set_next(divider_parser)
             .set_next(breadcrumb_parser)
@@ -127,12 +124,6 @@ class ConverterChainFactory:
 
     def _create_column_list_parser(self) -> ColumnListParser:
         return ColumnListParser(syntax_registry=self._syntax_registry)
-
-    def _create_toggleable_heading_parser(self) -> ToggleableHeadingParser:
-        return ToggleableHeadingParser(
-            syntax_registry=self._syntax_registry,
-            rich_text_converter=self._rich_text_converter,
-        )
 
     def _create_toggle_parser(self) -> ToggleParser:
         return ToggleParser(

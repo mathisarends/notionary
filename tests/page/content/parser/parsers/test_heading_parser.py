@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -191,6 +191,8 @@ async def test_heading_data_should_have_correct_defaults(
     heading_parser: HeadingParser, context: BlockParsingContext
 ) -> None:
     context.line = "# Test Heading"
+    context.get_line_indentation_level = Mock(return_value=0)
+    context.collect_indented_child_lines = Mock(return_value=[])
 
     await heading_parser._process(context)
 
@@ -199,3 +201,43 @@ async def test_heading_data_should_have_correct_defaults(
 
     assert heading_data.color == "default"
     assert heading_data.is_toggleable is False
+
+
+@pytest.mark.asyncio
+async def test_heading_with_indented_children_should_become_toggleable(
+    heading_parser: HeadingParser, context: BlockParsingContext
+) -> None:
+    context.line = "## Heading with children"
+    context.get_line_indentation_level = Mock(return_value=0)
+    context.collect_indented_child_lines = Mock(return_value=["    First child", "    Second child"])
+    context.strip_indentation_level = Mock(return_value=["First child", "Second child"])
+    context.parse_nested_markdown = AsyncMock(return_value=[Mock(), Mock()])
+
+    await heading_parser._process(context)
+
+    block = context.result_blocks[0]
+    heading_data = block.heading_2
+
+    assert heading_data.is_toggleable is True
+    assert context.lines_consumed == 2
+    assert len(heading_data.children) == 2
+    # Verify that indented content was properly parsed
+    context.parse_nested_markdown.assert_called_once_with("First child\nSecond child")
+
+
+@pytest.mark.asyncio
+async def test_heading_without_children_should_stay_non_toggleable(
+    heading_parser: HeadingParser, context: BlockParsingContext
+) -> None:
+    context.line = "### Normal Heading"
+    context.get_line_indentation_level = Mock(return_value=0)
+    context.collect_indented_child_lines = Mock(return_value=[])
+
+    await heading_parser._process(context)
+
+    block = context.result_blocks[0]
+    heading_data = block.heading_3
+
+    assert heading_data.is_toggleable is False
+    assert heading_data.children == []
+    assert context.lines_consumed == 0

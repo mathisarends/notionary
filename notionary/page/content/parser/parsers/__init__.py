@@ -24,7 +24,6 @@ from .table import TableParser
 from .table_of_contents import TableOfContentsParser
 from .todo import TodoParser
 from .toggle import ToggleParser
-from .toggleable_heading import ToggleableHeadingParser
 from .video import VideoParser
 
 __all__ = [
@@ -55,6 +54,5 @@ __all__ = [
     "TableParser",
     "TodoParser",
     "ToggleParser",
-    "ToggleableHeadingParser",
     "VideoParser",
 ]

@@ -66,30 +66,6 @@ async def test_heading3_block_should_be_handled(heading_renderer: HeadingRendere
 
 
 @pytest.mark.asyncio
-async def test_toggleable_heading1_block_should_not_be_handled(heading_renderer: HeadingRenderer) -> None:
-    heading_data = _create_heading_data([RichText.from_plain_text("Toggleable Heading 1")], is_toggleable=True)
-    block = _create_heading_block(BlockType.HEADING_1, heading_data)
-
-    assert not heading_renderer._can_handle(block)
-
-
-@pytest.mark.asyncio
-async def test_toggleable_heading2_block_should_not_be_handled(heading_renderer: HeadingRenderer) -> None:
-    heading_data = _create_heading_data([RichText.from_plain_text("Toggleable Heading 2")], is_toggleable=True)
-    block = _create_heading_block(BlockType.HEADING_2, heading_data)
-
-    assert not heading_renderer._can_handle(block)
-
-
-@pytest.mark.asyncio
-async def test_toggleable_heading3_block_should_not_be_handled(heading_renderer: HeadingRenderer) -> None:
-    heading_data = _create_heading_data([RichText.from_plain_text("Toggleable Heading 3")], is_toggleable=True)
-    block = _create_heading_block(BlockType.HEADING_3, heading_data)
-
-    assert not heading_renderer._can_handle(block)
-
-
-@pytest.mark.asyncio
 async def test_non_heading_block_should_not_be_handled(heading_renderer: HeadingRenderer, mock_block: Block) -> None:
     mock_block.type = BlockType.PARAGRAPH
 
@@ -322,3 +298,43 @@ async def test_get_heading_title_for_invalid_type_should_return_empty_string(
     title = await heading_renderer._get_heading_title(block)
 
     assert title == ""
+
+
+@pytest.mark.asyncio
+async def test_toggleable_heading_with_children_should_render_with_indentation(
+    heading_renderer: HeadingRenderer,
+    render_context: MarkdownRenderingContext,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> None:
+    rich_text = [RichText.from_plain_text("Toggleable Heading")]
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Toggleable Heading")
+
+    heading_data = _create_heading_data(rich_text, is_toggleable=True)
+    block = _create_heading_block(BlockType.HEADING_2, heading_data)
+    render_context.block = block
+    render_context.render_children = AsyncMock(return_value="Child content")
+
+    await heading_renderer._process(render_context)
+
+    assert "## Toggleable Heading" in render_context.markdown_result
+    assert "Child content" in render_context.markdown_result
+    render_context.render_children.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_toggleable_heading_without_children_should_render_heading_only(
+    heading_renderer: HeadingRenderer,
+    render_context: MarkdownRenderingContext,
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> None:
+    rich_text = [RichText.from_plain_text("Toggleable No Children")]
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Toggleable No Children")
+
+    heading_data = _create_heading_data(rich_text, is_toggleable=True)
+    block = _create_heading_block(BlockType.HEADING_1, heading_data)
+    render_context.block = block
+    render_context.render_children = AsyncMock(return_value="")
+
+    await heading_renderer._process(render_context)
+
+    assert render_context.markdown_result == "# Toggleable No Children"

@@ -26,7 +26,6 @@ from notionary.page.content.renderer.renderers import (
     TableRenderer,
     TableRowHandler,
     TodoRenderer,
-    ToggleableHeadingRenderer,
     ToggleRenderer,
     VideoRenderer,
 )
@@ -45,7 +44,6 @@ class RendererChainFactory:
     def create(self) -> BlockRenderer:
         # Strukturelle Blocks
         toggle_handler = self._create_toggle_renderer()
-        toggleable_heading_handler = self._create_toggleable_heading_renderer()
         heading_handler = self._create_heading_renderer()
 
         # Content Blocks
@@ -83,8 +81,7 @@ class RendererChainFactory:
 
         # Chain verketten - most specific first, fallback last
         (
-            toggle_handler.set_next(toggleable_heading_handler)
-            .set_next(heading_handler)
+            toggle_handler.set_next(heading_handler)
             .set_next(callout_handler)
             .set_next(code_handler)
             .set_next(quote_handler)
@@ -115,12 +112,6 @@ class RendererChainFactory:
     # Renderer Creation Methods
     def _create_toggle_renderer(self) -> ToggleRenderer:
         return ToggleRenderer(
-            syntax_registry=self._syntax_registry,
-            rich_text_markdown_converter=self._rich_text_markdown_converter,
-        )
-
-    def _create_toggleable_heading_renderer(self) -> ToggleableHeadingRenderer:
-        return ToggleableHeadingRenderer(
             syntax_registry=self._syntax_registry,
             rich_text_markdown_converter=self._rich_text_markdown_converter,
         )

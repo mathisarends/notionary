@@ -1,4 +1,4 @@
-from notionary.page.content.markdown.nodes import HeadingMarkdownNode
+from notionary.page.content.markdown.nodes import HeadingMarkdownNode, ParagraphMarkdownNode
 from notionary.page.content.syntax.service import SyntaxRegistry
 
 
@@ -20,3 +20,27 @@ def test_heading_markdown_node(syntax_registry: SyntaxRegistry) -> None:
     h4_clamped = HeadingMarkdownNode(text="still valid", level=4)
     expected = f"{heading_syntax.start_delimiter * 3} still valid"
     assert h4_clamped.to_markdown() == expected
+
+
+def test_heading_with_children(syntax_registry: SyntaxRegistry) -> None:
+    """Test heading with nested children using indentation (toggleable)."""
+    heading_syntax = syntax_registry.get_heading_syntax()
+
+    # Create children
+    child1 = ParagraphMarkdownNode(text="First paragraph")
+    child2 = ParagraphMarkdownNode(text="Second paragraph")
+
+    heading = HeadingMarkdownNode(
+        text="Toggleable Heading",
+        level=2,
+        children=[child1, child2],
+    )
+
+    result = heading.to_markdown()
+
+    # Check parent heading
+    assert f"{heading_syntax.start_delimiter * 2} Toggleable Heading" in result
+
+    # Check indented children (4 spaces)
+    assert "    First paragraph" in result
+    assert "    Second paragraph" in result

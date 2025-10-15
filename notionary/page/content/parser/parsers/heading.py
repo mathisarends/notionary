@@ -3,6 +3,8 @@ from typing import override
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.schemas import (
     BlockColor,
+    BlockCreatePayload,
+    BlockType,
     CreateHeading1Block,
     CreateHeading2Block,
     CreateHeading3Block,
@@ -17,6 +19,9 @@ from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class HeadingParser(LineParser):
+    MIN_HEADING_LEVEL = 1
+    MAX_HEADING_LEVEL = 3
+
     def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_heading_syntax()
@@ -31,8 +36,44 @@ class HeadingParser(LineParser):
     @override
     async def _process(self, context: BlockParsingContext) -> None:
         block = await self._create_heading_block(context.line)
-        if block:
-            context.result_blocks.append(block)
+        if not block:
+            return
+
+        await self._process_nested_children(block, context)
+        context.result_blocks.append(block)
+
+    async def _process_nested_children(self, block: CreateHeadingBlock, context: BlockParsingContext) -> None:
+        parent_indent_level = context.get_line_indentation_level()
+        child_lines = context.collect_indented_child_lines(parent_indent_level)
+
+        if not child_lines:
+            return
+
+        self._set_heading_toggleable(block, True)
+
+        stripped_lines = context.strip_indentation_level(child_lines, levels=1)
+        child_markdown = "\n".join(stripped_lines)
+
+        child_blocks = await context.parse_nested_markdown(child_markdown)
+        self._set_heading_children(block, child_blocks)
+
+        context.lines_consumed = len(child_lines)
+
+    def _set_heading_toggleable(self, block: CreateHeadingBlock, is_toggleable: bool) -> None:
+        if block.type == BlockType.HEADING_1:
+            block.heading_1.is_toggleable = is_toggleable
+        elif block.type == BlockType.HEADING_2:
+            block.heading_2.is_toggleable = is_toggleable
+        elif block.type == BlockType.HEADING_3:
+            block.heading_3.is_toggleable = is_toggleable
+
+    def _set_heading_children(self, block: CreateHeadingBlock, children: list[BlockCreatePayload]) -> None:
+        if block.type == BlockType.HEADING_1:
+            block.heading_1.children = children
+        elif block.type == BlockType.HEADING_2:
+            block.heading_2.children = children
+        elif block.type == BlockType.HEADING_3:
+            block.heading_3.children = children
 
     async def _create_heading_block(self, line: str) -> CreateHeadingBlock | None:
         match = self._syntax.regex_pattern.match(line)
@@ -40,16 +81,22 @@ class HeadingParser(LineParser):
             return None
 
         level = len(match.group(1))
-        if level < 1 or level > 3:
-            return None
-
         content = match.group(2).strip()
-        if not content:
+
+        if not self._is_valid_heading(level, content):
             return None
 
-        rich_text = await self._rich_text_converter.to_rich_text(content)
-        heading_data = CreateHeadingData(rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=False)
+        heading_data = await self._build_heading_data(content)
+        return self._create_heading_block_by_level(level, heading_data)
 
+    def _is_valid_heading(self, level: int, content: str) -> bool:
+        return self.MIN_HEADING_LEVEL <= level <= self.MAX_HEADING_LEVEL and bool(content)
+
+    async def _build_heading_data(self, content: str) -> CreateHeadingData:
+        rich_text = await self._rich_text_converter.to_rich_text(content)
+        return CreateHeadingData(rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=False, children=[])
+
+    def _create_heading_block_by_level(self, level: int, heading_data: CreateHeadingData) -> CreateHeadingBlock:
         if level == 1:
             return CreateHeading1Block(heading_1=heading_data)
         elif level == 2:
