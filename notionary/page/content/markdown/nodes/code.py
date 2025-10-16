@@ -7,8 +7,6 @@ from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 class CodeMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
-    """Code node for creating Notion-style code blocks."""
-
     def __init__(
         self,
         code: str,

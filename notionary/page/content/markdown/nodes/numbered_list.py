@@ -22,9 +22,8 @@ class NumberedListMarkdownNode(ChildrenRenderMixin, MarkdownNode):
         return "\n".join(list_items)
 
     def _render_list_item(self, index: int, text: str) -> str:
-        delimiter = self._get_list_delimiter()
         item_number = index + 1
-        item_line = f"{item_number}{delimiter} {text}"
+        item_line = f"{item_number}. {text}"
 
         child = self._get_child_for_item(index)
         if child:
@@ -32,9 +31,6 @@ class NumberedListMarkdownNode(ChildrenRenderMixin, MarkdownNode):
             return f"{item_line}\n{child_content}"
 
         return item_line
-
-    def _get_list_delimiter(self) -> str:
-        return self._syntax_registry.get_numbered_list_syntax().end_delimiter
 
     def _get_child_for_item(self, index: int) -> MarkdownNode | None:
         if not self.children or index >= len(self.children):

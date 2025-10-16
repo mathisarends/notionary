@@ -38,17 +38,14 @@ class MarkdownBuilder:
     def __init__(self) -> None:
         self.children: list[MarkdownNode] = []
 
-    def h1(self, text: str) -> Self:
-        self.children.append(HeadingMarkdownNode(text=text, level=1))
-        return self
+    def h1(self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None) -> Self:
+        return self._add_heading(text, 1, builder_func)
 
-    def h2(self, text: str) -> Self:
-        self.children.append(HeadingMarkdownNode(text=text, level=2))
-        return self
+    def h2(self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None) -> Self:
+        return self._add_heading(text, 2, builder_func)
 
-    def h3(self, text: str) -> Self:
-        self.children.append(HeadingMarkdownNode(text=text, level=3))
-        return self
+    def h3(self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None) -> Self:
+        return self._add_heading(text, 3, builder_func)
 
     def paragraph(self, text: str) -> Self:
         self.children.append(ParagraphMarkdownNode(text=text))
@@ -58,8 +55,9 @@ class MarkdownBuilder:
         self.children.append(SpaceMarkdownNode())
         return self
 
-    def quote(self, text: str) -> Self:
-        self.children.append(QuoteMarkdownNode(text=text))
+    def quote(self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None) -> Self:
+        children = self._build_children(builder_func)
+        self.children.append(QuoteMarkdownNode(text=text, children=children))
         return self
 
     def divider(self) -> Self:
@@ -70,24 +68,46 @@ class MarkdownBuilder:
         self.children.append(NumberedListMarkdownNode(texts=items))
         return self
 
+    def numbered_list_item(
+        self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None
+    ) -> Self:
+        children = self._build_children(builder_func)
+        child_nodes = [children] if children else None
+        self.children.append(NumberedListMarkdownNode(texts=[text], children=child_nodes))
+        return self
+
     def bulleted_list(self, items: list[str]) -> Self:
         self.children.append(BulletedListMarkdownNode(texts=items))
         return self
 
-    def todo(self, text: str, checked: bool = False) -> Self:
-        self.children.append(TodoMarkdownNode(text=text, checked=checked))
+    def bulleted_list_item(
+        self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None
+    ) -> Self:
+        children = self._build_children(builder_func)
+        child_nodes = [children] if children else None
+        self.children.append(BulletedListMarkdownNode(texts=[text], children=child_nodes))
         return self
 
-    def checked_todo(self, text: str) -> Self:
-        return self.todo(text, checked=True)
+    def todo(
+        self,
+        text: str,
+        checked: bool = False,
+        builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None,
+    ) -> Self:
+        children = self._build_children(builder_func)
+        self.children.append(TodoMarkdownNode(text=text, checked=checked, children=children))
+        return self
 
-    def unchecked_todo(self, text: str) -> Self:
-        return self.todo(text, checked=False)
+    def checked_todo(self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None) -> Self:
+        return self.todo(text, checked=True, builder_func=builder_func)
+
+    def unchecked_todo(
+        self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None
+    ) -> Self:
+        return self.todo(text, checked=False, builder_func=builder_func)
 
     def todo_list(self, items: list[str], completed: list[bool] | None = None) -> Self:
-        if completed is None:
-            completed = [False] * len(items)
-
+        completed = completed or [False] * len(items)
         for i, item in enumerate(items):
             is_done = completed[i] if i < len(completed) else False
             self.children.append(TodoMarkdownNode(text=item, checked=is_done))
@@ -103,48 +123,13 @@ class MarkdownBuilder:
         emoji: str | None = None,
         builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None,
     ) -> Self:
-        """
-        Add a callout block with children built using the builder API.
-
-        Args:
-            text: The callout text content
-            emoji: Optional emoji for the callout icon
-            builder_func: Optional function that receives a MarkdownBuilder and returns it configured
-
-        Example:
-            builder.callout_with_children("Important note", "⚠️", lambda c:
-                c.paragraph("Additional details here")
-                .bulleted_list(["Point 1", "Point 2"])
-            )
-        """
-        if builder_func is None:
-            self.children.append(CalloutMarkdownNode(text=text, emoji=emoji))
-            return self
-
-        callout_builder = MarkdownBuilder()
-        builder_func(callout_builder)
-        self.children.append(CalloutMarkdownNode(text=text, emoji=emoji, children=callout_builder.children))
+        children = self._build_children(builder_func)
+        self.children.append(CalloutMarkdownNode(text=text, emoji=emoji, children=children))
         return self
 
     def toggle(self, title: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder]) -> Self:
-        """
-        Add a toggle block with content built using the builder API.
-
-        Args:
-            title: The toggle title/header text
-            builder_func: Function that receives a MarkdownBuilder and returns it configured
-
-        Example:
-            builder.toggle("Advanced Settings", lambda t:
-                t.h3("Configuration")
-                .paragraph("Settings description")
-                .table(["Setting", "Value"], [["Debug", "True"]])
-                .callout("Important note", "⚠️")
-            )
-        """
-        toggle_builder = MarkdownBuilder()
-        builder_func(toggle_builder)
-        self.children.append(ToggleMarkdownNode(title=title, children=toggle_builder.children))
+        children = self._build_children(builder_func)
+        self.children.append(ToggleMarkdownNode(title=title, children=children))
         return self
 
     def toggleable_heading(
@@ -153,25 +138,8 @@ class MarkdownBuilder:
         level: int,
         builder_func: Callable[[MarkdownBuilder], MarkdownBuilder],
     ) -> Self:
-        """
-        Add a toggleable heading with content built using the builder API.
-
-        Args:
-            text: The heading text content
-            level: Heading level (1-3)
-            builder_func: Function that receives a MarkdownBuilder and returns it configured
-
-        Example:
-            builder.toggleable_heading("Advanced Section", 2, lambda t:
-                t.paragraph("Introduction to this section")
-                .numbered_list(["Step 1", "Step 2", "Step 3"])
-                .code("example_code()", "python")
-                .table(["Feature", "Status"], [["API", "Ready"]])
-            )
-        """
-        toggle_builder = MarkdownBuilder()
-        builder_func(toggle_builder)
-        self.children.append(ToggleableHeadingMarkdownNode(text=text, level=level, children=toggle_builder.children))
+        children = self._build_children(builder_func)
+        self.children.append(ToggleableHeadingMarkdownNode(text=text, level=level, children=children))
         return self
 
     def image(self, url: str, caption: str | None = None) -> Self:
@@ -214,10 +182,6 @@ class MarkdownBuilder:
         self.children.append(TableMarkdownNode(headers=headers, rows=rows))
         return self
 
-    def add_custom(self, node: MarkdownNode) -> Self:
-        self.children.append(node)
-        return self
-
     def breadcrumb(self) -> Self:
         self.children.append(BreadcrumbMarkdownNode())
         return self
@@ -235,70 +199,36 @@ class MarkdownBuilder:
         *builder_funcs: Callable[[MarkdownBuilder], MarkdownBuilder],
         width_ratios: list[float] | None = None,
     ) -> Self:
-        """
-        Add multiple columns in a layout.
-
-        Args:
-            *builder_funcs: Multiple functions, each building one column
-            width_ratios: Optional list of width ratios (0.0 to 1.0).
-                        If None, columns have equal width.
-                        Length must match number of builder_funcs.
-
-        Examples:
-            # Equal width (original API unchanged):
-            builder.columns(
-                lambda col: col.h2("Left").paragraph("Left content"),
-                lambda col: col.h2("Right").paragraph("Right content")
-            )
-
-            # Custom ratios:
-            builder.columns(
-                lambda col: col.h2("Main").paragraph("70% width"),
-                lambda col: col.h2("Sidebar").paragraph("30% width"),
-                width_ratios=[0.7, 0.3]
-            )
-
-            # Three columns with custom ratios:
-            builder.columns(
-                lambda col: col.h3("Nav").paragraph("Navigation"),
-                lambda col: col.h2("Main").paragraph("Main content"),
-                lambda col: col.h3("Ads").paragraph("Advertisement"),
-                width_ratios=[0.2, 0.6, 0.2]
-            )
-        """
-        self._validate_columns_args(builder_funcs, width_ratios)
-
-        # Create all columns
-        columns = []
-        for i, builder_func in enumerate(builder_funcs):
-            width_ratio = width_ratios[i] if width_ratios else None
-
-            col_builder = MarkdownBuilder()
-            builder_func(col_builder)
-
-            column_node = ColumnMarkdownNode(children=col_builder.children, width_ratio=width_ratio)
-            columns.append(column_node)
-
+        columns = self._build_columns(builder_funcs, width_ratios)
         self.children.append(ColumnListMarkdownNode(columns=columns))
         return self
 
-    def _validate_columns_args(
+    def build(self) -> str:
+        return "\n\n".join(child.to_markdown() for child in self.children if child is not None)
+
+    def _add_heading(
+        self, text: str, level: int, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None
+    ) -> Self:
+        children = self._build_children(builder_func)
+        self.children.append(HeadingMarkdownNode(text=text, level=level, children=children))
+        return self
+
+    def _build_children(self, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None) -> list[MarkdownNode]:
+        if builder_func is None:
+            return []
+
+        builder = MarkdownBuilder()
+        builder_func(builder)
+        return builder.children
+
+    def _build_columns(
         self,
         builder_funcs: tuple[Callable[[MarkdownBuilder], MarkdownBuilder], ...],
         width_ratios: list[float] | None,
-    ) -> None:
-        if len(builder_funcs) < 2:
-            raise ValueError("Column layout requires at least 2 columns")
-
-        if width_ratios is not None:
-            if len(width_ratios) != len(builder_funcs):
-                raise ValueError(
-                    f"width_ratios length ({len(width_ratios)}) must match number of columns ({len(builder_funcs)})"
-                )
-
-            ratio_sum = sum(width_ratios)
-            if not (0.9 <= ratio_sum <= 1.1):  # Allow small floating point errors
-                raise ValueError(f"width_ratios should sum to 1.0, got {ratio_sum}")
-
-    def build(self) -> str:
-        return "\n\n".join(child.to_markdown() for child in self.children if child is not None)
+    ) -> list[ColumnMarkdownNode]:
+        columns = []
+        for i, builder_func in enumerate(builder_funcs):
+            width_ratio = width_ratios[i] if width_ratios else None
+            children = self._build_children(builder_func)
+            columns.append(ColumnMarkdownNode(children=children, width_ratio=width_ratio))
+        return columns

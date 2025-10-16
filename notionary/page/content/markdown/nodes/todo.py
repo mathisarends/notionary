@@ -26,7 +26,7 @@ class TodoMarkdownNode(ChildrenRenderMixin, MarkdownNode):
     def to_markdown(self) -> str:
         validated_marker = self._get_validated_marker()
         checkbox_state = self._get_checkbox_state()
-        result = f"{validated_marker} {checkbox_state} {self.text}"
+        result = f"{validated_marker}{checkbox_state} {self.text}"
         result += self.render_children()
         return result
 

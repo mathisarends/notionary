@@ -1,208 +1,282 @@
-from notionary import MarkdownBuilder
+import pytest
+
+from notionary.page.content.markdown.builder import MarkdownBuilder
 
 
-def test_nested_columns_with_mixed_content():
-    builder = MarkdownBuilder()
+@pytest.fixture
+def builder() -> MarkdownBuilder:
+    return MarkdownBuilder()
 
-    result = (
-        builder.h1("Complex Documentation")
-        .paragraph("Introduction text")
-        .columns(
-            # Linke Spalte: Tabelle + Liste
-            lambda col: (
-                col.h2("API Overview")
-                .table(
-                    headers=["Endpoint", "Method", "Status"],
-                    rows=[["/users", "GET", "Active"], ["/auth", "POST", "Beta"]],
-                )
-                .bulleted_list(["Authentication required", "Rate limited", "JSON responses"])
-            ),
-            # Rechte Spalte: Code + Callout
-            lambda col: (
-                col.h2("Implementation")
-                .code("def get_users():\n    return api.request('/users')", "python")
-                .callout("Important: Always handle exceptions!", "⚠️")
-            ),
-            width_ratios=[0.6, 0.4],
-        )
-        .build()
-    )
 
-    assert "# Complex Documentation" in result
-    assert "Introduction text" in result
-    assert "## API Overview" in result
-    assert "## Implementation" in result
-    assert "| Endpoint | Method | Status |" in result
-    assert "```python" in result
-    assert "def get_users():" in result
-    assert '[callout](Important: Always handle exceptions! "⚠️")' in result
-    assert "-  Authentication required" in result  # SyntaxRegistry adds space after bullet
+def test_simple_document(builder: MarkdownBuilder):
+    result = builder.h1("Welcome").paragraph("This is a test document.").space().divider().build()
 
+    assert "# Welcome" in result
+    assert "This is a test document." in result
+
+
+def test_heading_with_nested_content(builder: MarkdownBuilder):
+    result = builder.h2(
+        "Features", lambda b: b.paragraph("Key features:").bulleted_list(["Fast", "Simple", "Reliable"])
+    ).build()
+
+    assert "## Features" in result
+    assert "Key features:" in result
+    assert "Fast" in result
+
+
+def test_columns_with_content(builder: MarkdownBuilder):
+    result = builder.columns(
+        lambda col: col.h3("Left Column").paragraph("Left content"),
+        lambda col: col.h3("Right Column").paragraph("Right content"),
+    ).build()
+
+    assert "::: columns" in result
     assert "::: column" in result
-    assert ":::" in result
+    assert "### Left Column" in result
+    assert "### Right Column" in result
+    assert "Left content" in result
+    assert "Right content" in result
 
 
-def test_deeply_nested_toggles():
-    """Test tief verschachtelte Toggle-Strukturen"""
-    builder = MarkdownBuilder()
+def test_columns_with_width_ratios(builder: MarkdownBuilder):
+    result = builder.columns(
+        lambda col: col.paragraph("Sidebar"), lambda col: col.paragraph("Main content"), width_ratios=[0.3, 0.7]
+    ).build()
 
+    assert "::: columns" in result
+    assert "Sidebar" in result
+    assert "Main content" in result
+    assert "0.3" in result
+    assert "0.7" in result
+
+
+def test_three_column_layout(builder: MarkdownBuilder):
+    result = builder.columns(
+        lambda col: col.h3("Nav").paragraph("Navigation"),
+        lambda col: col.h2("Content").paragraph("Main content area"),
+        lambda col: col.h3("Ads").paragraph("Advertisements"),
+        width_ratios=[0.2, 0.6, 0.2],
+    ).build()
+
+    assert "::: columns" in result
+    assert "### Nav" in result
+    assert "## Content" in result
+    assert "### Ads" in result
+
+
+def test_callout_with_nested_content(builder: MarkdownBuilder):
+    result = builder.callout_with_children(
+        "Important note",
+        emoji="⚠️",
+        builder_func=lambda b: b.paragraph("Please read carefully.").bulleted_list(["Point 1", "Point 2"]),
+    ).build()
+
+    assert "[callout]" in result
+    assert "Important note" in result
+    assert "⚠️" in result
+    assert "Please read carefully." in result
+    assert "Point 1" in result
+
+
+def test_toggle_section(builder: MarkdownBuilder):
+    result = builder.toggle(
+        "Advanced Settings",
+        lambda b: b.h3("Configuration").paragraph("Details here").code("config = true", language="javascript"),
+    ).build()
+
+    assert "+++ Advanced Settings" in result
+    assert "### Configuration" in result
+    assert "Details here" in result
+    assert "```javascript" in result
+    assert "config = true" in result
+
+
+def test_toggleable_heading_with_content(builder: MarkdownBuilder):
+    result = builder.toggleable_heading(
+        "API Reference",
+        2,
+        lambda b: b.paragraph("API documentation").table(
+            ["Method", "Description"], [["GET", "Fetch data"], ["POST", "Create data"]]
+        ),
+    ).build()
+
+    assert "+++##" in result
+    assert "API Reference" in result
+    assert "API documentation" in result
+    assert "| Method |" in result
+
+
+def test_simple_numbered_list(builder: MarkdownBuilder):
+    result = builder.numbered_list(["First", "Second", "Third"]).build()
+
+    assert "1. First" in result
+    assert "2. Second" in result
+    assert "3. Third" in result
+
+
+def test_simple_bulleted_list(builder: MarkdownBuilder):
+    result = builder.bulleted_list(["Item 1", "Item 2", "Item 3"]).build()
+
+    assert "- Item 1" in result
+    assert "- Item 2" in result
+    assert "- Item 3" in result
+
+
+def test_quote_with_nested_content(builder: MarkdownBuilder):
+    result = builder.quote(
+        "Life is what happens", lambda b: b.paragraph("— John Lennon").space().paragraph("From 1980 interview")
+    ).build()
+
+    assert "> Life is what happens" in result
+    assert "John Lennon" in result
+    assert "From 1980 interview" in result
+
+
+def test_simple_documentation_page(builder: MarkdownBuilder):
     result = (
-        builder.h1("Nested Configuration")
-        .toggle(
-            "Database Settings",
-            lambda t: (
-                t.h2("Connection Configuration")
-                .paragraph("Main database settings")
-                .toggle(
-                    "Advanced Options",
-                    lambda inner: (
-                        inner.h3("Performance Tuning")
-                        .table(
-                            headers=["Parameter", "Value", "Description"],
-                            rows=[
-                                [
-                                    "max_connections",
-                                    "100",
-                                    "Maximum concurrent connections",
-                                ],
-                                ["timeout", "30s", "Connection timeout"],
-                            ],
-                        )
-                        .callout("Restart required after changes", "🔄")
-                    ),
-                )
-                .paragraph("End of database configuration")
-            ),
-        )
-        .build()
-    )
-
-    # FIXED: Toggle-Titel MIT Leerzeichen (aktuelle Implementierung)
-    assert "+++ Database Settings" in result
-    assert "## Connection Configuration" in result
-    assert "Main database settings" in result
-
-    # FIXED: Innerer Toggle auch mit Leerzeichen
-    assert "+++ Advanced Options" in result
-    assert "### Performance Tuning" in result
-    assert "| Parameter | Value | Description |" in result
-    assert "| max_connections | 100 | Maximum concurrent connections |" in result
-    assert '[callout](Restart required after changes "🔄")' in result
-    assert "End of database configuration" in result
-
-
-def test_complex_documentation_structure():
-    """Test einer komplexen Dokumentationsstruktur - FIXED for new caption syntax"""
-    builder = MarkdownBuilder()
-
-    result = (
-        builder.h1("API Documentation & Implementation Guide")
-        .paragraph("Diese Dokumentation zeigt sowohl die API-Endpunkte als auch deren Implementierung.")
+        builder.breadcrumb()
+        .h1("Project Documentation")
+        .paragraph("Complete guide for developers")
+        .space()
+        .table_of_contents()
         .divider()
-        .columns(
-            # Linke Spalte: Tabelle mit API-Endpunkten
-            lambda col: (
-                col.h2("📋 API Endpunkte")
-                .paragraph("Übersicht aller verfügbaren REST-API Endpunkte:")
-                .table(
-                    headers=["Endpunkt", "Methode", "Beschreibung", "Status"],
-                    rows=[
-                        ["/api/users", "GET", "Alle Benutzer abrufen", "✅ Aktiv"],
-                        [
-                            "/api/users/{id}",
-                            "GET",
-                            "Einzelnen Benutzer abrufen",
-                            "✅ Aktiv",
-                        ],
-                        ["/api/users", "POST", "Neuen Benutzer erstellen", "✅ Aktiv"],
-                        [
-                            "/api/users/{id}",
-                            "DELETE",
-                            "Benutzer löschen",
-                            "⚠️ Deprecated",
-                        ],
-                    ],
-                )
-                .callout(
-                    "💡 Alle Endpunkte erfordern eine gültige API-Authentifizierung",
-                    "🔐",
-                )
-            ),
-            # Rechte Spalte: Code-Implementierung
-            lambda col: (
-                col.h2("⚙️ Implementierung")
-                .paragraph("Python-Client Beispiel für die API-Nutzung:")
-                .code(
-                    """import requests
-import json
-
-class APIClient:
-    def __init__(self, base_url: str, api_key: str):
-        self.base_url = base_url.rstrip('/')
-        self.session = requests.Session()
-        self.session.headers.update({
-            'Authorization': f'Bearer {api_key}',
-            'Content-Type': 'application/json'
-        })
-
-    def get_users(self):
-        response = self.session.get(f'{self.base_url}/api/users')
-        response.raise_for_status()
-        return response.json()""",
-                    "python",
-                    "Python API Client Implementation",
-                )
-                .paragraph("**Wichtige Hinweise:**")
-                .bulleted_list(
-                    [
-                        "API-Key über Umgebungsvariablen laden",
-                        "Retry-Mechanismus für fehlerhafte Requests",
-                        "Rate-Limiting beachten (100 Requests/Min)",
-                    ]
-                )
-            ),
-            width_ratios=[0.6, 0.4],
+        .h2(
+            "Getting Started",
+            lambda b: b.paragraph("Follow these steps:").numbered_list(["Install dependencies", "Run application"]),
         )
-        .toggle(
-            "📊 Performance Benchmarks",
-            lambda toggle: (
-                toggle.h3("Benchmark Results")
-                .table(
-                    headers=["Endpunkt", "Avg Response Time", "RPS", "P95"],
-                    rows=[
-                        ["/api/users", "45ms", "850", "120ms"],
-                        ["/api/users/{id}", "12ms", "2400", "35ms"],
-                        ["/api/auth/login", "180ms", "200", "450ms"],
-                    ],
-                )
-                .callout("Tests durchgeführt mit 1000 concurrent users über 5 Minuten", "📈")
-            ),
+        .callout_with_children(
+            "Note", emoji="💡", builder_func=lambda b: b.paragraph("Make sure Python 3.9+ is installed")
         )
         .build()
     )
 
-    # Hauptstruktur
-    assert "# API Documentation & Implementation Guide" in result
-    assert "Diese Dokumentation zeigt sowohl die API-Endpunkte als auch deren Implementierung." in result
-    assert "---" in result  # Divider
+    assert "# Project Documentation" in result
+    assert "Complete guide for developers" in result
+    assert "[toc]" in result
+    assert "## Getting Started" in result
+    assert "Install dependencies" in result
+    assert "[callout]" in result
+    assert "💡" in result
 
-    # Spalten-Content
-    assert "## 📋 API Endpunkte" in result
-    assert "## ⚙️ Implementierung" in result
-    assert "| Endpunkt | Methode | Beschreibung | Status |" in result
-    assert "| /api/users | GET | Alle Benutzer abrufen | ✅ Aktiv |" in result
+
+def test_todo_with_nested_tasks(builder: MarkdownBuilder):
+    result = (
+        builder.checked_todo(
+            "Complete Phase 1",
+            lambda b: b.paragraph("Finished tasks:").bulleted_list(["Design", "Implementation", "Testing"]),
+        )
+        .unchecked_todo("Start Phase 2")
+        .build()
+    )
+
+    assert "- Complete Phase 1" in result
+    assert "Finished tasks:" in result
+    assert "- [ ] Start Phase 2" in result
+
+
+def test_media_rich_content(builder: MarkdownBuilder):
+    result = (
+        builder.h2("Gallery")
+        .image("https://example.com/photo.jpg", caption="Project screenshot")
+        .space()
+        .video("https://example.com/demo.mp4", caption="Demo video")
+        .divider()
+        .pdf("https://example.com/manual.pdf", caption="User manual")
+        .build()
+    )
+
+    assert "## Gallery" in result
+    assert "[image]" in result
+    assert "https://example.com/photo.jpg" in result
+    assert "Project screenshot" in result
+    assert "https://example.com/demo.mp4" in result
+
+
+def test_deeply_nested_structure(builder: MarkdownBuilder):
+    result = builder.h1(
+        "Documentation",
+        lambda b: b.callout_with_children(
+            "Overview",
+            emoji="📚",
+            builder_func=lambda c: c.paragraph("Main sections:").toggle(
+                "Chapter 1", lambda t: t.h3("Introduction").paragraph("Content here")
+            ),
+        ),
+    ).build()
+
+    assert "# Documentation" in result
+    assert "[callout]" in result
+    assert "📚" in result
+    assert "+++ Chapter 1" in result
+    assert "### Introduction" in result
+
+
+def test_table_with_surrounding_content(builder: MarkdownBuilder):
+    result = (
+        builder.h2("API Endpoints")
+        .paragraph("Available routes:")
+        .table(
+            ["Method", "Path", "Description"],
+            [
+                ["GET", "/users", "List all users"],
+                ["POST", "/users", "Create user"],
+                ["DELETE", "/users/:id", "Delete user"],
+            ],
+        )
+        .paragraph("All endpoints require authentication.")
+        .build()
+    )
+
+    assert "## API Endpoints" in result
+    assert "| Method |" in result
+    assert "| GET |" in result
+    assert "/users" in result
+    assert "All endpoints require authentication." in result
+
+
+def test_code_blocks(builder: MarkdownBuilder):
+    result = (
+        builder.h3("Code Example")
+        .code("print('hello world')", language="python", caption="Python example")
+        .space()
+        .mermaid("graph TD\n  A-->B", caption="Flow diagram")
+        .build()
+    )
+
+    assert "### Code Example" in result
     assert "```python" in result
-    assert "class APIClient:" in result
+    assert "print('hello world')" in result
+    assert "```mermaid" in result
 
-    # Caption now appears on separate line with [caption] syntax
-    assert "[caption] Python API Client Implementation" in result
 
-    # Callouts und Listen
-    assert '[callout](💡 Alle Endpunkte erfordern eine gültige API-Authentifizierung "🔐")' in result
-    assert "-  API-Key über Umgebungsvariablen laden" in result  # SyntaxRegistry adds space after bullet
+def test_build_produces_string(builder: MarkdownBuilder):
+    builder.h1("Title").paragraph("Content")
 
-    # Toggle mit Benchmarks - FIXED: Korrekte Syntax MIT Leerzeichen
-    assert "+++ 📊 Performance Benchmarks" in result
-    assert "### Benchmark Results" in result
-    assert "| /api/users | 45ms | 850 | 120ms |" in result
-    assert '[callout](Tests durchgeführt mit 1000 concurrent users über 5 Minuten "📈")' in result
+    result = builder.build()
+
+    assert isinstance(result, str)
+    assert len(result) > 0
+
+
+def test_empty_builder_builds_empty_string(builder: MarkdownBuilder):
+    result = builder.build()
+
+    assert result == ""
+
+
+def test_multiple_media_types(builder: MarkdownBuilder):
+    result = (
+        builder.image("img.png", caption="Image")
+        .video("video.mp4")
+        .audio("audio.mp3", caption="Audio")
+        .pdf("doc.pdf")
+        .file("file.zip")
+        .build()
+    )
+
+    assert "[image]" in result
+    assert "[video]" in result
+    assert "[audio]" in result
+    assert "[pdf]" in result
+    assert "[file]" in result

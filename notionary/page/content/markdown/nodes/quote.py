@@ -19,7 +19,7 @@ class QuoteMarkdownNode(ChildrenRenderMixin, MarkdownNode):
     @override
     def to_markdown(self) -> str:
         quote_delimiter = self._get_quote_delimiter()
-        result = f"{quote_delimiter} {self.text}"
+        result = f"{quote_delimiter}{self.text}"
         result += self.render_children()
         return result
 

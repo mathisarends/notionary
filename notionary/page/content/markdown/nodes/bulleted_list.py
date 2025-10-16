@@ -23,7 +23,7 @@ class BulletedListMarkdownNode(ChildrenRenderMixin, MarkdownNode):
 
     def _render_list_item(self, index: int, text: str) -> str:
         delimiter = self._get_list_delimiter()
-        item_line = f"{delimiter} {text}"
+        item_line = f"{delimiter}{text}"
 
         child = self._get_child_for_item(index)
         if child:

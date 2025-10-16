@@ -64,5 +64,3 @@ class SyntaxDefinition:
     end_delimiter: str
     regex_pattern: re.Pattern
     end_regex_pattern: re.Pattern | None = None
-    is_multiline_block: bool = False
-    is_inline: bool = False

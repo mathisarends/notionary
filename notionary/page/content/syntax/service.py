@@ -140,8 +140,6 @@ class SyntaxRegistry:
             start_delimiter="[audio](",
             end_delimiter=")",
             regex_pattern=re.compile(r"\[audio\]\(([^)]+)\)"),
-            is_multiline_block=False,
-            is_inline=True,
         )
         self._definitions[SyntaxRegistryKey.AUDIO] = definition
 
@@ -150,8 +148,6 @@ class SyntaxRegistry:
             start_delimiter="[bookmark](",
             end_delimiter=")",
             regex_pattern=re.compile(r"\[bookmark\]\((https?://[^\s\"]+)\)"),
-            is_multiline_block=False,
-            is_inline=True,
         )
         self._definitions[SyntaxRegistryKey.BOOKMARK] = definition
 
@@ -160,8 +156,6 @@ class SyntaxRegistry:
             start_delimiter="[breadcrumb]",
             end_delimiter="",
             regex_pattern=re.compile(r"^\[breadcrumb\]\s*$", re.IGNORECASE),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.BREADCRUMB] = definition
 
@@ -170,8 +164,6 @@ class SyntaxRegistry:
             start_delimiter="- ",
             end_delimiter="",
             regex_pattern=re.compile(r"^(\s*)-\s+(?!\[[ xX]\])(.+)$"),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.BULLETED_LIST] = definition
 
@@ -182,8 +174,6 @@ class SyntaxRegistry:
             regex_pattern=re.compile(
                 r'\[callout\](?:\(([^")]+?)(?:\s+"([^"]+)")?\)|(?:\s+([^"\n]+?)(?:\s+"([^"]+)")?)(?:\n|$))'
             ),
-            is_multiline_block=False,
-            is_inline=True,
         )
         self._definitions[SyntaxRegistryKey.CALLOUT] = definition
 
@@ -194,8 +184,6 @@ class SyntaxRegistry:
             end_delimiter=code_delimiter,
             regex_pattern=re.compile("^" + re.escape(code_delimiter) + r"(\w*)\s*$"),
             end_regex_pattern=re.compile("^" + re.escape(code_delimiter) + r"\s*$"),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.CODE] = definition
 
@@ -208,8 +196,6 @@ class SyntaxRegistry:
                 re.IGNORECASE | re.MULTILINE,
             ),
             end_regex_pattern=re.compile(rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*$", re.MULTILINE),
-            is_multiline_block=True,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.COLUMN] = definition
 
@@ -219,8 +205,6 @@ class SyntaxRegistry:
             end_delimiter=self.MULTI_LINE_BLOCK_DELIMITER,
             regex_pattern=re.compile(rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*columns?\s*$", re.IGNORECASE),
             end_regex_pattern=re.compile(rf"^{re.escape(self.MULTI_LINE_BLOCK_DELIMITER)}\s*$"),
-            is_multiline_block=True,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.COLUMN_LIST] = definition
 
@@ -229,8 +213,6 @@ class SyntaxRegistry:
             start_delimiter="---",
             end_delimiter="",
             regex_pattern=re.compile(r"^\s*-{3,}\s*$"),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.DIVIDER] = definition
 
@@ -239,8 +221,6 @@ class SyntaxRegistry:
             start_delimiter="[embed](",
             end_delimiter=")",
             regex_pattern=re.compile(r"\[embed\]\((https?://[^\s)]+)\)"),
-            is_multiline_block=False,
-            is_inline=True,
         )
         self._definitions[SyntaxRegistryKey.EMBED] = definition
 
@@ -249,8 +229,6 @@ class SyntaxRegistry:
             start_delimiter="$$",
             end_delimiter="$$",
             regex_pattern=re.compile(r"^\$\$\s*$"),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.EQUATION] = definition
 
@@ -259,8 +237,6 @@ class SyntaxRegistry:
             start_delimiter="[file](",
             end_delimiter=")",
             regex_pattern=re.compile(r"\[file\]\(([^)]+)\)"),
-            is_multiline_block=False,
-            is_inline=True,
         )
         self._definitions[SyntaxRegistryKey.FILE] = definition
 
@@ -269,8 +245,6 @@ class SyntaxRegistry:
             start_delimiter="# ",
             end_delimiter="",
             regex_pattern=re.compile(r"^#\s+(.+)$"),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.HEADING_1] = definition
 
@@ -279,8 +253,6 @@ class SyntaxRegistry:
             start_delimiter="## ",
             end_delimiter="",
             regex_pattern=re.compile(r"^#{2}\s+(.+)$"),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.HEADING_2] = definition
 
@@ -289,8 +261,6 @@ class SyntaxRegistry:
             start_delimiter="### ",
             end_delimiter="",
             regex_pattern=re.compile(r"^#{3}\s+(.+)$"),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.HEADING_3] = definition
 
@@ -299,8 +269,6 @@ class SyntaxRegistry:
             start_delimiter="[image](",
             end_delimiter=")",
             regex_pattern=re.compile(r"(?<!!)\[image\]\(([^)]+)\)"),
-            is_multiline_block=False,
-            is_inline=True,
         )
         self._definitions[SyntaxRegistryKey.IMAGE] = definition
 
@@ -309,8 +277,6 @@ class SyntaxRegistry:
             start_delimiter="1. ",
             end_delimiter="",
             regex_pattern=re.compile(r"^(\s*)(\d+)\.\s+(.+)$"),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.NUMBERED_LIST] = definition
 
@@ -319,8 +285,6 @@ class SyntaxRegistry:
             start_delimiter="[pdf](",
             end_delimiter=")",
             regex_pattern=re.compile(r"\[pdf\]\(([^)]+)\)"),
-            is_multiline_block=False,
-            is_inline=True,
         )
         self._definitions[SyntaxRegistryKey.PDF] = definition
 
@@ -329,8 +293,6 @@ class SyntaxRegistry:
             start_delimiter="> ",
             end_delimiter="",
             regex_pattern=re.compile(r"^>(?!>)\s*(.+)$"),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.QUOTE] = definition
 
@@ -341,8 +303,6 @@ class SyntaxRegistry:
             regex_pattern=re.compile(
                 rf"^\s*{re.escape(self.TABLE_DELIMITER)}(.+){re.escape(self.TABLE_DELIMITER)}\s*$"
             ),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.TABLE] = definition
 
@@ -353,8 +313,6 @@ class SyntaxRegistry:
             regex_pattern=re.compile(
                 rf"^\s*{re.escape(self.TABLE_DELIMITER)}([\s\-:|]+){re.escape(self.TABLE_DELIMITER)}\s*$"
             ),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.TABLE_ROW] = definition
 
@@ -363,8 +321,6 @@ class SyntaxRegistry:
             start_delimiter="[toc]",
             end_delimiter="",
             regex_pattern=re.compile(r"^\[toc\]$", re.IGNORECASE),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.TABLE_OF_CONTENTS] = definition
 
@@ -373,8 +329,6 @@ class SyntaxRegistry:
             start_delimiter="- [ ]",
             end_delimiter="",
             regex_pattern=re.compile(r"^\s*-\s+\[ \]\s+(.+)$"),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.TO_DO] = definition
 
@@ -383,8 +337,6 @@ class SyntaxRegistry:
             start_delimiter="- [x]",
             end_delimiter="",
             regex_pattern=re.compile(r"^\s*-\s+\[x\]\s+(.+)$", re.IGNORECASE),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.TO_DO_DONE] = definition
 
@@ -394,8 +346,6 @@ class SyntaxRegistry:
             end_delimiter=self.TOGGLE_DELIMITER,
             regex_pattern=re.compile(rf"^{re.escape(self.TOGGLE_DELIMITER)}\s+(.+)$"),
             end_regex_pattern=re.compile(rf"^{re.escape(self.TOGGLE_DELIMITER)}\s*$"),
-            is_multiline_block=True,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.TOGGLE] = definition
 
@@ -406,8 +356,6 @@ class SyntaxRegistry:
             end_delimiter=self.TOGGLE_DELIMITER,
             regex_pattern=re.compile(rf"^{escaped_delimiter}\s*(?P<level>#{{1,3}})(?!#)\s*(.+)$", re.IGNORECASE),
             end_regex_pattern=re.compile(rf"^{escaped_delimiter}\s*$"),
-            is_multiline_block=True,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.TOGGLEABLE_HEADING] = definition
 
@@ -416,8 +364,6 @@ class SyntaxRegistry:
             start_delimiter="[video](",
             end_delimiter=")",
             regex_pattern=re.compile(r"\[video\]\(([^)]+)\)"),
-            is_multiline_block=False,
-            is_inline=True,
         )
         self._definitions[SyntaxRegistryKey.VIDEO] = definition
 
@@ -426,8 +372,6 @@ class SyntaxRegistry:
             start_delimiter="[caption]",
             end_delimiter="",
             regex_pattern=re.compile(r"^\[caption\]\s+(\S.*)$"),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.CAPTION] = definition
 
@@ -436,8 +380,6 @@ class SyntaxRegistry:
             start_delimiter="[space]",
             end_delimiter="",
             regex_pattern=re.compile(r"^\[space\]\s*$"),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.SPACE] = definition
 
@@ -446,7 +388,5 @@ class SyntaxRegistry:
             start_delimiter="#",
             end_delimiter="",
             regex_pattern=re.compile(r"^(#{1,3})[ \t]+(.+)$"),
-            is_multiline_block=False,
-            is_inline=False,
         )
         self._definitions[SyntaxRegistryKey.HEADING] = definition
