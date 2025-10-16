@@ -48,7 +48,7 @@ class CommentClient(NotionHttpClient):
             start_cursor=start_cursor,
             page_size=page_size,
         )
-        resp = await self.get("comments", params=request.model_dump())
+        resp = await self.get("comments", params=request.model_dump(exclude_none=True))
         return CommentListResponse.model_validate(resp)
 
     async def create_comment_for_page(

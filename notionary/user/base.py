@@ -1,13 +1,19 @@
-from abc import ABC, abstractmethod
-from typing import Self
+from __future__ import annotations
+
+from abc import abstractmethod
+from typing import TYPE_CHECKING, Self
 
 from notionary.exceptions.search import NoUsersInWorkspace, UserNotFound
 from notionary.user.client import UserHttpClient
 from notionary.user.schemas import UserResponseDto, UserType
 from notionary.utils.fuzzy import find_all_matches
 
+if TYPE_CHECKING:
+    from notionary.user.bot import BotUser
+    from notionary.user.person import PersonUser
 
-class BaseUser(ABC):
+
+class BaseUser:
     def __init__(
         self,
         id: str,
@@ -17,6 +23,25 @@ class BaseUser(ABC):
         self._id = id
         self._name = name
         self._avatar_url = avatar_url
+
+    @classmethod
+    async def from_id_auto(
+        cls,
+        user_id: str,
+        http_client: UserHttpClient | None = None,
+    ) -> BotUser | PersonUser:
+        from notionary.user.bot import BotUser
+        from notionary.user.person import PersonUser
+
+        client = http_client or UserHttpClient()
+        user_dto = await client.get_user_by_id(user_id)
+
+        if user_dto.type == UserType.BOT:
+            return BotUser.from_dto(user_dto)
+        elif user_dto.type == UserType.PERSON:
+            return PersonUser.from_dto(user_dto)
+        else:
+            raise ValueError(f"Unknown user type: {user_dto.type}")
 
     @classmethod
     async def from_id(

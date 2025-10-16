@@ -54,12 +54,14 @@ class NotionDataSource(Entity):
         last_edited_by: PartialUserDto,
         archived: bool,
         in_trash: bool,
+        url: str,
         properties: dict[str, DataSourceProperty],
         parent_database_id: str | None,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
         description: str | None = None,
+        public_url: str | None = None,
         data_source_instance_client: DataSourceInstanceClient | None = None,
         query_resolver: QueryResolver | None = None,
     ) -> None:
@@ -78,6 +80,8 @@ class NotionDataSource(Entity):
         self._parent_database: NotionDatabase | None = None
         self._title = title
         self._archived = archived
+        self._url = url
+        self._public_url = public_url
         self._description = description
         self._properties = properties or {}
         self._data_source_client = data_source_instance_client or DataSourceInstanceClient(data_source_id=id)
@@ -127,11 +131,13 @@ class NotionDataSource(Entity):
             last_edited_by=response.last_edited_by,
             archived=response.archived,
             in_trash=response.in_trash,
+            url=response.url,
             properties=response.properties,
             parent_database_id=parent_database_id,
             emoji_icon=extract_emoji_icon_from_dto(response),
             external_icon_url=extract_external_icon_url_from_dto(response),
             cover_image_url=extract_cover_image_url_from_dto(response),
+            public_url=response.url,
         )
 
     @classmethod
@@ -145,12 +151,14 @@ class NotionDataSource(Entity):
         last_edited_by: PartialUserDto,
         archived: bool,
         in_trash: bool,
+        url: str,
         properties: dict[str, DataSourceProperty],
         parent_database_id: str | None,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
         description: str | None = None,
+        public_url: str | None = None,
     ) -> Self:
         data_source_instance_client = DataSourceInstanceClient(data_source_id=id)
         return cls(
@@ -162,11 +170,13 @@ class NotionDataSource(Entity):
             last_edited_by=last_edited_by,
             archived=archived,
             in_trash=in_trash,
+            url=url,
             parent_database_id=parent_database_id,
             emoji_icon=emoji_icon,
             external_icon_url=external_icon_url,
             cover_image_url=cover_image_url,
             description=description,
+            public_url=public_url,
             properties=properties,
             data_source_instance_client=data_source_instance_client,
         )
@@ -190,6 +200,14 @@ class NotionDataSource(Entity):
     @property
     def properties(self) -> dict[str, DataSourceProperty]:
         return self._properties
+
+    @property
+    def url(self) -> str:
+        return self._url
+
+    @property
+    def public_url(self) -> str | None:
+        return self._public_url
 
     async def get_parent_database(self) -> NotionDatabase | None:
         if self._parent_database is None and self._parent_database_id:
