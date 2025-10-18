@@ -10,6 +10,7 @@ from notionary.blocks.schemas import (
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.column import ColumnParser
 from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.grammar import MarkdownGrammar
 
 
 @pytest.fixture
@@ -20,6 +21,11 @@ def syntax_registry() -> SyntaxRegistry:
 @pytest.fixture
 def column_parser(syntax_registry: SyntaxRegistry) -> ColumnParser:
     return ColumnParser(syntax_registry=syntax_registry)
+
+
+@pytest.fixture
+def column_delimiter(markdown_grammar: MarkdownGrammar) -> str:
+    return markdown_grammar.column_delimiter
 
 
 @pytest.fixture
@@ -39,11 +45,10 @@ def context() -> BlockParsingContext:
 
 def test_can_handle_valid_column_start(
     column_parser: ColumnParser,
-    syntax_registry: SyntaxRegistry,
     context: BlockParsingContext,
+    column_delimiter: str,
 ) -> None:
-    delimiter = syntax_registry.MULTI_LINE_BLOCK_DELIMITER
-    context.line = f"{delimiter} column"
+    context.line = f"{column_delimiter} column"
 
     assert column_parser._can_handle(context) is True
 
@@ -62,12 +67,11 @@ def test_can_handle_valid_column_start(
 )
 def test_can_handle_case_insensitive_column_start(
     column_parser: ColumnParser,
-    syntax_registry: SyntaxRegistry,
     context: BlockParsingContext,
     column_line: str,
+    column_delimiter: str,
 ) -> None:
-    delimiter = syntax_registry.MULTI_LINE_BLOCK_DELIMITER
-    context.line = column_line.format(delimiter=delimiter)
+    context.line = column_line.format(delimiter=column_delimiter)
 
     assert column_parser._can_handle(context) is True
 
@@ -83,15 +87,14 @@ def test_cannot_handle_invalid_line(
 
 def test_cannot_handle_wrong_keyword(
     column_parser: ColumnParser,
-    syntax_registry: SyntaxRegistry,
     context: BlockParsingContext,
+    column_delimiter: str,
 ) -> None:
-    delimiter = syntax_registry.MULTI_LINE_BLOCK_DELIMITER
     invalid_variations = [
-        f"{delimiter} col",
-        f"{delimiter} columns",
-        f"column {delimiter}",
-        f"text {delimiter} column",
+        f"{column_delimiter} col",
+        f"{column_delimiter} columns",
+        f"column {column_delimiter}",
+        f"text {column_delimiter} column",
     ]
 
     for invalid_line in invalid_variations:
@@ -102,12 +105,11 @@ def test_cannot_handle_wrong_keyword(
 @pytest.mark.asyncio
 async def test_process_column_without_children(
     column_parser: ColumnParser,
-    syntax_registry: SyntaxRegistry,
     context: BlockParsingContext,
+    column_delimiter: str,
 ) -> None:
-    delimiter = syntax_registry.MULTI_LINE_BLOCK_DELIMITER
-    context.line = f"{delimiter} column"
-    context.all_lines = [f"{delimiter} column"]
+    context.line = f"{column_delimiter} column"
+    context.all_lines = [f"{column_delimiter} column"]
 
     await column_parser._process(context)
 
@@ -118,12 +120,11 @@ async def test_process_column_without_children(
 @pytest.mark.asyncio
 async def test_process_column_with_width_ratio(
     column_parser: ColumnParser,
-    syntax_registry: SyntaxRegistry,
     context: BlockParsingContext,
+    column_delimiter: str,
 ) -> None:
-    delimiter = syntax_registry.MULTI_LINE_BLOCK_DELIMITER
-    context.line = f"{delimiter} column 0.5"
-    context.all_lines = [f"{delimiter} column 0.5"]
+    context.line = f"{column_delimiter} column 0.5"
+    context.all_lines = [f"{column_delimiter} column 0.5"]
 
     await column_parser._process(context)
 
@@ -134,15 +135,14 @@ async def test_process_column_with_width_ratio(
 @pytest.mark.asyncio
 async def test_process_column_with_indented_children(
     column_parser: ColumnParser,
-    syntax_registry: SyntaxRegistry,
     context: BlockParsingContext,
+    column_delimiter: str,
 ) -> None:
-    delimiter = syntax_registry.MULTI_LINE_BLOCK_DELIMITER
     paragraph_block = CreateParagraphBlock(paragraph=CreateParagraphData(rich_text=[]))
 
-    context.line = f"{delimiter} column"
+    context.line = f"{column_delimiter} column"
     context.all_lines = [
-        f"{delimiter} column",
+        f"{column_delimiter} column",
         "    Child content line 1",
         "    Child content line 2",
     ]
@@ -158,13 +158,12 @@ async def test_process_column_with_indented_children(
 @pytest.mark.asyncio
 async def test_process_column_consumes_indented_lines(
     column_parser: ColumnParser,
-    syntax_registry: SyntaxRegistry,
     context: BlockParsingContext,
+    column_delimiter: str,
 ) -> None:
-    delimiter = syntax_registry.MULTI_LINE_BLOCK_DELIMITER
-    context.line = f"{delimiter} column"
+    context.line = f"{column_delimiter} column"
     context.all_lines = [
-        f"{delimiter} column",
+        f"{column_delimiter} column",
         "    Child line 1",
         "    Child line 2",
         "Next block",
@@ -178,10 +177,9 @@ async def test_process_column_consumes_indented_lines(
 
 def test_create_column_block_with_width_ratio(
     column_parser: ColumnParser,
-    syntax_registry: SyntaxRegistry,
+    column_delimiter: str,
 ) -> None:
-    delimiter = syntax_registry.MULTI_LINE_BLOCK_DELIMITER
-    block = column_parser._create_column_block(f"{delimiter} column 0.5")
+    block = column_parser._create_column_block(f"{column_delimiter} column 0.5")
 
     assert isinstance(block, CreateColumnBlock)
     assert block.column.width_ratio == pytest.approx(0.5)
@@ -190,9 +188,9 @@ def test_create_column_block_with_width_ratio(
 def test_create_column_block_without_width_ratio(
     column_parser: ColumnParser,
     syntax_registry: SyntaxRegistry,
+    column_delimiter: str,
 ) -> None:
-    delimiter = syntax_registry.MULTI_LINE_BLOCK_DELIMITER
-    block = column_parser._create_column_block(f"{delimiter} column")
+    block = column_parser._create_column_block(f"{column_delimiter} column")
 
     assert isinstance(block, CreateColumnBlock)
     assert block.column.width_ratio is None
@@ -271,13 +269,12 @@ def test_parse_width_ratio_none_input(
 @pytest.mark.asyncio
 async def test_process_various_width_ratios(
     column_parser: ColumnParser,
-    syntax_registry: SyntaxRegistry,
     context: BlockParsingContext,
     ratio_line: str,
     expected_ratio: float | None,
+    column_delimiter: str,
 ) -> None:
-    delimiter = syntax_registry.MULTI_LINE_BLOCK_DELIMITER
-    context.line = ratio_line.format(delimiter=delimiter)
+    context.line = ratio_line.format(delimiter=column_delimiter)
     context.all_lines = [context.line]
 
     await column_parser._process(context)
@@ -299,12 +296,11 @@ async def test_process_various_width_ratios(
 @pytest.mark.asyncio
 async def test_process_invalid_width_ratio_creates_no_block(
     column_parser: ColumnParser,
-    syntax_registry: SyntaxRegistry,
     context: BlockParsingContext,
     invalid_ratio_line: str,
+    column_delimiter: str,
 ) -> None:
-    delimiter = syntax_registry.MULTI_LINE_BLOCK_DELIMITER
-    context.line = invalid_ratio_line.format(delimiter=delimiter)
+    context.line = invalid_ratio_line.format(delimiter=column_delimiter)
     context.all_lines = [context.line]
 
     await column_parser._process(context)
@@ -315,10 +311,9 @@ async def test_process_invalid_width_ratio_creates_no_block(
 
 def test_column_block_structure(
     column_parser: ColumnParser,
-    syntax_registry: SyntaxRegistry,
+    column_delimiter: str,
 ) -> None:
-    delimiter = syntax_registry.MULTI_LINE_BLOCK_DELIMITER
-    block = column_parser._create_column_block(f"{delimiter} column 0.5")
+    block = column_parser._create_column_block(f"{column_delimiter} column 0.5")
 
     assert isinstance(block, CreateColumnBlock)
     assert hasattr(block, "column")

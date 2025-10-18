@@ -4,7 +4,6 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import Block, ColumnListBlock
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.column_list import ColumnListRenderer
@@ -20,7 +19,7 @@ def _create_column_list_block() -> ColumnListBlock:
 
 
 @pytest.fixture
-def column_list_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> ColumnListRenderer:
+def column_list_renderer() -> ColumnListRenderer:
     return ColumnListRenderer()
 
 
@@ -116,12 +115,3 @@ async def test_column_list_should_increase_indent_level_for_children(
     await column_list_renderer._process(render_context)
 
     assert render_context.indent_level == original_indent
-
-
-@pytest.mark.asyncio
-async def test_column_list_marker_should_be_from_syntax_registry(
-    column_list_renderer: ColumnListRenderer,
-    syntax_registry: SyntaxRegistry,
-) -> None:
-    syntax = syntax_registry.get_column_list_syntax()
-    assert syntax.start_delimiter == f"{syntax_registry.MULTI_LINE_BLOCK_DELIMITER} columns"

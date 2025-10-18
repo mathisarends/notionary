@@ -12,17 +12,17 @@ from notionary.blocks.schemas import (
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.column_list import ColumnListParser
-from notionary.page.content.syntax import SyntaxRegistry
-
-
-@pytest.fixture
-def syntax_registry() -> SyntaxRegistry:
-    return SyntaxRegistry()
+from notionary.page.content.syntax import MarkdownGrammar, SyntaxRegistry
 
 
 @pytest.fixture
 def column_list_parser(syntax_registry: SyntaxRegistry) -> ColumnListParser:
     return ColumnListParser(syntax_registry=syntax_registry)
+
+
+@pytest.fixture
+def column_delimiter(markdown_grammar: MarkdownGrammar) -> str:
+    return markdown_grammar.column_delimiter
 
 
 @pytest.fixture
@@ -95,15 +95,14 @@ def test_cannot_handle_invalid_line(
 
 def test_cannot_handle_wrong_keyword(
     column_list_parser: ColumnListParser,
-    syntax_registry: SyntaxRegistry,
     context: BlockParsingContext,
+    column_delimiter: str,
 ) -> None:
-    base_delimiter = syntax_registry.MULTI_LINE_BLOCK_DELIMITER
     invalid_variations = [
-        f"{base_delimiter} column list",
-        f"{base_delimiter} cols",
-        f"columns {base_delimiter}",
-        f"text {base_delimiter} columns",
+        f"{column_delimiter} column list",
+        f"{column_delimiter} cols",
+        f"columns {column_delimiter}",
+        f"text {column_delimiter} columns",
     ]
 
     for invalid_line in invalid_variations:
@@ -135,9 +134,9 @@ async def test_process_column_list_with_indented_columns(
     syntax_registry: SyntaxRegistry,
     context: BlockParsingContext,
     column_block: CreateColumnBlock,
+    column_delimiter: str,
 ) -> None:
     delimiter = syntax_registry.get_column_list_syntax().start_delimiter
-    column_delimiter = syntax_registry.get_column_syntax().start_delimiter
 
     context.line = delimiter
     context.all_lines = [

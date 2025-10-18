@@ -23,7 +23,6 @@ from .table_of_contents import TableOfContentsRenderer
 from .table_row import TableRowHandler
 from .todo import TodoRenderer
 from .toggle import ToggleRenderer
-from .toggleable_heading import ToggleableHeadingRenderer
 from .video import VideoRenderer
 
 __all__ = [
@@ -52,6 +51,5 @@ __all__ = [
     "TableRowHandler",
     "TodoRenderer",
     "ToggleRenderer",
-    "ToggleableHeadingRenderer",
     "VideoRenderer",
 ]
