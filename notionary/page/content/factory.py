@@ -2,7 +2,11 @@ from notionary.blocks.client import NotionBlockHttpClient
 from notionary.page.content.parser.factory import ConverterChainFactory
 from notionary.page.content.parser.post_processing.handlers import RichTextLengthTruncationPostProcessor
 from notionary.page.content.parser.post_processing.service import BlockPostProcessor
-from notionary.page.content.parser.pre_processsing.handlers import ColumnSyntaxPreProcessor, WhitespacePreProcessor
+from notionary.page.content.parser.pre_processsing.handlers import (
+    ColumnSyntaxPreProcessor,
+    IndentationNormalizer,
+    WhitespacePreProcessor,
+)
 from notionary.page.content.parser.pre_processsing.service import MarkdownPreProcessor
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.page.content.renderer.factory import RendererChainFactory
@@ -55,6 +59,7 @@ class PageContentServiceFactory:
         pre_processor = MarkdownPreProcessor()
         pre_processor.register(ColumnSyntaxPreProcessor())
         pre_processor.register(WhitespacePreProcessor())
+        pre_processor.register(IndentationNormalizer())
         return pre_processor
 
     def _create_post_processor(self) -> BlockPostProcessor:
