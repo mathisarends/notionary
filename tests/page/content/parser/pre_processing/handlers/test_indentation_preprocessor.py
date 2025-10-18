@@ -104,14 +104,13 @@ def test_normalizes_nested_code_example_with_explanation(normalizer: Indentation
     )
     assert result == expected
 
+    def test_removes_indentation_from_blank_lines(normalizer: IndentationNormalizer):
+        markdown = "    Line 1\n    \n    Line 2"
 
-def test_removes_indentation_from_blank_lines(normalizer: IndentationNormalizer):
-    markdown = "    Line 1\n    \n    Line 2"
+        result = normalizer.process(markdown)
 
-    result = normalizer.process(markdown)
-
-    expected = "    Line 1\n\n    Line 2"
-    assert result == expected
+        expected = "    Line 1\n\n    Line 2"
+        assert result == expected
 
 
 def test_handles_empty_string(normalizer: IndentationNormalizer):

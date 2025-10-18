@@ -1,5 +1,5 @@
-from .numbered_list_placeholdere import NumberedListPlaceholderReplaceerPostProcessor
+from .numbered_list import NumberedListPlaceholderReplacerPostProcessor
 
 __all__ = [
-    "NumberedListPlaceholderReplaceerPostProcessor",
+    "NumberedListPlaceholderReplacerPostProcessor",
 ]
