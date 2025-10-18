@@ -4,551 +4,527 @@ import pytest
 
 from notionary.exceptions.block_parsing import InsufficientColumnsError, InvalidColumnRatioSumError
 from notionary.page.content.parser.pre_processsing.handlers.column_syntax import ColumnSyntaxPreProcessor
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import MarkdownGrammar, SyntaxRegistry
 
 
 @pytest.fixture
-def processor(syntax_registry: SyntaxRegistry) -> ColumnSyntaxPreProcessor:
-    """Fixture that provides a ColumnSyntaxPreProcessor instance."""
-    return ColumnSyntaxPreProcessor(syntax_registry)
+def processor(syntax_registry: SyntaxRegistry, markdown_grammar: MarkdownGrammar) -> ColumnSyntaxPreProcessor:
+    return ColumnSyntaxPreProcessor(syntax_registry, markdown_grammar)
 
 
-def test_no_columns_block_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
+@pytest.fixture
+def column_list_delimiter(syntax_registry: SyntaxRegistry) -> str:
+    return syntax_registry.get_column_list_syntax().start_delimiter
+
+
+@pytest.fixture
+def column_delimiter(syntax_registry: SyntaxRegistry) -> str:
+    return syntax_registry.get_column_syntax().start_delimiter
+
+
+def test_no_columns_block_should_pass(processor: ColumnSyntaxPreProcessor, heading_delimiter: str) -> None:
     valid_markdown = dedent(
-        """
-        # Normal heading
+        f"""
+        {heading_delimiter} Normal heading
 
         Normal text without columns.
 
-        ## Another heading
+        {heading_delimiter * 2} Another heading
 
         - List
         - Items
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
 def test_empty_string_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
     result = processor.process("")
+
     assert result == ""
 
 
 def test_only_whitespace_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
     markdown = "   \n\n  \t\n"
     result = processor.process(markdown)
+
     assert result == markdown
 
 
-def test_valid_columns_with_two_columns_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
+def test_valid_columns_with_two_columns_should_pass(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        Left content
-        :::
-
-        ::: column
-        Right content
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}Left content
+        {indent}{column_delimiter}
+        {indent}Right content
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_valid_columns_with_three_columns_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
+def test_valid_columns_with_three_columns_should_pass(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        First column
-        :::
-
-        ::: column
-        Second column
-        :::
-
-        ::: column
-        Third column
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}First column
+        {indent}{column_delimiter}
+        {indent}Second column
+        {indent}{column_delimiter}
+        {indent}Third column
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_valid_columns_with_four_columns_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
+def test_valid_columns_with_four_columns_should_pass(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        Column 1
-        :::
-
-        ::: column
-        Column 2
-        :::
-
-        ::: column
-        Column 3
-        :::
-
-        ::: column
-        Column 4
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}Column 1
+        {indent}{column_delimiter}
+        {indent}Column 2
+        {indent}{column_delimiter}
+        {indent}Column 3
+        {indent}{column_delimiter}
+        {indent}Column 4
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_columns_with_only_one_column_should_fail(processor: ColumnSyntaxPreProcessor) -> None:
+def test_columns_with_only_one_column_should_fail(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     invalid_markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        Only one column
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}Only one column
         """
     )
+
     with pytest.raises(InsufficientColumnsError):
         processor.process(invalid_markdown)
 
 
-def test_columns_with_zero_columns_should_fail(processor: ColumnSyntaxPreProcessor) -> None:
+def test_columns_with_zero_columns_should_fail(processor: ColumnSyntaxPreProcessor, column_list_delimiter: str) -> None:
     invalid_markdown = dedent(
-        """
-        ::: columns
-        :::
+        f"""
+        {column_list_delimiter}
         """
     )
+
     with pytest.raises(InsufficientColumnsError):
         processor.process(invalid_markdown)
 
 
-def test_valid_width_ratios_that_sum_to_one_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
+def test_valid_width_ratios_that_sum_to_one_should_pass(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column 0.5
-        First column (50%)
-        :::
-
-        ::: column 0.3
-        Second column (30%)
-        :::
-
-        ::: column 0.2
-        Third column (20%)
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter} 0.5
+        {indent}First column (50%)
+        {indent}{column_delimiter} 0.3
+        {indent}Second column (30%)
+        {indent}{column_delimiter} 0.2
+        {indent}Third column (20%)
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_valid_width_ratios_60_40_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
+def test_valid_width_ratios_60_40_should_pass(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column 0.6
-        Wider column
-        :::
-
-        ::: column 0.4
-        Narrower column
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter} 0.6
+        {indent}Wider column
+        {indent}{column_delimiter} 0.4
+        {indent}Narrower column
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_valid_width_ratios_equal_split_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
+def test_valid_width_ratios_equal_split_should_pass(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column 0.5
-        Left
-        :::
-
-        ::: column 0.5
-        Right
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter} 0.5
+        {indent}Left
+        {indent}{column_delimiter} 0.5
+        {indent}Right
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_valid_width_ratios_within_tolerance_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
-    """Test that ratios summing to ~1.0 within tolerance pass."""
+def test_valid_width_ratios_within_tolerance_should_pass(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column 0.33333
-        Column 1
-        :::
-
-        ::: column 0.33333
-        Column 2
-        :::
-
-        ::: column 0.33334
-        Column 3
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter} 0.33333
+        {indent}Column 1
+        {indent}{column_delimiter} 0.33333
+        {indent}Column 2
+        {indent}{column_delimiter} 0.33334
+        {indent}Column 3
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_invalid_width_ratios_not_summing_to_one_should_fail(processor: ColumnSyntaxPreProcessor) -> None:
+def test_invalid_width_ratios_not_summing_to_one_should_fail(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     invalid_markdown = dedent(
-        """
-        ::: columns
-        ::: column 0.5
-        First column
-        :::
-
-        ::: column 0.4
-        Second column
-        :::
-
-        ::: column 0.2
-        Third column (sum = 1.1)
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter} 0.5
+        {indent}First column
+        {indent}{column_delimiter} 0.4
+        {indent}Second column
+        {indent}{column_delimiter} 0.2
+        {indent}Third column (sum = 1.1)
         """
     )
+
     with pytest.raises(InvalidColumnRatioSumError):
         processor.process(invalid_markdown)
 
 
-def test_invalid_width_ratios_summing_to_less_than_one_should_fail(processor: ColumnSyntaxPreProcessor) -> None:
+def test_invalid_width_ratios_summing_to_less_than_one_should_fail(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     invalid_markdown = dedent(
-        """
-        ::: columns
-        ::: column 0.3
-        First column
-        :::
-
-        ::: column 0.2
-        Second column (sum = 0.5)
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter} 0.3
+        {indent}First column
+        {indent}{column_delimiter} 0.2
+        {indent}Second column (sum = 0.5)
         """
     )
+
     with pytest.raises(InvalidColumnRatioSumError):
         processor.process(invalid_markdown)
 
 
-def test_invalid_width_ratios_exceeding_one_should_fail(processor: ColumnSyntaxPreProcessor) -> None:
+def test_invalid_width_ratios_exceeding_one_should_fail(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     invalid_markdown = dedent(
-        """
-        ::: columns
-        ::: column 0.8
-        First column
-        :::
-
-        ::: column 0.8
-        Second column (sum = 1.6)
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter} 0.8
+        {indent}First column
+        {indent}{column_delimiter} 0.8
+        {indent}Second column (sum = 1.6)
         """
     )
+
     with pytest.raises(InvalidColumnRatioSumError):
         processor.process(invalid_markdown)
 
 
-def test_mixed_columns_with_and_without_ratios_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
-    """Mixed ratios (some specified, some not) should pass validation."""
+def test_mixed_columns_with_and_without_ratios_should_pass(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column 0.6
-        With ratio
-        :::
-
-        ::: column
-        Without ratio
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter} 0.6
+        {indent}With ratio
+        {indent}{column_delimiter}
+        {indent}Without ratio
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_all_columns_without_ratios_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
+def test_all_columns_without_ratios_should_pass(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        First
-        :::
-
-        ::: column
-        Second
-        :::
-
-        ::: column
-        Third
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}First
+        {indent}{column_delimiter}
+        {indent}Second
+        {indent}{column_delimiter}
+        {indent}Third
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_multiple_columns_blocks_should_validate_all(processor: ColumnSyntaxPreProcessor) -> None:
+def test_multiple_columns_blocks_should_validate_all(
+    processor: ColumnSyntaxPreProcessor,
+    heading_delimiter: str,
+    column_list_delimiter: str,
+    column_delimiter: str,
+    indent: str,
+) -> None:
     valid_markdown = dedent(
-        """
-        # First section
+        f"""
+        {heading_delimiter} First section
 
-        ::: columns
-        ::: column
-        First column block 1
-        :::
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}First column block 1
+        {indent}{column_delimiter}
+        {indent}Second column block 1
 
-        ::: column
-        Second column block 1
-        :::
-        :::
+        {heading_delimiter} Second section
 
-        # Second section
-
-        ::: columns
-        ::: column
-        First column block 2
-        :::
-
-        ::: column
-        Second column block 2
-        :::
-        :::
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}First column block 2
+        {indent}{column_delimiter}
+        {indent}Second column block 2
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_multiple_columns_blocks_first_invalid_should_fail(processor: ColumnSyntaxPreProcessor) -> None:
+def test_multiple_columns_blocks_first_invalid_should_fail(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     invalid_markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        Only one column
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}Only one column
 
-        ::: columns
-        ::: column
-        Valid first
-        :::
-
-        ::: column
-        Valid second
-        :::
-        :::
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}Valid first
+        {indent}{column_delimiter}
+        {indent}Valid second
         """
     )
+
     with pytest.raises(InsufficientColumnsError):
         processor.process(invalid_markdown)
 
 
-def test_multiple_columns_blocks_second_invalid_should_fail(processor: ColumnSyntaxPreProcessor) -> None:
+def test_multiple_columns_blocks_second_invalid_should_fail(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     invalid_markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        Valid first
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}Valid first
+        {indent}{column_delimiter}
+        {indent}Valid second
 
-        ::: column
-        Valid second
-        :::
-        :::
-
-        ::: columns
-        ::: column
-        Only one column
-        :::
-        :::
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}Only one column
         """
     )
+
     with pytest.raises(InsufficientColumnsError):
         processor.process(invalid_markdown)
 
 
-def test_nested_content_in_columns_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
+def test_nested_content_in_columns_should_pass(
+    processor: ColumnSyntaxPreProcessor,
+    heading_delimiter: str,
+    column_list_delimiter: str,
+    column_delimiter: str,
+    code_start_delimiter: str,
+    code_end_delimiter: str,
+    indent: str,
+) -> None:
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        ## Heading in column
-
-        - List
-        - Items
-
-        ```python
-        code block
-        ```
-        :::
-
-        ::: column
-        **Bold text**
-
-        > Quote
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}{heading_delimiter * 2} Heading in column
+        {indent}
+        {indent}- List
+        {indent}- Items
+        {indent}
+        {indent}{code_start_delimiter}python
+        {indent}code block
+        {indent}{code_end_delimiter}
+        {indent}{column_delimiter}
+        {indent}**Bold text**
+        {indent}
+        {indent}> Quote
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_columns_with_empty_content_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
+def test_columns_with_empty_content_should_pass(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        :::
-
-        ::: column
-        Some content
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}{column_delimiter}
+        {indent}Some content
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_columns_with_multiline_content_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
+def test_columns_with_multiline_content_should_pass(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        Line 1
-        Line 2
-        Line 3
-
-        Paragraph 2
-        :::
-
-        ::: column
-        Another column
-        with multiple
-        lines
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}Line 1
+        {indent}Line 2
+        {indent}Line 3
+        {indent}
+        {indent}Paragraph 2
+        {indent}{column_delimiter}
+        {indent}Another column
+        {indent}with multiple
+        {indent}lines
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_processor_without_syntax_registry_should_work() -> None:
-    """Test that processor can be instantiated without syntax_registry parameter."""
+def test_processor_without_syntax_registry_should_work(
+    column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     processor = ColumnSyntaxPreProcessor()
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        Left
-        :::
-
-        ::: column
-        Right
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}Left
+        {indent}{column_delimiter}
+        {indent}Right
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_processor_with_none_syntax_registry_should_work() -> None:
-    """Test that processor can be instantiated with None as syntax_registry."""
+def test_processor_with_none_syntax_registry_should_work(
+    column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     processor = ColumnSyntaxPreProcessor(syntax_registry=None)
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        Left
-        :::
-
-        ::: column
-        Right
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}Left
+        {indent}{column_delimiter}
+        {indent}Right
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_columns_block_not_closed_should_handle_gracefully(processor: ColumnSyntaxPreProcessor) -> None:
-    """Test behavior with unclosed columns block."""
+def test_columns_block_ending_by_lower_indentation(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        Content
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}Content
+        {indent}{column_delimiter}
+        {indent}More content
 
-        ::: column
-        More content
-        :::
+        Text at base level ends the column block
         """
     )
     result = processor.process(markdown)
+
     assert isinstance(result, str)
 
 
-def test_columns_with_special_characters_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
+def test_columns_with_special_characters_should_pass(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        Content with special chars: <>&"'
-        :::
-
-        ::: column
-        More special: @#$%^&*()
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}Content with special chars: <>&"'
+        {indent}{column_delimiter}
+        {indent}More special: @#$%^&*()
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
 
 
-def test_columns_with_unicode_content_should_pass(processor: ColumnSyntaxPreProcessor) -> None:
+def test_columns_with_unicode_content_should_pass(
+    processor: ColumnSyntaxPreProcessor, column_list_delimiter: str, column_delimiter: str, indent: str
+) -> None:
     valid_markdown = dedent(
-        """
-        ::: columns
-        ::: column
-        Deutsch: äöüß
-        :::
-
-        ::: column
-        日本語: こんにちは
-        :::
-        :::
+        f"""
+        {column_list_delimiter}
+        {indent}{column_delimiter}
+        {indent}Deutsch: äöüß
+        {indent}{column_delimiter}
+        {indent}日本語: こんにちは
         """
     )
     result = processor.process(valid_markdown)
+
     assert result == valid_markdown
