@@ -34,4 +34,4 @@ markdown = (MarkdownBuilder()
 ## Reference
 
 !!! info "Notion API Reference"
-    For the official Notion API reference on breadcrumb blocks, see <a href="https://developers.notion.com/reference/block#breadcrumb" target="_blank">https://developers.notion.com/reference/block#breadcrumb</a>
+    For the official Notion API reference on breadcrumb blocks, see the official notion doc <a href="https://developers.notion.com/reference/block#breadcrumb" target="_blank">https://developers.notion.com/reference/block#breadcrumb</a>
