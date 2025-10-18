@@ -1,7 +1,7 @@
 from typing import override
 
 from notionary.page.content.markdown.nodes.base import MarkdownNode
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 class TableMarkdownNode(MarkdownNode):

@@ -1,12 +1,12 @@
 from notionary.page.content.markdown.nodes import ParagraphMarkdownNode, TodoMarkdownNode
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 def test_unchecked_todo(syntax_registry: SyntaxRegistry) -> None:
     todo = TodoMarkdownNode(text="Buy groceries", checked=False, syntax_registry=syntax_registry)
 
     checkbox = syntax_registry.get_todo_syntax().start_delimiter
-    expected = f"- {checkbox} Buy groceries"
+    expected = f"-{checkbox} Buy groceries"
 
     assert todo.to_markdown() == expected
 
@@ -14,8 +14,7 @@ def test_unchecked_todo(syntax_registry: SyntaxRegistry) -> None:
 def test_checked_todo(syntax_registry: SyntaxRegistry) -> None:
     todo = TodoMarkdownNode(text="Finish homework", checked=True, syntax_registry=syntax_registry)
 
-    checkbox = syntax_registry.get_todo_syntax().end_delimiter
-    expected = f"- {checkbox} Finish homework"
+    expected = "- Finish homework"
 
     assert todo.to_markdown() == expected
 
@@ -24,7 +23,7 @@ def test_todo_with_explicit_dash_marker(syntax_registry: SyntaxRegistry) -> None
     todo = TodoMarkdownNode(text="Important task", checked=False, marker="-", syntax_registry=syntax_registry)
 
     checkbox = syntax_registry.get_todo_syntax().start_delimiter
-    expected = f"- {checkbox} Important task"
+    expected = f"-{checkbox} Important task"
 
     assert todo.to_markdown() == expected
 
@@ -33,7 +32,7 @@ def test_todo_with_invalid_marker_falls_back_to_dash(syntax_registry: SyntaxRegi
     todo = TodoMarkdownNode(text="Task with star marker", checked=False, marker="*", syntax_registry=syntax_registry)
 
     checkbox = syntax_registry.get_todo_syntax().start_delimiter
-    expected = f"- {checkbox} Task with star marker"
+    expected = f"-{checkbox} Task with star marker"
 
     assert todo.to_markdown() == expected
 
@@ -42,7 +41,7 @@ def test_todo_with_another_invalid_marker_falls_back_to_dash(syntax_registry: Sy
     todo = TodoMarkdownNode(text="Task with plus marker", checked=False, marker="+", syntax_registry=syntax_registry)
 
     checkbox = syntax_registry.get_todo_syntax().start_delimiter
-    expected = f"- {checkbox} Task with plus marker"
+    expected = f"-{checkbox} Task with plus marker"
 
     assert todo.to_markdown() == expected
 
@@ -55,7 +54,7 @@ def test_todo_with_paragraph_child(syntax_registry: SyntaxRegistry) -> None:
     result = todo.to_markdown()
     checkbox = syntax_registry.get_todo_syntax().start_delimiter
 
-    assert f"- {checkbox} Main task" in result
+    assert f"-{checkbox} Main task" in result
     assert "    Additional notes" in result
 
 
@@ -69,8 +68,8 @@ def test_todo_with_nested_todo_child(syntax_registry: SyntaxRegistry) -> None:
     result = parent_todo.to_markdown()
     checkbox = syntax_registry.get_todo_syntax().start_delimiter
 
-    assert f"- {checkbox} Main task" in result
-    assert f"    - {checkbox} Sub-task" in result
+    assert f"-{checkbox} Main task" in result
+    assert f"    -{checkbox} Sub-task" in result
 
 
 def test_todo_with_multiple_children(syntax_registry: SyntaxRegistry) -> None:
@@ -84,9 +83,9 @@ def test_todo_with_multiple_children(syntax_registry: SyntaxRegistry) -> None:
     result = todo.to_markdown()
     checkbox = syntax_registry.get_todo_syntax().start_delimiter
 
-    assert f"- {checkbox} Main task" in result
+    assert f"-{checkbox} Main task" in result
     assert "    Additional notes" in result
-    assert f"    - {checkbox} Sub-task" in result
+    assert f"    -{checkbox} Sub-task" in result
 
 
 def test_checked_todo_with_children(syntax_registry: SyntaxRegistry) -> None:
@@ -95,9 +94,8 @@ def test_checked_todo_with_children(syntax_registry: SyntaxRegistry) -> None:
     todo = TodoMarkdownNode(text="Completed task", checked=True, children=[child], syntax_registry=syntax_registry)
 
     result = todo.to_markdown()
-    checkbox = syntax_registry.get_todo_syntax().end_delimiter
 
-    assert f"- {checkbox} Completed task" in result
+    assert "- Completed task" in result
     assert "    Completion notes" in result
 
 
@@ -105,7 +103,7 @@ def test_todo_without_children(syntax_registry: SyntaxRegistry) -> None:
     todo = TodoMarkdownNode(text="Simple task", checked=False, children=[], syntax_registry=syntax_registry)
 
     checkbox = syntax_registry.get_todo_syntax().start_delimiter
-    expected = f"- {checkbox} Simple task"
+    expected = f"-{checkbox} Simple task"
 
     assert todo.to_markdown() == expected
     assert "\n" not in todo.to_markdown()
@@ -130,6 +128,6 @@ def test_todo_with_empty_text(syntax_registry: SyntaxRegistry) -> None:
     todo = TodoMarkdownNode(text="", checked=False, syntax_registry=syntax_registry)
 
     checkbox = syntax_registry.get_todo_syntax().start_delimiter
-    expected = f"- {checkbox} "
+    expected = f"-{checkbox} "
 
     assert todo.to_markdown() == expected

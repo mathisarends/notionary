@@ -5,7 +5,7 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRich
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.schemas import CodeData, CodeLanguage, CreateCodeBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 class CodeParser(LineParser):

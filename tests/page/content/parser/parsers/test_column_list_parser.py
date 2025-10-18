@@ -12,7 +12,7 @@ from notionary.blocks.schemas import (
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.column_list import ColumnListParser
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 @pytest.fixture

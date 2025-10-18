@@ -5,7 +5,7 @@ import pytest
 from notionary.blocks.schemas import CreateVideoBlock, FileType
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.video import VideoParser
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 @pytest.fixture

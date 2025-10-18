@@ -7,7 +7,7 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 from notionary.shared.models.icon import EmojiIcon
 
 

@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 from notionary.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 class BlockRenderer(ABC):

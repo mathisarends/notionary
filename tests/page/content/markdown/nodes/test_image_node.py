@@ -1,6 +1,6 @@
 from notionary.page.content.markdown.nodes import ImageMarkdownNode
+from notionary.page.content.syntax import SyntaxRegistry
 from notionary.page.content.syntax.models import SyntaxDefinition
-from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 def test_image_markdown_node(syntax_registry: SyntaxRegistry, caption_syntax: SyntaxDefinition) -> None:

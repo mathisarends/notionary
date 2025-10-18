@@ -2,7 +2,7 @@ from notionary.page.content.markdown.nodes import (
     ParagraphMarkdownNode,
     ToggleableHeadingMarkdownNode,
 )
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 def test_toggleable_heading_markdown_node(syntax_registry: SyntaxRegistry) -> None:

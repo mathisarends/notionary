@@ -1,17 +1,30 @@
+import math
 from typing import override
 
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
+from notionary.page.content.syntax import SyntaxRegistry
+from notionary.utils.mixins.logging import LoggingMixin
 
 
-class IndentationNormalizer(PreProcessor):
+class IndentationNormalizer(PreProcessor, LoggingMixin):
     MARKDOWN_STANDARD_INDENT_SIZE = 4
+
+    def __init__(self, syntax_registry: SyntaxRegistry | None = None) -> None:
+        super().__init__()
+        self._syntax_registry = syntax_registry or SyntaxRegistry()
+        self._code_block_start_delimiter = self._syntax_registry.get_code_syntax().start_delimiter
 
     @override
     def process(self, markdown_text: str) -> str:
         if self._is_empty(markdown_text):
             return ""
 
-        return self._normalize_to_markdown_indentation(markdown_text)
+        normalized = self._normalize_to_markdown_indentation(markdown_text)
+
+        if normalized != markdown_text:
+            self.logger.warning("Inconsistent indentation detected and corrected")
+
+        return normalized
 
     def _is_empty(self, text: str) -> bool:
         return not text
@@ -33,7 +46,7 @@ class IndentationNormalizer(PreProcessor):
         return "\n".join(processed_lines)
 
     def _is_code_fence(self, line: str) -> bool:
-        return line.lstrip().startswith("```")
+        return line.lstrip().startswith(self._code_block_start_delimiter)
 
     def _normalize_to_standard_indentation(self, line: str) -> str:
         if self._is_blank_line(line):
@@ -49,7 +62,7 @@ class IndentationNormalizer(PreProcessor):
 
     def _round_to_nearest_indentation_level(self, line: str) -> int:
         leading_spaces = self._count_leading_spaces(line)
-        return round(leading_spaces / self.MARKDOWN_STANDARD_INDENT_SIZE)
+        return math.ceil(leading_spaces / self.MARKDOWN_STANDARD_INDENT_SIZE)
 
     def _count_leading_spaces(self, line: str) -> int:
         return len(line) - len(line.lstrip())

@@ -5,7 +5,7 @@ import pytest
 from notionary.blocks.schemas import CreatePdfBlock, FileType
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.pdf import PdfParser
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 @pytest.fixture

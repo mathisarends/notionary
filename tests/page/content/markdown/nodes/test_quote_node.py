@@ -1,12 +1,12 @@
 from notionary.page.content.markdown.nodes import ParagraphMarkdownNode, QuoteMarkdownNode
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 def test_simple_quote(syntax_registry: SyntaxRegistry) -> None:
     quote = QuoteMarkdownNode(text="This is a quote", syntax_registry=syntax_registry)
 
     delimiter = syntax_registry.get_quote_syntax().start_delimiter
-    expected = f"{delimiter} This is a quote"
+    expected = f"{delimiter}This is a quote"
 
     assert quote.to_markdown() == expected
 
@@ -15,7 +15,7 @@ def test_quote_with_different_text(syntax_registry: SyntaxRegistry) -> None:
     quote = QuoteMarkdownNode(text="Life is beautiful", syntax_registry=syntax_registry)
 
     delimiter = syntax_registry.get_quote_syntax().start_delimiter
-    expected = f"{delimiter} Life is beautiful"
+    expected = f"{delimiter}Life is beautiful"
 
     assert quote.to_markdown() == expected
 
@@ -28,7 +28,7 @@ def test_quote_with_single_paragraph_child(syntax_registry: SyntaxRegistry) -> N
     result = quote.to_markdown()
     delimiter = syntax_registry.get_quote_syntax().start_delimiter
 
-    assert result.startswith(f"{delimiter} Main quote text")
+    assert result.startswith(f"{delimiter}Main quote text")
     assert "\n    Attribution text" in result
 
 
@@ -43,7 +43,7 @@ def test_quote_with_multiple_children(syntax_registry: SyntaxRegistry) -> None:
     result = quote.to_markdown()
     delimiter = syntax_registry.get_quote_syntax().start_delimiter
 
-    assert result.startswith(f"{delimiter} Main quote text")
+    assert result.startswith(f"{delimiter}Main quote text")
     assert "    Attribution text" in result
     assert "    Additional context" in result
 
@@ -52,7 +52,7 @@ def test_quote_without_children(syntax_registry: SyntaxRegistry) -> None:
     quote = QuoteMarkdownNode(text="Standalone quote", children=[], syntax_registry=syntax_registry)
 
     delimiter = syntax_registry.get_quote_syntax().start_delimiter
-    expected = f"{delimiter} Standalone quote"
+    expected = f"{delimiter}Standalone quote"
 
     assert quote.to_markdown() == expected
     assert "\n" not in quote.to_markdown()
@@ -66,8 +66,8 @@ def test_quote_with_nested_quote_child(syntax_registry: SyntaxRegistry) -> None:
     result = parent_quote.to_markdown()
     delimiter = syntax_registry.get_quote_syntax().start_delimiter
 
-    assert result.startswith(f"{delimiter} Parent quote")
-    assert f"    {delimiter} Nested quote" in result
+    assert result.startswith(f"{delimiter}Parent quote")
+    assert f"    {delimiter}Nested quote" in result
 
 
 def test_quote_children_order_preserved(syntax_registry: SyntaxRegistry) -> None:
@@ -91,6 +91,6 @@ def test_quote_with_empty_text(syntax_registry: SyntaxRegistry) -> None:
     quote = QuoteMarkdownNode(text="", syntax_registry=syntax_registry)
 
     delimiter = syntax_registry.get_quote_syntax().start_delimiter
-    expected = f"{delimiter} "
+    expected = f"{delimiter}"
 
     assert quote.to_markdown() == expected

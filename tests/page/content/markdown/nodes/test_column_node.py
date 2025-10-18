@@ -1,6 +1,6 @@
 from notionary.page.content.markdown.nodes import ColumnMarkdownNode, ParagraphMarkdownNode
 from notionary.page.content.markdown.nodes.columns import ColumnListMarkdownNode
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 def test_column_without_width_ratio(syntax_registry: SyntaxRegistry) -> None:

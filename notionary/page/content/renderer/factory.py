@@ -29,7 +29,7 @@ from notionary.page.content.renderer.renderers import (
     ToggleRenderer,
     VideoRenderer,
 )
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 class RendererChainFactory:

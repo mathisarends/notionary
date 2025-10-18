@@ -1,6 +1,6 @@
 from notionary.page.content.markdown.nodes.pdf import PdfMarkdownNode
+from notionary.page.content.syntax import SyntaxRegistry
 from notionary.page.content.syntax.models import SyntaxDefinition
-from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 def test_pdf_markdown_node(syntax_registry: SyntaxRegistry, caption_syntax: SyntaxDefinition) -> None:

@@ -1,5 +1,5 @@
 from notionary.page.content.markdown.nodes import TableMarkdownNode
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 def test_table_markdown_node(syntax_registry: SyntaxRegistry) -> None:

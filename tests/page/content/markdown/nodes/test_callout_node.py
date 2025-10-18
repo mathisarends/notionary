@@ -1,5 +1,5 @@
 from notionary.page.content.markdown.nodes import CalloutMarkdownNode, ParagraphMarkdownNode
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 def test_callout_markdown_node_without_emoji(syntax_registry: SyntaxRegistry) -> None:

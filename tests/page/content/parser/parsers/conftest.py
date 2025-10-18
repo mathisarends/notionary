@@ -5,7 +5,7 @@ import pytest
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.page.content.parser.parsers.base import BlockParsingContext
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 @pytest.fixture

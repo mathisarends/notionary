@@ -6,7 +6,7 @@ from notionary.page.content.parser.parsers import (
     BlockParsingContext,
     LineParser,
 )
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 class ToggleParser(LineParser):

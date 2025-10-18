@@ -1,12 +1,11 @@
 from notionary.page.content.markdown.nodes import NumberedListMarkdownNode, ParagraphMarkdownNode
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 def test_simple_numbered_list(syntax_registry: SyntaxRegistry) -> None:
     numbered_list = NumberedListMarkdownNode(texts=["First", "Second", "Third"], syntax_registry=syntax_registry)
 
-    delimiter = syntax_registry.get_numbered_list_syntax().end_delimiter
-    expected = f"1{delimiter} First\n2{delimiter} Second\n3{delimiter} Third"
+    expected = "1. First\n2. Second\n3. Third"
 
     assert numbered_list.to_markdown() == expected
 
@@ -20,8 +19,7 @@ def test_empty_numbered_list(syntax_registry: SyntaxRegistry) -> None:
 def test_single_item_numbered_list(syntax_registry: SyntaxRegistry) -> None:
     numbered_list = NumberedListMarkdownNode(texts=["Only item"], syntax_registry=syntax_registry)
 
-    delimiter = syntax_registry.get_numbered_list_syntax().end_delimiter
-    expected = f"1{delimiter} Only item"
+    expected = "1. Only item"
 
     assert numbered_list.to_markdown() == expected
 
@@ -34,9 +32,8 @@ def test_numbered_list_with_paragraph_child(syntax_registry: SyntaxRegistry) -> 
     )
 
     result = numbered_list.to_markdown()
-    delimiter = syntax_registry.get_numbered_list_syntax().end_delimiter
 
-    assert f"1{delimiter} First item" in result
+    assert "1. First item" in result
     assert "    Nested explanation" in result
 
 
@@ -48,11 +45,10 @@ def test_numbered_list_with_nested_list_child(syntax_registry: SyntaxRegistry) -
     )
 
     result = parent_list.to_markdown()
-    delimiter = syntax_registry.get_numbered_list_syntax().end_delimiter
 
-    assert f"1{delimiter} Parent item" in result
-    assert f"    1{delimiter} Sub-item 1" in result
-    assert f"    2{delimiter} Sub-item 2" in result
+    assert "1. Parent item" in result
+    assert "    1. Sub-item 1" in result
+    assert "    2. Sub-item 2" in result
 
 
 def test_numbered_list_with_multiple_items_and_children(syntax_registry: SyntaxRegistry) -> None:
@@ -64,10 +60,9 @@ def test_numbered_list_with_multiple_items_and_children(syntax_registry: SyntaxR
     )
 
     result = numbered_list.to_markdown()
-    delimiter = syntax_registry.get_numbered_list_syntax().end_delimiter
 
-    assert f"1{delimiter} Item 1" in result
-    assert f"2{delimiter} Item 2" in result
+    assert "1. Item 1" in result
+    assert "2. Item 2" in result
     assert "    First explanation" in result
     assert "    Second explanation" in result
 
@@ -80,13 +75,12 @@ def test_numbered_list_with_fewer_children_than_items(syntax_registry: SyntaxReg
     )
 
     result = numbered_list.to_markdown()
-    delimiter = syntax_registry.get_numbered_list_syntax().end_delimiter
 
     lines = result.split("\n")
-    assert f"1{delimiter} Item 1" in lines[0]
+    assert "1. Item 1" in lines[0]
     assert "    Only child" in lines[1]
-    assert f"2{delimiter} Item 2" in lines[2]
-    assert f"3{delimiter} Item 3" in lines[3]
+    assert "2. Item 2" in lines[2]
+    assert "3. Item 3" in lines[3]
 
 
 def test_numbered_list_with_none_children(syntax_registry: SyntaxRegistry) -> None:
@@ -95,8 +89,7 @@ def test_numbered_list_with_none_children(syntax_registry: SyntaxRegistry) -> No
     )
 
     result = numbered_list.to_markdown()
-    delimiter = syntax_registry.get_numbered_list_syntax().end_delimiter
-    expected = f"1{delimiter} Item 1\n2{delimiter} Item 2"
+    expected = "1. Item 1\n2. Item 2"
 
     assert result == expected
 
@@ -120,12 +113,11 @@ def test_numbered_list_numbering_starts_at_one(syntax_registry: SyntaxRegistry) 
     numbered_list = NumberedListMarkdownNode(texts=["Alpha", "Beta", "Gamma"], syntax_registry=syntax_registry)
 
     result = numbered_list.to_markdown()
-    delimiter = syntax_registry.get_numbered_list_syntax().end_delimiter
 
-    assert result.startswith(f"1{delimiter}")
-    assert f"2{delimiter}" in result
-    assert f"3{delimiter}" in result
-    assert f"0{delimiter}" not in result
+    assert result.startswith("1. ")
+    assert "2. " in result
+    assert "3. " in result
+    assert "0. " not in result
 
 
 def test_numbered_list_with_ten_items(syntax_registry: SyntaxRegistry) -> None:
@@ -133,7 +125,6 @@ def test_numbered_list_with_ten_items(syntax_registry: SyntaxRegistry) -> None:
     numbered_list = NumberedListMarkdownNode(texts=texts, syntax_registry=syntax_registry)
 
     result = numbered_list.to_markdown()
-    delimiter = syntax_registry.get_numbered_list_syntax().end_delimiter
 
     for i in range(1, 11):
-        assert f"{i}{delimiter} Item {i}" in result
+        assert f"{i}. Item {i}" in result

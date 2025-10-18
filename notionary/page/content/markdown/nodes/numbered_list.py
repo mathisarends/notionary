@@ -2,7 +2,7 @@ from typing import override
 
 from notionary.page.content.markdown.nodes.base import MarkdownNode
 from notionary.page.content.markdown.nodes.mixins import ChildrenRenderMixin
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 class NumberedListMarkdownNode(ChildrenRenderMixin, MarkdownNode):

@@ -8,7 +8,7 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import (
 from notionary.blocks.schemas import BlockColor, CreateNumberedListItemBlock, CreateNumberedListItemData
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.numbered_list import NumberedListParser
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 @pytest.fixture

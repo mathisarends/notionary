@@ -3,7 +3,7 @@ from typing import override
 
 from notionary.exceptions.block_parsing import InsufficientColumnsError, InvalidColumnRatioSumError
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 RATIO_TOLERANCE = 0.0001
 

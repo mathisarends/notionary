@@ -1,5 +1,5 @@
 from notionary.page.content.markdown.nodes import HeadingMarkdownNode, ParagraphMarkdownNode
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 def test_heading_markdown_node(syntax_registry: SyntaxRegistry) -> None:

@@ -1,6 +1,6 @@
 from notionary.page.content.markdown.nodes import EmbedMarkdownNode
+from notionary.page.content.syntax import SyntaxRegistry
 from notionary.page.content.syntax.models import SyntaxDefinition
-from notionary.page.content.syntax.service import SyntaxRegistry
 
 
 def test_embed_markdown_node(syntax_registry: SyntaxRegistry, caption_syntax: SyntaxDefinition) -> None:

@@ -3,7 +3,7 @@ from notionary.page.content.markdown.nodes import (
     ParagraphMarkdownNode,
     ToggleMarkdownNode,
 )
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 def test_simple_toggle(syntax_registry: SyntaxRegistry) -> None:

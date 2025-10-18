@@ -8,7 +8,7 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import (
 from notionary.blocks.schemas import CodeLanguage, CreateCodeBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.code import CodeParser
-from notionary.page.content.syntax.service import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxRegistry
 
 
 @pytest.fixture
