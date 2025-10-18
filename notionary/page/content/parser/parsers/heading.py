@@ -49,6 +49,11 @@ class HeadingParser(LineParser):
         if not child_lines:
             return
 
+        child_lines = self._remove_trailing_empty_lines(child_lines)
+
+        if not child_lines:
+            return
+
         self._set_heading_toggleable(block, True)
 
         stripped_lines = context.strip_indentation_level(child_lines, levels=1)
@@ -74,6 +79,11 @@ class HeadingParser(LineParser):
             block.heading_2.children = children
         elif block.type == BlockType.HEADING_3:
             block.heading_3.children = children
+
+    def _remove_trailing_empty_lines(self, lines: list[str]) -> list[str]:
+        while lines and not lines[-1].strip():
+            lines.pop()
+        return lines
 
     async def _create_heading_block(self, line: str) -> CreateHeadingBlock | None:
         match = self._syntax.regex_pattern.match(line)

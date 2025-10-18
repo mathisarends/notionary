@@ -17,4 +17,4 @@ class NotionCover(BaseModel):
 
     @classmethod
     def from_url(cls, url: str) -> Self:
-        return cls(icon=ExternalFile(url))
+        return cls(external=ExternalFile(url=url))

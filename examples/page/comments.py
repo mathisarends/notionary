@@ -3,6 +3,7 @@ import asyncio
 from notionary import NotionPage
 from notionary.comments import Comment
 
+# Replace with title of your page
 PAGE_TITLE = "Neue super page"
 
 

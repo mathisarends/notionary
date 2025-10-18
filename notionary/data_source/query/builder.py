@@ -45,6 +45,7 @@ class DataSourceQueryBuilder:
         self._current_property: str | None = None
         self._negate_next = False
         self._or_group: list[FilterCondition] | None = None
+        self._page_size: int | None = None
 
     def where(self, property_name: str) -> Self:
         self._finalize_current_or_group()
@@ -164,27 +165,45 @@ class DataSourceQueryBuilder:
         self._sorts.append(sort)
         return self
 
-    def order_by_ascending(self, property_name: str) -> Self:
+    def order_by_property_name_ascending(self, property_name: str) -> Self:
         return self.order_by(property_name, SortDirection.ASCENDING)
 
-    def order_by_descending(self, property_name: str) -> Self:
+    def order_by_property_name_descending(self, property_name: str) -> Self:
         return self.order_by(property_name, SortDirection.DESCENDING)
 
-    def order_by_created_time(self, direction: SortDirection = SortDirection.DESCENDING) -> Self:
+    def order_by_created_time_ascending(self) -> Self:
+        return self._order_by_created_time(SortDirection.ASCENDING)
+
+    def order_by_created_time_descending(self) -> Self:
+        return self._order_by_created_time(SortDirection.DESCENDING)
+
+    def _order_by_created_time(self, direction: SortDirection = SortDirection.DESCENDING) -> Self:
         sort = TimestampSort(timestamp=TimestampType.CREATED_TIME, direction=direction)
         self._sorts.append(sort)
         return self
 
-    def order_by_last_edited_time(self, direction: SortDirection = SortDirection.DESCENDING) -> Self:
+    def order_by_last_edited_time_ascending(self) -> Self:
+        return self._order_by_last_edited_time(SortDirection.ASCENDING)
+
+    def order_by_last_edited_time_descending(self) -> Self:
+        return self._order_by_last_edited_time(SortDirection.DESCENDING)
+
+    def _order_by_last_edited_time(self, direction: SortDirection = SortDirection.DESCENDING) -> Self:
         sort = TimestampSort(timestamp=TimestampType.LAST_EDITED_TIME, direction=direction)
         self._sorts.append(sort)
+        return self
+
+    def limit(self, page_size: int) -> Self:
+        if page_size < 1:
+            raise ValueError("Limit must be at least 1")
+        self._page_size = page_size
         return self
 
     def build(self) -> DataSourceQueryParams:
         self._finalize_current_or_group()
         notion_filter = self._create_notion_filter_if_needed()
         sorts = self._create_sorts_if_needed()
-        return DataSourceQueryParams(filter=notion_filter, sorts=sorts)
+        return DataSourceQueryParams(filter=notion_filter, sorts=sorts, page_size=self._page_size)
 
     def _select_property_without_negation(self, property_name: str) -> None:
         self._current_property = property_name

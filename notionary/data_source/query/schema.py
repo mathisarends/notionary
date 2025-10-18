@@ -287,9 +287,10 @@ type NotionSort = PropertySort | TimestampSort
 class DataSourceQueryParams(BaseModel):
     filter: NotionFilter | None = None
     sorts: list[NotionSort] | None = None
+    page_size: int | None = None
 
     @model_serializer
-    def serialize_model(self) -> JsonDict:
+    def to_api_params(self) -> JsonDict:
         result: JsonDict = {}
 
         if self.filter is not None:
