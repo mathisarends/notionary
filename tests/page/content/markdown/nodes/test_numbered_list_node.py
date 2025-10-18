@@ -4,7 +4,6 @@ from notionary.page.content.syntax import SyntaxRegistry
 
 def test_simple_numbered_list(syntax_registry: SyntaxRegistry) -> None:
     numbered_list = NumberedListMarkdownNode(texts=["First", "Second", "Third"], syntax_registry=syntax_registry)
-
     expected = "1. First\n2. Second\n3. Third"
 
     assert numbered_list.to_markdown() == expected
@@ -18,7 +17,6 @@ def test_empty_numbered_list(syntax_registry: SyntaxRegistry) -> None:
 
 def test_single_item_numbered_list(syntax_registry: SyntaxRegistry) -> None:
     numbered_list = NumberedListMarkdownNode(texts=["Only item"], syntax_registry=syntax_registry)
-
     expected = "1. Only item"
 
     assert numbered_list.to_markdown() == expected
@@ -26,7 +24,6 @@ def test_single_item_numbered_list(syntax_registry: SyntaxRegistry) -> None:
 
 def test_numbered_list_with_paragraph_child(syntax_registry: SyntaxRegistry, indent: str) -> None:
     paragraph_child = ParagraphMarkdownNode(text="Nested explanation", syntax_registry=syntax_registry)
-
     numbered_list = NumberedListMarkdownNode(
         texts=["First item"], children=[paragraph_child], syntax_registry=syntax_registry
     )
@@ -39,7 +36,6 @@ def test_numbered_list_with_paragraph_child(syntax_registry: SyntaxRegistry, ind
 
 def test_numbered_list_with_nested_list_child(syntax_registry: SyntaxRegistry, indent: str) -> None:
     nested_list = NumberedListMarkdownNode(texts=["Sub-item 1", "Sub-item 2"], syntax_registry=syntax_registry)
-
     parent_list = NumberedListMarkdownNode(
         texts=["Parent item"], children=[nested_list], syntax_registry=syntax_registry
     )
@@ -54,7 +50,6 @@ def test_numbered_list_with_nested_list_child(syntax_registry: SyntaxRegistry, i
 def test_numbered_list_with_multiple_items_and_children(syntax_registry: SyntaxRegistry, indent: str) -> None:
     first_child = ParagraphMarkdownNode(text="First explanation", syntax_registry=syntax_registry)
     second_child = ParagraphMarkdownNode(text="Second explanation", syntax_registry=syntax_registry)
-
     numbered_list = NumberedListMarkdownNode(
         texts=["Item 1", "Item 2"], children=[first_child, second_child], syntax_registry=syntax_registry
     )
@@ -69,14 +64,13 @@ def test_numbered_list_with_multiple_items_and_children(syntax_registry: SyntaxR
 
 def test_numbered_list_with_fewer_children_than_items(syntax_registry: SyntaxRegistry, indent: str) -> None:
     child = ParagraphMarkdownNode(text="Only child", syntax_registry=syntax_registry)
-
     numbered_list = NumberedListMarkdownNode(
         texts=["Item 1", "Item 2", "Item 3"], children=[child], syntax_registry=syntax_registry
     )
 
     result = numbered_list.to_markdown()
-
     lines = result.split("\n")
+
     assert "1. Item 1" in lines[0]
     assert f"{indent}Only child" in lines[1]
     assert "2. Item 2" in lines[2]
@@ -87,9 +81,9 @@ def test_numbered_list_with_none_children(syntax_registry: SyntaxRegistry) -> No
     numbered_list = NumberedListMarkdownNode(
         texts=["Item 1", "Item 2"], children=[None, None], syntax_registry=syntax_registry
     )
+    expected = "1. Item 1\n2. Item 2"
 
     result = numbered_list.to_markdown()
-    expected = "1. Item 1\n2. Item 2"
 
     assert result == expected
 
@@ -97,7 +91,6 @@ def test_numbered_list_with_none_children(syntax_registry: SyntaxRegistry) -> No
 def test_numbered_list_children_order_preserved(syntax_registry: SyntaxRegistry) -> None:
     first_child = ParagraphMarkdownNode(text="First", syntax_registry=syntax_registry)
     second_child = ParagraphMarkdownNode(text="Second", syntax_registry=syntax_registry)
-
     numbered_list = NumberedListMarkdownNode(
         texts=["Item 1", "Item 2"], children=[first_child, second_child], syntax_registry=syntax_registry
     )

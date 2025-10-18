@@ -26,9 +26,6 @@ class PageContentService(LoggingMixin):
     @time_execution_async()
     async def get_as_markdown(self) -> str:
         blocks = await self._block_client.get_block_tree(parent_block_id=self._page_id)
-        import json
-
-        print("blocks", json.dumps([block.model_dump() for block in blocks], indent=2))
         return await self._notion_to_markdown_converter.convert(blocks=blocks)
 
     @time_execution_async()

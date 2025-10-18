@@ -1,19 +1,44 @@
+import pytest
+
+from notionary.blocks.enums import CodeLanguage
 from notionary.page.content.markdown.nodes import CodeMarkdownNode
 from notionary.page.content.syntax import SyntaxRegistry
 from notionary.page.content.syntax.models import SyntaxDefinition
 
 
-def test_code_markdown_node(syntax_registry: SyntaxRegistry, caption_syntax: SyntaxDefinition) -> None:
-    code_syntax = syntax_registry.get_code_syntax()
+@pytest.fixture
+def code_syntax(syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
+    return syntax_registry.get_code_syntax()
 
+
+@pytest.fixture
+def code_start_delimiter(code_syntax: SyntaxDefinition) -> str:
+    return code_syntax.start_delimiter
+
+
+@pytest.fixture
+def code_end_delimiter(code_syntax: SyntaxDefinition) -> str:
+    return code_syntax.end_delimiter
+
+
+def test_code_without_language(code_start_delimiter: str, code_end_delimiter: str) -> None:
     code = CodeMarkdownNode(code="print('Hello World')")
-    expected = f"{code_syntax.start_delimiter}\nprint('Hello World')\n{code_syntax.end_delimiter}"
+    expected = f"{code_start_delimiter}\nprint('Hello World')\n{code_end_delimiter}"
+
     assert code.to_markdown() == expected
 
-    code_with_lang = CodeMarkdownNode(code="print('Hello World')", language="python")
-    expected = f"{code_syntax.start_delimiter}python\nprint('Hello World')\n{code_syntax.end_delimiter}"
-    assert code_with_lang.to_markdown() == expected
 
-    code_with_caption = CodeMarkdownNode(code="print('Hello World')", language="python", caption="Example code")
-    expected = f"{code_syntax.start_delimiter}python\nprint('Hello World')\n{code_syntax.end_delimiter}\n{caption_syntax.start_delimiter} Example code"
-    assert code_with_caption.to_markdown() == expected
+def test_code_with_language(code_start_delimiter: str, code_end_delimiter: str) -> None:
+    code = CodeMarkdownNode(code="print('Hello World')", language=CodeLanguage.PYTHON)
+    expected = f"{code_start_delimiter}python\nprint('Hello World')\n{code_end_delimiter}"
+
+    assert code.to_markdown() == expected
+
+
+def test_code_with_caption(code_start_delimiter: str, code_end_delimiter: str, caption_delimiter: str) -> None:
+    code = CodeMarkdownNode(code="print('Hello World')", language=CodeLanguage.PYTHON, caption="Example code")
+    expected = (
+        f"{code_start_delimiter}python\nprint('Hello World')\n{code_end_delimiter}\n{caption_delimiter} Example code"
+    )
+
+    assert code.to_markdown() == expected

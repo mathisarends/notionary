@@ -1,3 +1,4 @@
+from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -5,18 +6,31 @@ import pytest
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
 from notionary.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
+from notionary.page.content.syntax.grammar import MarkdownGrammar
+
+
+@pytest.fixture
+def markdown_grammar() -> MarkdownGrammar:
+    return MarkdownGrammar()
+
+
+@pytest.fixture
+def indent(markdown_grammar: MarkdownGrammar) -> str:
+    return " " * markdown_grammar.spaces_per_nesting_level
 
 
 @pytest.fixture
 def mock_rich_text_markdown_converter() -> RichTextToMarkdownConverter:
-    converter: RichTextToMarkdownConverter = AsyncMock(spec=RichTextToMarkdownConverter)
+    mock_obj: RichTextToMarkdownConverter = AsyncMock(spec=RichTextToMarkdownConverter)
+    converter = cast(RichTextToMarkdownConverter, mock_obj)
     converter.to_markdown = AsyncMock(return_value="converted markdown")
     return converter
 
 
 @pytest.fixture
 def mock_block() -> Block:
-    block: Block = Mock(spec=Block)
+    mock_obj = Mock(spec=Block)
+    block = cast(Block, mock_obj)
     block.has_children = False
     block.children = []
     return block
@@ -24,7 +38,8 @@ def mock_block() -> Block:
 
 @pytest.fixture
 def render_context(mock_block: Block) -> MarkdownRenderingContext:
-    context: MarkdownRenderingContext = Mock(spec=MarkdownRenderingContext)
+    mock_obj: MarkdownRenderingContext = Mock(spec=MarkdownRenderingContext)
+    context = cast(MarkdownRenderingContext, mock_obj)
     context.block = mock_block
     context.indent_level = 0
     context.markdown_result = ""

@@ -1,15 +1,23 @@
+import pytest
+
 from notionary.page.content.markdown.nodes import EmbedMarkdownNode
 from notionary.page.content.syntax import SyntaxRegistry
-from notionary.page.content.syntax.models import SyntaxDefinition
 
 
-def test_embed_markdown_node(syntax_registry: SyntaxRegistry, caption_syntax: SyntaxDefinition) -> None:
-    embed_syntax = syntax_registry.get_embed_syntax()
+@pytest.fixture
+def embed_delimiter(syntax_registry: SyntaxRegistry) -> str:
+    return syntax_registry.get_embed_syntax().start_delimiter
 
+
+def test_embed_without_caption(embed_delimiter: str) -> None:
     embed = EmbedMarkdownNode(url="https://example.com")
-    expected = f"{embed_syntax.start_delimiter}https://example.com)"
+    expected = f"{embed_delimiter}https://example.com)"
+
     assert embed.to_markdown() == expected
 
-    embed_with_caption = EmbedMarkdownNode(url="https://example.com", caption="External content")
-    expected = f"{embed_syntax.start_delimiter}https://example.com)\n{caption_syntax.start_delimiter} External content"
-    assert embed_with_caption.to_markdown() == expected
+
+def test_embed_with_caption(embed_delimiter: str, caption_delimiter: str) -> None:
+    embed = EmbedMarkdownNode(url="https://example.com", caption="External content")
+    expected = f"{embed_delimiter}https://example.com)\n{caption_delimiter} External content"
+
+    assert embed.to_markdown() == expected

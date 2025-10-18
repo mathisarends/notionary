@@ -1,19 +1,38 @@
+import pytest
+
 from notionary.page.content.markdown.nodes import TableMarkdownNode
 from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.models import SyntaxDefinition
 
 
-def test_table_markdown_node(syntax_registry: SyntaxRegistry) -> None:
-    """Test TableMarkdownNode"""
-    table_syntax = syntax_registry.get_table_syntax()
+@pytest.fixture
+def table_syntax(syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
+    return syntax_registry.get_table_syntax()
 
+
+@pytest.fixture
+def table_delimiter(table_syntax: SyntaxDefinition) -> str:
+    return table_syntax.start_delimiter
+
+
+@pytest.fixture
+def table_separator(table_syntax: SyntaxDefinition) -> str:
+    return table_syntax.end_delimiter
+
+
+def test_table_markdown_node(table_delimiter: str, table_separator: str) -> None:
     table = TableMarkdownNode(
         headers=["Name", "Age", "City"],
         rows=[["Alice", "25", "Berlin"], ["Bob", "30", "Munich"]],
     )
+
+    d = table_delimiter
+    s = table_separator
     expected = (
-        f"{table_syntax.start_delimiter} Name {table_syntax.start_delimiter} Age {table_syntax.start_delimiter} City {table_syntax.start_delimiter}\n"
-        f"{table_syntax.start_delimiter} {table_syntax.end_delimiter} {table_syntax.start_delimiter} {table_syntax.end_delimiter} {table_syntax.start_delimiter} {table_syntax.end_delimiter} {table_syntax.start_delimiter}\n"
-        f"{table_syntax.start_delimiter} Alice {table_syntax.start_delimiter} 25 {table_syntax.start_delimiter} Berlin {table_syntax.start_delimiter}\n"
-        f"{table_syntax.start_delimiter} Bob {table_syntax.start_delimiter} 30 {table_syntax.start_delimiter} Munich {table_syntax.start_delimiter}"
+        f"{d} Name {d} Age {d} City {d}\n"
+        f"{d} {s} {d} {s} {d} {s} {d}\n"
+        f"{d} Alice {d} 25 {d} Berlin {d}\n"
+        f"{d} Bob {d} 30 {d} Munich {d}"
     )
+
     assert table.to_markdown() == expected

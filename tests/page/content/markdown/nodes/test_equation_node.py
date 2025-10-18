@@ -1,27 +1,55 @@
+import pytest
+
 from notionary.page.content.markdown.nodes import EquationMarkdownNode
 from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.models import SyntaxDefinition
 
 
-def test_equation_markdown_node(syntax_registry: SyntaxRegistry) -> None:
-    """Test EquationMarkdownNode"""
-    equation_syntax = syntax_registry.get_equation_syntax()
+@pytest.fixture
+def equation_syntax(syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
+    return syntax_registry.get_equation_syntax()
 
-    equation_simple = EquationMarkdownNode(expression="E = mc^2")
-    expected = f"{equation_syntax.start_delimiter}E = mc^2{equation_syntax.end_delimiter}"
-    assert equation_simple.to_markdown() == expected
 
-    equation_with_parens = EquationMarkdownNode(expression="f(x) = sin(x)")
-    expected = f"{equation_syntax.start_delimiter}f(x) = sin(x){equation_syntax.end_delimiter}"
-    assert equation_with_parens.to_markdown() == expected
+@pytest.fixture
+def equation_start_delimiter(equation_syntax: SyntaxDefinition) -> str:
+    return equation_syntax.start_delimiter
 
-    equation_with_quotes = EquationMarkdownNode(expression='say "hello"')
-    expected = f'{equation_syntax.start_delimiter}say "hello"{equation_syntax.end_delimiter}'
-    assert equation_with_quotes.to_markdown() == expected
 
-    equation_empty = EquationMarkdownNode(expression="")
-    expected = f"{equation_syntax.start_delimiter}{equation_syntax.end_delimiter}"
-    assert equation_empty.to_markdown() == expected
+@pytest.fixture
+def equation_end_delimiter(equation_syntax: SyntaxDefinition) -> str:
+    return equation_syntax.end_delimiter
 
-    equation_whitespace = EquationMarkdownNode(expression="   ")
-    expected = f"{equation_syntax.start_delimiter}{equation_syntax.end_delimiter}"
-    assert equation_whitespace.to_markdown() == expected
+
+def test_equation_simple(equation_start_delimiter: str, equation_end_delimiter: str) -> None:
+    equation = EquationMarkdownNode(expression="E = mc^2")
+    expected = f"{equation_start_delimiter}E = mc^2{equation_end_delimiter}"
+
+    assert equation.to_markdown() == expected
+
+
+def test_equation_with_parens(equation_start_delimiter: str, equation_end_delimiter: str) -> None:
+    equation = EquationMarkdownNode(expression="f(x) = sin(x)")
+    expected = f"{equation_start_delimiter}f(x) = sin(x){equation_end_delimiter}"
+
+    assert equation.to_markdown() == expected
+
+
+def test_equation_with_quotes(equation_start_delimiter: str, equation_end_delimiter: str) -> None:
+    equation = EquationMarkdownNode(expression='say "hello"')
+    expected = f'{equation_start_delimiter}say "hello"{equation_end_delimiter}'
+
+    assert equation.to_markdown() == expected
+
+
+def test_equation_empty(equation_start_delimiter: str, equation_end_delimiter: str) -> None:
+    equation = EquationMarkdownNode(expression="")
+    expected = f"{equation_start_delimiter}{equation_end_delimiter}"
+
+    assert equation.to_markdown() == expected
+
+
+def test_equation_whitespace(equation_start_delimiter: str, equation_end_delimiter: str) -> None:
+    equation = EquationMarkdownNode(expression="   ")
+    expected = f"{equation_start_delimiter}{equation_end_delimiter}"
+
+    assert equation.to_markdown() == expected

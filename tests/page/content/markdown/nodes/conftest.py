@@ -22,3 +22,8 @@ def indent(markdown_grammar: MarkdownGrammar) -> str:
 @pytest.fixture
 def caption_syntax(syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
     return syntax_registry.get_caption_syntax()
+
+
+@pytest.fixture
+def caption_delimiter(caption_syntax: SyntaxDefinition) -> str:
+    return caption_syntax.start_delimiter

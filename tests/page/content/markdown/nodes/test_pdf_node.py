@@ -1,15 +1,23 @@
+import pytest
+
 from notionary.page.content.markdown.nodes.pdf import PdfMarkdownNode
 from notionary.page.content.syntax import SyntaxRegistry
-from notionary.page.content.syntax.models import SyntaxDefinition
 
 
-def test_pdf_markdown_node(syntax_registry: SyntaxRegistry, caption_syntax: SyntaxDefinition) -> None:
-    pdf_syntax = syntax_registry.get_pdf_syntax()
+@pytest.fixture
+def pdf_delimiter(syntax_registry: SyntaxRegistry) -> str:
+    return syntax_registry.get_pdf_syntax().start_delimiter
 
+
+def test_pdf_without_caption(pdf_delimiter: str) -> None:
     pdf = PdfMarkdownNode(url="https://example.com/document.pdf")
-    expected = f"{pdf_syntax.start_delimiter}https://example.com/document.pdf)"
+    expected = f"{pdf_delimiter}https://example.com/document.pdf)"
+
     assert pdf.to_markdown() == expected
 
-    pdf_with_caption = PdfMarkdownNode(url="https://example.com/document.pdf", caption="Critical safety information")
-    expected = f"{pdf_syntax.start_delimiter}https://example.com/document.pdf)\n{caption_syntax.start_delimiter} Critical safety information"
-    assert pdf_with_caption.to_markdown() == expected
+
+def test_pdf_with_caption(pdf_delimiter: str, caption_delimiter: str) -> None:
+    pdf = PdfMarkdownNode(url="https://example.com/document.pdf", caption="Critical safety information")
+    expected = f"{pdf_delimiter}https://example.com/document.pdf)\n{caption_delimiter} Critical safety information"
+
+    assert pdf.to_markdown() == expected

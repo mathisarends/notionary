@@ -307,6 +307,7 @@ async def test_toggleable_heading_with_children_should_render_with_indentation(
     heading_renderer: HeadingRenderer,
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+    indent: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("Toggleable Heading")]
     mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Toggleable Heading")
@@ -314,12 +315,12 @@ async def test_toggleable_heading_with_children_should_render_with_indentation(
     heading_data = _create_heading_data(rich_text, is_toggleable=True)
     block = _create_heading_block(BlockType.HEADING_2, heading_data)
     render_context.block = block
-    render_context.render_children = AsyncMock(return_value="    Child content")
+    render_context.render_children = AsyncMock(return_value=f"{indent}Child content")
 
     await heading_renderer._process(render_context)
 
     assert "## Toggleable Heading" in render_context.markdown_result
-    assert "    Child content" in render_context.markdown_result
+    assert f"{indent}Child content" in render_context.markdown_result
     # Verify that render_children was called
     render_context.render_children.assert_called_once()
     # Verify that indent level was increased temporarily
@@ -352,6 +353,7 @@ async def test_toggleable_heading_with_nested_indent_should_handle_multiple_leve
     heading_renderer: HeadingRenderer,
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+    indent: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("Nested Heading")]
     mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Nested Heading")
@@ -360,10 +362,10 @@ async def test_toggleable_heading_with_nested_indent_should_handle_multiple_leve
     block = _create_heading_block(BlockType.HEADING_3, heading_data)
     render_context.block = block
     render_context.indent_level = 1  # Already indented
-    render_context.render_children = AsyncMock(return_value="        Deeply nested content")
+    render_context.render_children = AsyncMock(return_value=f"{indent}{indent}Deeply nested content")
 
     await heading_renderer._process(render_context)
 
     assert "  ### Nested Heading" in render_context.markdown_result
-    assert "        Deeply nested content" in render_context.markdown_result
+    assert f"{indent}{indent}Deeply nested content" in render_context.markdown_result
     assert render_context.indent_level == 1

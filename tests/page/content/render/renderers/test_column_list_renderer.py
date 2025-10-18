@@ -84,6 +84,7 @@ async def test_column_list_with_indentation_should_indent_start_marker(
     column_list_renderer: ColumnListRenderer,
     render_context: MarkdownRenderingContext,
     syntax_registry: SyntaxRegistry,
+    indent: str,
 ) -> None:
     render_context.render_children = AsyncMock(return_value="")
     render_context.indent_level = 1
@@ -93,7 +94,7 @@ async def test_column_list_with_indentation_should_indent_start_marker(
     await column_list_renderer._process(render_context)
 
     delimiter = syntax_registry.get_column_list_syntax().start_delimiter
-    assert render_context.markdown_result == f"    {delimiter}"
+    assert render_context.markdown_result == f"{indent}{delimiter}"
 
 
 @pytest.mark.asyncio

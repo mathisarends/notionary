@@ -1,35 +1,45 @@
+import pytest
+
 from notionary.page.content.markdown.nodes import HeadingMarkdownNode, ParagraphMarkdownNode
 from notionary.page.content.syntax import SyntaxRegistry
 
 
-def test_heading_markdown_node(syntax_registry: SyntaxRegistry) -> None:
-    heading_syntax = syntax_registry.get_heading_syntax()
-
-    h1 = HeadingMarkdownNode(text="Heading 1", level=1)
-    expected = f"{heading_syntax.start_delimiter} Heading 1"
-    assert h1.to_markdown() == expected
-
-    h2 = HeadingMarkdownNode(text="Heading 2", level=2)
-    expected = f"{heading_syntax.start_delimiter * 2} Heading 2"
-    assert h2.to_markdown() == expected
-
-    h3 = HeadingMarkdownNode(text="Heading 3", level=3)
-    expected = f"{heading_syntax.start_delimiter * 3} Heading 3"
-    assert h3.to_markdown() == expected
-
-    h4_clamped = HeadingMarkdownNode(text="still valid", level=4)
-    expected = f"{heading_syntax.start_delimiter * 3} still valid"
-    assert h4_clamped.to_markdown() == expected
+@pytest.fixture
+def heading_delimiter(syntax_registry: SyntaxRegistry) -> str:
+    return syntax_registry.get_heading_syntax().start_delimiter
 
 
-def test_heading_with_children(syntax_registry: SyntaxRegistry, indent: str) -> None:
-    """Test heading with nested children using indentation (toggleable)."""
-    heading_syntax = syntax_registry.get_heading_syntax()
+def test_heading_level_1(heading_delimiter: str) -> None:
+    heading = HeadingMarkdownNode(text="Heading 1", level=1)
+    expected = f"{heading_delimiter} Heading 1"
 
-    # Create children
+    assert heading.to_markdown() == expected
+
+
+def test_heading_level_2(heading_delimiter: str) -> None:
+    heading = HeadingMarkdownNode(text="Heading 2", level=2)
+    expected = f"{heading_delimiter * 2} Heading 2"
+
+    assert heading.to_markdown() == expected
+
+
+def test_heading_level_3(heading_delimiter: str) -> None:
+    heading = HeadingMarkdownNode(text="Heading 3", level=3)
+    expected = f"{heading_delimiter * 3} Heading 3"
+
+    assert heading.to_markdown() == expected
+
+
+def test_heading_level_4_clamped(heading_delimiter: str) -> None:
+    heading = HeadingMarkdownNode(text="still valid", level=4)
+    expected = f"{heading_delimiter * 3} still valid"
+
+    assert heading.to_markdown() == expected
+
+
+def test_heading_with_children(heading_delimiter: str, indent: str) -> None:
     child1 = ParagraphMarkdownNode(text="First paragraph")
     child2 = ParagraphMarkdownNode(text="Second paragraph")
-
     heading = HeadingMarkdownNode(
         text="Toggleable Heading",
         level=2,
@@ -38,9 +48,6 @@ def test_heading_with_children(syntax_registry: SyntaxRegistry, indent: str) -> 
 
     result = heading.to_markdown()
 
-    # Check parent heading
-    assert f"{heading_syntax.start_delimiter * 2} Toggleable Heading" in result
-
-    # Check indented children
+    assert f"{heading_delimiter * 2} Toggleable Heading" in result
     assert f"{indent}First paragraph" in result
     assert f"{indent}Second paragraph" in result

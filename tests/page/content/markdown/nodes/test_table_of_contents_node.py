@@ -1,14 +1,16 @@
+import pytest
+
 from notionary.page.content.markdown.nodes import TableOfContentsMarkdownNode
 from notionary.page.content.syntax import SyntaxRegistry
 
 
-def test_table_of_contents_markdown_node(syntax_registry: SyntaxRegistry) -> None:
-    toc_syntax = syntax_registry.get_table_of_contents_syntax()
+@pytest.fixture
+def table_of_contents_delimiter(syntax_registry: SyntaxRegistry) -> str:
+    return syntax_registry.get_table_of_contents_syntax().start_delimiter
 
+
+def test_table_of_contents_markdown_node(table_of_contents_delimiter: str) -> None:
     toc = TableOfContentsMarkdownNode()
-    expected = toc_syntax.start_delimiter
-    assert toc.to_markdown() == expected
+    expected = table_of_contents_delimiter
 
-    toc2 = TableOfContentsMarkdownNode()
-    expected = toc_syntax.start_delimiter
-    assert toc2.to_markdown() == expected
+    assert toc.to_markdown() == expected
