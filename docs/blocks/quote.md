@@ -52,3 +52,8 @@ markdown = (MarkdownBuilder()
   .quote("Simple is better than complex.")
   .build())
 ```
+
+## Reference
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on quote blocks, see <a href="https://developers.notion.com/reference/block#quote" target="_blank">https://developers.notion.com/reference/block#quote</a>

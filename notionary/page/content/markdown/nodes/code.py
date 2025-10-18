@@ -1,6 +1,6 @@
 from typing import override
 
-from notionary.blocks.enums import CodeLanguage
+from notionary.blocks.enums import CodingLanguage
 from notionary.page.content.markdown.nodes.base import MarkdownNode
 from notionary.page.content.markdown.nodes.mixins.caption import CaptionMarkdownNodeMixin
 from notionary.page.content.syntax import SyntaxRegistry
@@ -10,7 +10,7 @@ class CodeMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
     def __init__(
         self,
         code: str,
-        language: CodeLanguage | None = None,
+        language: CodingLanguage | None = None,
         caption: str | None = None,
         syntax_registry: SyntaxRegistry | None = None,
     ) -> None:

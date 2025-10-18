@@ -28,6 +28,19 @@ With rich text:
 3. Contact @user[Support] if needed
 ```
 
+Nested and mixed lists (using indentation):
+
+```markdown
+1. Setup
+  - Install dependencies
+  - Configure environment
+2. Tasks
+  1. Implement feature A
+    - Write unit tests
+    - Update docs
+  2. Review PRs
+```
+
 ## Builder
 
 ```python
@@ -42,3 +55,9 @@ markdown = (MarkdownBuilder()
   ])
   .build())
 ```
+
+
+## Reference
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on numbered list blocks, see <a href="https://developers.notion.com/reference/block#numbered-list-item" target="_blank">https://developers.notion.com/reference/block#numbered-list-item</a>

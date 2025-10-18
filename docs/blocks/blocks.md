@@ -41,6 +41,27 @@ classDiagram
 
 > The public API surface for content is intentionally small: you only need `page.append_markdown()` and optionally the `MarkdownBuilder` functions.
 
+
+---
+
+## Indentation & Nesting Syntax
+
+Many Notionary block types support nested content using indentation. Indentation is always defined by a fixed number of spaces per nesting level (see test fixtures for details). This makes it easy to compose complex structures in Markdown, and ensures round-trip safety.
+
+The following blocks use indentation for nesting:
+
+- [Bulleted List](./bulleted_list.md)
+- [Callout](./callout.md)
+- [Column](./column.md)
+- [Heading](./heading.md)
+- [Numbered List](./numbered_list.md)
+- [Quote](./quote.md)
+- [Toggle](./toggle.md)
+- [Todo](./todo.md)
+
+For each, child content is indented by one or more levels.
+
+
 ### Captions
 
 Some blocks support captions. In Markdown, add a `[caption]` line immediately below the block. The following block types support captions:
@@ -60,6 +81,15 @@ Example:
 [image](./assets/screenshot.png)
 [caption] Main dashboard view
 ```
+
+## Vertical Spacing
+
+To add extra vertical space between content, use either two consecutive empty lines or the explicit `[space]` marker in your Markdown. This creates a spacing block for visual separation. Spacing blocks work in all block contexts and help improve readability and structure.
+
+See the [Spacing block documentation](./space.md) for details and examples.
+
+---
+
 
 ## Philosophy
 
@@ -115,23 +145,7 @@ await page.append_markdown(
 - Refactored auth middleware
 - Improved caching layer
 - Added experimental AI summary
-
-::: columns
-::: column
-### Metrics
-| Key  | Value |
-| ---- | ----- |
-| Req/s | 412  |
-| P95   | 180ms |
-:::
-::: column
-### Flags
-- [x] Enable feature X
-- [ ] Launch Beta Group
-:::
-:::
 """
-)
 ```
 
 ---
@@ -166,15 +180,6 @@ await page.append_markdown(lambda b: (
 
 ---
 
-## Error Handling & Robustness
-
-- Length trimming where Notion imposes limits
-- Graceful downgrade: unknown block types become paragraphs
-- Retry layer for transient network faults
-- Validation on builder API (e.g. column ratio mismatches)
-
----
-
 ## Minimal End‑to‑End Example
 
 ```python
@@ -203,9 +208,6 @@ print(markdown_snapshot)
 
 - Prefer the builder in automated pipelines (stable structure, fewer parsing ambiguities)
 - Keep raw markdown lean; move logic into Python where possible
-- Use `replace_content` for idempotent regeneration flows
-- Validate complex tables in code before sending
-- Retrieve then diff markdown snapshots for change auditing
 
 ---
 

@@ -42,3 +42,9 @@ markdown = (MarkdownBuilder()
   .paragraph("How to use...")
   .build())
 ```
+
+
+## Reference
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on table of contents blocks, see <a href="https://developers.notion.com/reference/block#table-of-contents" target="_blank">https://developers.notion.com/reference/block#table-of-contents</a>

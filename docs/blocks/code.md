@@ -27,11 +27,11 @@ graph TD; A-->B; B-->C;
 
 `python`, `javascript`, `bash`, `json`, `yaml`, `sql`, `mermaid`, `go`, `rust`
 
-Full list: inspect `CodeLanguage` enum.
+Full list: inspect `CodingLanguage` enum.
 
 ```python
-from notionary.blocks.code import CodeLanguage
-all_langs = [c.value for c in CodeLanguage]
+from notionary.blocks.code import CodingLanguage
+all_langs = [c.value for c in CodingLanguage]
 ```
 
 ## Builder
@@ -46,3 +46,9 @@ markdown = (MarkdownBuilder()
     .mermaid('graph TD; A-->B; B-->C;', 'Flow')
     .build())
 ```
+
+
+## Reference
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on code blocks, see <a href="https://developers.notion.com/reference/block#code" target="_blank">https://developers.notion.com/reference/block#code</a>

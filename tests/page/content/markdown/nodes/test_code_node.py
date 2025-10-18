@@ -1,6 +1,6 @@
 import pytest
 
-from notionary.blocks.enums import CodeLanguage
+from notionary.blocks.enums import CodingLanguage
 from notionary.page.content.markdown.nodes import CodeMarkdownNode
 from notionary.page.content.syntax import SyntaxRegistry
 from notionary.page.content.syntax.models import SyntaxDefinition
@@ -29,14 +29,14 @@ def test_code_without_language(code_start_delimiter: str, code_end_delimiter: st
 
 
 def test_code_with_language(code_start_delimiter: str, code_end_delimiter: str) -> None:
-    code = CodeMarkdownNode(code="print('Hello World')", language=CodeLanguage.PYTHON)
+    code = CodeMarkdownNode(code="print('Hello World')", language=CodingLanguage.PYTHON)
     expected = f"{code_start_delimiter}python\nprint('Hello World')\n{code_end_delimiter}"
 
     assert code.to_markdown() == expected
 
 
 def test_code_with_caption(code_start_delimiter: str, code_end_delimiter: str, caption_delimiter: str) -> None:
-    code = CodeMarkdownNode(code="print('Hello World')", language=CodeLanguage.PYTHON, caption="Example code")
+    code = CodeMarkdownNode(code="print('Hello World')", language=CodingLanguage.PYTHON, caption="Example code")
     expected = (
         f"{code_start_delimiter}python\nprint('Hello World')\n{code_end_delimiter}\n{caption_delimiter} Example code"
     )

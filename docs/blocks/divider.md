@@ -37,3 +37,6 @@ markdown = (MarkdownBuilder()
   .paragraph("Complex configuration.")
   .build())
 ```
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on divider blocks, see <a href="https://developers.notion.com/reference/block#divider" target="_blank">https://developers.notion.com/reference/block#divider</a>

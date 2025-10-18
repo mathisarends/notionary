@@ -32,3 +32,9 @@ markdown = (MarkdownBuilder()
   .paragraph("Navigate using the sidebar.")
   .build())
 ```
+
+
+## Reference
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on image blocks, see <a href="https://developers.notion.com/reference/block#image" target="_blank">https://developers.notion.com/reference/block#image</a>

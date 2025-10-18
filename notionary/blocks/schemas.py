@@ -4,7 +4,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from notionary.blocks.enums import BlockColor, BlockType, CodeLanguage, FileType
+from notionary.blocks.enums import BlockColor, BlockType, CodingLanguage, FileType
 from notionary.blocks.rich_text.models import RichText
 from notionary.shared.models.icon import Icon
 from notionary.shared.models.parent import Parent
@@ -227,7 +227,7 @@ class CreateChildDatabaseBlock(BaseModel):
 class CodeData(BaseModel):
     caption: list[RichText] = Field(default_factory=list)
     rich_text: list[RichText]
-    language: CodeLanguage = CodeLanguage.PLAIN_TEXT
+    language: CodingLanguage = CodingLanguage.PLAIN_TEXT
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 

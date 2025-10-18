@@ -37,3 +37,8 @@ markdown = (MarkdownBuilder()
   .paragraph("Follow along with the video.")
   .build())
 ```
+
+## Reference
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on video blocks, see <a href="https://developers.notion.com/reference/block#video" target="_blank">https://developers.notion.com/reference/block#video</a>

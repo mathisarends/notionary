@@ -32,3 +32,7 @@ markdown = (MarkdownBuilder()
   .paragraph("See the features in action.")
   .build())
 ```
+
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on embed blocks, see <a href="https://developers.notion.com/reference/block#embed" target="_blank">https://developers.notion.com/reference/block#embed</a>

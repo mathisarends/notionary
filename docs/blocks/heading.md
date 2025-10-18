@@ -1,4 +1,4 @@
-Headings create structure. Three levels are supported: `#`, `##`, `###` (H1–H3). Keep them minimal and descriptive.
+Headings create structure. Three levels are supported: `#`, `##`, `###` (H1–H3).
 
 ## Standard
 
@@ -16,32 +16,37 @@ markdown = """
 
 Inline rich text (bold, links, code, etc.) is supported inside the heading text (see [Rich Text](./rich_text.md)).
 
-## Toggleable Headings
+## Heading with Children
 
-Collapsed content regions that start with `+++` followed by a normal heading marker and end with a closing `+++` line.
+There are two ways to create a toggleable heading:
 
-Syntax:
+1) Raw Markdown: To create a toggleable heading, simply indent child content under any heading using four spaces per level. No delimiter is needed.
 
-```python
-markdown = """
-+++# Collapsible Main Section
-Content inside the toggleable heading.
-Can contain multiple paragraphs and other blocks.
-+++
-"""
+```markdown
+# Collapsible Main Section
+  Content inside the toggleable heading.
+  Can contain multiple paragraphs and other blocks.
 ```
 
-## Builder Usage
+2) Builder: Any heading (`h1`, `h2`, `h3`) becomes toggleable when you provide children via the builder function.
 
 ```python
 from notionary import MarkdownBuilder
 
 markdown = (
-    MarkdownBuilder()
-      .h1("Guide")
-      .h2("Intro")
-      .paragraph("Overview text.")
-      .toggleable_heading("Advanced", 2, lambda b: b.paragraph("Hidden details"))
-      .build()
+  MarkdownBuilder()
+    .h1("Guide")
+    .h2("Intro")
+    .paragraph("Overview text.")
+    .h2("Advanced", lambda b: (
+      b.paragraph("Hidden details")
+       .code("print('ok')", language="python")
+    ))
+    .build()
 )
 ```
+
+## Reference
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on heading blocks, see <a href="https://developers.notion.com/reference/block#headings" target="_blank">https://developers.notion.com/reference/block#headings</a>

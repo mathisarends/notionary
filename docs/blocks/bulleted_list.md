@@ -28,6 +28,20 @@ With rich text:
 - Ask @user[Jane] for details
 ```
 
+Nested and mixed lists (using indentation):
+
+```markdown
+- Features
+  1. Real-time collaboration
+  2. Advanced analytics
+  3. Custom integrations
+- Roadmap
+  - Q1: Stabilization
+  - Q2: Performance
+    1. Cache layer
+    2. Query planner
+```
+
 ## Builder
 
 ```python
@@ -42,3 +56,8 @@ markdown = (MarkdownBuilder()
   ])
   .build())
 ```
+
+## Reference
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on bulleted-list blocks, see <a href="https://developers.notion.com/reference/block#bulleted-list-item" target="_blank">https://developers.notion.com/reference/block#bulleted-list-item</a>

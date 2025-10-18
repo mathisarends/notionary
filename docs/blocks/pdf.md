@@ -32,3 +32,8 @@ markdown = (MarkdownBuilder()
   .paragraph("Follow the steps in the PDF above.")
   .build())
 ```
+
+## Reference
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on pdf blocks, see <a href="https://developers.notion.com/reference/block#pdf" target="_blank">https://developers.notion.com/reference/block#pdf</a>

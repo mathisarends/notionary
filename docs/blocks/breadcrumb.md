@@ -29,3 +29,9 @@ markdown = (MarkdownBuilder()
   .paragraph("Documentation content.")
   .build())
 ```
+
+
+## Reference
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on breadcrumb blocks, see <a href="https://developers.notion.com/reference/block#breadcrumb" target="_blank">https://developers.notion.com/reference/block#breadcrumb</a>

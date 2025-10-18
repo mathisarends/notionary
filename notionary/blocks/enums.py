@@ -68,7 +68,7 @@ class FileType(StrEnum):
     FILE_UPLOAD = "file_upload"
 
 
-class CodeLanguage(StrEnum):
+class CodingLanguage(StrEnum):
     ABAP = "abap"
     ARDUINO = "arduino"
     BASH = "bash"

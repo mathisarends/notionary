@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Self
 
-from notionary.blocks.enums import CodeLanguage
+from notionary.blocks.enums import CodingLanguage
 from notionary.page.content.markdown.nodes import (
     AudioMarkdownNode,
     BookmarkMarkdownNode,
@@ -159,12 +159,12 @@ class MarkdownBuilder:
         self.children.append(EmbedMarkdownNode(url=url, caption=caption))
         return self
 
-    def code(self, code: str, language: CodeLanguage | None = None, caption: str | None = None) -> Self:
+    def code(self, code: str, language: CodingLanguage | None = None, caption: str | None = None) -> Self:
         self.children.append(CodeMarkdownNode(code=code, language=language, caption=caption))
         return self
 
     def mermaid(self, diagram: str, caption: str | None = None) -> Self:
-        self.children.append(CodeMarkdownNode(code=diagram, language=CodeLanguage.MERMAID.value, caption=caption))
+        self.children.append(CodeMarkdownNode(code=diagram, language=CodingLanguage.MERMAID.value, caption=caption))
         return self
 
     def table(self, headers: list[str], rows: list[list[str]]) -> Self:

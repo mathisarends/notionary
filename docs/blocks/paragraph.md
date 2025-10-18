@@ -11,11 +11,6 @@ and ~~strikethrough~~ text.
 Blank line → new paragraph.
 ```
 
-
-## Visual Spacing
-
-Spacing is a cross-cutting concept in Notionary. You can add extra vertical space between content using either two consecutive empty lines or the explicit `[space]` marker. See the dedicated [Spacing documentation](./space.md) for details and examples.
-
 ## Mentions & Inline Rich Text
 
 You can drop mentions directly inside paragraphs:
@@ -48,3 +43,9 @@ builder = MarkdownBuilder() \
 
 await page.replace_content(lambda: builder.build())
 ```
+
+
+## Reference
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on paragraph blocks, see <a href="https://developers.notion.com/reference/block#paragraph" target="_blank">https://developers.notion.com/reference/block#paragraph</a>

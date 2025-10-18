@@ -36,27 +36,28 @@ nav:
       - Database: database.md
 
       - Blocks:
-          - Overview: blocks/blocks.md
-          - Rich Text: blocks/rich_text.md
-          - Paragraph: blocks/paragraph.md
-          - Heading: blocks/heading.md
+          - Breadcrumb: blocks/breadcrumb.md
+          - Bulleted List: blocks/bulleted_list.md
           - Callout: blocks/callout.md
           - Code: blocks/code.md
-          - Quote: blocks/quote.md
-          - Divider: blocks/divider.md
-          - Space: blocks/space.md
           - Columns: blocks/column.md
-          - Toggle: blocks/toggle.md
-          - Table: blocks/table.md
-          - Equation: blocks/equation.md
-          - Breadcrumb: blocks/breadcrumb.md
-          - Table of Contents: blocks/table_of_contents.md
+          - Divider: blocks/divider.md
           - Embed: blocks/embed.md
+          - Equation: blocks/equation.md
           - File: blocks/file.md
-          - PDF: blocks/pdf.md
-          - Bulleted List: blocks/bulleted_list.md
-          - Numbered List: blocks/numbered_list.md
+          - Heading: blocks/heading.md
           - Image: blocks/image.md
+          - Numbered List: blocks/numbered_list.md
+          - Overview: blocks/blocks.md
+          - Paragraph: blocks/paragraph.md
+          - PDF: blocks/pdf.md
+          - Quote: blocks/quote.md
+          - Rich Text: blocks/rich_text.md
+          - Space: blocks/space.md
+          - Table: blocks/table.md
+          - Table of Contents: blocks/table_of_contents.md
+          - Todo: blocks/todo.md
+          - Toggle: blocks/toggle.md
           - Video: blocks/video.md
 
   - Shoutouts: shoutouts.md

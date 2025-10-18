@@ -3,13 +3,13 @@ from typing import override
 
 from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.schemas import CodeData, CodeLanguage, CreateCodeBlock
+from notionary.blocks.schemas import CodeData, CodingLanguage, CreateCodeBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 from notionary.page.content.syntax import SyntaxRegistry
 
 
 class CodeParser(LineParser):
-    DEFAULT_LANGUAGE = CodeLanguage.PLAIN_TEXT
+    DEFAULT_LANGUAGE = CodingLanguage.PLAIN_TEXT
 
     def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
         super().__init__(syntax_registry)
@@ -67,8 +67,8 @@ class CodeParser(LineParser):
         code_data = CodeData(rich_text=rich_text, language=language, caption=[])
         return CreateCodeBlock(code=code_data)
 
-    def _parse_language(self, language_str: str | None) -> CodeLanguage:
-        return CodeLanguage.from_string(language_str, default=self.DEFAULT_LANGUAGE)
+    def _parse_language(self, language_str: str | None) -> CodingLanguage:
+        return CodingLanguage.from_string(language_str, default=self.DEFAULT_LANGUAGE)
 
     async def _create_rich_text_from_code(self, code_lines: list[str]) -> list[RichText]:
         content = "\n".join(code_lines) if code_lines else ""

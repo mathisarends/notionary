@@ -5,7 +5,7 @@ import pytest
 from notionary.blocks.rich_text.markdown_rich_text_converter import (
     MarkdownRichTextConverter,
 )
-from notionary.blocks.schemas import CodeLanguage, CreateCodeBlock
+from notionary.blocks.schemas import CodingLanguage, CreateCodeBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.code import CodeParser
 from notionary.page.content.syntax import SyntaxRegistry
@@ -39,7 +39,7 @@ async def test_code_block_should_create_code_block(
     assert len(context.result_blocks) == 1
     block = context.result_blocks[0]
     assert isinstance(block, CreateCodeBlock)
-    assert block.code.language == CodeLanguage.PLAIN_TEXT
+    assert block.code.language == CodingLanguage.PLAIN_TEXT
     assert block.code.caption == []
     mock_rich_text_converter.to_rich_text.assert_called_once_with("print('Hello World')")
 
@@ -47,14 +47,14 @@ async def test_code_block_should_create_code_block(
 @pytest.mark.parametrize(
     "language_tag,expected_language",
     [
-        ("python", CodeLanguage.PYTHON),
-        ("javascript", CodeLanguage.JAVASCRIPT),
-        ("java", CodeLanguage.JAVA),
-        ("typescript", CodeLanguage.TYPESCRIPT),
-        ("c", CodeLanguage.C),
-        ("cpp", CodeLanguage.CPP),
-        ("go", CodeLanguage.GO),
-        ("rust", CodeLanguage.RUST),
+        ("python", CodingLanguage.PYTHON),
+        ("javascript", CodingLanguage.JAVASCRIPT),
+        ("java", CodingLanguage.JAVA),
+        ("typescript", CodingLanguage.TYPESCRIPT),
+        ("c", CodingLanguage.C),
+        ("cpp", CodingLanguage.CPP),
+        ("go", CodingLanguage.GO),
+        ("rust", CodingLanguage.RUST),
     ],
 )
 @pytest.mark.asyncio
@@ -62,7 +62,7 @@ async def test_code_block_with_language_should_set_correct_language(
     code_parser: CodeParser,
     context: BlockParsingContext,
     language_tag: str,
-    expected_language: CodeLanguage,
+    expected_language: CodingLanguage,
 ) -> None:
     _setup_code_block_context_with_language(context, ["code"], language_tag)
 
@@ -82,7 +82,7 @@ async def test_code_block_with_case_insensitive_language_should_parse(
     await code_parser._process(context)
 
     block = context.result_blocks[0]
-    assert block.code.language == CodeLanguage.PYTHON
+    assert block.code.language == CodingLanguage.PYTHON
 
 
 @pytest.mark.asyncio
@@ -95,7 +95,7 @@ async def test_code_block_with_unknown_language_should_use_plain_text(
     await code_parser._process(context)
 
     block = context.result_blocks[0]
-    assert block.code.language == CodeLanguage.PLAIN_TEXT
+    assert block.code.language == CodingLanguage.PLAIN_TEXT
 
 
 @pytest.mark.asyncio

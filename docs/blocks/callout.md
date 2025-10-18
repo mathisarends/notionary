@@ -42,7 +42,6 @@ If no emoji is provided a default (💡) is used.
 
 [callout] Warning
     Make sure to backup before proceeding!
-    > Critical data could be lost
 ```
 
 ## Builder
@@ -56,3 +55,8 @@ markdown = (MarkdownBuilder()
   .callout("Test in staging first!", emoji="⚠️")
   .build())
 ```
+
+## Reference
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on callout blocks, see <a href="https://developers.notion.com/reference/block#callout" target="_blank">https://developers.notion.com/reference/block#callout</a>

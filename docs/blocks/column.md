@@ -34,6 +34,27 @@ Right content
 :::
 ```
 
+You can nest bulleted and numbered lists inside columns using indentation:
+
+```
+::: columns
+::: column
+Features:
+  - Real-time collaboration
+  - Advanced analytics
+  - Custom integrations
+:::
+::: column
+Steps:
+  1. Download installer
+  2. Run setup wizard
+  3. Configure settings
+:::
+:::
+```
+
+Lists can be arbitrarily nested using indentation, and both bulleted and numbered lists work inside columns.
+
 With width ratios:
 
 ```
@@ -93,3 +114,8 @@ markdown = (MarkdownBuilder()
   )
   .build())
 ```
+
+## Reference
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on column and column-list blocks, see <a href="https://developers.notion.com/reference/block#column-list-and-column" target="_blank">https://developers.notion.com/reference/block#column-list-and-column</a>

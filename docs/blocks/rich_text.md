@@ -91,4 +91,4 @@ When read back both display using the page title if resolvable.
 ## Reference
 
 !!! info "Notion API Reference"
-For the official Notion API reference on blocks, see [https://developers.notion.com/reference/rich-text](https://developers.notion.com/reference/rich-text)
+    For the official Notion API reference on rich text, see <a href="https://developers.notion.com/reference/rich-text" target="_blank">https://developers.notion.com/reference/rich-text</a>

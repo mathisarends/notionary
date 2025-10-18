@@ -36,3 +36,6 @@ markdown = (MarkdownBuilder()
   .equation("F = ma")
   .build())
 ```
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on equation blocks, see <a href="https://developers.notion.com/reference/block#equation" target="_blank">https://developers.notion.com/reference/block#equation</a>

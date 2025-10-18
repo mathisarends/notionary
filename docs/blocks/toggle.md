@@ -45,3 +45,9 @@ markdown = (MarkdownBuilder()
   )
   .build())
 ```
+
+
+## Reference
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on toggle blocks, see <a href="https://developers.notion.com/reference/block#toggle" target="_blank">https://developers.notion.com/reference/block#toggle</a>

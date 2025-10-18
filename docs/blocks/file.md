@@ -32,3 +32,7 @@ markdown = (MarkdownBuilder()
   .paragraph("Download and follow the steps.")
   .build())
 ```
+
+
+!!! info "Notion API Reference"
+    For the official Notion API reference on file blocks, see <a href="https://developers.notion.com/reference/block#file" target="_blank">https://developers.notion.com/reference/block#file</a>
