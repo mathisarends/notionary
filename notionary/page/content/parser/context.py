@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Awaitable, Callable
 
 from notionary.blocks.schemas import BlockCreatePayload
+from notionary.page.content.syntax.grammar import MarkdownGrammar
 
 
 class ParentBlockContext:
@@ -23,22 +24,21 @@ class ParentBlockContext:
         self.child_blocks.append(block)
 
 
-ParseChildrenCallback = Callable[[str], Awaitable[list[BlockCreatePayload]]]
+_ParseChildrenCallback = Callable[[str], Awaitable[list[BlockCreatePayload]]]
 
 
 class BlockParsingContext:
-    MARKDOWN_INDENTATION_MULTIPLIER = 4
-
     def __init__(
         self,
         line: str,
         result_blocks: list[BlockCreatePayload],
         parent_stack: list[ParentBlockContext],
-        parse_children_callback: ParseChildrenCallback | None = None,
+        parse_children_callback: _ParseChildrenCallback | None = None,
         all_lines: list[str] | None = None,
         current_line_index: int | None = None,
         lines_consumed: int = 0,
         is_previous_line_empty: bool = False,
+        markdown_grammar: MarkdownGrammar | None = None,
     ) -> None:
         self.line = line
         self.result_blocks = result_blocks
@@ -48,6 +48,8 @@ class BlockParsingContext:
         self.current_line_index = current_line_index
         self.lines_consumed = lines_consumed
         self.is_previous_line_empty = is_previous_line_empty
+        markdown_grammar = markdown_grammar or MarkdownGrammar()
+        self._spaces_per_nesting_level = markdown_grammar.spaces_per_nesting_level
 
     async def parse_nested_markdown(self, text: str) -> list[BlockCreatePayload]:
         if not self._can_parse_children(text):
@@ -81,7 +83,7 @@ class BlockParsingContext:
         return len(line) - len(line.lstrip())
 
     def _calculate_indentation_level(self, leading_spaces: int) -> int:
-        return leading_spaces // self.MARKDOWN_INDENTATION_MULTIPLIER
+        return leading_spaces // self._spaces_per_nesting_level
 
     def collect_indented_child_lines(self, parent_indent_level: int) -> list[str]:
         child_lines = []
@@ -116,7 +118,7 @@ class BlockParsingContext:
         return self._remove_leading_spaces(line, spaces_to_remove)
 
     def _calculate_spaces_to_remove(self, levels: int) -> int:
-        return self.MARKDOWN_INDENTATION_MULTIPLIER * levels
+        return self._spaces_per_nesting_level * levels
 
     def _remove_leading_spaces(self, line: str, spaces: int) -> str:
         if len(line) < spaces:

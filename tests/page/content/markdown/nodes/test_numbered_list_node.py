@@ -24,7 +24,7 @@ def test_single_item_numbered_list(syntax_registry: SyntaxRegistry) -> None:
     assert numbered_list.to_markdown() == expected
 
 
-def test_numbered_list_with_paragraph_child(syntax_registry: SyntaxRegistry) -> None:
+def test_numbered_list_with_paragraph_child(syntax_registry: SyntaxRegistry, indent: str) -> None:
     paragraph_child = ParagraphMarkdownNode(text="Nested explanation", syntax_registry=syntax_registry)
 
     numbered_list = NumberedListMarkdownNode(
@@ -34,10 +34,10 @@ def test_numbered_list_with_paragraph_child(syntax_registry: SyntaxRegistry) -> 
     result = numbered_list.to_markdown()
 
     assert "1. First item" in result
-    assert "    Nested explanation" in result
+    assert f"{indent}Nested explanation" in result
 
 
-def test_numbered_list_with_nested_list_child(syntax_registry: SyntaxRegistry) -> None:
+def test_numbered_list_with_nested_list_child(syntax_registry: SyntaxRegistry, indent: str) -> None:
     nested_list = NumberedListMarkdownNode(texts=["Sub-item 1", "Sub-item 2"], syntax_registry=syntax_registry)
 
     parent_list = NumberedListMarkdownNode(
@@ -47,11 +47,11 @@ def test_numbered_list_with_nested_list_child(syntax_registry: SyntaxRegistry) -
     result = parent_list.to_markdown()
 
     assert "1. Parent item" in result
-    assert "    1. Sub-item 1" in result
-    assert "    2. Sub-item 2" in result
+    assert f"{indent}1. Sub-item 1" in result
+    assert f"{indent}2. Sub-item 2" in result
 
 
-def test_numbered_list_with_multiple_items_and_children(syntax_registry: SyntaxRegistry) -> None:
+def test_numbered_list_with_multiple_items_and_children(syntax_registry: SyntaxRegistry, indent: str) -> None:
     first_child = ParagraphMarkdownNode(text="First explanation", syntax_registry=syntax_registry)
     second_child = ParagraphMarkdownNode(text="Second explanation", syntax_registry=syntax_registry)
 
@@ -63,11 +63,11 @@ def test_numbered_list_with_multiple_items_and_children(syntax_registry: SyntaxR
 
     assert "1. Item 1" in result
     assert "2. Item 2" in result
-    assert "    First explanation" in result
-    assert "    Second explanation" in result
+    assert f"{indent}First explanation" in result
+    assert f"{indent}Second explanation" in result
 
 
-def test_numbered_list_with_fewer_children_than_items(syntax_registry: SyntaxRegistry) -> None:
+def test_numbered_list_with_fewer_children_than_items(syntax_registry: SyntaxRegistry, indent: str) -> None:
     child = ParagraphMarkdownNode(text="Only child", syntax_registry=syntax_registry)
 
     numbered_list = NumberedListMarkdownNode(
@@ -78,7 +78,7 @@ def test_numbered_list_with_fewer_children_than_items(syntax_registry: SyntaxReg
 
     lines = result.split("\n")
     assert "1. Item 1" in lines[0]
-    assert "    Only child" in lines[1]
+    assert f"{indent}Only child" in lines[1]
     assert "2. Item 2" in lines[2]
     assert "3. Item 3" in lines[3]
 

@@ -1,22 +1,24 @@
 from collections.abc import Awaitable, Callable
 
 from notionary.blocks.schemas import Block
+from notionary.page.content.syntax.grammar import MarkdownGrammar
 
 ConvertChildrenCallback = Callable[[list[Block], int], Awaitable[str]]
 
 
 class MarkdownRenderingContext:
-    MARKDOWN_INDENTATION_MULTIPLIER = 4
-
     def __init__(
         self,
         block: Block,
         indent_level: int,
         convert_children_callback: ConvertChildrenCallback | None = None,
+        markdown_grammar: MarkdownGrammar | None = None,
     ) -> None:
         self.block = block
         self.indent_level = indent_level
         self.convert_children_callback = convert_children_callback
+        markdown_grammar = markdown_grammar or MarkdownGrammar()
+        self._spaces_per_nesting_level = markdown_grammar.spaces_per_nesting_level
 
         self.markdown_result: str | None = None
 
@@ -44,6 +46,6 @@ class MarkdownRenderingContext:
         if not text:
             return text
 
-        spaces = " " * self.MARKDOWN_INDENTATION_MULTIPLIER * self.indent_level
+        spaces = " " * self._spaces_per_nesting_level * self.indent_level
         lines = text.split("\n")
         return "\n".join(f"{spaces}{line}" if line.strip() else line for line in lines)

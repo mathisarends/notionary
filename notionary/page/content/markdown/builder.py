@@ -28,7 +28,6 @@ from notionary.page.content.markdown.nodes import (
     TableMarkdownNode,
     TableOfContentsMarkdownNode,
     TodoMarkdownNode,
-    ToggleableHeadingMarkdownNode,
     ToggleMarkdownNode,
     VideoMarkdownNode,
 )
@@ -130,16 +129,6 @@ class MarkdownBuilder:
     def toggle(self, title: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder]) -> Self:
         children = self._build_children(builder_func)
         self.children.append(ToggleMarkdownNode(title=title, children=children))
-        return self
-
-    def toggleable_heading(
-        self,
-        text: str,
-        level: int,
-        builder_func: Callable[[MarkdownBuilder], MarkdownBuilder],
-    ) -> Self:
-        children = self._build_children(builder_func)
-        self.children.append(ToggleableHeadingMarkdownNode(text=text, level=level, children=children))
         return self
 
     def image(self, url: str, caption: str | None = None) -> Self:

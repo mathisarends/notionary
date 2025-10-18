@@ -2,16 +2,19 @@ import math
 from typing import override
 
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import MarkdownGrammar, SyntaxRegistry
 from notionary.utils.mixins.logging import LoggingMixin
 
 
 class IndentationNormalizer(PreProcessor, LoggingMixin):
-    MARKDOWN_STANDARD_INDENT_SIZE = 4
-
-    def __init__(self, syntax_registry: SyntaxRegistry | None = None) -> None:
+    def __init__(
+        self, syntax_registry: SyntaxRegistry | None = None, markdown_grammar: MarkdownGrammar | None = None
+    ) -> None:
         super().__init__()
         self._syntax_registry = syntax_registry or SyntaxRegistry()
+        self._markdown_grammar = markdown_grammar or MarkdownGrammar()
+
+        self._spaces_per_nesting_level = self._markdown_grammar.spaces_per_nesting_level
         self._code_block_start_delimiter = self._syntax_registry.get_code_syntax().start_delimiter
 
     @override
@@ -22,7 +25,9 @@ class IndentationNormalizer(PreProcessor, LoggingMixin):
         normalized = self._normalize_to_markdown_indentation(markdown_text)
 
         if normalized != markdown_text:
-            self.logger.warning("Inconsistent indentation detected and corrected")
+            self.logger.warning(
+                "Corrected non-standard indentation. Check the result for formatting errors and use consistent indentation in the source."
+            )
 
         return normalized
 
@@ -62,7 +67,7 @@ class IndentationNormalizer(PreProcessor, LoggingMixin):
 
     def _round_to_nearest_indentation_level(self, line: str) -> int:
         leading_spaces = self._count_leading_spaces(line)
-        return math.ceil(leading_spaces / self.MARKDOWN_STANDARD_INDENT_SIZE)
+        return math.ceil(leading_spaces / self._spaces_per_nesting_level)
 
     def _count_leading_spaces(self, line: str) -> int:
         return len(line) - len(line.lstrip())
@@ -75,5 +80,5 @@ class IndentationNormalizer(PreProcessor, LoggingMixin):
         return standard_indent + content
 
     def _create_standard_indent(self, level: int) -> str:
-        spaces = level * self.MARKDOWN_STANDARD_INDENT_SIZE
+        spaces = level * self._spaces_per_nesting_level
         return " " * spaces

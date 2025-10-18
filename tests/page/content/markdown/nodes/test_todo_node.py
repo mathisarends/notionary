@@ -46,7 +46,7 @@ def test_todo_with_another_invalid_marker_falls_back_to_dash(syntax_registry: Sy
     assert todo.to_markdown() == expected
 
 
-def test_todo_with_paragraph_child(syntax_registry: SyntaxRegistry) -> None:
+def test_todo_with_paragraph_child(syntax_registry: SyntaxRegistry, indent: str) -> None:
     child = ParagraphMarkdownNode(text="Additional notes", syntax_registry=syntax_registry)
 
     todo = TodoMarkdownNode(text="Main task", checked=False, children=[child], syntax_registry=syntax_registry)
@@ -55,10 +55,10 @@ def test_todo_with_paragraph_child(syntax_registry: SyntaxRegistry) -> None:
     checkbox = syntax_registry.get_todo_syntax().start_delimiter
 
     assert f"-{checkbox} Main task" in result
-    assert "    Additional notes" in result
+    assert f"{indent}Additional notes" in result
 
 
-def test_todo_with_nested_todo_child(syntax_registry: SyntaxRegistry) -> None:
+def test_todo_with_nested_todo_child(syntax_registry: SyntaxRegistry, indent: str) -> None:
     nested_todo = TodoMarkdownNode(text="Sub-task", checked=False, syntax_registry=syntax_registry)
 
     parent_todo = TodoMarkdownNode(
@@ -69,10 +69,10 @@ def test_todo_with_nested_todo_child(syntax_registry: SyntaxRegistry) -> None:
     checkbox = syntax_registry.get_todo_syntax().start_delimiter
 
     assert f"-{checkbox} Main task" in result
-    assert f"    -{checkbox} Sub-task" in result
+    assert f"{indent}-{checkbox} Sub-task" in result
 
 
-def test_todo_with_multiple_children(syntax_registry: SyntaxRegistry) -> None:
+def test_todo_with_multiple_children(syntax_registry: SyntaxRegistry, indent: str) -> None:
     first_child = ParagraphMarkdownNode(text="Additional notes", syntax_registry=syntax_registry)
     second_child = TodoMarkdownNode(text="Sub-task", checked=False, syntax_registry=syntax_registry)
 
@@ -84,11 +84,11 @@ def test_todo_with_multiple_children(syntax_registry: SyntaxRegistry) -> None:
     checkbox = syntax_registry.get_todo_syntax().start_delimiter
 
     assert f"-{checkbox} Main task" in result
-    assert "    Additional notes" in result
-    assert f"    -{checkbox} Sub-task" in result
+    assert f"{indent}Additional notes" in result
+    assert f"{indent}-{checkbox} Sub-task" in result
 
 
-def test_checked_todo_with_children(syntax_registry: SyntaxRegistry) -> None:
+def test_checked_todo_with_children(syntax_registry: SyntaxRegistry, indent: str) -> None:
     child = ParagraphMarkdownNode(text="Completion notes", syntax_registry=syntax_registry)
 
     todo = TodoMarkdownNode(text="Completed task", checked=True, children=[child], syntax_registry=syntax_registry)
@@ -96,7 +96,7 @@ def test_checked_todo_with_children(syntax_registry: SyntaxRegistry) -> None:
     result = todo.to_markdown()
 
     assert "- Completed task" in result
-    assert "    Completion notes" in result
+    assert f"{indent}Completion notes" in result
 
 
 def test_todo_without_children(syntax_registry: SyntaxRegistry) -> None:

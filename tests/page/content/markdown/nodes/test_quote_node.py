@@ -20,7 +20,7 @@ def test_quote_with_different_text(syntax_registry: SyntaxRegistry) -> None:
     assert quote.to_markdown() == expected
 
 
-def test_quote_with_single_paragraph_child(syntax_registry: SyntaxRegistry) -> None:
+def test_quote_with_single_paragraph_child(syntax_registry: SyntaxRegistry, indent: str) -> None:
     child = ParagraphMarkdownNode(text="Attribution text", syntax_registry=syntax_registry)
 
     quote = QuoteMarkdownNode(text="Main quote text", children=[child], syntax_registry=syntax_registry)
@@ -29,10 +29,10 @@ def test_quote_with_single_paragraph_child(syntax_registry: SyntaxRegistry) -> N
     delimiter = syntax_registry.get_quote_syntax().start_delimiter
 
     assert result.startswith(f"{delimiter}Main quote text")
-    assert "\n    Attribution text" in result
+    assert f"\n{indent}Attribution text" in result
 
 
-def test_quote_with_multiple_children(syntax_registry: SyntaxRegistry) -> None:
+def test_quote_with_multiple_children(syntax_registry: SyntaxRegistry, indent: str) -> None:
     first_child = ParagraphMarkdownNode(text="Attribution text", syntax_registry=syntax_registry)
     second_child = ParagraphMarkdownNode(text="Additional context", syntax_registry=syntax_registry)
 
@@ -44,8 +44,8 @@ def test_quote_with_multiple_children(syntax_registry: SyntaxRegistry) -> None:
     delimiter = syntax_registry.get_quote_syntax().start_delimiter
 
     assert result.startswith(f"{delimiter}Main quote text")
-    assert "    Attribution text" in result
-    assert "    Additional context" in result
+    assert f"{indent}Attribution text" in result
+    assert f"{indent}Additional context" in result
 
 
 def test_quote_without_children(syntax_registry: SyntaxRegistry) -> None:
@@ -58,7 +58,7 @@ def test_quote_without_children(syntax_registry: SyntaxRegistry) -> None:
     assert "\n" not in quote.to_markdown()
 
 
-def test_quote_with_nested_quote_child(syntax_registry: SyntaxRegistry) -> None:
+def test_quote_with_nested_quote_child(syntax_registry: SyntaxRegistry, indent: str) -> None:
     nested_quote = QuoteMarkdownNode(text="Nested quote", syntax_registry=syntax_registry)
 
     parent_quote = QuoteMarkdownNode(text="Parent quote", children=[nested_quote], syntax_registry=syntax_registry)
@@ -67,7 +67,7 @@ def test_quote_with_nested_quote_child(syntax_registry: SyntaxRegistry) -> None:
     delimiter = syntax_registry.get_quote_syntax().start_delimiter
 
     assert result.startswith(f"{delimiter}Parent quote")
-    assert f"    {delimiter}Nested quote" in result
+    assert f"{indent}{delimiter}Nested quote" in result
 
 
 def test_quote_children_order_preserved(syntax_registry: SyntaxRegistry) -> None:

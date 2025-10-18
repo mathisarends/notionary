@@ -6,20 +6,21 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import (
 from notionary.blocks.schemas import Block, BlockType
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import MarkdownGrammar, SyntaxRegistry
 
 
 class NumberedListRenderer(BlockRenderer):
-    # Placeholder for numbered list fixer (post processing)
-    NUMBERED_LIST_PLACEHOLDER = "__NUM__"
-
     def __init__(
         self,
         syntax_registry: SyntaxRegistry | None = None,
         rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
+        markdown_grammar: MarkdownGrammar | None = None,
     ) -> None:
         super().__init__(syntax_registry=syntax_registry)
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
+
+        markdown_grammar = markdown_grammar or MarkdownGrammar()
+        self._numbered_list_placeholder = markdown_grammar.numbered_list_placeholder
 
     @override
     def _can_handle(self, block: Block) -> bool:
@@ -31,7 +32,7 @@ class NumberedListRenderer(BlockRenderer):
         rich_text = list_item_data.rich_text if list_item_data else []
         content = await self._rich_text_markdown_converter.to_markdown(rich_text)
 
-        item_line = context.indent_text(f"{self.NUMBERED_LIST_PLACEHOLDER}. {content}")
+        item_line = context.indent_text(f"{self._numbered_list_placeholder}. {content}")
 
         children_markdown = await context.render_children_with_additional_indent(1)
 

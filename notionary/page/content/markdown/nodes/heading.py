@@ -1,11 +1,11 @@
 from typing import override
 
 from notionary.page.content.markdown.nodes.base import MarkdownNode
-from notionary.page.content.markdown.nodes.mixins import ChildrenRenderMixin
+from notionary.page.content.markdown.nodes.container import ContainerNode
 from notionary.page.content.syntax import SyntaxRegistry
 
 
-class HeadingMarkdownNode(ChildrenRenderMixin, MarkdownNode):
+class HeadingMarkdownNode(ContainerNode):
     MIN_LEVEL = 1
     MAX_LEVEL = 3
 

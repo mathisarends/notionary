@@ -9,6 +9,7 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMa
 from notionary.blocks.schemas import Block, NumberedListItemBlock, NumberedListItemData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.numbered_list import NumberedListRenderer
+from notionary.page.content.syntax import MarkdownGrammar
 
 
 def _create_numbered_list_item_data(rich_text: list[RichText]) -> NumberedListItemData:
@@ -26,6 +27,11 @@ def _create_numbered_list_item_block(list_item_data: NumberedListItemData | None
 @pytest.fixture
 def numbered_list_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> NumberedListRenderer:
     return NumberedListRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
+
+
+@pytest.fixture
+def numbered_list_placeholder() -> str:
+    return MarkdownGrammar().numbered_list_placeholder
 
 
 @pytest.mark.asyncio
@@ -51,6 +57,7 @@ async def test_numbered_list_item_without_children_should_render_with_placeholde
     numbered_list_renderer: NumberedListRenderer,
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+    numbered_list_placeholder: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("First item")]
     mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="First item")
@@ -62,7 +69,7 @@ async def test_numbered_list_item_without_children_should_render_with_placeholde
     await numbered_list_renderer._process(render_context)
 
     # Mock indent_text adds 2 spaces
-    assert render_context.markdown_result == "  __NUM__. First item"
+    assert render_context.markdown_result == f"  {numbered_list_placeholder}. First item"
 
 
 @pytest.mark.asyncio
@@ -70,6 +77,7 @@ async def test_numbered_list_item_with_indentation_should_include_indent(
     numbered_list_renderer: NumberedListRenderer,
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+    numbered_list_placeholder: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("Nested item")]
     mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Nested item")
@@ -82,7 +90,7 @@ async def test_numbered_list_item_with_indentation_should_include_indent(
     await numbered_list_renderer._process(render_context)
 
     # Mock indent_text always adds 2 spaces regardless of indent_level
-    assert render_context.markdown_result == "  __NUM__. Nested item"
+    assert render_context.markdown_result == f"  {numbered_list_placeholder}. Nested item"
     # Verify indent_text was called (real implementation would use indent_level)
     render_context.indent_text.assert_called_once()
 
@@ -92,6 +100,7 @@ async def test_numbered_list_item_with_children_should_render_with_newline_separ
     numbered_list_renderer: NumberedListRenderer,
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+    numbered_list_placeholder: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("Parent item")]
     mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Parent item")
@@ -104,7 +113,7 @@ async def test_numbered_list_item_with_children_should_render_with_newline_separ
     await numbered_list_renderer._process(render_context)
 
     # Mock indent_text adds 2 spaces
-    assert render_context.markdown_result == "  __NUM__. Parent item\n    Child content"
+    assert render_context.markdown_result == f"  {numbered_list_placeholder}. Parent item\n    Child content"
 
 
 @pytest.mark.asyncio
@@ -112,6 +121,7 @@ async def test_numbered_list_item_with_empty_text_should_render_placeholder_only
     numbered_list_renderer: NumberedListRenderer,
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+    numbered_list_placeholder: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("")]
     mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="")
@@ -123,7 +133,7 @@ async def test_numbered_list_item_with_empty_text_should_render_placeholder_only
     await numbered_list_renderer._process(render_context)
 
     # Mock indent_text adds 2 spaces
-    assert render_context.markdown_result == "  __NUM__. "
+    assert render_context.markdown_result == f"  {numbered_list_placeholder}. "
 
 
 @pytest.mark.asyncio
@@ -131,6 +141,7 @@ async def test_numbered_list_item_without_data_should_render_placeholder_only(
     numbered_list_renderer: NumberedListRenderer,
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+    numbered_list_placeholder: str,
 ) -> None:
     mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="")
 
@@ -140,11 +151,4 @@ async def test_numbered_list_item_without_data_should_render_placeholder_only(
     await numbered_list_renderer._process(render_context)
 
     # Mock indent_text adds 2 spaces
-    assert render_context.markdown_result == "  __NUM__. "
-
-
-@pytest.mark.asyncio
-async def test_numbered_list_item_placeholder_constant_should_be_correct(
-    numbered_list_renderer: NumberedListRenderer,
-) -> None:
-    assert numbered_list_renderer.NUMBERED_LIST_PLACEHOLDER == "__NUM__"
+    assert render_context.markdown_result == f"  {numbered_list_placeholder}. "

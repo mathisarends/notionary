@@ -92,21 +92,6 @@ def test_toggle_section(builder: MarkdownBuilder):
     assert "config = true" in result
 
 
-def test_toggleable_heading_with_content(builder: MarkdownBuilder):
-    result = builder.toggleable_heading(
-        "API Reference",
-        2,
-        lambda b: b.paragraph("API documentation").table(
-            ["Method", "Description"], [["GET", "Fetch data"], ["POST", "Create data"]]
-        ),
-    ).build()
-
-    assert "+++##" in result
-    assert "API Reference" in result
-    assert "API documentation" in result
-    assert "| Method |" in result
-
-
 def test_simple_numbered_list(builder: MarkdownBuilder):
     result = builder.numbered_list(["First", "Second", "Third"]).build()
 

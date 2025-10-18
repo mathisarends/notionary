@@ -22,7 +22,7 @@ def test_heading_markdown_node(syntax_registry: SyntaxRegistry) -> None:
     assert h4_clamped.to_markdown() == expected
 
 
-def test_heading_with_children(syntax_registry: SyntaxRegistry) -> None:
+def test_heading_with_children(syntax_registry: SyntaxRegistry, indent: str) -> None:
     """Test heading with nested children using indentation (toggleable)."""
     heading_syntax = syntax_registry.get_heading_syntax()
 
@@ -41,6 +41,6 @@ def test_heading_with_children(syntax_registry: SyntaxRegistry) -> None:
     # Check parent heading
     assert f"{heading_syntax.start_delimiter * 2} Toggleable Heading" in result
 
-    # Check indented children (4 spaces)
-    assert "    First paragraph" in result
-    assert "    Second paragraph" in result
+    # Check indented children
+    assert f"{indent}First paragraph" in result
+    assert f"{indent}Second paragraph" in result

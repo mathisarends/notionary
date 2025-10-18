@@ -1,11 +1,11 @@
 from typing import override
 
 from notionary.page.content.markdown.nodes.base import MarkdownNode
-from notionary.page.content.markdown.nodes.mixins import ChildrenRenderMixin
+from notionary.page.content.markdown.nodes.container import ContainerNode
 from notionary.page.content.syntax import SyntaxRegistry
 
 
-class TodoMarkdownNode(ChildrenRenderMixin, MarkdownNode):
+class TodoMarkdownNode(ContainerNode):
     VALID_MARKER = "-"
 
     def __init__(

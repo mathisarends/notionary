@@ -20,7 +20,7 @@ def test_callout_markdown_node_with_emoji(syntax_registry: SyntaxRegistry) -> No
     assert callout.to_markdown() == expected
 
 
-def test_callout_with_single_child(syntax_registry: SyntaxRegistry) -> None:
+def test_callout_with_single_child(syntax_registry: SyntaxRegistry, indent: str) -> None:
     child = ParagraphMarkdownNode(text="Important details", syntax_registry=syntax_registry)
 
     callout = CalloutMarkdownNode(text="Main message", children=[child], syntax_registry=syntax_registry)
@@ -30,11 +30,11 @@ def test_callout_with_single_child(syntax_registry: SyntaxRegistry) -> None:
 
     assert result.startswith(f"{start_delimiter}(Main message)")
 
-    # Check indented child (4 spaces)
-    assert "\n    Important details" in result
+    # Check indented child
+    assert f"\n{indent}Important details" in result
 
 
-def test_callout_with_multiple_children(syntax_registry: SyntaxRegistry) -> None:
+def test_callout_with_multiple_children(syntax_registry: SyntaxRegistry, indent: str) -> None:
     child1 = ParagraphMarkdownNode(text="Important details", syntax_registry=syntax_registry)
     child2 = ParagraphMarkdownNode(text="Additional information", syntax_registry=syntax_registry)
 
@@ -47,10 +47,10 @@ def test_callout_with_multiple_children(syntax_registry: SyntaxRegistry) -> None
     expected_parent = f'{start_delimiter}(Main callout message "💡")'
 
     assert result.startswith(expected_parent)
-    # Check both children are indented correctly (4 spaces)
+    # Check both children are indented correctly
     lines = result.split("\n")
-    assert any("    Important details" in line for line in lines), "First child should be indented with 4 spaces"
-    assert any("    Additional information" in line for line in lines), "Second child should be indented with 4 spaces"
+    assert any(f"{indent}Important details" in line for line in lines), "First child should be indented"
+    assert any(f"{indent}Additional information" in line for line in lines), "Second child should be indented"
 
     # Verify children appear after parent
     parent_index = result.index(expected_parent)
@@ -71,7 +71,7 @@ def test_callout_with_empty_children_list(syntax_registry: SyntaxRegistry) -> No
     assert "\n" not in callout.to_markdown(), "Should not have newlines without children"
 
 
-def test_callout_with_nested_callouts(syntax_registry: SyntaxRegistry) -> None:
+def test_callout_with_nested_callouts(syntax_registry: SyntaxRegistry, indent: str) -> None:
     nested_callout = CalloutMarkdownNode(text="Nested warning", emoji="⚠️", syntax_registry=syntax_registry)
 
     parent_callout = CalloutMarkdownNode(
@@ -84,4 +84,4 @@ def test_callout_with_nested_callouts(syntax_registry: SyntaxRegistry) -> None:
     assert result.startswith(f'{start_delimiter}(Parent callout "📢")')
 
     expected_nested = f'{start_delimiter}(Nested warning "⚠️")'
-    assert f"    {expected_nested}" in result, "Nested callout should be indented"
+    assert f"{indent}{expected_nested}" in result, "Nested callout should be indented"

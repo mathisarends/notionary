@@ -3,6 +3,7 @@ from enum import IntEnum
 from typing import override
 
 from notionary.page.content.renderer.post_processing.port import PostProcessor
+from notionary.page.content.syntax.grammar import MarkdownGrammar
 
 
 class _NumberingStyle(IntEnum):
@@ -85,8 +86,10 @@ class _ListNumberingState:
 
 
 class NumberedListPlaceholderReplacerPostProcessor(PostProcessor):
-    PLACEHOLDER = "__NUM__"
-    SPACES_PER_NESTING_LEVEL = 4
+    def __init__(self, markdown_grammar: MarkdownGrammar | None = None) -> None:
+        self._markdown_grammar = markdown_grammar or MarkdownGrammar()
+        self._spaces_per_nesting_level = self._markdown_grammar.spaces_per_nesting_level
+        self._numbered_list_placeholder = self._markdown_grammar.numbered_list_placeholder
 
     @override
     def process(self, markdown_text: str) -> str:
@@ -120,18 +123,18 @@ class NumberedListPlaceholderReplacerPostProcessor(PostProcessor):
         return f"{indentation}{number}. {content}"
 
     def _calculate_nesting_level(self, indentation: str) -> int:
-        return len(indentation) // self.SPACES_PER_NESTING_LEVEL
+        return len(indentation) // self._spaces_per_nesting_level
 
     def _extract_indentation(self, line: str) -> str:
-        match = re.match(rf"^(\s*){re.escape(self.PLACEHOLDER)}\.", line)
+        match = re.match(rf"^(\s*){re.escape(self._numbered_list_placeholder)}\.", line)
         return match.group(1) if match else ""
 
     def _extract_content(self, line: str) -> str:
-        match = re.match(rf"^\s*{re.escape(self.PLACEHOLDER)}\.\s*(.*)", line)
+        match = re.match(rf"^\s*{re.escape(self._numbered_list_placeholder)}\.\s*(.*)", line)
         return match.group(1) if match else ""
 
     def _is_placeholder_list_item(self, line: str) -> bool:
-        return bool(re.match(rf"^\s*{re.escape(self.PLACEHOLDER)}\.", line))
+        return bool(re.match(rf"^\s*{re.escape(self._numbered_list_placeholder)}\.", line))
 
     def _is_blank_between_list_items(self, lines: list[str], current_index: int, processed_lines: list[str]) -> bool:
         if not self._is_blank(lines[current_index]):

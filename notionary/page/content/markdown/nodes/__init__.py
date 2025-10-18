@@ -21,7 +21,6 @@ from .table import TableMarkdownNode
 from .table_of_contents import TableOfContentsMarkdownNode
 from .todo import TodoMarkdownNode
 from .toggle import ToggleMarkdownNode
-from .toggleable_heading import ToggleableHeadingMarkdownNode
 from .video import VideoMarkdownNode
 
 __all__ = [
@@ -49,6 +48,5 @@ __all__ = [
     "TableOfContentsMarkdownNode",
     "TodoMarkdownNode",
     "ToggleMarkdownNode",
-    "ToggleableHeadingMarkdownNode",
     "VideoMarkdownNode",
 ]

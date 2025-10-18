@@ -21,7 +21,7 @@ def test_column_with_width_ratio(syntax_registry: SyntaxRegistry) -> None:
     assert column.to_markdown() == expected
 
 
-def test_column_with_children(syntax_registry: SyntaxRegistry) -> None:
+def test_column_with_children(syntax_registry: SyntaxRegistry, indent: str) -> None:
     child = ParagraphMarkdownNode(text="Column content", syntax_registry=syntax_registry)
 
     column = ColumnMarkdownNode(children=[child], syntax_registry=syntax_registry)
@@ -30,7 +30,7 @@ def test_column_with_children(syntax_registry: SyntaxRegistry) -> None:
     delimiter = syntax_registry.get_column_syntax().start_delimiter
 
     assert result.startswith(delimiter)
-    assert "    Column content" in result
+    assert f"{indent}Column content" in result
 
 
 def test_column_list_without_columns(syntax_registry: SyntaxRegistry) -> None:
@@ -42,7 +42,7 @@ def test_column_list_without_columns(syntax_registry: SyntaxRegistry) -> None:
     assert column_list.to_markdown() == expected
 
 
-def test_column_list_with_columns(syntax_registry: SyntaxRegistry) -> None:
+def test_column_list_with_columns(syntax_registry: SyntaxRegistry, indent: str) -> None:
     column1 = ColumnMarkdownNode(width_ratio=0.5, syntax_registry=syntax_registry)
     column2 = ColumnMarkdownNode(width_ratio=0.5, syntax_registry=syntax_registry)
 
@@ -53,4 +53,4 @@ def test_column_list_with_columns(syntax_registry: SyntaxRegistry) -> None:
     column_delimiter = syntax_registry.get_column_syntax().start_delimiter
 
     assert result.startswith(delimiter)
-    assert f"    {column_delimiter} 0.5" in result
+    assert f"{indent}{column_delimiter} 0.5" in result
