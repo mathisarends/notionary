@@ -188,6 +188,10 @@ class NotionPage(Entity):
     def url(self) -> str:
         return self._url
 
+    @property
+    def markdown_builder() -> MarkdownBuilder:
+        return MarkdownBuilder()
+
     async def get_comments(self) -> list[Comment]:
         return await self._comment_service.list_all_comments_for_page(page_id=self._id)
 

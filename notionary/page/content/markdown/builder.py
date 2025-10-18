@@ -31,6 +31,7 @@ from notionary.page.content.markdown.nodes import (
     ToggleMarkdownNode,
     VideoMarkdownNode,
 )
+from notionary.page.content.markdown.nodes.container import flatten_children
 
 
 class MarkdownBuilder:
@@ -71,7 +72,8 @@ class MarkdownBuilder:
         self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None
     ) -> Self:
         children = self._build_children(builder_func)
-        child_nodes = [children] if children else None
+        wrapped = flatten_children(children)
+        child_nodes = [wrapped] if wrapped else None
         self.children.append(NumberedListMarkdownNode(texts=[text], children=child_nodes))
         return self
 
@@ -83,7 +85,8 @@ class MarkdownBuilder:
         self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None
     ) -> Self:
         children = self._build_children(builder_func)
-        child_nodes = [children] if children else None
+        wrapped = flatten_children(children)
+        child_nodes = [wrapped] if wrapped else None
         self.children.append(BulletedListMarkdownNode(texts=[text], children=child_nodes))
         return self
 
