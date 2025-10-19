@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -228,11 +228,13 @@ def test_get_select_property_when_none(handler: PagePropertyHandler) -> None:
     assert priority is None
 
 
-@pytest.mark.skip("Requires NOTION_TOKEN environment variable")
 @pytest.mark.asyncio
 async def test_get_title_property_value(handler: PagePropertyHandler) -> None:
-    title = await handler.get_value_of_title_property("Title")
-    assert title == "Test Title"
+    with patch("notionary.page.properties.service.convert_rich_text_to_markdown") as mock_convert:
+        mock_convert.return_value = "Test Title"
+        title = await handler.get_value_of_title_property("Title")
+        assert title == "Test Title"
+        mock_convert.assert_called_once()
 
 
 def test_get_multiselect_property_values(handler: PagePropertyHandler) -> None:
@@ -266,11 +268,13 @@ def test_get_date_property_when_none(handler: PagePropertyHandler) -> None:
     assert date is None
 
 
-@pytest.mark.skip("Requires NOTION_TOKEN environment variable")
 @pytest.mark.asyncio
 async def test_get_rich_text_property_value(handler: PagePropertyHandler) -> None:
-    text = await handler.get_value_of_rich_text_property("Description")
-    assert text == "Rich text content"
+    with patch("notionary.page.properties.service.convert_rich_text_to_markdown") as mock_convert:
+        mock_convert.return_value = "Rich text content"
+        text = await handler.get_value_of_rich_text_property("Description")
+        assert text == "Rich text content"
+        mock_convert.assert_called_once()
 
 
 def test_get_email_property_value(handler: PagePropertyHandler) -> None:
