@@ -165,3 +165,30 @@ class CodingLanguage(StrEnum):
                 return member
 
         return default if default is not None else cls.PLAIN_TEXT
+
+
+class VideoFileType(StrEnum):
+    AMV = ".amv"
+    ASF = ".asf"
+    AVI = ".avi"
+    F4V = ".f4v"
+    FLV = ".flv"
+    GIFV = ".gifv"
+    MKV = ".mkv"
+    MOV = ".mov"
+    MPG = ".mpg"
+    MPEG = ".mpeg"
+    MPV = ".mpv"
+    MP4 = ".mp4"
+    M4V = ".m4v"
+    QT = ".qt"
+    WMV = ".wmv"
+
+    @classmethod
+    def get_all_extensions(cls) -> set[str]:
+        return {ext.value for ext in cls}
+
+    @classmethod
+    def is_valid_extension(cls, filename: str) -> bool:
+        lower_filename = filename.lower()
+        return any(lower_filename.endswith(ext.value) for ext in cls)

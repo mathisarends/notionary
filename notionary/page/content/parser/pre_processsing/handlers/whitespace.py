@@ -1,10 +1,12 @@
 from typing import override
 
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
+from notionary.utils.decorators import time_execution_sync
 
 
 class WhitespacePreProcessor(PreProcessor):
     @override
+    @time_execution_sync()
     def process(self, markdown_text: str) -> str:
         if not markdown_text:
             return ""

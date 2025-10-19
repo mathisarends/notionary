@@ -5,6 +5,7 @@ from notionary.page.content.parser.post_processing.service import BlockPostProce
 from notionary.page.content.parser.pre_processsing.handlers import (
     ColumnSyntaxPreProcessor,
     IndentationNormalizer,
+    VideoFormatPreProcessor,
     WhitespacePreProcessor,
 )
 from notionary.page.content.parser.pre_processsing.service import MarkdownPreProcessor
@@ -60,6 +61,7 @@ class PageContentServiceFactory:
         pre_processor.register(ColumnSyntaxPreProcessor())
         pre_processor.register(WhitespacePreProcessor())
         pre_processor.register(IndentationNormalizer())
+        pre_processor.register(VideoFormatPreProcessor())
         return pre_processor
 
     def _create_post_processor(self) -> BlockPostProcessor:

@@ -4,13 +4,14 @@ from typing import override
 from notionary.exceptions.block_parsing import InsufficientColumnsError, InvalidColumnRatioSumError
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
 from notionary.page.content.syntax import MarkdownGrammar, SyntaxRegistry
+from notionary.utils.decorators import time_execution_sync
 from notionary.utils.mixins.logging import LoggingMixin
-
-RATIO_TOLERANCE = 0.0001
-MINIMUM_COLUMNS = 2
 
 
 class ColumnSyntaxPreProcessor(PreProcessor, LoggingMixin):
+    _RATIO_TOLERANCE = 0.0001
+    _MINIMUM_COLUMNS = 2
+
     def __init__(
         self, syntax_registry: SyntaxRegistry | None = None, markdown_grammar: MarkdownGrammar | None = None
     ) -> None:
@@ -24,6 +25,7 @@ class ColumnSyntaxPreProcessor(PreProcessor, LoggingMixin):
         self._column_pattern = self._syntax_registry.get_column_syntax().regex_pattern
 
     @override
+    @time_execution_sync()
     def process(self, markdown_text: str) -> str:
         if not self._contains_column_lists(markdown_text):
             return markdown_text
@@ -96,8 +98,10 @@ class ColumnSyntaxPreProcessor(PreProcessor, LoggingMixin):
         return list(self._column_pattern.finditer(content))
 
     def _validate_minimum_column_count(self, column_count: int) -> None:
-        if column_count < MINIMUM_COLUMNS:
-            self.logger.error(f"Column list must contain at least {MINIMUM_COLUMNS} columns, found {column_count}")
+        if column_count < self._MINIMUM_COLUMNS:
+            self.logger.error(
+                f"Column list must contain at least {self._MINIMUM_COLUMNS} columns, found {column_count}"
+            )
             raise InsufficientColumnsError(column_count)
 
     def _extract_column_ratios(self, column_matches: list[re.Match]) -> list[float]:
@@ -120,11 +124,11 @@ class ColumnSyntaxPreProcessor(PreProcessor, LoggingMixin):
         total_ratio = sum(ratios)
 
         if not self._is_ratio_sum_valid(total_ratio):
-            self.logger.error(f"Column ratios must sum to 1.0 (±{RATIO_TOLERANCE}), but sum to {total_ratio:.4f}")
-            raise InvalidColumnRatioSumError(total_ratio, RATIO_TOLERANCE)
+            self.logger.error(f"Column ratios must sum to 1.0 (±{self._RATIO_TOLERANCE}), but sum to {total_ratio:.4f}")
+            raise InvalidColumnRatioSumError(total_ratio, self._RATIO_TOLERANCE)
 
     def _should_validate_ratios(self, ratios: list[float], column_count: int) -> bool:
         return len(ratios) > 0 and len(ratios) == column_count
 
     def _is_ratio_sum_valid(self, total: float) -> bool:
-        return abs(total - 1.0) <= RATIO_TOLERANCE
+        return abs(total - 1.0) <= self._RATIO_TOLERANCE

@@ -8,6 +8,7 @@ from .api import (
     NotionValidationError,
 )
 from .base import NotionaryError
+from .block_parsing import InsufficientColumnsError, InvalidColumnRatioSumError, UnsupportedVideoFormatError
 from .data_source import DataSourcePropertyNotFound, DataSourcePropertyTypeError
 from .properties import AccessPagePropertyWithoutDataSourceError, PagePropertyNotFoundError, PagePropertyTypeError
 from .search import DatabaseNotFound, DataSourceNotFound, EntityNotFound, PageNotFound
@@ -19,6 +20,8 @@ __all__ = [
     "DataSourcePropertyTypeError",
     "DatabaseNotFound",
     "EntityNotFound",
+    "InsufficientColumnsError",
+    "InvalidColumnRatioSumError",
     "NotionApiError",
     "NotionAuthenticationError",
     "NotionConnectionError",
@@ -30,4 +33,5 @@ __all__ = [
     "PageNotFound",
     "PagePropertyNotFoundError",
     "PagePropertyTypeError",
+    "UnsupportedVideoFormatError",
 ]

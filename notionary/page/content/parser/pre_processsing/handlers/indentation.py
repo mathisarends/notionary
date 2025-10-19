@@ -3,6 +3,7 @@ from typing import override
 
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
 from notionary.page.content.syntax import MarkdownGrammar, SyntaxRegistry
+from notionary.utils.decorators import time_execution_sync
 from notionary.utils.mixins.logging import LoggingMixin
 
 
@@ -18,6 +19,7 @@ class IndentationNormalizer(PreProcessor, LoggingMixin):
         self._code_block_start_delimiter = self._syntax_registry.get_code_syntax().start_delimiter
 
     @override
+    @time_execution_sync()
     def process(self, markdown_text: str) -> str:
         if self._is_empty(markdown_text):
             return ""
