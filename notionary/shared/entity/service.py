@@ -1,21 +1,17 @@
-from __future__ import annotations
-
 import random
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.entity.schemas import EntityResponseDto
 from notionary.shared.models.cover import CoverType
 from notionary.shared.models.icon import IconType
 from notionary.shared.models.parent import ParentType
+from notionary.user.base import BaseUser
 from notionary.user.service import UserService
 from notionary.utils.mixins.logging import LoggingMixin
 from notionary.utils.uuid_utils import extract_uuid
-
-if TYPE_CHECKING:
-    from notionary.user.base import BaseUser
 
 
 class Entity(LoggingMixin, ABC):
