@@ -16,11 +16,7 @@ from notionary.data_source.properties.schemas import (
     DataSourceSelectProperty,
     DataSourceStatusProperty,
 )
-from notionary.data_source.query.builder import DataSourceQueryBuilder
-from notionary.data_source.query.resolver import QueryResolver
-from notionary.data_source.query.schema import (
-    DataSourceQueryParams,
-)
+from notionary.data_source.query import DataSourceQueryBuilder, DataSourceQueryParams, QueryResolver
 from notionary.data_source.schema.service import DataSourcePropertySchemaFormatter
 from notionary.data_source.schemas import DataSourceDto
 from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound, DataSourcePropertyTypeError

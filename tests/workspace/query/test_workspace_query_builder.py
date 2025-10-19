@@ -64,6 +64,34 @@ def test_with_sort_by_last_edited(builder: NotionWorkspaceQueryConfigBuilder):
     assert config.sort_timestamp == SortTimestamp.LAST_EDITED_TIME
 
 
+def test_with_sort_by_created_time_ascending(builder: NotionWorkspaceQueryConfigBuilder):
+    config = builder.with_sort_by_created_time_ascending().build()
+
+    assert config.sort_timestamp == SortTimestamp.CREATED_TIME
+    assert config.sort_direction == SortDirection.ASCENDING
+
+
+def test_with_sort_by_created_time_descending(builder: NotionWorkspaceQueryConfigBuilder):
+    config = builder.with_sort_by_created_time_descending().build()
+
+    assert config.sort_timestamp == SortTimestamp.CREATED_TIME
+    assert config.sort_direction == SortDirection.DESCENDING
+
+
+def test_with_sort_by_last_edited_ascending(builder: NotionWorkspaceQueryConfigBuilder):
+    config = builder.with_sort_by_last_edited_ascending().build()
+
+    assert config.sort_timestamp == SortTimestamp.LAST_EDITED_TIME
+    assert config.sort_direction == SortDirection.ASCENDING
+
+
+def test_with_sort_by_last_edited_descending(builder: NotionWorkspaceQueryConfigBuilder):
+    config = builder.with_sort_by_last_edited_descending().build()
+
+    assert config.sort_timestamp == SortTimestamp.LAST_EDITED_TIME
+    assert config.sort_direction == SortDirection.DESCENDING
+
+
 def test_with_page_size_sets_size(builder: NotionWorkspaceQueryConfigBuilder):
     config = builder.with_page_size(50).build()
 
@@ -96,6 +124,18 @@ def test_builder_chaining_works(builder: NotionWorkspaceQueryConfigBuilder):
         .with_sort_by_last_edited()
         .with_page_size(75)
         .build()
+    )
+
+    assert config.query == "project"
+    assert config.object_type == WorkspaceQueryObjectType.PAGE
+    assert config.sort_direction == SortDirection.DESCENDING
+    assert config.sort_timestamp == SortTimestamp.LAST_EDITED_TIME
+    assert config.page_size == 75
+
+
+def test_builder_chaining_with_convenience_method(builder: NotionWorkspaceQueryConfigBuilder):
+    config = (
+        builder.with_query("project").with_pages_only().with_sort_by_last_edited_descending().with_page_size(75).build()
     )
 
     assert config.query == "project"

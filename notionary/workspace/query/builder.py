@@ -48,6 +48,26 @@ class NotionWorkspaceQueryConfigBuilder:
     def with_sort_by_last_edited(self) -> Self:
         return self.with_sort_timestamp(SortTimestamp.LAST_EDITED_TIME)
 
+    def with_sort_by_created_time_ascending(self) -> Self:
+        self.config.sort_timestamp = SortTimestamp.CREATED_TIME
+        self.config.sort_direction = SortDirection.ASCENDING
+        return self
+
+    def with_sort_by_created_time_descending(self) -> Self:
+        self.config.sort_timestamp = SortTimestamp.CREATED_TIME
+        self.config.sort_direction = SortDirection.DESCENDING
+        return self
+
+    def with_sort_by_last_edited_ascending(self) -> Self:
+        self.config.sort_timestamp = SortTimestamp.LAST_EDITED_TIME
+        self.config.sort_direction = SortDirection.ASCENDING
+        return self
+
+    def with_sort_by_last_edited_descending(self) -> Self:
+        self.config.sort_timestamp = SortTimestamp.LAST_EDITED_TIME
+        self.config.sort_direction = SortDirection.DESCENDING
+        return self
+
     def with_page_size(self, size: int) -> Self:
         self.config.page_size = min(size, 100)
         return self
