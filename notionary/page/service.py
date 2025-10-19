@@ -20,6 +20,7 @@ from notionary.shared.entity.dto_parsers import (
     extract_external_icon_url_from_dto,
 )
 from notionary.shared.entity.service import Entity
+from notionary.shared.models.parent import Parent
 from notionary.user.schemas import PartialUserDto
 from notionary.workspace.query.service import WorkspaceQueryService
 
@@ -36,6 +37,7 @@ class NotionPage(Entity):
         url: str,
         archived: bool,
         in_trash: bool,
+        parent: Parent,
         page_property_handler: PagePropertyHandler,
         block_client: NotionBlockHttpClient,
         comment_service: CommentService,
@@ -53,6 +55,7 @@ class NotionPage(Entity):
             last_edited_time=last_edited_time,
             last_edited_by=last_edited_by,
             in_trash=in_trash,
+            parent=parent,
             emoji_icon=emoji_icon,
             external_icon_url=external_icon_url,
             cover_image_url=cover_image_url,
@@ -112,6 +115,7 @@ class NotionPage(Entity):
             last_edited_by=response.last_edited_by,
             archived=response.archived,
             in_trash=response.in_trash,
+            parent=response.parent,
             url=response.url,
             page_property_handler=page_property_handler,
             public_url=response.public_url,
@@ -132,6 +136,7 @@ class NotionPage(Entity):
         url: str,
         archived: bool,
         in_trash: bool,
+        parent: Parent,
         page_property_handler: PagePropertyHandler,
         public_url: str | None = None,
         emoji_icon: str | None = None,
@@ -161,6 +166,7 @@ class NotionPage(Entity):
             comment_service=comment_service,
             page_content_service=page_content_service,
             metadata_update_client=metadata_update_client,
+            parent=parent,
             public_url=public_url,
             emoji_icon=emoji_icon,
             external_icon_url=external_icon_url,

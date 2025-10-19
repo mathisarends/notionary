@@ -17,6 +17,7 @@ from notionary.shared.entity.dto_parsers import (
     extract_title,
 )
 from notionary.shared.entity.service import Entity
+from notionary.shared.models.parent import Parent
 from notionary.user.schemas import PartialUserDto
 from notionary.workspace.query.service import WorkspaceQueryService
 
@@ -36,6 +37,7 @@ class NotionDatabase(Entity):
         in_trash: bool,
         is_inline: bool,
         data_source_ids: list[str],
+        parent: Parent,
         public_url: str | None = None,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
@@ -51,6 +53,7 @@ class NotionDatabase(Entity):
             last_edited_time=last_edited_time,
             last_edited_by=last_edited_by,
             in_trash=in_trash,
+            parent=parent,
             emoji_icon=emoji_icon,
             external_icon_url=external_icon_url,
             cover_image_url=cover_image_url,
@@ -114,6 +117,7 @@ class NotionDatabase(Entity):
             is_inline=response.is_inline,
             url=response.url,
             public_url=response.public_url,
+            parent=response.parent,
             emoji_icon=extract_emoji_icon_from_dto(response),
             external_icon_url=extract_external_icon_url_from_dto(response),
             cover_image_url=extract_cover_image_url_from_dto(response),

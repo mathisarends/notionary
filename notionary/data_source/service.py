@@ -28,7 +28,6 @@ from notionary.page.properties.models import PageTitleProperty
 from notionary.page.schemas import NotionPageDto
 from notionary.shared.entity.dto_parsers import (
     extract_cover_image_url_from_dto,
-    extract_database_id,
     extract_description,
     extract_emoji_icon_from_dto,
     extract_external_icon_url_from_dto,
@@ -36,6 +35,7 @@ from notionary.shared.entity.dto_parsers import (
 )
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.entity.service import Entity
+from notionary.shared.models.parent import Parent
 from notionary.user.schemas import PartialUserDto
 from notionary.workspace.query.service import WorkspaceQueryService
 
@@ -55,8 +55,8 @@ class NotionDataSource(Entity):
         archived: bool,
         in_trash: bool,
         url: str,
+        parent: Parent,
         properties: dict[str, DataSourceProperty],
-        parent_database_id: str | None,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
@@ -73,10 +73,10 @@ class NotionDataSource(Entity):
             last_edited_by=last_edited_by,
             in_trash=in_trash,
             emoji_icon=emoji_icon,
+            parent=parent,
             external_icon_url=external_icon_url,
             cover_image_url=cover_image_url,
         )
-        self._parent_database_id = parent_database_id
         self._parent_database: NotionDatabase | None = None
         self._title = title
         self._archived = archived
@@ -119,8 +119,6 @@ class NotionDataSource(Entity):
             extract_description(response, rich_text_converter),
         )
 
-        parent_database_id = extract_database_id(response)
-
         return cls._create(
             id=response.id,
             title=title,
@@ -132,8 +130,8 @@ class NotionDataSource(Entity):
             archived=response.archived,
             in_trash=response.in_trash,
             url=response.url,
+            parent=response.parent,
             properties=response.properties,
-            parent_database_id=parent_database_id,
             emoji_icon=extract_emoji_icon_from_dto(response),
             external_icon_url=extract_external_icon_url_from_dto(response),
             cover_image_url=extract_cover_image_url_from_dto(response),
@@ -152,8 +150,8 @@ class NotionDataSource(Entity):
         archived: bool,
         in_trash: bool,
         url: str,
+        parent: Parent,
         properties: dict[str, DataSourceProperty],
-        parent_database_id: str | None,
         emoji_icon: str | None = None,
         external_icon_url: str | None = None,
         cover_image_url: str | None = None,
@@ -171,7 +169,7 @@ class NotionDataSource(Entity):
             archived=archived,
             in_trash=in_trash,
             url=url,
-            parent_database_id=parent_database_id,
+            parent=parent,
             emoji_icon=emoji_icon,
             external_icon_url=external_icon_url,
             cover_image_url=cover_image_url,
@@ -208,11 +206,6 @@ class NotionDataSource(Entity):
     @property
     def public_url(self) -> str | None:
         return self._public_url
-
-    async def get_parent_database(self) -> NotionDatabase | None:
-        if self._parent_database is None and self._parent_database_id:
-            self._parent_database = await NotionDatabase.from_id(self._parent_database_id)
-        return self._parent_database
 
     async def create_blank_page(self, title: str | None = None) -> NotionPage:
         return await self._data_source_client.create_blank_page(title=title)
