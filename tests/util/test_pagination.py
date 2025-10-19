@@ -104,7 +104,7 @@ async def test_pagination_passes_cursor_correctly() -> None:
                 next_cursor=None,
             )
 
-    await paginate_notion_api(tracking_mock_api, block_id="test_block", page_size=10)
+    await paginate_notion_api(tracking_mock_api, block_id="test_block", total_result_limit=10)
 
     assert len(received_kwargs) == 2
     assert received_kwargs[0] == {"block_id": "test_block", "page_size": 10}

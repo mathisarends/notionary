@@ -2,8 +2,7 @@ import asyncio
 
 from notionary import NotionWorkspace
 
-# Replace with your desired query string
-YOUR_QUERY = "Podcast"
+YOUR_QUERY = ""
 
 
 async def main() -> None:

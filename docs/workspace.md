@@ -31,7 +31,7 @@ Workspace search is powered by Notion's Search API. In Notionary, you can provid
 
 ```python
 from notionary import NotionWorkspace
-from notionary.workspace.query.builder import WorkspaceQueryConfigBuilder
+from notionary.workspace.query.builder import NotionWorkspaceQueryConfigBuilder
 
 workspace = NotionWorkspace()
 
@@ -48,11 +48,11 @@ data_sources = await workspace.get_data_sources(
 
 ```python
 from notionary import NotionWorkspace
-from notionary.workspace.query.builder import WorkspaceQueryConfigBuilder
+from notionary.workspace.query.builder import NotionWorkspaceQueryConfigBuilder
 
 workspace = NotionWorkspace()
 
-builder = WorkspaceQueryConfigBuilder().with_pages_only().with_query("docs").with_page_size(10)
+builder = NotionWorkspaceQueryConfigBuilder().with_pages_only().with_query("docs").with_page_size(10)
 config = builder.build()
 
 pages = await workspace.get_pages(config)

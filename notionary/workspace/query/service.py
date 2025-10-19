@@ -2,20 +2,16 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING
 
 from notionary.exceptions.search import DatabaseNotFound, DataSourceNotFound, PageNotFound
 from notionary.utils.fuzzy import find_all_matches
 from notionary.workspace.client import WorkspaceClient
-from notionary.workspace.query.builder import WorkspaceQueryConfigBuilder
-from notionary.workspace.query.models import WorkspaceQueryConfig
+from notionary.workspace.query.builder import NotionWorkspaceQueryConfigBuilder
+from notionary.workspace.query.models import SearchableEntity, WorkspaceQueryConfig
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase, NotionDataSource, NotionPage
-
-
-class SearchableEntity(Protocol):
-    title: str
 
 
 class WorkspaceQueryService:
@@ -49,20 +45,28 @@ class WorkspaceQueryService:
         return await asyncio.gather(*data_source_tasks)
 
     async def find_data_source(self, query: str) -> NotionDataSource:
-        config = WorkspaceQueryConfigBuilder().with_query(query).with_data_sources_only().with_page_size(100).build()
+        config = (
+            NotionWorkspaceQueryConfigBuilder().with_query(query).with_data_sources_only().with_page_size(100).build()
+        )
         data_sources = await self.get_data_sources(config)
         return self._find_exact_match(data_sources, query, DataSourceNotFound)
 
     async def find_page(self, query: str) -> NotionPage:
-        config = WorkspaceQueryConfigBuilder().with_query(query).with_pages_only().with_page_size(100).build()
+        config = NotionWorkspaceQueryConfigBuilder().with_query(query).with_pages_only().with_page_size(100).build()
         pages = await self.get_pages(config)
         return self._find_exact_match(pages, query, PageNotFound)
 
     async def find_database(self, query: str) -> NotionDatabase:
-        config = WorkspaceQueryConfigBuilder().with_query(query).with_data_sources_only().with_page_size(100).build()
+        config = (
+            NotionWorkspaceQueryConfigBuilder().with_query(query).with_data_sources_only().with_page_size(100).build()
+        )
         data_sources = await self.get_data_sources(config)
 
-        parent_database_tasks = [data_source.get_parent_database() for data_source in data_sources]
+        parent_database_ids = [data_sources.get_parent_database_id_if_present() for data_sources in data_sources]
+        # filter none values which should not happen but for safety
+        parent_database_ids = [id for id in parent_database_ids if id is not None]
+
+        parent_database_tasks = [NotionDatabase.from_id(db_id) for db_id in parent_database_ids]
         parent_databases = await asyncio.gather(*parent_database_tasks)
         potential_databases = [database for database in parent_databases if database is not None]
 

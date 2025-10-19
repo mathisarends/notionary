@@ -193,10 +193,10 @@ class DataSourceQueryBuilder:
         self._sorts.append(sort)
         return self
 
-    def limit(self, page_size: int) -> Self:
-        if page_size < 1:
+    def limit(self, total_result_limit: int) -> Self:
+        if total_result_limit < 1:
             raise ValueError("Limit must be at least 1")
-        self._page_size = page_size
+        self._page_size = total_result_limit
         return self
 
     def build(self) -> DataSourceQueryParams:

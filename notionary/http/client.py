@@ -158,7 +158,7 @@ class NotionHttpClient(LoggingMixin):
             )
         if status_code == 404:
             raise NotionResourceNotFoundError(
-                "The requested resource was not found. Please verify the page/database ID.",
+                "The requested resource was not found. Please verify the page/database/datasource ID.",
                 status_code=status_code,
                 response_text=response_text,
             )

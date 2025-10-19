@@ -1,3 +1,3 @@
-from .builder import WorkspaceQueryConfigBuilder
+from .builder import NotionWorkspaceQueryConfigBuilder
 
-__all__ = ["WorkspaceQueryConfigBuilder"]
+__all__ = ["NotionWorkspaceQueryConfigBuilder"]

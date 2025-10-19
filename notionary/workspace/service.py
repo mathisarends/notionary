@@ -4,7 +4,7 @@ from collections.abc import AsyncIterator, Callable
 from typing import TYPE_CHECKING, Self
 
 from notionary.user.service import UserService
-from notionary.workspace.query.builder import WorkspaceQueryConfigBuilder
+from notionary.workspace.query.builder import NotionWorkspaceQueryConfigBuilder
 from notionary.workspace.query.models import WorkspaceQueryConfig, WorkspaceQueryObjectType
 from notionary.workspace.query.service import WorkspaceQueryService
 
@@ -13,7 +13,9 @@ if TYPE_CHECKING:
     from notionary.page.service import NotionPage
     from notionary.user import BotUser, PersonUser
 
-type _QueryConfigInput = WorkspaceQueryConfig | Callable[[WorkspaceQueryConfigBuilder], WorkspaceQueryConfigBuilder]
+type _QueryConfigInput = (
+    WorkspaceQueryConfig | Callable[[NotionWorkspaceQueryConfigBuilder], NotionWorkspaceQueryConfigBuilder]
+)
 
 
 class NotionWorkspace:
@@ -84,8 +86,8 @@ class NotionWorkspace:
 
         return builder.build()
 
-    def _create_builder_with_defaults(self, object_type: WorkspaceQueryObjectType) -> WorkspaceQueryConfigBuilder:
-        builder = WorkspaceQueryConfigBuilder()
+    def _create_builder_with_defaults(self, object_type: WorkspaceQueryObjectType) -> NotionWorkspaceQueryConfigBuilder:
+        builder = NotionWorkspaceQueryConfigBuilder()
 
         if object_type == WorkspaceQueryObjectType.PAGE:
             builder.with_pages_only()

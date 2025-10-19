@@ -8,12 +8,16 @@ from notionary.workspace.query.models import (
 )
 
 
-class WorkspaceQueryConfigBuilder:
+class NotionWorkspaceQueryConfigBuilder:
     def __init__(self, config: WorkspaceQueryConfig = None) -> None:
         self.config = config or WorkspaceQueryConfig()
 
     def with_query(self, query: str) -> Self:
         self.config.query = query
+        return self
+
+    def with_total_results_limit(self, limit: int) -> Self:
+        self.config.total_results_limit = limit
         return self
 
     def with_pages_only(self) -> Self:

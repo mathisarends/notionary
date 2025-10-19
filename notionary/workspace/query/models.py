@@ -1,8 +1,13 @@
 from enum import StrEnum
+from typing import Protocol
 
 from pydantic import BaseModel, Field, field_validator, model_serializer
 
 from notionary.shared.typings import JsonDict
+
+
+class SearchableEntity(Protocol):
+    title: str
 
 
 class SortDirection(StrEnum):
@@ -25,8 +30,11 @@ class WorkspaceQueryConfig(BaseModel):
     object_type: WorkspaceQueryObjectType | None = None
     sort_direction: SortDirection = SortDirection.DESCENDING
     sort_timestamp: SortTimestamp = SortTimestamp.LAST_EDITED_TIME
+
     page_size: int = Field(default=100, ge=1, le=100)
     start_cursor: str | None = None
+
+    total_results_limit: int | None = None
 
     @field_validator("query")
     @classmethod
