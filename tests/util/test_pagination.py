@@ -37,11 +37,6 @@ def create_mock_api_with_pages(pages: list[PaginatedResponse]):
     return mock_api
 
 
-# ============================================================================
-# Tests
-# ============================================================================
-
-
 @pytest.mark.asyncio
 async def test_single_page_pagination(sample_results: list[dict[str, str]]) -> None:
     single_page = create_paginated_response(
@@ -104,7 +99,7 @@ async def test_pagination_passes_cursor_correctly() -> None:
                 next_cursor=None,
             )
 
-    await paginate_notion_api(tracking_mock_api, block_id="test_block", total_result_limit=10)
+    await paginate_notion_api(tracking_mock_api, block_id="test_block", page_size=10)
 
     assert len(received_kwargs) == 2
     assert received_kwargs[0] == {"block_id": "test_block", "page_size": 10}
@@ -167,3 +162,144 @@ async def test_preserves_original_kwargs() -> None:
 
     assert original_kwargs == {"block_id": "test", "page_size": 50}
     assert "start_cursor" not in original_kwargs
+
+
+@pytest.mark.asyncio
+async def test_total_results_limit_stops_pagination_early() -> None:
+    page1 = create_paginated_response(
+        results=[{"id": "1"}, {"id": "2"}],
+        has_more=True,
+        next_cursor="cursor_1",
+    )
+
+    page2 = create_paginated_response(
+        results=[{"id": "3"}, {"id": "4"}],
+        has_more=True,
+        next_cursor="cursor_2",
+    )
+
+    page3 = create_paginated_response(
+        results=[{"id": "5"}, {"id": "6"}],
+        has_more=False,
+        next_cursor=None,
+    )
+
+    mock_api = create_mock_api_with_pages([page1, page2, page3])
+    results = await paginate_notion_api(mock_api, total_results_limit=3)
+
+    assert len(results) == 3
+    assert [r["id"] for r in results] == ["1", "2", "3"]
+
+
+@pytest.mark.asyncio
+async def test_total_results_limit_cuts_off_mid_page() -> None:
+    page1 = create_paginated_response(
+        results=[{"id": "1"}, {"id": "2"}, {"id": "3"}, {"id": "4"}],
+        has_more=True,
+        next_cursor="cursor_1",
+    )
+
+    mock_api = create_mock_api_with_pages([page1])
+    results = await paginate_notion_api(mock_api, total_results_limit=2)
+
+    assert len(results) == 2
+    assert [r["id"] for r in results] == ["1", "2"]
+
+
+@pytest.mark.asyncio
+async def test_total_results_limit_exact_page_boundary() -> None:
+    page1 = create_paginated_response(
+        results=[{"id": "1"}, {"id": "2"}],
+        has_more=True,
+        next_cursor="cursor_1",
+    )
+
+    page2 = create_paginated_response(
+        results=[{"id": "3"}, {"id": "4"}],
+        has_more=True,
+        next_cursor="cursor_2",
+    )
+
+    mock_api = create_mock_api_with_pages([page1, page2])
+    results = await paginate_notion_api(mock_api, total_results_limit=2)
+
+    assert len(results) == 2
+    assert [r["id"] for r in results] == ["1", "2"]
+
+
+@pytest.mark.asyncio
+async def test_total_results_limit_across_multiple_pages() -> None:
+    page1 = create_paginated_response(
+        results=[{"id": "1"}, {"id": "2"}],
+        has_more=True,
+        next_cursor="cursor_1",
+    )
+
+    page2 = create_paginated_response(
+        results=[{"id": "3"}, {"id": "4"}],
+        has_more=True,
+        next_cursor="cursor_2",
+    )
+
+    page3 = create_paginated_response(
+        results=[{"id": "5"}, {"id": "6"}],
+        has_more=False,
+        next_cursor=None,
+    )
+
+    mock_api = create_mock_api_with_pages([page1, page2, page3])
+    results = await paginate_notion_api(mock_api, total_results_limit=5)
+
+    assert len(results) == 5
+    assert [r["id"] for r in results] == ["1", "2", "3", "4", "5"]
+
+
+@pytest.mark.asyncio
+async def test_total_results_limit_zero() -> None:
+    page1 = create_paginated_response(
+        results=[{"id": "1"}, {"id": "2"}],
+        has_more=True,
+        next_cursor="cursor_1",
+    )
+
+    mock_api = create_mock_api_with_pages([page1])
+    results = await paginate_notion_api(mock_api, total_results_limit=0)
+
+    assert len(results) == 0
+    assert results == []
+
+
+@pytest.mark.asyncio
+async def test_total_results_limit_larger_than_available() -> None:
+    page1 = create_paginated_response(
+        results=[{"id": "1"}, {"id": "2"}],
+        has_more=False,
+        next_cursor=None,
+    )
+
+    mock_api = create_mock_api_with_pages([page1])
+    results = await paginate_notion_api(mock_api, total_results_limit=100)
+
+    assert len(results) == 2
+    assert [r["id"] for r in results] == ["1", "2"]
+
+
+@pytest.mark.asyncio
+async def test_no_total_results_limit_fetches_all() -> None:
+    page1 = create_paginated_response(
+        results=[{"id": "1"}, {"id": "2"}],
+        has_more=True,
+        next_cursor="cursor_1",
+    )
+
+    page2 = create_paginated_response(
+        results=[{"id": "3"}],
+        has_more=False,
+        next_cursor=None,
+    )
+
+    mock_api = create_mock_api_with_pages([page1, page2])
+    results = await paginate_notion_api(mock_api)  # No limit
+
+    assert len(results) == 3
+    assert [r["id"] for r in results] == ["1", "2", "3"]

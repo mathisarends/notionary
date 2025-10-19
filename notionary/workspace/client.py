@@ -22,6 +22,7 @@ class WorkspaceClient:
         async for page in paginate_notion_api_generator(
             self._query_pages,
             search_config=search_config,
+            total_results_limit=search_config.total_results_limit,
         ):
             yield page
 
@@ -32,6 +33,7 @@ class WorkspaceClient:
         async for data_source in paginate_notion_api_generator(
             self._query_data_sources,
             search_config=search_config,
+            total_results_limit=search_config.total_results_limit,
         ):
             yield data_source
 

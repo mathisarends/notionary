@@ -18,20 +18,17 @@ class CommentClient(NotionHttpClient):
     async def iter_comments(
         self,
         block_id: str,
-        *,
-        page_size: int = 100,
+        total_results_limit: int | None = None,
     ) -> AsyncGenerator[CommentDto]:
-        """
-        Iterates through all comments for a block, yielding each comment individually.
-        Uses pagination to handle large result sets efficiently without loading everything into memory.
-        """
         async for comment in paginate_notion_api_generator(
-            self._list_comments_page, block_id=block_id, page_size=page_size
+            self._list_comments_page, block_id=block_id, total_results_limit=total_results_limit
         ):
             yield comment
 
-    async def get_all_comments(self, block_id: str, *, page_size: int = 100) -> list[CommentDto]:
-        all_comments = await paginate_notion_api(self._list_comments_page, block_id=block_id, page_size=page_size)
+    async def get_all_comments(self, block_id: str, *, total_results_limit: int | None = None) -> list[CommentDto]:
+        all_comments = await paginate_notion_api(
+            self._list_comments_page, block_id=block_id, total_results_limit=total_results_limit
+        )
 
         self.logger.debug("Retrieved %d total comments for block %s", len(all_comments), block_id)
         return all_comments

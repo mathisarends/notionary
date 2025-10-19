@@ -289,6 +289,8 @@ class DataSourceQueryParams(BaseModel):
     sorts: list[NotionSort] | None = None
     page_size: int | None = None
 
+    total_results_limit: int | None = None
+
     @model_serializer
     def to_api_params(self) -> JsonDict:
         result: JsonDict = {}
@@ -298,5 +300,8 @@ class DataSourceQueryParams(BaseModel):
 
         if self.sorts is not None and len(self.sorts) > 0:
             result["sorts"] = [sort.model_dump() for sort in self.sorts]
+
+        if self.page_size is not None:
+            result["page_size"] = self.page_size
 
         return result

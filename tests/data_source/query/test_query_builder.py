@@ -679,56 +679,62 @@ def test_filter_and_sort_serialization(builder: DataSourceQueryBuilder) -> None:
 
 
 def test_limit_sets_page_size(builder: DataSourceQueryBuilder) -> None:
-    result = builder.limit(10).build()
+    result = builder.total_results_limit(10).build()
 
-    assert result.page_size == 10
+    assert result.total_results_limit == 10
 
 
 def test_limit_with_filter(builder: DataSourceQueryBuilder) -> None:
-    result = builder.where("Status").equals("Active").limit(25).build()
+    result = builder.where("Status").equals("Active").total_results_limit(25).build()
 
     assert result.filter is not None
-    assert result.page_size == 25
+    assert result.total_results_limit == 25
 
 
 def test_limit_with_sort(builder: DataSourceQueryBuilder) -> None:
-    result = builder.order_by_property_name_descending("Price").limit(50).build()
+    result = builder.order_by_property_name_descending("Price").total_results_limit(50).build()
 
     assert result.sorts is not None
-    assert result.page_size == 50
+    assert result.total_results_limit == 50
 
 
 def test_limit_with_filter_and_sort(builder: DataSourceQueryBuilder) -> None:
-    result = builder.where("Status").equals("Active").order_by_property_name_descending("Price").limit(15).build()
+    result = (
+        builder.where("Status")
+        .equals("Active")
+        .order_by_property_name_descending("Price")
+        .total_results_limit(15)
+        .build()
+    )
 
     assert result.filter is not None
     assert result.sorts is not None
-    assert result.page_size == 15
+    assert result.total_results_limit == 15
 
 
 def test_limit_less_than_one_raises_error(builder: DataSourceQueryBuilder) -> None:
     with pytest.raises(ValueError, match="Limit must be at least 1"):
-        builder.limit(0)
+        builder.total_results_limit(0)
 
 
 def test_limit_negative_raises_error(builder: DataSourceQueryBuilder) -> None:
     with pytest.raises(ValueError, match="Limit must be at least 1"):
-        builder.limit(-5)
+        builder.total_results_limit(-5)
 
 
 def test_limit_exactly_one_is_valid(builder: DataSourceQueryBuilder) -> None:
-    result = builder.limit(1).build()
+    result = builder.total_results_limit(1).build()
 
-    assert result.page_size == 1
+    assert result.total_results_limit == 1
 
 
 def test_limit_large_number_is_valid(builder: DataSourceQueryBuilder) -> None:
-    result = builder.limit(100).build()
+    result = builder.total_results_limit(100).build()
 
-    assert result.page_size == 100
+    assert result.total_results_limit == 100
 
 
 def test_without_limit_page_size_is_none(builder: DataSourceQueryBuilder) -> None:
     result = builder.where("Status").equals("Active").build()
 
-    assert result.page_size is None
+    assert result.total_results_limit is None

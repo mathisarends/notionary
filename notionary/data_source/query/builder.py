@@ -46,6 +46,7 @@ class DataSourceQueryBuilder:
         self._negate_next = False
         self._or_group: list[FilterCondition] | None = None
         self._page_size: int | None = None
+        self._total_results_limit: int | None = None
 
     def where(self, property_name: str) -> Self:
         self._finalize_current_or_group()
@@ -193,17 +194,25 @@ class DataSourceQueryBuilder:
         self._sorts.append(sort)
         return self
 
-    def limit(self, total_result_limit: int) -> Self:
+    def total_results_limit(self, total_result_limit: int) -> Self:
         if total_result_limit < 1:
             raise ValueError("Limit must be at least 1")
-        self._page_size = total_result_limit
+        self._total_results_limit = total_result_limit
+        return self
+
+    def page_size(self, page_size: int) -> Self:
+        if page_size < 1:
+            raise ValueError("Page size must be at least 1")
+        self._page_size = page_size
         return self
 
     def build(self) -> DataSourceQueryParams:
         self._finalize_current_or_group()
         notion_filter = self._create_notion_filter_if_needed()
         sorts = self._create_sorts_if_needed()
-        return DataSourceQueryParams(filter=notion_filter, sorts=sorts, page_size=self._page_size)
+        return DataSourceQueryParams(
+            filter=notion_filter, sorts=sorts, page_size=self._page_size, total_results_limit=self._total_results_limit
+        )
 
     def _select_property_without_negation(self, property_name: str) -> None:
         self._current_property = property_name
