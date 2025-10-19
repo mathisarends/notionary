@@ -11,7 +11,7 @@
 [![PyPI version](https://badge.fury.io/py/notionary.svg)](https://badge.fury.io/py/notionary)
 [![Python Version](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Coverage](https://img.shields.io/badge/coverage-83%25-brightgreen)](https://github.com/yourusername/notionary)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/mathisarends/fc0568b66a20fbbaa5018205861c0da9/raw/notionary-coverage.json)](https://github.com/mathisarends/notionary)
 [![Downloads](https://img.shields.io/pypi/dm/notionary?color=blue)](https://pypi.org/project/notionary/)
 [![Documentation](https://img.shields.io/badge/docs-notionary-blue?style=flat&logo=readthedocs)](https://mathisarends.github.io/notionary/)
 [![Notion API](https://img.shields.io/badge/Notion%20API-Official-000000?logo=notion&logoColor=white)](https://developers.notion.com/)
