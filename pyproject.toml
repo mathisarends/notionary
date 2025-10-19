@@ -1,6 +1,6 @@
 [project]
 name = "notionary"
-version = "0.2.28"
+version = "0.3.0"
 description = "Python library for programmatic Notion workspace management - databases, pages, and content with advanced Markdown support"
 authors = [{ name = "Mathis Arends", email = "mathisarends27@gmail.com" }]
 requires-python = ">=3.11"

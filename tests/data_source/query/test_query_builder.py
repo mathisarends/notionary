@@ -549,7 +549,7 @@ def test_order_by_property_descending(builder: DataSourceQueryBuilder) -> None:
 
 
 def test_order_by_ascending_shorthand(builder: DataSourceQueryBuilder) -> None:
-    result = builder.order_by_ascending("Status").build()
+    result = builder.order_by_property_name_ascending("Status").build()
 
     assert result.sorts is not None
     assert len(result.sorts) == 1
@@ -559,14 +559,14 @@ def test_order_by_ascending_shorthand(builder: DataSourceQueryBuilder) -> None:
 
 
 def test_order_by_descending_shorthand(builder: DataSourceQueryBuilder) -> None:
-    result = builder.order_by_descending("Status").build()
+    result = builder.order_by_property_name_descending("Status").build()
 
     assert result.sorts is not None
     assert result.sorts[0].direction == SortDirection.DESCENDING
 
 
 def test_order_by_created_time(builder: DataSourceQueryBuilder) -> None:
-    result = builder.order_by_created_time(SortDirection.ASCENDING).build()
+    result = builder.order_by_created_time_ascending().build()
 
     assert result.sorts is not None
     assert len(result.sorts) == 1
@@ -576,14 +576,14 @@ def test_order_by_created_time(builder: DataSourceQueryBuilder) -> None:
 
 
 def test_order_by_created_time_default_descending(builder: DataSourceQueryBuilder) -> None:
-    result = builder.order_by_created_time().build()
+    result = builder.order_by_created_time_descending().build()
 
     assert result.sorts is not None
     assert result.sorts[0].direction == SortDirection.DESCENDING
 
 
 def test_order_by_last_edited_time(builder: DataSourceQueryBuilder) -> None:
-    result = builder.order_by_last_edited_time(SortDirection.ASCENDING).build()
+    result = builder.order_by_last_edited_time_ascending().build()
 
     assert result.sorts is not None
     assert len(result.sorts) == 1
@@ -594,9 +594,9 @@ def test_order_by_last_edited_time(builder: DataSourceQueryBuilder) -> None:
 
 def test_multiple_sorts_nested(builder: DataSourceQueryBuilder) -> None:
     result = (
-        builder.order_by_descending("Priority")
-        .order_by_ascending("Status")
-        .order_by_created_time(SortDirection.ASCENDING)
+        builder.order_by_property_name_descending("Priority")
+        .order_by_property_name_ascending("Status")
+        .order_by_created_time_ascending()
         .build()
     )
 
@@ -619,8 +619,8 @@ def test_filter_and_sort_combined(builder: DataSourceQueryBuilder) -> None:
         .equals("Active")
         .and_where("Price")
         .greater_than(100)
-        .order_by_descending("Price")
-        .order_by_created_time()
+        .order_by_property_name_descending("Price")
+        .order_by_created_time_descending()
         .build()
     )
 
@@ -645,7 +645,7 @@ def test_build_without_sorts_returns_none(builder: DataSourceQueryBuilder) -> No
 
 
 def test_build_with_only_sorts_no_filter(builder: DataSourceQueryBuilder) -> None:
-    result = builder.order_by_ascending("Price").build()
+    result = builder.order_by_property_name_ascending("Price").build()
 
     assert result.filter is None
     assert result.sorts is not None
@@ -653,7 +653,7 @@ def test_build_with_only_sorts_no_filter(builder: DataSourceQueryBuilder) -> Non
 
 
 def test_sort_serialization(builder: DataSourceQueryBuilder) -> None:
-    result = builder.order_by_descending("Price").order_by_created_time().build()
+    result = builder.order_by_property_name_descending("Price").order_by_created_time_descending().build()
 
     serialized = result.model_dump()
 
@@ -664,10 +664,71 @@ def test_sort_serialization(builder: DataSourceQueryBuilder) -> None:
 
 
 def test_filter_and_sort_serialization(builder: DataSourceQueryBuilder) -> None:
-    result = builder.where("Status").equals("Active").order_by_ascending("Price").build()
+    result = builder.where("Status").equals("Active").order_by_property_name_ascending("Price").build()
 
     serialized = result.model_dump()
 
     assert "filter" in serialized
     assert "sorts" in serialized
     assert serialized["sorts"][0] == {"property": "Price", "direction": "ascending"}
+
+
+# ============================================================================
+# Limit Tests
+# ============================================================================
+
+
+def test_limit_sets_page_size(builder: DataSourceQueryBuilder) -> None:
+    result = builder.limit(10).build()
+
+    assert result.page_size == 10
+
+
+def test_limit_with_filter(builder: DataSourceQueryBuilder) -> None:
+    result = builder.where("Status").equals("Active").limit(25).build()
+
+    assert result.filter is not None
+    assert result.page_size == 25
+
+
+def test_limit_with_sort(builder: DataSourceQueryBuilder) -> None:
+    result = builder.order_by_property_name_descending("Price").limit(50).build()
+
+    assert result.sorts is not None
+    assert result.page_size == 50
+
+
+def test_limit_with_filter_and_sort(builder: DataSourceQueryBuilder) -> None:
+    result = builder.where("Status").equals("Active").order_by_property_name_descending("Price").limit(15).build()
+
+    assert result.filter is not None
+    assert result.sorts is not None
+    assert result.page_size == 15
+
+
+def test_limit_less_than_one_raises_error(builder: DataSourceQueryBuilder) -> None:
+    with pytest.raises(ValueError, match="Limit must be at least 1"):
+        builder.limit(0)
+
+
+def test_limit_negative_raises_error(builder: DataSourceQueryBuilder) -> None:
+    with pytest.raises(ValueError, match="Limit must be at least 1"):
+        builder.limit(-5)
+
+
+def test_limit_exactly_one_is_valid(builder: DataSourceQueryBuilder) -> None:
+    result = builder.limit(1).build()
+
+    assert result.page_size == 1
+
+
+def test_limit_large_number_is_valid(builder: DataSourceQueryBuilder) -> None:
+    result = builder.limit(100).build()
+
+    assert result.page_size == 100
+
+
+def test_without_limit_page_size_is_none(builder: DataSourceQueryBuilder) -> None:
+    result = builder.where("Status").equals("Active").build()
+
+    assert result.page_size is None

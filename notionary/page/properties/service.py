@@ -147,10 +147,21 @@ class PagePropertyHandler:
     # Writer Methods
     # =========================================================================
 
-    async def set_title_property(self, property_name: str, title: str) -> None:
-        self._get_typed_property_or_raise(property_name, PageTitleProperty)
-        updated_page = await self._property_http_client.patch_title(property_name, title)
+    async def set_title_property(self, title: str) -> None:
+        title_property_name = self._extract_title_property_name()
+
+        self._get_typed_property_or_raise(title_property_name, PageTitleProperty)
+        updated_page = await self._property_http_client.patch_title(title_property_name, title)
         self._properties = updated_page.properties
+
+    def _extract_title_property_name(self) -> str | None:
+        if not self._properties:
+            return None
+
+        return next(
+            (key for key, prop in self._properties.items() if isinstance(prop, PageTitleProperty)),
+            None,
+        )
 
     async def set_rich_text_property(self, property_name: str, text: str) -> None:
         self._get_typed_property_or_raise(property_name, PageRichTextProperty)

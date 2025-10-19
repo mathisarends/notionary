@@ -51,8 +51,8 @@ class PagePropertyHttpClient(NotionHttpClient):
 
         return await self.patch_page(update_dto)
 
-    async def patch_title(self, title: str) -> NotionPageDto:
-        return await self._patch_property("title", title, PageTitleProperty)
+    async def patch_title(self, property_name: str, title: str) -> NotionPageDto:
+        return await self._patch_property(property_name, title, PageTitleProperty)
 
     async def patch_rich_text_property(self, property_name: str, text: str) -> NotionPageDto:
         return await self._patch_property(property_name, text, PageRichTextProperty)
