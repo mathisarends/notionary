@@ -45,14 +45,14 @@ class NotionWorkspace:
         self,
         config: _QueryConfigInput | None = None,
     ) -> list[NotionPage]:
-        query_config = self._resolve_config(config, default_object_type_to_query=WorkspaceQueryObjectType.PAGE)
+        query_config = self._resolve_config(config, WorkspaceQueryObjectType.PAGE)
         return await self._query_service.get_pages(query_config)
 
     async def get_pages_stream(
         self,
         config: _QueryConfigInput | None = None,
     ) -> AsyncIterator[NotionPage]:
-        query_config = self._resolve_config(config, default_object_type_to_query=WorkspaceQueryObjectType.PAGE)
+        query_config = self._resolve_config(config, WorkspaceQueryObjectType.PAGE)
         async for page in self._query_service.get_pages_stream(query_config):
             yield page
 
@@ -60,41 +60,49 @@ class NotionWorkspace:
         self,
         config: _QueryConfigInput | None = None,
     ) -> list[NotionDataSource]:
-        query_config = self._resolve_config(config, default_object_type_to_query=WorkspaceQueryObjectType.DATA_SOURCE)
+        query_config = self._resolve_config(config, WorkspaceQueryObjectType.DATA_SOURCE)
         return await self._query_service.get_data_sources(query_config)
 
     async def get_data_sources_stream(
         self,
         config: _QueryConfigInput | None = None,
     ) -> AsyncIterator[NotionDataSource]:
-        query_config = self._resolve_config(config, default_object_type_to_query=WorkspaceQueryObjectType.DATA_SOURCE)
+        query_config = self._resolve_config(config, WorkspaceQueryObjectType.DATA_SOURCE)
         async for data_source in self._query_service.get_data_sources_stream(query_config):
             yield data_source
 
     def _resolve_config(
         self,
         config: _QueryConfigInput | None,
-        default_object_type_to_query: WorkspaceQueryObjectType,
+        expected_object_type: WorkspaceQueryObjectType,
     ) -> WorkspaceQueryConfig:
+        if config is None:
+            return self._create_default_config(expected_object_type)
+
         if isinstance(config, WorkspaceQueryConfig):
-            return config
+            return self._ensure_correct_object_type(config, expected_object_type)
 
-        builder = self._create_builder_with_defaults(default_object_type_to_query)
+        return self._build_config_from_callable(config, expected_object_type)
 
-        if callable(config):
-            config(builder)
+    def _create_default_config(self, object_type: WorkspaceQueryObjectType) -> WorkspaceQueryConfig:
+        return WorkspaceQueryConfig(object_type=object_type)
 
-        return builder.build()
-
-    def _create_builder_with_defaults(self, object_type: WorkspaceQueryObjectType) -> NotionWorkspaceQueryConfigBuilder:
+    def _build_config_from_callable(
+        self,
+        config_callable: Callable[[NotionWorkspaceQueryConfigBuilder], NotionWorkspaceQueryConfigBuilder],
+        expected_object_type: WorkspaceQueryObjectType,
+    ) -> WorkspaceQueryConfig:
         builder = NotionWorkspaceQueryConfigBuilder()
+        config_callable(builder)
+        return self._ensure_correct_object_type(builder.build(), expected_object_type)
 
-        if object_type == WorkspaceQueryObjectType.PAGE:
-            builder.with_pages_only()
-        else:
-            builder.with_data_sources_only()
-
-        return builder
+    def _ensure_correct_object_type(
+        self,
+        config: WorkspaceQueryConfig,
+        expected_object_type: WorkspaceQueryObjectType,
+    ) -> WorkspaceQueryConfig:
+        config.object_type = expected_object_type
+        return config
 
     async def get_users(self) -> list[PersonUser]:
         return [user async for user in self._user_service.list_users_stream()]

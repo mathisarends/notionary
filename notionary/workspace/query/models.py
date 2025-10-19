@@ -44,7 +44,7 @@ class WorkspaceQueryConfig(BaseModel):
         return value
 
     @model_serializer
-    def serialize_model(self) -> JsonDict:
+    def to_api_params(self) -> JsonDict:
         search_dict: JsonDict = {}
 
         if self.query:
