@@ -96,10 +96,6 @@ class Entity(LoggingMixin, ABC):
     def created_by(self) -> PartialUserDto:
         return self._created_by
 
-    @property
-    def last_edited_by(self) -> PartialUserDto:
-        return self._last_edited_by
-
     async def get_created_by_user(self) -> BaseUser | None:
         return await self._user_service.get_user_by_id(self._created_by.id)
 
