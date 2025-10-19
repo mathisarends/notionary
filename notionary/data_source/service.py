@@ -27,16 +27,11 @@ from notionary.exceptions.data_source.properties import DataSourcePropertyNotFou
 from notionary.page.properties.models import PageTitleProperty
 from notionary.page.schemas import NotionPageDto
 from notionary.shared.entity.dto_parsers import (
-    extract_cover_image_url_from_dto,
     extract_description,
-    extract_emoji_icon_from_dto,
-    extract_external_icon_url_from_dto,
     extract_title,
 )
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.entity.service import Entity
-from notionary.shared.models.parent import Parent
-from notionary.user.schemas import PartialUserDto
 from notionary.workspace.query.service import WorkspaceQueryService
 
 if TYPE_CHECKING:
@@ -46,45 +41,21 @@ if TYPE_CHECKING:
 class NotionDataSource(Entity):
     def __init__(
         self,
-        id: str,
+        dto: DataSourceDto,
         title: str,
-        created_time: str,
-        created_by: PartialUserDto,
-        last_edited_time: str,
-        last_edited_by: PartialUserDto,
-        archived: bool,
-        in_trash: bool,
-        url: str,
-        parent: Parent,
+        description: str | None,
         properties: dict[str, DataSourceProperty],
-        emoji_icon: str | None = None,
-        external_icon_url: str | None = None,
-        cover_image_url: str | None = None,
-        description: str | None = None,
-        public_url: str | None = None,
-        data_source_instance_client: DataSourceInstanceClient | None = None,
+        data_source_instance_client: DataSourceInstanceClient,
         query_resolver: QueryResolver | None = None,
     ) -> None:
-        super().__init__(
-            id=id,
-            created_time=created_time,
-            created_by=created_by,
-            last_edited_time=last_edited_time,
-            last_edited_by=last_edited_by,
-            in_trash=in_trash,
-            emoji_icon=emoji_icon,
-            parent=parent,
-            external_icon_url=external_icon_url,
-            cover_image_url=cover_image_url,
-        )
+        super().__init__(dto=dto)
+
         self._parent_database: NotionDatabase | None = None
         self._title = title
-        self._archived = archived
-        self._url = url
-        self._public_url = public_url
+        self._archived = dto.archived
         self._description = description
         self._properties = properties or {}
-        self._data_source_client = data_source_instance_client or DataSourceInstanceClient(data_source_id=id)
+        self._data_source_client = data_source_instance_client
         self.query_resolver = query_resolver or QueryResolver()
 
     @classmethod
@@ -111,71 +82,21 @@ class NotionDataSource(Entity):
     @classmethod
     async def _create_from_dto(
         cls,
-        response: DataSourceDto,
+        dto: DataSourceDto,
         rich_text_converter: RichTextToMarkdownConverter,
     ) -> Self:
         title, description = await asyncio.gather(
-            extract_title(response, rich_text_converter),
-            extract_description(response, rich_text_converter),
+            extract_title(dto, rich_text_converter),
+            extract_description(dto, rich_text_converter),
         )
 
-        return cls._create(
-            id=response.id,
-            title=title,
-            description=description,
-            created_time=response.created_time,
-            created_by=response.created_by,
-            last_edited_time=response.last_edited_time,
-            last_edited_by=response.last_edited_by,
-            archived=response.archived,
-            in_trash=response.in_trash,
-            url=response.url,
-            parent=response.parent,
-            properties=response.properties,
-            emoji_icon=extract_emoji_icon_from_dto(response),
-            external_icon_url=extract_external_icon_url_from_dto(response),
-            cover_image_url=extract_cover_image_url_from_dto(response),
-            public_url=response.url,
-        )
+        data_source_instance_client = DataSourceInstanceClient(data_source_id=dto.id)
 
-    @classmethod
-    def _create(
-        cls,
-        id: str,
-        title: str,
-        created_time: str,
-        created_by: PartialUserDto,
-        last_edited_time: str,
-        last_edited_by: PartialUserDto,
-        archived: bool,
-        in_trash: bool,
-        url: str,
-        parent: Parent,
-        properties: dict[str, DataSourceProperty],
-        emoji_icon: str | None = None,
-        external_icon_url: str | None = None,
-        cover_image_url: str | None = None,
-        description: str | None = None,
-        public_url: str | None = None,
-    ) -> Self:
-        data_source_instance_client = DataSourceInstanceClient(data_source_id=id)
         return cls(
-            id=id,
+            dto=dto,
             title=title,
-            created_time=created_time,
-            created_by=created_by,
-            last_edited_time=last_edited_time,
-            last_edited_by=last_edited_by,
-            archived=archived,
-            in_trash=in_trash,
-            url=url,
-            parent=parent,
-            emoji_icon=emoji_icon,
-            external_icon_url=external_icon_url,
-            cover_image_url=cover_image_url,
             description=description,
-            public_url=public_url,
-            properties=properties,
+            properties=dto.properties,
             data_source_instance_client=data_source_instance_client,
         )
 
@@ -198,14 +119,6 @@ class NotionDataSource(Entity):
     @property
     def properties(self) -> dict[str, DataSourceProperty]:
         return self._properties
-
-    @property
-    def url(self) -> str:
-        return self._url
-
-    @property
-    def public_url(self) -> str | None:
-        return self._public_url
 
     async def create_blank_page(self, title: str | None = None) -> NotionPage:
         return await self._data_source_client.create_blank_page(title=title)

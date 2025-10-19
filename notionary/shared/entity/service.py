@@ -6,48 +6,66 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Self
 
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
-from notionary.shared.models.parent import Parent, ParentType
-from notionary.user.schemas import PartialUserDto
+from notionary.shared.entity.schemas import EntityResponseDto
+from notionary.shared.models.cover import CoverType
+from notionary.shared.models.icon import IconType
+from notionary.shared.models.parent import ParentType
 from notionary.user.service import UserService
 from notionary.utils.mixins.logging import LoggingMixin
 from notionary.utils.uuid_utils import extract_uuid
 
 if TYPE_CHECKING:
-    from notionary import NotionDatabase, NotionDataSource, NotionPage
     from notionary.user.base import BaseUser
 
 
 class Entity(LoggingMixin, ABC):
     def __init__(
         self,
-        id: str,
-        created_time: str,
-        created_by: PartialUserDto,
-        last_edited_time: str,
-        last_edited_by: PartialUserDto,
-        in_trash: bool,
-        parent: Parent,
-        emoji_icon: str | None = None,
-        external_icon_url: str | None = None,
-        cover_image_url: str | None = None,
+        dto: EntityResponseDto,
         user_service: UserService | None = None,
     ) -> None:
-        self._id = id
-        self._created_time = created_time
-        self._created_by = created_by
-        self._last_edited_time = last_edited_time
-        self._last_edited_by = last_edited_by
-        self._in_trash = in_trash
-        self._parent = parent
-        self._emoji_icon = emoji_icon
-        self._external_icon_url = external_icon_url
-        self._cover_image_url = cover_image_url
+        self._id = dto.id
+        self._created_time = dto.created_time
+        self._created_by = dto.created_by
+        self._last_edited_time = dto.last_edited_time
+        self._last_edited_by = dto.last_edited_by
+        self._in_trash = dto.in_trash
+        self._parent = dto.parent
+        self._url = dto.url
+        self._public_url = dto.public_url
+
+        self._emoji_icon = self._extract_emoji_icon(dto)
+        self._external_icon_url = self._extract_external_icon_url(dto)
+        self._cover_image_url = self._extract_cover_image_url(dto)
+
         self._user_service = user_service or UserService()
 
-        # Lazy-loaded parent entities cache
-        self._cached_parent_database: NotionDatabase | None = None
-        self._cached_parent_data_source: NotionDataSource | None = None
-        self._cached_parent_page: NotionPage | None = None
+    @staticmethod
+    def _extract_emoji_icon(dto: EntityResponseDto) -> str | None:
+        if dto.icon is None:
+            return None
+        if dto.icon.type is not IconType.EMOJI:
+            return None
+
+        return dto.icon.emoji
+
+    @staticmethod
+    def _extract_external_icon_url(dto: EntityResponseDto) -> str | None:
+        if dto.icon is None:
+            return None
+        if dto.icon.type is not IconType.EXTERNAL:
+            return None
+
+        return dto.icon.external.url
+
+    @staticmethod
+    def _extract_cover_image_url(dto: EntityResponseDto) -> str | None:
+        if dto.cover is None:
+            return None
+        if dto.cover.type is not CoverType.EXTERNAL:
+            return None
+
+        return dto.cover.external.url
 
     @classmethod
     @abstractmethod
@@ -102,8 +120,12 @@ class Entity(LoggingMixin, ABC):
         return self._cover_image_url
 
     @property
-    def created_by(self) -> PartialUserDto:
-        return self._created_by
+    def url(self) -> str:
+        return self._url
+
+    @property
+    def public_url(self) -> str | None:
+        return self._public_url
 
     # =========================================================================
     # Parent ID Getters
@@ -148,15 +170,13 @@ class Entity(LoggingMixin, ABC):
 
     async def set_emoji_icon(self, emoji: str) -> None:
         entity_response = await self._entity_metadata_update_client.patch_emoji_icon(emoji)
-        self._emoji_icon = entity_response.icon.emoji if entity_response.icon else None
+        self._emoji_icon = self._extract_emoji_icon(entity_response)
         self._external_icon_url = None
 
     async def set_external_icon(self, icon_url: str) -> None:
         entity_response = await self._entity_metadata_update_client.patch_external_icon(icon_url)
         self._emoji_icon = None
-        self._external_icon_url = (
-            entity_response.icon.external.url if entity_response.icon and entity_response.icon.external else None
-        )
+        self._external_icon_url = self._extract_external_icon_url(entity_response)
 
     async def remove_icon(self) -> None:
         await self._entity_metadata_update_client.remove_icon()
@@ -165,9 +185,7 @@ class Entity(LoggingMixin, ABC):
 
     async def set_cover_image_by_url(self, image_url: str) -> None:
         entity_response = await self._entity_metadata_update_client.patch_external_cover(image_url)
-        self._cover_image_url = (
-            entity_response.cover.external.url if entity_response.cover and entity_response.cover.external else None
-        )
+        self._cover_image_url = self._extract_cover_image_url(entity_response)
 
     async def set_random_gradient_cover(self) -> None:
         random_cover_url = self._get_random_gradient_cover()

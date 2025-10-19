@@ -10,15 +10,10 @@ from notionary.database.client import NotionDatabaseHttpClient
 from notionary.database.database_metadata_update_client import DatabaseMetadataUpdateClient
 from notionary.database.schemas import NotionDatabaseDto
 from notionary.shared.entity.dto_parsers import (
-    extract_cover_image_url_from_dto,
     extract_description,
-    extract_emoji_icon_from_dto,
-    extract_external_icon_url_from_dto,
     extract_title,
 )
 from notionary.shared.entity.service import Entity
-from notionary.shared.models.parent import Parent
-from notionary.user.schemas import PartialUserDto
 from notionary.workspace.query.service import WorkspaceQueryService
 
 type DataSourceFactory = Callable[[str], Awaitable[NotionDataSource]]
@@ -27,48 +22,24 @@ type DataSourceFactory = Callable[[str], Awaitable[NotionDataSource]]
 class NotionDatabase(Entity):
     def __init__(
         self,
-        id: str,
+        dto: NotionDatabaseDto,
         title: str,
-        created_time: str,
-        created_by: PartialUserDto,
-        last_edited_time: str,
-        last_edited_by: PartialUserDto,
-        url: str,
-        in_trash: bool,
-        is_inline: bool,
+        description: str | None,
         data_source_ids: list[str],
-        parent: Parent,
-        public_url: str | None = None,
-        emoji_icon: str | None = None,
-        external_icon_url: str | None = None,
-        cover_image_url: str | None = None,
-        description: str | None = None,
-        client: NotionDatabaseHttpClient | None = None,
-        metadata_update_client: DatabaseMetadataUpdateClient | None = None,
+        client: NotionDatabaseHttpClient,
+        metadata_update_client: DatabaseMetadataUpdateClient,
     ) -> None:
-        super().__init__(
-            id=id,
-            created_time=created_time,
-            created_by=created_by,
-            last_edited_time=last_edited_time,
-            last_edited_by=last_edited_by,
-            in_trash=in_trash,
-            parent=parent,
-            emoji_icon=emoji_icon,
-            external_icon_url=external_icon_url,
-            cover_image_url=cover_image_url,
-        )
+        super().__init__(dto=dto)
+
         self._title = title
-        self._url = url
-        self._public_url = public_url
         self._description = description
-        self._is_inline = is_inline
+        self._is_inline = dto.is_inline
 
         self._data_sources: list[NotionDataSource] | None = None
         self._data_source_ids = data_source_ids
 
-        self.client = client or NotionDatabaseHttpClient(database_id=id)
-        self._metadata_update_client = metadata_update_client or DatabaseMetadataUpdateClient(database_id=id)
+        self.client = client
+        self._metadata_update_client = metadata_update_client
 
     @classmethod
     async def from_id(
@@ -97,32 +68,23 @@ class NotionDatabase(Entity):
     @classmethod
     async def _create_from_dto(
         cls,
-        response: NotionDatabaseDto,
+        dto: NotionDatabaseDto,
         rich_text_converter: RichTextToMarkdownConverter,
         client: NotionDatabaseHttpClient,
     ) -> Self:
         title, description = await asyncio.gather(
-            extract_title(response, rich_text_converter), extract_description(response, rich_text_converter)
+            extract_title(dto, rich_text_converter), extract_description(dto, rich_text_converter)
         )
 
+        metadata_update_client = DatabaseMetadataUpdateClient(database_id=dto.id)
+
         return cls(
-            id=response.id,
+            dto=dto,
             title=title,
             description=description,
-            created_time=response.created_time,
-            created_by=response.created_by,
-            last_edited_time=response.last_edited_time,
-            last_edited_by=response.last_edited_by,
-            in_trash=response.in_trash,
-            is_inline=response.is_inline,
-            url=response.url,
-            public_url=response.public_url,
-            parent=response.parent,
-            emoji_icon=extract_emoji_icon_from_dto(response),
-            external_icon_url=extract_external_icon_url_from_dto(response),
-            cover_image_url=extract_cover_image_url_from_dto(response),
-            data_source_ids=[ds.id for ds in response.data_sources],
+            data_source_ids=[ds.id for ds in dto.data_sources],
             client=client,
+            metadata_update_client=metadata_update_client,
         )
 
     @property
@@ -132,14 +94,6 @@ class NotionDatabase(Entity):
     @property
     def title(self) -> str:
         return self._title
-
-    @property
-    def url(self) -> str:
-        return self._url
-
-    @property
-    def public_url(self) -> str | None:
-        return self._public_url
 
     @property
     def is_inline(self) -> bool:

@@ -99,6 +99,6 @@ async def paginate_notion_api_generator(
     total_results_limit: int | None = None,
     **kwargs,
 ) -> AsyncGenerator[Any]:
-    async for page in _fetch_data(api_call, total_results_limit=total_results_limit, **kwargs):
+    async for page in _fetch_data(api_call, total_results_limit, **kwargs):
         for item in page.results:
             yield item
