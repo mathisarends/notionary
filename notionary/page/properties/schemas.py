@@ -1,7 +1,7 @@
 from enum import StrEnum
-from typing import Annotated, Any, Literal, TypeVar
+from typing import Any, Literal, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from notionary.blocks.rich_text.models import RichText
 from notionary.shared.properties.type import PropertyType
@@ -142,40 +142,14 @@ class VerificationValue(BaseModel):
 # ============================================================================
 
 
-class PageStatusProperty(PageProperty):
-    type: Literal[PropertyType.STATUS] = PropertyType.STATUS
-    status: StatusOption | None = None
-    options: list[StatusOption] = Field(default_factory=list)
-
-    @property
-    def option_names(self) -> list[str]:
-        return [option.name for option in self.options]
-
-
-class PageRelationProperty(PageProperty):
-    type: Literal[PropertyType.RELATION] = PropertyType.RELATION
-    relation: list[RelationItem] = Field(default_factory=list)
-    has_more: bool = False
-
-
-class PageURLProperty(PageProperty):
-    type: Literal[PropertyType.URL] = PropertyType.URL
-    url: str | None = None
+class PageTitleProperty(PageProperty):
+    type: Literal[PropertyType.TITLE] = PropertyType.TITLE
+    title: list[RichText] = Field(default_factory=list)
 
 
 class PageRichTextProperty(PageProperty):
     type: Literal[PropertyType.RICH_TEXT] = PropertyType.RICH_TEXT
     rich_text: list[RichText] = Field(default_factory=list)
-
-
-class PageMultiSelectProperty(PageProperty):
-    type: Literal[PropertyType.MULTI_SELECT] = PropertyType.MULTI_SELECT
-    multi_select: list[SelectOption] = Field(default_factory=list)
-    options: list[SelectOption] = Field(default_factory=list)
-
-    @property
-    def option_names(self) -> list[str]:
-        return [option.name for option in self.options]
 
 
 class PageSelectProperty(PageProperty):
@@ -188,19 +162,24 @@ class PageSelectProperty(PageProperty):
         return [option.name for option in self.options]
 
 
-class PagePeopleProperty(PageProperty):
-    type: Literal[PropertyType.PEOPLE] = PropertyType.PEOPLE
-    people: list[PersonUserResponseDto] = Field(default_factory=list)
+class PageMultiSelectProperty(PageProperty):
+    type: Literal[PropertyType.MULTI_SELECT] = PropertyType.MULTI_SELECT
+    multi_select: list[SelectOption] = Field(default_factory=list)
+    options: list[SelectOption] = Field(default_factory=list)
+
+    @property
+    def option_names(self) -> list[str]:
+        return [option.name for option in self.options]
 
 
-class PageDateProperty(PageProperty):
-    type: Literal[PropertyType.DATE] = PropertyType.DATE
-    date: DateValue | None = None
+class PageStatusProperty(PageProperty):
+    type: Literal[PropertyType.STATUS] = PropertyType.STATUS
+    status: StatusOption | None = None
+    options: list[StatusOption] = Field(default_factory=list)
 
-
-class PageTitleProperty(PageProperty):
-    type: Literal[PropertyType.TITLE] = PropertyType.TITLE
-    title: list[RichText] = Field(default_factory=list)
+    @property
+    def option_names(self) -> list[str]:
+        return [option.name for option in self.options]
 
 
 class PageNumberProperty(PageProperty):
@@ -208,9 +187,19 @@ class PageNumberProperty(PageProperty):
     number: float | None = None
 
 
+class PageDateProperty(PageProperty):
+    type: Literal[PropertyType.DATE] = PropertyType.DATE
+    date: DateValue | None = None
+
+
 class PageCheckboxProperty(PageProperty):
     type: Literal[PropertyType.CHECKBOX] = PropertyType.CHECKBOX
     checkbox: bool = False
+
+
+class PageURLProperty(PageProperty):
+    type: Literal[PropertyType.URL] = PropertyType.URL
+    url: str | None = None
 
 
 class PageEmailProperty(PageProperty):
@@ -223,29 +212,34 @@ class PagePhoneNumberProperty(PageProperty):
     phone_number: str | None = None
 
 
-class PageCreatedTimeProperty(PageProperty):
-    type: Literal[PropertyType.CREATED_TIME] = PropertyType.CREATED_TIME
-    created_time: str  # ISO 8601 datetime - read-only
-
-
-class PageLastEditedTimeProperty(PageProperty):
-    type: Literal[PropertyType.LAST_EDITED_TIME] = PropertyType.LAST_EDITED_TIME
-    last_edited_time: str  # ISO 8601 datetime - read-only
+class PagePeopleProperty(PageProperty):
+    type: Literal[PropertyType.PEOPLE] = PropertyType.PEOPLE
+    people: list[PersonUserResponseDto] = Field(default_factory=list)
 
 
 class PageCreatedByProperty(PageProperty):
     type: Literal[PropertyType.CREATED_BY] = PropertyType.CREATED_BY
-    created_by: UserResponseDto  # User object - read-only
+    created_by: UserResponseDto
 
 
 class PageLastEditedByProperty(PageProperty):
     type: Literal[PropertyType.LAST_EDITED_BY] = PropertyType.LAST_EDITED_BY
-    last_edited_by: UserResponseDto  # User object - read-only
+    last_edited_by: UserResponseDto
 
 
-class PageFilesProperty(PageProperty):
-    type: Literal[PropertyType.FILES] = PropertyType.FILES
-    files: list[FileObject] = Field(default_factory=list)
+class PageCreatedTimeProperty(PageProperty):
+    type: Literal[PropertyType.CREATED_TIME] = PropertyType.CREATED_TIME
+    created_time: str
+
+
+class PageLastEditedTimeProperty(PageProperty):
+    type: Literal[PropertyType.LAST_EDITED_TIME] = PropertyType.LAST_EDITED_TIME
+    last_edited_time: str
+
+
+class PageLastVisitedTimeProperty(PageProperty):
+    type: Literal[PropertyType.LAST_VISITED_TIME] = PropertyType.LAST_VISITED_TIME
+    last_visited_time: str | None = None
 
 
 class PageFormulaProperty(PageProperty):
@@ -258,14 +252,15 @@ class PageRollupProperty(PageProperty):
     rollup: RollupValue
 
 
-class PageUniqueIdProperty(PageProperty):
-    type: Literal[PropertyType.UNIQUE_ID] = PropertyType.UNIQUE_ID
-    unique_id: UniqueIdValue
+class PageFilesProperty(PageProperty):
+    type: Literal[PropertyType.FILES] = PropertyType.FILES
+    files: list[FileObject] = Field(default_factory=list)
 
 
-class PageVerificationProperty(PageProperty):
-    type: Literal[PropertyType.VERIFICATION] = PropertyType.VERIFICATION
-    verification: VerificationValue
+class PageRelationProperty(PageProperty):
+    type: Literal[PropertyType.RELATION] = PropertyType.RELATION
+    relation: list[RelationItem] = Field(default_factory=list)
+    has_more: bool = False
 
 
 class PageButtonProperty(PageProperty):
@@ -273,36 +268,63 @@ class PageButtonProperty(PageProperty):
     button: JsonDict = Field(default_factory=dict)
 
 
+class PageLocationProperty(PageProperty):
+    type: Literal[PropertyType.LOCATION] = PropertyType.LOCATION
+    location: JsonDict | None = None
+
+
+class PagePlaceProperty(PageProperty):
+    type: Literal[PropertyType.PLACE] = PropertyType.PLACE
+    place: JsonDict | None = None
+
+
+class PageVerificationProperty(PageProperty):
+    type: Literal[PropertyType.VERIFICATION] = PropertyType.VERIFICATION
+    verification: VerificationValue
+
+
+class PageUniqueIdProperty(PageProperty):
+    type: Literal[PropertyType.UNIQUE_ID] = PropertyType.UNIQUE_ID
+    unique_id: UniqueIdValue
+
+
+class PageUnknownProperty(PageProperty):
+    model_config = ConfigDict(extra="allow")
+
+
 # ============================================================================
 # Discriminated Union
 # ============================================================================
 
 
-DiscriminatedPageProperty = Annotated[
-    PageStatusProperty
-    | PageRelationProperty
-    | PageURLProperty
+type AnyPageProperty = (
+    PageTitleProperty
     | PageRichTextProperty
-    | PageMultiSelectProperty
     | PageSelectProperty
-    | PagePeopleProperty
-    | PageDateProperty
-    | PageTitleProperty
+    | PageMultiSelectProperty
+    | PageStatusProperty
     | PageNumberProperty
+    | PageDateProperty
     | PageCheckboxProperty
+    | PageURLProperty
     | PageEmailProperty
     | PagePhoneNumberProperty
-    | PageCreatedTimeProperty
-    | PageLastEditedTimeProperty
+    | PagePeopleProperty
     | PageCreatedByProperty
     | PageLastEditedByProperty
-    | PageFilesProperty
+    | PageCreatedTimeProperty
+    | PageLastEditedTimeProperty
+    | PageLastVisitedTimeProperty
     | PageFormulaProperty
     | PageRollupProperty
-    | PageUniqueIdProperty
+    | PageFilesProperty
+    | PageRelationProperty
+    | PageButtonProperty
+    | PageLocationProperty
+    | PagePlaceProperty
     | PageVerificationProperty
-    | PageButtonProperty,
-    Field(discriminator="type"),
-]
+    | PageUniqueIdProperty
+    | PageUnknownProperty
+)
 
 PagePropertyT = TypeVar("PagePropertyT", bound=PageProperty)

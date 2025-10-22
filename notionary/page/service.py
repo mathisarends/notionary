@@ -11,7 +11,7 @@ from notionary.page.content.service import PageContentService
 from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
 from notionary.page.properties.factory import PagePropertyHandlerFactory
-from notionary.page.properties.models import PageTitleProperty
+from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.properties.service import PagePropertyHandler
 from notionary.page.schemas import NotionPageDto
 from notionary.shared.entity.service import Entity

@@ -1,0 +1,711 @@
+[33m1521b81[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Format snips
+[33m720ebf7[m[33m ([m[1;33mtag: [m[1;33mv0.3.1[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Combine ci pipeline and use uv for isntalling deps
+[33m0546ce4[m Merge branch 'main' of https://github.com/mathisarends/notionary
+[33m2310cfd[m FIx coverage badge and make it faster
+[33mabd66d0[m Use real badge from coverage action
+[33m4efc0cb[m Merge branch 'main' of https://github.com/mathisarends/notionary
+[33m6b7f18b[m Add coverage badge update
+[33m5208a65[m Add documentation badge to README
+[33m532b5f7[m Revise README badges and Python version
+[33mafa723d[m Fix tests for integration pipeline
+[33m1dd46fc[m Ensure correct query type when using workspace query builder
+[33mcdc8515[m Measure preprocessing performance
+[33m90f10c1[m Add convenience methods for asceding sort
+[33me2cde67[m Remove type checking for circular dep that does not exist
+[33mced236a[m Simplify construction of database data source und page significantly by shifting logic in entity
+[33m4f30d86[m Add tests for new limit logic and pagination
+[33m302b897[m Rename query config builder
+[33m5f9711e[m Add possibility to acces parents in entity!
+[33m999775d[m Fix confusing api for partial user
+[33m76ff416[m Fix set title for notion page
+[33m1a02b71[m[33m ([m[1;33mtag: [m[1;33mv0.3.0[m[33m)[m Change doc workflow!
+[33mc744765[m[33m ([m[1;31morigin/docs[m[33m, [m[1;32mdocs[m[33m)[m Add quick and dirty examples
+[33md178a71[m Add examples and fix errors when patching covers
+[33me8d0a1d[m Fix inconsistent doc with and add references for all blocks to official doc
+[33mb3ec201[m Adapt column syntax processor to new syntax
+[33ma2e6a43[m Refactor node tests to not use hardcoded values but defined syntax
+[33m7d37103[m Use grammer to define constant indentation in markdown nodes aswell
+[33mb970d08[m Use new grammar structure to define constants for markdown syntax
+[33m69c105c[m Make intent more clear when parsing numbered lists
+[33m5f2cd9f[m Enforce correct indendation and adjust imporst for syntax registry
+[33md8d9a51[m Add whitespace preprocesor with tests
+[33m373d515[m[33m ([m[1;32msupport-nested-block-writing-with-indentation[m[33m)[m Add some examples files and make bot factory more adaptable when query for id
+[33m1c7d0e6[m Add simple tests for markdown builder
+[33mbb6d980[m Adjust columns to new syntax
+[33m4469586[m Adjust header to new syntax
+[33m2568dea[m Adjust toggle to use new indentation based syntax
+[33maf7ea81[m Adjust nodes for quote lists and callouts + tests
+[33m06a399c[m Add first parsers to support indentation syntax
+[33m2fbb0cd[m Use type aliases for weird return types in performacne decorators
+[33m4920c77[m Add infrastructure for performance measurement
+[33mde3fee4[m Fix noisy logging issue and provide env example to set log levels
+[33m081ed62[m Change api for query pages stream and validate errors more sonsistently with correct recommendations
+[33m59dd76e[m Apply to user retrieval as well
+[33m6f8ec5b[m Do not compensate for typos but rather raise meaningful exceptions for better debugging
+[33m490a987[m[33m ([m[1;32msyntax-for-blocks[m[33m)[m Add schemas in preparation to support children for all nested blocks in rendering and parsing context
+[33m1be1c93[m Add tests for rendering nested bulleted list content in renderer
+[33m38e1624[m Improve doc by adding dedicated spacing ssection
+[33m2bb183f[m Add tests that verify behaviour that richt text truncater handles empty paragraphs and blocks
+[33m7b667b9[m Make callout single line block for now
+[33m429a270[m Make intent clearer by adding type alias for json dict
+[33m4ee6f1e[m Add tests for schema formatter
+[33m978b6e8[m Add schema generator with name resolvement and rich text types for data sources in inline formatting
+[33m1e1797d[m Merge branch 'main' of https://github.com/mathisarends/notionary
+[33m2ddb1f4[m Remove examples which use the wrong syntax
+[33mc8babca[m Revise README for better content presentation
+[33mbe77cf9[m Skip tests that require auth token and add todo markers to repalce them with mocks
+[33m052dbff[m Add docs so that they dont lie about the api
+[33m685254e[m[33m ([m[1;33mtag: [m[1;33mv0.2.28[m[33m)[m Delete temp folder bump version to 0.2.28
+[33m54c75fb[m Add tests for workspace query builder
+[33m4062061[m Make api more powerful by providing filter in workspace service and parallelize tasks for get semantic
+[33m478daeb[m Switch serializing strategy for WorksapceSearchConfig
+[33mc848bf1[m Add mappings so data source parsing does not fail
+[33me3be96d[m Remove circular deps
+[33m7dd83b3[m Finish basic functionality of notion workspace
+[33m7e9a543[m Add more page types to satisfy du for notion api
+[33m686d0dc[m Rename search service to query service and add page iterators to workspace service layer
+[33meb8058d[m Add support for generators in data source client
+[33mac4b543[m Validate value for property type in pydantic model
+[33m037ea5b[m Test commit
+[33m36fd184[m Add tests for queryx resolver and builder
+[33mef00bff[m Integrate query resolver so that queries from properties which reference uuids in the api can be queried by natural language
+[33md6897dc[m Build query id resolver
+[33mdb753e5[m Add temp to gitignore and provide example for .env.example
+[33m121b859[m Provide meaningful errors via operator vlaidation in query filter builder
+[33m959dc76[m Add more robust test date parsing for different formats in builder + tests
+[33ma46e9a2[m Fix where or where logical conditions
+[33m6b96c83[m Add sort capabilities to query builder and add according tests
+[33mb0fc4ca[m Add where and negation props for query builder
+[33m27c667d[m Remove redundant suggestion logic in property not found exceptions
+[33md656c29[m Readd property funcs and improve api of query builder
+[33mbad220a[m Remove redundant mapping by using correct typings in builder directly
+[33mf8385d2[m Make property query filter more resilient
+[33m4b310b0[m Add data source filter builder typings and service layer
+[33m2bc8ece[m Test property handler with logic which is not covered by data source itself
+[33m15f1b08[m Lazy load data source for page
+[33md1e7d06[m Fix tree fetching and implement iterator for paginated responses
+[33m45e0c69[m Add tests for pagination
+[33m5ec0c13[m Abstract pagination logic and refactor block client
+[33mddb2bbf[m Choose more accurate name for numbered list placeholder post processor
+[33md0673d6[m Add tests for numered list placeholder replacement
+[33m0205366[m Integrate markdown psot processor
+[33md51639a[m Expand reading operations in page content service as well
+[33ma31b1f4[m Started implementing page content service which acts as a facade to all page content related funtionality
+[33m72a80cc[m Make page deletion service ten times faster
+[33md56c8cf[m Add tests for data source service
+[33m1192039[m Move markdown nodes to page content
+[33me80acc8[m Add tests for rich text truncation
+[33m2ea1358[m Add post processor pipeline as well
+[33m511c818[m Couple tests to registry so changes may be made
+[33m4c0cb0f[m Adjust markdown builder to new syntax registry
+[33md9bacf5[m Seperate node tests in dedicated files
+[33m43ac087[m Fix all rendering tests
+[33m64033be[m Add chain factory that s builds the chain in appropriate order
+[33m4094761[m Fix problems with cases insensitiveness in tests
+[33m7f3a5ec[m Fix collision of toggle and toggleable heading due to poor escaping of pattern
+[33m67d1306[m Supply registry for parser test files
+[33m7229a6d[m Use kwargs vor parser registry + define dedicated key for syntax registry
+[33m856322e[m Use syntax registry really consequently
+[33m38c3e0a[m Adjust all parsers to use syntax registry for single source of truth syntax wise
+[33m34c93a4[m Add first scratch of singleton registry
+[33mec7ebb1[m Enforce di in parser service
+[33m0c6ccb8[m Remove structured output feature for now
+[33mad4d216[m Make coding language aliases in enum
+[33m68c89a6[m Make all renderer testst work
+[33ma28e7d8[m Add first batch of rendering tests
+[33m1cb6a18[m Add tests for all parsers
+[33mc6f9025[m Add blank files for testing parssers and renderes
+[33m0e8fa3e[m Allow for page creation with new data source
+[33m250657c[m Define domain specific erros and prevent api call to notion when columns are not formatted propertly
+[33m7c99e26[m Add tests for heading and preprocessing
+[33m2615a39[m Make tests and code more beatiful
+[33mff9f7a7[m Add preprocessor with tests
+[33m281903a[m Remove mappings for blocks
+[33md864937[m Add dedicated and more resilient caption parser for blocks
+[33m4d69f57[m Delete block registry for now
+[33m6726053[m Make line strip redundant because preprocessing handles it
+[33m604f258[m Add multi line support for callout
+[33ma4489c6[m Add multi line quotes support and deidcated caption hierarchy which keeps that in sync
+[33m64131d1[m Implement first scratch of remaining parserS
+[33m6730b4d[m Refactor toggleable headings + create dedicatead typings for creation models
+[33mc780d9b[m Add support for toggleS
+[33mef46a12[m Refactor column and column list parsers
+[33m6351ae8[m Allow for rich text in table creation and refactor component to not use mapper anymore
+[33m988b7ca[m Remove unused flags from parsing context
+[33m56ae725[m Make naming in folder structure more consistent handle post processing of numbered lists
+[33m55cbbc1[m Rename writing logic to be in theme with parsing and rendering + refactor main converter logic
+[33m45993b4[m Handle table markdown formatting correcetly
+[33m9f56e54[m Guard table rows from fallback
+[33mab53095[m Remove duplication by introducting CaptionedRenderer
+[33mba35ba5[m Pass in block in can handle instead of whole context
+[33m151effa[m Add fallback handler
+[33m3e2aedd[m Remove prompt information and extract all handlers with rich text conversion
+[33m2e985e2[m Make implementation of block context parser more abstract and clean
+[33m6c1aece[m extract text indentaion from base renderer and refactor toggleable heading to not catch normal headings + make blocks type safe by applying DU
+[33m22ecfed[m Rename contnet retriever to markdonw converter for more clarity + refactor
+[33mdf28678[m Use di for content renderer and adjust to new folder structure philosophy
+[33m7c72b4d[m Move writer to content
+[33mba62b38[m Fix more tests for name id resolvers
+[33md7e87c0[m Remove not implemented proxy pattern for caching http responses
+[33mab384d0[m Define exception and export from package exceptions
+[33m49c19ae[m Simplify search api + seperate api and business logic
+[33m9f10634[m Remove lying comments in block types
+[33m2c1bb8d[m Remove scrappy file upload mixin logic
+[33m680064d[m Return more concrete models when converting from markdown to blocks
+[33mb945602[m Rename elements to mappers
+[33m1fca57d[m Fix table.py: use TableData and TableRowData instead of TableBlock and TableRowBlock
+[33m8fb99dc[m Fix remaining test files: callout, code, column, bulleted_list, numbered_list, paragraph, embed, todo, video, file - use *Data instead of *Block and Mock() for invalid blocks
+[33m6a1d212[m Fix test files: breadcrumb, divider, equation, quote, table_of_contents - use *Data instead of *Block
+[33m2d2a548[m Fix first bunch of failing tests
+[33m54726ff[m Adjust to new conversion folder logic
+[33md8628c9[m Get rid of _bootstrap block and define blocks schmas in central place
+[33mba12419[m Adjust imports
+[33mb89da0c[m Make design more testable start block refactoring
+[33m467eb6f[m Fix tests for name id resolver
+[33me02071e[m Add support for quering get_last_edited_by_user for page
+[33m4cb91d5[m Refactor person and bot to by in same pattern as other entite
+[33mb5a9efd[m Make design of database testable + lazy loading of databases in data_source
+[33m666223f[m Rationalize factories for central entities
+[33m57178d9[m Fix block models
+[33m8309031[m Fix tests remae block files to models
+[33mc2ff249[m Use correct typings for blocks and adjust tests
+[33m4067733[m Inject property handler and construct it in page property
+[33mcb61528[m Improve error handlign even further
+[33mee7227b[m Throw appropriate errors for for properties not found or linked in notion page
+[33me49b8a3[m Rename richt text object to rich text
+[33m1ac1c86[m Remove base properties mxiin and utilize discriminated unions with type adatapers
+[33m65f2c10[m Refactor some structure and move property reading capabilitty to data source
+[33mf8d2c41[m Allow for creation of new pages in data source
+[33md4637ae[m Refactor comments and user modules
+[33mac0b8b9[m Rename user to person to be in notion scheme and fix tests
+[33m6ab6e85[m Add more minimalistic factories for user and bot user
+[33md84baab[m Fix warning in test file by reanming sample item
+[33m538acda[m Fix tests
+[33m4bbd877[m Make it runnable again
+[33mf1d4982[m Temp commit from refactoring
+[33m0782910[m Update doc
+[33m959934c[m Add semantic comments and start implementing new doc desig
+[33mc92fa12[m Rework design of notionary docs
+[33m27a6e14[m Add base properties mixin to remove redundancies of mapping property json
+[33m94e3106[m Move datasource properties to dedicated package
+[33m8ec7af7[m Lazily evaluate dtasources from database
+[33m0e4707d[m Add two phase search for finding databases by title
+[33mf700503[m Add property reading and build connection to page
+[33m19c12a3[m Small tweaks to data_source_facotry for improved algorithm
+[33m84b4cd3[m Add factory for data sources
+[33m1537f6f[m Move uuid utils - unify entity interface
+[33ma6b8863[m Make fetching of data_source possible
+[33m1fee329[m Add capabilites of fetching data source endpoints
+[33m0fc3783[m Adjust first response models to new api
+[33m9eb6e3b[m Add more properties from entity response to entity
+[33m1544168[m Seperate properties mixins
+[33ma513e96[m Fix tests and move property files
+[33mfca23ad[m Make delegation of db reader to page gproperty reader more seemless
+[33mad78b52[m Implement capability to get detailed information from props
+[33m6076c4c[m Implement more type safe version of property_reader and writer
+[33m42a6644[m Add inline and description props for database
+[33m8ce701c[m Implement metadata update by template like metadata update client
+[33m9cb715b[m Implement template like logic for changing meta data of page and database
+[33ma1476b8[m Add archive and removal of cover and icons to database
+[33m690c94f[m Add class based factories
+[33m10b86d5[m Add common entity model for page and database dtos
+[33m62f40f1[m Extract from url method to map its own logic to id
+[33m27924d1[m Remove all occurences of old signatures
+[33m86d6c45[m Remove all occurences of old signatures
+[33m721d7c9[m Add common interface for shared methdos of database and notion page
+[33m79b6ee2[m Prepare for common inheritance from page and database
+[33m82972f2[m Make database updates type safe
+[33m51b1fa7[m Add abstraction level for name id resolvement and add test for new functionality
+[33m6154494[m Extract common logic of name id resolvers
+[33m5e12438[m Add alternative implementation for name id resolvement of users pages and databases
+[33maf13be8[m Remove token drilling from page and database - alway use env value for notion client
+[33md92aeda[m Add test for markdown to rich text conversion
+[33mb6f3573[m Add tests for test_rich_text_to_markdown_converter
+[33mf4f2d15[m Fix tests for fix bookmark element
+[33m1667993[m Repalce text inline formatter with specialised handlers for reading and writing richt text content
+[33mec96f7a[m Fix testst related to class var in markdown builder
+[33me7764d2[m Update contributing index to new uv version
+[33m4d4b898[m Add ruff and migrate to uv
+[33mf5f8ca9[m Rename user and file upload client aswell
+[33mec0d221[m Rename all clients to http client for less ambiguity
+[33md372c4a[m Refactor gradient cover logic into util file
+[33m7d92c58[m Readd api for archiving pages and share state of properties
+[33mb1a6947[m Readd functionality for archiving pages
+[33m3d1be70[m More robust handling for potentially unchecked types in property writer
+[33m91da959[m Make api so that property getter are not immediately accesible
+[33ma4bd08d[m Extract property reading and writing to seperate files
+[33m211a368[m Remove misleading comments about page manager
+[33mab16495[m Build maps for property excation and setting instead of switch case
+[33m94c7345[m Add support for created prop and rename notion client to client
+[33m9e12786[m Allow typed retrieval of alle property types
+[33m66acaf3[m Make setting of properties work
+[33me905a3e[m Make get options for file work
+[33m4e20dc6[m Seperate database provider from factory use typings from properties in database
+[33m8d5915d[m Implement out convenience methods for accesing certain types of properties
+[33m018d67f[m Type properties more aggressively
+[33mdd9dfc0[m Truncate queries in factory due to notions problems with long queries
+[33m220445a[m Truncate queries in factory due to notions problems with long queries
+[33m93c455e[m Use parent models more consistently
+[33m3513237[m Fix tests that require api token
+[33mba80c4a[m Use command like semantic for page operations
+[33m1f359ec[m Update page to use common dto instead of mapping for every property
+[33m3b4e166[m Seperate shared models more - remove duplication
+[33m577faf4[m Clean up file models
+[33m4c35bc2[m Extract construction of notion page in dedicated factory
+[33maecd68c[m Make the page client more util based and no more need to keeb base client abstract
+[33m6d958f2[m Remove unused try except blocks + remove telemetry
+[33m821e508[m Propage http errors to caller
+[33m1635d8e[m  Use external ressource instead of icon
+[33m93e7ac8[m Fix comment client
+[33mb2c7d2f[m Extract cover image property on page load + handle depreacted signature get_cover_image_url()
+[33m6bbbca5[m Allow for reading with space marker
+[33m564e392[m Fix spacer not working
+[33m1129eaf[m Differentiate between external and emoji icon
+[33m7a6eb6b[m Fix property options setting and getting adnd get rid of redundant logic
+[33m305b3ed[m Fix parent database not in page creation
+[33m83eec76[m Fix get property by name for pages that do not have a database as a parent
+[33m8b6661d[m Merge pull request #6 from tsubakiky/fix/equation-handler-syntax-warning
+[33m59d353b[m equation_handler: fix invalid escape sequence
+[33m220125f[m Revise README for Notionary with enhanced descriptions
+[33mf825966[m Update README with video and image upload section
+[33ma089c5b[m Update README to replace video tags with YouTube link
+[33mc4a4927[m[33m ([m[1;31morigin/video-upload[m[33m)[m Update readme with video demos
+[33m3f5b4af[m Handle empty list in markdown nodes correclty
+[33m66f2100[m Finish structured ouptut with fluent api + fix tests
+[33m84d15e1[m Rationalize document markdown node
+[33m22589c7[m add working structured ouput approach
+[33mb72f2d6[m Add support for adding content by pydantic model
+[33mcc1b247[m Move markdown to block package - reexport markdon nodes
+[33m6d29f91[m Reduce complexity in mapping logic between markdown model and markdown nodes
+[33m89f9981[m Remove more severe redundancies
+[33m4cbf31f[m Working version of extraction form hierarchich pydantic model
+[33m5aa1548[m Fix page content retrieval
+[33mecc750f[m Implement new logic for structured ouputs
+[33m38a9d17[m Prepare structured ouput by reworking markdown_node api and decluttering markdown builder
+[33me00d24e[m Make block registry builder redundant and remove it
+[33m3126a21[m Remove post processing formatting which should be handled by notion ui now
+[33m503a876[m Refactor file uploads
+[33m811e0e0[m Add examples for new file upload capabilities
+[33mc8d92ef[m Allow for direct pdf upload
+[33m186bf35[m Allow video upload as well
+[33mc98c439[m Allow download of mp3 files as well
+[33m5b7b5bf[m Allow for file upload in image element
+[33m5c2023a[m Use enum instead of literal for file upload limits
+[33m8982dcc[m Allow for inline local file uploads with direct appending content
+[33m18af63b[m Actually integrate file element
+[33m5e801d9[m Setup thread safe page context for file upload
+[33m44a5a2a[m Allow for posting of comments
+[33m52c0b66[m Add basic notion comment client + integrate with page
+[33m067d032[m Allow for page creation in page and in workspace root
+[33mee477ad[m Add reading capabilites to child_database_element + fallback to paragraph when trying to append via block api
+[33m408d6f9[m Allow for creation of sub-databses in notion page
+[33m153e4f6[m Prepare page context for inline database + pages + file uploads
+[33m22954c4[m Adjust quote element by offical syntax
+[33mcf61e48[m Add documentation for rich text formatting
+[33ma7d7300[m Compensate for warnings
+[33mcd39898[m Add support for mentioning users
+[33mad3ebdf[m Account for numbered list elements
+[33m695c0a8[m Accound for recursive inline formatting parsing in both ways
+[33m60076d8[m Allow for mention natural language resolvement
+[33m24cae41[m Clean up edge cases and fix remaning teste
+[33m9ac4050[m Adjust tests to new syntax
+[33m692375a[m Change convertion signature to be async in preparation for in markdown file upload
+[33m97851b7[m Seperate database and page mentions
+[33mf7f8870[m Suppress errors for name id resolver that makes plausible assumptions
+[33me5bac82[m Implement name to id resolver
+[33me1824a2[m Cleanup image element parsing
+[33mfc64c1c[m Fix tests
+[33mb9db2eb[m Use common synthax for block equations
+[33m70babee[m Refactor and add docstrings for text inline formatter
+[33mc277887[m Allow for inline equation and color based formatting
+[33m14ccc83[m Adjust all markdown nodeS
+[33mfc10e3d[m Use mixin in markdown node as well for more consistency
+[33mffbfd49[m Use mixin correctly and consequently
+[33m7131388[m Use mixin for bookmark element parsing
+[33m030d5d9[m Fix interface of block prompt information generation
+[33m14bb2a7[m Readd syntax generator from registry
+[33m11b11c1[m Ensure blocks are single source of truth for their own content
+[33ma38a25c[m Fix tests
+[33me00e67c[m Fix integration link
+[33me8bcae6[m Merge branch 'main' of https://github.com/mathisarends/notionary
+[33m3b54a46[m Update README.md
+[33mf1c2225[m Refactor text length processor
+[33m450b949[m Properly cast empty paragraps
+[33mf6e72fa[m Improve post procssing of markdown
+[33mcf80668[m Handle block post procssing in markdown converter itself
+[33m0b856a5[m Make typing for block create result request clearer (not a list but a single element here)
+[33m41b2703[m Fix issue when using multi line string with markdown node
+[33m9a92685[m Fix cicular deps
+[33m0a6f045[m Finish documentation
+[33m715d02f[m Add comprehensive doc for database
+[33md5fe1f9[m Use pydantic like structure for doc
+[33m774a167[m Simplify docs
+[33m53b40bb[m Add documentation for blocks
+[33m2d56d74[m Fix issue that ensures divider is present when flag is set in markdown appendix
+[33ma393961[m Refactor model structure
+[33m73b1867[m Add modules for notion blocks
+[33ma9df0bc[m Fix toggle inside column
+[33md5d9bab[m Fix mermaid and toggle
+[33m4686fa6[m Fix inconsistency with old formatting format for toggle elements
+[33m8cc48b6[m Delete old fles - fix equation bug
+[33mdd2a21e[m Refactor reader and writer logic
+[33m273f9d3[m Convert headings correctly
+[33m8aef90b[m Fix indent and incorrect toggle element
+[33mf1e033c[m Make column reading work
+[33mc497199[m Add more sophisticated reading logic as well
+[33m0cbb5a0[m Setup folder structure for content reading
+[33m27f9919[m Refactor all handlers
+[33m2077995[m Remove unneeded child handler and prefix
+[33m475a87e[m Allow for batch processing of tables
+[33m43d45f9[m Fix code block not working in nested content
+[33m46a17f9[m use batching for code handler which works faster but cant be in nested content yet!)
+[33m7b594ae[m Working toggle elements with new synthax
+[33mc36cb7a[m Add new synthax for toggle elements
+[33mb15ae83[m Clear out delimiters from column logic
+[33m1c5f50b[m Make markdwon builder from model work
+[33mec205e5[m Add pdf block
+[33mbf6dd3b[m Fix links in docs
+[33m987bd8a[m Fix docs structure and mkdocs config
+[33mbbc4eab[m Add tests for nersted markdown builder
+[33m5eb04c4[m Add support for builder injection in append content api
+[33m3760f56[m Adjust tests to notion_block_element change
+[33mbfe9260[m Remove match markdown from notion block element
+[33m18052a3[m Add column handler
+[33mf41511c[m Remove element prompt builder imports and classes from all classes
+[33m0c07a79[m Fix end line for column_list builder
+[33mff5e8b7[m Add support for column aspect ratio
+[33ma592407[m Remove llm description + made column buildes work with function injection
+[33md2a9210[m Use enum for programming language
+[33m74414b7[m Delete init folders for blocks
+[33maad6029[m Add tests for elements ant their conversion - fix escaping in sequation block
+[33m581c915[m Add new elements to markdown builder interface
+[33m0e419d0[m Remove all type checkings from pydantic models
+[33mff36362[m Fix model rebuilding problem by bootstrapping imports
+[33m8017870[m Readd create page from url
+[33m71fc91e[m Use enums consistently and add breadcrumb element support
+[33m8cfb43b[m Use enum for block type instead of pure literal
+[33m5a6d5a5[m Readd support for mention elements
+[33m0717a2b[m Use pydantic typings for inline rich text conversion
+[33m3718fd2[m Prepend table of contents + match typings of richt text obj with pydantic schema
+[33m864ff6f[m Add support for table of contents
+[33mfb626e6[m Add equation element
+[33ma88d62b[m Add ci/cd for tests
+[33m794dd74[m Fix tests
+[33m308a497[m Rework tests for basic markdown elements
+[33mff86eaf[m Fix test 1
+[33m2630af0[m Remove caption handler and include it in code handler
+[33me473fce[m Add chain of responisbility readd code highlighting
+[33m365bf92[m Rationalize line processor
+[33m5976b2d[m Allow for nested tables
+[33m7714448[m Seperate column list and column block for easier stack based parsing
+[33m567e40c[m Flatten list correctly when length is to long and list is returned and no single object
+[33m7de55b5[m Readd column support but a lot cleaner
+[33m41581e1[m Fix all imports and rebuilds
+[33m9874bbb[m Readd column logic
+[33m75c80a9[m Use more semantic block position dataclass instead of weird tuple
+[33mef4e33c[m Fix inherent multiline elements like table and blocks
+[33m8467021[m Parser v2 with independent nesting structure
+[33m4004038[m Fix tests
+[33m772fc01[m Fix table
+[33md19b3c9[m Add doc for resolvement
+[33m50dce0a[m Fix all imports
+[33maec413e[m Pre import fix
+[33m9add7ef[m Move models to dedicated elements
+[33mc5e2b17[m Use pydantic models consequently for block conversion
+[33m1c8de20[m Adjust all blocks on pydantic based structure
+[33m7cc177d[m Return string values for markdown appending and replacing - for confirming actions
+[33m961a9c2[m Rationalize service layer for reading page content
+[33m7330cfc[m Read files with typed values
+[33maba0657[m Fix content retrieval not working at all
+[33m30fe319[m Add tests for every element + column still failing though
+[33meeeab5d[m Add pytest tests
+[33m616a9c8[m Adjust examples to new more maintainable markdown builders
+[33m51a328b[m Setup new folder structure completely - prepare typings
+[33mf3e07fa[m Rework syntax of media elements so that they are consistent
+[33mefac8ba[m Rename every markdown node and rework folder structured for blocks
+[33mab86945[m Use catpion model to simplify logic
+[33m4857d52[m Remove complicated toggle logic
+[33m8d02b8a[m Replace spacer rules by more comprehensive implementation
+[33m5b444a5[m Remove rules for conversion logic
+[33mc766e31[m Extract whitespace processor and text chunking
+[33m945c56b[m Dont use builder directly solely for creating registy
+[33mf79c02b[m Injecte block registry builder in every class it fore sure is
+[33m1539b5f[m Add bulleted list for markdown builders
+[33m937ef61[m Add pydantic models and params for everything
+[33mdcf1d60[m Add logic to programmatically create blocks
+[33m8aefc25[m Add class based markdown mapping isntead of pure markdown
+[33m28df7c9[m Add demos for file upload with bytes and pdfs
+[33me42c158[m Upload file from bytes
+[33m390b35c[m Make page upload for small file work
+[33me39e3e6[m Implement fuzzy matching in a functional way
+[33m111882d[m Replace integration user with generic bot user and search for human users as well
+[33meffd15b[m Add example for integration info
+[33mfb914c8[m Seemingly retrievev all user information and bot informaiton from api
+[33md025dbd[m Add simple user and bot api
+[33m58ab5f7[m Configure logging for production environment
+[33m3a29078[m Parallelise data fetching for get all pages
+[33m615e183[m Add telemtry with posthog and env example for opt-out
+[33m9cca30f[m Remove reference to reference.md
+[33m858b070[m Add write permission to config yaml
+[33mf77e33f[m Fix actual mkdoc yaml (no workflow)
+[33m629c6e9[m Merge branch 'main' of https://github.com/mathisarends/notionary
+[33mb691a65[m Fix poetry lock issue
+[33m26a0f4a[m Update mkdocs.yml
+[33mf73485b[m Update mkdocs.yml
+[33m25d985a[m Update mkdocs.yml
+[33m09d3f8b[m Try new upload page artifact version
+[33mfda258f[m Create mkdocs.yml
+[33m32ab9d7[m Remove cli patch version 0.2.15
+[33m4e92667[m Merge branch 'main' of https://github.com/mathisarends/notionary
+[33m36f0322[m Add basic mkdoc
+[33md57b3cc[m Update README.md
+[33mdb2efbc[m Add banner to readme
+[33m4a5569e[m Switch to poetry and renam id to database id
+[33m957f05a[m Add more examples for block conversion
+[33mb8ca8a5[m Add demos for callout code and audio blocks
+[33m6c7a281[m Add workspace page and database demo
+[33m7a3392c[m Group domain modal based
+[33m1b25ff9[m Barell all block files
+[33m9815205[m Add notion database provider
+[33m3b4a331[m Add first idea for database creation optimization when working with multiple pages
+[33m62bf680[m Allow for property setters with new and improved logic
+[33m5186f82[m Delete annoying old code
+[33m73b2f10[m Appla fuzzy matching to datbase search as well
+[33m0cc56d2[m Readd fuzzy matching for page factory
+[33mf4a838c[m Get property current options selected
+[33m7b678ed[m Handle relation for page via database (one to many
+[33m93d6a53[m Instantiate parent database with page in order for more elegant property retrieval of related pages
+[33ma4c7faa[m Introduce block client
+[33m7c37eca[m Remove redundant icon manager and cover manager
+[33ma005a08[m Parallelise search for pages and databases
+[33mac31ac8[m Remove agent form main branch and clean up instantiation logic for database
+[33m1a40fd6[m Extract api logic of notion database into client and away from service layer
+[33m1ae0792[m Split Notion Client in database and page related operations and remove old one from api
+[33mf3b16eb[m Add icon and cover images for database aswell
+[33med51a94[m Keep database state in sync with remote state
+[33m48e476e[m Rationalize database discoverY
+[33m6ab807b[m Replace search with workspace represenation
+[33m7c9cb11[m Use filter builder
+[33m85cf173[m Reactor notion database
+[33mef3dee2[m Rationalize notion page factory
+[33m5ea703c[m Integrate factory methods into notion database
+[33m54f0958[m Use search in database factory
+[33m29cb08b[m Simplify notion client
+[33ma45299c[m Make notion client a singleton which resolves cleanup issues
+[33mfe458ef[m Implement global search for react
+[33m1efea19[m Cleanup api for querying specific pages in notion_database
+[33m6acbabc[m Implement search for page in database
+[33mba87fc4[m Add basic tools and graph structure
+[33mafd8579[m Add basic structure for notion agent
+[33mc5266e2[m Remove telemetry
+[33m29aa06d[m Remove telemetry
+[33mca8a06e[m Fix issue in database when get_intance for db is not defined
+[33m083b05b[m Setup basic cli for setup
+[33mf7cd4f1[m Add telemtry with robust shutdown
+[33mede2962[m Setup conversion tracker gen
+[33m805568a[m Add decorators and tracking for important functions
+[33m0edbd55[m Add basic telemetry setup
+[33m241c0e4[m Merge branch 'main' of https://github.com/mathisarends/notionary
+[33mdc38983[m Merge pull request #4 from tjclement/feature/page_mentions
+[33m1e7aa54[m Resolve mergers with base branch
+[33md0d1111[m Merge pull request #3 from tjclement/fix/link_in_rich_text
+[33m613a7c2[m Added Mention Block support for page mentions, triggered by @[page-id]
+[33m2dfe4f0[m Fixed links not being turned into Notion Block if they're in the middle of rich text blocks like bullet lists
+[33m1d472e0[m Use strategy pattern for spacere rules so these are actually applied
+[33mdfc1533[m Use strategy pattern for spacere rules so these are actually applied
+[33m35c096f[m Fix not working logic for many pages in workspace in notion page factory
+[33m4207fa2[m Clear working dir
+[33me28a7da[m Fxi column formatting and first headline issue
+[33mc592dd9[m Update readme to emphasize column feature more
+[33m54cd7bb[m Introduce rules for colum formatting
+[33m7400dac[m Escape comments in python strings which would cose problems with formatting logic
+[33m313cce7[m Fix indent if client forgets to use dedent
+[33m1be7d61[m Be less opiniated on text dedention as code blocks could be indented improperly
+[33m9690edc[m Introduce icon formatting for notion pages
+[33md9bb805[m Improve default formatting by being more opinionated about spacing on page
+[33m8478695[m Update readme to new code style
+[33md13f8f0[m Make exmaples more concise
+[33m2dcb818[m Allow support for captions in code blocks
+[33mfc399c3[m Fix code highlighting not working
+[33m8f90aab[m Move string back to prompt generator module
+[33m91e68ee[m Adapt relations to new api structure
+[33mde297b5[m Fix errorness typing of notion database response
+[33m31257fb[m Fix typo in notion datbase response
+[33m25a892f[m Move all prompting related files to appropriate folder + prepare prompt templates
+[33m37a0e17[m Add minimal registry in builder
+[33m876cbf4[m Handle duplicate elements in registry
+[33ma4d336b[m Rename block element registry to block registry
+[33m8da6050[m Make prompt more concise because of default formatting for simple markdown elements
+[33m217ea48[m Make notion prompt more accesible and precise
+[33m5308e69[m Fix issue with not correct relation values due to include semantic + remove page relation operation
+[33m3442380[m Add smoke tests for notion database
+[33m2b977d5[m Test entire notion page api in smoke test
+[33m361187f[m Clean up interface for notion page + rename operations
+[33m32707f5[m Add smoke test for evaluated notion page
+[33mf6c6dde[m Remove current relation ids mappers
+[33mbd4d42c[m Fix realtions options for notion page
+[33me43cc58[m Seperate page content writer from retriever
+[33m494d9d0[m simplified api of page clear to only return boolean value
+[33m069249d[m Restore working page clear method
+[33mb46f4bd[m Run formatter
+[33mb7bd136[m Fix get title of page util
+[33mf323538[m Implement get database helper func
+[33m4713c37[m Validate page response via pydantic schema
+[33m47b5353[m Dont use await for factorym methods make naming more consistent + consquently use factories
+[33m2370c86[m Reuse exisitng page title resolver logic + simplify page facade
+[33m42ea7d0[m Remove code nobody uses
+[33mb7fd084[m Adapat datbase factory to new logger aswell
+[33md6a204c[m Allow for creating via factory methods in notin page directly
+[33m49cea96[m Fix issue when adding existing relations
+[33m50893b7[m Merge pull request #2 from mathisarends/pr-1-fix-append-md-issue
+[33m05935ef[m Resolve mergers + add batch processing example
+[33mb48dba8[m Fix same issue with cover url
+[33m304a200[m Add batch processing for Notion blocks and divider option in markdown append
+[33m0840cdd[m Improve typing of prompts
+[33m5d18ea9[m Use class methods instead of statics
+[33m5cd2e61[m Make toggle synthax more robust - no indentation
+[33ma8fa527[m Implement working collapsable heading elements
+[33m1bd223c[m Implement working collapsable heading elements
+[33m27b361d[m Simplify markdown to notion converter
+[33me29205e[m Remove not working column element
+[33m0d6d794[m Refactor quote element
+[33m2a234e4[m Ensure default stylings for mermaids and remove breaking divider block
+[33m4dca945[m Enforce correct behaviour for code usage
+[33mceeff32[m Add contains to registry class
+[33m7fa5f4a[m Fix numbered list typo
+[33m5fb81fa[m Use more compact formatting for markdown parser
+[33m2064d36[m Use typed dict for better consistency in generated prompt
+[33m2e048ce[m Improve prompt descriptions
+[33m471d278[m Refactor determine relations logic to be generic
+[33m1aa1edb[m Update readme.md
+[33mfb8b549[m Use page title resolver to resolve current deps by name
+[33me6dd655[m Fix mention element and build in registry
+[33mc2392f5[m Add working mention element
+[33m54c4341[m Correctly exclude database child fronm clearance method
+[33med30a3e[m Add mention element (working?)
+[33m8f0cb40[m Working text content with toggles
+[33m392b850[m Implement last updated method for notion page
+[33m45c2323[m Add cleaner api for registry buidler and ensure paragraph is always set
+[33m8e8d814[m Remove import layer for elements
+[33mab4114d[m Remove core layer for easier imports
+[33m0819a54[m Show correct link with title formatting
+[33macddf74[m Ensure getters on page title and url are using lazy evaluation
+[33mcc0d525[m Add page factory with convenient fuzzy matching method
+[33m5cf0ec9[m Add documentation for notion page and rename database and page entities
+[33m633ba33[m Implement cleaner api for client through init
+[33mc037d00[m Rename database accessor to discovery
+[33m00e582a[m Add example with new workflow
+[33m7ec6db1[m Improve data flow when creating new page
+[33m55fa81c[m Remove now unused exception handling
+[33m57fd88e[m Fix to long text paragraph content
+[33m77881e4[m Fix toggle elements offset
+[33mb6539a5[m Add notion audio block
+[33mfd8bd9e[m Add embed element
+[33mecbd93f[m Fix test imports and ignore database writes in page content manager
+[33m7d29981[m Add mappings for query result and fix error when uuid is formatted already
+[33m7d378e5[m Improve feedback when non existing property value is set
+[33m801cc57[m Remove redundant page crud logic in database manager
+[33m6cf52a0[m Move folders to be responsibility related
+[33m70c09b3[m Remove low level block functions from page fassade
+[33mfbc979d[m Clean up page layer
+[33mbb9a83f[m Allow to set relation based on input field
+[33mc0b6449[m Add discovery of database methods for notion_page
+[33m057f67b[m Extract icon manager
+[33m35840ed[m Seperate cover related work from meta data editor
+[33mb7dd055[m Add way to generically update properties in page manager
+[33m33459a2[m Add getter for page icon
+[33m1f6840a[m ADd possibility to add randum banners for page and fetch for current banner url
+[33m4aace8f[m Build page with url in iterator
+[33m2f09787[m Add fetch for properties
+[33me99c88d[m Find packages by namespace
+[33m4e45311[m Update readme for new changes
+[33mf9b2725[m Run formatter
+[33me31a6b4[m Seperate database manager from specialised classes
+[33m2daaf6f[m Allow for dill down of properties
+[33mbb41a83[m Combine page editor and writer for less overhead
+[33m4dbd238[m Remove both sided dependency from column element to converter
+[33m52fdf6d[m Handle pattern parsing for nested toggle elements in converter
+[33m6f23107[m Fix markdown appendix and refactor control flow for markdown converter
+[33mc2c226e[m Fix inconvenient title fetch cascade
+[33m796d479[m Change builder to be instance based (destroyed everything)
+[33ma8e636f[m Add example for factory methods
+[33m62e519e[m Fix iter database error
+[33m84bab7b[m Add factory methods methodes for creating database manager from title and id
+[33md99948d[m Update readme
+[33mdd0ad79[m Extract common logic for parsing uuid of url
+[33m9666355[m Remove registry for database and add accessor class instead
+[33m06ce6f5[m Yield actually page manager with util functions for page
+[33m2a39367[m Replace normal for loop with async gen for more flexibility
+[33m4721ec9[m Setup pip folders and update requirements
+[33mef50f63[m Hook up element registry to database manager
+[33m438cfed[m Improve error messages in page manager
+[33m84a8040[m Remove metadata logic from page manager and delegate resposibility to db manager
+[33md43b49c[m Run black formatter on project
+[33md354e37[m Fix example and database writter in general with new notion schema
+[33m18cc2fa[m Add typing and simplified notion database manager
+[33m06a4368[m Encapsulated data call in http client
+[33ma740cdb[m Add example for notion page manager
+[33ma34942b[m Add database writer which support relations
+[33m795c377[m Add delete and update properties
+[33m9c0a4b5[m Allow possibility to create pages for database
+[33m5cbce26[m Add support for relation type in database
+[33m698e528[m Add database manager with basic id title mappings
+[33m37471cf[m Cache database file
+[33m616f310[m Refactor content reader writer into own files
+[33me5da9d0[m Pre integration with paga fassade
+[33m9ab4ede[m Extract cache and content functionality from metadata manager
+[33m56abb4c[m Add title setter
+[33m1fe5806[m Add page metadata manger
+[33m37869f8[m Add possibility to deregister notion blocks
+[33m8abb92d[m Generate llm description based on actual registered elements
+[33m8f6975c[m Move files in converter package
+[33mdf39881[m Update docs for basic markdown elements and add spacer context
+[33md700f67[m Wrap text parsing logic in own file with prompt description
+[33m0d60dc8[m Add dedicated class method for supportign llm_agent_descriptions
+[33md4fbe01[m Add integrations test for element converters
+[33m91e2675[m Remove old converting logic
+[33med774fd[m Cleanup documentation generator
+[33m1b78fde[m Add dynamic system prompt for custom synthax
+[33m7164202[m Recude branching in column_element
+[33m6673a92[m Add test for column layout
+[33m6562ab9[m Add support for column element
+[33m02ca308[m Add support for toggles
+[33m3ba721c[m Actually register video element
+[33maaebdb6[m Rename files and add video player element
+[33m18920f4[m Add tests for multiline elements
+[33m0ed977c[m Add tests for lists
+[33maef7d45[m Add tst for heading, quote and fix formatting parser
+[33mc95a893[m Add test for bookmark callout image divider
+[33m56f15f7[m Rename base_element
+[33me53319c[m Remove old testS
+[33ma16c9e0[m Add custom spacer
+[33m8f6bea5[m Add support for images
+[33m8fbfaf1[m Add basic bookmark functionality
+[33m67fe54f[m Support background color for quote
+[33m281f400[m Add support for qoutes
+[33me092ee9[m Include parsed formatting for all list options - support colors and typography
+[33m15ad121[m Add bulleted and numbered lsits
+[33me8f58ce[m Add todo and break multi line elements correctly
+[33m5018a39[m Add spacing by default after multi line text blocks
+[33m0b564b0[m Fixed not working multi lines
+[33m46bab6d[m Initialize incomplete package (not working yet!)
+[33md71ec1c[m Add paragraph, headings + folder structure
+[33mac4c517[m Add dividing parser
+[33maf2a092[m Add custom synthax for marking relevant files
+[33m3a87923[m Implement custom synthax for callouts
+[33m7fabe31[m Conversion of toggle working
+[33ma3d97b2[m Add working version of toggle parser - indentation not working though
+[33mf197610[m Seperate concerns of page manager and converter
+[33mdb8ff47[m Add table parsing that actually works
+[33mf5a18f7[m Add read direction for quotas, todos and table NOT working
+[33me457eb3[m Add todo element parser
+[33m1e4ecf5[m Add quote representation in markdown blocks
+[33mfe5a413[m Refacotr table parser
+[33m3117c33[m Add markdwon table notion converter
+[33m1fa0fdd[m Fix issue where multi line blocks were added first
+[33m1ae072f[m Add TextFormattingParser - reduce complexity in methods
+[33mfba3c18[m Improve MarkdownToNotionConverter
+[33m3fa9942[m Use factory for converting notion contents
+[33m10a059b[m Add test for content converter (pre refactor)
+[33m235a471[m Use httpx with less boilerplate
+[33m103d511[m Add abstract notion clients

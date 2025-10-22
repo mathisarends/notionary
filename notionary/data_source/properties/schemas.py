@@ -1,7 +1,7 @@
 from enum import StrEnum
-from typing import Annotated, Literal, TypeVar
+from typing import Literal, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from notionary.shared.properties.type import PropertyType
 from notionary.shared.typings import JsonDict
@@ -126,107 +126,9 @@ class DataSourceStatusGroup(BaseModel):
     option_ids: list[str]
 
 
-# ============================================================================
-# Config Models
-# ============================================================================
-
-
 class DataSourceStatusConfig(BaseModel):
     options: list[DataSourcePropertyOption] = Field(default_factory=list)
     groups: list[DataSourceStatusGroup] = Field(default_factory=list)
-
-
-class DataSourceSelectConfig(BaseModel):
-    options: list[DataSourcePropertyOption] = Field(default_factory=list)
-
-
-class DataSourceMultiSelectConfig(BaseModel):
-    options: list[DataSourcePropertyOption] = Field(default_factory=list)
-
-
-class DataSourceRelationConfig(BaseModel):
-    data_source_id: str
-    type: RelationType = RelationType.SINGLE_PROPERTY
-    single_property: JsonDict = Field(default_factory=dict)
-
-
-class DataSourceNumberConfig(BaseModel):
-    format: NumberFormat
-
-
-class DataSourceFormulaConfig(BaseModel):
-    expression: str
-
-
-class DataSourceUniqueIdConfig(BaseModel):
-    prefix: str | None = None
-
-
-class DataSourceRollupConfig(BaseModel):
-    function: RollupFunction
-    relation_property_id: str
-    relation_property_name: str
-    rollup_property_id: str
-    rollup_property_name: str
-
-
-class DataSourceDateConfig(BaseModel): ...
-
-
-class DataSourceCreatedTimeConfig(BaseModel): ...
-
-
-class DataSourceCreatedByConfig(BaseModel): ...
-
-
-class DataSourceLastEditedTimeConfig(BaseModel): ...
-
-
-class DataSourceLastEditedByConfig(BaseModel): ...
-
-
-class DataSourceLastVisitedTimeConfig(BaseModel): ...
-
-
-class DataSourceTitleConfig(BaseModel): ...
-
-
-class DataSourceRichTextConfig(BaseModel): ...
-
-
-class DataSourceURLConfig(BaseModel): ...
-
-
-class DataSourcePeopleConfig(BaseModel): ...
-
-
-class DataSourceCheckboxConfig(BaseModel): ...
-
-
-class DataSourceEmailConfig(BaseModel): ...
-
-
-class DataSourcePhoneNumberConfig(BaseModel): ...
-
-
-class DataSourceFilesConfig(BaseModel): ...
-
-
-class DataSourceButtonConfig(BaseModel): ...
-
-
-class DataSourceLocationConfig(BaseModel): ...
-
-
-class DataSourceVerificationConfig(BaseModel): ...
-
-
-class DataSourcePlaceConfig(BaseModel): ...
-
-
-# ============================================================================
-# Property Models
-# ============================================================================
 
 
 class DataSourceStatusProperty(DataSourceProperty):
@@ -242,6 +144,10 @@ class DataSourceStatusProperty(DataSourceProperty):
         return [group.name for group in self.status.groups]
 
 
+class DataSourceSelectConfig(BaseModel):
+    options: list[DataSourcePropertyOption] = Field(default_factory=list)
+
+
 class DataSourceSelectProperty(DataSourceProperty):
     type: Literal[PropertyType.SELECT] = PropertyType.SELECT
     select: DataSourceSelectConfig = Field(default_factory=DataSourceSelectConfig)
@@ -249,6 +155,10 @@ class DataSourceSelectProperty(DataSourceProperty):
     @property
     def option_names(self) -> list[str]:
         return [option.name for option in self.select.options]
+
+
+class DataSourceMultiSelectConfig(BaseModel):
+    options: list[DataSourcePropertyOption] = Field(default_factory=list)
 
 
 class DataSourceMultiSelectProperty(DataSourceProperty):
@@ -260,6 +170,12 @@ class DataSourceMultiSelectProperty(DataSourceProperty):
         return [option.name for option in self.multi_select.options]
 
 
+class DataSourceRelationConfig(BaseModel):
+    data_source_id: str | None = None
+    type: RelationType = RelationType.SINGLE_PROPERTY
+    single_property: JsonDict = Field(default_factory=dict)
+
+
 class DataSourceRelationProperty(DataSourceProperty):
     type: Literal[PropertyType.RELATION] = PropertyType.RELATION
     relation: DataSourceRelationConfig = Field(default_factory=DataSourceRelationConfig)
@@ -269,9 +185,15 @@ class DataSourceRelationProperty(DataSourceProperty):
         return self.relation.data_source_id
 
 
+class DataSourceDateConfig(BaseModel): ...
+
+
 class DataSourceDateProperty(DataSourceProperty):
     type: Literal[PropertyType.DATE] = PropertyType.DATE
     date: DataSourceDateConfig = Field(default_factory=DataSourceDateConfig)
+
+
+class DataSourceCreatedTimeConfig(BaseModel): ...
 
 
 class DataSourceCreatedTimeProperty(DataSourceProperty):
@@ -279,9 +201,15 @@ class DataSourceCreatedTimeProperty(DataSourceProperty):
     created_time: DataSourceCreatedTimeConfig = Field(default_factory=DataSourceCreatedTimeConfig)
 
 
+class DataSourceCreatedByConfig(BaseModel): ...
+
+
 class DataSourceCreatedByProperty(DataSourceProperty):
     type: Literal[PropertyType.CREATED_BY] = PropertyType.CREATED_BY
     created_by: DataSourceCreatedByConfig = Field(default_factory=DataSourceCreatedByConfig)
+
+
+class DataSourceLastEditedTimeConfig(BaseModel): ...
 
 
 class DataSourceLastEditedTimeProperty(DataSourceProperty):
@@ -289,9 +217,23 @@ class DataSourceLastEditedTimeProperty(DataSourceProperty):
     last_edited_time: DataSourceLastEditedTimeConfig = Field(default_factory=DataSourceLastEditedTimeConfig)
 
 
+class DataSourceLastEditedByConfig(BaseModel): ...
+
+
 class DataSourceLastEditedByProperty(DataSourceProperty):
     type: Literal[PropertyType.LAST_EDITED_BY] = PropertyType.LAST_EDITED_BY
     last_edited_by: DataSourceLastEditedByConfig = Field(default_factory=DataSourceLastEditedByConfig)
+
+
+class DataSourceLastVisitedTimeConfig(BaseModel): ...
+
+
+class DataSourceLastVisitedTimeProperty(DataSourceProperty):
+    type: Literal[PropertyType.LAST_VISITED_TIME] = PropertyType.LAST_VISITED_TIME
+    last_visited_time: DataSourceLastVisitedTimeConfig = Field(default_factory=DataSourceLastVisitedTimeConfig)
+
+
+class DataSourceTitleConfig(BaseModel): ...
 
 
 class DataSourceTitleProperty(DataSourceProperty):
@@ -299,9 +241,15 @@ class DataSourceTitleProperty(DataSourceProperty):
     title: DataSourceTitleConfig = Field(default_factory=DataSourceTitleConfig)
 
 
+class DataSourceRichTextConfig(BaseModel): ...
+
+
 class DataSourceRichTextProperty(DataSourceProperty):
     type: Literal[PropertyType.RICH_TEXT] = PropertyType.RICH_TEXT
     rich_text: DataSourceRichTextConfig = Field(default_factory=DataSourceRichTextConfig)
+
+
+class DataSourceURLConfig(BaseModel): ...
 
 
 class DataSourceURLProperty(DataSourceProperty):
@@ -309,9 +257,16 @@ class DataSourceURLProperty(DataSourceProperty):
     url: DataSourceURLConfig = Field(default_factory=DataSourceURLConfig)
 
 
+class DataSourcePeopleConfig(BaseModel): ...
+
+
 class DataSourcePeopleProperty(DataSourceProperty):
     type: Literal[PropertyType.PEOPLE] = PropertyType.PEOPLE
     people: DataSourcePeopleConfig = Field(default_factory=DataSourcePeopleConfig)
+
+
+class DataSourceNumberConfig(BaseModel):
+    format: NumberFormat
 
 
 class DataSourceNumberProperty(DataSourceProperty):
@@ -323,9 +278,15 @@ class DataSourceNumberProperty(DataSourceProperty):
         return self.number.format
 
 
+class DataSourceCheckboxConfig(BaseModel): ...
+
+
 class DataSourceCheckboxProperty(DataSourceProperty):
     type: Literal[PropertyType.CHECKBOX] = PropertyType.CHECKBOX
     checkbox: DataSourceCheckboxConfig = Field(default_factory=DataSourceCheckboxConfig)
+
+
+class DataSourceEmailConfig(BaseModel): ...
 
 
 class DataSourceEmailProperty(DataSourceProperty):
@@ -333,14 +294,24 @@ class DataSourceEmailProperty(DataSourceProperty):
     email: DataSourceEmailConfig = Field(default_factory=DataSourceEmailConfig)
 
 
+class DataSourcePhoneNumberConfig(BaseModel): ...
+
+
 class DataSourcePhoneNumberProperty(DataSourceProperty):
     type: Literal[PropertyType.PHONE_NUMBER] = PropertyType.PHONE_NUMBER
     phone_number: DataSourcePhoneNumberConfig = Field(default_factory=DataSourcePhoneNumberConfig)
 
 
+class DataSourceFilesConfig(BaseModel): ...
+
+
 class DataSourceFilesProperty(DataSourceProperty):
     type: Literal[PropertyType.FILES] = PropertyType.FILES
     files: DataSourceFilesConfig = Field(default_factory=DataSourceFilesConfig)
+
+
+class DataSourceFormulaConfig(BaseModel):
+    expression: str
 
 
 class DataSourceFormulaProperty(DataSourceProperty):
@@ -352,6 +323,14 @@ class DataSourceFormulaProperty(DataSourceProperty):
         return self.formula.expression
 
 
+class DataSourceRollupConfig(BaseModel):
+    function: RollupFunction
+    relation_property_id: str
+    relation_property_name: str
+    rollup_property_id: str
+    rollup_property_name: str
+
+
 class DataSourceRollupProperty(DataSourceProperty):
     type: Literal[PropertyType.ROLLUP] = PropertyType.ROLLUP
     rollup: DataSourceRollupConfig
@@ -359,6 +338,10 @@ class DataSourceRollupProperty(DataSourceProperty):
     @property
     def rollup_function(self) -> RollupFunction:
         return self.rollup.function
+
+
+class DataSourceUniqueIdConfig(BaseModel):
+    prefix: str | None = None
 
 
 class DataSourceUniqueIdProperty(DataSourceProperty):
@@ -370,11 +353,43 @@ class DataSourceUniqueIdProperty(DataSourceProperty):
         return self.unique_id.prefix
 
 
-# ============================================================================
-# Discriminated Union
-# ============================================================================
+class DataSourceButtonConfig(BaseModel): ...
 
-DiscriminatedDataSourceProperty = Annotated[
+
+class DataSourceButtonProperty(DataSourceProperty):
+    type: Literal[PropertyType.BUTTON] = PropertyType.BUTTON
+    button: DataSourceButtonConfig = Field(default_factory=DataSourceButtonConfig)
+
+
+class DataSourceLocationConfig(BaseModel): ...
+
+
+class DataSourceLocationProperty(DataSourceProperty):
+    type: Literal[PropertyType.LOCATION] = PropertyType.LOCATION
+    location: DataSourceLocationConfig = Field(default_factory=DataSourceLocationConfig)
+
+
+class DataSourcePlaceConfig(BaseModel): ...
+
+
+class DataSourcePlaceProperty(DataSourceProperty):
+    type: Literal[PropertyType.PLACE] = PropertyType.PLACE
+    place: DataSourcePlaceConfig = Field(default_factory=DataSourcePlaceConfig)
+
+
+class DataSourceVerificationConfig(BaseModel): ...
+
+
+class DataSourceVerificationProperty(DataSourceProperty):
+    type: Literal[PropertyType.VERIFICATION] = PropertyType.VERIFICATION
+    verification: DataSourceVerificationConfig = Field(default_factory=DataSourceVerificationConfig)
+
+
+class DataSourceUnknownProperty(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+
+type AnyDataSourceProperty = (
     DataSourceStatusProperty
     | DataSourceSelectProperty
     | DataSourceMultiSelectProperty
@@ -384,6 +399,7 @@ DiscriminatedDataSourceProperty = Annotated[
     | DataSourceCreatedByProperty
     | DataSourceLastEditedTimeProperty
     | DataSourceLastEditedByProperty
+    | DataSourceLastVisitedTimeProperty
     | DataSourceTitleProperty
     | DataSourceRichTextProperty
     | DataSourceURLProperty
@@ -395,8 +411,12 @@ DiscriminatedDataSourceProperty = Annotated[
     | DataSourceFilesProperty
     | DataSourceFormulaProperty
     | DataSourceRollupProperty
-    | DataSourceUniqueIdProperty,
-    Field(discriminator="type"),
-]
+    | DataSourceUniqueIdProperty
+    | DataSourceButtonProperty
+    | DataSourceLocationProperty
+    | DataSourcePlaceProperty
+    | DataSourceVerificationProperty
+    | DataSourceUnknownProperty
+)
 
 DataSourcePropertyT = TypeVar("DataSourcePropertyT", bound=DataSourceProperty)

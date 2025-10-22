@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from notionary.blocks.rich_text.models import RichText
 from notionary.http.client import NotionHttpClient
-from notionary.page.properties.models import (
+from notionary.page.properties.schemas import (
     DateValue,
     PageCheckboxProperty,
     PageDateProperty,

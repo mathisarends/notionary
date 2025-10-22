@@ -20,7 +20,7 @@ from notionary.data_source.query import DataSourceQueryBuilder, DataSourceQueryP
 from notionary.data_source.schema.service import DataSourcePropertySchemaFormatter
 from notionary.data_source.schemas import DataSourceDto
 from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound, DataSourcePropertyTypeError
-from notionary.page.properties.models import PageTitleProperty
+from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import NotionPageDto
 from notionary.shared.entity.dto_parsers import (
     extract_description,
@@ -115,6 +115,10 @@ class NotionDataSource(Entity):
     @property
     def properties(self) -> dict[str, DataSourceProperty]:
         return self._properties
+
+    @property
+    def data_source_query_builder(self) -> DataSourceQueryBuilder:
+        return DataSourceQueryBuilder(properties=self._properties)
 
     async def create_blank_page(self, title: str | None = None) -> NotionPage:
         return await self._data_source_client.create_blank_page(title=title)
@@ -222,43 +226,44 @@ class NotionDataSource(Entity):
 
         return prop
 
-    def filter(self) -> DataSourceQueryBuilder:
+    def get_query_builder(self) -> DataSourceQueryBuilder:
         return DataSourceQueryBuilder(properties=self._properties)
-
-    async def query_pages(
-        self, filter_fn: Callable[[DataSourceQueryBuilder], DataSourceQueryBuilder]
-    ) -> list[NotionPage]:
-        builder = DataSourceQueryBuilder(properties=self._properties)
-        configured_builder = filter_fn(builder)
-        query_params = configured_builder.build()
-
-        return await self.get_pages(query_params)
-
-    async def query_pages_stream(
-        self, filter_fn: Callable[[DataSourceQueryBuilder], DataSourceQueryBuilder]
-    ) -> AsyncIterator[NotionPage]:
-        builder = DataSourceQueryBuilder(properties=self._properties)
-        configured_builder = filter_fn(builder)
-        query_params = configured_builder.build()
-
-        async for page in self.get_pages_stream(query_params):
-            yield page
 
     async def get_pages(
         self,
+        *,
+        filter_fn: Callable[[DataSourceQueryBuilder], DataSourceQueryBuilder] | None = None,
         query_params: DataSourceQueryParams | None = None,
     ) -> list[NotionPage]:
         from notionary import NotionPage
+
+        if filter_fn is not None and query_params is not None:
+            raise ValueError("Use either filter_fn OR query_params, not both")
+
+        if filter_fn is not None:
+            builder = DataSourceQueryBuilder(properties=self._properties)
+            configured_builder = filter_fn(builder)
+            query_params = configured_builder.build()
 
         resolved_params = await self._resolve_query_params_if_needed(query_params)
         query_response = await self._data_source_client.query(query_params=resolved_params)
         return [await NotionPage.from_id(page.id) for page in query_response.results]
 
-    async def get_pages_stream(
+    async def iter_pages(
         self,
+        *,
+        filter_fn: Callable[[DataSourceQueryBuilder], DataSourceQueryBuilder] | None = None,
         query_params: DataSourceQueryParams | None = None,
     ) -> AsyncIterator[NotionPage]:
         from notionary import NotionPage
+
+        if filter_fn is not None and query_params is not None:
+            raise ValueError("Use either filter_fn OR query_params, not both")
+
+        if filter_fn is not None:
+            builder = DataSourceQueryBuilder(properties=self._properties)
+            configured_builder = filter_fn(builder)
+            query_params = configured_builder.build()
 
         resolved_params = await self._resolve_query_params_if_needed(query_params)
 

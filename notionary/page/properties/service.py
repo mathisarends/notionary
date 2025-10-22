@@ -10,7 +10,7 @@ from notionary.exceptions.properties import (
     PagePropertyTypeError,
 )
 from notionary.page.properties.client import PagePropertyHttpClient
-from notionary.page.properties.models import (
+from notionary.page.properties.schemas import (
     PageCheckboxProperty,
     PageCreatedTimeProperty,
     PageDateProperty,

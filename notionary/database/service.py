@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Self
@@ -16,7 +14,7 @@ from notionary.shared.entity.dto_parsers import (
 from notionary.shared.entity.service import Entity
 from notionary.workspace.query.service import WorkspaceQueryService
 
-type DataSourceFactory = Callable[[str], Awaitable[NotionDataSource]]
+type _DataSourceFactory = Callable[[str], Awaitable[NotionDataSource]]
 
 
 class NotionDatabase(Entity):
@@ -104,7 +102,7 @@ class NotionDatabase(Entity):
 
     async def get_data_sources(
         self,
-        data_source_factory: DataSourceFactory = NotionDataSource.from_id,
+        data_source_factory: _DataSourceFactory = NotionDataSource.from_id,
     ) -> list[NotionDataSource]:
         if self._data_sources is None:
             self._data_sources = await self._load_data_sources(data_source_factory)
@@ -112,7 +110,7 @@ class NotionDatabase(Entity):
 
     async def _load_data_sources(
         self,
-        data_source_factory: DataSourceFactory,
+        data_source_factory: _DataSourceFactory,
     ) -> list[NotionDataSource]:
         tasks = [data_source_factory(ds_id) for ds_id in self._data_source_ids]
         return list(await asyncio.gather(*tasks))

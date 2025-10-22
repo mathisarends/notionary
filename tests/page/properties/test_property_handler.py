@@ -8,7 +8,7 @@ from notionary.exceptions.properties import (
     PagePropertyNotFoundError,
     PagePropertyTypeError,
 )
-from notionary.page.properties.models import (
+from notionary.page.properties.schemas import (
     DateValue,
     PageCheckboxProperty,
     PageCreatedTimeProperty,
