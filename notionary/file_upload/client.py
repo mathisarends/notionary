@@ -1,6 +1,4 @@
-from io import BytesIO
 from pathlib import Path
-from typing import BinaryIO
 
 import aiofiles
 
@@ -15,21 +13,33 @@ from notionary.file_upload.schemas import (
 from notionary.http.client import NotionHttpClient
 from notionary.utils.pagination import PaginatedResponse, paginate_notion_api_generator
 
+# make this here more clean
 
+
+# validate file upload limits directly here in notionary
 class FileUploadHttpClient(NotionHttpClient):
     async def upload_file(
         self,
         filename: str,
         content_type: str | None = None,
-        content_length: int | None = None,
-        mode: UploadMode = UploadMode.SINGLE_PART,
-        number_of_parts: int | None = None,
     ) -> FileUploadResponse:
         request = FileUploadCreateRequest(
             filename=filename,
             content_type=content_type,
-            content_length=content_length,
-            mode=mode,
+        )
+        response = await self.post("file_uploads", data=request.model_dump())
+        return FileUploadResponse.model_validate(response)
+
+    async def upload_file_multipart(
+        self,
+        filename: str,
+        number_of_parts: int,
+        content_type: str | None = None,
+    ) -> FileUploadResponse:
+        request = FileUploadCreateRequest(
+            filename=filename,
+            content_type=content_type,
+            mode=UploadMode.MULTI_PART,
             number_of_parts=number_of_parts,
         )
         response = await self.post("file_uploads", data=request.model_dump())
@@ -38,24 +48,15 @@ class FileUploadHttpClient(NotionHttpClient):
     async def send_file_content(
         self,
         file_upload_id: str,
-        file_content: BinaryIO | bytes,
-        filename: str | None = None,
+        file_content: bytes,
+        filename: str,
         part_number: int | None = None,
     ) -> FileUploadResponse:
         await self._ensure_initialized()
 
         url = f"{self.BASE_URL}/file_uploads/{file_upload_id}/send"
-
-        if hasattr(file_content, "read"):
-            file_bytes = file_content.read()
-            if hasattr(file_content, "seek"):
-                file_content.seek(0)
-        else:
-            file_bytes = file_content
-
-        files = {"file": (filename or "file", file_bytes)}
+        files = {"file": (filename, file_content)}
         data = {"part_number": str(part_number)} if part_number is not None else None
-
         headers = {
             "Authorization": f"Bearer {self.token}",
             "Notion-Version": self.NOTION_VERSION,
@@ -136,7 +137,7 @@ class FileUploadHttpClient(NotionHttpClient):
 
         return await self.send_file_content(
             file_upload_id=file_upload_id,
-            file_content=BytesIO(file_content),
+            file_content=file_content,
             filename=file_path.name,
             part_number=part_number,
         )

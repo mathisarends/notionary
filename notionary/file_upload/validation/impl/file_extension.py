@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import ClassVar
+from typing import ClassVar, override
 
 from notionary.exceptions.file_upload import NoFileExtensionException, UnsupportedFileTypeException
+from notionary.file_upload.pre_processing.port import FileUploadValidator
 from notionary.file_upload.schemas import (
     AudioExtension,
     AudioMimeType,
@@ -15,7 +16,7 @@ from notionary.file_upload.schemas import (
 )
 
 
-class FileValidator:
+class FileExtensionValidator(FileUploadValidator):
     EXTENSION_TO_MIME: ClassVar[dict[str, str]] = {
         AudioExtension.AAC: AudioMimeType.AAC,
         AudioExtension.ADTS: AudioMimeType.AAC,
@@ -81,7 +82,8 @@ class FileValidator:
         **{ext.value: FileCategory.VIDEO for ext in VideoExtension},
     }
 
-    def validate(self, filename: str | Path) -> None:
+    @override
+    async def validate(self, filename: str | Path) -> None:
         filename_str = Path(filename).name
         extension = self._extract_extension(filename_str)
 

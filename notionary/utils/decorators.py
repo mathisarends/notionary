@@ -9,10 +9,10 @@ P = ParamSpec("P")
 R = TypeVar("R")
 T = TypeVar("T")
 
-type SyncFunc = Callable[P, R]
-type AsyncFunc = Callable[P, Coroutine[Any, Any, R]]
-type SyncDecorator = Callable[[SyncFunc], SyncFunc]
-type AsyncDecorator = Callable[[AsyncFunc], AsyncFunc]
+type _SyncFunc = Callable[P, R]
+type _AsyncFunc = Callable[P, Coroutine[Any, Any, R]]
+type _SyncDecorator = Callable[[_SyncFunc], _SyncFunc]
+type _AsyncDecorator = Callable[[_AsyncFunc], _AsyncFunc]
 
 
 def singleton(cls):
@@ -26,8 +26,8 @@ def singleton(cls):
     return wrapper
 
 
-def time_execution_sync(additional_text: str = "", min_duration_to_log: float = 0.25) -> SyncDecorator:
-    def decorator(func: SyncFunc) -> SyncFunc:
+def time_execution_sync(additional_text: str = "", min_duration_to_log: float = 0.25) -> _SyncDecorator:
+    def decorator(func: _SyncFunc) -> _SyncFunc:
         @functools.wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             start_time = time.perf_counter()
@@ -49,8 +49,8 @@ def time_execution_sync(additional_text: str = "", min_duration_to_log: float = 
 def time_execution_async(
     additional_text: str = "",
     min_duration_to_log: float = 0.25,
-) -> AsyncDecorator:
-    def decorator(func: AsyncFunc) -> AsyncFunc:
+) -> _AsyncDecorator:
+    def decorator(func: _AsyncFunc) -> _AsyncFunc:
         @functools.wraps(func)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             start_time = time.perf_counter()

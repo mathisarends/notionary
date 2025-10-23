@@ -9,8 +9,7 @@ from notionary.workspace.query.models import WorkspaceQueryConfig, WorkspaceQuer
 from notionary.workspace.query.service import WorkspaceQueryService
 
 if TYPE_CHECKING:
-    from notionary.data_source.service import NotionDataSource
-    from notionary.page.service import NotionPage
+    from notionary import NotionDataSource, NotionPage
     from notionary.user import BotUser, PersonUser
 
 type _QueryConfigInput = (

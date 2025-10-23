@@ -22,3 +22,15 @@ class NoFileExtensionException(NotionaryException):
             f"File '{filename}' has no extension. Files must have a valid extension to determine their type."
         )
         self.filename = filename
+
+
+class FileSizeException(NotionaryException):
+    def __init__(self, filename: str, file_size_bytes: int, max_size_bytes: int):
+        file_size_mb = file_size_bytes / (1024 * 1024)
+        max_size_mb = max_size_bytes / (1024 * 1024)
+        super().__init__(
+            f"File '{filename}' is too large ({file_size_mb:.2f} MB). Maximum allowed size is {max_size_mb:.2f} MB."
+        )
+        self.filename = filename
+        self.file_size_bytes = file_size_bytes
+        self.max_size_bytes = max_size_bytes
