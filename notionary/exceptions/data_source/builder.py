@@ -8,11 +8,11 @@ from notionary.data_source.query.schema import (
     Operator,
     StringOperator,
 )
-from notionary.exceptions.base import NotionaryError
+from notionary.exceptions.base import NotionaryException
 from notionary.shared.properties.type import PropertyType
 
 
-class QueryBuilderError(NotionaryError):
+class QueryBuilderError(NotionaryException):
     def __init__(self, message: str, property_name: str | None = None) -> None:
         self.property_name = property_name
         super().__init__(message)

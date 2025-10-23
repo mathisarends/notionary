@@ -1,7 +1,7 @@
-from notionary.exceptions.base import NotionaryError
+from notionary.exceptions.base import NotionaryException
 
 
-class NotionApiError(NotionaryError):
+class NotionApiError(NotionaryException):
     def __init__(
         self,
         message: str,

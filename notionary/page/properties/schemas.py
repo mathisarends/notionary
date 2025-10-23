@@ -292,11 +292,6 @@ class PageUnknownProperty(PageProperty):
     model_config = ConfigDict(extra="allow")
 
 
-# ============================================================================
-# Discriminated Union
-# ============================================================================
-
-
 type AnyPageProperty = (
     PageTitleProperty
     | PageRichTextProperty

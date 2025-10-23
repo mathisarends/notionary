@@ -1,11 +1,11 @@
 import difflib
 from typing import ClassVar
 
-from notionary.exceptions.base import NotionaryError
+from notionary.exceptions.base import NotionaryException
 from notionary.shared.models.parent import ParentType
 
 
-class PagePropertyNotFoundError(NotionaryError):
+class PagePropertyNotFoundError(NotionaryException):
     def __init__(
         self,
         page_url: str,
@@ -31,7 +31,7 @@ class PagePropertyNotFoundError(NotionaryError):
         super().__init__(message)
 
 
-class PagePropertyTypeError(NotionaryError):
+class PagePropertyTypeError(NotionaryException):
     def __init__(
         self,
         property_name: str,
@@ -41,7 +41,7 @@ class PagePropertyTypeError(NotionaryError):
         super().__init__(message)
 
 
-class AccessPagePropertyWithoutDataSourceError(NotionaryError):
+class AccessPagePropertyWithoutDataSourceError(NotionaryException):
     _PARENT_DESCRIPTIONS: ClassVar[dict[ParentType, str]] = {
         ParentType.WORKSPACE: "the workspace itself",
         ParentType.PAGE_ID: "another page",

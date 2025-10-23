@@ -1,15 +1,15 @@
-from notionary.exceptions.base import NotionaryError
+from notionary.exceptions.base import NotionaryException
 
 RATIO_TOLERANCE = 0.0001
 
 
-class InsufficientColumnsError(NotionaryError):
+class InsufficientColumnsError(NotionaryException):
     def __init__(self, column_count: int) -> None:
         self.column_count = column_count
         super().__init__(f"Columns container must contain at least 2 column blocks, but only {column_count} found")
 
 
-class InvalidColumnRatioSumError(NotionaryError):
+class InvalidColumnRatioSumError(NotionaryException):
     def __init__(self, total: float, tolerance: float = RATIO_TOLERANCE) -> None:
         self.total = total
         self.tolerance = tolerance

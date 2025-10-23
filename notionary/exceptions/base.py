@@ -1,2 +1,2 @@
-class NotionaryError(Exception):
+class NotionaryException(Exception):
     pass

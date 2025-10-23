@@ -170,6 +170,7 @@ class DataSourceMultiSelectProperty(DataSourceProperty):
         return [option.name for option in self.multi_select.options]
 
 
+# https://developers.notion.com/reference/property-object
 class DataSourceRelationConfig(BaseModel):
     data_source_id: str | None = None
     type: RelationType = RelationType.SINGLE_PROPERTY

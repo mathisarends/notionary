@@ -1,7 +1,7 @@
-from notionary.exceptions.base import NotionaryError
+from notionary.exceptions.base import NotionaryException
 
 
-class EntityNotFound(NotionaryError):
+class EntityNotFound(NotionaryException):
     def __init__(self, entity_type: str, query: str, available_titles: list[str] | None = None) -> None:
         self.entity_type = entity_type
         self.query = query
@@ -33,14 +33,14 @@ class DatabaseNotFound(EntityNotFound):
         super().__init__("database", query, available_titles)
 
 
-class NoUsersInWorkspace(NotionaryError):
+class NoUsersInWorkspace(NotionaryException):
     def __init__(self, user_type: str) -> None:
         self.user_type = user_type
         message = f"No '{user_type}' users found in the workspace."
         super().__init__(message)
 
 
-class UserNotFound(NotionaryError):
+class UserNotFound(NotionaryException):
     def __init__(self, user_type: str, query: str, available_names: list[str] | None = None) -> None:
         self.user_type = user_type
         self.query = query

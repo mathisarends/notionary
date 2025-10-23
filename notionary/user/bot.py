@@ -20,6 +20,18 @@ class BotUser(BaseUser):
         self._workspace_file_upload_limit_in_bytes = workspace_file_upload_limit_in_bytes
         self._owner_type = owner_type
 
+    @property
+    def workspace_name(self) -> str | None:
+        return self._workspace_name
+
+    @property
+    def workspace_file_upload_limit_in_bytes(self) -> int:
+        return self._workspace_file_upload_limit_in_bytes
+
+    @property
+    def owner_type(self) -> WorkspaceOwnerType | None:
+        return self._owner_type
+
     @classmethod
     def _get_expected_user_type(cls) -> UserType:
         return UserType.BOT
@@ -53,18 +65,6 @@ class BotUser(BaseUser):
             workspace_file_upload_limit_in_bytes=limit,
             owner_type=owner_type,
         )
-
-    @property
-    def workspace_name(self) -> str | None:
-        return self._workspace_name
-
-    @property
-    def workspace_file_upload_limit_in_bytes(self) -> int:
-        return self._workspace_file_upload_limit_in_bytes
-
-    @property
-    def owner_type(self) -> WorkspaceOwnerType | None:
-        return self._owner_type
 
     def __repr__(self) -> str:
         return f"BotUser(id={self._id!r}, name={self._name!r}, avatar_url={self._avatar_url!r}, workspace_name={self._workspace_name!r}, workspace_file_upload_limit_in_bytes={self._workspace_file_upload_limit_in_bytes!r}, owner_type={self._owner_type!r})"

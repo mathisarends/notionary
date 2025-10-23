@@ -1,241 +1,142 @@
-import traceback
 from io import BytesIO
 from pathlib import Path
 from typing import BinaryIO
 
 import aiofiles
-import httpx
 
-from notionary.file_upload.models import (
+from notionary.file_upload.schemas import (
     FileUploadCompleteRequest,
     FileUploadCreateRequest,
+    FileUploadFilter,
     FileUploadListResponse,
     FileUploadResponse,
     UploadMode,
 )
 from notionary.http.client import NotionHttpClient
+from notionary.utils.pagination import PaginatedResponse, paginate_notion_api_generator
 
 
 class FileUploadHttpClient(NotionHttpClient):
-    """
-    Client for Notion file upload operations.
-    Inherits base HTTP functionality from NotionHttpClient.
-    """
-
-    async def create_file_upload(
+    async def upload_file(
         self,
         filename: str,
         content_type: str | None = None,
         content_length: int | None = None,
         mode: UploadMode = UploadMode.SINGLE_PART,
-    ) -> FileUploadResponse | None:
-        """
-        Create a new file upload.
-
-        Args:
-            filename: Name of the file (max 900 bytes)
-            content_type: MIME type of the file
-            content_length: Size of the file in bytes
-            mode: Upload mode (UploadMode.SINGLE_PART or UploadMode.MULTI_PART)
-
-        Returns:
-            FileUploadResponse or None if failed
-        """
-        request_data = FileUploadCreateRequest(
+        number_of_parts: int | None = None,
+    ) -> FileUploadResponse:
+        request = FileUploadCreateRequest(
             filename=filename,
             content_type=content_type,
             content_length=content_length,
             mode=mode,
+            number_of_parts=number_of_parts,
         )
+        response = await self.post("file_uploads", data=request.model_dump())
+        return FileUploadResponse.model_validate(response)
 
-        response = await self.post("file_uploads", data=request_data.model_dump())
-        if response is None:
-            return None
-
-        try:
-            return FileUploadResponse.model_validate(response)
-        except Exception as e:
-            self.logger.error("Failed to validate file upload response: %s", e)
-            return None
-
-    async def send_file_upload(
+    async def send_file_content(
         self,
         file_upload_id: str,
-        file_content: BinaryIO,
+        file_content: BinaryIO | bytes,
         filename: str | None = None,
         part_number: int | None = None,
-    ) -> bool:
-        """
-        Send file content to Notion.
-
-        Args:
-            file_upload_id: ID of the file upload
-            file_content: Binary file content
-            filename: Optional filename for the form data
-            part_number: Part number for multi-part uploads
-
-        Returns:
-            True if successful, False otherwise
-        """
-        if not self.client:
-            self.logger.error("HTTP client not initialized")
-            return False
+    ) -> FileUploadResponse:
+        await self._ensure_initialized()
 
         url = f"{self.BASE_URL}/file_uploads/{file_upload_id}/send"
 
-        try:
-            # Read all content from BinaryIO into bytes
-            if hasattr(file_content, "read"):
-                file_bytes = file_content.read()
-                # Reset position if possible (for BytesIO objects)
-                if hasattr(file_content, "seek"):
-                    file_content.seek(0)
-            else:
-                file_bytes = file_content
+        if hasattr(file_content, "read"):
+            file_bytes = file_content.read()
+            if hasattr(file_content, "seek"):
+                file_content.seek(0)
+        else:
+            file_bytes = file_content
 
-            # Prepare files dict for multipart upload
-            files = {"file": (filename or "file", file_bytes)}
+        files = {"file": (filename or "file", file_bytes)}
+        data = {"part_number": str(part_number)} if part_number is not None else None
 
-            # Prepare form data (only for multi-part uploads)
-            data = {}
-            if part_number is not None:
-                data["part_number"] = str(part_number)
+        headers = {
+            "Authorization": f"Bearer {self.token}",
+            "Notion-Version": self.NOTION_VERSION,
+        }
 
-            # Create a new client instance specifically for this upload
-            # This avoids issues with the base client's default JSON headers
-            upload_headers = {
-                "Authorization": f"Bearer {self.token}",
-                "Notion-Version": self.NOTION_VERSION,
-                # Explicitly do NOT set Content-Type - let httpx handle multipart
-            }
+        response = await self.client.post(url, files=files, data=data, headers=headers)
+        response.raise_for_status()
 
-            self.logger.debug("Sending file upload to %s with filename %s", url, filename)
+        return FileUploadResponse.model_validate(response.json())
 
-            # Use a temporary client for the multipart upload
-            async with httpx.AsyncClient(timeout=self.timeout) as upload_client:
-                response = await upload_client.post(
-                    url,
-                    files=files,
-                    data=data if data else None,
-                    headers=upload_headers,
-                )
+    async def complete_upload(self, file_upload_id: str) -> FileUploadResponse:
+        request = FileUploadCompleteRequest()
+        response = await self.post(f"file_uploads/{file_upload_id}/complete", data=request.model_dump())
+        return FileUploadResponse.model_validate(response)
 
-                response.raise_for_status()
-                self.logger.debug("File upload sent successfully: %s", file_upload_id)
-                return True
-
-        except httpx.HTTPStatusError as e:
-            try:
-                error_text = e.response.text
-            except Exception:
-                error_text = "Unable to read error response"
-            error_msg = f"HTTP {e.response.status_code}: {error_text}"
-            self.logger.error("Send file upload failed (%s): %s", url, error_msg)
-            return False
-
-        except httpx.RequestError as e:
-            self.logger.error("Request error sending file upload (%s): %s", url, str(e))
-            return False
-
-        except Exception as e:
-            self.logger.error("Unexpected error in send_file_upload: %s", str(e))
-
-            self.logger.debug("Full traceback: %s", traceback.format_exc())
-            return False
-
-    async def complete_file_upload(self, file_upload_id: str) -> FileUploadResponse | None:
-        """
-        Complete a multi-part file upload.
-
-        Args:
-            file_upload_id: ID of the file upload
-
-        Returns:
-            FileUploadResponse or None if failed
-        """
-        request_data = FileUploadCompleteRequest()
-
-        response = await self.post(f"file_uploads/{file_upload_id}/complete", data=request_data.model_dump())
-        if response is None:
-            return None
-
-        try:
-            return FileUploadResponse.model_validate(response)
-        except Exception as e:
-            self.logger.error("Failed to validate complete file upload response: %s", e)
-            return None
-
-    async def retrieve_file_upload(self, file_upload_id: str) -> FileUploadResponse | None:
-        """
-        Retrieve details of a file upload.
-
-        Args:
-            file_upload_id: ID of the file upload
-
-        Returns:
-            FileUploadResponse or None if failed
-        """
+    async def get_file_upload(self, file_upload_id: str) -> FileUploadResponse:
         response = await self.get(f"file_uploads/{file_upload_id}")
-        if response is None:
-            return None
+        return FileUploadResponse.model_validate(response)
 
-        try:
-            return FileUploadResponse.model_validate(response)
-        except Exception as e:
-            self.logger.error("Failed to validate retrieve file upload response: %s", e)
-            return None
-
-    async def list_file_uploads(
-        self, page_size: int = 100, start_cursor: str | None = None
-    ) -> FileUploadListResponse | None:
-        """
-        List file uploads for the current bot integration.
-
-        Args:
-            page_size: Number of uploads per page (max 100)
-            start_cursor: Cursor for pagination
-
-        Returns:
-            FileUploadListResponse or None if failed
-        """
+    async def _fetch_file_uploads_page(
+        self,
+        page_size: int = 100,
+        start_cursor: str | None = None,
+        filter: FileUploadFilter | None = None,
+        **kwargs,
+    ) -> PaginatedResponse:
         params = {"page_size": min(page_size, 100)}
         if start_cursor:
             params["start_cursor"] = start_cursor
+        if filter:
+            params.update(filter.model_dump(exclude_none=True))
 
         response = await self.get("file_uploads", params=params)
-        if response is None:
-            return None
+        parsed = FileUploadListResponse.model_validate(response)
 
-        try:
-            return FileUploadListResponse.model_validate(response)
-        except Exception as e:
-            self.logger.error("Failed to validate list file uploads response: %s", e)
-            return None
+        return PaginatedResponse(
+            results=parsed.results,
+            has_more=parsed.has_more,
+            next_cursor=parsed.next_cursor,
+        )
 
-    async def send_file_from_path(self, file_upload_id: str, file_path: Path, part_number: int | None = None) -> bool:
-        """
-        Convenience method to send file from file path.
+    async def list_file_uploads(
+        self,
+        page_size: int = 100,
+        start_cursor: str | None = None,
+        filter: FileUploadFilter | None = None,
+        total_results_limit: int | None = None,
+    ) -> FileUploadListResponse:
+        all_results = await paginate_notion_api_generator(
+            lambda **kwargs: self._fetch_file_uploads_page(
+                filter=filter,
+                **kwargs,
+            ),
+            total_results_limit=total_results_limit,
+            page_size=page_size,
+            start_cursor=start_cursor,
+        )
 
-        Args:
-            file_upload_id: ID of the file upload
-            file_path: Path to the file
-            part_number: Part number for multi-part uploads
+        file_uploads = [item async for item in all_results]
 
-        Returns:
-            True if successful, False otherwise
-        """
-        try:
-            # Read file content into memory first using aiofiles
-            async with aiofiles.open(file_path, "rb") as f:
-                file_content = await f.read()
+        return FileUploadListResponse(
+            object="list",
+            results=file_uploads,
+            next_cursor=None,
+            has_more=False,
+            type="file_upload",
+            request_id="",
+        )
 
-            # Use BytesIO for the upload
-            return await self.send_file_upload(
-                file_upload_id=file_upload_id,
-                file_content=BytesIO(file_content),
-                filename=file_path.name,
-                part_number=part_number,
-            )
-        except Exception as e:
-            self.logger.error("Failed to send file from path %s: %s", file_path, e)
-            return False
+    async def send_file_from_path(
+        self,
+        file_upload_id: str,
+        file_path: Path,
+        part_number: int | None = None,
+    ) -> FileUploadResponse:
+        async with aiofiles.open(file_path, "rb") as f:
+            file_content = await f.read()
+
+        return await self.send_file_content(
+            file_upload_id=file_upload_id,
+            file_content=BytesIO(file_content),
+            filename=file_path.name,
+            part_number=part_number,
+        )
