@@ -9,17 +9,18 @@ from notionary.file_upload.validation.validators import (
 )
 
 
-def create_file_upload_validator_service(
+def create_file_upload_validation_service(
     file_path: Path,
-    filename: str,
-    file_size_bytes: int,
 ) -> FileUploadValidationService:
+    file_path = Path(file_path)
+    filename = file_path.name
+    file_size_bytes = file_path.stat().st_size
+
     validation_service = FileUploadValidationService()
 
     file_exists_validator = _create_file_exists_validator(file_path)
     filename_length_validator = _create_filename_length_validator(filename)
     extension_validator = _create_extension_validator(filename)
-
     size_validator = _create_size_validator(filename, file_size_bytes)
 
     validation_service.register(file_exists_validator)
@@ -30,7 +31,7 @@ def create_file_upload_validator_service(
     return validation_service
 
 
-def create_bytes_upload_validator_service(
+def create_bytes_upload_validation_service(
     filename: str,
     file_size_bytes: int,
 ) -> FileUploadValidationService:
@@ -38,7 +39,6 @@ def create_bytes_upload_validator_service(
 
     filename_length_validator = _create_filename_length_validator(filename)
     extension_validator = _create_extension_validator(filename)
-
     size_validator = _create_size_validator(filename, file_size_bytes)
 
     validation_service.register(filename_length_validator)

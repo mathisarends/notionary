@@ -9,11 +9,9 @@ class FileUploadConfig:
     https://developers.notion.com/reference/file-uploads
     """
 
-    # File Size Limits (documented by Notion)
     TWENTY_MEGABYTES = 20 * 1024 * 1024
     SINGLE_PART_MAX_SIZE = TWENTY_MEGABYTES
 
-    # Multi-part uploads: recommended chunk size
     # Valid range: 5-20 MB per part (last part can be < 5 MB)
     # Notion explicitly recommends 10 MB for optimal performance
     TEN_MEGABYTES = 10 * 1024 * 1024
@@ -21,6 +19,5 @@ class FileUploadConfig:
 
     MAX_FILENAME_BYTES: int = 900
 
-    DEFAULT_TIMEOUT: int = 30
     MAX_UPLOAD_TIMEOUT: int = 300
     POLL_INTERVAL: int = 2
