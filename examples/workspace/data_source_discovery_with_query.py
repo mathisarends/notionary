@@ -3,7 +3,7 @@ import asyncio
 from notionary import NotionWorkspace
 
 # Replace with your desired query string
-YOUR_QUERY = "Poadcast"
+YOUR_QUERY = ""
 
 
 async def main() -> None:
@@ -11,7 +11,7 @@ async def main() -> None:
 
     print(f"Search for {YOUR_QUERY}:")
     async for data_source in workspace.get_data_sources_stream(
-        lambda builder: builder.with_query(YOUR_QUERY).with_page_size(10)
+        filter_fn=lambda builder: builder.with_query(YOUR_QUERY).with_page_size(10)
     ):
         print(f"  {data_source.title}")
 

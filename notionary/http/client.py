@@ -44,7 +44,6 @@ class NotionHttpClient(LoggingMixin):
         self._is_initialized = False
 
     def __del__(self):
-        """Auto-cleanup when client is destroyed."""
         if not hasattr(self, "client") or not self.client:
             return
 

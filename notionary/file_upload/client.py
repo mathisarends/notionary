@@ -49,8 +49,6 @@ class FileUploadHttpClient(NotionHttpClient):
         filename: str,
         part_number: int | None = None,
     ) -> FileUploadResponse:
-        await self._ensure_initialized()
-
         url = f"{self.BASE_URL}/file_uploads/{file_upload_id}/send"
         files = {"file": (filename, file_content)}
         data = {"part_number": str(part_number)} if part_number is not None else None

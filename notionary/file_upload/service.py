@@ -7,7 +7,7 @@ import aiofiles
 
 from notionary.exceptions.file_upload import UploadFailedError, UploadTimeoutError
 from notionary.file_upload.client import FileUploadHttpClient
-from notionary.file_upload.config import FileUploadConfig
+from notionary.file_upload.config import NOTION_SINGLE_PART_MAX_SIZE, FileUploadConfig
 from notionary.file_upload.schemas import FileUploadResponse, FileUploadStatus
 from notionary.file_upload.validation.factory import (
     create_bytes_upload_validation_service,
@@ -25,7 +25,7 @@ class FileUploadService(LoggingMixin):
         file_path = Path(file_path)
 
         validator_service = create_file_upload_validation_service(file_path)
-        await validator_service.validate_all()
+        await validator_service.validate()
 
         file_size = file_path.stat().st_size
         filename = filename or file_path.name
@@ -52,7 +52,7 @@ class FileUploadService(LoggingMixin):
             filename=filename,
             file_size_bytes=file_size,
         )
-        await validator_service.validate_all()
+        await validator_service.validate()
 
         content_type = content_type or self._guess_content_type(filename)
 
@@ -130,25 +130,25 @@ class FileUploadService(LoggingMixin):
     async def _read_file_chunks(self, file_path: Path) -> AsyncGenerator[bytes]:
         async with aiofiles.open(file_path, "rb") as file:
             while True:
-                chunk = await file.read(self.config.MULTI_PART_CHUNK_SIZE)
+                chunk = await file.read(self.config.multi_part_chunk_size)
                 if not chunk:
                     break
                 yield chunk
 
     async def _bytes_chunk_generator(self, file_content: bytes) -> AsyncGenerator[bytes]:
-        chunk_size = self.config.MULTI_PART_CHUNK_SIZE
+        chunk_size = self.config.multi_part_chunk_size
         for i in range(0, len(file_content), chunk_size):
             yield file_content[i : i + chunk_size]
 
     def _fits_in_single_part(self, file_size: int) -> bool:
-        return file_size <= self.config.SINGLE_PART_MAX_SIZE
+        return file_size <= NOTION_SINGLE_PART_MAX_SIZE
 
     def _guess_content_type(self, filename: str) -> str | None:
         content_type, _ = mimetypes.guess_type(filename)
         return content_type
 
     def _calculate_part_count(self, file_size: int) -> int:
-        return (file_size + self.config.MULTI_PART_CHUNK_SIZE - 1) // self.config.MULTI_PART_CHUNK_SIZE
+        return (file_size + self.config.multi_part_chunk_size - 1) // self.config.multi_part_chunk_size
 
     async def get_upload_status(self, file_upload_id: str) -> str:
         try:
@@ -162,7 +162,7 @@ class FileUploadService(LoggingMixin):
         file_upload_id: str,
         timeout_seconds: int | None = None,
     ) -> FileUploadResponse:
-        timeout = timeout_seconds or self.config.MAX_UPLOAD_TIMEOUT
+        timeout = timeout_seconds or self.config.max_upload_timeout
 
         try:
             return await asyncio.wait_for(self._poll_status_until_complete(file_upload_id), timeout=timeout)
@@ -181,7 +181,7 @@ class FileUploadService(LoggingMixin):
             if upload_info.status == FileUploadStatus.FAILED:
                 raise UploadFailedError(file_upload_id)
 
-            await asyncio.sleep(self.config.POLL_INTERVAL)
+            await asyncio.sleep(self.config.poll_interval)
 
     async def list_recent_uploads(self, limit: int = 50) -> list[FileUploadResponse]:
         response = await self.client.list_file_uploads(

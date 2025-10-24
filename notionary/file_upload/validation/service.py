@@ -11,7 +11,7 @@ class FileUploadValidationService(LoggingMixin):
         self._validators.append(validator)
 
     @time_execution_async()
-    async def validate_all(self) -> None:
+    async def validate(self) -> None:
         for validator in self._validators:
             self.logger.info("Validating with %s", validator.__class__.__name__)
             await validator.validate()

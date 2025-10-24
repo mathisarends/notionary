@@ -10,7 +10,7 @@ async def main() -> None:
 
     print(f"Search for {YOUR_QUERY}:")
     async for page in workspace.get_pages_stream(
-        lambda builder: builder.with_query(YOUR_QUERY).with_total_results_limit(10)
+        filter_fn=lambda builder: builder.with_query(YOUR_QUERY).with_total_results_limit(10)
     ):
         print(f"  {page.title}")
 
