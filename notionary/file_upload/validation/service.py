@@ -5,13 +5,13 @@ from notionary.utils.mixins.logging import LoggingMixin
 
 class FileUploadValidationService(LoggingMixin):
     def __init__(self) -> None:
-        self._processors: list[FileUploadValidator] = []
+        self._validators: list[FileUploadValidator] = []
 
-    def register(self, processor: FileUploadValidator) -> None:
-        self._processors.append(processor)
+    def register(self, validator: FileUploadValidator) -> None:
+        self._validators.append(validator)
 
     @time_execution_async()
-    async def process(self, uploaded_file: str) -> str:
-        for processor in self._processors:
-            self.logger.info(f"Validating uploaded file with {processor.__class__.__name__}")
-            await processor.validate(uploaded_file)
+    async def validate_all(self) -> None:
+        for validator in self._validators:
+            self.logger.info("Validating with %s", validator.__class__.__name__)
+            await validator.validate()

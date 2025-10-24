@@ -1,287 +1,246 @@
 import asyncio
 import mimetypes
 from datetime import datetime, timedelta
-from io import BytesIO
 from pathlib import Path
 
+import aiofiles
+
+from notionary.exceptions.file_upload import UploadFailedError, UploadTimeoutError
 from notionary.file_upload.client import FileUploadHttpClient
-from notionary.file_upload.schemas import FileUploadResponse, UploadMode
+from notionary.file_upload.config import FileUploadConfig
+from notionary.file_upload.schemas import FileUploadResponse, FileUploadStatus
+from notionary.file_upload.validation.factory import (
+    create_bytes_upload_validator_service,
+    create_file_upload_validator_service,
+)
 from notionary.utils.mixins.logging import LoggingMixin
 
 
-# TODO: Clean up this so that its usabile in page and or workspace context
 class FileUploadService(LoggingMixin):
-    SINGLE_PART_MAX_SIZE = 20 * 1024 * 1024  # 20MB
-    MULTI_PART_CHUNK_SIZE = 10 * 1024 * 1024  # 10MB per part
-    MAX_FILENAME_BYTES = 900
+    def __init__(self, client: FileUploadHttpClient | None = None, config: FileUploadConfig | None = None):
+        self.client = client or FileUploadHttpClient()
+        self.config = config or FileUploadConfig()
 
-    # make the cleint itself injectable should have no circular deps here aswell
-    def __init__(self, token: str | None = None):
-        self.client = FileUploadHttpClient(token=token)
-
-    # Raise exception here obviously
-    async def upload_file(self, file_path: Path, filename: str | None = None) -> FileUploadResponse | None:
-        if not file_path.exists():
-            self.logger.error("File does not exist: %s", file_path)
-            return None
-
+    async def upload_file(self, file_path: Path, filename: str | None = None) -> FileUploadResponse:
         file_size = file_path.stat().st_size
         filename = filename or file_path.name
 
-        # Validate filename length
-        if len(filename.encode("utf-8")) > self.MAX_FILENAME_BYTES:
-            self.logger.error(
-                "Filename too long: %d bytes (max %d)",
-                len(filename.encode("utf-8")),
-                self.MAX_FILENAME_BYTES,
-            )
-            return None
+        # Validierung über Validator-Chain
+        validator_service = create_file_upload_validator_service(
+            file_path=file_path,
+            filename=filename,
+            file_size_bytes=file_size,
+        )
+        await validator_service.validate_all()
 
-        # Choose upload method based on file size
-        if file_size <= self.SINGLE_PART_MAX_SIZE:
-            return await self._upload_small_file(file_path, filename, file_size)
-        else:
-            return await self._upload_large_file(file_path, filename, file_size)
+        if self._fits_in_single_part(file_size):
+            return await self._upload_in_single_part(file_path, filename)
+
+        return await self._upload_in_multiple_parts(file_path, filename, file_size)
 
     async def upload_from_bytes(
-        self, file_content: bytes, filename: str, content_type: str | None = None
-    ) -> FileUploadResponse | None:
+        self,
+        file_content: bytes,
+        filename: str,
+        content_type: str | None = None,
+    ) -> FileUploadResponse:
         file_size = len(file_content)
 
-        # Validate filename length
-        if len(filename.encode("utf-8")) > self.MAX_FILENAME_BYTES:
-            self.logger.error(
-                "Filename too long: %d bytes (max %d)",
-                len(filename.encode("utf-8")),
-                self.MAX_FILENAME_BYTES,
-            )
-            return None
+        validator_service = create_bytes_upload_validator_service(
+            filename=filename,
+            file_size_bytes=file_size,
+        )
+        await validator_service.validate_all()
 
-        # Guess content type if not provided
-        if not content_type:
-            content_type, _ = mimetypes.guess_type(filename)
+        content_type = content_type or self._guess_content_type(filename)
 
-        # Choose upload method based on size
-        if file_size <= self.SINGLE_PART_MAX_SIZE:
-            return await self._upload_small_file_from_bytes(file_content, filename, content_type, file_size)
-        else:
-            return await self._upload_large_file_from_bytes(file_content, filename, content_type, file_size)
+        if self._fits_in_single_part(file_size):
+            return await self._upload_bytes_in_single_part(file_content, filename, content_type)
 
-    async def get_upload_status(self, file_upload_id: str) -> str | None:
-        upload_info = await self.client.retrieve_file_upload(file_upload_id)
-        return upload_info.status if upload_info else None
+        return await self._upload_bytes_in_multiple_parts(file_content, filename, content_type, file_size)
 
-    async def wait_for_upload_completion(
-        self, file_upload_id: str, timeout_seconds: int = 300, poll_interval: int = 2
-    ) -> FileUploadResponse | None:
-        start_time = datetime.now()
-        timeout_delta = timedelta(seconds=timeout_seconds)
+    async def get_upload_status(self, file_upload_id: str) -> str:
+        try:
+            upload_info = await self.client.get_file_upload(file_upload_id)
+            return upload_info.status
+        except Exception as e:
+            raise UploadFailedError(file_upload_id, reason=str(e)) from e
 
-        while datetime.now() - start_time < timeout_delta:
-            upload_info = await self.client.retrieve_file_upload(file_upload_id)
+    async def wait_for_completion(
+        self,
+        file_upload_id: str,
+        timeout_seconds: int | None = None,
+    ) -> FileUploadResponse:
+        timeout = timeout_seconds or self.config.MAX_UPLOAD_TIMEOUT
+        deadline = datetime.now() + timedelta(seconds=timeout)
 
-            if not upload_info:
-                self.logger.error("Failed to retrieve upload info for %s", file_upload_id)
-                return None
+        while datetime.now() < deadline:
+            upload_info = await self.client.get_file_upload(file_upload_id)
 
-            if upload_info.status == "uploaded":
+            if upload_info.status == FileUploadStatus.UPLOADED:
                 self.logger.info("Upload completed: %s", file_upload_id)
                 return upload_info
-            elif upload_info.status == "failed":
-                self.logger.error("Upload failed: %s", file_upload_id)
-                return None
 
-            await asyncio.sleep(poll_interval)
+            if upload_info.status == FileUploadStatus.FAILED:
+                raise UploadFailedError(file_upload_id)
 
-        self.logger.warning("Upload timeout: %s", file_upload_id)
-        return None
+            await asyncio.sleep(self.config.POLL_INTERVAL)
 
-    # TODO: Das hier ist interessant auch für dne @workspace
+        raise UploadTimeoutError(file_upload_id, timeout)
+
     async def list_recent_uploads(self, limit: int = 50) -> list[FileUploadResponse]:
-        uploads = []
-        start_cursor = None
-        remaining = limit
+        response = await self.client.list_file_uploads(
+            page_size=min(limit, 100),
+            total_results_limit=limit,
+        )
+        return response.results[:limit]
 
-        while remaining > 0:
-            page_size = min(remaining, 100)  # API max per request
+    def _fits_in_single_part(self, file_size: int) -> bool:
+        return file_size <= self.config.SINGLE_PART_MAX_SIZE
 
-            response = await self.client.list_file_uploads(page_size=page_size, start_cursor=start_cursor)
+    def _guess_content_type(self, filename: str) -> str | None:
+        content_type, _ = mimetypes.guess_type(filename)
+        return content_type
 
-            if not response or not response.results:
-                break
+    def _calculate_part_count(self, file_size: int) -> int:
+        return (file_size + self.config.MULTI_PART_CHUNK_SIZE - 1) // self.config.MULTI_PART_CHUNK_SIZE
 
-            uploads.extend(response.results)
-            remaining -= len(response.results)
+    async def _upload_in_single_part(self, file_path: Path, filename: str) -> FileUploadResponse:
+        content_type = self._guess_content_type(filename)
 
-            if not response.has_more or not response.next_cursor:
-                break
-
-            start_cursor = response.next_cursor
-
-        return uploads[:limit]
-
-    async def _upload_small_file(self, file_path: Path, filename: str, file_size: int) -> FileUploadResponse | None:
-        content_type, _ = mimetypes.guess_type(str(file_path))
-
-        # Create file upload
-        file_upload = await self.client.create_file_upload(
+        file_upload = await self.client.create_single_part_upload(
             filename=filename,
             content_type=content_type,
-            content_length=file_size,
-            mode=UploadMode.SINGLE_PART,
         )
 
-        if not file_upload:
-            self.logger.error("Failed to create file upload for %s", filename)
-            return None
+        await self.client.send_file_from_path(
+            file_upload_id=file_upload.id,
+            file_path=file_path,
+        )
 
-        # Send file content
-        success = await self.client.send_file_from_path(file_upload_id=file_upload.id, file_path=file_path)
-
-        if not success:
-            self.logger.error("Failed to send file content for %s", filename)
-            return None
-
-        self.logger.info("Successfully uploaded file: %s (ID: %s)", filename, file_upload.id)
+        self.logger.info("Single-part upload completed: %s (ID: %s)", filename, file_upload.id)
         return file_upload
 
-    async def _upload_large_file(self, file_path: Path, filename: str, file_size: int) -> FileUploadResponse | None:
-        content_type, _ = mimetypes.guess_type(str(file_path))
-
-        # Create file upload with multi-part mode
-        file_upload = await self.client.create_file_upload(
+    async def _upload_bytes_in_single_part(
+        self,
+        file_content: bytes,
+        filename: str,
+        content_type: str | None,
+    ) -> FileUploadResponse:
+        file_upload = await self.client.create_single_part_upload(
             filename=filename,
             content_type=content_type,
-            content_length=file_size,
-            mode=UploadMode.MULTI_PART,
         )
 
-        if not file_upload:
-            self.logger.error("Failed to create multi-part file upload for %s", filename)
-            return None
+        await self.client.send_file_content(
+            file_upload_id=file_upload.id,
+            file_content=file_content,
+            filename=filename,
+        )
 
-        # Upload file in parts
-        success = await self._upload_file_parts(file_upload.id, file_path, file_size)
+        self.logger.info("Single-part upload from bytes completed: %s (ID: %s)", filename, file_upload.id)
+        return file_upload
 
-        if not success:
-            self.logger.error("Failed to upload file parts for %s", filename)
-            return None
+    async def _upload_in_multiple_parts(
+        self,
+        file_path: Path,
+        filename: str,
+        file_size: int,
+    ) -> FileUploadResponse:
+        content_type = self._guess_content_type(filename)
+        part_count = self._calculate_part_count(file_size)
 
-        # Complete the upload
-        completed_upload = await self.client.complete_file_upload(file_upload.id)
+        file_upload = await self.client.create_multi_part_upload(
+            filename=filename,
+            content_type=content_type,
+            number_of_parts=part_count,
+        )
 
-        if not completed_upload:
-            self.logger.error("Failed to complete file upload for %s", filename)
-            return None
+        await self._send_file_parts(file_upload.id, file_path, part_count)
 
-        self.logger.info("Successfully uploaded large file: %s (ID: %s)", filename, file_upload.id)
+        completed_upload = await self.client.complete_upload(file_upload.id)
+
+        self.logger.info("Multi-part upload completed: %s (ID: %s)", filename, file_upload.id)
         return completed_upload
 
-    async def _upload_small_file_from_bytes(
+    async def _upload_bytes_in_multiple_parts(
         self,
         file_content: bytes,
         filename: str,
         content_type: str | None,
         file_size: int,
-    ) -> FileUploadResponse | None:
-        file_upload = await self.client.create_file_upload(
+    ) -> FileUploadResponse:
+        part_count = self._calculate_part_count(file_size)
+
+        file_upload = await self.client.create_multi_part_upload(
             filename=filename,
             content_type=content_type,
-            content_length=file_size,
-            mode=UploadMode.SINGLE_PART,
+            number_of_parts=part_count,
         )
 
-        if not file_upload:
-            return None
+        await self._send_bytes_parts(file_upload.id, file_content, filename, part_count)
 
-        from io import BytesIO
+        completed_upload = await self.client.complete_upload(file_upload.id)
 
-        success = await self.client.send_file_upload(
-            file_upload_id=file_upload.id,
-            file_content=BytesIO(file_content),
-            filename=filename,
-        )
+        self.logger.info("Multi-part upload from bytes completed: %s (ID: %s)", filename, file_upload.id)
+        return completed_upload
 
-        return file_upload if success else None
-
-    async def _upload_large_file_from_bytes(
+    async def _send_file_parts(
         self,
-        file_content: bytes,
-        filename: str,
-        content_type: str | None,
-        file_size: int,
-    ) -> FileUploadResponse | None:
-        file_upload = await self.client.create_file_upload(
-            filename=filename,
-            content_type=content_type,
-            content_length=file_size,
-            mode=UploadMode.MULTI_PART,
-        )
-
-        if not file_upload:
-            return None
-
-        # Upload in chunks
-        success = await self._upload_bytes_parts(file_upload.id, file_content)
-
-        if not success:
-            return None
-
-        return await self.client.complete_file_upload(file_upload.id)
-
-    async def _upload_file_parts(self, file_upload_id: str, file_path: Path, file_size: int) -> bool:
+        file_upload_id: str,
+        file_path: Path,
+        total_parts: int,
+    ) -> None:
         part_number = 1
-        total_parts = (file_size + self.MULTI_PART_CHUNK_SIZE - 1) // self.MULTI_PART_CHUNK_SIZE
 
         try:
-            import aiofiles
-
             async with aiofiles.open(file_path, "rb") as file:
                 while True:
-                    chunk = await file.read(self.MULTI_PART_CHUNK_SIZE)
+                    chunk = await file.read(self.config.MULTI_PART_CHUNK_SIZE)
                     if not chunk:
                         break
 
-                    success = await self.client.send_file_upload(
+                    await self.client.send_file_content(
                         file_upload_id=file_upload_id,
-                        file_content=BytesIO(chunk),
+                        file_content=chunk,
                         filename=file_path.name,
                         part_number=part_number,
                     )
 
-                    if not success:
-                        self.logger.error("Failed to upload part %d/%d", part_number, total_parts)
-                        return False
-
                     self.logger.debug("Uploaded part %d/%d", part_number, total_parts)
                     part_number += 1
 
-            self.logger.info("Successfully uploaded all %d parts", total_parts)
-            return True
+        except Exception as e:
+            raise UploadFailedError(
+                file_upload_id=file_upload_id, reason=f"Failed to upload part {part_number}/{total_parts}: {e}"
+            ) from e
+
+    async def _send_bytes_parts(
+        self,
+        file_upload_id: str,
+        file_content: bytes,
+        filename: str,
+        total_parts: int,
+    ) -> None:
+        chunk_size = self.config.MULTI_PART_CHUNK_SIZE
+        part_number = 1
+
+        try:
+            for part_number in range(1, total_parts + 1):
+                start = (part_number - 1) * chunk_size
+                end = start + chunk_size
+                chunk = file_content[start:end]
+
+                await self.client.send_file_content(
+                    file_upload_id=file_upload_id,
+                    file_content=chunk,
+                    filename=filename,
+                    part_number=part_number,
+                )
+
+                self.logger.debug("Uploaded part %d/%d", part_number, total_parts)
 
         except Exception as e:
-            self.logger.error("Error uploading file parts: %s", e)
-            return False
-
-    async def _upload_bytes_parts(self, file_upload_id: str, file_content: bytes) -> bool:
-        part_number = 1
-        total_parts = (len(file_content) + self.MULTI_PART_CHUNK_SIZE - 1) // self.MULTI_PART_CHUNK_SIZE
-
-        for i in range(0, len(file_content), self.MULTI_PART_CHUNK_SIZE):
-            chunk = file_content[i : i + self.MULTI_PART_CHUNK_SIZE]
-
-            success = await self.client.send_file_upload(
-                file_upload_id=file_upload_id,
-                file_content=BytesIO(chunk),
-                part_number=part_number,
-            )
-
-            if not success:
-                self.logger.error("Failed to upload part %d/%d", part_number, total_parts)
-                return False
-
-            self.logger.debug("Uploaded part %d/%d", part_number, total_parts)
-            part_number += 1
-
-        self.logger.info("Successfully uploaded all %d parts", total_parts)
-        return True
+            raise UploadFailedError(
+                file_upload_id=file_upload_id, reason=f"Failed to upload part {part_number}/{total_parts}: {e}"
+            ) from e

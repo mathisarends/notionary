@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import ClassVar, override
 
 from notionary.exceptions.file_upload import NoFileExtensionException, UnsupportedFileTypeException
-from notionary.file_upload.pre_processing.port import FileUploadValidator
 from notionary.file_upload.schemas import (
     AudioExtension,
     AudioMimeType,
@@ -14,6 +13,7 @@ from notionary.file_upload.schemas import (
     VideoExtension,
     VideoMimeType,
 )
+from notionary.file_upload.validation.port import FileUploadValidator
 
 
 class FileExtensionValidator(FileUploadValidator):
@@ -82,17 +82,19 @@ class FileExtensionValidator(FileUploadValidator):
         **{ext.value: FileCategory.VIDEO for ext in VideoExtension},
     }
 
+    def __init__(self, filename: str | Path) -> None:
+        self.filename = Path(filename).name if isinstance(filename, Path) else filename
+
     @override
-    async def validate(self, filename: str | Path) -> None:
-        filename_str = Path(filename).name
-        extension = self._extract_extension(filename_str)
+    async def validate(self) -> None:
+        extension = self._extract_extension(self.filename)
 
         if not extension:
-            raise NoFileExtensionException(filename_str)
+            raise NoFileExtensionException(self.filename)
 
         if not self._is_supported(extension):
             supported_by_category = self._get_supported_extensions_by_category()
-            raise UnsupportedFileTypeException(extension, filename_str, supported_by_category)
+            raise UnsupportedFileTypeException(extension, self.filename, supported_by_category)
 
     @staticmethod
     def _extract_extension(filename: str) -> str:

@@ -18,7 +18,7 @@ from notionary.http.models import HttpMethod
 from notionary.shared.typings import JsonDict
 from notionary.utils.mixins.logging import LoggingMixin
 
-load_dotenv()
+load_dotenv(override=True)
 
 
 class NotionHttpClient(LoggingMixin):
@@ -60,18 +60,13 @@ class NotionHttpClient(LoggingMixin):
             self.logger.warning("No event loop available for auto-closing NotionHttpClient")
 
     async def __aenter__(self):
-        """Async context manager entry."""
         await self._ensure_initialized()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async context manager exit."""
         await self.close()
 
     async def close(self) -> None:
-        """
-        Closes the HTTP client and releases resources.
-        """
         if not hasattr(self, "client") or not self.client:
             return
 
@@ -81,33 +76,24 @@ class NotionHttpClient(LoggingMixin):
         self.logger.debug("NotionHttpClient closed")
 
     async def get(self, endpoint: str, params: JsonDict | None = None) -> JsonDict | None:
-        return await self.make_request(HttpMethod.GET, endpoint, params=params)
+        return await self._make_request(HttpMethod.GET, endpoint, params=params)
 
     async def post(self, endpoint: str, data: JsonDict | None = None) -> JsonDict | None:
-        return await self.make_request(HttpMethod.POST, endpoint, data)
+        return await self._make_request(HttpMethod.POST, endpoint, data)
 
     async def patch(self, endpoint: str, data: JsonDict | None = None) -> JsonDict | None:
-        return await self.make_request(HttpMethod.PATCH, endpoint, data)
+        return await self._make_request(HttpMethod.PATCH, endpoint, data)
 
     async def delete(self, endpoint: str) -> JsonDict | None:
-        return await self.make_request(HttpMethod.DELETE, endpoint)
+        return await self._make_request(HttpMethod.DELETE, endpoint)
 
-    async def make_request(
+    async def _make_request(
         self,
         method: HttpMethod,
         endpoint: str,
         data: JsonDict | None = None,
         params: JsonDict | None = None,
     ) -> JsonDict | None:
-        """
-        Executes an HTTP request and returns the data or None on error.
-
-        Args:
-            method: HTTP method to use
-            endpoint: API endpoint
-            data: Request body data (for POST/PATCH)
-            params: Query parameters (for GET requests)
-        """
         await self._ensure_initialized()
 
         url = f"{self.BASE_URL}/{endpoint.lstrip('/')}"
@@ -141,7 +127,6 @@ class NotionHttpClient(LoggingMixin):
         status_code = e.response.status_code
         response_text = e.response.text
 
-        # Map HTTP status codes to specific business exceptions
         if status_code == 401:
             raise NotionAuthenticationError(
                 "Invalid or missing API key. Please check your Notion integration token.",
