@@ -8,13 +8,21 @@ from notionary.shared.models.file import ExternalFile
 
 class CoverType(StrEnum):
     EXTERNAL = "external"
-    FILE = "file"
+    FILE_UPLOAD = "file_upload"
 
 
-class NotionCover(BaseModel):
-    type: Literal[CoverType.EXTERNAL, CoverType.FILE] = CoverType.EXTERNAL
-    external: ExternalFile | None = None
+class ExternalCover(BaseModel):
+    type: Literal[CoverType.EXTERNAL] = CoverType.EXTERNAL
+    external: ExternalFile
 
     @classmethod
     def from_url(cls, url: str) -> Self:
         return cls(external=ExternalFile(url=url))
+
+
+class FileUploadCover(BaseModel):
+    type: Literal[CoverType.FILE_UPLOAD] = CoverType.FILE_UPLOAD
+    id: str
+
+
+Cover = ExternalCover | FileUploadCover

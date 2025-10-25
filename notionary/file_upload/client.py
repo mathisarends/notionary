@@ -2,10 +2,10 @@ from collections.abc import AsyncGenerator
 
 import httpx
 
+from notionary.file_upload.query.models import FileUploadQuery
 from notionary.file_upload.schemas import (
     FileUploadCompleteRequest,
     FileUploadCreateRequest,
-    FileUploadFilter,
     FileUploadListResponse,
     FileUploadResponse,
     UploadMode,
@@ -70,22 +70,22 @@ class FileUploadHttpClient(NotionHttpClient):
 
     async def list_file_uploads(
         self,
-        filter: FileUploadFilter | None = None,
-        total_results_limit: int | None = None,
+        query: FileUploadQuery | None = None,
     ) -> list[FileUploadResponse]:
+        query = query or FileUploadQuery()
         return await paginate_notion_api(
-            lambda **kwargs: self._fetch_file_uploads_page(filter=filter, **kwargs),
-            total_results_limit=total_results_limit,
+            lambda **kwargs: self._fetch_file_uploads_page(query=query, **kwargs),
+            total_results_limit=query.total_results_limit,
         )
 
     async def list_file_uploads_stream(
         self,
-        filter: FileUploadFilter | None = None,
-        total_results_limit: int | None = None,
+        query: FileUploadQuery | None = None,
     ) -> AsyncGenerator[FileUploadResponse]:
+        query = query or FileUploadQuery()
         async for upload in paginate_notion_api_generator(
-            lambda **kwargs: self._fetch_file_uploads_page(filter=filter, **kwargs),
-            total_results_limit=total_results_limit,
+            lambda **kwargs: self._fetch_file_uploads_page(query=query, **kwargs),
+            total_results_limit=query.total_results_limit,
         ):
             yield upload
 
@@ -121,18 +121,15 @@ class FileUploadHttpClient(NotionHttpClient):
 
     async def _fetch_file_uploads_page(
         self,
-        filter: FileUploadFilter | None = None,
-        page_size: int = 100,
+        query: FileUploadQuery,
         start_cursor: str | None = None,
         **kwargs,
     ) -> PaginatedResponse:
-        params = {"page_size": min(page_size, 100)}
+        params = query.model_dump(exclude_none=True)
+        params["page_size"] = min(query.page_size_limit or 100, 100)
 
         if start_cursor:
             params["start_cursor"] = start_cursor
-
-        if filter:
-            params.update(filter.model_dump(exclude_none=True))
 
         response = await self.get("file_uploads", params=params)
         parsed = FileUploadListResponse.model_validate(response)

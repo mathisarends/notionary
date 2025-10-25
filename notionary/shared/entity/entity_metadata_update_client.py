@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from notionary.shared.entity.schemas import EntityResponseDto, NotionEntityUpdateDto
-from notionary.shared.models.cover import NotionCover
+from notionary.shared.models.cover import ExternalCover
 from notionary.shared.models.icon import EmojiIcon, ExternalIcon
 
 
@@ -24,7 +24,7 @@ class EntityMetadataUpdateClient(ABC):
         return await self.patch_metadata(update_dto)
 
     async def patch_external_cover(self, cover_url: str) -> EntityResponseDto:
-        cover = NotionCover.from_url(cover_url)
+        cover = ExternalCover.from_url(cover_url)
         update_dto = NotionEntityUpdateDto(cover=cover)
         return await self.patch_metadata(update_dto)
 

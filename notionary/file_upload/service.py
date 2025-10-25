@@ -9,7 +9,7 @@ from notionary.exceptions.file_upload import UploadFailedError, UploadTimeoutErr
 from notionary.file_upload.client import FileUploadHttpClient
 from notionary.file_upload.config import NOTION_SINGLE_PART_MAX_SIZE, FileUploadConfig
 from notionary.file_upload.query import FileUploadQuery, FileUploadQueryBuilder
-from notionary.file_upload.schemas import FileUploadFilter, FileUploadResponse, FileUploadStatus
+from notionary.file_upload.schemas import FileUploadResponse, FileUploadStatus
 from notionary.file_upload.validation.factory import (
     create_bytes_upload_validation_service,
     create_file_upload_validation_service,
@@ -17,7 +17,7 @@ from notionary.file_upload.validation.factory import (
 from notionary.utils.mixins.logging import LoggingMixin
 
 
-class FileUploadService(LoggingMixin):
+class NotionFileUpload(LoggingMixin):
     def __init__(self, client: FileUploadHttpClient | None = None, config: FileUploadConfig | None = None):
         self.client = client or FileUploadHttpClient()
         self.config = config or FileUploadConfig()
@@ -194,25 +194,8 @@ class FileUploadService(LoggingMixin):
         filter_fn: Callable[[FileUploadQueryBuilder], FileUploadQueryBuilder] | None = None,
         query: FileUploadQuery | None = None,
     ) -> list[FileUploadResponse]:
-        if filter_fn is not None and query is not None:
-            raise ValueError("Use either filter_fn OR query, not both")
-
-        if filter_fn is not None:
-            builder = FileUploadQueryBuilder()
-            configured_builder = filter_fn(builder)
-            query = configured_builder.build()
-
-        query = query or FileUploadQuery()
-
-        filter_obj = FileUploadFilter(
-            status=query.status,
-            archived=query.archived,
-        )
-
-        return await self.client.list_file_uploads(
-            filter=filter_obj if (query.status or query.archived is not None) else None,
-            total_results_limit=query.total_results_limit,
-        )
+        resolved_query = self._resolve_query(filter_fn=filter_fn, query=query)
+        return await self.client.list_file_uploads(query=resolved_query)
 
     async def iter_uploads(
         self,
@@ -220,23 +203,21 @@ class FileUploadService(LoggingMixin):
         filter_fn: Callable[[FileUploadQueryBuilder], FileUploadQueryBuilder] | None = None,
         query: FileUploadQuery | None = None,
     ) -> AsyncIterator[FileUploadResponse]:
-        if filter_fn is not None and query is not None:
+        resolved_query = self._resolve_query(filter_fn=filter_fn, query=query)
+        async for upload in self.client.list_file_uploads_stream(query=resolved_query):
+            yield upload
+
+    def _resolve_query(
+        self,
+        filter_fn: Callable[[FileUploadQueryBuilder], FileUploadQueryBuilder] | None = None,
+        query: FileUploadQuery | None = None,
+    ) -> FileUploadQuery:
+        if filter_fn and query:
             raise ValueError("Use either filter_fn OR query, not both")
 
-        if filter_fn is not None:
+        if filter_fn:
             builder = FileUploadQueryBuilder()
             configured_builder = filter_fn(builder)
-            query = configured_builder.build()
+            return configured_builder.build()
 
-        query = query or FileUploadQuery()
-
-        filter_obj = FileUploadFilter(
-            status=query.status,
-            archived=query.archived,
-        )
-
-        async for upload in self.client.list_file_uploads_stream(
-            filter=filter_obj if (query.status or query.archived is not None) else None,
-            total_results_limit=query.total_results_limit,
-        ):
-            yield upload
+        return query or FileUploadQuery()

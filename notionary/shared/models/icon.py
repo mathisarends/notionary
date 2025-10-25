@@ -9,6 +9,7 @@ from notionary.shared.models.file import ExternalFile
 class IconType(StrEnum):
     EMOJI = "emoji"
     EXTERNAL = "external"
+    FILE_UPLOAD = "file_upload"
 
 
 class EmojiIcon(BaseModel):
@@ -25,4 +26,9 @@ class ExternalIcon(BaseModel):
         return cls(external=ExternalFile(url=url))
 
 
-Icon = EmojiIcon | ExternalIcon
+class FileUploadIcon(BaseModel):
+    type: Literal[IconType.FILE_UPLOAD] = IconType.FILE_UPLOAD
+    id: str
+
+
+Icon = EmojiIcon | ExternalIcon | FileUploadIcon

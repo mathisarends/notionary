@@ -1,4 +1,4 @@
 from .query import FileUploadQueryBuilder
-from .service import FileUploadService
+from .service import NotionFileUpload
 
-__all__ = ["FileUploadQueryBuilder", "FileUploadService"]
+__all__ = ["FileUploadQueryBuilder", "NotionFileUpload"]

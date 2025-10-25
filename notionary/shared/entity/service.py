@@ -174,6 +174,8 @@ class Entity(LoggingMixin, ABC):
         self._emoji_icon = None
         self._external_icon_url = self._extract_external_icon_url(entity_response)
 
+    async def set_icon_from_file_upload(self, file_upload_url: str) -> None: ...
+
     async def remove_icon(self) -> None:
         await self._entity_metadata_update_client.remove_icon()
         self._emoji_icon = None
@@ -182,6 +184,8 @@ class Entity(LoggingMixin, ABC):
     async def set_cover_image_by_url(self, image_url: str) -> None:
         entity_response = await self._entity_metadata_update_client.patch_external_cover(image_url)
         self._cover_image_url = self._extract_cover_image_url(entity_response)
+
+    async def set_cover_image_from_file_upload(self, file_upload_url: str) -> None: ...
 
     async def set_random_gradient_cover(self) -> None:
         random_cover_url = self._get_random_gradient_cover()
