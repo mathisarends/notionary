@@ -1,5 +1,11 @@
 from .grammar import MarkdownGrammar
-from .models import SyntaxDefinition
-from .registry import SyntaxRegistry
+from .models import EnclosedSyntaxDefinition, SimpleSyntaxDefinition, SyntaxDefinition
+from .registry import SyntaxDefinitionRegistry
 
-__all__ = ["MarkdownGrammar", "SyntaxDefinition", "SyntaxRegistry"]
+__all__ = [
+    "EnclosedSyntaxDefinition",
+    "MarkdownGrammar",
+    "SimpleSyntaxDefinition",
+    "SyntaxDefinition",
+    "SyntaxDefinitionRegistry",
+]

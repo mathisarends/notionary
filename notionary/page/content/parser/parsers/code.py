@@ -5,13 +5,15 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRich
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.schemas import CodeData, CodingLanguage, CreateCodeBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 class CodeParser(LineParser):
     DEFAULT_LANGUAGE = CodingLanguage.PLAIN_TEXT
 
-    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+    def __init__(
+        self, syntax_registry: SyntaxDefinitionRegistry, rich_text_converter: MarkdownRichTextConverter
+    ) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_code_syntax()
         self._rich_text_converter = rich_text_converter

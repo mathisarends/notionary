@@ -4,12 +4,12 @@ from abc import ABC, abstractmethod
 
 from notionary.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 class BlockRenderer(ABC):
-    def __init__(self, syntax_registry: SyntaxRegistry | None = None) -> None:
-        self._syntax_registry = syntax_registry or SyntaxRegistry()
+    def __init__(self, syntax_registry: SyntaxDefinitionRegistry | None = None) -> None:
+        self._syntax_registry = syntax_registry or SyntaxDefinitionRegistry()
         self._next_handler: BlockRenderer | None = None
 
     def set_next(self, handler: BlockRenderer) -> BlockRenderer:

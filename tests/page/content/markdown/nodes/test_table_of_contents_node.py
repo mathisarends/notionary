@@ -1,11 +1,11 @@
 import pytest
 
 from notionary.page.content.markdown.nodes import TableOfContentsMarkdownNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def table_of_contents_delimiter(syntax_registry: SyntaxRegistry) -> str:
+def table_of_contents_delimiter(syntax_registry: SyntaxDefinitionRegistry) -> str:
     return syntax_registry.get_table_of_contents_syntax().start_delimiter
 
 

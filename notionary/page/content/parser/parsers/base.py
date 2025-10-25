@@ -3,11 +3,11 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 from notionary.page.content.parser.context import BlockParsingContext
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 class LineParser(ABC):
-    def __init__(self, syntax_registry: SyntaxRegistry | None = None) -> None:
+    def __init__(self, syntax_registry: SyntaxDefinitionRegistry | None = None) -> None:
         self._next_handler: LineParser | None = None
         self._syntax_registry = syntax_registry
 

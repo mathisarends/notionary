@@ -2,12 +2,12 @@ from typing import override
 
 from notionary.blocks.schemas import CreateImageBlock, ExternalFileWithCaption
 from notionary.page.content.parser.parsers.file_like_block import FileLikeBlockParser
-from notionary.page.content.syntax import SyntaxDefinition, SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinition, SyntaxDefinitionRegistry
 
 
 class ImageParser(FileLikeBlockParser[CreateImageBlock]):
     @override
-    def _get_syntax(self, syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
+    def _get_syntax(self, syntax_registry: SyntaxDefinitionRegistry) -> SyntaxDefinition:
         return syntax_registry.get_image_syntax()
 
     @override

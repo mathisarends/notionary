@@ -1,11 +1,11 @@
 import pytest
 
 from notionary.page.content.markdown.nodes.pdf import PdfMarkdownNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def pdf_delimiter(syntax_registry: SyntaxRegistry) -> str:
+def pdf_delimiter(syntax_registry: SyntaxDefinitionRegistry) -> str:
     return syntax_registry.get_pdf_syntax().start_delimiter
 
 

@@ -3,16 +3,16 @@ import pytest
 from notionary.blocks.schemas import CreateBookmarkBlock
 from notionary.page.content.parser.context import BlockParsingContext
 from notionary.page.content.parser.parsers.bookmark import BookmarkParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def bookmark_parser(syntax_registry: SyntaxRegistry) -> BookmarkParser:
+def bookmark_parser(syntax_registry: SyntaxDefinitionRegistry) -> BookmarkParser:
     return BookmarkParser(syntax_registry=syntax_registry)
 
 
 @pytest.fixture
-def make_bookmark_syntax(syntax_registry: SyntaxRegistry):
+def make_bookmark_syntax(syntax_registry: SyntaxDefinitionRegistry):
     syntax = syntax_registry.get_bookmark_syntax()
 
     def _make(url: str) -> str:

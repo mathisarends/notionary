@@ -12,11 +12,11 @@ from notionary.blocks.schemas import (
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.column_list import ColumnListParser
-from notionary.page.content.syntax import MarkdownGrammar, SyntaxRegistry
+from notionary.page.content.syntax import MarkdownGrammar, SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def column_list_parser(syntax_registry: SyntaxRegistry) -> ColumnListParser:
+def column_list_parser(syntax_registry: SyntaxDefinitionRegistry) -> ColumnListParser:
     return ColumnListParser(syntax_registry=syntax_registry)
 
 
@@ -53,7 +53,7 @@ def paragraph_block() -> CreateParagraphBlock:
 
 def test_can_handle_valid_column_list_start(
     column_list_parser: ColumnListParser,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     context: BlockParsingContext,
 ) -> None:
     delimiter = syntax_registry.get_column_list_syntax().start_delimiter
@@ -72,7 +72,7 @@ def test_can_handle_valid_column_list_start(
 )
 def test_can_handle_column_list_with_whitespace(
     column_list_parser: ColumnListParser,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     context: BlockParsingContext,
     column_list_line: str,
 ) -> None:
@@ -113,7 +113,7 @@ def test_cannot_handle_wrong_keyword(
 @pytest.mark.asyncio
 async def test_process_column_list_without_children(
     column_list_parser: ColumnListParser,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     context: BlockParsingContext,
 ) -> None:
     delimiter = syntax_registry.get_column_list_syntax().start_delimiter
@@ -131,7 +131,7 @@ async def test_process_column_list_without_children(
 @pytest.mark.asyncio
 async def test_process_column_list_with_indented_columns(
     column_list_parser: ColumnListParser,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     context: BlockParsingContext,
     column_block: CreateColumnBlock,
     column_delimiter: str,
@@ -157,7 +157,7 @@ async def test_process_column_list_with_indented_columns(
 @pytest.mark.asyncio
 async def test_process_column_list_filters_only_column_blocks(
     column_list_parser: ColumnListParser,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     context: BlockParsingContext,
     column_block: CreateColumnBlock,
     paragraph_block: CreateParagraphBlock,
@@ -179,7 +179,7 @@ async def test_process_column_list_filters_only_column_blocks(
 @pytest.mark.asyncio
 async def test_process_column_list_consumes_indented_lines(
     column_list_parser: ColumnListParser,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     context: BlockParsingContext,
 ) -> None:
     delimiter = syntax_registry.get_column_list_syntax().start_delimiter
@@ -245,7 +245,7 @@ def test_extract_column_blocks_with_only_non_columns(
 
 def test_is_column_list_start_with_valid_pattern(
     column_list_parser: ColumnListParser,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     context: BlockParsingContext,
 ) -> None:
     delimiter = syntax_registry.get_column_list_syntax().start_delimiter
@@ -277,7 +277,7 @@ def test_column_list_block_structure(
 @pytest.mark.asyncio
 async def test_column_list_with_mixed_content(
     column_list_parser: ColumnListParser,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     context: BlockParsingContext,
     column_block: CreateColumnBlock,
     paragraph_block: CreateParagraphBlock,

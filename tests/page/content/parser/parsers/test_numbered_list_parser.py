@@ -8,12 +8,12 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import (
 from notionary.blocks.schemas import BlockColor, CreateNumberedListItemBlock, CreateNumberedListItemData
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.numbered_list import NumberedListParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
 def numbered_list_parser(
-    mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxRegistry
+    mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxDefinitionRegistry
 ) -> NumberedListParser:
     return NumberedListParser(rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry)
 

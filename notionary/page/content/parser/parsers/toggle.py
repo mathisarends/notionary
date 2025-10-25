@@ -6,11 +6,13 @@ from notionary.page.content.parser.parsers import (
     BlockParsingContext,
     LineParser,
 )
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 class ToggleParser(LineParser):
-    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+    def __init__(
+        self, syntax_registry: SyntaxDefinitionRegistry, rich_text_converter: MarkdownRichTextConverter
+    ) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_toggle_syntax()
         self._heading_syntax = syntax_registry.get_toggleable_heading_syntax()

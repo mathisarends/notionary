@@ -7,12 +7,12 @@ from notionary.blocks.schemas import (
     NotionHostedFileWithCaption,
 )
 from notionary.page.content.renderer.renderers.captioned_block import CaptionedBlockRenderer
-from notionary.page.content.syntax import SyntaxDefinition
+from notionary.page.content.syntax import EnclosedSyntaxDefinition
 
 
 class FileLikeBlockRenderer(CaptionedBlockRenderer):
     @abstractmethod
-    def _get_syntax(self) -> SyntaxDefinition:
+    def _get_syntax(self) -> EnclosedSyntaxDefinition:
         pass
 
     @abstractmethod

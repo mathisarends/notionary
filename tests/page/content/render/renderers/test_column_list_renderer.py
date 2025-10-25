@@ -7,7 +7,7 @@ from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block, ColumnListBlock
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.column_list import ColumnListRenderer
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 def _create_column_list_block() -> ColumnListBlock:
@@ -24,8 +24,8 @@ def column_list_renderer() -> ColumnListRenderer:
 
 
 @pytest.fixture
-def syntax_registry() -> SyntaxRegistry:
-    return SyntaxRegistry()
+def syntax_registry() -> SyntaxDefinitionRegistry:
+    return SyntaxDefinitionRegistry()
 
 
 @pytest.mark.asyncio
@@ -48,7 +48,7 @@ async def test_non_column_list_block_should_not_be_handled(
 async def test_column_list_without_children_should_render_start_marker(
     column_list_renderer: ColumnListRenderer,
     render_context: MarkdownRenderingContext,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> None:
     render_context.render_children = AsyncMock(return_value="")
     block = _create_column_list_block()
@@ -65,7 +65,7 @@ async def test_column_list_without_children_should_render_start_marker(
 async def test_column_list_with_children_should_render_children_below_marker(
     column_list_renderer: ColumnListRenderer,
     render_context: MarkdownRenderingContext,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> None:
     render_context.render_children = AsyncMock(return_value="::: column\nColumn 1\n::: column\nColumn 2")
     block = _create_column_list_block()
@@ -83,7 +83,7 @@ async def test_column_list_with_children_should_render_children_below_marker(
 async def test_column_list_with_indentation_should_indent_start_marker(
     column_list_renderer: ColumnListRenderer,
     render_context: MarkdownRenderingContext,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     indent: str,
 ) -> None:
     render_context.render_children = AsyncMock(return_value="")

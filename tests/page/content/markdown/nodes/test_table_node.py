@@ -1,12 +1,12 @@
 import pytest
 
 from notionary.page.content.markdown.nodes import TableMarkdownNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 from notionary.page.content.syntax.models import SyntaxDefinition
 
 
 @pytest.fixture
-def table_syntax(syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
+def table_syntax(syntax_registry: SyntaxDefinitionRegistry) -> SyntaxDefinition:
     return syntax_registry.get_table_syntax()
 
 

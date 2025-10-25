@@ -2,7 +2,7 @@ from typing import override
 
 from notionary.blocks.schemas import Block, BlockType, ExternalFileWithCaption, NotionHostedFileWithCaption
 from notionary.page.content.renderer.renderers.file_like_block import FileLikeBlockRenderer
-from notionary.page.content.syntax import SyntaxDefinition
+from notionary.page.content.syntax import EnclosedSyntaxDefinition
 
 
 class VideoRenderer(FileLikeBlockRenderer):
@@ -11,7 +11,7 @@ class VideoRenderer(FileLikeBlockRenderer):
         return block.type == BlockType.VIDEO
 
     @override
-    def _get_syntax(self) -> SyntaxDefinition:
+    def _get_syntax(self) -> EnclosedSyntaxDefinition:
         return self._syntax_registry.get_video_syntax()
 
     @override

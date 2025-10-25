@@ -2,7 +2,7 @@ from typing import override
 
 from notionary.page.content.markdown.nodes.base import MarkdownNode
 from notionary.page.content.markdown.nodes.mixins.caption import CaptionMarkdownNodeMixin
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 class AudioMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
@@ -10,7 +10,7 @@ class AudioMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
         self,
         url: str,
         caption: str | None = None,
-        syntax_registry: SyntaxRegistry | None = None,
+        syntax_registry: SyntaxDefinitionRegistry | None = None,
     ) -> None:
         super().__init__(syntax_registry=syntax_registry)
         self.url = url

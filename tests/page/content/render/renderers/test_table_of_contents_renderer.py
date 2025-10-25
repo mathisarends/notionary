@@ -105,6 +105,6 @@ async def test_table_of_contents_with_children_should_render_with_newline_separa
 async def test_table_of_contents_markdown_constant_should_be_correct(
     table_of_contents_renderer: TableOfContentsRenderer,
 ) -> None:
-    # The TOC syntax is now in SyntaxRegistry, not as a constant on the renderer
+    # The TOC syntax is now in SyntaxDefinitionRegistry, not as a constant on the renderer
     syntax = table_of_contents_renderer._syntax_registry.get_table_of_contents_syntax()
     assert syntax.start_delimiter == "[toc]"

@@ -3,11 +3,11 @@ import pytest
 from notionary.page.content.parser.pre_processsing.handlers import (
     IndentationNormalizer,
 )
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def normalizer(syntax_registry: SyntaxRegistry) -> IndentationNormalizer:
+def normalizer(syntax_registry: SyntaxDefinitionRegistry) -> IndentationNormalizer:
     return IndentationNormalizer(syntax_registry)
 
 

@@ -4,21 +4,21 @@ import pytest
 
 from notionary.exceptions.block_parsing import InsufficientColumnsError, InvalidColumnRatioSumError
 from notionary.page.content.parser.pre_processsing.handlers.column_syntax import ColumnSyntaxPreProcessor
-from notionary.page.content.syntax import MarkdownGrammar, SyntaxRegistry
+from notionary.page.content.syntax import MarkdownGrammar, SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def processor(syntax_registry: SyntaxRegistry, markdown_grammar: MarkdownGrammar) -> ColumnSyntaxPreProcessor:
+def processor(syntax_registry: SyntaxDefinitionRegistry, markdown_grammar: MarkdownGrammar) -> ColumnSyntaxPreProcessor:
     return ColumnSyntaxPreProcessor(syntax_registry, markdown_grammar)
 
 
 @pytest.fixture
-def column_list_delimiter(syntax_registry: SyntaxRegistry) -> str:
+def column_list_delimiter(syntax_registry: SyntaxDefinitionRegistry) -> str:
     return syntax_registry.get_column_list_syntax().start_delimiter
 
 
 @pytest.fixture
-def column_delimiter(syntax_registry: SyntaxRegistry) -> str:
+def column_delimiter(syntax_registry: SyntaxDefinitionRegistry) -> str:
     return syntax_registry.get_column_syntax().start_delimiter
 
 

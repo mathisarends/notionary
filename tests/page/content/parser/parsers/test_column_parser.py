@@ -9,17 +9,17 @@ from notionary.blocks.schemas import (
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.column import ColumnParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 from notionary.page.content.syntax.grammar import MarkdownGrammar
 
 
 @pytest.fixture
-def syntax_registry() -> SyntaxRegistry:
-    return SyntaxRegistry()
+def syntax_registry() -> SyntaxDefinitionRegistry:
+    return SyntaxDefinitionRegistry()
 
 
 @pytest.fixture
-def column_parser(syntax_registry: SyntaxRegistry) -> ColumnParser:
+def column_parser(syntax_registry: SyntaxDefinitionRegistry) -> ColumnParser:
     return ColumnParser(syntax_registry=syntax_registry)
 
 
@@ -187,7 +187,7 @@ def test_create_column_block_with_width_ratio(
 
 def test_create_column_block_without_width_ratio(
     column_parser: ColumnParser,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     column_delimiter: str,
 ) -> None:
     block = column_parser._create_column_block(f"{column_delimiter} column")

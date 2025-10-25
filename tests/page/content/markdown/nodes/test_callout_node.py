@@ -1,29 +1,31 @@
 import pytest
 
 from notionary.page.content.markdown.nodes import CalloutMarkdownNode, ParagraphMarkdownNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def callout_delimiter(syntax_registry: SyntaxRegistry) -> str:
+def callout_delimiter(syntax_registry: SyntaxDefinitionRegistry) -> str:
     return syntax_registry.get_callout_syntax().start_delimiter
 
 
-def test_callout_without_emoji(syntax_registry: SyntaxRegistry, callout_delimiter: str) -> None:
+def test_callout_without_emoji(syntax_registry: SyntaxDefinitionRegistry, callout_delimiter: str) -> None:
     callout = CalloutMarkdownNode(text="This is important", syntax_registry=syntax_registry)
     expected = f"{callout_delimiter}(This is important)"
 
     assert callout.to_markdown() == expected
 
 
-def test_callout_with_emoji(syntax_registry: SyntaxRegistry, callout_delimiter: str) -> None:
+def test_callout_with_emoji(syntax_registry: SyntaxDefinitionRegistry, callout_delimiter: str) -> None:
     callout = CalloutMarkdownNode(text="Warning!", emoji="⚠️", syntax_registry=syntax_registry)
     expected = f'{callout_delimiter}(Warning! "⚠️")'
 
     assert callout.to_markdown() == expected
 
 
-def test_callout_with_single_child(syntax_registry: SyntaxRegistry, callout_delimiter: str, indent: str) -> None:
+def test_callout_with_single_child(
+    syntax_registry: SyntaxDefinitionRegistry, callout_delimiter: str, indent: str
+) -> None:
     child = ParagraphMarkdownNode(text="Important details", syntax_registry=syntax_registry)
     callout = CalloutMarkdownNode(text="Main message", children=[child], syntax_registry=syntax_registry)
 
@@ -33,7 +35,9 @@ def test_callout_with_single_child(syntax_registry: SyntaxRegistry, callout_deli
     assert f"\n{indent}Important details" in result
 
 
-def test_callout_with_multiple_children(syntax_registry: SyntaxRegistry, callout_delimiter: str, indent: str) -> None:
+def test_callout_with_multiple_children(
+    syntax_registry: SyntaxDefinitionRegistry, callout_delimiter: str, indent: str
+) -> None:
     child1 = ParagraphMarkdownNode(text="Important details", syntax_registry=syntax_registry)
     child2 = ParagraphMarkdownNode(text="Additional information", syntax_registry=syntax_registry)
     callout = CalloutMarkdownNode(
@@ -56,7 +60,7 @@ def test_callout_with_multiple_children(syntax_registry: SyntaxRegistry, callout
     assert child2_index > child1_index
 
 
-def test_callout_with_empty_children_list(syntax_registry: SyntaxRegistry, callout_delimiter: str) -> None:
+def test_callout_with_empty_children_list(syntax_registry: SyntaxDefinitionRegistry, callout_delimiter: str) -> None:
     callout = CalloutMarkdownNode(text="Test", children=[], syntax_registry=syntax_registry)
     expected = f"{callout_delimiter}(Test)"
 
@@ -66,7 +70,9 @@ def test_callout_with_empty_children_list(syntax_registry: SyntaxRegistry, callo
     assert "\n" not in result
 
 
-def test_callout_with_nested_callouts(syntax_registry: SyntaxRegistry, callout_delimiter: str, indent: str) -> None:
+def test_callout_with_nested_callouts(
+    syntax_registry: SyntaxDefinitionRegistry, callout_delimiter: str, indent: str
+) -> None:
     nested_callout = CalloutMarkdownNode(text="Nested warning", emoji="⚠️", syntax_registry=syntax_registry)
     parent_callout = CalloutMarkdownNode(
         text="Parent callout", emoji="📢", children=[nested_callout], syntax_registry=syntax_registry

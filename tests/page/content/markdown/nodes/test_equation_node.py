@@ -1,12 +1,12 @@
 import pytest
 
 from notionary.page.content.markdown.nodes import EquationMarkdownNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 from notionary.page.content.syntax.models import SyntaxDefinition
 
 
 @pytest.fixture
-def equation_syntax(syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
+def equation_syntax(syntax_registry: SyntaxDefinitionRegistry) -> SyntaxDefinition:
     return syntax_registry.get_equation_syntax()
 
 

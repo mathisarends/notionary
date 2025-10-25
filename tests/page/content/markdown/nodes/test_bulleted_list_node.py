@@ -1,28 +1,28 @@
 import pytest
 
 from notionary.page.content.markdown.nodes import BulletedListMarkdownNode, ParagraphMarkdownNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def bulleted_list_delimiter(syntax_registry: SyntaxRegistry) -> str:
+def bulleted_list_delimiter(syntax_registry: SyntaxDefinitionRegistry) -> str:
     return syntax_registry.get_bulleted_list_syntax().start_delimiter
 
 
-def test_simple_bulleted_list(syntax_registry: SyntaxRegistry, bulleted_list_delimiter: str) -> None:
+def test_simple_bulleted_list(syntax_registry: SyntaxDefinitionRegistry, bulleted_list_delimiter: str) -> None:
     bulleted_list = BulletedListMarkdownNode(texts=["Item 1", "Item 2", "Item 3"], syntax_registry=syntax_registry)
     expected = f"{bulleted_list_delimiter}Item 1\n{bulleted_list_delimiter}Item 2\n{bulleted_list_delimiter}Item 3"
 
     assert bulleted_list.to_markdown() == expected
 
 
-def test_empty_bulleted_list(syntax_registry: SyntaxRegistry) -> None:
+def test_empty_bulleted_list(syntax_registry: SyntaxDefinitionRegistry) -> None:
     bulleted_list = BulletedListMarkdownNode(texts=[], syntax_registry=syntax_registry)
 
     assert bulleted_list.to_markdown() == ""
 
 
-def test_single_item_bulleted_list(syntax_registry: SyntaxRegistry, bulleted_list_delimiter: str) -> None:
+def test_single_item_bulleted_list(syntax_registry: SyntaxDefinitionRegistry, bulleted_list_delimiter: str) -> None:
     bulleted_list = BulletedListMarkdownNode(texts=["Single item"], syntax_registry=syntax_registry)
     expected = f"{bulleted_list_delimiter}Single item"
 
@@ -30,7 +30,7 @@ def test_single_item_bulleted_list(syntax_registry: SyntaxRegistry, bulleted_lis
 
 
 def test_bulleted_list_with_paragraph_child(
-    syntax_registry: SyntaxRegistry, bulleted_list_delimiter: str, indent: str
+    syntax_registry: SyntaxDefinitionRegistry, bulleted_list_delimiter: str, indent: str
 ) -> None:
     paragraph_child = ParagraphMarkdownNode(text="Child paragraph", syntax_registry=syntax_registry)
     bulleted_list = BulletedListMarkdownNode(
@@ -44,7 +44,7 @@ def test_bulleted_list_with_paragraph_child(
 
 
 def test_bulleted_list_with_nested_list_child(
-    syntax_registry: SyntaxRegistry, bulleted_list_delimiter: str, indent: str
+    syntax_registry: SyntaxDefinitionRegistry, bulleted_list_delimiter: str, indent: str
 ) -> None:
     nested_list = BulletedListMarkdownNode(texts=["Nested item 1", "Nested item 2"], syntax_registry=syntax_registry)
     parent_list = BulletedListMarkdownNode(
@@ -59,7 +59,7 @@ def test_bulleted_list_with_nested_list_child(
 
 
 def test_bulleted_list_with_multiple_items_and_children(
-    syntax_registry: SyntaxRegistry, bulleted_list_delimiter: str, indent: str
+    syntax_registry: SyntaxDefinitionRegistry, bulleted_list_delimiter: str, indent: str
 ) -> None:
     first_child = ParagraphMarkdownNode(text="First child", syntax_registry=syntax_registry)
     second_child = ParagraphMarkdownNode(text="Second child", syntax_registry=syntax_registry)
@@ -76,7 +76,7 @@ def test_bulleted_list_with_multiple_items_and_children(
 
 
 def test_bulleted_list_with_fewer_children_than_items(
-    syntax_registry: SyntaxRegistry, bulleted_list_delimiter: str, indent: str
+    syntax_registry: SyntaxDefinitionRegistry, bulleted_list_delimiter: str, indent: str
 ) -> None:
     child = ParagraphMarkdownNode(text="Only child", syntax_registry=syntax_registry)
     bulleted_list = BulletedListMarkdownNode(
@@ -92,7 +92,9 @@ def test_bulleted_list_with_fewer_children_than_items(
     assert f"{bulleted_list_delimiter}Item 3" in lines[3]
 
 
-def test_bulleted_list_with_none_children(syntax_registry: SyntaxRegistry, bulleted_list_delimiter: str) -> None:
+def test_bulleted_list_with_none_children(
+    syntax_registry: SyntaxDefinitionRegistry, bulleted_list_delimiter: str
+) -> None:
     bulleted_list = BulletedListMarkdownNode(
         texts=["Item 1", "Item 2"], children=[None, None], syntax_registry=syntax_registry
     )
@@ -103,7 +105,7 @@ def test_bulleted_list_with_none_children(syntax_registry: SyntaxRegistry, bulle
     assert result == expected
 
 
-def test_bulleted_list_children_order_preserved(syntax_registry: SyntaxRegistry) -> None:
+def test_bulleted_list_children_order_preserved(syntax_registry: SyntaxDefinitionRegistry) -> None:
     first_child = ParagraphMarkdownNode(text="First", syntax_registry=syntax_registry)
     second_child = ParagraphMarkdownNode(text="Second", syntax_registry=syntax_registry)
     bulleted_list = BulletedListMarkdownNode(

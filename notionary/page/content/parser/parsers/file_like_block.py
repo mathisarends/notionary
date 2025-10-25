@@ -10,7 +10,7 @@ from notionary.blocks.schemas import (
 from notionary.exceptions.file_upload import UploadFailedError, UploadTimeoutError
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 from notionary.page.content.syntax.models import SyntaxDefinition
 from notionary.shared.models.file import ExternalFileData, FileUploadedFileData
 from notionary.utils.mixins.logging import LoggingMixin
@@ -19,13 +19,15 @@ _TBlock = TypeVar("_TBlock")
 
 
 class FileLikeBlockParser(LineParser, LoggingMixin, Generic[_TBlock]):
-    def __init__(self, syntax_registry: SyntaxRegistry, file_upload_service: NotionFileUpload | None = None) -> None:
+    def __init__(
+        self, syntax_registry: SyntaxDefinitionRegistry, file_upload_service: NotionFileUpload | None = None
+    ) -> None:
         super().__init__(syntax_registry)
         self._syntax = self._get_syntax(syntax_registry)
         self._file_upload_service = file_upload_service or NotionFileUpload()
 
     @abstractmethod
-    def _get_syntax(self, syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
+    def _get_syntax(self, syntax_registry: SyntaxDefinitionRegistry) -> SyntaxDefinition:
         pass
 
     @abstractmethod

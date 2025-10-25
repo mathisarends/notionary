@@ -1,11 +1,11 @@
 import pytest
 
 from notionary.page.content.markdown.nodes import FileMarkdownNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def file_delimiter(syntax_registry: SyntaxRegistry) -> str:
+def file_delimiter(syntax_registry: SyntaxDefinitionRegistry) -> str:
     return syntax_registry.get_file_syntax().start_delimiter
 
 

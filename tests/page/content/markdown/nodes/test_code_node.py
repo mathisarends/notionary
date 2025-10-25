@@ -2,12 +2,12 @@ import pytest
 
 from notionary.blocks.enums import CodingLanguage
 from notionary.page.content.markdown.nodes import CodeMarkdownNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 from notionary.page.content.syntax.models import SyntaxDefinition
 
 
 @pytest.fixture
-def code_syntax(syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
+def code_syntax(syntax_registry: SyntaxDefinitionRegistry) -> SyntaxDefinition:
     return syntax_registry.get_code_syntax()
 
 

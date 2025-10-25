@@ -2,11 +2,11 @@ from typing import override
 
 from notionary.blocks.schemas import CreateEmbedBlock, EmbedData
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 class EmbedParser(LineParser):
-    def __init__(self, syntax_registry: SyntaxRegistry) -> None:
+    def __init__(self, syntax_registry: SyntaxDefinitionRegistry) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_embed_syntax()
 

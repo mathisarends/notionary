@@ -7,11 +7,11 @@ from notionary.exceptions import UnsupportedVideoFormatError
 from notionary.page.content.parser.pre_processsing.handlers import (
     VideoFormatPreProcessor,
 )
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def preprocessor(syntax_registry: SyntaxRegistry) -> VideoFormatPreProcessor:
+def preprocessor(syntax_registry: SyntaxDefinitionRegistry) -> VideoFormatPreProcessor:
     processor = VideoFormatPreProcessor(syntax_registry)
     processor.logger = Mock()
     return processor

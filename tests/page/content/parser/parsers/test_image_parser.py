@@ -6,18 +6,18 @@ from notionary.blocks.schemas import CreateImageBlock
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.image import ImageParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 from notionary.shared.models.file import FileType
 
 
 @pytest.fixture
-def image_parser(syntax_registry: SyntaxRegistry) -> ImageParser:
+def image_parser(syntax_registry: SyntaxDefinitionRegistry) -> ImageParser:
     mock_file_upload = Mock(spec=NotionFileUpload)
     return ImageParser(syntax_registry=syntax_registry, file_upload_service=mock_file_upload)
 
 
 @pytest.fixture
-def make_image_syntax(syntax_registry: SyntaxRegistry):
+def make_image_syntax(syntax_registry: SyntaxDefinitionRegistry):
     syntax = syntax_registry.get_image_syntax()
 
     def _make(url: str) -> str:

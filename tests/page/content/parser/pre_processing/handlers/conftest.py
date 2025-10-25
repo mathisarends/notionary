@@ -1,6 +1,6 @@
 import pytest
 
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 from notionary.page.content.syntax.grammar import MarkdownGrammar
 
 
@@ -15,20 +15,20 @@ def indent(markdown_grammar: MarkdownGrammar) -> str:
 
 
 @pytest.fixture
-def syntax_registry() -> SyntaxRegistry:
-    return SyntaxRegistry()
+def syntax_registry() -> SyntaxDefinitionRegistry:
+    return SyntaxDefinitionRegistry()
 
 
 @pytest.fixture
-def heading_delimiter(syntax_registry: SyntaxRegistry) -> str:
+def heading_delimiter(syntax_registry: SyntaxDefinitionRegistry) -> str:
     return syntax_registry.get_heading_syntax().start_delimiter
 
 
 @pytest.fixture
-def code_start_delimiter(syntax_registry: SyntaxRegistry) -> str:
+def code_start_delimiter(syntax_registry: SyntaxDefinitionRegistry) -> str:
     return syntax_registry.get_code_syntax().start_delimiter
 
 
 @pytest.fixture
-def code_end_delimiter(syntax_registry: SyntaxRegistry) -> str:
+def code_end_delimiter(syntax_registry: SyntaxDefinitionRegistry) -> str:
     return syntax_registry.get_code_syntax().end_delimiter

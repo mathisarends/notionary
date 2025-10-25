@@ -5,16 +5,16 @@ import pytest
 from notionary.blocks.schemas import CreateEmbedBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.embed import EmbedParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def embed_parser(syntax_registry: SyntaxRegistry) -> EmbedParser:
+def embed_parser(syntax_registry: SyntaxDefinitionRegistry) -> EmbedParser:
     return EmbedParser(syntax_registry=syntax_registry)
 
 
 @pytest.fixture
-def make_embed_syntax(syntax_registry: SyntaxRegistry):
+def make_embed_syntax(syntax_registry: SyntaxDefinitionRegistry):
     syntax = syntax_registry.get_embed_syntax()
 
     def _make(url: str) -> str:

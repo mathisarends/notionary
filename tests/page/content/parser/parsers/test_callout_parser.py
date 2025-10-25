@@ -5,7 +5,7 @@ import pytest
 from notionary.blocks.schemas import CreateCalloutBlock
 from notionary.page.content.parser.context import BlockParsingContext
 from notionary.page.content.parser.parsers.callout import CalloutParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
@@ -16,12 +16,12 @@ def mock_rich_text_converter() -> AsyncMock:
 
 
 @pytest.fixture
-def callout_parser(syntax_registry: SyntaxRegistry, mock_rich_text_converter: AsyncMock) -> CalloutParser:
+def callout_parser(syntax_registry: SyntaxDefinitionRegistry, mock_rich_text_converter: AsyncMock) -> CalloutParser:
     return CalloutParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
 
 
 @pytest.fixture
-def make_callout_syntax(syntax_registry: SyntaxRegistry):
+def make_callout_syntax(syntax_registry: SyntaxDefinitionRegistry):
     syntax = syntax_registry.get_callout_syntax()
 
     def _make(content: str, emoji: str = "💡") -> str:

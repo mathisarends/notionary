@@ -9,7 +9,7 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMa
 from notionary.blocks.schemas import Block, ColumnBlock, ColumnData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.column import ColumnRenderer
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 def _create_column_data(width_ratio: float | None = None) -> ColumnData:
@@ -30,8 +30,8 @@ def column_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConvert
 
 
 @pytest.fixture
-def syntax_registry() -> SyntaxRegistry:
-    return SyntaxRegistry()
+def syntax_registry() -> SyntaxDefinitionRegistry:
+    return SyntaxDefinitionRegistry()
 
 
 @pytest.mark.asyncio
@@ -51,7 +51,7 @@ async def test_non_column_block_should_not_be_handled(column_renderer: ColumnRen
 @pytest.mark.asyncio
 async def test_column_without_width_ratio_should_render_base_marker(
     column_renderer: ColumnRenderer,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     render_context: MarkdownRenderingContext,
 ) -> None:
     render_context.render_children = AsyncMock(return_value="")
@@ -69,7 +69,7 @@ async def test_column_without_width_ratio_should_render_base_marker(
 @pytest.mark.asyncio
 async def test_column_with_width_ratio_should_include_width_in_marker(
     column_renderer: ColumnRenderer,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     render_context: MarkdownRenderingContext,
 ) -> None:
     render_context.render_children = AsyncMock(return_value="")
@@ -88,7 +88,7 @@ async def test_column_with_width_ratio_should_include_width_in_marker(
 @pytest.mark.asyncio
 async def test_column_with_children_should_render_children_below_marker(
     column_renderer: ColumnRenderer,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     render_context: MarkdownRenderingContext,
 ) -> None:
     render_context.render_children = AsyncMock(return_value="Column content here")
@@ -107,7 +107,7 @@ async def test_column_with_children_should_render_children_below_marker(
 @pytest.mark.asyncio
 async def test_column_with_indentation_should_indent_marker(
     column_renderer: ColumnRenderer,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     render_context: MarkdownRenderingContext,
 ) -> None:
     render_context.render_children = AsyncMock(return_value="")
@@ -126,7 +126,7 @@ async def test_column_with_indentation_should_indent_marker(
 @pytest.mark.asyncio
 async def test_column_without_data_should_render_base_marker(
     column_renderer: ColumnRenderer,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
     render_context: MarkdownRenderingContext,
 ) -> None:
     render_context.render_children = AsyncMock(return_value="")
@@ -164,7 +164,7 @@ async def test_column_should_increase_indent_level_for_children(
 
 def test_build_column_start_tag_with_width_ratio_should_include_width(
     column_renderer: ColumnRenderer,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> None:
     column_data = _create_column_data(width_ratio=0.75)
     block = _create_column_block(column_data)
@@ -177,7 +177,7 @@ def test_build_column_start_tag_with_width_ratio_should_include_width(
 
 def test_build_column_start_tag_without_width_ratio_should_return_base_marker(
     column_renderer: ColumnRenderer,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> None:
     column_data = _create_column_data(width_ratio=None)
     block = _create_column_block(column_data)
@@ -190,7 +190,7 @@ def test_build_column_start_tag_without_width_ratio_should_return_base_marker(
 
 def test_build_column_start_tag_without_data_should_return_base_marker(
     column_renderer: ColumnRenderer,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> None:
     block = _create_column_block(None)
 
@@ -202,7 +202,7 @@ def test_build_column_start_tag_without_data_should_return_base_marker(
 
 def test_column_marker_should_be_from_syntax_registry(
     column_renderer: ColumnRenderer,
-    syntax_registry: SyntaxRegistry,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> None:
     syntax = column_renderer._syntax_registry.get_column_syntax()
     delimiter = syntax_registry.get_column_syntax().start_delimiter

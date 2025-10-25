@@ -8,11 +8,13 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 class TodoParser(LineParser):
-    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+    def __init__(
+        self, syntax_registry: SyntaxDefinitionRegistry, rich_text_converter: MarkdownRichTextConverter
+    ) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_todo_syntax()
         self._syntax_done = syntax_registry.get_todo_done_syntax()

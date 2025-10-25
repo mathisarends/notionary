@@ -6,18 +6,18 @@ from notionary.blocks.schemas import CreatePdfBlock
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.pdf import PdfParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 from notionary.shared.models.file import FileType
 
 
 @pytest.fixture
-def pdf_parser(syntax_registry: SyntaxRegistry) -> PdfParser:
+def pdf_parser(syntax_registry: SyntaxDefinitionRegistry) -> PdfParser:
     mock_file_upload = Mock(spec=NotionFileUpload)
     return PdfParser(syntax_registry=syntax_registry, file_upload_service=mock_file_upload)
 
 
 @pytest.fixture
-def make_pdf_syntax(syntax_registry: SyntaxRegistry):
+def make_pdf_syntax(syntax_registry: SyntaxDefinitionRegistry):
     syntax = syntax_registry.get_pdf_syntax()
 
     def _make(url: str) -> str:

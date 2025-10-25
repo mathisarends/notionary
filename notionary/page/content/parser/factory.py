@@ -30,18 +30,18 @@ from notionary.page.content.parser.parsers import (
     ToggleParser,
     VideoParser,
 )
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 class ConverterChainFactory:
     def __init__(
         self,
         rich_text_converter: MarkdownRichTextConverter | None = None,
-        syntax_registry: SyntaxRegistry | None = None,
+        syntax_registry: SyntaxDefinitionRegistry | None = None,
         file_upload_service: NotionFileUpload | None = None,
     ) -> None:
         self._rich_text_converter = rich_text_converter or MarkdownRichTextConverter()
-        self._syntax_registry = syntax_registry or SyntaxRegistry()
+        self._syntax_registry = syntax_registry or SyntaxDefinitionRegistry()
         self._file_upload_service = file_upload_service
 
     def create(self) -> LineParser:

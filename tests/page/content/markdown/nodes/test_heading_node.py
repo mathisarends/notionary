@@ -1,11 +1,11 @@
 import pytest
 
 from notionary.page.content.markdown.nodes import HeadingMarkdownNode, ParagraphMarkdownNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def heading_delimiter(syntax_registry: SyntaxRegistry) -> str:
+def heading_delimiter(syntax_registry: SyntaxDefinitionRegistry) -> str:
     return syntax_registry.get_heading_syntax().start_delimiter
 
 

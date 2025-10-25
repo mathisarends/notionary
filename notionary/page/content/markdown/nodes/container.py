@@ -1,5 +1,5 @@
 from notionary.page.content.markdown.nodes.base import MarkdownNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 from notionary.page.content.syntax.grammar import MarkdownGrammar
 
 
@@ -24,7 +24,7 @@ class _MultiChildWrapper(MarkdownNode):
 class ContainerNode(MarkdownNode):
     children: list[MarkdownNode]
 
-    def __init__(self, syntax_registry: SyntaxRegistry | None = None) -> None:
+    def __init__(self, syntax_registry: SyntaxDefinitionRegistry | None = None) -> None:
         super().__init__(syntax_registry=syntax_registry)
         grammar = self._get_grammar(syntax_registry)
         self._spaces_per_nesting_level = grammar.spaces_per_nesting_level
@@ -60,5 +60,5 @@ class ContainerNode(MarkdownNode):
         return "\n".join(f"{indent}{line}" if line.strip() else line for line in lines)
 
     @staticmethod
-    def _get_grammar(syntax_registry: SyntaxRegistry | None) -> MarkdownGrammar:
+    def _get_grammar(syntax_registry: SyntaxDefinitionRegistry | None) -> MarkdownGrammar:
         return syntax_registry._markdown_grammar if syntax_registry else MarkdownGrammar()

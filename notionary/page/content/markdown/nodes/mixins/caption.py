@@ -1,8 +1,8 @@
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 class CaptionMarkdownNodeMixin:
-    _syntax_registry: SyntaxRegistry
+    _syntax_registry: SyntaxDefinitionRegistry
 
     def _append_caption_to_markdown(self, base_markdown: str, caption: str | None) -> str:
         if not caption:

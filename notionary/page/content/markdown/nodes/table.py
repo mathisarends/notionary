@@ -1,12 +1,12 @@
 from typing import override
 
 from notionary.page.content.markdown.nodes.base import MarkdownNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 class TableMarkdownNode(MarkdownNode):
     def __init__(
-        self, headers: list[str], rows: list[list[str]], syntax_registry: SyntaxRegistry | None = None
+        self, headers: list[str], rows: list[list[str]], syntax_registry: SyntaxDefinitionRegistry | None = None
     ) -> None:
         super().__init__(syntax_registry=syntax_registry)
         self._validate_input(headers, rows)

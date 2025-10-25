@@ -1,11 +1,11 @@
 import pytest
 
 from notionary.page.content.markdown.nodes import EmbedMarkdownNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def embed_delimiter(syntax_registry: SyntaxRegistry) -> str:
+def embed_delimiter(syntax_registry: SyntaxDefinitionRegistry) -> str:
     return syntax_registry.get_embed_syntax().start_delimiter
 
 

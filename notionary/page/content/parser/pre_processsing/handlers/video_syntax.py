@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from notionary.blocks.enums import VideoFileType
 from notionary.exceptions import UnsupportedVideoFormatError
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 from notionary.utils.decorators import time_execution_sync
 from notionary.utils.mixins.logging import LoggingMixin
 
@@ -14,9 +14,9 @@ class VideoFormatPreProcessor(PreProcessor, LoggingMixin):
     YOUTUBE_WATCH_PATTERN = re.compile(r"^https?://(?:www\.)?youtube\.com/watch\?.*v=[\w-]+", re.IGNORECASE)
     YOUTUBE_EMBED_PATTERN = re.compile(r"^https?://(?:www\.)?youtube\.com/embed/[\w-]+", re.IGNORECASE)
 
-    def __init__(self, syntax_registry: SyntaxRegistry | None = None) -> None:
+    def __init__(self, syntax_registry: SyntaxDefinitionRegistry | None = None) -> None:
         super().__init__()
-        self._syntax_registry = syntax_registry or SyntaxRegistry()
+        self._syntax_registry = syntax_registry or SyntaxDefinitionRegistry()
         self._video_syntax = self._syntax_registry.get_video_syntax()
 
     @override

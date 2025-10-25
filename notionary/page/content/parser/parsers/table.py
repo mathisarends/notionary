@@ -4,11 +4,13 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRich
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.schemas import CreateTableBlock, CreateTableData, CreateTableRowBlock, TableRowData
 from notionary.page.content.parser.parsers import BlockParsingContext, LineParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 class TableParser(LineParser):
-    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+    def __init__(
+        self, syntax_registry: SyntaxDefinitionRegistry, rich_text_converter: MarkdownRichTextConverter
+    ) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_table_syntax()
         self._separator_syntax = syntax_registry.get_table_row_syntax()
@@ -132,7 +134,7 @@ class TableParser(LineParser):
         return rich_text_cells
 
     def _parse_table_row(self, row_text: str) -> list[str]:
-        """Parse a table row by splitting on the table delimiter from SyntaxRegistry."""
+        """Parse a table row by splitting on the table delimiter from SyntaxDefinitionRegistry."""
         row_content = row_text.strip()
         delimiter = self._syntax.start_delimiter
 

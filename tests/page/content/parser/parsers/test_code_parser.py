@@ -8,11 +8,13 @@ from notionary.blocks.rich_text.markdown_rich_text_converter import (
 from notionary.blocks.schemas import CodingLanguage, CreateCodeBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.code import CodeParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def code_parser(mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxRegistry) -> CodeParser:
+def code_parser(
+    mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxDefinitionRegistry
+) -> CodeParser:
     return CodeParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
 
 

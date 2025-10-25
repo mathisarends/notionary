@@ -5,14 +5,14 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 class ColumnParser(LineParser):
     MIN_WIDTH_RATIO = 0
     MAX_WIDTH_RATIO = 1.0
 
-    def __init__(self, syntax_registry: SyntaxRegistry) -> None:
+    def __init__(self, syntax_registry: SyntaxDefinitionRegistry) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_column_syntax()
 

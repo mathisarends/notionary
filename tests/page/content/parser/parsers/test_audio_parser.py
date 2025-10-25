@@ -6,18 +6,18 @@ from notionary.blocks.schemas import BlockType, CreateAudioBlock
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.parser.context import BlockParsingContext
 from notionary.page.content.parser.parsers.audio import AudioParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 from notionary.shared.models.file import FileType
 
 
 @pytest.fixture
-def audio_parser(syntax_registry: SyntaxRegistry) -> AudioParser:
+def audio_parser(syntax_registry: SyntaxDefinitionRegistry) -> AudioParser:
     mock_file_upload = Mock(spec=NotionFileUpload)
     return AudioParser(syntax_registry=syntax_registry, file_upload_service=mock_file_upload)
 
 
 @pytest.fixture
-def make_audio_syntax(syntax_registry: SyntaxRegistry):
+def make_audio_syntax(syntax_registry: SyntaxDefinitionRegistry):
     syntax = syntax_registry.get_audio_syntax()
 
     def _make(url: str) -> str:

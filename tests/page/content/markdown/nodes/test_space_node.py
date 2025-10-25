@@ -1,11 +1,11 @@
 import pytest
 
 from notionary.page.content.markdown.nodes import SpaceMarkdownNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def space_delimiter(syntax_registry: SyntaxRegistry) -> str:
+def space_delimiter(syntax_registry: SyntaxDefinitionRegistry) -> str:
     return syntax_registry.get_space_syntax().start_delimiter
 
 

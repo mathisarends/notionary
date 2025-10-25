@@ -29,17 +29,17 @@ from notionary.page.content.renderer.renderers import (
     ToggleRenderer,
     VideoRenderer,
 )
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax import SyntaxDefinitionRegistry
 
 
 class RendererChainFactory:
     def __init__(
         self,
         rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
-        syntax_registry: SyntaxRegistry | None = None,
+        syntax_registry: SyntaxDefinitionRegistry | None = None,
     ) -> None:
         self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
-        self._syntax_registry = syntax_registry or SyntaxRegistry()
+        self._syntax_registry = syntax_registry or SyntaxDefinitionRegistry()
 
     def create(self) -> BlockRenderer:
         # Strukturelle Blocks

@@ -1,12 +1,12 @@
 import pytest
 
-from notionary.page.content.syntax import MarkdownGrammar, SyntaxRegistry
+from notionary.page.content.syntax import MarkdownGrammar, SyntaxDefinitionRegistry
 from notionary.page.content.syntax.models import SyntaxDefinition
 
 
 @pytest.fixture
-def syntax_registry() -> SyntaxRegistry:
-    return SyntaxRegistry()
+def syntax_registry() -> SyntaxDefinitionRegistry:
+    return SyntaxDefinitionRegistry()
 
 
 @pytest.fixture
@@ -20,7 +20,7 @@ def indent(markdown_grammar: MarkdownGrammar) -> str:
 
 
 @pytest.fixture
-def caption_syntax(syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
+def caption_syntax(syntax_registry: SyntaxDefinitionRegistry) -> SyntaxDefinition:
     return syntax_registry.get_caption_syntax()
 
 
