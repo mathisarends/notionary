@@ -8,7 +8,7 @@ from notionary.file_upload.service import NotionFileUpload
 from notionary.page.properties.schemas import FileType
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.entity.schemas import EntityResponseDto
-from notionary.shared.models.file import ExternalFile
+from notionary.shared.models.file import ExternalFile, NotionHostedFile
 from notionary.shared.models.icon import EmojiIcon, IconType
 from notionary.shared.models.parent import ParentType
 from notionary.user.base import BaseUser
@@ -55,23 +55,29 @@ class Entity(LoggingMixin, ABC):
     def _extract_external_icon_url(dto: EntityResponseDto) -> str | None:
         if dto.icon is None:
             return None
-        if dto.icon.type is not IconType.EXTERNAL:
-            return None
 
-        external_icon = cast(ExternalFile, dto.icon)
+        if dto.icon.type == IconType.EXTERNAL:
+            external_icon = cast(ExternalFile, dto.icon)
+            return external_icon.external.url
+        elif dto.icon.type == IconType.FILE:
+            notion_file_icon = cast(NotionHostedFile, dto.icon)
+            return notion_file_icon.file.url
 
-        return external_icon.external.url
+        return None
 
     @staticmethod
     def _extract_cover_image_url(dto: EntityResponseDto) -> str | None:
         if dto.cover is None:
             return None
-        if dto.cover.type is not FileType.EXTERNAL:
-            return None
 
-        external_cover = cast(ExternalFile, dto.cover)
+        if dto.cover.type == FileType.EXTERNAL:
+            external_cover = cast(ExternalFile, dto.cover)
+            return external_cover.external.url
+        elif dto.cover.type == FileType.FILE:
+            notion_file_cover = cast(NotionHostedFile, dto.cover)
+            return notion_file_cover.file.url
 
-        return external_cover.external.url
+        return None
 
     @classmethod
     @abstractmethod
@@ -92,10 +98,7 @@ class Entity(LoggingMixin, ABC):
 
     @property
     @abstractmethod
-    def _entity_metadata_update_client(self) -> EntityMetadataUpdateClient:
-        # functionality for updating properties like title, icon, cover, archive status depends on interface for template like implementation
-        # has to be implementated by inheritants to correctly use the methods below
-        ...
+    def _entity_metadata_update_client(self) -> EntityMetadataUpdateClient: ...
 
     @property
     def id(self) -> str:
