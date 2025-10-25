@@ -1,6 +1,6 @@
 import asyncio
 import mimetypes
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, AsyncIterator, Callable
 from pathlib import Path
 
 import aiofiles
@@ -8,7 +8,8 @@ import aiofiles
 from notionary.exceptions.file_upload import UploadFailedError, UploadTimeoutError
 from notionary.file_upload.client import FileUploadHttpClient
 from notionary.file_upload.config import NOTION_SINGLE_PART_MAX_SIZE, FileUploadConfig
-from notionary.file_upload.schemas import FileUploadResponse, FileUploadStatus
+from notionary.file_upload.query import FileUploadQuery, FileUploadQueryBuilder
+from notionary.file_upload.schemas import FileUploadFilter, FileUploadResponse, FileUploadStatus
 from notionary.file_upload.validation.factory import (
     create_bytes_upload_validation_service,
     create_file_upload_validation_service,
@@ -187,6 +188,55 @@ class FileUploadService(LoggingMixin):
 
             await asyncio.sleep(self.config.poll_interval)
 
-    async def list_recent_uploads(self) -> list[FileUploadResponse]:
-        response = await self.client.list_file_uploads()
-        return response
+    async def get_uploads(
+        self,
+        *,
+        filter_fn: Callable[[FileUploadQueryBuilder], FileUploadQueryBuilder] | None = None,
+        query: FileUploadQuery | None = None,
+    ) -> list[FileUploadResponse]:
+        if filter_fn is not None and query is not None:
+            raise ValueError("Use either filter_fn OR query, not both")
+
+        if filter_fn is not None:
+            builder = FileUploadQueryBuilder()
+            configured_builder = filter_fn(builder)
+            query = configured_builder.build()
+
+        query = query or FileUploadQuery()
+
+        filter_obj = FileUploadFilter(
+            status=query.status,
+            archived=query.archived,
+        )
+
+        return await self.client.list_file_uploads(
+            filter=filter_obj if (query.status or query.archived is not None) else None,
+            total_results_limit=query.total_results_limit,
+        )
+
+    async def iter_uploads(
+        self,
+        *,
+        filter_fn: Callable[[FileUploadQueryBuilder], FileUploadQueryBuilder] | None = None,
+        query: FileUploadQuery | None = None,
+    ) -> AsyncIterator[FileUploadResponse]:
+        if filter_fn is not None and query is not None:
+            raise ValueError("Use either filter_fn OR query, not both")
+
+        if filter_fn is not None:
+            builder = FileUploadQueryBuilder()
+            configured_builder = filter_fn(builder)
+            query = configured_builder.build()
+
+        query = query or FileUploadQuery()
+
+        filter_obj = FileUploadFilter(
+            status=query.status,
+            archived=query.archived,
+        )
+
+        async for upload in self.client.list_file_uploads_stream(
+            filter=filter_obj if (query.status or query.archived is not None) else None,
+            total_results_limit=query.total_results_limit,
+        ):
+            yield upload

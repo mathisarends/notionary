@@ -1,3 +1,5 @@
+from collections.abc import AsyncGenerator
+
 import httpx
 
 from notionary.file_upload.schemas import (
@@ -9,7 +11,7 @@ from notionary.file_upload.schemas import (
     UploadMode,
 )
 from notionary.http.client import NotionHttpClient
-from notionary.utils.pagination import PaginatedResponse, paginate_notion_api
+from notionary.utils.pagination import PaginatedResponse, paginate_notion_api, paginate_notion_api_generator
 
 
 class FileUploadHttpClient(NotionHttpClient):
@@ -71,12 +73,21 @@ class FileUploadHttpClient(NotionHttpClient):
         filter: FileUploadFilter | None = None,
         total_results_limit: int | None = None,
     ) -> list[FileUploadResponse]:
-        file_uploads = await paginate_notion_api(
+        return await paginate_notion_api(
             lambda **kwargs: self._fetch_file_uploads_page(filter=filter, **kwargs),
             total_results_limit=total_results_limit,
         )
 
-        return file_uploads
+    async def list_file_uploads_stream(
+        self,
+        filter: FileUploadFilter | None = None,
+        total_results_limit: int | None = None,
+    ) -> AsyncGenerator[FileUploadResponse]:
+        async for upload in paginate_notion_api_generator(
+            lambda **kwargs: self._fetch_file_uploads_page(filter=filter, **kwargs),
+            total_results_limit=total_results_limit,
+        ):
+            yield upload
 
     async def _create_upload(
         self,
@@ -110,14 +121,20 @@ class FileUploadHttpClient(NotionHttpClient):
 
     async def _fetch_file_uploads_page(
         self,
+        filter: FileUploadFilter | None = None,
         page_size: int = 100,
         start_cursor: str | None = None,
-        filter: FileUploadFilter | None = None,
         **kwargs,
     ) -> PaginatedResponse:
-        params = self._build_pagination_params(page_size, start_cursor, filter)
-        response = await self.get("file_uploads", params=params)
+        params = {"page_size": min(page_size, 100)}
 
+        if start_cursor:
+            params["start_cursor"] = start_cursor
+
+        if filter:
+            params.update(filter.model_dump(exclude_none=True))
+
+        response = await self.get("file_uploads", params=params)
         parsed = FileUploadListResponse.model_validate(response)
 
         return PaginatedResponse(
@@ -139,19 +156,3 @@ class FileUploadHttpClient(NotionHttpClient):
             "Authorization": f"Bearer {self.token}",
             "Notion-Version": self.NOTION_VERSION,
         }
-
-    def _build_pagination_params(
-        self,
-        page_size: int,
-        start_cursor: str | None,
-        filter: FileUploadFilter | None,
-    ) -> dict:
-        params = {"page_size": min(page_size, 100)}
-
-        if start_cursor:
-            params["start_cursor"] = start_cursor
-
-        if filter:
-            params.update(filter.model_dump(exclude_none=True))
-
-        return params
