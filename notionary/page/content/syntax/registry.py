@@ -99,14 +99,14 @@ class SyntaxRegistry:
         return SyntaxDefinition(
             start_delimiter=f"[{media_type}](",
             end_delimiter=")",
-            regex_pattern=re.compile(rf"\[{re.escape(media_type)}\]\(({url_pattern})\)"),
+            regex_pattern=re.compile(rf"(?<!\!)\[{re.escape(media_type)}\]\(({url_pattern})\)"),
         )
 
     def _create_url_media_syntax(self, media_type: str) -> SyntaxDefinition:
         return SyntaxDefinition(
             start_delimiter=f"[{media_type}](",
             end_delimiter=")",
-            regex_pattern=re.compile(rf"\[{re.escape(media_type)}\]\((https?://[^\s)]+)\)"),
+            regex_pattern=re.compile(rf"(?<!\!)\[{re.escape(media_type)}\]\((https?://[^\s)]+)\)"),
         )
 
     def _register_defaults(self) -> None:

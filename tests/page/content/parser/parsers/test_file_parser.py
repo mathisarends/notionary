@@ -14,12 +14,23 @@ def file_parser(syntax_registry: SyntaxRegistry) -> FileParser:
     return FileParser(syntax_registry=syntax_registry)
 
 
+@pytest.fixture
+def make_file_syntax(syntax_registry: SyntaxRegistry):
+    syntax = syntax_registry.get_file_syntax()
+
+    def _make(url: str) -> str:
+        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
+
+    return _make
+
+
 @pytest.mark.asyncio
 async def test_file_should_create_file_block(
     file_parser: FileParser,
     context: BlockParsingContext,
+    make_file_syntax,
 ) -> None:
-    context.line = "[file](https://example.com/document.zip)"
+    context.line = make_file_syntax("https://example.com/document.zip")
 
     await file_parser._process(context)
 
@@ -35,8 +46,9 @@ async def test_file_should_create_file_block(
 async def test_file_with_whitespace_around_url_should_strip(
     file_parser: FileParser,
     context: BlockParsingContext,
+    make_file_syntax,
 ) -> None:
-    context.line = "[file](  https://example.com/file.pdf  )"
+    context.line = make_file_syntax("  https://example.com/file.pdf  ")
 
     await file_parser._process(context)
 
@@ -45,20 +57,21 @@ async def test_file_with_whitespace_around_url_should_strip(
 
 
 @pytest.mark.parametrize(
-    "line",
+    "url",
     [
-        "[file](https://example.com/document.zip)",
-        "[file](https://example.com/archive.tar.gz)",
-        "[file](https://example.com/data.csv)",
-        "[file](https://s3.amazonaws.com/bucket/file.xlsx)",
+        "https://example.com/document.zip",
+        "https://example.com/archive.tar.gz",
+        "https://example.com/data.csv",
+        "https://s3.amazonaws.com/bucket/file.xlsx",
     ],
 )
 def test_file_with_valid_url_should_handle(
     file_parser: FileParser,
     context: BlockParsingContext,
-    line: str,
+    make_file_syntax,
+    url: str,
 ) -> None:
-    context.line = line
+    context.line = make_file_syntax(url)
 
     can_handle = file_parser._can_handle(context)
 
@@ -68,8 +81,9 @@ def test_file_with_valid_url_should_handle(
 def test_file_inside_parent_context_should_not_handle(
     file_parser: FileParser,
     context: BlockParsingContext,
+    make_file_syntax,
 ) -> None:
-    context.line = "[file](https://example.com/document.zip)"
+    context.line = make_file_syntax("https://example.com/document.zip")
     context.is_inside_parent_context = Mock(return_value=True)
 
     can_handle = file_parser._can_handle(context)
@@ -103,8 +117,9 @@ def test_file_with_invalid_syntax_should_not_handle(
 async def test_file_with_empty_url_should_not_create_block(
     file_parser: FileParser,
     context: BlockParsingContext,
+    make_file_syntax,
 ) -> None:
-    context.line = "[file]()"
+    context.line = make_file_syntax("")
 
     await file_parser._process(context)
 

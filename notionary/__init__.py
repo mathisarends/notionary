@@ -1,12 +1,12 @@
 from .data_source.service import NotionDataSource
 from .database.service import NotionDatabase
-from .file_upload import FileUploadQueryBuilder, NotionFileUpload
+from .file_upload import FileUploadQuery, FileUploadQueryBuilder, NotionFileUpload
 from .page.content.markdown.builder import MarkdownBuilder
 from .page.service import NotionPage
-from .workspace import NotionWorkspace, NotionWorkspaceQueryConfigBuilder
+from .workspace import NotionWorkspace, NotionWorkspaceQueryConfigBuilder, WorkspaceQueryConfig
 
 __all__ = [
-    "FileUploadQueryBuilder",
+    "FileUploadQuery",
     "FileUploadQueryBuilder",
     "MarkdownBuilder",
     "NotionDataSource",
@@ -15,4 +15,5 @@ __all__ = [
     "NotionPage",
     "NotionWorkspace",
     "NotionWorkspaceQueryConfigBuilder",
+    "WorkspaceQueryConfig",
 ]

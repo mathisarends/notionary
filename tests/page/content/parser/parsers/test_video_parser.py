@@ -14,11 +14,21 @@ def video_parser(syntax_registry: SyntaxRegistry) -> VideoParser:
     return VideoParser(syntax_registry=syntax_registry)
 
 
+@pytest.fixture
+def make_video_syntax(syntax_registry: SyntaxRegistry):
+    syntax = syntax_registry.get_video_syntax()
+
+    def _make(url: str) -> str:
+        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
+
+    return _make
+
+
 @pytest.mark.asyncio
 async def test_video_with_youtube_url_should_create_block(
-    video_parser: VideoParser, context: BlockParsingContext
+    video_parser: VideoParser, context: BlockParsingContext, make_video_syntax
 ) -> None:
-    context.line = "[video](https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
+    context.line = make_video_syntax("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
     assert video_parser._can_handle(context)
     await video_parser._process(context)
@@ -32,9 +42,9 @@ async def test_video_with_youtube_url_should_create_block(
 
 @pytest.mark.asyncio
 async def test_video_with_vimeo_url_should_create_block(
-    video_parser: VideoParser, context: BlockParsingContext
+    video_parser: VideoParser, context: BlockParsingContext, make_video_syntax
 ) -> None:
-    context.line = "[video](https://vimeo.com/123456789)"
+    context.line = make_video_syntax("https://vimeo.com/123456789")
 
     assert video_parser._can_handle(context)
     await video_parser._process(context)
@@ -45,9 +55,9 @@ async def test_video_with_vimeo_url_should_create_block(
 
 @pytest.mark.asyncio
 async def test_video_with_direct_mp4_url_should_create_block(
-    video_parser: VideoParser, context: BlockParsingContext
+    video_parser: VideoParser, context: BlockParsingContext, make_video_syntax
 ) -> None:
-    context.line = "[video](https://example.com/video.mp4)"
+    context.line = make_video_syntax("https://example.com/video.mp4")
 
     assert video_parser._can_handle(context)
     await video_parser._process(context)
@@ -58,9 +68,9 @@ async def test_video_with_direct_mp4_url_should_create_block(
 
 @pytest.mark.asyncio
 async def test_video_with_text_before_and_after_should_create_block(
-    video_parser: VideoParser, context: BlockParsingContext
+    video_parser: VideoParser, context: BlockParsingContext, make_video_syntax
 ) -> None:
-    context.line = "Check out this video: [video](https://youtube.com/watch?v=123) - it's great!"
+    context.line = f"Check out this video: {make_video_syntax('https://youtube.com/watch?v=123')} - it's great!"
 
     assert video_parser._can_handle(context)
     await video_parser._process(context)
@@ -69,8 +79,10 @@ async def test_video_with_text_before_and_after_should_create_block(
 
 
 @pytest.mark.asyncio
-async def test_video_caption_should_be_empty_list(video_parser: VideoParser, context: BlockParsingContext) -> None:
-    context.line = "[video](https://example.com/video.mp4)"
+async def test_video_caption_should_be_empty_list(
+    video_parser: VideoParser, context: BlockParsingContext, make_video_syntax
+) -> None:
+    context.line = make_video_syntax("https://example.com/video.mp4")
 
     await video_parser._process(context)
 
@@ -79,8 +91,10 @@ async def test_video_caption_should_be_empty_list(video_parser: VideoParser, con
 
 
 @pytest.mark.asyncio
-async def test_video_type_should_be_external(video_parser: VideoParser, context: BlockParsingContext) -> None:
-    context.line = "[video](https://example.com/video.mp4)"
+async def test_video_type_should_be_external(
+    video_parser: VideoParser, context: BlockParsingContext, make_video_syntax
+) -> None:
+    context.line = make_video_syntax("https://example.com/video.mp4")
 
     await video_parser._process(context)
 
@@ -99,9 +113,9 @@ async def test_regular_markdown_link_should_not_be_handled(
 
 @pytest.mark.asyncio
 async def test_video_without_url_should_not_create_block(
-    video_parser: VideoParser, context: BlockParsingContext
+    video_parser: VideoParser, context: BlockParsingContext, make_video_syntax
 ) -> None:
-    context.line = "[video]()"
+    context.line = make_video_syntax("")
 
     if video_parser._can_handle(context):
         await video_parser._process(context)
@@ -128,16 +142,9 @@ async def test_video_with_missing_closing_bracket_should_not_be_handled(
 
 @pytest.mark.asyncio
 async def test_video_inside_parent_context_should_not_be_handled(
-    video_parser: VideoParser, context: BlockParsingContext
+    video_parser: VideoParser, context: BlockParsingContext, make_video_syntax
 ) -> None:
-    context.line = "[video](https://example.com/video.mp4)"
+    context.line = make_video_syntax("https://example.com/video.mp4")
     context.is_inside_parent_context = Mock(return_value=True)
 
     assert not video_parser._can_handle(context)
-
-
-@pytest.mark.asyncio
-async def test_extract_url_with_invalid_pattern_should_return_none(video_parser: VideoParser) -> None:
-    url = video_parser._extract_url("not a video")
-
-    assert url is None

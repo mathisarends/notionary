@@ -11,12 +11,23 @@ def bookmark_parser(syntax_registry: SyntaxRegistry) -> BookmarkParser:
     return BookmarkParser(syntax_registry=syntax_registry)
 
 
+@pytest.fixture
+def make_bookmark_syntax(syntax_registry: SyntaxRegistry):
+    syntax = syntax_registry.get_bookmark_syntax()
+
+    def _make(url: str) -> str:
+        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
+
+    return _make
+
+
 @pytest.mark.asyncio
 async def test_valid_bookmark_syntax_should_create_bookmark_block(
     bookmark_parser: BookmarkParser,
     context: BlockParsingContext,
+    make_bookmark_syntax,
 ) -> None:
-    context.line = "[bookmark](https://example.com)"
+    context.line = make_bookmark_syntax("https://example.com")
 
     await bookmark_parser._process(context)
 
@@ -27,8 +38,9 @@ async def test_valid_bookmark_syntax_should_create_bookmark_block(
 def test_bookmark_with_whitespace_url_should_not_be_handled(
     bookmark_parser: BookmarkParser,
     context: BlockParsingContext,
+    make_bookmark_syntax,
 ) -> None:
-    context.line = "[bookmark](   )"
+    context.line = make_bookmark_syntax("   ")
 
     can_handle = bookmark_parser._can_handle(context)
 

@@ -14,12 +14,23 @@ def pdf_parser(syntax_registry: SyntaxRegistry) -> PdfParser:
     return PdfParser(syntax_registry=syntax_registry)
 
 
+@pytest.fixture
+def make_pdf_syntax(syntax_registry: SyntaxRegistry):
+    syntax = syntax_registry.get_pdf_syntax()
+
+    def _make(url: str) -> str:
+        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
+
+    return _make
+
+
 @pytest.mark.asyncio
 async def test_pdf_should_create_pdf_block(
     pdf_parser: PdfParser,
     context: BlockParsingContext,
+    make_pdf_syntax,
 ) -> None:
-    context.line = "[pdf](https://example.com/document.pdf)"
+    context.line = make_pdf_syntax("https://example.com/document.pdf")
 
     await pdf_parser._process(context)
 
@@ -35,8 +46,9 @@ async def test_pdf_should_create_pdf_block(
 async def test_pdf_with_url_containing_special_characters_should_extract_correctly(
     pdf_parser: PdfParser,
     context: BlockParsingContext,
+    make_pdf_syntax,
 ) -> None:
-    context.line = "[pdf](https://example.com/path/to/file.pdf?param=value&other=123)"
+    context.line = make_pdf_syntax("https://example.com/path/to/file.pdf?param=value&other=123")
 
     await pdf_parser._process(context)
 
@@ -48,8 +60,9 @@ async def test_pdf_with_url_containing_special_characters_should_extract_correct
 async def test_pdf_with_whitespace_around_url_should_strip(
     pdf_parser: PdfParser,
     context: BlockParsingContext,
+    make_pdf_syntax,
 ) -> None:
-    context.line = "[pdf](  https://example.com/document.pdf  )"
+    context.line = make_pdf_syntax("  https://example.com/document.pdf  ")
 
     await pdf_parser._process(context)
 
@@ -61,8 +74,9 @@ async def test_pdf_with_whitespace_around_url_should_strip(
 async def test_pdf_with_text_before_and_after_should_create_block(
     pdf_parser: PdfParser,
     context: BlockParsingContext,
+    make_pdf_syntax,
 ) -> None:
-    context.line = "Check out this document: [pdf](https://example.com/doc.pdf) for more info"
+    context.line = f"Check out this document: {make_pdf_syntax('https://example.com/doc.pdf')} for more info"
 
     await pdf_parser._process(context)
 
@@ -72,20 +86,21 @@ async def test_pdf_with_text_before_and_after_should_create_block(
 
 
 @pytest.mark.parametrize(
-    "line",
+    "url",
     [
-        "[pdf](https://example.com/document.pdf)",
-        "[pdf](http://example.com/file.pdf)",
-        "[pdf](https://example.com/path/to/document.pdf)",
-        "[pdf](https://s3.amazonaws.com/bucket/file.pdf)",
+        "https://example.com/document.pdf",
+        "http://example.com/file.pdf",
+        "https://example.com/path/to/document.pdf",
+        "https://s3.amazonaws.com/bucket/file.pdf",
     ],
 )
 def test_pdf_with_valid_url_should_handle(
     pdf_parser: PdfParser,
     context: BlockParsingContext,
-    line: str,
+    make_pdf_syntax,
+    url: str,
 ) -> None:
-    context.line = line
+    context.line = make_pdf_syntax(url)
 
     can_handle = pdf_parser._can_handle(context)
 
@@ -95,8 +110,9 @@ def test_pdf_with_valid_url_should_handle(
 def test_pdf_inside_parent_context_should_not_handle(
     pdf_parser: PdfParser,
     context: BlockParsingContext,
+    make_pdf_syntax,
 ) -> None:
-    context.line = "[pdf](https://example.com/document.pdf)"
+    context.line = make_pdf_syntax("https://example.com/document.pdf")
     context.is_inside_parent_context = Mock(return_value=True)
 
     can_handle = pdf_parser._can_handle(context)
@@ -134,8 +150,9 @@ def test_pdf_with_invalid_syntax_should_not_handle(
 async def test_pdf_with_empty_url_should_not_create_block(
     pdf_parser: PdfParser,
     context: BlockParsingContext,
+    make_pdf_syntax,
 ) -> None:
-    context.line = "[pdf]()"
+    context.line = make_pdf_syntax("")
 
     await pdf_parser._process(context)
 
@@ -146,8 +163,9 @@ async def test_pdf_with_empty_url_should_not_create_block(
 async def test_pdf_should_append_block_to_result_blocks(
     pdf_parser: PdfParser,
     context: BlockParsingContext,
+    make_pdf_syntax,
 ) -> None:
-    context.line = "[pdf](https://example.com/document.pdf)"
+    context.line = make_pdf_syntax("https://example.com/document.pdf")
     initial_length = len(context.result_blocks)
 
     await pdf_parser._process(context)
@@ -159,8 +177,9 @@ async def test_pdf_should_append_block_to_result_blocks(
 async def test_pdf_with_relative_url_should_create_block(
     pdf_parser: PdfParser,
     context: BlockParsingContext,
+    make_pdf_syntax,
 ) -> None:
-    context.line = "[pdf](/documents/file.pdf)"
+    context.line = make_pdf_syntax("/documents/file.pdf")
 
     await pdf_parser._process(context)
 

@@ -1,4 +1,4 @@
-from .query import NotionWorkspaceQueryConfigBuilder
+from .query import NotionWorkspaceQueryConfigBuilder, WorkspaceQueryConfig
 from .service import NotionWorkspace
 
-__all__ = ["NotionWorkspace", "NotionWorkspaceQueryConfigBuilder"]
+__all__ = ["NotionWorkspace", "NotionWorkspaceQueryConfigBuilder", "WorkspaceQueryConfig"]

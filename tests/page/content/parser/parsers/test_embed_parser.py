@@ -13,12 +13,23 @@ def embed_parser(syntax_registry: SyntaxRegistry) -> EmbedParser:
     return EmbedParser(syntax_registry=syntax_registry)
 
 
+@pytest.fixture
+def make_embed_syntax(syntax_registry: SyntaxRegistry):
+    syntax = syntax_registry.get_embed_syntax()
+
+    def _make(url: str) -> str:
+        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
+
+    return _make
+
+
 @pytest.mark.asyncio
 async def test_embed_should_create_embed_block(
     embed_parser: EmbedParser,
     context: BlockParsingContext,
+    make_embed_syntax,
 ) -> None:
-    context.line = "[embed](https://example.com/content)"
+    context.line = make_embed_syntax("https://example.com/content")
 
     await embed_parser._process(context)
 
@@ -33,8 +44,9 @@ async def test_embed_should_create_embed_block(
 async def test_embed_with_http_url_should_create_block(
     embed_parser: EmbedParser,
     context: BlockParsingContext,
+    make_embed_syntax,
 ) -> None:
-    context.line = "[embed](http://example.com/content)"
+    context.line = make_embed_syntax("http://example.com/content")
 
     await embed_parser._process(context)
 
@@ -43,21 +55,22 @@ async def test_embed_with_http_url_should_create_block(
 
 
 @pytest.mark.parametrize(
-    "line",
+    "url",
     [
-        "[embed](https://example.com/page)",
-        "[embed](https://youtube.com/watch?v=abc123)",
-        "[embed](https://www.notion.so/page)",
-        "[embed](http://example.com/content)",
-        "[embed](https://example.com/path/to/content?param=value)",
+        "https://example.com/page",
+        "https://youtube.com/watch?v=abc123",
+        "https://www.notion.so/page",
+        "http://example.com/content",
+        "https://example.com/path/to/content?param=value",
     ],
 )
 def test_embed_with_valid_url_should_handle(
     embed_parser: EmbedParser,
     context: BlockParsingContext,
-    line: str,
+    make_embed_syntax,
+    url: str,
 ) -> None:
-    context.line = line
+    context.line = make_embed_syntax(url)
 
     can_handle = embed_parser._can_handle(context)
 
@@ -67,8 +80,9 @@ def test_embed_with_valid_url_should_handle(
 def test_embed_inside_parent_context_should_not_handle(
     embed_parser: EmbedParser,
     context: BlockParsingContext,
+    make_embed_syntax,
 ) -> None:
-    context.line = "[embed](https://example.com/content)"
+    context.line = make_embed_syntax("https://example.com/content")
     context.is_inside_parent_context = Mock(return_value=True)
 
     can_handle = embed_parser._can_handle(context)
@@ -109,8 +123,9 @@ def test_embed_with_invalid_syntax_should_not_handle(
 async def test_embed_with_query_parameters_should_create_block(
     embed_parser: EmbedParser,
     context: BlockParsingContext,
+    make_embed_syntax,
 ) -> None:
-    context.line = "[embed](https://youtube.com/watch?v=abc123&t=30s)"
+    context.line = make_embed_syntax("https://youtube.com/watch?v=abc123&t=30s")
 
     await embed_parser._process(context)
 
@@ -122,8 +137,9 @@ async def test_embed_with_query_parameters_should_create_block(
 async def test_embed_with_text_before_and_after_should_create_block(
     embed_parser: EmbedParser,
     context: BlockParsingContext,
+    make_embed_syntax,
 ) -> None:
-    context.line = "Check out this: [embed](https://example.com/content) it's great!"
+    context.line = f"Check out this: {make_embed_syntax('https://example.com/content')} it's great!"
 
     await embed_parser._process(context)
 
@@ -136,8 +152,9 @@ async def test_embed_with_text_before_and_after_should_create_block(
 async def test_embed_with_fragment_should_create_block(
     embed_parser: EmbedParser,
     context: BlockParsingContext,
+    make_embed_syntax,
 ) -> None:
-    context.line = "[embed](https://example.com/page#section)"
+    context.line = make_embed_syntax("https://example.com/page#section")
 
     await embed_parser._process(context)
 
@@ -149,8 +166,9 @@ async def test_embed_with_fragment_should_create_block(
 async def test_embed_should_append_block_to_result_blocks(
     embed_parser: EmbedParser,
     context: BlockParsingContext,
+    make_embed_syntax,
 ) -> None:
-    context.line = "[embed](https://example.com/content)"
+    context.line = make_embed_syntax("https://example.com/content")
     initial_length = len(context.result_blocks)
 
     await embed_parser._process(context)
@@ -162,8 +180,9 @@ async def test_embed_should_append_block_to_result_blocks(
 async def test_embed_with_port_number_should_create_block(
     embed_parser: EmbedParser,
     context: BlockParsingContext,
+    make_embed_syntax,
 ) -> None:
-    context.line = "[embed](https://example.com:8080/content)"
+    context.line = make_embed_syntax("https://example.com:8080/content")
 
     await embed_parser._process(context)
 

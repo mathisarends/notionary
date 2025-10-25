@@ -14,12 +14,23 @@ def image_parser(syntax_registry: SyntaxRegistry) -> ImageParser:
     return ImageParser(syntax_registry=syntax_registry)
 
 
+@pytest.fixture
+def make_image_syntax(syntax_registry: SyntaxRegistry):
+    syntax = syntax_registry.get_image_syntax()
+
+    def _make(url: str) -> str:
+        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
+
+    return _make
+
+
 @pytest.mark.asyncio
 async def test_image_should_create_image_block(
     image_parser: ImageParser,
     context: BlockParsingContext,
+    make_image_syntax,
 ) -> None:
-    context.line = "[image](https://example.com/photo.jpg)"
+    context.line = make_image_syntax("https://example.com/photo.jpg")
 
     await image_parser._process(context)
 
@@ -35,8 +46,9 @@ async def test_image_should_create_image_block(
 async def test_image_with_url_containing_special_characters_should_extract_correctly(
     image_parser: ImageParser,
     context: BlockParsingContext,
+    make_image_syntax,
 ) -> None:
-    context.line = "[image](https://example.com/path/to/image.png?size=large&quality=high)"
+    context.line = make_image_syntax("https://example.com/path/to/image.png?size=large&quality=high")
 
     await image_parser._process(context)
 
@@ -48,8 +60,9 @@ async def test_image_with_url_containing_special_characters_should_extract_corre
 async def test_image_with_whitespace_around_url_should_strip(
     image_parser: ImageParser,
     context: BlockParsingContext,
+    make_image_syntax,
 ) -> None:
-    context.line = "[image](  https://example.com/photo.jpg  )"
+    context.line = make_image_syntax("  https://example.com/photo.jpg  ")
 
     await image_parser._process(context)
 
@@ -61,8 +74,9 @@ async def test_image_with_whitespace_around_url_should_strip(
 async def test_image_with_text_before_and_after_should_create_block(
     image_parser: ImageParser,
     context: BlockParsingContext,
+    make_image_syntax,
 ) -> None:
-    context.line = "Check out this image: [image](https://example.com/photo.jpg) it's great!"
+    context.line = f"Check out this image: {make_image_syntax('https://example.com/photo.jpg')} it's great!"
 
     await image_parser._process(context)
 
@@ -72,22 +86,23 @@ async def test_image_with_text_before_and_after_should_create_block(
 
 
 @pytest.mark.parametrize(
-    "line",
+    "url",
     [
-        "[image](https://example.com/photo.jpg)",
-        "[image](https://example.com/image.png)",
-        "[image](https://example.com/picture.gif)",
-        "[image](https://example.com/photo.jpeg)",
-        "[image](https://example.com/image.webp)",
-        "[image](https://s3.amazonaws.com/bucket/image.jpg)",
+        "https://example.com/photo.jpg",
+        "https://example.com/image.png",
+        "https://example.com/picture.gif",
+        "https://example.com/photo.jpeg",
+        "https://example.com/image.webp",
+        "https://s3.amazonaws.com/bucket/image.jpg",
     ],
 )
 def test_image_with_valid_url_should_handle(
     image_parser: ImageParser,
     context: BlockParsingContext,
-    line: str,
+    make_image_syntax,
+    url: str,
 ) -> None:
-    context.line = line
+    context.line = make_image_syntax(url)
 
     can_handle = image_parser._can_handle(context)
 
@@ -97,8 +112,9 @@ def test_image_with_valid_url_should_handle(
 def test_image_inside_parent_context_should_not_handle(
     image_parser: ImageParser,
     context: BlockParsingContext,
+    make_image_syntax,
 ) -> None:
-    context.line = "[image](https://example.com/photo.jpg)"
+    context.line = make_image_syntax("https://example.com/photo.jpg")
     context.is_inside_parent_context = Mock(return_value=True)
 
     can_handle = image_parser._can_handle(context)
@@ -137,8 +153,9 @@ def test_image_with_invalid_syntax_should_not_handle(
 async def test_image_with_empty_url_should_not_create_block(
     image_parser: ImageParser,
     context: BlockParsingContext,
+    make_image_syntax,
 ) -> None:
-    context.line = "[image]()"
+    context.line = make_image_syntax("")
 
     await image_parser._process(context)
 
@@ -149,8 +166,9 @@ async def test_image_with_empty_url_should_not_create_block(
 async def test_image_should_append_block_to_result_blocks(
     image_parser: ImageParser,
     context: BlockParsingContext,
+    make_image_syntax,
 ) -> None:
-    context.line = "[image](https://example.com/photo.jpg)"
+    context.line = make_image_syntax("https://example.com/photo.jpg")
     initial_length = len(context.result_blocks)
 
     await image_parser._process(context)
@@ -162,8 +180,9 @@ async def test_image_should_append_block_to_result_blocks(
 async def test_image_with_relative_url_should_create_block(
     image_parser: ImageParser,
     context: BlockParsingContext,
+    make_image_syntax,
 ) -> None:
-    context.line = "[image](/images/photo.jpg)"
+    context.line = make_image_syntax("/images/photo.jpg")
 
     await image_parser._process(context)
 
@@ -176,8 +195,9 @@ async def test_image_with_relative_url_should_create_block(
 async def test_image_with_data_url_should_create_block(
     image_parser: ImageParser,
     context: BlockParsingContext,
+    make_image_syntax,
 ) -> None:
-    context.line = "[image](data:image/png;base64,iVBORw0KGgoAAAANS)"
+    context.line = make_image_syntax("data:image/png;base64,iVBORw0KGgoAAAANS")
 
     await image_parser._process(context)
 

@@ -71,7 +71,13 @@ class FileLikeBlockParser(LineParser, LoggingMixin, Generic[_TBlock]):
         return match.group(1).strip() if match else None
 
     def _is_external_url(self, path_or_url: str) -> bool:
-        return path_or_url.startswith("http://") or path_or_url.startswith("https://")
+        if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
+            return True
+
+        if path_or_url.startswith("data:"):
+            return True
+
+        return path_or_url.startswith("/")
 
     async def _upload_local_file(self, file_path: str) -> FileUploadFileWithCaption:
         path = Path(file_path)
