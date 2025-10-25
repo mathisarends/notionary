@@ -7,8 +7,8 @@ from notionary.page.content.syntax import SyntaxDefinition
 
 class AudioRenderer(FileLikeBlockRenderer):
     @override
-    def _get_block_type(self) -> BlockType:
-        return BlockType.AUDIO
+    def _can_handle(self, block: Block) -> bool:
+        return block.type == BlockType.AUDIO
 
     @override
     def _get_syntax(self) -> SyntaxDefinition:

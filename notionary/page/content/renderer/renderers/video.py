@@ -7,8 +7,8 @@ from notionary.page.content.syntax import SyntaxDefinition
 
 class VideoRenderer(FileLikeBlockRenderer):
     @override
-    def _get_block_type(self) -> BlockType:
-        return BlockType.VIDEO
+    def _can_handle(self, block: Block) -> bool:
+        return block.type == BlockType.VIDEO
 
     @override
     def _get_syntax(self) -> SyntaxDefinition:

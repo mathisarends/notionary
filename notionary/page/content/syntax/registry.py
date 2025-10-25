@@ -94,63 +94,79 @@ class SyntaxRegistry:
     def get_heading_syntax(self) -> SyntaxDefinition:
         return self._definitions[SyntaxRegistryKey.HEADING]
 
+    def _create_media_syntax(self, media_type: str, url_pattern: str | None = None) -> SyntaxDefinition:
+        url_pattern = url_pattern or "[^)]+"
+        return SyntaxDefinition(
+            start_delimiter=f"[{media_type}](",
+            end_delimiter=")",
+            regex_pattern=re.compile(rf"\[{re.escape(media_type)}\]\(({url_pattern})\)"),
+        )
+
+    def _create_url_media_syntax(self, media_type: str) -> SyntaxDefinition:
+        return SyntaxDefinition(
+            start_delimiter=f"[{media_type}](",
+            end_delimiter=")",
+            regex_pattern=re.compile(rf"\[{re.escape(media_type)}\]\((https?://[^\s)]+)\)"),
+        )
+
     def _register_defaults(self) -> None:
         self._register_audio_syntax()
-        self._register_bookmark_syntax()
-        self._register_image_syntax()
         self._register_video_syntax()
+        self._register_image_syntax()
         self._register_file_syntax()
         self._register_pdf_syntax()
+        self._register_bookmark_syntax()
+        self._register_embed_syntax()
 
-        # List blocks
         self._register_bulleted_list_syntax()
         self._register_numbered_list_syntax()
         self._register_todo_syntax()
         self._register_todo_done_syntax()
 
-        # Container blocks
         self._register_toggle_syntax()
         self._register_toggleable_heading_syntax()
         self._register_callout_syntax()
         self._register_quote_syntax()
         self._register_code_syntax()
 
-        # Column layout blocks
         self._register_column_list_syntax()
         self._register_column_syntax()
 
         self._register_heading_1_syntax()
         self._register_heading_2_syntax()
         self._register_heading_3_syntax()
-        self._register_heading_syntax()  # Shared pattern for regular headings
+        self._register_heading_syntax()
 
         self._register_divider_syntax()
         self._register_breadcrumb_syntax()
         self._register_table_of_contents_syntax()
         self._register_equation_syntax()
-        self._register_embed_syntax()
         self._register_table_syntax()
         self._register_table_row_syntax()
 
-        # Post-processing and utility blocks
         self._register_caption_syntax()
         self._register_space_syntax()
 
     def _register_audio_syntax(self) -> None:
-        definition = SyntaxDefinition(
-            start_delimiter="[audio](",
-            end_delimiter=")",
-            regex_pattern=re.compile(r"\[audio\]\(([^)]+)\)"),
-        )
-        self._definitions[SyntaxRegistryKey.AUDIO] = definition
+        self._definitions[SyntaxRegistryKey.AUDIO] = self._create_media_syntax("audio")
+
+    def _register_video_syntax(self) -> None:
+        self._definitions[SyntaxRegistryKey.VIDEO] = self._create_media_syntax("video")
+
+    def _register_image_syntax(self) -> None:
+        self._definitions[SyntaxRegistryKey.IMAGE] = self._create_media_syntax("image")
+
+    def _register_file_syntax(self) -> None:
+        self._definitions[SyntaxRegistryKey.FILE] = self._create_media_syntax("file")
+
+    def _register_pdf_syntax(self) -> None:
+        self._definitions[SyntaxRegistryKey.PDF] = self._create_media_syntax("pdf")
 
     def _register_bookmark_syntax(self) -> None:
-        definition = SyntaxDefinition(
-            start_delimiter="[bookmark](",
-            end_delimiter=")",
-            regex_pattern=re.compile(r"\[bookmark\]\((https?://[^\s\"]+)\)"),
-        )
-        self._definitions[SyntaxRegistryKey.BOOKMARK] = definition
+        self._definitions[SyntaxRegistryKey.BOOKMARK] = self._create_url_media_syntax("bookmark")
+
+    def _register_embed_syntax(self) -> None:
+        self._definitions[SyntaxRegistryKey.EMBED] = self._create_url_media_syntax("embed")
 
     def _register_breadcrumb_syntax(self) -> None:
         definition = SyntaxDefinition(
@@ -219,14 +235,6 @@ class SyntaxRegistry:
         )
         self._definitions[SyntaxRegistryKey.DIVIDER] = definition
 
-    def _register_embed_syntax(self) -> None:
-        definition = SyntaxDefinition(
-            start_delimiter="[embed](",
-            end_delimiter=")",
-            regex_pattern=re.compile(r"\[embed\]\((https?://[^\s)]+)\)"),
-        )
-        self._definitions[SyntaxRegistryKey.EMBED] = definition
-
     def _register_equation_syntax(self) -> None:
         definition = SyntaxDefinition(
             start_delimiter="$$",
@@ -234,14 +242,6 @@ class SyntaxRegistry:
             regex_pattern=re.compile(r"^\$\$\s*$"),
         )
         self._definitions[SyntaxRegistryKey.EQUATION] = definition
-
-    def _register_file_syntax(self) -> None:
-        definition = SyntaxDefinition(
-            start_delimiter="[file](",
-            end_delimiter=")",
-            regex_pattern=re.compile(r"\[file\]\(([^)]+)\)"),
-        )
-        self._definitions[SyntaxRegistryKey.FILE] = definition
 
     def _register_heading_1_syntax(self) -> None:
         definition = SyntaxDefinition(
@@ -267,14 +267,6 @@ class SyntaxRegistry:
         )
         self._definitions[SyntaxRegistryKey.HEADING_3] = definition
 
-    def _register_image_syntax(self) -> None:
-        definition = SyntaxDefinition(
-            start_delimiter="[image](",
-            end_delimiter=")",
-            regex_pattern=re.compile(r"(?<!!)\[image\]\(([^)]+)\)"),
-        )
-        self._definitions[SyntaxRegistryKey.IMAGE] = definition
-
     def _register_numbered_list_syntax(self) -> None:
         definition = SyntaxDefinition(
             start_delimiter="1. ",
@@ -282,14 +274,6 @@ class SyntaxRegistry:
             regex_pattern=re.compile(r"^(\s*)(\d+)\.\s+(.+)$"),
         )
         self._definitions[SyntaxRegistryKey.NUMBERED_LIST] = definition
-
-    def _register_pdf_syntax(self) -> None:
-        definition = SyntaxDefinition(
-            start_delimiter="[pdf](",
-            end_delimiter=")",
-            regex_pattern=re.compile(r"\[pdf\]\(([^)]+)\)"),
-        )
-        self._definitions[SyntaxRegistryKey.PDF] = definition
 
     def _register_quote_syntax(self) -> None:
         definition = SyntaxDefinition(
@@ -361,14 +345,6 @@ class SyntaxRegistry:
             end_regex_pattern=re.compile(rf"^{escaped_delimiter}\s*$"),
         )
         self._definitions[SyntaxRegistryKey.TOGGLEABLE_HEADING] = definition
-
-    def _register_video_syntax(self) -> None:
-        definition = SyntaxDefinition(
-            start_delimiter="[video](",
-            end_delimiter=")",
-            regex_pattern=re.compile(r"\[video\]\(([^)]+)\)"),
-        )
-        self._definitions[SyntaxRegistryKey.VIDEO] = definition
 
     def _register_caption_syntax(self) -> None:
         definition = SyntaxDefinition(

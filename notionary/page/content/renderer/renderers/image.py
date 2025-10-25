@@ -7,8 +7,8 @@ from notionary.page.content.syntax import SyntaxDefinition
 
 class ImageRenderer(FileLikeBlockRenderer):
     @override
-    def _get_block_type(self) -> BlockType:
-        return BlockType.IMAGE
+    def _can_handle(self, block: Block) -> bool:
+        return block.type == BlockType.IMAGE
 
     @override
     def _get_syntax(self) -> SyntaxDefinition:

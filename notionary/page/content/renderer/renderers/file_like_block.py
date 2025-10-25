@@ -3,7 +3,6 @@ from typing import override
 
 from notionary.blocks.schemas import (
     Block,
-    BlockType,
     ExternalFileWithCaption,
     NotionHostedFileWithCaption,
 )
@@ -13,20 +12,12 @@ from notionary.page.content.syntax import SyntaxDefinition
 
 class FileLikeBlockRenderer(CaptionedBlockRenderer):
     @abstractmethod
-    def _get_block_type(self) -> BlockType:
-        pass
-
-    @abstractmethod
     def _get_syntax(self) -> SyntaxDefinition:
         pass
 
     @abstractmethod
     def _get_file_data(self, block: Block) -> ExternalFileWithCaption | NotionHostedFileWithCaption | None:
         pass
-
-    @override
-    def _can_handle(self, block: Block) -> bool:
-        return block.type == self._get_block_type()
 
     @override
     async def _render_main_content(self, block: Block) -> str:

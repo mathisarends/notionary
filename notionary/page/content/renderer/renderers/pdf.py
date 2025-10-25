@@ -7,8 +7,8 @@ from notionary.page.content.syntax import SyntaxDefinition
 
 class PdfRenderer(FileLikeBlockRenderer):
     @override
-    def _get_block_type(self) -> BlockType:
-        return BlockType.PDF
+    def _can_handle(self, block: Block) -> bool:
+        return block.type == BlockType.PDF
 
     @override
     def _get_syntax(self) -> SyntaxDefinition:
@@ -17,7 +17,3 @@ class PdfRenderer(FileLikeBlockRenderer):
     @override
     def _get_file_data(self, block: Block) -> ExternalFileWithCaption | NotionHostedFileWithCaption | None:
         return block.pdf
-
-    # Compatibility wrapper expected by some tests — forwards to the shared extractor.
-    def _extract_pdf_url(self, block: Block) -> str:
-        return self._extract_url(block)
