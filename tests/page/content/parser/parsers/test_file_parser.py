@@ -3,6 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.schemas import CreateFileBlock
+from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.file import FileParser
 from notionary.page.content.syntax import SyntaxRegistry
@@ -11,7 +12,8 @@ from notionary.shared.models.file import FileType
 
 @pytest.fixture
 def file_parser(syntax_registry: SyntaxRegistry) -> FileParser:
-    return FileParser(syntax_registry=syntax_registry)
+    mock_file_upload = Mock(spec=NotionFileUpload)
+    return FileParser(syntax_registry=syntax_registry, file_upload_service=mock_file_upload)
 
 
 @pytest.fixture

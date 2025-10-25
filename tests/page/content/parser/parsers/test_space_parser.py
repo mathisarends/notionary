@@ -1,5 +1,5 @@
 from textwrap import dedent
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -12,6 +12,7 @@ from notionary.blocks.rich_text.name_id_resolver import (
     PersonNameIdResolver,
 )
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.factory import PageContentServiceFactory
 from notionary.page.content.parser.factory import ConverterChainFactory
 from notionary.page.content.parser.service import MarkdownToNotionConverter
@@ -71,7 +72,11 @@ def parser(
         person_resolver=mock_user_resolver,
     )
 
-    converter_chain_factory = ConverterChainFactory(rich_text_converter=markdown_rich_text_converter)
+    mock_file_upload = Mock(spec=NotionFileUpload)
+    converter_chain_factory = ConverterChainFactory(
+        rich_text_converter=markdown_rich_text_converter,
+        file_upload_service=mock_file_upload,
+    )
 
     renderer_chain_factory = RendererChainFactory(rich_text_markdown_converter=rich_text_to_markdown_converter)
 

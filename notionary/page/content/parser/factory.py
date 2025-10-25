@@ -1,6 +1,7 @@
 from notionary.blocks.rich_text.markdown_rich_text_converter import (
     MarkdownRichTextConverter,
 )
+from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.parser.parsers import (
     AudioParser,
     BookmarkParser,
@@ -37,9 +38,11 @@ class ConverterChainFactory:
         self,
         rich_text_converter: MarkdownRichTextConverter | None = None,
         syntax_registry: SyntaxRegistry | None = None,
+        file_upload_service: NotionFileUpload | None = None,
     ) -> None:
         self._rich_text_converter = rich_text_converter or MarkdownRichTextConverter()
         self._syntax_registry = syntax_registry or SyntaxRegistry()
+        self._file_upload_service = file_upload_service
 
     def create(self) -> LineParser:
         # multi-line (structural) blocks
@@ -186,19 +189,19 @@ class ConverterChainFactory:
         return EmbedParser(syntax_registry=self._syntax_registry)
 
     def _create_image_parser(self) -> ImageParser:
-        return ImageParser(syntax_registry=self._syntax_registry)
+        return ImageParser(syntax_registry=self._syntax_registry, file_upload_service=self._file_upload_service)
 
     def _create_video_parser(self) -> VideoParser:
-        return VideoParser(syntax_registry=self._syntax_registry)
+        return VideoParser(syntax_registry=self._syntax_registry, file_upload_service=self._file_upload_service)
 
     def _create_audio_parser(self) -> AudioParser:
-        return AudioParser(syntax_registry=self._syntax_registry)
+        return AudioParser(syntax_registry=self._syntax_registry, file_upload_service=self._file_upload_service)
 
     def _create_file_parser(self) -> FileParser:
-        return FileParser(syntax_registry=self._syntax_registry)
+        return FileParser(syntax_registry=self._syntax_registry, file_upload_service=self._file_upload_service)
 
     def _create_pdf_parser(self) -> PdfParser:
-        return PdfParser(syntax_registry=self._syntax_registry)
+        return PdfParser(syntax_registry=self._syntax_registry, file_upload_service=self._file_upload_service)
 
     def _create_caption_parser(self) -> CaptionParser:
         return CaptionParser(
