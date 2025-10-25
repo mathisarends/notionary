@@ -132,9 +132,6 @@ class SyntaxRegistry:
         self._register_column_list_syntax()
         self._register_column_syntax()
 
-        self._register_heading_1_syntax()
-        self._register_heading_2_syntax()
-        self._register_heading_3_syntax()
         self._register_heading_syntax()
 
         self._register_divider_syntax()
@@ -242,30 +239,6 @@ class SyntaxRegistry:
             regex_pattern=re.compile(r"^\$\$\s*$"),
         )
         self._definitions[SyntaxRegistryKey.EQUATION] = definition
-
-    def _register_heading_1_syntax(self) -> None:
-        definition = SyntaxDefinition(
-            start_delimiter="# ",
-            end_delimiter="",
-            regex_pattern=re.compile(r"^#\s+(.+)$"),
-        )
-        self._definitions[SyntaxRegistryKey.HEADING_1] = definition
-
-    def _register_heading_2_syntax(self) -> None:
-        definition = SyntaxDefinition(
-            start_delimiter="## ",
-            end_delimiter="",
-            regex_pattern=re.compile(r"^#{2}\s+(.+)$"),
-        )
-        self._definitions[SyntaxRegistryKey.HEADING_2] = definition
-
-    def _register_heading_3_syntax(self) -> None:
-        definition = SyntaxDefinition(
-            start_delimiter="### ",
-            end_delimiter="",
-            regex_pattern=re.compile(r"^#{3}\s+(.+)$"),
-        )
-        self._definitions[SyntaxRegistryKey.HEADING_3] = definition
 
     def _register_numbered_list_syntax(self) -> None:
         definition = SyntaxDefinition(

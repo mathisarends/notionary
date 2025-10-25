@@ -11,7 +11,6 @@ class SyntaxRegistryKey(StrEnum):
     FILE = "file"
     PDF = "pdf"
 
-    # List blocks
     BULLETED_LIST = "bulleted_list"
     NUMBERED_LIST = "numbered_list"
     TO_DO = "todo"
@@ -26,11 +25,7 @@ class SyntaxRegistryKey(StrEnum):
     COLUMN_LIST = "column_list"
     COLUMN = "column"
 
-    # Heading blocks
-    HEADING_1 = "heading_1"
-    HEADING_2 = "heading_2"
-    HEADING_3 = "heading_3"
-    HEADING = "heading"  # Shared pattern for regular headings
+    HEADING = "heading"
 
     DIVIDER = "divider"
     BREADCRUMB = "breadcrumb"
@@ -44,6 +39,7 @@ class SyntaxRegistryKey(StrEnum):
     SPACE = "space"
 
 
+# TODO: This should be extracted here:
 # some elemente need closing delimiters, others not
 # either use union type or validate config in service
 @dataclass(frozen=True)
