@@ -1,34 +1,22 @@
 from typing import override
 
 from notionary.blocks.schemas import Block, BlockType, ExternalFileWithCaption, NotionHostedFileWithCaption
-from notionary.page.content.renderer.renderers.captioned_block import CaptionedBlockRenderer
+from notionary.page.content.renderer.renderers.file_like_block import FileLikeBlockRenderer
+from notionary.page.content.syntax import SyntaxDefinition
 
 
-class FileRenderer(CaptionedBlockRenderer):
+class FileRenderer(FileLikeBlockRenderer):
     @override
-    def _can_handle(self, block: Block) -> bool:
-        return block.type == BlockType.FILE
+    def _get_block_type(self) -> BlockType:
+        return BlockType.FILE
 
     @override
-    async def _render_main_content(self, block: Block) -> str:
-        url = self._extract_file_url(block)
+    def _get_syntax(self) -> SyntaxDefinition:
+        return self._syntax_registry.get_file_syntax()
 
-        if not url:
-            return ""
-
-        syntax = self._syntax_registry.get_file_syntax()
-        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
-
-    def _extract_file_url(self, block: Block) -> str:
-        if not block.file:
-            return ""
-
-        if isinstance(block.file, ExternalFileWithCaption):
-            return block.file.external.url or ""
-        elif isinstance(block.file, NotionHostedFileWithCaption):
-            return block.file.file.url or ""
-
-        return ""
+    @override
+    def _get_file_data(self, block: Block) -> ExternalFileWithCaption | NotionHostedFileWithCaption | None:
+        return block.file
 
     def _extract_file_name(self, block: Block) -> str:
         if not block.file:

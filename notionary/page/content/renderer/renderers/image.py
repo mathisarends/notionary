@@ -1,31 +1,19 @@
 from typing import override
 
 from notionary.blocks.schemas import Block, BlockType, ExternalFileWithCaption, NotionHostedFileWithCaption
-from notionary.page.content.renderer.renderers.captioned_block import CaptionedBlockRenderer
+from notionary.page.content.renderer.renderers.file_like_block import FileLikeBlockRenderer
+from notionary.page.content.syntax import SyntaxDefinition
 
 
-class ImageRenderer(CaptionedBlockRenderer):
+class ImageRenderer(FileLikeBlockRenderer):
     @override
-    def _can_handle(self, block: Block) -> bool:
-        return block.type == BlockType.IMAGE
+    def _get_block_type(self) -> BlockType:
+        return BlockType.IMAGE
 
     @override
-    async def _render_main_content(self, block: Block) -> str:
-        url = self._extract_image_url(block)
+    def _get_syntax(self) -> SyntaxDefinition:
+        return self._syntax_registry.get_image_syntax()
 
-        if not url:
-            return ""
-
-        syntax = self._syntax_registry.get_image_syntax()
-        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
-
-    def _extract_image_url(self, block: Block) -> str:
-        if not block.image:
-            return ""
-
-        if isinstance(block.image, ExternalFileWithCaption):
-            return block.image.external.url or ""
-        elif isinstance(block.image, NotionHostedFileWithCaption):
-            return block.image.file.url or ""
-
-        return ""
+    @override
+    def _get_file_data(self, block: Block) -> ExternalFileWithCaption | NotionHostedFileWithCaption | None:
+        return block.image

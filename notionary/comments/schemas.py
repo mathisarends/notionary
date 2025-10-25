@@ -8,10 +8,6 @@ from pydantic import BaseModel, Field
 
 from notionary.blocks.rich_text.models import RichText
 
-# ---------------------------
-# Comment Parent
-# ---------------------------
-
 
 class CommentParentType(StrEnum):
     PAGE_ID = "page_id"
@@ -28,7 +24,7 @@ class BlockCommentParent(BaseModel):
     block_id: str
 
 
-CommentParent = PageCommentParent | BlockCommentParent
+type CommentParent = PageCommentParent | BlockCommentParent
 
 
 # ---------------------------
@@ -96,7 +92,7 @@ class CustomCommentDisplayName(BaseModel):
     custom: CustomDisplayName
 
 
-CommentDisplayNameInput = IntegrationDisplayName | UserDisplayName | CustomCommentDisplayName
+type CommentDisplayNameInput = IntegrationDisplayName | UserDisplayName | CustomCommentDisplayName
 
 
 class CommentDisplayNameDto(BaseModel):
@@ -189,8 +185,6 @@ class UserRef(BaseModel):
 
 
 class CommentDto(BaseModel):
-    """Comment object as returned by the API"""
-
     object: Literal["comment"] = "comment"
     id: str
 
@@ -217,24 +211,3 @@ class CommentListResponse(BaseModel):
     results: list[CommentDto] = Field(default_factory=list)
     next_cursor: str | None = None
     has_more: bool = False
-
-
-# ---------------------------
-# Convenience Builders
-# ---------------------------
-
-
-class CommentDisplayNameBuilder:
-    """Helper class to build display names easily"""
-
-    @staticmethod
-    def integration() -> IntegrationDisplayName:
-        return IntegrationDisplayName()
-
-    @staticmethod
-    def user() -> UserDisplayName:
-        return UserDisplayName()
-
-    @staticmethod
-    def custom(name: str) -> CustomCommentDisplayName:
-        return CustomCommentDisplayName(custom=CustomDisplayName(name=name))

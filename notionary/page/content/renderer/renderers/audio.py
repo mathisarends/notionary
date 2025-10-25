@@ -1,31 +1,19 @@
 from typing import override
 
 from notionary.blocks.schemas import Block, BlockType, ExternalFileWithCaption, NotionHostedFileWithCaption
-from notionary.page.content.renderer.renderers.captioned_block import CaptionedBlockRenderer
+from notionary.page.content.renderer.renderers.file_like_block import FileLikeBlockRenderer
+from notionary.page.content.syntax import SyntaxDefinition
 
 
-class AudioRenderer(CaptionedBlockRenderer):
+class AudioRenderer(FileLikeBlockRenderer):
     @override
-    def _can_handle(self, block: Block) -> bool:
-        return block.type == BlockType.AUDIO
+    def _get_block_type(self) -> BlockType:
+        return BlockType.AUDIO
 
     @override
-    async def _render_main_content(self, block: Block) -> str:
-        url = self._extract_audio_url(block)
+    def _get_syntax(self) -> SyntaxDefinition:
+        return self._syntax_registry.get_audio_syntax()
 
-        if not url:
-            return ""
-
-        syntax = self._syntax_registry.get_audio_syntax()
-        return f"{syntax.start_delimiter}{url}{syntax.end_delimiter}"
-
-    def _extract_audio_url(self, block: Block) -> str:
-        if not block.audio:
-            return ""
-
-        if isinstance(block.audio, ExternalFileWithCaption):
-            return block.audio.external.url or ""
-        elif isinstance(block.audio, NotionHostedFileWithCaption):
-            return block.audio.file.url or ""
-
-        return ""
+    @override
+    def _get_file_data(self, block: Block) -> ExternalFileWithCaption | NotionHostedFileWithCaption | None:
+        return block.audio

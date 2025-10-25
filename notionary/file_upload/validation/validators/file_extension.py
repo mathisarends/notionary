@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import ClassVar, override
 
 from notionary.exceptions.file_upload import NoFileExtensionException, UnsupportedFileTypeException
-from notionary.file_upload.schemas import (
+from notionary.file_upload.validation.models import (
     AudioExtension,
     AudioMimeType,
     DocumentExtension,

@@ -1,5 +1,3 @@
-"""Parser for embed blocks."""
-
 from typing import override
 
 from notionary.blocks.schemas import CreateEmbedBlock, EmbedData
