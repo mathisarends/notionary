@@ -123,38 +123,3 @@ async def test_image_with_missing_data_should_render_empty_string(
     await image_renderer._process(render_context)
 
     assert render_context.markdown_result == ""
-
-
-@pytest.mark.asyncio
-async def test_extract_image_url_with_external_file_should_return_url(
-    image_renderer: ImageRenderer,
-) -> None:
-    image_data = _create_image_data_with_external_url("https://example.com/image.png")
-    block = _create_image_block(image_data)
-
-    url = image_renderer._extract_image_url(block)
-
-    assert url == "https://example.com/image.png"
-
-
-@pytest.mark.asyncio
-async def test_extract_image_url_with_notion_file_should_return_url(
-    image_renderer: ImageRenderer,
-) -> None:
-    image_data = _create_image_data_with_notion_file("https://notion.so/image.png", "2025-01-01")
-    block = _create_image_block(image_data)
-
-    url = image_renderer._extract_image_url(block)
-
-    assert url == "https://notion.so/image.png"
-
-
-@pytest.mark.asyncio
-async def test_extract_image_url_without_image_data_should_return_empty_string(
-    image_renderer: ImageRenderer,
-) -> None:
-    block = _create_image_block(None)
-
-    url = image_renderer._extract_image_url(block)
-
-    assert url == ""

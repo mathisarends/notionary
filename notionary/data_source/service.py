@@ -20,6 +20,7 @@ from notionary.data_source.query import DataSourceQueryBuilder, DataSourceQueryP
 from notionary.data_source.schema.service import DataSourcePropertySchemaFormatter
 from notionary.data_source.schemas import DataSourceDto
 from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound, DataSourcePropertyTypeError
+from notionary.file_upload.service import NotionFileUpload
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import NotionPageDto
 from notionary.shared.entity.dto_parsers import (
@@ -28,6 +29,7 @@ from notionary.shared.entity.dto_parsers import (
 )
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.entity.service import Entity
+from notionary.user.service import UserService
 from notionary.workspace.query.service import WorkspaceQueryService
 
 if TYPE_CHECKING:
@@ -43,8 +45,10 @@ class NotionDataSource(Entity):
         properties: dict[str, DataSourceProperty],
         data_source_instance_client: DataSourceInstanceClient,
         query_resolver: QueryResolver | None = None,
+        user_service: UserService | None = None,
+        file_upload_service: NotionFileUpload | None = None,
     ) -> None:
-        super().__init__(dto=dto)
+        super().__init__(dto=dto, user_service=user_service, file_upload_service=file_upload_service)
 
         self._parent_database: NotionDatabase | None = None
         self._title = title

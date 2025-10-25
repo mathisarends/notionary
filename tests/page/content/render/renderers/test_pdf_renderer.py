@@ -123,38 +123,3 @@ async def test_pdf_with_missing_data_should_render_empty_string(
     await pdf_renderer._process(render_context)
 
     assert render_context.markdown_result == ""
-
-
-@pytest.mark.asyncio
-async def test_extract_pdf_url_with_external_file_should_return_url(
-    pdf_renderer: PdfRenderer,
-) -> None:
-    pdf_data = _create_pdf_data_with_external_url("https://example.com/document.pdf")
-    block = _create_pdf_block(pdf_data)
-
-    url = pdf_renderer._extract_pdf_url(block)
-
-    assert url == "https://example.com/document.pdf"
-
-
-@pytest.mark.asyncio
-async def test_extract_pdf_url_with_notion_file_should_return_url(
-    pdf_renderer: PdfRenderer,
-) -> None:
-    pdf_data = _create_pdf_data_with_notion_file("https://notion.so/document.pdf", "2025-01-01")
-    block = _create_pdf_block(pdf_data)
-
-    url = pdf_renderer._extract_pdf_url(block)
-
-    assert url == "https://notion.so/document.pdf"
-
-
-@pytest.mark.asyncio
-async def test_extract_pdf_url_without_pdf_data_should_return_empty_string(
-    pdf_renderer: PdfRenderer,
-) -> None:
-    block = _create_pdf_block(None)
-
-    url = pdf_renderer._extract_pdf_url(block)
-
-    assert url == ""

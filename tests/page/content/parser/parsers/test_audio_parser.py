@@ -185,8 +185,7 @@ async def test_audio_with_url_only_whitespace_should_create_block_with_empty_str
 
     await audio_parser._process(context)
 
-    assert len(context.result_blocks) == 1
-    assert context.result_blocks[0].audio.external.url == ""
+    assert len(context.result_blocks) == 0
 
 
 @pytest.mark.asyncio

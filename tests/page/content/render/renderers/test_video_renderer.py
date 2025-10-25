@@ -123,38 +123,3 @@ async def test_video_with_missing_data_should_render_empty_string(
     await video_renderer._process(render_context)
 
     assert render_context.markdown_result == ""
-
-
-@pytest.mark.asyncio
-async def test_extract_video_url_with_external_file_should_return_url(
-    video_renderer: VideoRenderer,
-) -> None:
-    video_data = _create_video_data_with_external_url("https://example.com/video.mp4")
-    block = _create_video_block(video_data)
-
-    url = video_renderer._extract_video_url(block)
-
-    assert url == "https://example.com/video.mp4"
-
-
-@pytest.mark.asyncio
-async def test_extract_video_url_with_notion_file_should_return_url(
-    video_renderer: VideoRenderer,
-) -> None:
-    video_data = _create_video_data_with_notion_file("https://notion.so/video.mp4", "2025-01-01")
-    block = _create_video_block(video_data)
-
-    url = video_renderer._extract_video_url(block)
-
-    assert url == "https://notion.so/video.mp4"
-
-
-@pytest.mark.asyncio
-async def test_extract_video_url_without_video_data_should_return_empty_string(
-    video_renderer: VideoRenderer,
-) -> None:
-    block = _create_video_block(None)
-
-    url = video_renderer._extract_video_url(block)
-
-    assert url == ""

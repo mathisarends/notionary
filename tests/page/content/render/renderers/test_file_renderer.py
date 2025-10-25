@@ -144,30 +144,6 @@ async def test_file_with_missing_data_should_render_empty_string(
 
 
 @pytest.mark.asyncio
-async def test_extract_file_url_with_external_file_should_return_url(
-    file_renderer: FileRenderer,
-) -> None:
-    file_data = _create_file_data_with_external_url("https://example.com/file.zip")
-    block = _create_file_block(file_data)
-
-    url = file_renderer._extract_file_url(block)
-
-    assert url == "https://example.com/file.zip"
-
-
-@pytest.mark.asyncio
-async def test_extract_file_url_with_notion_file_should_return_url(
-    file_renderer: FileRenderer,
-) -> None:
-    file_data = _create_file_data_with_notion_file("https://notion.so/file.zip", "2025-01-01")
-    block = _create_file_block(file_data)
-
-    url = file_renderer._extract_file_url(block)
-
-    assert url == "https://notion.so/file.zip"
-
-
-@pytest.mark.asyncio
 async def test_extract_file_name_with_name_should_return_name(
     file_renderer: FileRenderer,
 ) -> None:

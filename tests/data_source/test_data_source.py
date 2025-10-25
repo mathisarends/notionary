@@ -120,7 +120,11 @@ def data_source(
     mock_query_resolver: QueryResolver,
     monkeypatch,
 ) -> NotionDataSource:
+    from notionary.file_upload.service import NotionFileUpload
+
     monkeypatch.setattr("notionary.shared.entity.service.UserService", lambda: Mock(spec=UserService))
+
+    mock_file_upload_service = Mock(spec=NotionFileUpload)
 
     return NotionDataSource(
         dto=base_dto,
@@ -129,6 +133,8 @@ def data_source(
         properties=test_properties,
         data_source_instance_client=Mock(spec=DataSourceInstanceClient),
         query_resolver=mock_query_resolver,
+        user_service=Mock(spec=UserService),
+        file_upload_service=mock_file_upload_service,
     )
 
 

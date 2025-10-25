@@ -5,7 +5,7 @@ from notionary.blocks.schemas import ExternalFileWithCaption
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 from notionary.page.content.syntax import SyntaxRegistry
 from notionary.page.content.syntax.models import SyntaxDefinition
-from notionary.shared.models.file import ExternalFile
+from notionary.shared.models.file import ExternalFileData
 
 _TBlock = TypeVar("_TBlock")
 
@@ -36,8 +36,7 @@ class FileLikeBlockParser(LineParser, Generic[_TBlock]):
             return
 
         file_data = ExternalFileWithCaption(
-            external=ExternalFile.from_url(url=url),
-            caption=[],
+            external=ExternalFileData(url=url),
         )
         block = self._create_block(file_data)
         context.result_blocks.append(block)

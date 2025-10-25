@@ -17,3 +17,7 @@ class PdfRenderer(FileLikeBlockRenderer):
     @override
     def _get_file_data(self, block: Block) -> ExternalFileWithCaption | NotionHostedFileWithCaption | None:
         return block.pdf
+
+    # Compatibility wrapper expected by some tests — forwards to the shared extractor.
+    def _extract_pdf_url(self, block: Block) -> str:
+        return self._extract_url(block)
