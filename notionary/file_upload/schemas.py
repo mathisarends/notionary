@@ -1,5 +1,4 @@
 from enum import StrEnum
-from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -16,18 +15,7 @@ class FileUploadStatus(StrEnum):
     EXPIRED = "expired"
 
 
-class WorkspaceLimits(BaseModel):
-    max_file_upload_size_in_bytes: int
-
-
-class BotInfo(BaseModel):
-    owner: dict
-    workspace_name: str | None = None
-    workspace_limits: WorkspaceLimits
-
-
 class FileUploadResponse(BaseModel):
-    object: Literal["file_upload"]
     id: str
     created_time: str
     last_edited_time: str
@@ -38,7 +26,7 @@ class FileUploadResponse(BaseModel):
     filename: str | None = None
     content_type: str | None = None
     content_length: int | None = None
-    request_id: str
+    request_id: str | None = None
 
 
 class FileUploadFilter(BaseModel):
@@ -47,12 +35,9 @@ class FileUploadFilter(BaseModel):
 
 
 class FileUploadListResponse(BaseModel):
-    object: Literal["list"]
     results: list[FileUploadResponse]
     next_cursor: str | None = None
     has_more: bool
-    type: Literal["file_upload"]
-    request_id: str
 
 
 class FileUploadCreateRequest(BaseModel):
@@ -85,7 +70,6 @@ class FileUploadCompleteRequest(BaseModel):
 
 
 class FileUploadAttachment(BaseModel):
-    type: Literal["file_upload"]
     file_upload: dict[str, str]
     name: str | None = None
 

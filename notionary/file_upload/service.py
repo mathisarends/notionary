@@ -24,6 +24,10 @@ class FileUploadService(LoggingMixin):
     async def upload_file(self, file_path: Path, filename: str | None = None) -> FileUploadResponse:
         file_path = Path(file_path)
 
+        if not file_path.is_absolute() and self.config.base_upload_path:
+            file_path = Path(self.config.base_upload_path) / file_path
+        file_path = file_path.resolve()
+
         validator_service = create_file_upload_validation_service(file_path)
         await validator_service.validate()
 
@@ -78,7 +82,7 @@ class FileUploadService(LoggingMixin):
         )
 
         self.logger.info("Single-part content sent, waiting for completion... (ID: %s)", file_upload.id)
-        return await self.wait_for_completion(file_upload.id)
+        return await self._wait_for_completion(file_upload.id)
 
     async def _upload_multi_part_content(
         self,
@@ -100,7 +104,7 @@ class FileUploadService(LoggingMixin):
         await self.client.complete_upload(file_upload.id)
 
         self.logger.info("Multi-part content sent, waiting for completion... (ID: %s)", file_upload.id)
-        return await self.wait_for_completion(file_upload.id)
+        return await self._wait_for_completion(file_upload.id)
 
     async def _send_parts(
         self,
@@ -157,7 +161,7 @@ class FileUploadService(LoggingMixin):
         except Exception as e:
             raise UploadFailedError(file_upload_id, reason=str(e)) from e
 
-    async def wait_for_completion(
+    async def _wait_for_completion(
         self,
         file_upload_id: str,
         timeout_seconds: int | None = None,
@@ -183,9 +187,6 @@ class FileUploadService(LoggingMixin):
 
             await asyncio.sleep(self.config.poll_interval)
 
-    async def list_recent_uploads(self, limit: int = 50) -> list[FileUploadResponse]:
-        response = await self.client.list_file_uploads(
-            page_size=min(limit, 100),
-            total_results_limit=limit,
-        )
-        return response.results[:limit]
+    async def list_recent_uploads(self) -> list[FileUploadResponse]:
+        response = await self.client.list_file_uploads()
+        return response
