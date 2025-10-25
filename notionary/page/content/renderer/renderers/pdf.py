@@ -1,6 +1,6 @@
 from typing import override
 
-from notionary.blocks.schemas import Block, BlockType
+from notionary.blocks.schemas import Block, BlockType, ExternalFileWithCaption, NotionHostedFileWithCaption
 from notionary.page.content.renderer.renderers.captioned_block import CaptionedBlockRenderer
 
 
@@ -23,9 +23,9 @@ class PdfRenderer(CaptionedBlockRenderer):
         if not block.pdf:
             return ""
 
-        if block.pdf.external:
+        if isinstance(block.pdf, ExternalFileWithCaption):
             return block.pdf.external.url or ""
-        elif block.pdf.file:
+        elif isinstance(block.pdf, NotionHostedFileWithCaption):
             return block.pdf.file.url or ""
 
         return ""

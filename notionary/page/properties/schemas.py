@@ -4,6 +4,7 @@ from typing import Any, Literal, TypeVar
 from pydantic import BaseModel, ConfigDict, Field
 
 from notionary.blocks.rich_text.models import RichText
+from notionary.shared.models.file import File
 from notionary.shared.properties.type import PropertyType
 from notionary.shared.typings import JsonDict
 from notionary.user.schemas import PersonUserResponseDto, UserResponseDto
@@ -36,38 +37,6 @@ class DateValue(BaseModel):
     start: str
     end: str | None = None
     time_zone: str | None = None
-
-
-# ============================================================================
-# File Models
-# ============================================================================
-
-
-class FileType(StrEnum):
-    EXTERNAL = "external"
-    FILE = "file"
-
-
-class ExternalFile(BaseModel):
-    """External file hosted outside of Notion."""
-
-    url: str
-
-
-class NotionFile(BaseModel):
-    """File uploaded to Notion with expiration."""
-
-    url: str
-    expiry_time: str
-
-
-class FileObject(BaseModel):
-    """File object can be external or uploaded to Notion."""
-
-    name: str
-    type: FileType
-    external: ExternalFile | None = None
-    file: NotionFile | None = None
 
 
 # ============================================================================
@@ -254,7 +223,7 @@ class PageRollupProperty(PageProperty):
 
 class PageFilesProperty(PageProperty):
     type: Literal[PropertyType.FILES] = PropertyType.FILES
-    files: list[FileObject] = Field(default_factory=list)
+    files: list[File] = Field(default_factory=list)
 
 
 class PageRelationProperty(PageProperty):

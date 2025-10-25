@@ -3,27 +3,28 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from notionary.blocks.enums import BlockType, FileType
+from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, ExternalFile, NotionHostedFile, PdfBlock, PdfData
+from notionary.blocks.schemas import Block, ExternalFileWithCaption, NotionHostedFileWithCaption, PdfBlock
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.pdf import PdfRenderer
+from notionary.shared.models.file import ExternalFileData, NotionHostedFileData
 
 
-def _create_pdf_data_with_external_url(url: str) -> PdfData:
-    return PdfData(type=FileType.EXTERNAL, external=ExternalFile(url=url))
+def _create_pdf_data_with_external_url(url: str) -> ExternalFileWithCaption:
+    return ExternalFileWithCaption(external=ExternalFileData(url=url))
 
 
-def _create_pdf_data_with_notion_file(url: str, expiry_time: str) -> PdfData:
-    return PdfData(type=FileType.FILE, file=NotionHostedFile(url=url, expiry_time=expiry_time))
+def _create_pdf_data_with_notion_file(url: str, expiry_time: str) -> NotionHostedFileWithCaption:
+    return NotionHostedFileWithCaption(file=NotionHostedFileData(url=url, expiry_time=expiry_time))
 
 
-def _create_pdf_data_with_caption(url: str, caption: list[RichText]) -> PdfData:
-    return PdfData(type=FileType.EXTERNAL, external=ExternalFile(url=url), caption=caption)
+def _create_pdf_data_with_caption(url: str, caption: list[RichText]) -> ExternalFileWithCaption:
+    return ExternalFileWithCaption(external=ExternalFileData(url=url), caption=caption)
 
 
-def _create_pdf_block(pdf_data: PdfData | None) -> PdfBlock:
+def _create_pdf_block(pdf_data: ExternalFileWithCaption | NotionHostedFileWithCaption | None) -> PdfBlock:
     mock_obj = Mock(spec=Block)
     pdf_block = cast(PdfBlock, mock_obj)
     pdf_block.type = BlockType.PDF
@@ -102,7 +103,7 @@ async def test_pdf_without_url_should_render_empty_string(
     pdf_renderer: PdfRenderer,
     render_context: MarkdownRenderingContext,
 ) -> None:
-    pdf_data = PdfData(type=FileType.EXTERNAL)
+    pdf_data = ExternalFileWithCaption(external=ExternalFileData(url=""))
     block = _create_pdf_block(pdf_data)
     render_context.block = block
 

@@ -2,10 +2,11 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.schemas import BlockType, CreateAudioBlock, FileType
+from notionary.blocks.schemas import BlockType, CreateAudioBlock
 from notionary.page.content.parser.context import BlockParsingContext
 from notionary.page.content.parser.parsers.audio import AudioParser
 from notionary.page.content.syntax import SyntaxRegistry
+from notionary.shared.models.file import FileType
 
 
 @pytest.fixture

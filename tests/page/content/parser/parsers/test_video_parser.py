@@ -2,10 +2,11 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.schemas import CreateVideoBlock, FileType
+from notionary.blocks.schemas import CreateVideoBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.video import VideoParser
 from notionary.page.content.syntax import SyntaxRegistry
+from notionary.shared.models.file import FileType
 
 
 @pytest.fixture

@@ -1,6 +1,6 @@
 from typing import override
 
-from notionary.blocks.schemas import Block, BlockType
+from notionary.blocks.schemas import Block, BlockType, ExternalFileWithCaption, NotionHostedFileWithCaption
 from notionary.page.content.renderer.renderers.captioned_block import CaptionedBlockRenderer
 
 
@@ -23,9 +23,9 @@ class ImageRenderer(CaptionedBlockRenderer):
         if not block.image:
             return ""
 
-        if block.image.external:
+        if isinstance(block.image, ExternalFileWithCaption):
             return block.image.external.url or ""
-        elif block.image.file:
+        elif isinstance(block.image, NotionHostedFileWithCaption):
             return block.image.file.url or ""
 
         return ""

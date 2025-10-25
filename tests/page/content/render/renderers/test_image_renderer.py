@@ -3,27 +3,28 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from notionary.blocks.enums import BlockType, FileType
+from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, ExternalFile, ImageBlock, ImageData, NotionHostedFile
+from notionary.blocks.schemas import Block, ExternalFileWithCaption, ImageBlock, NotionHostedFileWithCaption
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.image import ImageRenderer
+from notionary.shared.models.file import ExternalFileData, NotionHostedFileData
 
 
-def _create_image_data_with_external_url(url: str) -> ImageData:
-    return ImageData(type=FileType.EXTERNAL, external=ExternalFile(url=url))
+def _create_image_data_with_external_url(url: str) -> ExternalFileWithCaption:
+    return ExternalFileWithCaption(external=ExternalFileData(url=url))
 
 
-def _create_image_data_with_notion_file(url: str, expiry_time: str) -> ImageData:
-    return ImageData(type=FileType.FILE, file=NotionHostedFile(url=url, expiry_time=expiry_time))
+def _create_image_data_with_notion_file(url: str, expiry_time: str) -> NotionHostedFileWithCaption:
+    return NotionHostedFileWithCaption(file=NotionHostedFileData(url=url, expiry_time=expiry_time))
 
 
-def _create_image_data_with_caption(url: str, caption: list[RichText]) -> ImageData:
-    return ImageData(type=FileType.EXTERNAL, external=ExternalFile(url=url), caption=caption)
+def _create_image_data_with_caption(url: str, caption: list[RichText]) -> ExternalFileWithCaption:
+    return ExternalFileWithCaption(external=ExternalFileData(url=url), caption=caption)
 
 
-def _create_image_block(image_data: ImageData | None) -> ImageBlock:
+def _create_image_block(image_data: ExternalFileWithCaption | NotionHostedFileWithCaption | None) -> ImageBlock:
     mock_obj = Mock(spec=Block)
     image_block = cast(ImageBlock, mock_obj)
     image_block.type = BlockType.IMAGE
@@ -102,7 +103,7 @@ async def test_image_without_url_should_render_empty_string(
     image_renderer: ImageRenderer,
     render_context: MarkdownRenderingContext,
 ) -> None:
-    image_data = ImageData(type=FileType.EXTERNAL)
+    image_data = ExternalFileWithCaption(external=ExternalFileData(url=""))
     block = _create_image_block(image_data)
     render_context.block = block
 

@@ -3,27 +3,32 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from notionary.blocks.enums import BlockType, FileType
+from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, ExternalFile, FileBlock, FileData, NotionHostedFile
+from notionary.blocks.schemas import Block, ExternalFileWithCaption, FileBlock, NotionHostedFileWithCaption
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.file import FileRenderer
+from notionary.shared.models.file import ExternalFileData, NotionHostedFileData
 
 
-def _create_file_data_with_external_url(url: str, name: str | None = None) -> FileData:
-    return FileData(type=FileType.EXTERNAL, external=ExternalFile(url=url), name=name)
+def _create_file_data_with_external_url(url: str, name: str | None = None) -> ExternalFileWithCaption:
+    return ExternalFileWithCaption(external=ExternalFileData(url=url), name=name)
 
 
-def _create_file_data_with_notion_file(url: str, expiry_time: str, name: str | None = None) -> FileData:
-    return FileData(type=FileType.FILE, file=NotionHostedFile(url=url, expiry_time=expiry_time), name=name)
+def _create_file_data_with_notion_file(
+    url: str, expiry_time: str, name: str | None = None
+) -> NotionHostedFileWithCaption:
+    return NotionHostedFileWithCaption(file=NotionHostedFileData(url=url, expiry_time=expiry_time), name=name)
 
 
-def _create_file_data_with_caption(url: str, caption: list[RichText], name: str | None = None) -> FileData:
-    return FileData(type=FileType.EXTERNAL, external=ExternalFile(url=url), caption=caption, name=name)
+def _create_file_data_with_caption(
+    url: str, caption: list[RichText], name: str | None = None
+) -> ExternalFileWithCaption:
+    return ExternalFileWithCaption(external=ExternalFileData(url=url), caption=caption, name=name)
 
 
-def _create_file_block(file_data: FileData | None) -> FileBlock:
+def _create_file_block(file_data: ExternalFileWithCaption | NotionHostedFileWithCaption | None) -> FileBlock:
     mock_obj = Mock(spec=Block)
     file_block = cast(FileBlock, mock_obj)
     file_block.type = BlockType.FILE
@@ -116,7 +121,7 @@ async def test_file_without_url_should_render_empty_string(
     file_renderer: FileRenderer,
     render_context: MarkdownRenderingContext,
 ) -> None:
-    file_data = FileData(type=FileType.EXTERNAL)
+    file_data = ExternalFileWithCaption(external=ExternalFileData(url=""))
     block = _create_file_block(file_data)
     render_context.block = block
 

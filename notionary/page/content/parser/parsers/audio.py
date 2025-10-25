@@ -2,12 +2,11 @@ from typing import override
 
 from notionary.blocks.schemas import (
     CreateAudioBlock,
-    ExternalFile,
-    FileData,
-    FileType,
+    ExternalFileWithCaption,
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 from notionary.page.content.syntax import SyntaxRegistry
+from notionary.shared.models.file import ExternalFileData
 
 
 class AudioParser(LineParser):
@@ -27,9 +26,8 @@ class AudioParser(LineParser):
         if url is None:
             return
 
-        audio_data = FileData(
-            type=FileType.EXTERNAL,
-            external=ExternalFile(url=url),
+        audio_data = ExternalFileWithCaption(
+            external=ExternalFileData(url=url),
             caption=[],
         )
         block = CreateAudioBlock(audio=audio_data)

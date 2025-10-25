@@ -18,4 +18,4 @@ class EmojiIcon(BaseModel):
     emoji: str
 
 
-Icon = EmojiIcon | File
+type Icon = EmojiIcon | File

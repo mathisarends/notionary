@@ -9,10 +9,12 @@ from notionary.blocks.schemas import (
     CreateImageBlock,
     CreateParagraphBlock,
     CreateVideoBlock,
+    ExternalFileWithCaption,
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.caption import CaptionParser
 from notionary.page.content.syntax import SyntaxRegistry
+from notionary.shared.models.file import ExternalFileData
 
 
 @pytest.fixture
@@ -24,18 +26,14 @@ def caption_parser(
 
 @pytest.fixture
 def video_block_with_caption_support() -> CreateVideoBlock:
-    from notionary.blocks.schemas import FileType, VideoData
-
-    video_data = VideoData(type=FileType.EXTERNAL, external={"url": "https://youtube.com/watch?v=test"}, caption=[])
+    video_data = ExternalFileWithCaption(external=ExternalFileData(url="https://youtube.com/watch?v=test"), caption=[])
     block = CreateVideoBlock(type=BlockType.VIDEO, video=video_data)
     return block
 
 
 @pytest.fixture
 def image_block_with_caption_support() -> CreateImageBlock:
-    from notionary.blocks.schemas import FileType, ImageData
-
-    image_data = ImageData(type=FileType.EXTERNAL, external={"url": "https://example.com/image.png"}, caption=[])
+    image_data = ExternalFileWithCaption(external=ExternalFileData(url="https://example.com/image.png"), caption=[])
     block = CreateImageBlock(type=BlockType.IMAGE, image=image_data)
     return block
 

@@ -2,12 +2,11 @@ from typing import override
 
 from notionary.blocks.schemas import (
     CreateFileBlock,
-    ExternalFile,
-    FileData,
-    FileType,
+    ExternalFileWithCaption,
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 from notionary.page.content.syntax import SyntaxRegistry
+from notionary.shared.models.file import ExternalFileData
 
 
 class FileParser(LineParser):
@@ -27,9 +26,8 @@ class FileParser(LineParser):
         if not url:
             return
 
-        file_data = FileData(
-            type=FileType.EXTERNAL,
-            external=ExternalFile(url=url),
+        file_data = ExternalFileWithCaption(
+            external=ExternalFileData(url=url),
             caption=[],
         )
         block = CreateFileBlock(file=file_data)

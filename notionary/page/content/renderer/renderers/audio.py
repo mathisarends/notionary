@@ -1,6 +1,6 @@
 from typing import override
 
-from notionary.blocks.schemas import Block, BlockType
+from notionary.blocks.schemas import Block, BlockType, ExternalFileWithCaption, NotionHostedFileWithCaption
 from notionary.page.content.renderer.renderers.captioned_block import CaptionedBlockRenderer
 
 
@@ -23,9 +23,9 @@ class AudioRenderer(CaptionedBlockRenderer):
         if not block.audio:
             return ""
 
-        if block.audio.external:
+        if isinstance(block.audio, ExternalFileWithCaption):
             return block.audio.external.url or ""
-        elif block.audio.file:
+        elif isinstance(block.audio, NotionHostedFileWithCaption):
             return block.audio.file.url or ""
 
         return ""

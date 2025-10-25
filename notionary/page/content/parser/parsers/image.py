@@ -1,15 +1,12 @@
-"""Parser for image blocks."""
-
 from typing import override
 
 from notionary.blocks.schemas import (
     CreateImageBlock,
-    ExternalFile,
-    FileData,
-    FileType,
+    ExternalFileWithCaption,
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 from notionary.page.content.syntax import SyntaxRegistry
+from notionary.shared.models.file import ExternalFileData
 
 
 class ImageParser(LineParser):
@@ -29,9 +26,8 @@ class ImageParser(LineParser):
         if not url:
             return
 
-        image_data = FileData(
-            type=FileType.EXTERNAL,
-            external=ExternalFile(url=url),
+        image_data = ExternalFileWithCaption(
+            external=ExternalFileData(url=url),
             caption=[],
         )
         block = CreateImageBlock(image=image_data)

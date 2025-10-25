@@ -2,10 +2,11 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.schemas import CreateImageBlock, FileType
+from notionary.blocks.schemas import CreateImageBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.image import ImageParser
 from notionary.page.content.syntax import SyntaxRegistry
+from notionary.shared.models.file import FileType
 
 
 @pytest.fixture

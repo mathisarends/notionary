@@ -4,6 +4,9 @@ from notionary.page.content.syntax.grammar import MarkdownGrammar
 from notionary.page.content.syntax.models import SyntaxDefinition, SyntaxRegistryKey
 
 
+# TODO: Add support for file upload in blocks for file types (refactor file types aswell)
+# differentiate between external and uploaded files
+# consolidate file models and norm them in parsers and serializers
 class SyntaxRegistry:
     def __init__(self, markdown_markdown_grammar: MarkdownGrammar | None = None) -> None:
         self._markdown_grammar = markdown_markdown_grammar or MarkdownGrammar()

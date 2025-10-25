@@ -62,12 +62,6 @@ class BlockType(StrEnum):
     VIDEO = "video"
 
 
-class FileType(StrEnum):
-    EXTERNAL = "external"
-    FILE = "file"
-    FILE_UPLOAD = "file_upload"
-
-
 class CodingLanguage(StrEnum):
     ABAP = "abap"
     ARDUINO = "arduino"

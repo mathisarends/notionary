@@ -5,10 +5,9 @@ from pathlib import Path
 from typing import Self, cast
 
 from notionary.file_upload.service import NotionFileUpload
-from notionary.page.properties.schemas import FileType
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.entity.schemas import EntityResponseDto
-from notionary.shared.models.file import ExternalFile, NotionHostedFile
+from notionary.shared.models.file import ExternalFile, FileType, NotionHostedFile
 from notionary.shared.models.icon import EmojiIcon, IconType
 from notionary.shared.models.parent import ParentType
 from notionary.user.base import BaseUser

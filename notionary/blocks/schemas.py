@@ -4,41 +4,38 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from notionary.blocks.enums import BlockColor, BlockType, CodingLanguage, FileType
+from notionary.blocks.enums import BlockColor, BlockType, CodingLanguage
 from notionary.blocks.rich_text.models import RichText
+from notionary.shared.models.file import ExternalFile, FileUploadFile, NotionHostedFile
 from notionary.shared.models.icon import Icon
 from notionary.shared.models.parent import Parent
 from notionary.user.schemas import PartialUserDto
 
 # ============================================================================
-# File-related models
+# File Data wrapper with caption
 # ============================================================================
 
 
-class ExternalFile(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    url: str
-
-
-class NotionHostedFile(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    url: str
-    expiry_time: str
-
-
-class FileUploadFile(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    id: str
-
-
-class FileData(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class CaptionMixin(BaseModel):
     caption: list[RichText] = Field(default_factory=list)
-    type: FileType
-    external: ExternalFile | None = None
-    file: NotionHostedFile | None = None
-    file_upload: FileUploadFile | None = None
     name: str | None = None
+
+
+class ExternalFileWithCaption(CaptionMixin, ExternalFile):
+    pass
+
+
+class NotionHostedFileWithCaption(CaptionMixin, NotionHostedFile):
+    pass
+
+
+class FileUploadFileWithCaption(CaptionMixin, FileUploadFile):
+    pass
+
+
+type FileWithCaption = Annotated[
+    ExternalFileWithCaption | NotionHostedFileWithCaption | FileUploadFileWithCaption, Field(discriminator="type")
+]
 
 
 # ============================================================================
@@ -65,24 +62,14 @@ class BaseBlock(BaseModel):
 # ============================================================================
 
 
-class AudioData(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    caption: list[RichText] = Field(default_factory=list)
-    type: FileType
-    external: ExternalFile | None = None
-    file: NotionHostedFile | None = None
-    file_upload: FileUploadFile | None = None
-    name: str | None = None
-
-
 class AudioBlock(BaseBlock):
     type: Literal[BlockType.AUDIO] = BlockType.AUDIO
-    audio: AudioData
+    audio: FileWithCaption
 
 
 class CreateAudioBlock(BaseModel):
     type: Literal[BlockType.AUDIO] = BlockType.AUDIO
-    audio: AudioData
+    audio: FileWithCaption
 
 
 # ============================================================================
@@ -90,8 +77,7 @@ class CreateAudioBlock(BaseModel):
 # ============================================================================
 
 
-class BookmarkData(BaseModel):
-    caption: list[RichText] = Field(default_factory=list)
+class BookmarkData(CaptionMixin):
     url: str
 
 
@@ -224,8 +210,7 @@ class CreateChildDatabaseBlock(BaseModel):
 # ============================================================================
 
 
-class CodeData(BaseModel):
-    caption: list[RichText] = Field(default_factory=list)
+class CodeData(CaptionMixin):
     rich_text: list[RichText]
     language: CodingLanguage = CodingLanguage.PLAIN_TEXT
 
@@ -311,9 +296,8 @@ class CreateDividerBlock(BaseModel):
 # ============================================================================
 
 
-class EmbedData(BaseModel):
+class EmbedData(CaptionMixin):
     url: str
-    caption: list[RichText] = Field(default_factory=list)
 
 
 class EmbedBlock(BaseBlock):
@@ -352,12 +336,12 @@ class CreateEquationBlock(BaseModel):
 
 class FileBlock(BaseBlock):
     type: Literal[BlockType.FILE] = BlockType.FILE
-    file: FileData
+    file: FileWithCaption
 
 
 class CreateFileBlock(BaseModel):
     type: Literal[BlockType.FILE] = BlockType.FILE
-    file: FileData
+    file: FileWithCaption
 
 
 # ============================================================================
@@ -416,24 +400,14 @@ CreateHeadingBlock = CreateHeading1Block | CreateHeading2Block | CreateHeading3B
 # ============================================================================
 
 
-class ImageData(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    caption: list[RichText] = Field(default_factory=list)
-    type: FileType
-    external: ExternalFile | None = None
-    file: NotionHostedFile | None = None
-    file_upload: FileUploadFile | None = None
-    name: str | None = None
-
-
 class ImageBlock(BaseBlock):
     type: Literal[BlockType.IMAGE] = BlockType.IMAGE
-    image: ImageData
+    image: FileWithCaption
 
 
 class CreateImageBlock(BaseModel):
     type: Literal[BlockType.IMAGE] = BlockType.IMAGE
-    image: ImageData
+    image: FileWithCaption
 
 
 # ============================================================================
@@ -497,24 +471,14 @@ class CreateParagraphBlock(BaseModel):
 # ============================================================================
 
 
-class PdfData(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    caption: list[RichText] = Field(default_factory=list)
-    type: FileType
-    external: ExternalFile | None = None
-    file: NotionHostedFile | None = None
-    file_upload: FileUploadFile | None = None
-    name: str | None = None
-
-
 class PdfBlock(BaseBlock):
     type: Literal[BlockType.PDF] = BlockType.PDF
-    pdf: PdfData
+    pdf: FileWithCaption
 
 
 class CreatePdfBlock(BaseModel):
     type: Literal[BlockType.PDF] = BlockType.PDF
-    pdf: PdfData
+    pdf: FileWithCaption
 
 
 # ============================================================================
@@ -669,31 +633,21 @@ class CreateToggleBlock(BaseModel):
 # ============================================================================
 
 
-class VideoData(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    caption: list[RichText] = Field(default_factory=list)
-    type: FileType
-    external: ExternalFile | None = None
-    file: NotionHostedFile | None = None
-    file_upload: FileUploadFile | None = None
-    name: str | None = None
-
-
 class VideoBlock(BaseBlock):
     type: Literal[BlockType.VIDEO] = BlockType.VIDEO
-    video: VideoData
+    video: FileWithCaption
 
 
 class CreateVideoBlock(BaseModel):
     type: Literal[BlockType.VIDEO] = BlockType.VIDEO
-    video: VideoData
+    video: FileWithCaption
 
 
 # ============================================================================
 # Block Union Type
 # ============================================================================
 
-Block = Annotated[
+type Block = Annotated[
     (
         AudioBlock
         | BookmarkBlock
@@ -743,7 +697,7 @@ class BlockChildrenResponse(BaseModel):
     request_id: str
 
 
-BlockCreatePayload = Annotated[
+type BlockCreatePayload = Annotated[
     (
         CreateAudioBlock
         | CreateBookmarkBlock

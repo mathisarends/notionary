@@ -3,27 +3,28 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from notionary.blocks.enums import BlockType, FileType
+from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, ExternalFile, NotionHostedFile, VideoBlock, VideoData
+from notionary.blocks.schemas import Block, ExternalFileWithCaption, NotionHostedFileWithCaption, VideoBlock
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.video import VideoRenderer
+from notionary.shared.models.file import ExternalFileData, NotionHostedFileData
 
 
-def _create_video_data_with_external_url(url: str) -> VideoData:
-    return VideoData(type=FileType.EXTERNAL, external=ExternalFile(url=url))
+def _create_video_data_with_external_url(url: str) -> ExternalFileWithCaption:
+    return ExternalFileWithCaption(external=ExternalFileData(url=url))
 
 
-def _create_video_data_with_notion_file(url: str, expiry_time: str) -> VideoData:
-    return VideoData(type=FileType.FILE, file=NotionHostedFile(url=url, expiry_time=expiry_time))
+def _create_video_data_with_notion_file(url: str, expiry_time: str) -> NotionHostedFileWithCaption:
+    return NotionHostedFileWithCaption(file=NotionHostedFileData(url=url, expiry_time=expiry_time))
 
 
-def _create_video_data_with_caption(url: str, caption: list[RichText]) -> VideoData:
-    return VideoData(type=FileType.EXTERNAL, external=ExternalFile(url=url), caption=caption)
+def _create_video_data_with_caption(url: str, caption: list[RichText]) -> ExternalFileWithCaption:
+    return ExternalFileWithCaption(external=ExternalFileData(url=url), caption=caption)
 
 
-def _create_video_block(video_data: VideoData | None) -> VideoBlock:
+def _create_video_block(video_data: ExternalFileWithCaption | NotionHostedFileWithCaption | None) -> VideoBlock:
     mock_obj = Mock(spec=Block)
     video_block = cast(VideoBlock, mock_obj)
     video_block.type = BlockType.VIDEO
@@ -102,7 +103,7 @@ async def test_video_without_url_should_render_empty_string(
     video_renderer: VideoRenderer,
     render_context: MarkdownRenderingContext,
 ) -> None:
-    video_data = VideoData(type=FileType.EXTERNAL)
+    video_data = ExternalFileWithCaption(external=ExternalFileData(url=""))
     block = _create_video_block(video_data)
     render_context.block = block
 

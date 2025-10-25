@@ -1,6 +1,6 @@
 from typing import override
 
-from notionary.blocks.schemas import Block, BlockType
+from notionary.blocks.schemas import Block, BlockType, ExternalFileWithCaption, NotionHostedFileWithCaption
 from notionary.page.content.renderer.renderers.captioned_block import CaptionedBlockRenderer
 
 
@@ -23,9 +23,9 @@ class VideoRenderer(CaptionedBlockRenderer):
         if not block.video:
             return ""
 
-        if block.video.external:
+        if isinstance(block.video, ExternalFileWithCaption):
             return block.video.external.url or ""
-        elif block.video.file:
+        elif isinstance(block.video, NotionHostedFileWithCaption):
             return block.video.file.url or ""
 
         return ""

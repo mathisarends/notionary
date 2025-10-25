@@ -1,15 +1,12 @@
-"""Parser for video blocks."""
-
 from typing import override
 
 from notionary.blocks.schemas import (
     CreateVideoBlock,
-    ExternalFile,
-    FileData,
-    FileType,
+    ExternalFileWithCaption,
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 from notionary.page.content.syntax import SyntaxRegistry
+from notionary.shared.models.file import ExternalFileData
 
 
 class VideoParser(LineParser):
@@ -29,9 +26,8 @@ class VideoParser(LineParser):
         if not url:
             return
 
-        video_data = FileData(
-            type=FileType.EXTERNAL,
-            external=ExternalFile(url=url),
+        video_data = ExternalFileWithCaption(
+            external=ExternalFileData(url=url),
             caption=[],
         )
         block = CreateVideoBlock(video=video_data)

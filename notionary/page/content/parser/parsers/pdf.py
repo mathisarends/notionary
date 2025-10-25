@@ -1,15 +1,12 @@
-"""Parser for PDF blocks."""
-
 from typing import override
 
 from notionary.blocks.schemas import (
     CreatePdfBlock,
-    ExternalFile,
-    FileData,
-    FileType,
+    ExternalFileWithCaption,
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 from notionary.page.content.syntax import SyntaxRegistry
+from notionary.shared.models.file import ExternalFileData
 
 
 class PdfParser(LineParser):
@@ -29,9 +26,8 @@ class PdfParser(LineParser):
         if not url:
             return
 
-        pdf_data = FileData(
-            type=FileType.EXTERNAL,
-            external=ExternalFile(url=url),
+        pdf_data = ExternalFileWithCaption(
+            external=ExternalFileData(url=url),
             caption=[],
         )
         block = CreatePdfBlock(pdf=pdf_data)

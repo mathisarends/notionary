@@ -44,10 +44,10 @@ class NotionFileUpload(LoggingMixin):
         if self._fits_in_single_part(file_size):
             content = await self._file_reader.read_full_file(file_path)
             return await self._upload_single_part_content(content, filename, content_type)
-
-        return await self._upload_multi_part_content(
-            filename, content_type, file_size, self._file_reader.read_file_chunks(file_path)
-        )
+        else:
+            return await self._upload_multi_part_content(
+                filename, content_type, file_size, self._file_reader.read_file_chunks(file_path)
+            )
 
     async def upload_from_bytes(
         self,
