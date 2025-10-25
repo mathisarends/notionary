@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 from notionary.blocks.rich_text.models import RichText
 from notionary.shared.entity.schemas import EntityResponseDto
-from notionary.shared.models.cover import Cover
+from notionary.shared.models.file import File
 from notionary.shared.models.icon import Icon
 
 
@@ -24,6 +24,6 @@ class NotionDatabaseDto(EntityResponseDto):
 class NotionDatabaseUpdateDto(BaseModel):
     title: list[RichText] | None = None
     icon: Icon | None = None
-    cover: Cover | None = None
+    cover: File | None = None
     archived: bool | None = None
     description: list[RichText] | None = None

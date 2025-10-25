@@ -4,8 +4,7 @@ from typing import Protocol
 from pydantic import BaseModel
 
 from notionary.blocks.rich_text.models import RichText
-from notionary.shared.models.cover import Cover
-from notionary.shared.models.icon import Icon
+from notionary.shared.models.file import File
 from notionary.shared.models.parent import Parent
 from notionary.user.schemas import PartialUserDto
 
@@ -23,8 +22,8 @@ class EntityResponseDto(BaseModel):
     created_by: PartialUserDto
     last_edited_time: str
     last_edited_by: PartialUserDto
-    cover: Cover | None = None
-    icon: Icon | None = None
+    cover: File | None = None
+    icon: File | None = None
     parent: Parent
     in_trash: bool
     url: str
@@ -32,8 +31,8 @@ class EntityResponseDto(BaseModel):
 
 
 class NotionEntityUpdateDto(BaseModel):
-    icon: Icon | None = None
-    cover: Cover | None = None
+    icon: File | None = None
+    cover: File | None = None
     in_trash: bool | None = None
 
 

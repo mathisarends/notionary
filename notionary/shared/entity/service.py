@@ -1,12 +1,15 @@
 import random
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import Self
+from pathlib import Path
+from typing import Self, cast
 
+from notionary.file_upload.service import NotionFileUpload
+from notionary.page.properties.schemas import FileType
 from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
 from notionary.shared.entity.schemas import EntityResponseDto
-from notionary.shared.models.cover import CoverType
-from notionary.shared.models.icon import IconType
+from notionary.shared.models.file import ExternalFile
+from notionary.shared.models.icon import EmojiIcon, IconType
 from notionary.shared.models.parent import ParentType
 from notionary.user.base import BaseUser
 from notionary.user.service import UserService
@@ -19,6 +22,7 @@ class Entity(LoggingMixin, ABC):
         self,
         dto: EntityResponseDto,
         user_service: UserService | None = None,
+        file_upload_service: NotionFileUpload | None = None,
     ) -> None:
         self._id = dto.id
         self._created_time = dto.created_time
@@ -35,6 +39,7 @@ class Entity(LoggingMixin, ABC):
         self._cover_image_url = self._extract_cover_image_url(dto)
 
         self._user_service = user_service or UserService()
+        self._file_upload_service = file_upload_service or NotionFileUpload()
 
     @staticmethod
     def _extract_emoji_icon(dto: EntityResponseDto) -> str | None:
@@ -43,7 +48,8 @@ class Entity(LoggingMixin, ABC):
         if dto.icon.type is not IconType.EMOJI:
             return None
 
-        return dto.icon.emoji
+        emoji_icon = cast(EmojiIcon, dto.icon)
+        return emoji_icon.emoji
 
     @staticmethod
     def _extract_external_icon_url(dto: EntityResponseDto) -> str | None:
@@ -52,16 +58,20 @@ class Entity(LoggingMixin, ABC):
         if dto.icon.type is not IconType.EXTERNAL:
             return None
 
-        return dto.icon.external.url
+        external_icon = cast(ExternalFile, dto.icon)
+
+        return external_icon.external.url
 
     @staticmethod
     def _extract_cover_image_url(dto: EntityResponseDto) -> str | None:
         if dto.cover is None:
             return None
-        if dto.cover.type is not CoverType.EXTERNAL:
+        if dto.cover.type is not FileType.EXTERNAL:
             return None
 
-        return dto.cover.external.url
+        external_cover = cast(ExternalFile, dto.cover)
+
+        return external_cover.external.url
 
     @classmethod
     @abstractmethod
@@ -123,10 +133,6 @@ class Entity(LoggingMixin, ABC):
     def public_url(self) -> str | None:
         return self._public_url
 
-    # =========================================================================
-    # Parent ID Getters
-    # =========================================================================
-
     def get_parent_database_id_if_present(self) -> str | None:
         if self._parent.type == ParentType.DATABASE_ID:
             return self._parent.database_id
@@ -150,19 +156,11 @@ class Entity(LoggingMixin, ABC):
     def is_workspace_parent(self) -> bool:
         return self._parent.type == ParentType.WORKSPACE
 
-    # =========================================================================
-    # User Methods
-    # =========================================================================
-
     async def get_created_by_user(self) -> BaseUser | None:
         return await self._user_service.get_user_by_id(self._created_by.id)
 
     async def get_last_edited_by_user(self) -> BaseUser | None:
         return await self._user_service.get_user_by_id(self._last_edited_by.id)
-
-    # =========================================================================
-    # Icon & Cover Methods
-    # =========================================================================
 
     async def set_emoji_icon(self, emoji: str) -> None:
         entity_response = await self._entity_metadata_update_client.patch_emoji_icon(emoji)
@@ -174,7 +172,18 @@ class Entity(LoggingMixin, ABC):
         self._emoji_icon = None
         self._external_icon_url = self._extract_external_icon_url(entity_response)
 
-    async def set_icon_from_file_upload(self, file_upload_url: str) -> None: ...
+    async def set_icon_from_file(self, file_path: Path, filename: str | None = None) -> None:
+        upload_response = await self._file_upload_service.upload_file(file_path, filename)
+        await self._set_icon_from_file_upload(upload_response.id)
+
+    async def set_icon_from_bytes(self, file_content: bytes, filename: str, content_type: str | None = None) -> None:
+        upload_response = await self._file_upload_service.upload_from_bytes(file_content, filename, content_type)
+        await self._set_icon_from_file_upload(upload_response.id)
+
+    async def _set_icon_from_file_upload(self, file_upload_id: str) -> None:
+        entity_response = await self._entity_metadata_update_client.patch_icon_from_file_upload(file_upload_id)
+        self._emoji_icon = None
+        self._external_icon_url = self._extract_external_icon_url(entity_response)
 
     async def remove_icon(self) -> None:
         await self._entity_metadata_update_client.remove_icon()
@@ -185,7 +194,19 @@ class Entity(LoggingMixin, ABC):
         entity_response = await self._entity_metadata_update_client.patch_external_cover(image_url)
         self._cover_image_url = self._extract_cover_image_url(entity_response)
 
-    async def set_cover_image_from_file_upload(self, file_upload_url: str) -> None: ...
+    async def set_cover_image_from_file(self, file_path: Path, filename: str | None = None) -> None:
+        upload_response = await self._file_upload_service.upload_file(file_path, filename)
+        await self._set_cover_image_from_file_upload(upload_response.id)
+
+    async def set_cover_image_from_bytes(
+        self, file_content: bytes, filename: str, content_type: str | None = None
+    ) -> None:
+        upload_response = await self._file_upload_service.upload_from_bytes(file_content, filename, content_type)
+        await self._set_cover_image_from_file_upload(upload_response.id)
+
+    async def _set_cover_image_from_file_upload(self, file_upload_id: str) -> None:
+        entity_response = await self._entity_metadata_update_client.patch_cover_from_file_upload(file_upload_id)
+        self._cover_image_url = self._extract_cover_image_url(entity_response)
 
     async def set_random_gradient_cover(self) -> None:
         random_cover_url = self._get_random_gradient_cover()
@@ -194,10 +215,6 @@ class Entity(LoggingMixin, ABC):
     async def remove_cover_image(self) -> None:
         await self._entity_metadata_update_client.remove_cover()
         self._cover_image_url = None
-
-    # =========================================================================
-    # Trash Methods
-    # =========================================================================
 
     async def move_to_trash(self) -> None:
         if self._in_trash:

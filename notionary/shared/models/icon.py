@@ -1,14 +1,15 @@
 from enum import StrEnum
-from typing import Literal, Self
+from typing import Literal
 
 from pydantic import BaseModel
 
-from notionary.shared.models.file import ExternalFile
+from notionary.shared.models.file import File
 
 
 class IconType(StrEnum):
     EMOJI = "emoji"
     EXTERNAL = "external"
+    FILE = "file"
     FILE_UPLOAD = "file_upload"
 
 
@@ -17,18 +18,4 @@ class EmojiIcon(BaseModel):
     emoji: str
 
 
-class ExternalIcon(BaseModel):
-    type: Literal[IconType.EXTERNAL] = IconType.EXTERNAL
-    external: ExternalFile
-
-    @classmethod
-    def from_url(cls, url: str) -> Self:
-        return cls(external=ExternalFile(url=url))
-
-
-class FileUploadIcon(BaseModel):
-    type: Literal[IconType.FILE_UPLOAD] = IconType.FILE_UPLOAD
-    id: str
-
-
-Icon = EmojiIcon | ExternalIcon | FileUploadIcon
+Icon = EmojiIcon | File
