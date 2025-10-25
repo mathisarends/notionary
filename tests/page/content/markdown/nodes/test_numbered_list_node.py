@@ -1,5 +1,5 @@
 from notionary.page.content.markdown.nodes import NumberedListMarkdownNode, ParagraphMarkdownNode
-from notionary.page.content.syntax import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 def test_simple_numbered_list(syntax_registry: SyntaxDefinitionRegistry) -> None:

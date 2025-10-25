@@ -4,7 +4,7 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMa
 from notionary.blocks.schemas import Block, BlockType
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
-from notionary.page.content.syntax import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class QuoteRenderer(BlockRenderer):

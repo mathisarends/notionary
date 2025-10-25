@@ -2,7 +2,7 @@ from typing import override
 
 from notionary.page.content.markdown.nodes.base import MarkdownNode
 from notionary.page.content.markdown.nodes.container import ContainerNode
-from notionary.page.content.syntax import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class ToggleMarkdownNode(ContainerNode):

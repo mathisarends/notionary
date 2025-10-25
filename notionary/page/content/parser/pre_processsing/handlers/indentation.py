@@ -2,7 +2,7 @@ import math
 from typing import override
 
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
-from notionary.page.content.syntax import MarkdownGrammar, SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import MarkdownGrammar, SyntaxDefinitionRegistry
 from notionary.utils.decorators import time_execution_sync
 from notionary.utils.mixins.logging import LoggingMixin
 

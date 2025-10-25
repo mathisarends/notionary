@@ -1,4 +1,4 @@
-from notionary.page.content.syntax import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class CaptionMarkdownNodeMixin:

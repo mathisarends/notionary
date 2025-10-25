@@ -2,7 +2,7 @@ from typing import override
 
 from notionary.blocks.schemas import Block, BlockType, ExternalFileWithCaption, NotionHostedFileWithCaption
 from notionary.page.content.renderer.renderers.file_like_block import FileLikeBlockRenderer
-from notionary.page.content.syntax import EnclosedSyntaxDefinition
+from notionary.page.content.syntax.definition import EnclosedSyntaxDefinition
 
 
 class FileRenderer(FileLikeBlockRenderer):

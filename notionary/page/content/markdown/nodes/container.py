@@ -1,6 +1,6 @@
 from notionary.page.content.markdown.nodes.base import MarkdownNode
-from notionary.page.content.syntax import SyntaxDefinitionRegistry
-from notionary.page.content.syntax.grammar import MarkdownGrammar
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
 
 
 def flatten_children(children: list[MarkdownNode]) -> MarkdownNode | None:

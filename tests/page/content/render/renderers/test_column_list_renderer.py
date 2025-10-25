@@ -7,7 +7,7 @@ from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block, ColumnListBlock
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.column_list import ColumnListRenderer
-from notionary.page.content.syntax import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 def _create_column_list_block() -> ColumnListBlock:

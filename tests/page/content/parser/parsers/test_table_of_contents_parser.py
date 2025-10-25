@@ -5,7 +5,7 @@ import pytest
 from notionary.blocks.schemas import CreateTableOfContentsBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.table_of_contents import TableOfContentsParser
-from notionary.page.content.syntax import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture

@@ -3,7 +3,7 @@ from typing import override
 from notionary.blocks.enums import CodingLanguage
 from notionary.page.content.markdown.nodes.base import MarkdownNode
 from notionary.page.content.markdown.nodes.mixins.caption import CaptionMarkdownNodeMixin
-from notionary.page.content.syntax import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class CodeMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):

@@ -3,7 +3,7 @@ import pytest
 from notionary.blocks.schemas import CreateBookmarkBlock
 from notionary.page.content.parser.context import BlockParsingContext
 from notionary.page.content.parser.parsers.bookmark import BookmarkParser
-from notionary.page.content.syntax import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture

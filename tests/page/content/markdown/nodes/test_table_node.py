@@ -1,8 +1,8 @@
 import pytest
 
 from notionary.page.content.markdown.nodes import TableMarkdownNode
-from notionary.page.content.syntax import SyntaxDefinitionRegistry
-from notionary.page.content.syntax.models import SyntaxDefinition
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition.models import SyntaxDefinition
 
 
 @pytest.fixture

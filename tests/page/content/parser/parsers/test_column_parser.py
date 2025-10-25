@@ -9,8 +9,8 @@ from notionary.blocks.schemas import (
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.column import ColumnParser
-from notionary.page.content.syntax import SyntaxDefinitionRegistry
-from notionary.page.content.syntax.grammar import MarkdownGrammar
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
 
 
 @pytest.fixture

@@ -2,7 +2,7 @@ from typing import override
 
 from notionary.blocks.schemas import CreateImageBlock, ExternalFileWithCaption
 from notionary.page.content.parser.parsers.file_like_block import FileLikeBlockParser
-from notionary.page.content.syntax import SyntaxDefinition, SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinition, SyntaxDefinitionRegistry
 
 
 class ImageParser(FileLikeBlockParser[CreateImageBlock]):

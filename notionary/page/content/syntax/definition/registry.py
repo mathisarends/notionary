@@ -1,7 +1,7 @@
 import re
 
-from notionary.page.content.syntax.grammar import MarkdownGrammar
-from notionary.page.content.syntax.models import (
+from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
+from notionary.page.content.syntax.definition.models import (
     EnclosedSyntaxDefinition,
     SimpleSyntaxDefinition,
     SyntaxDefinition,

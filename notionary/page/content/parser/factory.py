@@ -30,7 +30,7 @@ from notionary.page.content.parser.parsers import (
     ToggleParser,
     VideoParser,
 )
-from notionary.page.content.syntax import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class ConverterChainFactory:
