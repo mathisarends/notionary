@@ -34,7 +34,9 @@ def test_with_pages_only_sets_object_type(builder: NotionWorkspaceQueryConfigBui
     assert config.object_type == WorkspaceQueryObjectType.PAGE
 
 
-def test_with_data_sources_only_sets_object_type(builder: NotionWorkspaceQueryConfigBuilder):
+def test_with_data_sources_only_sets_object_type(
+    builder: NotionWorkspaceQueryConfigBuilder,
+):
     config = builder.with_data_sources_only().build()
 
     assert config.object_type == WorkspaceQueryObjectType.DATA_SOURCE
@@ -64,14 +66,18 @@ def test_with_sort_by_last_edited(builder: NotionWorkspaceQueryConfigBuilder):
     assert config.sort_timestamp == SortTimestamp.LAST_EDITED_TIME
 
 
-def test_with_sort_by_created_time_ascending(builder: NotionWorkspaceQueryConfigBuilder):
+def test_with_sort_by_created_time_ascending(
+    builder: NotionWorkspaceQueryConfigBuilder,
+):
     config = builder.with_sort_by_created_time_ascending().build()
 
     assert config.sort_timestamp == SortTimestamp.CREATED_TIME
     assert config.sort_direction == SortDirection.ASCENDING
 
 
-def test_with_sort_by_created_time_descending(builder: NotionWorkspaceQueryConfigBuilder):
+def test_with_sort_by_created_time_descending(
+    builder: NotionWorkspaceQueryConfigBuilder,
+):
     config = builder.with_sort_by_created_time_descending().build()
 
     assert config.sort_timestamp == SortTimestamp.CREATED_TIME
@@ -85,7 +91,9 @@ def test_with_sort_by_last_edited_ascending(builder: NotionWorkspaceQueryConfigB
     assert config.sort_direction == SortDirection.ASCENDING
 
 
-def test_with_sort_by_last_edited_descending(builder: NotionWorkspaceQueryConfigBuilder):
+def test_with_sort_by_last_edited_descending(
+    builder: NotionWorkspaceQueryConfigBuilder,
+):
     config = builder.with_sort_by_last_edited_descending().build()
 
     assert config.sort_timestamp == SortTimestamp.LAST_EDITED_TIME
@@ -133,9 +141,15 @@ def test_builder_chaining_works(builder: NotionWorkspaceQueryConfigBuilder):
     assert config.page_size == 75
 
 
-def test_builder_chaining_with_convenience_method(builder: NotionWorkspaceQueryConfigBuilder):
+def test_builder_chaining_with_convenience_method(
+    builder: NotionWorkspaceQueryConfigBuilder,
+):
     config = (
-        builder.with_query("project").with_pages_only().with_sort_by_last_edited_descending().with_page_size(75).build()
+        builder.with_query("project")
+        .with_pages_only()
+        .with_sort_by_last_edited_descending()
+        .with_page_size(75)
+        .build()
     )
 
     assert config.query == "project"

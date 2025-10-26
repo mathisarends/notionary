@@ -1,4 +1,4 @@
 from .models import SyntaxPromptData
-from .service import SyntaxPromptRegistry
+from .registry import SyntaxPromptRegistry
 
 __all__ = ["SyntaxPromptData", "SyntaxPromptRegistry"]

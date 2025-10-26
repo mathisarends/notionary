@@ -5,8 +5,15 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, ExternalFileWithCaption, NotionHostedFileWithCaption, VideoBlock
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
+from notionary.blocks.schemas import (
+    Block,
+    ExternalFileWithCaption,
+    NotionHostedFileWithCaption,
+    VideoBlock,
+)
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.video import VideoRenderer
 from notionary.shared.models.file import ExternalFileData, NotionHostedFileData
@@ -16,15 +23,23 @@ def _create_video_data_with_external_url(url: str) -> ExternalFileWithCaption:
     return ExternalFileWithCaption(external=ExternalFileData(url=url))
 
 
-def _create_video_data_with_notion_file(url: str, expiry_time: str) -> NotionHostedFileWithCaption:
-    return NotionHostedFileWithCaption(file=NotionHostedFileData(url=url, expiry_time=expiry_time))
+def _create_video_data_with_notion_file(
+    url: str, expiry_time: str
+) -> NotionHostedFileWithCaption:
+    return NotionHostedFileWithCaption(
+        file=NotionHostedFileData(url=url, expiry_time=expiry_time)
+    )
 
 
-def _create_video_data_with_caption(url: str, caption: list[RichText]) -> ExternalFileWithCaption:
+def _create_video_data_with_caption(
+    url: str, caption: list[RichText]
+) -> ExternalFileWithCaption:
     return ExternalFileWithCaption(external=ExternalFileData(url=url), caption=caption)
 
 
-def _create_video_block(video_data: ExternalFileWithCaption | NotionHostedFileWithCaption | None) -> VideoBlock:
+def _create_video_block(
+    video_data: ExternalFileWithCaption | NotionHostedFileWithCaption | None,
+) -> VideoBlock:
     mock_obj = Mock(spec=Block)
     video_block = cast(VideoBlock, mock_obj)
     video_block.type = BlockType.VIDEO
@@ -33,19 +48,25 @@ def _create_video_block(video_data: ExternalFileWithCaption | NotionHostedFileWi
 
 
 @pytest.fixture
-def video_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> VideoRenderer:
+def video_renderer(
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> VideoRenderer:
     return VideoRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
 
 
 @pytest.mark.asyncio
-async def test_video_block_should_be_handled(video_renderer: VideoRenderer, mock_block: Block) -> None:
+async def test_video_block_should_be_handled(
+    video_renderer: VideoRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.VIDEO
 
     assert video_renderer._can_handle(mock_block)
 
 
 @pytest.mark.asyncio
-async def test_non_video_block_should_not_be_handled(video_renderer: VideoRenderer, mock_block: Block) -> None:
+async def test_non_video_block_should_not_be_handled(
+    video_renderer: VideoRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.PARAGRAPH
 
     assert not video_renderer._can_handle(mock_block)
@@ -70,7 +91,9 @@ async def test_video_with_notion_hosted_file_should_render_markdown_video(
     video_renderer: VideoRenderer,
     render_context: MarkdownRenderingContext,
 ) -> None:
-    video_data = _create_video_data_with_notion_file("https://notion.so/video.mp4", "2025-01-01")
+    video_data = _create_video_data_with_notion_file(
+        "https://notion.so/video.mp4", "2025-01-01"
+    )
     block = _create_video_block(video_data)
     render_context.block = block
 
@@ -86,9 +109,13 @@ async def test_video_with_caption_should_include_caption_in_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     caption_rich_text = [RichText.from_plain_text("Video caption")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Video caption")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Video caption"
+    )
 
-    video_data = _create_video_data_with_caption("https://example.com/video.mp4", caption_rich_text)
+    video_data = _create_video_data_with_caption(
+        "https://example.com/video.mp4", caption_rich_text
+    )
     block = _create_video_block(video_data)
     render_context.block = block
 

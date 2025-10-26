@@ -2,7 +2,12 @@ from notionary.exceptions.base import NotionaryException
 
 
 class UnsupportedFileTypeException(NotionaryException):
-    def __init__(self, extension: str, filename: str, supported_extensions_by_category: dict[str, list[str]]):
+    def __init__(
+        self,
+        extension: str,
+        filename: str,
+        supported_extensions_by_category: dict[str, list[str]],
+    ):
         supported_exts = []
         for category, extensions in supported_extensions_by_category.items():
             supported_exts.append(f"{category}: {', '.join(extensions[:5])}...")
@@ -44,7 +49,9 @@ class FileNotFoundError(NotionaryException):
 
 class FilenameTooLongError(NotionaryException):
     def __init__(self, filename: str, filename_bytes: int, max_filename_bytes: int):
-        super().__init__(f"Filename too long: {filename_bytes} bytes (max {max_filename_bytes}). Filename: {filename}")
+        super().__init__(
+            f"Filename too long: {filename_bytes} bytes (max {max_filename_bytes}). Filename: {filename}"
+        )
         self.filename = filename
         self.filename_bytes = filename_bytes
         self.max_filename_bytes = max_filename_bytes
@@ -62,6 +69,8 @@ class UploadFailedError(NotionaryException):
 
 class UploadTimeoutError(NotionaryException):
     def __init__(self, file_upload_id: str, timeout_seconds: int):
-        super().__init__(f"Upload timeout after {timeout_seconds}s for file_upload_id: {file_upload_id}")
+        super().__init__(
+            f"Upload timeout after {timeout_seconds}s for file_upload_id: {file_upload_id}"
+        )
         self.file_upload_id = file_upload_id
         self.timeout_seconds = timeout_seconds

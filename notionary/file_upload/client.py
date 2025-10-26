@@ -11,7 +11,11 @@ from notionary.file_upload.schemas import (
     UploadMode,
 )
 from notionary.http.client import NotionHttpClient
-from notionary.utils.pagination import PaginatedResponse, paginate_notion_api, paginate_notion_api_generator
+from notionary.utils.pagination import (
+    PaginatedResponse,
+    paginate_notion_api,
+    paginate_notion_api_generator,
+)
 
 
 class FileUploadHttpClient(NotionHttpClient):

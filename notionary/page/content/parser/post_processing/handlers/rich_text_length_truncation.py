@@ -27,7 +27,9 @@ class RichTextLengthTruncationPostProcessor(PostProcessor, LoggingMixin):
         flattened_blocks = self._flatten_blocks(blocks)
         return [self._process_block(block) for block in flattened_blocks]
 
-    def _flatten_blocks(self, blocks: list[_NestedBlockList]) -> list[BlockCreatePayload]:
+    def _flatten_blocks(
+        self, blocks: list[_NestedBlockList]
+    ) -> list[BlockCreatePayload]:
         flattened: list[BlockCreatePayload] = []
 
         for item in blocks:
@@ -111,4 +113,8 @@ class RichTextLengthTruncationPostProcessor(PostProcessor, LoggingMixin):
         return content[:cutoff] + self.ELLIPSIS
 
     def _is_text_type(self, rich_text: RichText) -> bool:
-        return rich_text.type == RichTextType.TEXT and rich_text.text is not None and rich_text.text.content
+        return (
+            rich_text.type == RichTextType.TEXT
+            and rich_text.text is not None
+            and rich_text.text.content
+        )

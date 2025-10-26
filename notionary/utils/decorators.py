@@ -26,7 +26,9 @@ def singleton(cls):
     return wrapper
 
 
-def time_execution_sync(additional_text: str = "", min_duration_to_log: float = 0.25) -> _SyncDecorator:
+def time_execution_sync(
+    additional_text: str = "", min_duration_to_log: float = 0.25
+) -> _SyncDecorator:
     def decorator(func: _SyncFunc) -> _SyncFunc:
         @functools.wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
@@ -106,7 +108,9 @@ def async_retry(
                 except Exception as e:
                     last_exception = e
 
-                    if retry_on_exceptions is not None and not isinstance(e, retry_on_exceptions):
+                    if retry_on_exceptions is not None and not isinstance(
+                        e, retry_on_exceptions
+                    ):
                         raise
 
                     if attempt == max_retries:

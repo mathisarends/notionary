@@ -1,6 +1,8 @@
 import pytest
 
-from notionary.page.content.renderer.post_processing.handlers import NumberedListPlaceholderReplacerPostProcessor
+from notionary.page.content.renderer.post_processing.handlers import (
+    NumberedListPlaceholderReplacerPostProcessor,
+)
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
 
 
@@ -29,7 +31,9 @@ def test_single_level_nested_list_should_use_alphabetic(
         f"    {numbered_list_placeholder}. Nested item b\n"
         f"{numbered_list_placeholder}. Second item"
     )
-    expected = "1. First item\n    a. Nested item a\n    b. Nested item b\n2. Second item"
+    expected = (
+        "1. First item\n    a. Nested item a\n    b. Nested item b\n2. Second item"
+    )
 
     result = processor.process(markdown)
     assert result == expected
@@ -252,7 +256,9 @@ def test_nested_lists_with_blank_lines_between_should_work(
         "\n"
         f"{numbered_list_placeholder}. Third item"
     )
-    expected = "1. First item\n2. Second item\n    a. Nested a\n    b. Nested b\n3. Third item"
+    expected = (
+        "1. First item\n2. Second item\n    a. Nested a\n    b. Nested b\n3. Third item"
+    )
 
     result = processor.process(markdown)
     assert result == expected

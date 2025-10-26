@@ -68,7 +68,9 @@ def _create_property_filter(
     )
 
 
-def _create_query_params(filter: PropertyFilter | CompoundFilter | None) -> DataSourceQueryParams:
+def _create_query_params(
+    filter: PropertyFilter | CompoundFilter | None,
+) -> DataSourceQueryParams:
     return DataSourceQueryParams(filter=filter, sorts=None)
 
 
@@ -185,7 +187,9 @@ class TestPeoplePropertyResolution:
         )
         params = _create_query_params(filter)
 
-        with pytest.raises(ValueError, match="Could not resolve user name 'Unknown User' to ID"):
+        with pytest.raises(
+            ValueError, match="Could not resolve user name 'Unknown User' to ID"
+        ):
             await query_resolver.resolve_params(params)
 
 
@@ -245,7 +249,9 @@ class TestRelationPropertyResolution:
         )
         params = _create_query_params(filter)
 
-        with pytest.raises(ValueError, match="Could not resolve page name 'Unknown Page' to ID"):
+        with pytest.raises(
+            ValueError, match="Could not resolve page name 'Unknown Page' to ID"
+        ):
             await query_resolver.resolve_params(params)
 
 

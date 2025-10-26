@@ -17,7 +17,9 @@ def test_video_without_caption(video_delimiter: str) -> None:
 
 
 def test_video_with_caption(video_delimiter: str, caption_delimiter: str) -> None:
-    video = VideoMarkdownNode(url="https://youtube.com/watch?v=123", caption="Tutorial Video")
+    video = VideoMarkdownNode(
+        url="https://youtube.com/watch?v=123", caption="Tutorial Video"
+    )
     expected = f"{video_delimiter}https://youtube.com/watch?v=123)\n{caption_delimiter} Tutorial Video"
 
     assert video.to_markdown() == expected

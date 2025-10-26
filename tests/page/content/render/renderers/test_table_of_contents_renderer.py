@@ -4,10 +4,14 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block, TableOfContentsBlock
 from notionary.page.content.renderer.context import MarkdownRenderingContext
-from notionary.page.content.renderer.renderers.table_of_contents import TableOfContentsRenderer
+from notionary.page.content.renderer.renderers.table_of_contents import (
+    TableOfContentsRenderer,
+)
 
 
 def _create_table_of_contents_block() -> TableOfContentsBlock:
@@ -94,7 +98,9 @@ async def test_table_of_contents_with_children_should_render_with_newline_separa
 ) -> None:
     block = _create_table_of_contents_block()
     render_context.block = block
-    render_context.render_children_with_additional_indent = AsyncMock(return_value="    Child content")
+    render_context.render_children_with_additional_indent = AsyncMock(
+        return_value="    Child content"
+    )
 
     await table_of_contents_renderer._process(render_context)
 

@@ -2,7 +2,9 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.schemas import BlockColor, CreateQuoteBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.quote import QuoteParser
@@ -11,9 +13,12 @@ from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 @pytest.fixture
 def quote_parser(
-    mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxDefinitionRegistry
+    mock_rich_text_converter: MarkdownRichTextConverter,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> QuoteParser:
-    return QuoteParser(rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry)
+    return QuoteParser(
+        rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry
+    )
 
 
 @pytest.mark.asyncio
@@ -133,7 +138,9 @@ async def test_quote_with_inline_markdown_should_convert_to_rich_text(
 
     await quote_parser._process(context)
 
-    mock_rich_text_converter.to_rich_text.assert_called_once_with("This is **bold** and *italic*")
+    mock_rich_text_converter.to_rich_text.assert_called_once_with(
+        "This is **bold** and *italic*"
+    )
 
 
 def test_quote_inside_parent_context_should_not_handle(
@@ -234,7 +241,9 @@ async def test_quote_with_indented_children_should_parse_children(
         ]
     )
 
-    child_block = CreateQuoteBlock(quote=CreateQuoteData(rich_text=[], color=BlockColor.DEFAULT))
+    child_block = CreateQuoteBlock(
+        quote=CreateQuoteData(rich_text=[], color=BlockColor.DEFAULT)
+    )
     context.parse_nested_markdown = AsyncMock(return_value=[child_block, child_block])
 
     # Mock the indented child collection for the quote

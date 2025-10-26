@@ -11,8 +11,12 @@ from notionary.utils.mixins.logging import LoggingMixin
 
 
 class VideoFormatPreProcessor(PreProcessor, LoggingMixin):
-    YOUTUBE_WATCH_PATTERN = re.compile(r"^https?://(?:www\.)?youtube\.com/watch\?.*v=[\w-]+", re.IGNORECASE)
-    YOUTUBE_EMBED_PATTERN = re.compile(r"^https?://(?:www\.)?youtube\.com/embed/[\w-]+", re.IGNORECASE)
+    YOUTUBE_WATCH_PATTERN = re.compile(
+        r"^https?://(?:www\.)?youtube\.com/watch\?.*v=[\w-]+", re.IGNORECASE
+    )
+    YOUTUBE_EMBED_PATTERN = re.compile(
+        r"^https?://(?:www\.)?youtube\.com/embed/[\w-]+", re.IGNORECASE
+    )
 
     def __init__(self, syntax_registry: SyntaxDefinitionRegistry | None = None) -> None:
         super().__init__()
@@ -53,7 +57,10 @@ class VideoFormatPreProcessor(PreProcessor, LoggingMixin):
         )
 
     def _is_youtube_video(self, url: str) -> bool:
-        return bool(self.YOUTUBE_WATCH_PATTERN.match(url) or self.YOUTUBE_EMBED_PATTERN.match(url))
+        return bool(
+            self.YOUTUBE_WATCH_PATTERN.match(url)
+            or self.YOUTUBE_EMBED_PATTERN.match(url)
+        )
 
     def _has_valid_video_extension(self, url: str) -> bool:
         return VideoFileType.is_valid_extension(url)

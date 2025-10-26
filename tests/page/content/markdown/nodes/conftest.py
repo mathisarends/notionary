@@ -1,6 +1,9 @@
 import pytest
 
-from notionary.page.content.syntax.definition import MarkdownGrammar, SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import (
+    MarkdownGrammar,
+    SyntaxDefinitionRegistry,
+)
 from notionary.page.content.syntax.definition.models import SyntaxDefinition
 
 

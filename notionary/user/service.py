@@ -42,14 +42,18 @@ class UserService:
         return [
             user
             for user in all_person_users
-            if query_lower in (user.name or "").lower() or query_lower in (user.email or "").lower()
+            if query_lower in (user.name or "").lower()
+            or query_lower in (user.email or "").lower()
         ]
 
     async def search_users_stream(self, query: str) -> AsyncIterator[PersonUser]:
         query_lower = query.lower()
 
         async for user in self.list_users_stream():
-            if query_lower in (user.name or "").lower() or query_lower in (user.email or "").lower():
+            if (
+                query_lower in (user.name or "").lower()
+                or query_lower in (user.email or "").lower()
+            ):
                 yield user
 
     async def get_current_bot(self) -> BotUser:

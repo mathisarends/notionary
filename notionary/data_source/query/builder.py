@@ -160,7 +160,9 @@ class DataSourceQueryBuilder:
     def people_is_empty(self) -> Self:
         return self._add_filter(ArrayOperator.IS_EMPTY, None)
 
-    def order_by(self, property_name: str, direction: SortDirection = SortDirection.ASCENDING) -> Self:
+    def order_by(
+        self, property_name: str, direction: SortDirection = SortDirection.ASCENDING
+    ) -> Self:
         self._ensure_property_exists(property_name)
         sort = PropertySort(property=property_name, direction=direction)
         self._sorts.append(sort)
@@ -178,7 +180,9 @@ class DataSourceQueryBuilder:
     def order_by_created_time_descending(self) -> Self:
         return self._order_by_created_time(SortDirection.DESCENDING)
 
-    def _order_by_created_time(self, direction: SortDirection = SortDirection.DESCENDING) -> Self:
+    def _order_by_created_time(
+        self, direction: SortDirection = SortDirection.DESCENDING
+    ) -> Self:
         sort = TimestampSort(timestamp=TimestampType.CREATED_TIME, direction=direction)
         self._sorts.append(sort)
         return self
@@ -189,8 +193,12 @@ class DataSourceQueryBuilder:
     def order_by_last_edited_time_descending(self) -> Self:
         return self._order_by_last_edited_time(SortDirection.DESCENDING)
 
-    def _order_by_last_edited_time(self, direction: SortDirection = SortDirection.DESCENDING) -> Self:
-        sort = TimestampSort(timestamp=TimestampType.LAST_EDITED_TIME, direction=direction)
+    def _order_by_last_edited_time(
+        self, direction: SortDirection = SortDirection.DESCENDING
+    ) -> Self:
+        sort = TimestampSort(
+            timestamp=TimestampType.LAST_EDITED_TIME, direction=direction
+        )
         self._sorts.append(sort)
         return self
 
@@ -211,7 +219,10 @@ class DataSourceQueryBuilder:
         notion_filter = self._create_notion_filter_if_needed()
         sorts = self._create_sorts_if_needed()
         return DataSourceQueryParams(
-            filter=notion_filter, sorts=sorts, page_size=self._page_size, total_results_limit=self._total_results_limit
+            filter=notion_filter,
+            sorts=sorts,
+            page_size=self._page_size,
+            total_results_limit=self._total_results_limit,
         )
 
     def _select_property_without_negation(self, property_name: str) -> None:
@@ -264,7 +275,9 @@ class DataSourceQueryBuilder:
     def _has_no_filters(self) -> bool:
         return not self._filters
 
-    def _is_regular_filter_condition(self, filter_item: InternalFilterCondition) -> bool:
+    def _is_regular_filter_condition(
+        self, filter_item: InternalFilterCondition
+    ) -> bool:
         return isinstance(filter_item, FilterCondition)
 
     def _finalize_current_or_group(self) -> None:
@@ -284,7 +297,11 @@ class DataSourceQueryBuilder:
 
     def _add_filter(
         self,
-        operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
+        operator: StringOperator
+        | NumberOperator
+        | BooleanOperator
+        | DateOperator
+        | ArrayOperator,
         value: str | int | float | list[str | int | float] | None,
     ) -> Self:
         self._ensure_property_is_selected()
@@ -301,7 +318,9 @@ class DataSourceQueryBuilder:
 
         property_obj = self._properties.get(self._current_property)
         if property_obj:
-            self._query_validator.validate_operator_for_property(self._current_property, property_obj, operator)
+            self._query_validator.validate_operator_for_property(
+                self._current_property, property_obj, operator
+            )
         return self
 
     def _ensure_property_is_selected(self) -> None:
@@ -313,8 +332,14 @@ class DataSourceQueryBuilder:
 
     def _apply_negation_if_needed(
         self,
-        operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
-    ) -> StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator:
+        operator: StringOperator
+        | NumberOperator
+        | BooleanOperator
+        | DateOperator
+        | ArrayOperator,
+    ) -> (
+        StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator
+    ):
         if not self._negate_next:
             return operator
 
@@ -324,7 +349,11 @@ class DataSourceQueryBuilder:
 
     def _create_filter_condition(
         self,
-        operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
+        operator: StringOperator
+        | NumberOperator
+        | BooleanOperator
+        | DateOperator
+        | ArrayOperator,
         value: str | int | float | list[str | int | float] | None,
     ) -> FilterCondition:
         field_type = self._determine_field_type_from_operator(operator)
@@ -372,13 +401,17 @@ class DataSourceQueryBuilder:
         property_filters = [self._build_filter(f) for f in self._filters]
         return CompoundFilter(operator=LogicalOperator.AND, filters=property_filters)
 
-    def _build_filter(self, condition: InternalFilterCondition) -> PropertyFilter | CompoundFilter:
+    def _build_filter(
+        self, condition: InternalFilterCondition
+    ) -> PropertyFilter | CompoundFilter:
         if isinstance(condition, OrGroupMarker):
             return self._build_or_compound_filter(condition)
         return self._build_property_filter(condition)
 
     def _build_or_compound_filter(self, or_marker: OrGroupMarker) -> CompoundFilter:
-        property_filters = [self._build_property_filter(c) for c in or_marker.conditions]
+        property_filters = [
+            self._build_property_filter(c) for c in or_marker.conditions
+        ]
         return CompoundFilter(operator=LogicalOperator.OR, filters=property_filters)
 
     def _build_property_filter(self, condition: FilterCondition) -> PropertyFilter:
@@ -398,8 +431,14 @@ class DataSourceQueryBuilder:
 
     def _negate_operator(
         self,
-        operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
-    ) -> StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator:
+        operator: StringOperator
+        | NumberOperator
+        | BooleanOperator
+        | DateOperator
+        | ArrayOperator,
+    ) -> (
+        StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator
+    ):
         negation_map = {
             StringOperator.EQUALS: StringOperator.DOES_NOT_EQUAL,
             StringOperator.DOES_NOT_EQUAL: StringOperator.EQUALS,
@@ -436,13 +475,23 @@ class DataSourceQueryBuilder:
 
     def _raise_operator_cannot_be_negated_error(
         self,
-        operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
+        operator: StringOperator
+        | NumberOperator
+        | BooleanOperator
+        | DateOperator
+        | ArrayOperator,
     ) -> None:
-        raise ValueError(f"Operator '{operator}' cannot be negated. This should not happen - please report this issue.")
+        raise ValueError(
+            f"Operator '{operator}' cannot be negated. This should not happen - please report this issue."
+        )
 
     def _determine_field_type_from_operator(
         self,
-        operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
+        operator: StringOperator
+        | NumberOperator
+        | BooleanOperator
+        | DateOperator
+        | ArrayOperator,
     ) -> FieldType:
         if isinstance(operator, StringOperator):
             return FieldType.STRING

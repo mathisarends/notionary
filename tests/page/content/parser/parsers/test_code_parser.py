@@ -13,17 +13,24 @@ from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 @pytest.fixture
 def code_parser(
-    mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxDefinitionRegistry
+    mock_rich_text_converter: MarkdownRichTextConverter,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> CodeParser:
-    return CodeParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
+    return CodeParser(
+        syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter
+    )
 
 
-def _setup_code_block_context(context: BlockParsingContext, code_lines: list[str]) -> None:
+def _setup_code_block_context(
+    context: BlockParsingContext, code_lines: list[str]
+) -> None:
     context.line = "```"
     context.get_remaining_lines = Mock(return_value=[*code_lines, "```"])
 
 
-def _setup_code_block_context_with_language(context: BlockParsingContext, code_lines: list[str], language: str) -> None:
+def _setup_code_block_context_with_language(
+    context: BlockParsingContext, code_lines: list[str], language: str
+) -> None:
     context.line = f"```{language}"
     context.get_remaining_lines = Mock(return_value=[*code_lines, "```"])
 
@@ -43,7 +50,9 @@ async def test_code_block_should_create_code_block(
     assert isinstance(block, CreateCodeBlock)
     assert block.code.language == CodingLanguage.PLAIN_TEXT
     assert block.code.caption == []
-    mock_rich_text_converter.to_rich_text.assert_called_once_with("print('Hello World')")
+    mock_rich_text_converter.to_rich_text.assert_called_once_with(
+        "print('Hello World')"
+    )
 
 
 @pytest.mark.parametrize(
@@ -205,7 +214,9 @@ async def test_code_block_should_preserve_indentation(
 
     await code_parser._process(context)
 
-    expected_content = "def hello():\n    print('indented')\n        print('more indented')"
+    expected_content = (
+        "def hello():\n    print('indented')\n        print('more indented')"
+    )
     mock_rich_text_converter.to_rich_text.assert_called_once_with(expected_content)
 
 

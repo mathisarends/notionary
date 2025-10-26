@@ -67,7 +67,11 @@ class MissingRequiredValue(QueryBuilderError):
     def __init__(
         self,
         property_name: str,
-        operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
+        operator: StringOperator
+        | NumberOperator
+        | BooleanOperator
+        | DateOperator
+        | ArrayOperator,
     ) -> None:
         self.operator = operator
 
@@ -79,7 +83,11 @@ class ValueNotAllowedForOperator(QueryBuilderError):
     def __init__(
         self,
         property_name: str,
-        operator: StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator,
+        operator: StringOperator
+        | NumberOperator
+        | BooleanOperator
+        | DateOperator
+        | ArrayOperator,
     ) -> None:
         self.operator = operator
 
@@ -144,9 +152,7 @@ class NoPropertySelected(QueryBuilderError):
 
 class EmptyOrGroupError(QueryBuilderError):
     def __init__(self) -> None:
-        message = (
-            "Cannot create an OR group with no conditions. Add at least one filter condition before using .or_where()"
-        )
+        message = "Cannot create an OR group with no conditions. Add at least one filter condition before using .or_where()"
         super().__init__(message)
 
 

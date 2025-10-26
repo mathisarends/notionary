@@ -5,8 +5,15 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, ExternalFileWithCaption, ImageBlock, NotionHostedFileWithCaption
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
+from notionary.blocks.schemas import (
+    Block,
+    ExternalFileWithCaption,
+    ImageBlock,
+    NotionHostedFileWithCaption,
+)
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.image import ImageRenderer
 from notionary.shared.models.file import ExternalFileData, NotionHostedFileData
@@ -16,15 +23,23 @@ def _create_image_data_with_external_url(url: str) -> ExternalFileWithCaption:
     return ExternalFileWithCaption(external=ExternalFileData(url=url))
 
 
-def _create_image_data_with_notion_file(url: str, expiry_time: str) -> NotionHostedFileWithCaption:
-    return NotionHostedFileWithCaption(file=NotionHostedFileData(url=url, expiry_time=expiry_time))
+def _create_image_data_with_notion_file(
+    url: str, expiry_time: str
+) -> NotionHostedFileWithCaption:
+    return NotionHostedFileWithCaption(
+        file=NotionHostedFileData(url=url, expiry_time=expiry_time)
+    )
 
 
-def _create_image_data_with_caption(url: str, caption: list[RichText]) -> ExternalFileWithCaption:
+def _create_image_data_with_caption(
+    url: str, caption: list[RichText]
+) -> ExternalFileWithCaption:
     return ExternalFileWithCaption(external=ExternalFileData(url=url), caption=caption)
 
 
-def _create_image_block(image_data: ExternalFileWithCaption | NotionHostedFileWithCaption | None) -> ImageBlock:
+def _create_image_block(
+    image_data: ExternalFileWithCaption | NotionHostedFileWithCaption | None,
+) -> ImageBlock:
     mock_obj = Mock(spec=Block)
     image_block = cast(ImageBlock, mock_obj)
     image_block.type = BlockType.IMAGE
@@ -33,19 +48,25 @@ def _create_image_block(image_data: ExternalFileWithCaption | NotionHostedFileWi
 
 
 @pytest.fixture
-def image_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> ImageRenderer:
+def image_renderer(
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> ImageRenderer:
     return ImageRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
 
 
 @pytest.mark.asyncio
-async def test_image_block_should_be_handled(image_renderer: ImageRenderer, mock_block: Block) -> None:
+async def test_image_block_should_be_handled(
+    image_renderer: ImageRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.IMAGE
 
     assert image_renderer._can_handle(mock_block)
 
 
 @pytest.mark.asyncio
-async def test_non_image_block_should_not_be_handled(image_renderer: ImageRenderer, mock_block: Block) -> None:
+async def test_non_image_block_should_not_be_handled(
+    image_renderer: ImageRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.PARAGRAPH
 
     assert not image_renderer._can_handle(mock_block)
@@ -70,7 +91,9 @@ async def test_image_with_notion_hosted_file_should_render_markdown_image(
     image_renderer: ImageRenderer,
     render_context: MarkdownRenderingContext,
 ) -> None:
-    image_data = _create_image_data_with_notion_file("https://notion.so/image.png", "2025-01-01")
+    image_data = _create_image_data_with_notion_file(
+        "https://notion.so/image.png", "2025-01-01"
+    )
     block = _create_image_block(image_data)
     render_context.block = block
 
@@ -86,9 +109,13 @@ async def test_image_with_caption_should_include_caption_in_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     caption_rich_text = [RichText.from_plain_text("Image caption")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Image caption")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Image caption"
+    )
 
-    image_data = _create_image_data_with_caption("https://example.com/image.png", caption_rich_text)
+    image_data = _create_image_data_with_caption(
+        "https://example.com/image.png", caption_rich_text
+    )
     block = _create_image_block(image_data)
     render_context.block = block
 

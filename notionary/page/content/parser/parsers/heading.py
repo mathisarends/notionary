@@ -1,6 +1,8 @@
 from typing import override
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.schemas import (
     BlockColor,
     BlockCreatePayload,
@@ -23,7 +25,9 @@ class HeadingParser(LineParser):
     MAX_HEADING_LEVEL = 3
 
     def __init__(
-        self, syntax_registry: SyntaxDefinitionRegistry, rich_text_converter: MarkdownRichTextConverter
+        self,
+        syntax_registry: SyntaxDefinitionRegistry,
+        rich_text_converter: MarkdownRichTextConverter,
     ) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_heading_syntax()
@@ -44,7 +48,9 @@ class HeadingParser(LineParser):
         await self._process_nested_children(block, context)
         context.result_blocks.append(block)
 
-    async def _process_nested_children(self, block: CreateHeadingBlock, context: BlockParsingContext) -> None:
+    async def _process_nested_children(
+        self, block: CreateHeadingBlock, context: BlockParsingContext
+    ) -> None:
         parent_indent_level = context.get_line_indentation_level()
         child_lines = context.collect_indented_child_lines(parent_indent_level)
 
@@ -66,7 +72,9 @@ class HeadingParser(LineParser):
 
         context.lines_consumed = len(child_lines)
 
-    def _set_heading_toggleable(self, block: CreateHeadingBlock, is_toggleable: bool) -> None:
+    def _set_heading_toggleable(
+        self, block: CreateHeadingBlock, is_toggleable: bool
+    ) -> None:
         if block.type == BlockType.HEADING_1:
             block.heading_1.is_toggleable = is_toggleable
         elif block.type == BlockType.HEADING_2:
@@ -74,7 +82,9 @@ class HeadingParser(LineParser):
         elif block.type == BlockType.HEADING_3:
             block.heading_3.is_toggleable = is_toggleable
 
-    def _set_heading_children(self, block: CreateHeadingBlock, children: list[BlockCreatePayload]) -> None:
+    def _set_heading_children(
+        self, block: CreateHeadingBlock, children: list[BlockCreatePayload]
+    ) -> None:
         if block.type == BlockType.HEADING_1:
             block.heading_1.children = children
         elif block.type == BlockType.HEADING_2:
@@ -102,13 +112,22 @@ class HeadingParser(LineParser):
         return self._create_heading_block_by_level(level, heading_data)
 
     def _is_valid_heading(self, level: int, content: str) -> bool:
-        return self.MIN_HEADING_LEVEL <= level <= self.MAX_HEADING_LEVEL and bool(content)
+        return self.MIN_HEADING_LEVEL <= level <= self.MAX_HEADING_LEVEL and bool(
+            content
+        )
 
     async def _build_heading_data(self, content: str) -> CreateHeadingData:
         rich_text = await self._rich_text_converter.to_rich_text(content)
-        return CreateHeadingData(rich_text=rich_text, color=BlockColor.DEFAULT, is_toggleable=False, children=[])
+        return CreateHeadingData(
+            rich_text=rich_text,
+            color=BlockColor.DEFAULT,
+            is_toggleable=False,
+            children=[],
+        )
 
-    def _create_heading_block_by_level(self, level: int, heading_data: CreateHeadingData) -> CreateHeadingBlock:
+    def _create_heading_block_by_level(
+        self, level: int, heading_data: CreateHeadingData
+    ) -> CreateHeadingBlock:
         if level == 1:
             return CreateHeading1Block(heading_1=heading_data)
         elif level == 2:

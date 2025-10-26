@@ -38,7 +38,9 @@ class RendererChainFactory:
         rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
         syntax_registry: SyntaxDefinitionRegistry | None = None,
     ) -> None:
-        self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
+        self._rich_text_markdown_converter = (
+            rich_text_markdown_converter or RichTextToMarkdownConverter()
+        )
         self._syntax_registry = syntax_registry or SyntaxDefinitionRegistry()
 
     def create(self) -> BlockRenderer:
@@ -219,13 +221,17 @@ class RendererChainFactory:
         return BreadcrumbRenderer(syntax_registry=self._syntax_registry)
 
     def _create_table_renderer(self) -> TableRenderer:
-        return TableRenderer(rich_text_markdown_converter=self._rich_text_markdown_converter)
+        return TableRenderer(
+            rich_text_markdown_converter=self._rich_text_markdown_converter
+        )
 
     def _create_table_row_handler(self) -> TableRowHandler:
         return TableRowHandler()
 
     def _create_paragraph_renderer(self) -> ParagraphRenderer:
-        return ParagraphRenderer(rich_text_markdown_converter=self._rich_text_markdown_converter)
+        return ParagraphRenderer(
+            rich_text_markdown_converter=self._rich_text_markdown_converter
+        )
 
     def _create_fallback_renderer(self) -> FallbackRenderer:
         return FallbackRenderer()

@@ -2,7 +2,13 @@ from typing import Self, cast
 
 from notionary.user.base import BaseUser
 from notionary.user.client import UserHttpClient
-from notionary.user.schemas import BotUserDto, BotUserResponseDto, UserResponseDto, UserType, WorkspaceOwnerType
+from notionary.user.schemas import (
+    BotUserDto,
+    BotUserResponseDto,
+    UserResponseDto,
+    UserType,
+    WorkspaceOwnerType,
+)
 
 
 class BotUser(BaseUser):
@@ -17,7 +23,9 @@ class BotUser(BaseUser):
     ) -> None:
         super().__init__(id=id, name=name, avatar_url=avatar_url)
         self._workspace_name = workspace_name
-        self._workspace_file_upload_limit_in_bytes = workspace_file_upload_limit_in_bytes
+        self._workspace_file_upload_limit_in_bytes = (
+            workspace_file_upload_limit_in_bytes
+        )
         self._owner_type = owner_type
 
     @property

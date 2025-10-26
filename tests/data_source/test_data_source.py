@@ -4,7 +4,9 @@ import pytest
 
 from notionary.blocks.rich_text.name_id_resolver.page import PageNameIdResolver
 from notionary.blocks.rich_text.name_id_resolver.person import PersonNameIdResolver
-from notionary.data_source.http.data_source_instance_client import DataSourceInstanceClient
+from notionary.data_source.http.data_source_instance_client import (
+    DataSourceInstanceClient,
+)
 from notionary.data_source.properties.schemas import (
     DataSourceMultiSelectProperty,
     DataSourcePropertyOption,
@@ -16,7 +18,10 @@ from notionary.data_source.properties.schemas import (
 from notionary.data_source.query.resolver import QueryResolver
 from notionary.data_source.schemas import DataSourceDto
 from notionary.data_source.service import NotionDataSource
-from notionary.exceptions.data_source import DataSourcePropertyNotFound, DataSourcePropertyTypeError
+from notionary.exceptions.data_source import (
+    DataSourcePropertyNotFound,
+    DataSourcePropertyTypeError,
+)
 from notionary.shared.models.parent import PageParent, ParentType, WorkspaceParent
 from notionary.shared.properties.type import PropertyType
 from notionary.user.schemas import PartialUserDto
@@ -70,7 +75,9 @@ def test_properties() -> dict:
             status={
                 "options": [
                     DataSourcePropertyOption(id="opt-1", name="Todo", color="default"),
-                    DataSourcePropertyOption(id="opt-2", name="In Progress", color="blue"),
+                    DataSourcePropertyOption(
+                        id="opt-2", name="In Progress", color="blue"
+                    ),
                     DataSourcePropertyOption(id="opt-3", name="Done", color="green"),
                 ]
             },
@@ -95,7 +102,9 @@ def test_properties() -> dict:
                 "options": [
                     DataSourcePropertyOption(id="opt-7", name="Bug", color="red"),
                     DataSourcePropertyOption(id="opt-8", name="Feature", color="blue"),
-                    DataSourcePropertyOption(id="opt-9", name="Documentation", color="green"),
+                    DataSourcePropertyOption(
+                        id="opt-9", name="Documentation", color="green"
+                    ),
                 ]
             },
         ),
@@ -122,7 +131,9 @@ def data_source(
 ) -> NotionDataSource:
     from notionary.file_upload.service import NotionFileUpload
 
-    monkeypatch.setattr("notionary.shared.entity.service.UserService", lambda: Mock(spec=UserService))
+    monkeypatch.setattr(
+        "notionary.shared.entity.service.UserService", lambda: Mock(spec=UserService)
+    )
 
     mock_file_upload_service = Mock(spec=NotionFileUpload)
 
@@ -166,7 +177,9 @@ def test_get_options_by_property_type(
     assert options == expected_options
 
 
-def test_get_property_with_wrong_type_raises_error(data_source: NotionDataSource) -> None:
+def test_get_property_with_wrong_type_raises_error(
+    data_source: NotionDataSource,
+) -> None:
     with pytest.raises(DataSourcePropertyTypeError) as exc_info:
         data_source.get_select_options_by_property_name("Tags")
 
@@ -195,11 +208,19 @@ def test_case_sensitive_property_lookup(data_source: NotionDataSource) -> None:
         data_source.get_select_options_by_property_name("priority")
 
 
-def test_properties_getter_returns_all_properties(data_source: NotionDataSource) -> None:
+def test_properties_getter_returns_all_properties(
+    data_source: NotionDataSource,
+) -> None:
     properties = data_source.properties
 
     assert len(properties) == 5
-    assert set(properties.keys()) == {"Status", "Priority", "Tags", "Related", "Description"}
+    assert set(properties.keys()) == {
+        "Status",
+        "Priority",
+        "Tags",
+        "Related",
+        "Description",
+    }
 
 
 # ============================================================================

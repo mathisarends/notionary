@@ -29,6 +29,8 @@ class DataSourcePropertyNotFound(NotionaryException):
 
 
 class DataSourcePropertyTypeError(NotionaryException):
-    def __init__(self, property_name: str, expected_type: str, actual_type: str) -> None:
+    def __init__(
+        self, property_name: str, expected_type: str, actual_type: str
+    ) -> None:
         message = f"Property '{property_name}' has the wrong type. Expected: '{expected_type}', found: '{actual_type}'."
         super().__init__(message)

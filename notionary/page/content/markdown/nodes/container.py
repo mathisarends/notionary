@@ -60,5 +60,9 @@ class ContainerNode(MarkdownNode):
         return "\n".join(f"{indent}{line}" if line.strip() else line for line in lines)
 
     @staticmethod
-    def _get_grammar(syntax_registry: SyntaxDefinitionRegistry | None) -> MarkdownGrammar:
-        return syntax_registry._markdown_grammar if syntax_registry else MarkdownGrammar()
+    def _get_grammar(
+        syntax_registry: SyntaxDefinitionRegistry | None,
+    ) -> MarkdownGrammar:
+        return (
+            syntax_registry._markdown_grammar if syntax_registry else MarkdownGrammar()
+        )

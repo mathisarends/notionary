@@ -1,7 +1,9 @@
 from typing import override
 
 from notionary.blocks.schemas import Block, BlockType
-from notionary.page.content.renderer.renderers.captioned_block import CaptionedBlockRenderer
+from notionary.page.content.renderer.renderers.captioned_block import (
+    CaptionedBlockRenderer,
+)
 
 
 class EmbedRenderer(CaptionedBlockRenderer):

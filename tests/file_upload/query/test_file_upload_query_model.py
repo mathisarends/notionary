@@ -110,7 +110,12 @@ def test_serialization_empty_when_no_status_or_archived() -> None:
 
 
 def test_full_model_with_all_fields() -> None:
-    query = FileUploadQuery(status=FileUploadStatus.FAILED, archived=True, page_size_limit=75, total_results_limit=300)
+    query = FileUploadQuery(
+        status=FileUploadStatus.FAILED,
+        archived=True,
+        page_size_limit=75,
+        total_results_limit=300,
+    )
 
     assert query.status == FileUploadStatus.FAILED
     assert query.archived is True

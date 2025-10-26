@@ -80,7 +80,9 @@ def create_multiselect_property(
     if options is None:
         options = ["Tag1", "Tag2"]
 
-    select_options = [SelectOption(id=f"opt_{i}", name=opt) for i, opt in enumerate(options)]
+    select_options = [
+        SelectOption(id=f"opt_{i}", name=opt) for i, opt in enumerate(options)
+    ]
     return PageMultiSelectProperty(
         id=property_id,
         type="multi_select",
@@ -139,14 +141,18 @@ def create_phone_property(
     phone: str | None = "+1234567890",
     property_id: str = "phone_id",
 ) -> PagePhoneNumberProperty:
-    return PagePhoneNumberProperty(id=property_id, type="phone_number", phone_number=phone)
+    return PagePhoneNumberProperty(
+        id=property_id, type="phone_number", phone_number=phone
+    )
 
 
 def create_created_time_property(
     created_time: str = "2025-01-15T10:00:00.000Z",
     property_id: str = "created_id",
 ) -> PageCreatedTimeProperty:
-    return PageCreatedTimeProperty(id=property_id, type="created_time", created_time=created_time)
+    return PageCreatedTimeProperty(
+        id=property_id, type="created_time", created_time=created_time
+    )
 
 
 # ============================================================================
@@ -178,7 +184,9 @@ def sample_properties() -> dict[str, PageProperty]:
 
 
 @pytest.fixture
-def handler(sample_properties: dict[str, PageProperty], mock_http_client: AsyncMock) -> PagePropertyHandler:
+def handler(
+    sample_properties: dict[str, PageProperty], mock_http_client: AsyncMock
+) -> PagePropertyHandler:
     return PagePropertyHandler(
         properties=sample_properties,
         parent_type=ParentType.DATABASE_ID,
@@ -230,7 +238,9 @@ def test_get_select_property_when_none(handler: PagePropertyHandler) -> None:
 
 @pytest.mark.asyncio
 async def test_get_title_property_value(handler: PagePropertyHandler) -> None:
-    with patch("notionary.page.properties.service.convert_rich_text_to_markdown") as mock_convert:
+    with patch(
+        "notionary.page.properties.service.convert_rich_text_to_markdown"
+    ) as mock_convert:
         mock_convert.return_value = "Test Title"
         title = await handler.get_value_of_title_property("Title")
         assert title == "Test Title"
@@ -270,7 +280,9 @@ def test_get_date_property_when_none(handler: PagePropertyHandler) -> None:
 
 @pytest.mark.asyncio
 async def test_get_rich_text_property_value(handler: PagePropertyHandler) -> None:
-    with patch("notionary.page.properties.service.convert_rich_text_to_markdown") as mock_convert:
+    with patch(
+        "notionary.page.properties.service.convert_rich_text_to_markdown"
+    ) as mock_convert:
         mock_convert.return_value = "Rich text content"
         text = await handler.get_value_of_rich_text_property("Description")
         assert text == "Rich text content"
@@ -327,4 +339,6 @@ async def test_get_options_without_data_source_raises_error(
     handler_without_data_source: PagePropertyHandler,
 ) -> None:
     with pytest.raises(AccessPagePropertyWithoutDataSourceError):
-        await handler_without_data_source.get_select_options_by_property_name("Priority")
+        await handler_without_data_source.get_select_options_by_property_name(
+            "Priority"
+        )

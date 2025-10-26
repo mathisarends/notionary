@@ -13,7 +13,9 @@ from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 class CaptionParser(LineParser):
     def __init__(
-        self, syntax_registry: SyntaxDefinitionRegistry, rich_text_converter: MarkdownRichTextConverter
+        self,
+        syntax_registry: SyntaxDefinitionRegistry,
+        rich_text_converter: MarkdownRichTextConverter,
     ) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_caption_syntax()
@@ -51,7 +53,9 @@ class CaptionParser(LineParser):
             return False
         return hasattr(block_data, "caption")
 
-    def _attach_caption_to_block(self, block: BlockCreatePayload, caption_rich_text: list) -> None:
+    def _attach_caption_to_block(
+        self, block: BlockCreatePayload, caption_rich_text: list
+    ) -> None:
         block_data = getattr(block, block.type.value)
         if hasattr(block_data, "caption"):
             block_data.caption = caption_rich_text

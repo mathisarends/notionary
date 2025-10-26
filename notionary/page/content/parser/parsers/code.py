@@ -1,7 +1,9 @@
 import re
 from typing import override
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.schemas import CodeData, CodingLanguage, CreateCodeBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
@@ -12,13 +14,17 @@ class CodeParser(LineParser):
     DEFAULT_LANGUAGE = CodingLanguage.PLAIN_TEXT
 
     def __init__(
-        self, syntax_registry: SyntaxDefinitionRegistry, rich_text_converter: MarkdownRichTextConverter
+        self,
+        syntax_registry: SyntaxDefinitionRegistry,
+        rich_text_converter: MarkdownRichTextConverter,
     ) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_code_syntax()
         self._rich_text_converter = rich_text_converter
         self._code_start_pattern = self._syntax.regex_pattern
-        self._code_end_pattern = self._syntax.end_regex_pattern or re.compile(r"^```\s*$")
+        self._code_end_pattern = self._syntax.end_regex_pattern or re.compile(
+            r"^```\s*$"
+        )
 
     @override
     def _can_handle(self, context: BlockParsingContext) -> bool:
@@ -31,7 +37,9 @@ class CodeParser(LineParser):
         code_lines = self._collect_code_lines(context)
         lines_consumed = self._count_lines_consumed(context)
 
-        block = await self._create_code_block(opening_line=context.line, code_lines=code_lines)
+        block = await self._create_code_block(
+            opening_line=context.line, code_lines=code_lines
+        )
         if not block:
             return
 
@@ -58,7 +66,9 @@ class CodeParser(LineParser):
                 return line_index + 1
         return len(context.get_remaining_lines())
 
-    async def _create_code_block(self, opening_line: str, code_lines: list[str]) -> CreateCodeBlock | None:
+    async def _create_code_block(
+        self, opening_line: str, code_lines: list[str]
+    ) -> CreateCodeBlock | None:
         match = self._code_start_pattern.match(opening_line)
         if not match:
             return None
@@ -72,7 +82,9 @@ class CodeParser(LineParser):
     def _parse_language(self, language_str: str | None) -> CodingLanguage:
         return CodingLanguage.from_string(language_str, default=self.DEFAULT_LANGUAGE)
 
-    async def _create_rich_text_from_code(self, code_lines: list[str]) -> list[RichText]:
+    async def _create_rich_text_from_code(
+        self, code_lines: list[str]
+    ) -> list[RichText]:
         content = "\n".join(code_lines) if code_lines else ""
         return await self._rich_text_converter.to_rich_text(content)
 

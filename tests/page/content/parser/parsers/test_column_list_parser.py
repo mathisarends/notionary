@@ -12,7 +12,10 @@ from notionary.blocks.schemas import (
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.column_list import ColumnListParser
-from notionary.page.content.syntax.definition import MarkdownGrammar, SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import (
+    MarkdownGrammar,
+    SyntaxDefinitionRegistry,
+)
 
 
 @pytest.fixture
@@ -167,13 +170,18 @@ async def test_process_column_list_filters_only_column_blocks(
     context.line = delimiter
     context.all_lines = [delimiter, "    content"]
     context.current_line_index = 0
-    context.parse_nested_markdown = AsyncMock(return_value=[column_block, paragraph_block, column_block])
+    context.parse_nested_markdown = AsyncMock(
+        return_value=[column_block, paragraph_block, column_block]
+    )
 
     await column_list_parser._process(context)
 
     finalized_block = context.result_blocks[0]
     assert len(finalized_block.column_list.children) == 2
-    assert all(isinstance(child, CreateColumnBlock) for child in finalized_block.column_list.children)
+    assert all(
+        isinstance(child, CreateColumnBlock)
+        for child in finalized_block.column_list.children
+    )
 
 
 @pytest.mark.asyncio
@@ -295,7 +303,9 @@ async def test_column_list_with_mixed_content(
 
     result_block = context.result_blocks[0]
     assert len(result_block.column_list.children) == 2
-    assert all(child.type == BlockType.COLUMN for child in result_block.column_list.children)
+    assert all(
+        child.type == BlockType.COLUMN for child in result_block.column_list.children
+    )
 
 
 def test_is_valid_column_block(

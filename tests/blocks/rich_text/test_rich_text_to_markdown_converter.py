@@ -22,7 +22,9 @@ from notionary.blocks.rich_text.name_id_resolver import (
     PageNameIdResolver,
     PersonNameIdResolver,
 )
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 
 
 @pytest.fixture
@@ -136,7 +138,9 @@ class TestRichTextToMarkdownConverter:
             RichText(
                 type=RichTextType.TEXT,
                 plain_text="Google",
-                text=TextContent(content="Google", link=LinkObject(url="https://google.com")),
+                text=TextContent(
+                    content="Google", link=LinkObject(url="https://google.com")
+                ),
                 annotations=TextAnnotations(),
             )
         ]
@@ -146,7 +150,11 @@ class TestRichTextToMarkdownConverter:
     @pytest.mark.asyncio
     async def test_equation(self, converter: RichTextToMarkdownConverter) -> None:
         rich_text = [
-            RichText(type=RichTextType.EQUATION, plain_text="E=mc^2", equation=EquationObject(expression="E=mc^2"))
+            RichText(
+                type=RichTextType.EQUATION,
+                plain_text="E=mc^2",
+                equation=EquationObject(expression="E=mc^2"),
+            )
         ]
         result = await converter.to_markdown(rich_text)
         assert result == "$E=mc^2$"
@@ -157,7 +165,9 @@ class TestRichTextToMarkdownConverter:
             RichText(
                 type=RichTextType.MENTION,
                 plain_text="Test Page",
-                mention=MentionObject(type=MentionType.PAGE, page=MentionPageRef(id="page-123")),
+                mention=MentionObject(
+                    type=MentionType.PAGE, page=MentionPageRef(id="page-123")
+                ),
             )
         ]
         result = await converter.to_markdown(rich_text)
@@ -169,7 +179,9 @@ class TestRichTextToMarkdownConverter:
             RichText(
                 type=RichTextType.MENTION,
                 plain_text="John Doe",
-                mention=MentionObject(type=MentionType.USER, user=MentionUserRef(id="user-123")),
+                mention=MentionObject(
+                    type=MentionType.USER, user=MentionUserRef(id="user-123")
+                ),
             )
         ]
         result = await converter.to_markdown(rich_text)
@@ -181,7 +193,10 @@ class TestRichTextToMarkdownConverter:
             RichText(
                 type=RichTextType.MENTION,
                 plain_text="2024-01-15",
-                mention=MentionObject(type=MentionType.DATE, date=MentionDate(start="2024-01-15", end="2024-01-20")),
+                mention=MentionObject(
+                    type=MentionType.DATE,
+                    date=MentionDate(start="2024-01-15", end="2024-01-20"),
+                ),
             )
         ]
         result = await converter.to_markdown(rich_text)

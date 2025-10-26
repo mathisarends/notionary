@@ -13,7 +13,9 @@ from notionary.shared.models.file import FileType
 @pytest.fixture
 def file_parser(syntax_registry: SyntaxDefinitionRegistry) -> FileParser:
     mock_file_upload = Mock(spec=NotionFileUpload)
-    return FileParser(syntax_registry=syntax_registry, file_upload_service=mock_file_upload)
+    return FileParser(
+        syntax_registry=syntax_registry, file_upload_service=mock_file_upload
+    )
 
 
 @pytest.fixture

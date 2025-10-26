@@ -22,14 +22,18 @@ def divider_renderer() -> DividerRenderer:
 
 
 @pytest.mark.asyncio
-async def test_divider_block_should_be_handled(divider_renderer: DividerRenderer, mock_block: Block) -> None:
+async def test_divider_block_should_be_handled(
+    divider_renderer: DividerRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.DIVIDER
 
     assert divider_renderer._can_handle(mock_block)
 
 
 @pytest.mark.asyncio
-async def test_non_divider_block_should_not_be_handled(divider_renderer: DividerRenderer, mock_block: Block) -> None:
+async def test_non_divider_block_should_not_be_handled(
+    divider_renderer: DividerRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.PARAGRAPH
 
     assert not divider_renderer._can_handle(mock_block)

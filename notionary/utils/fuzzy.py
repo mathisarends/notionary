@@ -28,7 +28,9 @@ def find_all_matches(
     text_extractor: Callable[[T], str],
     min_similarity: float,
 ) -> list[T]:
-    matches = _find_best_matches(query, items, text_extractor, min_similarity, limit=None)
+    matches = _find_best_matches(
+        query, items, text_extractor, min_similarity, limit=None
+    )
     return [match.item for match in matches]
 
 
@@ -56,7 +58,9 @@ def _find_best_matches(
     return results
 
 
-def _sort_by_highest_similarity_first(results: list[_MatchResult]) -> list[_MatchResult]:
+def _sort_by_highest_similarity_first(
+    results: list[_MatchResult],
+) -> list[_MatchResult]:
     return sorted(results, key=lambda x: x.similarity, reverse=True)
 
 

@@ -6,7 +6,10 @@ from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 class TableMarkdownNode(MarkdownNode):
     def __init__(
-        self, headers: list[str], rows: list[list[str]], syntax_registry: SyntaxDefinitionRegistry | None = None
+        self,
+        headers: list[str],
+        rows: list[list[str]],
+        syntax_registry: SyntaxDefinitionRegistry | None = None,
     ) -> None:
         super().__init__(syntax_registry=syntax_registry)
         self._validate_input(headers, rows)

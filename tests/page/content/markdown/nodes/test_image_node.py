@@ -18,7 +18,9 @@ def test_image_without_caption(image_delimiter: str) -> None:
 
 def test_image_with_caption(image_delimiter: str, caption_delimiter: str) -> None:
     image = ImageMarkdownNode(url="https://example.com/image.jpg", caption="My Image")
-    expected = f"{image_delimiter}https://example.com/image.jpg)\n{caption_delimiter} My Image"
+    expected = (
+        f"{image_delimiter}https://example.com/image.jpg)\n{caption_delimiter} My Image"
+    )
 
     assert image.to_markdown() == expected
 

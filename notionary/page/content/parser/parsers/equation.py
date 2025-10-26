@@ -24,7 +24,9 @@ class EquationParser(LineParser):
         equation_content = self._collect_equation_content(context)
         lines_consumed = self._count_lines_consumed(context)
 
-        block = self._create_equation_block(opening_line=context.line, equation_lines=equation_content)
+        block = self._create_equation_block(
+            opening_line=context.line, equation_lines=equation_content
+        )
 
         if block:
             context.lines_consumed = lines_consumed
@@ -50,7 +52,9 @@ class EquationParser(LineParser):
 
         return len(context.get_remaining_lines())
 
-    def _create_equation_block(self, opening_line: str, equation_lines: list[str]) -> CreateEquationBlock | None:
+    def _create_equation_block(
+        self, opening_line: str, equation_lines: list[str]
+    ) -> CreateEquationBlock | None:
         if opening_line.strip() != self._syntax.start_delimiter:
             return None
 

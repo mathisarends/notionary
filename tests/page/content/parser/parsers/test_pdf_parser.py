@@ -13,7 +13,9 @@ from notionary.shared.models.file import FileType
 @pytest.fixture
 def pdf_parser(syntax_registry: SyntaxDefinitionRegistry) -> PdfParser:
     mock_file_upload = Mock(spec=NotionFileUpload)
-    return PdfParser(syntax_registry=syntax_registry, file_upload_service=mock_file_upload)
+    return PdfParser(
+        syntax_registry=syntax_registry, file_upload_service=mock_file_upload
+    )
 
 
 @pytest.fixture
@@ -50,12 +52,17 @@ async def test_pdf_with_url_containing_special_characters_should_extract_correct
     context: BlockParsingContext,
     make_pdf_syntax,
 ) -> None:
-    context.line = make_pdf_syntax("https://example.com/path/to/file.pdf?param=value&other=123")
+    context.line = make_pdf_syntax(
+        "https://example.com/path/to/file.pdf?param=value&other=123"
+    )
 
     await pdf_parser._process(context)
 
     block = context.result_blocks[0]
-    assert block.pdf.external.url == "https://example.com/path/to/file.pdf?param=value&other=123"
+    assert (
+        block.pdf.external.url
+        == "https://example.com/path/to/file.pdf?param=value&other=123"
+    )
 
 
 @pytest.mark.asyncio

@@ -38,4 +38,6 @@ class PersonUser(BaseUser):
         return self._email
 
     def __repr__(self) -> str:
-        return f"PersonUser(id={self._id!r}, name={self._name!r}, email={self._email!r})"
+        return (
+            f"PersonUser(id={self._id!r}, name={self._name!r}, email={self._email!r})"
+        )

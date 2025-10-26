@@ -189,19 +189,34 @@ class ConverterChainFactory:
         return EmbedParser(syntax_registry=self._syntax_registry)
 
     def _create_image_parser(self) -> ImageParser:
-        return ImageParser(syntax_registry=self._syntax_registry, file_upload_service=self._file_upload_service)
+        return ImageParser(
+            syntax_registry=self._syntax_registry,
+            file_upload_service=self._file_upload_service,
+        )
 
     def _create_video_parser(self) -> VideoParser:
-        return VideoParser(syntax_registry=self._syntax_registry, file_upload_service=self._file_upload_service)
+        return VideoParser(
+            syntax_registry=self._syntax_registry,
+            file_upload_service=self._file_upload_service,
+        )
 
     def _create_audio_parser(self) -> AudioParser:
-        return AudioParser(syntax_registry=self._syntax_registry, file_upload_service=self._file_upload_service)
+        return AudioParser(
+            syntax_registry=self._syntax_registry,
+            file_upload_service=self._file_upload_service,
+        )
 
     def _create_file_parser(self) -> FileParser:
-        return FileParser(syntax_registry=self._syntax_registry, file_upload_service=self._file_upload_service)
+        return FileParser(
+            syntax_registry=self._syntax_registry,
+            file_upload_service=self._file_upload_service,
+        )
 
     def _create_pdf_parser(self) -> PdfParser:
-        return PdfParser(syntax_registry=self._syntax_registry, file_upload_service=self._file_upload_service)
+        return PdfParser(
+            syntax_registry=self._syntax_registry,
+            file_upload_service=self._file_upload_service,
+        )
 
     def _create_caption_parser(self) -> CaptionParser:
         return CaptionParser(

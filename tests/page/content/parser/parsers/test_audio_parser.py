@@ -13,7 +13,9 @@ from notionary.shared.models.file import FileType
 @pytest.fixture
 def audio_parser(syntax_registry: SyntaxDefinitionRegistry) -> AudioParser:
     mock_file_upload = Mock(spec=NotionFileUpload)
-    return AudioParser(syntax_registry=syntax_registry, file_upload_service=mock_file_upload)
+    return AudioParser(
+        syntax_registry=syntax_registry, file_upload_service=mock_file_upload
+    )
 
 
 @pytest.fixture
@@ -193,9 +195,7 @@ async def test_multiple_audio_patterns_should_use_first_match(
     context: BlockParsingContext,
     make_audio_syntax,
 ) -> None:
-    context.line = (
-        f"{make_audio_syntax('https://first.com/audio.mp3')} {make_audio_syntax('https://second.com/audio.mp3')}"
-    )
+    context.line = f"{make_audio_syntax('https://first.com/audio.mp3')} {make_audio_syntax('https://second.com/audio.mp3')}"
 
     await audio_parser._process(context)
 

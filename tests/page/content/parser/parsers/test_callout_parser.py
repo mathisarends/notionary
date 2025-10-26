@@ -11,13 +11,19 @@ from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 @pytest.fixture
 def mock_rich_text_converter() -> AsyncMock:
     converter = AsyncMock()
-    converter.to_rich_text = AsyncMock(return_value=[{"type": "text", "text": {"content": "test"}}])
+    converter.to_rich_text = AsyncMock(
+        return_value=[{"type": "text", "text": {"content": "test"}}]
+    )
     return converter
 
 
 @pytest.fixture
-def callout_parser(syntax_registry: SyntaxDefinitionRegistry, mock_rich_text_converter: AsyncMock) -> CalloutParser:
-    return CalloutParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
+def callout_parser(
+    syntax_registry: SyntaxDefinitionRegistry, mock_rich_text_converter: AsyncMock
+) -> CalloutParser:
+    return CalloutParser(
+        syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter
+    )
 
 
 @pytest.fixture

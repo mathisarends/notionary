@@ -69,7 +69,9 @@ class RichTextToMarkdownConverter:
             return await self._extract_database_mention_markdown(mention.database.id)
 
         elif mention.type == MentionType.DATASOURCE and mention.data_source:
-            return await self._extract_data_source_mention_markdown(mention.data_source.id)
+            return await self._extract_data_source_mention_markdown(
+                mention.data_source.id
+            )
 
         elif mention.type == MentionType.USER and mention.user:
             return await self._extract_user_mention_markdown(mention.user.id)
@@ -88,7 +90,9 @@ class RichTextToMarkdownConverter:
         return f"@database[{database_name or database_id}]"
 
     async def _extract_data_source_mention_markdown(self, data_source_id: str) -> str:
-        data_source_name = await self.data_source_resolver.resolve_id_to_name(data_source_id)
+        data_source_name = await self.data_source_resolver.resolve_id_to_name(
+            data_source_id
+        )
         return f"@datasource[{data_source_name or data_source_id}]"
 
     async def _extract_user_mention_markdown(self, user_id: str) -> str:
@@ -121,7 +125,10 @@ class RichTextToMarkdownConverter:
         if annotations.bold:
             content = f"**{content}**"
 
-        if annotations.color != BlockColor.DEFAULT and annotations.color in self.VALID_COLORS:
+        if (
+            annotations.color != BlockColor.DEFAULT
+            and annotations.color in self.VALID_COLORS
+        ):
             content = f"({annotations.color}:{content})"
 
         return content

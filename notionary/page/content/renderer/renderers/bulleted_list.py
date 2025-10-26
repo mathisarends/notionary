@@ -1,6 +1,8 @@
 from typing import override
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block, BlockType
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
@@ -14,7 +16,9 @@ class BulletedListRenderer(BlockRenderer):
         rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
     ) -> None:
         super().__init__(syntax_registry=syntax_registry)
-        self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
+        self._rich_text_markdown_converter = (
+            rich_text_markdown_converter or RichTextToMarkdownConverter()
+        )
 
     @override
     def _can_handle(self, block: Block) -> bool:
@@ -45,4 +49,6 @@ class BulletedListRenderer(BlockRenderer):
         if not block.bulleted_list_item or not block.bulleted_list_item.rich_text:
             return None
 
-        return await self._rich_text_markdown_converter.to_markdown(block.bulleted_list_item.rich_text)
+        return await self._rich_text_markdown_converter.to_markdown(
+            block.bulleted_list_item.rich_text
+        )

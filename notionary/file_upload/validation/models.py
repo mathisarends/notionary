@@ -53,14 +53,24 @@ class DocumentMimeType(StrEnum):
     PLAIN_TEXT = "text/plain"
     JSON = "application/json"
     MSWORD = "application/msword"
-    WORD_DOCUMENT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    WORD_TEMPLATE = "application/vnd.openxmlformats-officedocument.wordprocessingml.template"
+    WORD_DOCUMENT = (
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+    WORD_TEMPLATE = (
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.template"
+    )
     EXCEL = "application/vnd.ms-excel"
     EXCEL_SHEET = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    EXCEL_TEMPLATE = "application/vnd.openxmlformats-officedocument.spreadsheetml.template"
+    EXCEL_TEMPLATE = (
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.template"
+    )
     POWERPOINT = "application/vnd.ms-powerpoint"
-    POWERPOINT_PRESENTATION = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-    POWERPOINT_TEMPLATE = "application/vnd.openxmlformats-officedocument.presentationml.template"
+    POWERPOINT_PRESENTATION = (
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    )
+    POWERPOINT_TEMPLATE = (
+        "application/vnd.openxmlformats-officedocument.presentationml.template"
+    )
 
 
 class ImageExtension(StrEnum):

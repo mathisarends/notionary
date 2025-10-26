@@ -52,7 +52,9 @@ class FileUploadCreateRequest(BaseModel):
         if self.mode == UploadMode.MULTI_PART and self.number_of_parts is None:
             raise ValueError("number_of_parts is required when mode is 'multi_part'")
         if self.mode == UploadMode.SINGLE_PART and self.number_of_parts is not None:
-            raise ValueError("number_of_parts should not be provided for 'single_part' mode")
+            raise ValueError(
+                "number_of_parts should not be provided for 'single_part' mode"
+            )
         return self
 
     def model_dump(self, **kwargs):

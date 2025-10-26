@@ -25,7 +25,9 @@ def equation_renderer() -> EquationRenderer:
 
 
 @pytest.mark.asyncio
-async def test_equation_block_should_be_handled(equation_renderer: EquationRenderer, mock_block: EquationBlock) -> None:
+async def test_equation_block_should_be_handled(
+    equation_renderer: EquationRenderer, mock_block: EquationBlock
+) -> None:
     mock_block.type = BlockType.EQUATION
 
     assert equation_renderer._can_handle(mock_block)
@@ -59,7 +61,9 @@ async def test_equation_with_complex_expression_should_render_latex(
     equation_renderer: EquationRenderer,
     render_context: MarkdownRenderingContext,
 ) -> None:
-    equation_data = _create_equation_data(r"\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}")
+    equation_data = _create_equation_data(
+        r"\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}"
+    )
     block = _create_equation_block(equation_data)
     render_context.block = block
 
@@ -120,7 +124,9 @@ async def test_equation_with_children_should_render_children_with_indent(
     equation_data = _create_equation_data("a^2 + b^2 = c^2")
     block = _create_equation_block(equation_data)
     render_context.block = block
-    render_context.render_children_with_additional_indent = AsyncMock(return_value="  Child content")
+    render_context.render_children_with_additional_indent = AsyncMock(
+        return_value="  Child content"
+    )
 
     await equation_renderer._process(render_context)
 

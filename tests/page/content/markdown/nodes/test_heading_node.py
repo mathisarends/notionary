@@ -1,6 +1,9 @@
 import pytest
 
-from notionary.page.content.markdown.nodes import HeadingMarkdownNode, ParagraphMarkdownNode
+from notionary.page.content.markdown.nodes import (
+    HeadingMarkdownNode,
+    ParagraphMarkdownNode,
+)
 from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 

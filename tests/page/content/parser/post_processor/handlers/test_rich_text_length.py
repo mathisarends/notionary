@@ -28,12 +28,16 @@ def create_rich_text(content: str) -> RichText:
     return RichText.from_plain_text(content)
 
 
-def test_empty_blocks_should_return_empty(processor: RichTextLengthTruncationPostProcessor) -> None:
+def test_empty_blocks_should_return_empty(
+    processor: RichTextLengthTruncationPostProcessor,
+) -> None:
     result = processor.process([])
     assert result == []
 
 
-def test_short_text_should_remain_unchanged(processor: RichTextLengthTruncationPostProcessor) -> None:
+def test_short_text_should_remain_unchanged(
+    processor: RichTextLengthTruncationPostProcessor,
+) -> None:
     block = CreateParagraphBlock(
         type=BlockType.PARAGRAPH,
         paragraph=CreateParagraphData(rich_text=[create_rich_text("Short text")]),
@@ -44,7 +48,9 @@ def test_short_text_should_remain_unchanged(processor: RichTextLengthTruncationP
     assert result[0].paragraph.rich_text[0].text.content == "Short text"
 
 
-def test_text_over_limit_should_be_truncated(processor: RichTextLengthTruncationPostProcessor) -> None:
+def test_text_over_limit_should_be_truncated(
+    processor: RichTextLengthTruncationPostProcessor,
+) -> None:
     long_text = "x" * 2500
     block = CreateParagraphBlock(
         type=BlockType.PARAGRAPH,
@@ -56,7 +62,9 @@ def test_text_over_limit_should_be_truncated(processor: RichTextLengthTruncation
     assert len(result[0].paragraph.rich_text[0].text.content) == 2000
 
 
-def test_multiple_blocks_processed_independently(processor: RichTextLengthTruncationPostProcessor) -> None:
+def test_multiple_blocks_processed_independently(
+    processor: RichTextLengthTruncationPostProcessor,
+) -> None:
     blocks = [
         CreateParagraphBlock(
             type=BlockType.PARAGRAPH,
@@ -79,7 +87,9 @@ def test_multiple_blocks_processed_independently(processor: RichTextLengthTrunca
     assert len(result[2].paragraph.rich_text[0].text.content) == 2000
 
 
-def test_multiple_rich_texts_in_block_truncated_individually(processor: RichTextLengthTruncationPostProcessor) -> None:
+def test_multiple_rich_texts_in_block_truncated_individually(
+    processor: RichTextLengthTruncationPostProcessor,
+) -> None:
     block = CreateParagraphBlock(
         type=BlockType.PARAGRAPH,
         paragraph=CreateParagraphData(
@@ -98,7 +108,9 @@ def test_multiple_rich_texts_in_block_truncated_individually(processor: RichText
     assert len(result[0].paragraph.rich_text[2].text.content) == 2000
 
 
-def test_caption_should_be_truncated(processor: RichTextLengthTruncationPostProcessor) -> None:
+def test_caption_should_be_truncated(
+    processor: RichTextLengthTruncationPostProcessor,
+) -> None:
     block = CreateCodeBlock(
         type=BlockType.CODE,
         code=CodeData(
@@ -113,7 +125,9 @@ def test_caption_should_be_truncated(processor: RichTextLengthTruncationPostProc
     assert result[0].code.rich_text[0].text.content == "print('hello')"
 
 
-def test_children_processed_recursively(processor: RichTextLengthTruncationPostProcessor) -> None:
+def test_children_processed_recursively(
+    processor: RichTextLengthTruncationPostProcessor,
+) -> None:
     block = CreateCalloutBlock(
         type=BlockType.CALLOUT,
         callout=CreateCalloutData(
@@ -126,7 +140,9 @@ def test_children_processed_recursively(processor: RichTextLengthTruncationPostP
                         children=[
                             CreateParagraphBlock(
                                 type=BlockType.PARAGRAPH,
-                                paragraph=CreateParagraphData(rich_text=[create_rich_text("c" * 2500)]),
+                                paragraph=CreateParagraphData(
+                                    rich_text=[create_rich_text("c" * 2500)]
+                                ),
                             )
                         ],
                     ),
@@ -139,10 +155,21 @@ def test_children_processed_recursively(processor: RichTextLengthTruncationPostP
 
     assert len(result[0].callout.rich_text[0].text.content) == 2000
     assert len(result[0].callout.children[0].quote.rich_text[0].text.content) == 2000
-    assert len(result[0].callout.children[0].quote.children[0].paragraph.rich_text[0].text.content) == 2000
+    assert (
+        len(
+            result[0]
+            .callout.children[0]
+            .quote.children[0]
+            .paragraph.rich_text[0]
+            .text.content
+        )
+        == 2000
+    )
 
 
-def test_non_text_types_ignored(processor: RichTextLengthTruncationPostProcessor) -> None:
+def test_non_text_types_ignored(
+    processor: RichTextLengthTruncationPostProcessor,
+) -> None:
     block = CreateParagraphBlock(
         type=BlockType.PARAGRAPH,
         paragraph=CreateParagraphData(
@@ -161,7 +188,9 @@ def test_non_text_types_ignored(processor: RichTextLengthTruncationPostProcessor
     assert len(result[0].paragraph.rich_text[2].text.content) == 2000
 
 
-def test_blocks_without_rich_text_unchanged(processor: RichTextLengthTruncationPostProcessor) -> None:
+def test_blocks_without_rich_text_unchanged(
+    processor: RichTextLengthTruncationPostProcessor,
+) -> None:
     block = CreateDividerBlock(type=BlockType.DIVIDER, divider=DividerData())
 
     result = processor.process([block])
@@ -170,7 +199,9 @@ def test_blocks_without_rich_text_unchanged(processor: RichTextLengthTruncationP
     assert result[0].type == BlockType.DIVIDER
 
 
-def test_original_block_not_modified(processor: RichTextLengthTruncationPostProcessor) -> None:
+def test_original_block_not_modified(
+    processor: RichTextLengthTruncationPostProcessor,
+) -> None:
     original_block = CreateParagraphBlock(
         type=BlockType.PARAGRAPH,
         paragraph=CreateParagraphData(rich_text=[create_rich_text("x" * 2500)]),
@@ -181,7 +212,9 @@ def test_original_block_not_modified(processor: RichTextLengthTruncationPostProc
     assert len(original_block.paragraph.rich_text[0].text.content) == 2500
 
 
-def test_nested_list_structure_flattened(processor: RichTextLengthTruncationPostProcessor) -> None:
+def test_nested_list_structure_flattened(
+    processor: RichTextLengthTruncationPostProcessor,
+) -> None:
     blocks = [
         CreateParagraphBlock(
             type=BlockType.PARAGRAPH,
@@ -195,7 +228,9 @@ def test_nested_list_structure_flattened(processor: RichTextLengthTruncationPost
             [
                 CreateParagraphBlock(
                     type=BlockType.PARAGRAPH,
-                    paragraph=CreateParagraphData(rich_text=[create_rich_text("z" * 2500)]),
+                    paragraph=CreateParagraphData(
+                        rich_text=[create_rich_text("z" * 2500)]
+                    ),
                 )
             ],
         ],
@@ -204,10 +239,14 @@ def test_nested_list_structure_flattened(processor: RichTextLengthTruncationPost
     result = processor.process(blocks)
 
     assert len(result) == 3
-    assert all(len(block.paragraph.rich_text[0].text.content) == 2000 for block in result)
+    assert all(
+        len(block.paragraph.rich_text[0].text.content) == 2000 for block in result
+    )
 
 
-def test_empty_rich_text_list_should_be_handled(processor: RichTextLengthTruncationPostProcessor) -> None:
+def test_empty_rich_text_list_should_be_handled(
+    processor: RichTextLengthTruncationPostProcessor,
+) -> None:
     block = CreateParagraphBlock(
         type=BlockType.PARAGRAPH,
         paragraph=CreateParagraphData(rich_text=[]),
@@ -219,7 +258,9 @@ def test_empty_rich_text_list_should_be_handled(processor: RichTextLengthTruncat
     assert result[0].paragraph.rich_text == []
 
 
-def test_mixed_empty_and_filled_rich_text_lists(processor: RichTextLengthTruncationPostProcessor) -> None:
+def test_mixed_empty_and_filled_rich_text_lists(
+    processor: RichTextLengthTruncationPostProcessor,
+) -> None:
     blocks = [
         CreateParagraphBlock(
             type=BlockType.PARAGRAPH,
@@ -243,7 +284,9 @@ def test_mixed_empty_and_filled_rich_text_lists(processor: RichTextLengthTruncat
     assert result[2].paragraph.rich_text == []
 
 
-def test_empty_caption_should_be_handled(processor: RichTextLengthTruncationPostProcessor) -> None:
+def test_empty_caption_should_be_handled(
+    processor: RichTextLengthTruncationPostProcessor,
+) -> None:
     block = CreateCodeBlock(
         type=BlockType.CODE,
         code=CodeData(

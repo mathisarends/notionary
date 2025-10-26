@@ -2,7 +2,10 @@ from pathlib import Path
 
 import pytest
 
-from notionary.exceptions.file_upload import NoFileExtensionException, UnsupportedFileTypeException
+from notionary.exceptions.file_upload import (
+    NoFileExtensionException,
+    UnsupportedFileTypeException,
+)
 from notionary.file_upload.validation.validators import FileExtensionValidator
 
 
@@ -96,7 +99,18 @@ async def test_validate_fails_for_file_without_extension() -> None:
 
 @pytest.mark.asyncio
 async def test_validate_passes_for_all_image_extensions() -> None:
-    image_extensions = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".heic", ".tif", ".tiff", ".ico"]
+    image_extensions = [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".svg",
+        ".webp",
+        ".heic",
+        ".tif",
+        ".tiff",
+        ".ico",
+    ]
 
     for ext in image_extensions:
         validator = FileExtensionValidator(f"image{ext}")
@@ -105,7 +119,17 @@ async def test_validate_passes_for_all_image_extensions() -> None:
 
 @pytest.mark.asyncio
 async def test_validate_passes_for_all_document_extensions() -> None:
-    document_extensions = [".pdf", ".txt", ".json", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx"]
+    document_extensions = [
+        ".pdf",
+        ".txt",
+        ".json",
+        ".doc",
+        ".docx",
+        ".xls",
+        ".xlsx",
+        ".ppt",
+        ".pptx",
+    ]
 
     for ext in document_extensions:
         validator = FileExtensionValidator(f"document{ext}")

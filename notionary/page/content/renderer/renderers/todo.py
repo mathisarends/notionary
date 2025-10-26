@@ -1,7 +1,9 @@
 from typing import override
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
@@ -15,7 +17,9 @@ class TodoRenderer(BlockRenderer):
         rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
     ) -> None:
         super().__init__(syntax_registry=syntax_registry)
-        self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
+        self._rich_text_markdown_converter = (
+            rich_text_markdown_converter or RichTextToMarkdownConverter()
+        )
 
     @override
     def _can_handle(self, block: Block) -> bool:
@@ -29,7 +33,11 @@ class TodoRenderer(BlockRenderer):
             context.markdown_result = ""
             return
 
-        syntax = self._syntax_registry.get_todo_done_syntax() if is_checked else self._syntax_registry.get_todo_syntax()
+        syntax = (
+            self._syntax_registry.get_todo_done_syntax()
+            if is_checked
+            else self._syntax_registry.get_todo_syntax()
+        )
 
         todo_markdown = f"{syntax.start_delimiter} {content}"
 
@@ -51,6 +59,8 @@ class TodoRenderer(BlockRenderer):
 
         content = ""
         if block.to_do.rich_text:
-            content = await self._rich_text_markdown_converter.to_markdown(block.to_do.rich_text)
+            content = await self._rich_text_markdown_converter.to_markdown(
+                block.to_do.rich_text
+            )
 
         return is_checked, content

@@ -1,6 +1,8 @@
 from notionary.blocks.client import NotionBlockHttpClient
 from notionary.page.content.parser.factory import ConverterChainFactory
-from notionary.page.content.parser.post_processing.handlers import RichTextLengthTruncationPostProcessor
+from notionary.page.content.parser.post_processing.handlers import (
+    RichTextLengthTruncationPostProcessor,
+)
 from notionary.page.content.parser.post_processing.service import BlockPostProcessor
 from notionary.page.content.parser.pre_processsing.handlers import (
     ColumnSyntaxPreProcessor,
@@ -11,8 +13,12 @@ from notionary.page.content.parser.pre_processsing.handlers import (
 from notionary.page.content.parser.pre_processsing.service import MarkdownPreProcessor
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.page.content.renderer.factory import RendererChainFactory
-from notionary.page.content.renderer.post_processing.handlers import NumberedListPlaceholderReplacerPostProcessor
-from notionary.page.content.renderer.post_processing.service import MarkdownRenderingPostProcessor
+from notionary.page.content.renderer.post_processing.handlers import (
+    NumberedListPlaceholderReplacerPostProcessor,
+)
+from notionary.page.content.renderer.post_processing.service import (
+    MarkdownRenderingPostProcessor,
+)
 from notionary.page.content.renderer.service import NotionToMarkdownConverter
 from notionary.page.content.service import PageContentService
 
@@ -23,10 +29,14 @@ class PageContentServiceFactory:
         converter_chain_factory: ConverterChainFactory | None = None,
         renderer_chain_factory: RendererChainFactory | None = None,
     ) -> None:
-        self._converter_chain_factory = converter_chain_factory or ConverterChainFactory()
+        self._converter_chain_factory = (
+            converter_chain_factory or ConverterChainFactory()
+        )
         self._renderer_chain_factory = renderer_chain_factory or RendererChainFactory()
 
-    def create(self, page_id: str, block_client: NotionBlockHttpClient) -> PageContentService:
+    def create(
+        self, page_id: str, block_client: NotionBlockHttpClient
+    ) -> PageContentService:
         markdown_converter = self._create_markdown_to_notion_converter()
         notion_to_markdown_converter = self._create_notion_to_markdown_converter()
 
@@ -50,7 +60,9 @@ class PageContentServiceFactory:
 
     def _create_notion_to_markdown_converter(self) -> NotionToMarkdownConverter:
         renderer_chain = self._renderer_chain_factory.create()
-        markdown_rendering_post_processor = self._create_markdown_rendering_post_processor()
+        markdown_rendering_post_processor = (
+            self._create_markdown_rendering_post_processor()
+        )
         return NotionToMarkdownConverter(
             renderer_chain=renderer_chain,
             post_processor=markdown_rendering_post_processor,
@@ -69,7 +81,9 @@ class PageContentServiceFactory:
         post_processor.register(RichTextLengthTruncationPostProcessor())
         return post_processor
 
-    def _create_markdown_rendering_post_processor(self) -> MarkdownRenderingPostProcessor:
+    def _create_markdown_rendering_post_processor(
+        self,
+    ) -> MarkdownRenderingPostProcessor:
         post_processor = MarkdownRenderingPostProcessor()
         post_processor.register(NumberedListPlaceholderReplacerPostProcessor())
         return post_processor

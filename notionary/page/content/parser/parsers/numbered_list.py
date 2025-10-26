@@ -17,7 +17,9 @@ from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 class NumberedListParser(LineParser):
     def __init__(
-        self, syntax_registry: SyntaxDefinitionRegistry, rich_text_converter: MarkdownRichTextConverter
+        self,
+        syntax_registry: SyntaxDefinitionRegistry,
+        rich_text_converter: MarkdownRichTextConverter,
     ) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_numbered_list_syntax()
@@ -41,7 +43,9 @@ class NumberedListParser(LineParser):
         await self._process_nested_children(block, context)
         context.result_blocks.append(block)
 
-    async def _process_nested_children(self, block: CreateNumberedListItemBlock, context: BlockParsingContext) -> None:
+    async def _process_nested_children(
+        self, block: CreateNumberedListItemBlock, context: BlockParsingContext
+    ) -> None:
         child_lines = self._collect_child_lines(context)
         if not child_lines:
             return
@@ -63,13 +67,17 @@ class NumberedListParser(LineParser):
         children_text = self._convert_lines_to_text(stripped_lines)
         return await context.parse_nested_markdown(children_text)
 
-    def _remove_parent_indentation(self, lines: list[str], context: BlockParsingContext) -> list[str]:
+    def _remove_parent_indentation(
+        self, lines: list[str], context: BlockParsingContext
+    ) -> list[str]:
         return context.strip_indentation_level(lines, levels=1)
 
     def _convert_lines_to_text(self, lines: list[str]) -> str:
         return "\n".join(lines)
 
-    async def _create_numbered_list_block(self, text: str) -> CreateNumberedListItemBlock | None:
+    async def _create_numbered_list_block(
+        self, text: str
+    ) -> CreateNumberedListItemBlock | None:
         content = self._extract_list_content(text)
         if content is None:
             return None
@@ -87,5 +95,7 @@ class NumberedListParser(LineParser):
         return await self._rich_text_converter.to_rich_text(content)
 
     def _build_block(self, rich_text) -> CreateNumberedListItemBlock:
-        numbered_list_content = CreateNumberedListItemData(rich_text=rich_text, color=BlockColor.DEFAULT)
+        numbered_list_content = CreateNumberedListItemData(
+            rich_text=rich_text, color=BlockColor.DEFAULT
+        )
         return CreateNumberedListItemBlock(numbered_list_item=numbered_list_content)

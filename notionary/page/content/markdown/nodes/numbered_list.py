@@ -18,7 +18,9 @@ class NumberedListMarkdownNode(ContainerNode):
 
     @override
     def to_markdown(self) -> str:
-        list_items = [self._render_list_item(index, text) for index, text in enumerate(self.texts)]
+        list_items = [
+            self._render_list_item(index, text) for index, text in enumerate(self.texts)
+        ]
         return "\n".join(list_items)
 
     def _render_list_item(self, index: int, text: str) -> str:

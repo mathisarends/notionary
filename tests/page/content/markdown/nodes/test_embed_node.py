@@ -18,6 +18,8 @@ def test_embed_without_caption(embed_delimiter: str) -> None:
 
 def test_embed_with_caption(embed_delimiter: str, caption_delimiter: str) -> None:
     embed = EmbedMarkdownNode(url="https://example.com", caption="External content")
-    expected = f"{embed_delimiter}https://example.com)\n{caption_delimiter} External content"
+    expected = (
+        f"{embed_delimiter}https://example.com)\n{caption_delimiter} External content"
+    )
 
     assert embed.to_markdown() == expected

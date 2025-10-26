@@ -1,6 +1,8 @@
 from typing import override
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.schemas import BlockColor, CreateQuoteBlock, CreateQuoteData
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
@@ -11,7 +13,9 @@ from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 class QuoteParser(LineParser):
     def __init__(
-        self, syntax_registry: SyntaxDefinitionRegistry, rich_text_converter: MarkdownRichTextConverter
+        self,
+        syntax_registry: SyntaxDefinitionRegistry,
+        rich_text_converter: MarkdownRichTextConverter,
     ) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_quote_syntax()
@@ -49,11 +53,16 @@ class QuoteParser(LineParser):
         return quote_lines
 
     async def _process_nested_children(
-        self, block: CreateQuoteBlock, context: BlockParsingContext, quote_lines: list[str]
+        self,
+        block: CreateQuoteBlock,
+        context: BlockParsingContext,
+        quote_lines: list[str],
     ) -> None:
         # Calculate indent level after all quote lines
         last_quote_line_index = len(quote_lines) - 1
-        child_lines = self._collect_child_lines_after_quote(context, last_quote_line_index)
+        child_lines = self._collect_child_lines_after_quote(
+            context, last_quote_line_index
+        )
 
         if not child_lines:
             return
@@ -64,7 +73,9 @@ class QuoteParser(LineParser):
 
         context.lines_consumed += len(child_lines)
 
-    def _collect_child_lines_after_quote(self, context: BlockParsingContext, last_quote_index: int) -> list[str]:
+    def _collect_child_lines_after_quote(
+        self, context: BlockParsingContext, last_quote_index: int
+    ) -> list[str]:
         """Collect indented children after the quote block."""
         parent_indent_level = context.get_line_indentation_level()
         remaining_lines = context.get_remaining_lines()
@@ -88,18 +99,24 @@ class QuoteParser(LineParser):
 
         return child_lines
 
-    async def _parse_child_blocks(self, child_lines: list[str], context: BlockParsingContext) -> list[CreateQuoteBlock]:
+    async def _parse_child_blocks(
+        self, child_lines: list[str], context: BlockParsingContext
+    ) -> list[CreateQuoteBlock]:
         stripped_lines = self._remove_parent_indentation(child_lines, context)
         children_text = self._convert_lines_to_text(stripped_lines)
         return await context.parse_nested_markdown(children_text)
 
-    def _remove_parent_indentation(self, lines: list[str], context: BlockParsingContext) -> list[str]:
+    def _remove_parent_indentation(
+        self, lines: list[str], context: BlockParsingContext
+    ) -> list[str]:
         return context.strip_indentation_level(lines, levels=1)
 
     def _convert_lines_to_text(self, lines: list[str]) -> str:
         return "\n".join(lines)
 
-    async def _create_quote_block(self, quote_lines: list[str]) -> CreateQuoteBlock | None:
+    async def _create_quote_block(
+        self, quote_lines: list[str]
+    ) -> CreateQuoteBlock | None:
         contents = self._extract_quote_contents(quote_lines)
         if not contents:
             return None

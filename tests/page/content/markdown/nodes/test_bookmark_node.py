@@ -18,6 +18,8 @@ def test_bookmark_without_caption(bookmark_delimiter: str) -> None:
 
 def test_bookmark_with_caption(bookmark_delimiter: str, caption_delimiter: str) -> None:
     bookmark = BookmarkMarkdownNode(url="https://example.com", caption="Example Site")
-    expected = f"{bookmark_delimiter}https://example.com)\n{caption_delimiter} Example Site"
+    expected = (
+        f"{bookmark_delimiter}https://example.com)\n{caption_delimiter} Example Site"
+    )
 
     assert bookmark.to_markdown() == expected

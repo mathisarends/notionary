@@ -5,18 +5,24 @@ import pytest
 
 from notionary.blocks.enums import BlockType, CodingLanguage
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block, CodeBlock, CodeData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.code import CodeRenderer
 
 
-def _create_code_data(rich_text: list[RichText], language: CodingLanguage = CodingLanguage.PLAIN_TEXT) -> CodeData:
+def _create_code_data(
+    rich_text: list[RichText], language: CodingLanguage = CodingLanguage.PLAIN_TEXT
+) -> CodeData:
     return CodeData(rich_text=rich_text, language=language)
 
 
 def _create_code_data_with_caption(
-    rich_text: list[RichText], caption: list[RichText], language: CodingLanguage = CodingLanguage.PLAIN_TEXT
+    rich_text: list[RichText],
+    caption: list[RichText],
+    language: CodingLanguage = CodingLanguage.PLAIN_TEXT,
 ) -> CodeData:
     return CodeData(rich_text=rich_text, caption=caption, language=language)
 
@@ -30,19 +36,25 @@ def _create_code_block(code_data: CodeData | None) -> CodeBlock:
 
 
 @pytest.fixture
-def code_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> CodeRenderer:
+def code_renderer(
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> CodeRenderer:
     return CodeRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
 
 
 @pytest.mark.asyncio
-async def test_code_block_should_be_handled(code_renderer: CodeRenderer, mock_block: CodeBlock) -> None:
+async def test_code_block_should_be_handled(
+    code_renderer: CodeRenderer, mock_block: CodeBlock
+) -> None:
     mock_block.type = BlockType.CODE
 
     assert code_renderer._can_handle(mock_block)
 
 
 @pytest.mark.asyncio
-async def test_non_code_block_should_not_be_handled(code_renderer: CodeRenderer, mock_block: CodeBlock) -> None:
+async def test_non_code_block_should_not_be_handled(
+    code_renderer: CodeRenderer, mock_block: CodeBlock
+) -> None:
     mock_block.type = BlockType.PARAGRAPH
 
     assert not code_renderer._can_handle(mock_block)
@@ -55,7 +67,9 @@ async def test_code_with_python_language_should_render_markdown_code_block(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("print('Hello World')")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="print('Hello World')")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="print('Hello World')"
+    )
 
     code_data = _create_code_data(rich_text, CodingLanguage.PYTHON)
     block = _create_code_block(code_data)
@@ -76,9 +90,13 @@ async def test_code_with_caption_should_include_caption_in_markdown(
 ) -> None:
     rich_text = [RichText.from_plain_text("const x = 42;")]
     caption_rich_text = [RichText.from_plain_text("Example code")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(side_effect=["const x = 42;", "Example code"])
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        side_effect=["const x = 42;", "Example code"]
+    )
 
-    code_data = _create_code_data_with_caption(rich_text, caption_rich_text, CodingLanguage.JAVASCRIPT)
+    code_data = _create_code_data_with_caption(
+        rich_text, caption_rich_text, CodingLanguage.JAVASCRIPT
+    )
     block = _create_code_block(code_data)
     render_context.block = block
 
@@ -123,7 +141,9 @@ async def test_code_with_missing_data_should_render_empty_string(
 async def test_extract_code_language_with_python_should_return_python(
     code_renderer: CodeRenderer,
 ) -> None:
-    code_data = _create_code_data([RichText.from_plain_text("test")], CodingLanguage.PYTHON)
+    code_data = _create_code_data(
+        [RichText.from_plain_text("test")], CodingLanguage.PYTHON
+    )
     block = _create_code_block(code_data)
 
     language = code_renderer._extract_code_language(block)

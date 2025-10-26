@@ -59,7 +59,9 @@ class ColumnParser(LineParser):
     def _is_valid_width_ratio(self, width_ratio: float) -> bool:
         return self.MIN_WIDTH_RATIO < width_ratio <= self.MAX_WIDTH_RATIO
 
-    async def _populate_children(self, block: CreateColumnBlock, context: BlockParsingContext) -> None:
+    async def _populate_children(
+        self, block: CreateColumnBlock, context: BlockParsingContext
+    ) -> None:
         parent_indent_level = context.get_line_indentation_level()
         child_lines = context.collect_indented_child_lines(parent_indent_level)
 
@@ -70,7 +72,9 @@ class ColumnParser(LineParser):
         block.column.children = child_blocks
         context.lines_consumed = len(child_lines)
 
-    async def _parse_indented_children(self, child_lines: list[str], context: BlockParsingContext) -> list:
+    async def _parse_indented_children(
+        self, child_lines: list[str], context: BlockParsingContext
+    ) -> list:
         stripped_lines = context.strip_indentation_level(child_lines, levels=1)
         child_markdown = "\n".join(stripped_lines)
         return await context.parse_nested_markdown(child_markdown)

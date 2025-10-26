@@ -17,7 +17,9 @@ def test_pdf_without_caption(pdf_delimiter: str) -> None:
 
 
 def test_pdf_with_caption(pdf_delimiter: str, caption_delimiter: str) -> None:
-    pdf = PdfMarkdownNode(url="https://example.com/document.pdf", caption="Critical safety information")
+    pdf = PdfMarkdownNode(
+        url="https://example.com/document.pdf", caption="Critical safety information"
+    )
     expected = f"{pdf_delimiter}https://example.com/document.pdf)\n{caption_delimiter} Critical safety information"
 
     assert pdf.to_markdown() == expected

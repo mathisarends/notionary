@@ -17,7 +17,9 @@ def test_file_without_caption(file_delimiter: str) -> None:
 
 
 def test_file_with_caption(file_delimiter: str, caption_delimiter: str) -> None:
-    file = FileMarkdownNode(url="https://example.com/doc.pdf", caption="Important Document")
+    file = FileMarkdownNode(
+        url="https://example.com/doc.pdf", caption="Important Document"
+    )
     expected = f"{file_delimiter}https://example.com/doc.pdf)\n{caption_delimiter} Important Document"
 
     assert file.to_markdown() == expected

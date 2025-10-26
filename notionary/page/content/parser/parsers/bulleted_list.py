@@ -3,7 +3,10 @@ from typing import override
 from notionary.blocks.rich_text.markdown_rich_text_converter import (
     MarkdownRichTextConverter,
 )
-from notionary.blocks.schemas import CreateBulletedListItemBlock, CreateBulletedListItemData
+from notionary.blocks.schemas import (
+    CreateBulletedListItemBlock,
+    CreateBulletedListItemData,
+)
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
@@ -13,7 +16,9 @@ from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 class BulletedListParser(LineParser):
     def __init__(
-        self, syntax_registry: SyntaxDefinitionRegistry, rich_text_converter: MarkdownRichTextConverter
+        self,
+        syntax_registry: SyntaxDefinitionRegistry,
+        rich_text_converter: MarkdownRichTextConverter,
     ) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_bulleted_list_syntax()
@@ -37,7 +42,9 @@ class BulletedListParser(LineParser):
         await self._process_nested_children(block, context)
         context.result_blocks.append(block)
 
-    async def _process_nested_children(self, block: CreateBulletedListItemBlock, context: BlockParsingContext) -> None:
+    async def _process_nested_children(
+        self, block: CreateBulletedListItemBlock, context: BlockParsingContext
+    ) -> None:
         child_lines = self._collect_child_lines(context)
         if not child_lines:
             return
@@ -59,13 +66,17 @@ class BulletedListParser(LineParser):
         children_text = self._convert_lines_to_text(stripped_lines)
         return await context.parse_nested_markdown(children_text)
 
-    def _remove_parent_indentation(self, lines: list[str], context: BlockParsingContext) -> list[str]:
+    def _remove_parent_indentation(
+        self, lines: list[str], context: BlockParsingContext
+    ) -> list[str]:
         return context.strip_indentation_level(lines, levels=1)
 
     def _convert_lines_to_text(self, lines: list[str]) -> str:
         return "\n".join(lines)
 
-    async def _create_bulleted_list_block(self, text: str) -> CreateBulletedListItemBlock | None:
+    async def _create_bulleted_list_block(
+        self, text: str
+    ) -> CreateBulletedListItemBlock | None:
         content = self._extract_list_content(text)
         if content is None:
             return None

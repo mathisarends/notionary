@@ -1,6 +1,10 @@
 from typing import override
 
-from notionary.blocks.schemas import BlockColor, CreateTableOfContentsBlock, TableOfContentsData
+from notionary.blocks.schemas import (
+    BlockColor,
+    CreateTableOfContentsBlock,
+    TableOfContentsData,
+)
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,

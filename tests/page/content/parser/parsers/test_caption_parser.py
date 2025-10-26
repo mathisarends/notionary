@@ -2,7 +2,9 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.schemas import (
     BlockCreatePayload,
     BlockType,
@@ -19,21 +21,28 @@ from notionary.shared.models.file import ExternalFileData
 
 @pytest.fixture
 def caption_parser(
-    mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxDefinitionRegistry
+    mock_rich_text_converter: MarkdownRichTextConverter,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> CaptionParser:
-    return CaptionParser(rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry)
+    return CaptionParser(
+        rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry
+    )
 
 
 @pytest.fixture
 def video_block_with_caption_support() -> CreateVideoBlock:
-    video_data = ExternalFileWithCaption(external=ExternalFileData(url="https://youtube.com/watch?v=test"), caption=[])
+    video_data = ExternalFileWithCaption(
+        external=ExternalFileData(url="https://youtube.com/watch?v=test"), caption=[]
+    )
     block = CreateVideoBlock(type=BlockType.VIDEO, video=video_data)
     return block
 
 
 @pytest.fixture
 def image_block_with_caption_support() -> CreateImageBlock:
-    image_data = ExternalFileWithCaption(external=ExternalFileData(url="https://example.com/image.png"), caption=[])
+    image_data = ExternalFileWithCaption(
+        external=ExternalFileData(url="https://example.com/image.png"), caption=[]
+    )
     block = CreateImageBlock(type=BlockType.IMAGE, image=image_data)
     return block
 
@@ -59,8 +68,12 @@ async def test_caption_with_valid_previous_block_should_attach_caption(
 
     await caption_parser._process(context)
 
-    mock_rich_text_converter.to_rich_text.assert_called_once_with("This is a video caption")
-    assert video_block_with_caption_support.video.caption == [{"type": "text", "text": {"content": "test"}}]
+    mock_rich_text_converter.to_rich_text.assert_called_once_with(
+        "This is a video caption"
+    )
+    assert video_block_with_caption_support.video.caption == [
+        {"type": "text", "text": {"content": "test"}}
+    ]
 
 
 @pytest.mark.asyncio
@@ -75,7 +88,9 @@ async def test_caption_with_inline_markdown_should_convert_to_rich_text(
 
     await caption_parser._process(context)
 
-    mock_rich_text_converter.to_rich_text.assert_called_once_with("**Bold** and *italic* text")
+    mock_rich_text_converter.to_rich_text.assert_called_once_with(
+        "**Bold** and *italic* text"
+    )
 
 
 @pytest.mark.parametrize(
@@ -171,7 +186,9 @@ def test_block_with_caption_attribute_should_support_caption(
     caption_parser: CaptionParser,
     video_block_with_caption_support: BlockCreatePayload,
 ) -> None:
-    supports_caption = caption_parser._block_supports_caption(video_block_with_caption_support)
+    supports_caption = caption_parser._block_supports_caption(
+        video_block_with_caption_support
+    )
 
     assert supports_caption is True
 
@@ -180,7 +197,9 @@ def test_block_without_caption_attribute_should_not_support_caption(
     caption_parser: CaptionParser,
     paragraph_block_without_caption_support: BlockCreatePayload,
 ) -> None:
-    supports_caption = caption_parser._block_supports_caption(paragraph_block_without_caption_support)
+    supports_caption = caption_parser._block_supports_caption(
+        paragraph_block_without_caption_support
+    )
 
     assert supports_caption is False
 
@@ -209,7 +228,9 @@ async def test_caption_for_image_block_should_attach_caption(
 
     await caption_parser._process(context)
 
-    assert image_block_with_caption_support.image.caption == [{"type": "text", "text": {"content": "test"}}]
+    assert image_block_with_caption_support.image.caption == [
+        {"type": "text", "text": {"content": "test"}}
+    ]
 
 
 @pytest.mark.asyncio
@@ -218,13 +239,17 @@ async def test_caption_should_replace_existing_caption(
     context: BlockParsingContext,
     video_block_with_caption_support: BlockCreatePayload,
 ) -> None:
-    video_block_with_caption_support.video.caption = [{"type": "text", "text": {"content": "old"}}]
+    video_block_with_caption_support.video.caption = [
+        {"type": "text", "text": {"content": "old"}}
+    ]
     context.result_blocks = [video_block_with_caption_support]
     context.line = "[caption] New caption"
 
     await caption_parser._process(context)
 
-    assert video_block_with_caption_support.video.caption == [{"type": "text", "text": {"content": "test"}}]
+    assert video_block_with_caption_support.video.caption == [
+        {"type": "text", "text": {"content": "test"}}
+    ]
 
 
 @pytest.mark.asyncio

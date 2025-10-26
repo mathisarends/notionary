@@ -1,9 +1,15 @@
 import re
 from typing import override
 
-from notionary.exceptions.block_parsing import InsufficientColumnsError, InvalidColumnRatioSumError
+from notionary.exceptions.block_parsing import (
+    InsufficientColumnsError,
+    InvalidColumnRatioSumError,
+)
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
-from notionary.page.content.syntax.definition import MarkdownGrammar, SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import (
+    MarkdownGrammar,
+    SyntaxDefinitionRegistry,
+)
 from notionary.utils.decorators import time_execution_sync
 from notionary.utils.mixins.logging import LoggingMixin
 
@@ -13,15 +19,21 @@ class ColumnSyntaxPreProcessor(PreProcessor, LoggingMixin):
     _MINIMUM_COLUMNS = 2
 
     def __init__(
-        self, syntax_registry: SyntaxDefinitionRegistry | None = None, markdown_grammar: MarkdownGrammar | None = None
+        self,
+        syntax_registry: SyntaxDefinitionRegistry | None = None,
+        markdown_grammar: MarkdownGrammar | None = None,
     ) -> None:
         super().__init__()
         self._syntax_registry = syntax_registry or SyntaxDefinitionRegistry()
         self._markdown_grammar = markdown_grammar or MarkdownGrammar()
 
         self._spaces_per_nesting_level = self._markdown_grammar.spaces_per_nesting_level
-        self._column_list_delimiter = self._syntax_registry.get_column_list_syntax().start_delimiter
-        self._column_delimiter = self._syntax_registry.get_column_syntax().start_delimiter
+        self._column_list_delimiter = (
+            self._syntax_registry.get_column_list_syntax().start_delimiter
+        )
+        self._column_delimiter = (
+            self._syntax_registry.get_column_syntax().start_delimiter
+        )
         self._column_pattern = self._syntax_registry.get_column_syntax().regex_pattern
 
     @override
@@ -124,7 +136,9 @@ class ColumnSyntaxPreProcessor(PreProcessor, LoggingMixin):
         total_ratio = sum(ratios)
 
         if not self._is_ratio_sum_valid(total_ratio):
-            self.logger.error(f"Column ratios must sum to 1.0 (±{self._RATIO_TOLERANCE}), but sum to {total_ratio:.4f}")
+            self.logger.error(
+                f"Column ratios must sum to 1.0 (±{self._RATIO_TOLERANCE}), but sum to {total_ratio:.4f}"
+            )
             raise InvalidColumnRatioSumError(total_ratio, self._RATIO_TOLERANCE)
 
     def _should_validate_ratios(self, ratios: list[float], column_count: int) -> bool:

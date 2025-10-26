@@ -4,7 +4,9 @@ from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 class CaptionMarkdownNodeMixin:
     _syntax_registry: SyntaxDefinitionRegistry
 
-    def _append_caption_to_markdown(self, base_markdown: str, caption: str | None) -> str:
+    def _append_caption_to_markdown(
+        self, base_markdown: str, caption: str | None
+    ) -> str:
         if not caption:
             return base_markdown
 

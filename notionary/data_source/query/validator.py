@@ -39,7 +39,9 @@ class QueryValidator:
         self, property_name: str, property_obj: DataSourceProperty, operator: Operator
     ) -> None:
         if not self._is_operator_valid_for_property_type(property_obj.type, operator):
-            valid_operators = self._get_valid_operators_for_property_type(property_obj.type)
+            valid_operators = self._get_valid_operators_for_property_type(
+                property_obj.type
+            )
             raise InvalidOperatorForPropertyType(
                 property_name=property_name,
                 property_type=property_obj.type,
@@ -47,23 +49,33 @@ class QueryValidator:
                 valid_operators=valid_operators,
             )
 
-    def _is_operator_valid_for_property_type(self, property_type: PropertyType, operator: Operator) -> bool:
+    def _is_operator_valid_for_property_type(
+        self, property_type: PropertyType, operator: Operator
+    ) -> bool:
         allowed_operator_types = self._PROPERTY_TYPE_OPERATORS.get(property_type, [])
-        valid_operator_values = self._get_operator_values_from_types(allowed_operator_types)
+        valid_operator_values = self._get_operator_values_from_types(
+            allowed_operator_types
+        )
         return operator.value in valid_operator_values
 
-    def _get_operator_values_from_types(self, operator_types: list[type[Operator]]) -> set[str]:
+    def _get_operator_values_from_types(
+        self, operator_types: list[type[Operator]]
+    ) -> set[str]:
         values: set[str] = set()
         for operator_type in operator_types:
             for operator in operator_type:
                 values.add(operator.value)
         return values
 
-    def _get_valid_operators_for_property_type(self, property_type: PropertyType) -> list[Operator]:
+    def _get_valid_operators_for_property_type(
+        self, property_type: PropertyType
+    ) -> list[Operator]:
         allowed_operator_types = self._PROPERTY_TYPE_OPERATORS.get(property_type, [])
         return self._collect_all_operators_from_types(allowed_operator_types)
 
-    def _collect_all_operators_from_types(self, operator_types: list[type[Operator]]) -> list[Operator]:
+    def _collect_all_operators_from_types(
+        self, operator_types: list[type[Operator]]
+    ) -> list[Operator]:
         operators: list[Operator] = []
         for operator_type in operator_types:
             operators.extend(self._get_all_enum_values(operator_type))

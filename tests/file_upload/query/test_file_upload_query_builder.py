@@ -57,21 +57,27 @@ def test_with_page_size_limit() -> None:
 def test_with_page_size_limit_raises_on_too_large() -> None:
     builder = FileUploadQueryBuilder()
 
-    with pytest.raises(ValueError, match="page_size_limit must be between 1 and 100, got 200"):
+    with pytest.raises(
+        ValueError, match="page_size_limit must be between 1 and 100, got 200"
+    ):
         builder.with_page_size_limit(200)
 
 
 def test_with_page_size_limit_raises_on_too_small() -> None:
     builder = FileUploadQueryBuilder()
 
-    with pytest.raises(ValueError, match="page_size_limit must be between 1 and 100, got -10"):
+    with pytest.raises(
+        ValueError, match="page_size_limit must be between 1 and 100, got -10"
+    ):
         builder.with_page_size_limit(-10)
 
 
 def test_with_page_size_limit_raises_on_zero() -> None:
     builder = FileUploadQueryBuilder()
 
-    with pytest.raises(ValueError, match="page_size_limit must be between 1 and 100, got 0"):
+    with pytest.raises(
+        ValueError, match="page_size_limit must be between 1 and 100, got 0"
+    ):
         builder.with_page_size_limit(0)
 
 
@@ -85,21 +91,27 @@ def test_with_total_results_limit() -> None:
 def test_with_total_results_limit_raises_on_too_large() -> None:
     builder = FileUploadQueryBuilder()
 
-    with pytest.raises(ValueError, match="total_results_limit must be between 1 and 100, got 200"):
+    with pytest.raises(
+        ValueError, match="total_results_limit must be between 1 and 100, got 200"
+    ):
         builder.with_total_results_limit(200)
 
 
 def test_with_total_results_limit_raises_on_too_small() -> None:
     builder = FileUploadQueryBuilder()
 
-    with pytest.raises(ValueError, match="total_results_limit must be between 1 and 100, got -5"):
+    with pytest.raises(
+        ValueError, match="total_results_limit must be between 1 and 100, got -5"
+    ):
         builder.with_total_results_limit(-5)
 
 
 def test_with_total_results_limit_raises_on_zero() -> None:
     builder = FileUploadQueryBuilder()
 
-    with pytest.raises(ValueError, match="total_results_limit must be between 1 and 100, got 0"):
+    with pytest.raises(
+        ValueError, match="total_results_limit must be between 1 and 100, got 0"
+    ):
         builder.with_total_results_limit(0)
 
 

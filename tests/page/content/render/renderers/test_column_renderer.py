@@ -5,7 +5,9 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block, ColumnBlock, ColumnData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.column import ColumnRenderer
@@ -25,7 +27,9 @@ def _create_column_block(column_data: ColumnData | None) -> ColumnBlock:
 
 
 @pytest.fixture
-def column_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> ColumnRenderer:
+def column_renderer(
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> ColumnRenderer:
     return ColumnRenderer()
 
 
@@ -35,14 +39,18 @@ def syntax_registry() -> SyntaxDefinitionRegistry:
 
 
 @pytest.mark.asyncio
-async def test_column_block_should_be_handled(column_renderer: ColumnRenderer, mock_block: Block) -> None:
+async def test_column_block_should_be_handled(
+    column_renderer: ColumnRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.COLUMN
 
     assert column_renderer._can_handle(mock_block)
 
 
 @pytest.mark.asyncio
-async def test_non_column_block_should_not_be_handled(column_renderer: ColumnRenderer, mock_block: Block) -> None:
+async def test_non_column_block_should_not_be_handled(
+    column_renderer: ColumnRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.PARAGRAPH
 
     assert not column_renderer._can_handle(mock_block)

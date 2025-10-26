@@ -6,7 +6,10 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import (
 from notionary.blocks.schemas import Block, BlockType
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
-from notionary.page.content.syntax.definition import MarkdownGrammar, SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition import (
+    MarkdownGrammar,
+    SyntaxDefinitionRegistry,
+)
 
 
 class NumberedListRenderer(BlockRenderer):
@@ -17,7 +20,9 @@ class NumberedListRenderer(BlockRenderer):
         markdown_grammar: MarkdownGrammar | None = None,
     ) -> None:
         super().__init__(syntax_registry=syntax_registry)
-        self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
+        self._rich_text_markdown_converter = (
+            rich_text_markdown_converter or RichTextToMarkdownConverter()
+        )
 
         markdown_grammar = markdown_grammar or MarkdownGrammar()
         self._numbered_list_placeholder = markdown_grammar.numbered_list_placeholder

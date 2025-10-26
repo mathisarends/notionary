@@ -62,50 +62,78 @@ Final text.
 
 
 class TestVideoFormatValidation:
-    def test_validates_mp4_extension(self, preprocessor: VideoFormatPreProcessor) -> None:
+    def test_validates_mp4_extension(
+        self, preprocessor: VideoFormatPreProcessor
+    ) -> None:
         assert preprocessor._is_supported_video_url("https://example.com/video.mp4")
 
-    def test_validates_all_supported_extensions(self, preprocessor: VideoFormatPreProcessor) -> None:
+    def test_validates_all_supported_extensions(
+        self, preprocessor: VideoFormatPreProcessor
+    ) -> None:
         for video_type in VideoFileType:
             url = f"https://example.com/video{video_type.value}"
             assert preprocessor._is_supported_video_url(url)
 
-    def test_validates_youtube_watch_url(self, preprocessor: VideoFormatPreProcessor) -> None:
-        assert preprocessor._is_supported_video_url("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
-        assert preprocessor._is_supported_video_url("https://youtube.com/watch?v=dQw4w9WgXcQ")
+    def test_validates_youtube_watch_url(
+        self, preprocessor: VideoFormatPreProcessor
+    ) -> None:
+        assert preprocessor._is_supported_video_url(
+            "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        )
+        assert preprocessor._is_supported_video_url(
+            "https://youtube.com/watch?v=dQw4w9WgXcQ"
+        )
 
-    def test_validates_youtube_embed_url(self, preprocessor: VideoFormatPreProcessor) -> None:
-        assert preprocessor._is_supported_video_url("https://www.youtube.com/embed/dQw4w9WgXcQ")
-        assert preprocessor._is_supported_video_url("https://youtube.com/embed/dQw4w9WgXcQ")
+    def test_validates_youtube_embed_url(
+        self, preprocessor: VideoFormatPreProcessor
+    ) -> None:
+        assert preprocessor._is_supported_video_url(
+            "https://www.youtube.com/embed/dQw4w9WgXcQ"
+        )
+        assert preprocessor._is_supported_video_url(
+            "https://youtube.com/embed/dQw4w9WgXcQ"
+        )
 
-    def test_rejects_unsupported_extension(self, preprocessor: VideoFormatPreProcessor) -> None:
+    def test_rejects_unsupported_extension(
+        self, preprocessor: VideoFormatPreProcessor
+    ) -> None:
         assert not preprocessor._is_supported_video_url("https://example.com/file.pdf")
         assert not preprocessor._is_supported_video_url("https://example.com/file.txt")
 
     def test_rejects_vimeo_urls(self, preprocessor: VideoFormatPreProcessor) -> None:
         assert not preprocessor._is_supported_video_url("https://vimeo.com/123456789")
 
-    def test_validates_case_insensitive_extensions(self, preprocessor: VideoFormatPreProcessor) -> None:
+    def test_validates_case_insensitive_extensions(
+        self, preprocessor: VideoFormatPreProcessor
+    ) -> None:
         assert preprocessor._is_supported_video_url("https://example.com/video.MP4")
         assert preprocessor._is_supported_video_url("https://example.com/video.Mp4")
 
 
 class TestVideoBlockDetection:
-    def test_detects_video_block(self, preprocessor: VideoFormatPreProcessor, valid_mp4_video: str) -> None:
+    def test_detects_video_block(
+        self, preprocessor: VideoFormatPreProcessor, valid_mp4_video: str
+    ) -> None:
         assert preprocessor._contains_video_block(valid_mp4_video)
 
-    def test_ignores_non_video_lines(self, preprocessor: VideoFormatPreProcessor) -> None:
+    def test_ignores_non_video_lines(
+        self, preprocessor: VideoFormatPreProcessor
+    ) -> None:
         assert not preprocessor._contains_video_block("# Heading")
         assert not preprocessor._contains_video_block("Some text")
         assert not preprocessor._contains_video_block("[image](url.png)")
 
-    def test_extracts_url_from_video_block(self, preprocessor: VideoFormatPreProcessor, valid_mp4_video: str) -> None:
+    def test_extracts_url_from_video_block(
+        self, preprocessor: VideoFormatPreProcessor, valid_mp4_video: str
+    ) -> None:
         url = preprocessor._extract_url_from_video_block(valid_mp4_video)
         assert url == "https://example.com/video.mp4"
 
 
 class TestMarkdownProcessing:
-    def test_preserves_valid_video_blocks(self, preprocessor: VideoFormatPreProcessor, valid_mp4_video: str) -> None:
+    def test_preserves_valid_video_blocks(
+        self, preprocessor: VideoFormatPreProcessor, valid_mp4_video: str
+    ) -> None:
         result = preprocessor.process(valid_mp4_video)
         assert result == valid_mp4_video
 
@@ -115,7 +143,9 @@ class TestMarkdownProcessing:
         with pytest.raises(UnsupportedVideoFormatError):
             preprocessor.process(invalid_video)
 
-    def test_preserves_non_video_lines(self, preprocessor: VideoFormatPreProcessor) -> None:
+    def test_preserves_non_video_lines(
+        self, preprocessor: VideoFormatPreProcessor
+    ) -> None:
         markdown = "# Heading\n\nSome text\n\n- List item"
         result = preprocessor.process(markdown)
         assert result == markdown
@@ -159,21 +189,29 @@ class TestErrorHandling:
 
 
 class TestEdgeCases:
-    def test_handles_empty_markdown(self, preprocessor: VideoFormatPreProcessor) -> None:
+    def test_handles_empty_markdown(
+        self, preprocessor: VideoFormatPreProcessor
+    ) -> None:
         result = preprocessor.process("")
         assert result == ""
 
-    def test_handles_whitespace_only_markdown(self, preprocessor: VideoFormatPreProcessor) -> None:
+    def test_handles_whitespace_only_markdown(
+        self, preprocessor: VideoFormatPreProcessor
+    ) -> None:
         markdown = "   \n\n   "
         result = preprocessor.process(markdown)
         assert result == markdown
 
-    def test_handles_video_url_with_query_parameters(self, preprocessor: VideoFormatPreProcessor) -> None:
+    def test_handles_video_url_with_query_parameters(
+        self, preprocessor: VideoFormatPreProcessor
+    ) -> None:
         markdown = "[video](https://example.com/video.mp4?autoplay=1&muted=1)"
         result = preprocessor.process(markdown)
         assert result == markdown
 
-    def test_handles_malformed_video_syntax(self, preprocessor: VideoFormatPreProcessor) -> None:
+    def test_handles_malformed_video_syntax(
+        self, preprocessor: VideoFormatPreProcessor
+    ) -> None:
         """Test that malformed video syntax is ignored."""
         markdown = "[video(https://example.com/video.mp4)"
         result = preprocessor.process(markdown)

@@ -10,7 +10,9 @@ from notionary.page.content.syntax.definition.models import (
 
 
 class SyntaxDefinitionRegistry:
-    def __init__(self, markdown_markdown_grammar: MarkdownGrammar | None = None) -> None:
+    def __init__(
+        self, markdown_markdown_grammar: MarkdownGrammar | None = None
+    ) -> None:
         self._markdown_grammar = markdown_markdown_grammar or MarkdownGrammar()
         self._definitions: dict[SyntaxDefinitionRegistryKey, SyntaxDefinition] = {}
         self._register_defaults()
@@ -96,12 +98,16 @@ class SyntaxDefinitionRegistry:
     def get_toggleable_heading_syntax(self) -> EnclosedSyntaxDefinition:
         return self._definitions[SyntaxDefinitionRegistryKey.TOGGLEABLE_HEADING]
 
-    def _create_media_syntax(self, media_type: str, url_pattern: str | None = None) -> EnclosedSyntaxDefinition:
+    def _create_media_syntax(
+        self, media_type: str, url_pattern: str | None = None
+    ) -> EnclosedSyntaxDefinition:
         url_pattern = url_pattern or "[^)]+"
         return EnclosedSyntaxDefinition(
             start_delimiter=f"[{media_type}](",
             end_delimiter=")",
-            regex_pattern=re.compile(rf"(?<!\!)\[{re.escape(media_type)}\]\(({url_pattern})\)"),
+            regex_pattern=re.compile(
+                rf"(?<!\!)\[{re.escape(media_type)}\]\(({url_pattern})\)"
+            ),
             end_regex_pattern=re.compile(r"\)"),
         )
 
@@ -109,7 +115,9 @@ class SyntaxDefinitionRegistry:
         return EnclosedSyntaxDefinition(
             start_delimiter=f"[{media_type}](",
             end_delimiter=")",
-            regex_pattern=re.compile(rf"(?<!\!)\[{re.escape(media_type)}\]\((https?://[^\s)]+)\)"),
+            regex_pattern=re.compile(
+                rf"(?<!\!)\[{re.escape(media_type)}\]\((https?://[^\s)]+)\)"
+            ),
             end_regex_pattern=re.compile(r"\)"),
         )
 
@@ -189,7 +197,9 @@ class SyntaxDefinitionRegistry:
         delimiter = self._markdown_grammar.table_delimiter
         definition = SimpleSyntaxDefinition(
             start_delimiter=delimiter,
-            regex_pattern=re.compile(rf"^\s*{re.escape(delimiter)}(.+){re.escape(delimiter)}\s*$"),
+            regex_pattern=re.compile(
+                rf"^\s*{re.escape(delimiter)}(.+){re.escape(delimiter)}\s*$"
+            ),
         )
         self._definitions[SyntaxDefinitionRegistryKey.TABLE] = definition
 
@@ -197,7 +207,9 @@ class SyntaxDefinitionRegistry:
         delimiter = self._markdown_grammar.table_delimiter
         definition = SimpleSyntaxDefinition(
             start_delimiter=delimiter,
-            regex_pattern=re.compile(rf"^\s*{re.escape(delimiter)}([\s\-:|]+){re.escape(delimiter)}\s*$"),
+            regex_pattern=re.compile(
+                rf"^\s*{re.escape(delimiter)}([\s\-:|]+){re.escape(delimiter)}\s*$"
+            ),
         )
         self._definitions[SyntaxDefinitionRegistryKey.TABLE_ROW] = definition
 
@@ -245,25 +257,39 @@ class SyntaxDefinitionRegistry:
 
     # Registration methods - EnclosedSyntaxDefinition
     def _register_audio_syntax(self) -> None:
-        self._definitions[SyntaxDefinitionRegistryKey.AUDIO] = self._create_media_syntax("audio")
+        self._definitions[SyntaxDefinitionRegistryKey.AUDIO] = (
+            self._create_media_syntax("audio")
+        )
 
     def _register_video_syntax(self) -> None:
-        self._definitions[SyntaxDefinitionRegistryKey.VIDEO] = self._create_media_syntax("video")
+        self._definitions[SyntaxDefinitionRegistryKey.VIDEO] = (
+            self._create_media_syntax("video")
+        )
 
     def _register_image_syntax(self) -> None:
-        self._definitions[SyntaxDefinitionRegistryKey.IMAGE] = self._create_media_syntax("image")
+        self._definitions[SyntaxDefinitionRegistryKey.IMAGE] = (
+            self._create_media_syntax("image")
+        )
 
     def _register_file_syntax(self) -> None:
-        self._definitions[SyntaxDefinitionRegistryKey.FILE] = self._create_media_syntax("file")
+        self._definitions[SyntaxDefinitionRegistryKey.FILE] = self._create_media_syntax(
+            "file"
+        )
 
     def _register_pdf_syntax(self) -> None:
-        self._definitions[SyntaxDefinitionRegistryKey.PDF] = self._create_media_syntax("pdf")
+        self._definitions[SyntaxDefinitionRegistryKey.PDF] = self._create_media_syntax(
+            "pdf"
+        )
 
     def _register_bookmark_syntax(self) -> None:
-        self._definitions[SyntaxDefinitionRegistryKey.BOOKMARK] = self._create_url_media_syntax("bookmark")
+        self._definitions[SyntaxDefinitionRegistryKey.BOOKMARK] = (
+            self._create_url_media_syntax("bookmark")
+        )
 
     def _register_embed_syntax(self) -> None:
-        self._definitions[SyntaxDefinitionRegistryKey.EMBED] = self._create_url_media_syntax("embed")
+        self._definitions[SyntaxDefinitionRegistryKey.EMBED] = (
+            self._create_url_media_syntax("embed")
+        )
 
     def _register_callout_syntax(self) -> None:
         definition = EnclosedSyntaxDefinition(
@@ -304,7 +330,9 @@ class SyntaxDefinitionRegistry:
         definition = EnclosedSyntaxDefinition(
             start_delimiter=f"{delimiter} columns",
             end_delimiter=delimiter,
-            regex_pattern=re.compile(rf"^{re.escape(delimiter)}\s*columns?\s*$", re.IGNORECASE),
+            regex_pattern=re.compile(
+                rf"^{re.escape(delimiter)}\s*columns?\s*$", re.IGNORECASE
+            ),
             end_regex_pattern=re.compile(rf"^{re.escape(delimiter)}\s*$"),
         )
         self._definitions[SyntaxDefinitionRegistryKey.COLUMN_LIST] = definition
@@ -334,7 +362,10 @@ class SyntaxDefinitionRegistry:
         definition = EnclosedSyntaxDefinition(
             start_delimiter=f"{delimiter} #",
             end_delimiter=delimiter,
-            regex_pattern=re.compile(rf"^{escaped_delimiter}\s*(?P<level>#{{1,3}})(?!#)\s*(.+)$", re.IGNORECASE),
+            regex_pattern=re.compile(
+                rf"^{escaped_delimiter}\s*(?P<level>#{{1,3}})(?!#)\s*(.+)$",
+                re.IGNORECASE,
+            ),
             end_regex_pattern=re.compile(rf"^{escaped_delimiter}\s*$"),
         )
         self._definitions[SyntaxDefinitionRegistryKey.TOGGLEABLE_HEADING] = definition

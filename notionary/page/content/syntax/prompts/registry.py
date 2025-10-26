@@ -238,11 +238,7 @@ class SyntaxPromptRegistry:
                     "https://docs.example.com/guide",
                 ],
             ),
-            usage_notes=(
-                "Only accepts HTTP/HTTPS URLs. "
-                "Use the full URL including the protocol. "
-                "Cannot reference local files."
-            ),
+            usage_notes="Only accepts HTTP/HTTPS URLs. Use the full URL including the protocol. Cannot reference local files.",
             supports_inline_rich_text=False,
         )
 
@@ -261,10 +257,7 @@ class SyntaxPromptRegistry:
                     "https://open.spotify.com/track/xyz",
                 ],
             ),
-            usage_notes=(
-                "Only accepts HTTP/HTTPS URLs from supported platforms. "
-                "Use the full shareable URL from the platform."
-            ),
+            usage_notes="Only accepts HTTP/HTTPS URLs from supported platforms. Use the full shareable URL from the platform.",
             supports_inline_rich_text=False,
         )
 
@@ -281,11 +274,7 @@ class SyntaxPromptRegistry:
                 f"{definition.start_delimiter}Second item",
                 f"{spaces}{definition.start_delimiter}Nested item (indented with {self._grammar.spaces_per_nesting_level} spaces)",
             ],
-            usage_notes=(
-                f"Each list item is on its own line. "
-                f"Nest items by indenting with exactly {self._grammar.spaces_per_nesting_level} spaces per level. "
-                f"The content supports inline formatting like **bold**, *italic*, `code`, and links."
-            ),
+            usage_notes=f"Each list item is on its own line. Nest items by indenting with exactly {self._grammar.spaces_per_nesting_level} spaces per level. The content supports inline formatting like **bold**, *italic*, `code`, and links.",
             supports_inline_rich_text=True,
         )
 
@@ -301,12 +290,7 @@ class SyntaxPromptRegistry:
                 "2. Second step",
                 f"{spaces}1. Sub-step (indented with {self._grammar.spaces_per_nesting_level} spaces)",
             ],
-            usage_notes=(
-                f"Each list item is on its own line. "
-                f"The number is automatically incremented. "
-                f"Nest items by indenting with exactly {self._grammar.spaces_per_nesting_level} spaces per level. "
-                f"The content supports inline formatting like **bold**, *italic*, `code`, and links."
-            ),
+            usage_notes=f"Each list item is on its own line. The number is automatically incremented. Nest items by indenting with exactly {self._grammar.spaces_per_nesting_level} spaces per level. The content supports inline formatting like **bold**, *italic*, `code`, and links.",
             supports_inline_rich_text=True,
         )
 
@@ -321,9 +305,7 @@ class SyntaxPromptRegistry:
                 f"{definition.start_delimiter} Buy groceries",
                 f"{definition.start_delimiter} Write documentation",
             ],
-            usage_notes=(
-                f"Each todo item is on its own line. Can be nested by indenting with {self._grammar.spaces_per_nesting_level} spaces. The content supports inline formatting."
-            ),
+            usage_notes=f"Each todo item is on its own line. Can be nested by indenting with {self._grammar.spaces_per_nesting_level} spaces. The content supports inline formatting.",
             supports_inline_rich_text=True,
         )
 
@@ -338,11 +320,7 @@ class SyntaxPromptRegistry:
                 f"{definition.start_delimiter} Fixed the bug",
                 f"{definition.start_delimiter} Deployed to production",
             ],
-            usage_notes=(
-                f"Each completed todo item is on its own line. "
-                f"Can be nested by indenting with {self._grammar.spaces_per_nesting_level} spaces. "
-                f"The content supports inline formatting."
-            ),
+            usage_notes=f"Each completed todo item is on its own line. Can be nested by indenting with {self._grammar.spaces_per_nesting_level} spaces. The content supports inline formatting.",
             supports_inline_rich_text=True,
         )
 
@@ -358,10 +336,7 @@ class SyntaxPromptRegistry:
                 f"{delimiter} FAQ Answer\nDetailed explanation...\n{delimiter}",
                 f"{delimiter} Show more details\nAdditional information\n{delimiter}",
             ],
-            usage_notes=(
-                f"The toggle title (first line after {delimiter}) supports inline formatting. "
-                f"All content between the opening and closing delimiters will be collapsible."
-            ),
+            usage_notes=f"The toggle title (first line after {delimiter}) supports inline formatting. All content between the opening and closing delimiters will be collapsible.",
             supports_inline_rich_text=True,
         )
 
@@ -376,12 +351,7 @@ class SyntaxPromptRegistry:
                 f'{definition.start_delimiter}(⚠️ "Warning")',
                 f'{definition.start_delimiter}(📌 "Important Note")',
             ],
-            usage_notes=(
-                f"The callout declaration is single-line, but can contain nested content on "
-                f"subsequent lines indented by {self._grammar.spaces_per_nesting_level} spaces. "
-                f"Format: emoji/icon followed by optional title in quotes. "
-                f"The title supports inline formatting."
-            ),
+            usage_notes=f"The callout declaration is single-line, but can contain nested content on subsequent lines indented by {self._grammar.spaces_per_nesting_level} spaces. Format: emoji/icon followed by optional title in quotes. The title supports inline formatting.",
             supports_inline_rich_text=True,
         )
 
@@ -396,11 +366,7 @@ class SyntaxPromptRegistry:
                 f"{delimiter}javascript\nconsole.log('Hello!');\n{delimiter}",
                 f"{delimiter}\nPlain text code\n{delimiter}",
             ],
-            usage_notes=(
-                "Language identifier is optional but recommended for syntax highlighting. "
-                "Content between delimiters is preserved exactly as written, including whitespace. "
-                "NO inline formatting is supported inside code blocks."
-            ),
+            usage_notes="Language identifier is optional but recommended for syntax highlighting. Content between delimiters is preserved exactly as written, including whitespace. NO inline formatting is supported inside code blocks.",
             supports_inline_rich_text=False,
         )
 
@@ -444,14 +410,17 @@ class SyntaxPromptRegistry:
                 f"Column content must be indented by an additional {self._grammar.spaces_per_nesting_level} spaces (total {self._grammar.spaces_per_nesting_level * 2} spaces from start). "
                 f"Optional width ratio (0.0-1.0) can be specified after 'column'. "
                 f"At least 2 columns are required. "
-                f"The column list ends when indentation returns to the original level. "
+                f"The column list ends automatically when indentation returns to the original level (or the file ends). "
+                f"Do NOT use a closing '{delimiter}' delimiter for the column list. "
                 f"Column content supports all other block elements and inline formatting."
             ),
             supports_inline_rich_text=True,
         )
 
     def _register_equation_prompt(self) -> None:
-        delimiter = "$$"
+        delimiter = (
+            self._syntax_definition_registry.get_equation_syntax().start_delimiter
+        )
         self._prompts[SyntaxDefinitionRegistryKey.EQUATION] = SyntaxPromptData(
             element="Equation",
             description="Creates a mathematical equation block using LaTeX syntax.",
@@ -461,11 +430,7 @@ class SyntaxPromptRegistry:
                 f"{delimiter}\n\\frac{{-b \\pm \\sqrt{{b^2-4ac}}}}{{2a}}\n{delimiter}",
                 f"{delimiter}\n\\sum_{{i=1}}^{{n}} i = \\frac{{n(n+1)}}{{2}}\n{delimiter}",
             ],
-            usage_notes=(
-                "Uses LaTeX syntax for mathematical notation. "
-                "Content between delimiters is rendered as LaTeX. "
-                "NO markdown formatting is supported, only LaTeX commands."
-            ),
+            usage_notes="Uses LaTeX syntax for mathematical notation. Content between delimiters is rendered as LaTeX. NO markdown formatting is supported, only LaTeX commands.",
             supports_inline_rich_text=False,
         )
 
@@ -481,13 +446,7 @@ class SyntaxPromptRegistry:
                 f"{definition.start_delimiter}First line\n{definition.start_delimiter}Second line\n{definition.start_delimiter}Third line",
                 f"{definition.start_delimiter}Multi-paragraph quotes need multiple quote markers",
             ],
-            usage_notes=(
-                f"While marked as single-line syntax, quotes can span multiple lines by "
-                f"prefixing each line with '{definition.start_delimiter}'. "
-                f"Each line needs its own '{definition.start_delimiter}' prefix but they will "
-                f"render as a continuous quote block. "
-                f"The content supports inline formatting like **bold** and *italic*."
-            ),
+            usage_notes=f"While marked as single-line syntax, quotes can span multiple lines by prefixing each line with '{definition.start_delimiter}'. Each line needs its own '{definition.start_delimiter}' prefix but they will render as a continuous quote block. The content supports inline formatting like **bold** and *italic*.",
             supports_inline_rich_text=True,
         )
 
@@ -531,10 +490,7 @@ class SyntaxPromptRegistry:
                 "----",
                 "-----",
             ],
-            usage_notes=(
-                "Use at least three dashes. "
-                "The divider is purely visual and contains no text content."
-            ),
+            usage_notes="Use at least three dashes. The divider is purely visual and contains no text content.",
             supports_inline_rich_text=False,
         )
 
@@ -547,10 +503,7 @@ class SyntaxPromptRegistry:
             few_shot_examples=[
                 f"{definition.start_delimiter}",
             ],
-            usage_notes=(
-                "Automatically generates breadcrumb navigation based on page hierarchy. "
-                "No additional parameters or content needed."
-            ),
+            usage_notes="Automatically generates breadcrumb navigation based on page hierarchy. No additional parameters or content needed.",
             supports_inline_rich_text=False,
         )
 
@@ -563,10 +516,7 @@ class SyntaxPromptRegistry:
                 "[toc]",
                 "[TOC]",
             ],
-            usage_notes=(
-                "Automatically generates a table of contents from all headings in the document. "
-                "Case-insensitive. No additional parameters needed."
-            ),
+            usage_notes="Automatically generates a table of contents from all headings in the document. Case-insensitive. No additional parameters needed.",
             supports_inline_rich_text=False,
         )
 
@@ -622,10 +572,7 @@ class SyntaxPromptRegistry:
                 f"{definition.start_delimiter} Table showing quarterly results",
                 f"{definition.start_delimiter} Screenshot of the interface",
             ],
-            usage_notes=(
-                "Place immediately after the element you want to caption (image, table, etc.). "
-                "The caption text supports inline formatting."
-            ),
+            usage_notes="Place immediately after the element you want to caption (image, table, etc.). The caption text supports inline formatting.",
             supports_inline_rich_text=True,
         )
 
@@ -638,9 +585,6 @@ class SyntaxPromptRegistry:
             few_shot_examples=[
                 f"{definition.start_delimiter}",
             ],
-            usage_notes=(
-                "Creates vertical whitespace between elements. "
-                "No content or parameters needed."
-            ),
+            usage_notes="Creates vertical whitespace between elements. No content or parameters needed.",
             supports_inline_rich_text=False,
         )

@@ -1,15 +1,21 @@
 from typing import override
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block, BlockType
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
 
 
 class ParagraphRenderer(BlockRenderer):
-    def __init__(self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None) -> None:
+    def __init__(
+        self, rich_text_markdown_converter: RichTextToMarkdownConverter | None = None
+    ) -> None:
         super().__init__()
-        self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
+        self._rich_text_markdown_converter = (
+            rich_text_markdown_converter or RichTextToMarkdownConverter()
+        )
 
     @override
     def _can_handle(self, block: Block) -> bool:
@@ -37,4 +43,6 @@ class ParagraphRenderer(BlockRenderer):
         if not block.paragraph or not block.paragraph.rich_text:
             return None
 
-        return await self._rich_text_markdown_converter.to_markdown(block.paragraph.rich_text)
+        return await self._rich_text_markdown_converter.to_markdown(
+            block.paragraph.rich_text
+        )

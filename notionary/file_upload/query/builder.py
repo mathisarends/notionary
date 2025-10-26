@@ -42,12 +42,16 @@ class FileUploadQueryBuilder:
         return value
 
     def with_total_results_limit(self, total_results_limit: int) -> Self:
-        self._query.total_results_limit = self._validate_total_results_limit(total_results_limit)
+        self._query.total_results_limit = self._validate_total_results_limit(
+            total_results_limit
+        )
         return self
 
     def _validate_total_results_limit(self, value: int) -> int:
         if not (1 <= value <= 100):
-            raise ValueError(f"total_results_limit must be between 1 and 100, got {value}")
+            raise ValueError(
+                f"total_results_limit must be between 1 and 100, got {value}"
+            )
         return value
 
     def build(self) -> FileUploadQuery:

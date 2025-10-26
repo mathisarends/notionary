@@ -5,7 +5,9 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block, EmbedBlock, EmbedData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.embed import EmbedRenderer
@@ -28,19 +30,25 @@ def _create_embed_block(embed_data: EmbedData | None) -> EmbedBlock:
 
 
 @pytest.fixture
-def embed_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> EmbedRenderer:
+def embed_renderer(
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> EmbedRenderer:
     return EmbedRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
 
 
 @pytest.mark.asyncio
-async def test_embed_block_should_be_handled(embed_renderer: EmbedRenderer, mock_block: Block) -> None:
+async def test_embed_block_should_be_handled(
+    embed_renderer: EmbedRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.EMBED
 
     assert embed_renderer._can_handle(mock_block)
 
 
 @pytest.mark.asyncio
-async def test_non_embed_block_should_not_be_handled(embed_renderer: EmbedRenderer, mock_block: Block) -> None:
+async def test_non_embed_block_should_not_be_handled(
+    embed_renderer: EmbedRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.PARAGRAPH
 
     assert not embed_renderer._can_handle(mock_block)
@@ -67,9 +75,13 @@ async def test_embed_with_caption_should_include_caption_in_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     caption_rich_text = [RichText.from_plain_text("Embedded content")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Embedded content")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Embedded content"
+    )
 
-    embed_data = _create_embed_data_with_caption("https://example.com/embed", caption_rich_text)
+    embed_data = _create_embed_data_with_caption(
+        "https://example.com/embed", caption_rich_text
+    )
     block = _create_embed_block(embed_data)
     render_context.block = block
 

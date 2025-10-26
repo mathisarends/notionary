@@ -2,14 +2,18 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.schemas import CreateParagraphBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.paragraph import ParagraphParser
 
 
 @pytest.fixture
-def paragraph_parser(mock_rich_text_converter: MarkdownRichTextConverter) -> ParagraphParser:
+def paragraph_parser(
+    mock_rich_text_converter: MarkdownRichTextConverter,
+) -> ParagraphParser:
     return ParagraphParser(rich_text_converter=mock_rich_text_converter)
 
 
@@ -44,7 +48,9 @@ async def test_paragraph_with_inline_markdown_should_convert_rich_text(
 
     await parser._process(context)
 
-    mock_rich_text_converter.to_rich_text.assert_called_once_with("Text with **bold** and *italic* formatting")
+    mock_rich_text_converter.to_rich_text.assert_called_once_with(
+        "Text with **bold** and *italic* formatting"
+    )
 
 
 @pytest.mark.asyncio

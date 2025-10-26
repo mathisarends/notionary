@@ -1,6 +1,8 @@
 from typing import override
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block, BlockType, HeadingData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
@@ -18,11 +20,17 @@ class HeadingRenderer(BlockRenderer):
     ) -> None:
         super().__init__(syntax_registry=syntax_registry)
         self._syntax = self._syntax_registry.get_heading_syntax()
-        self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
+        self._rich_text_markdown_converter = (
+            rich_text_markdown_converter or RichTextToMarkdownConverter()
+        )
 
     @override
     def _can_handle(self, block: Block) -> bool:
-        return block.type in (BlockType.HEADING_1, BlockType.HEADING_2, BlockType.HEADING_3)
+        return block.type in (
+            BlockType.HEADING_1,
+            BlockType.HEADING_2,
+            BlockType.HEADING_3,
+        )
 
     @override
     async def _process(self, context: MarkdownRenderingContext) -> None:
@@ -35,7 +43,9 @@ class HeadingRenderer(BlockRenderer):
         heading_markdown = self._format_heading(level, title, context.indent_level)
 
         if self._is_toggleable(context.block):
-            context.markdown_result = await self._render_toggleable_heading(heading_markdown, context)
+            context.markdown_result = await self._render_toggleable_heading(
+                heading_markdown, context
+            )
         else:
             context.markdown_result = heading_markdown
 
@@ -52,7 +62,9 @@ class HeadingRenderer(BlockRenderer):
 
         return heading_markdown
 
-    async def _render_toggleable_heading(self, heading_markdown: str, context: MarkdownRenderingContext) -> str:
+    async def _render_toggleable_heading(
+        self, heading_markdown: str, context: MarkdownRenderingContext
+    ) -> str:
         original_indent = context.indent_level
         context.indent_level += 1
 
@@ -83,7 +95,9 @@ class HeadingRenderer(BlockRenderer):
         if not heading_data or not heading_data.rich_text:
             return ""
 
-        return await self._rich_text_markdown_converter.to_markdown(heading_data.rich_text)
+        return await self._rich_text_markdown_converter.to_markdown(
+            heading_data.rich_text
+        )
 
     def _get_heading_data(self, block: Block) -> HeadingData | None:
         if block.type == BlockType.HEADING_1:

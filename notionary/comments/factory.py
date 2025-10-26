@@ -1,6 +1,8 @@
 import asyncio
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.comments.models import Comment
 from notionary.comments.schemas import CommentDto
 from notionary.user.base import BaseUser
@@ -20,7 +22,9 @@ class CommentFactory(LoggingMixin):
         self.markdown_converter = markdown_converter or RichTextToMarkdownConverter()
 
     async def create_from_dto(self, dto: CommentDto) -> Comment:
-        author_name, content = await asyncio.gather(self._resolve_user_name(dto), self._resolve_content(dto))
+        author_name, content = await asyncio.gather(
+            self._resolve_user_name(dto), self._resolve_content(dto)
+        )
 
         return Comment(author_name=author_name, content=content)
 
@@ -30,7 +34,10 @@ class CommentFactory(LoggingMixin):
         try:
             return await BaseUser.from_id_auto(created_by_id, self.http_client)
         except Exception:
-            self.logger.warning(f"Failed to resolve user name for user_id: {created_by_id}", exc_info=True)
+            self.logger.warning(
+                f"Failed to resolve user name for user_id: {created_by_id}",
+                exc_info=True,
+            )
 
         return self.UNKNOWN_AUTHOR
 

@@ -1,7 +1,9 @@
 from typing import TypeVar, override
 
 from notionary.http.client import NotionHttpClient
-from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
+from notionary.shared.entity.entity_metadata_update_client import (
+    EntityMetadataUpdateClient,
+)
 from notionary.shared.entity.schemas import EntityResponseDto, NotionEntityUpdateDto
 
 ResponseType = TypeVar("ResponseType", bound=EntityResponseDto)
@@ -22,7 +24,9 @@ class GenericEntityMetadataUpdateClient(NotionHttpClient, EntityMetadataUpdateCl
 
     @override
     async def patch_metadata(self, updated_data: NotionEntityUpdateDto) -> ResponseType:
-        updated_data_dict = updated_data.model_dump(exclude_unset=True, exclude_none=True)
+        updated_data_dict = updated_data.model_dump(
+            exclude_unset=True, exclude_none=True
+        )
         url = f"{self._path_segment}/{self._entity_id}"
 
         response_dict = await self.patch(url, data=updated_data_dict)

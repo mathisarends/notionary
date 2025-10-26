@@ -31,9 +31,13 @@ class NotionBlockHttpClient(NotionHttpClient):
     async def get_all_block_children(self, parent_block_id: str) -> list[Block]:
         self.logger.debug("Retrieving all children for block: %s", parent_block_id)
 
-        all_blocks = await paginate_notion_api(self.get_block_children, block_id=parent_block_id)
+        all_blocks = await paginate_notion_api(
+            self.get_block_children, block_id=parent_block_id
+        )
 
-        self.logger.debug("Retrieved %d total children for block %s", len(all_blocks), parent_block_id)
+        self.logger.debug(
+            "Retrieved %d total children for block %s", len(all_blocks), parent_block_id
+        )
         return all_blocks
 
     async def get_block_children(
@@ -64,11 +68,17 @@ class NotionBlockHttpClient(NotionHttpClient):
 
         if len(batches) == 1:
             children_dicts = self._serialize_blocks(batches[0])
-            return await self._send_append_request(block_id, children_dicts, insert_after_block_id)
+            return await self._send_append_request(
+                block_id, children_dicts, insert_after_block_id
+            )
 
-        return await self._send_batched_append_requests(block_id, batches, insert_after_block_id)
+        return await self._send_batched_append_requests(
+            block_id, batches, insert_after_block_id
+        )
 
-    def _split_into_batches(self, blocks: list[BlockCreatePayload]) -> list[list[BlockCreatePayload]]:
+    def _split_into_batches(
+        self, blocks: list[BlockCreatePayload]
+    ) -> list[list[BlockCreatePayload]]:
         batches = []
         for i in range(0, len(blocks), self.BATCH_SIZE):
             batch = blocks[i : i + self.BATCH_SIZE]
@@ -89,19 +99,31 @@ class NotionBlockHttpClient(NotionHttpClient):
         return BlockChildrenResponse.model_validate(response)
 
     async def _send_batched_append_requests(
-        self, block_id: str, batches: list[list[BlockCreatePayload]], initial_after_block_id: str | None = None
+        self,
+        block_id: str,
+        batches: list[list[BlockCreatePayload]],
+        initial_after_block_id: str | None = None,
     ) -> BlockChildrenResponse:
         total_blocks = sum(len(batch) for batch in batches)
-        self.logger.info("Appending %d blocks in %d batches", total_blocks, len(batches))
+        self.logger.info(
+            "Appending %d blocks in %d batches", total_blocks, len(batches)
+        )
 
         all_responses = []
         after_block_id = initial_after_block_id
 
         for batch_index, batch in enumerate(batches, start=1):
-            self.logger.debug("Processing batch %d/%d (%d blocks)", batch_index, len(batches), len(batch))
+            self.logger.debug(
+                "Processing batch %d/%d (%d blocks)",
+                batch_index,
+                len(batches),
+                len(batch),
+            )
 
             children_dicts = self._serialize_blocks(batch)
-            response = await self._send_append_request(block_id, children_dicts, after_block_id)
+            response = await self._send_append_request(
+                block_id, children_dicts, after_block_id
+            )
             all_responses.append(response)
 
             if response.results:
@@ -112,9 +134,13 @@ class NotionBlockHttpClient(NotionHttpClient):
         self.logger.info("Successfully appended all blocks in %d batches", len(batches))
         return self._merge_responses(all_responses)
 
-    def _merge_responses(self, responses: list[BlockChildrenResponse]) -> BlockChildrenResponse:
+    def _merge_responses(
+        self, responses: list[BlockChildrenResponse]
+    ) -> BlockChildrenResponse:
         if not responses:
-            raise ValueError("Cannot merge empty response list - this should never happen")
+            raise ValueError(
+                "Cannot merge empty response list - this should never happen"
+            )
 
         first_response = responses[0]
         all_results = [block for response in responses for block in response.results]

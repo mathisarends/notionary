@@ -5,7 +5,11 @@ import pytest
 from notionary.blocks.rich_text.markdown_rich_text_converter import (
     MarkdownRichTextConverter,
 )
-from notionary.blocks.schemas import BlockColor, CreateNumberedListItemBlock, CreateNumberedListItemData
+from notionary.blocks.schemas import (
+    BlockColor,
+    CreateNumberedListItemBlock,
+    CreateNumberedListItemData,
+)
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.numbered_list import NumberedListParser
 from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
@@ -13,9 +17,12 @@ from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 @pytest.fixture
 def numbered_list_parser(
-    mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxDefinitionRegistry
+    mock_rich_text_converter: MarkdownRichTextConverter,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> NumberedListParser:
-    return NumberedListParser(rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry)
+    return NumberedListParser(
+        rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry
+    )
 
 
 @pytest.mark.asyncio
@@ -91,7 +98,9 @@ async def test_numbered_list_with_inline_markdown_should_convert_to_rich_text(
 
     await numbered_list_parser._process(context)
 
-    mock_rich_text_converter.to_rich_text.assert_called_once_with("This is **bold** and *italic*")
+    mock_rich_text_converter.to_rich_text.assert_called_once_with(
+        "This is **bold** and *italic*"
+    )
 
 
 def test_numbered_list_inside_parent_context_should_not_handle(
@@ -143,7 +152,9 @@ async def test_numbered_list_with_multiple_spaces_after_dot_should_handle(
 
     await numbered_list_parser._process(context)
 
-    mock_rich_text_converter.to_rich_text.assert_called_once_with("Item with multiple spaces")
+    mock_rich_text_converter.to_rich_text.assert_called_once_with(
+        "Item with multiple spaces"
+    )
 
 
 @pytest.mark.asyncio
@@ -165,16 +176,12 @@ async def test_numbered_list_with_long_content_should_create_block(
     context: BlockParsingContext,
     mock_rich_text_converter: MarkdownRichTextConverter,
 ) -> None:
-    context.line = (
-        "1. This is a very long item that contains multiple words and continues for a while to test longer content"
-    )
+    context.line = "1. This is a very long item that contains multiple words and continues for a while to test longer content"
 
     await numbered_list_parser._process(context)
 
     assert len(context.result_blocks) == 1
-    expected_content = (
-        "This is a very long item that contains multiple words and continues for a while to test longer content"
-    )
+    expected_content = "This is a very long item that contains multiple words and continues for a while to test longer content"
     mock_rich_text_converter.to_rich_text.assert_called_once_with(expected_content)
 
 
@@ -188,7 +195,9 @@ async def test_numbered_list_with_special_characters_should_create_block(
 
     await numbered_list_parser._process(context)
 
-    mock_rich_text_converter.to_rich_text.assert_called_once_with("Item with special chars: @#$%^&*()")
+    mock_rich_text_converter.to_rich_text.assert_called_once_with(
+        "Item with special chars: @#$%^&*()"
+    )
 
 
 @pytest.mark.asyncio
@@ -211,14 +220,19 @@ async def test_numbered_list_with_indented_children_should_parse_children(
     )
 
     child_block = CreateNumberedListItemBlock(
-        numbered_list_item=CreateNumberedListItemData(rich_text=[], color=BlockColor.DEFAULT)
+        numbered_list_item=CreateNumberedListItemData(
+            rich_text=[], color=BlockColor.DEFAULT
+        )
     )
     context.parse_nested_markdown = AsyncMock(return_value=[child_block, child_block])
 
     await numbered_list_parser._process(context)
 
     assert len(context.result_blocks) == 1
-    assert context.result_blocks[0].numbered_list_item.children == [child_block, child_block]
+    assert context.result_blocks[0].numbered_list_item.children == [
+        child_block,
+        child_block,
+    ]
     assert context.lines_consumed == 2
 
 

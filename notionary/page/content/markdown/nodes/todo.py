@@ -35,4 +35,6 @@ class TodoMarkdownNode(ContainerNode):
 
     def _get_checkbox_state(self) -> str:
         todo_syntax = self._syntax_registry.get_todo_syntax()
-        return todo_syntax.end_delimiter if self.checked else todo_syntax.start_delimiter
+        return (
+            todo_syntax.end_delimiter if self.checked else todo_syntax.start_delimiter
+        )

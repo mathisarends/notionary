@@ -53,7 +53,9 @@ class BotUserResponseDto(NotionUserBase):
     bot: BotUserDto
 
 
-UserResponseDto = Annotated[PersonUserResponseDto | BotUserResponseDto, Field(discriminator="type")]
+UserResponseDto = Annotated[
+    PersonUserResponseDto | BotUserResponseDto, Field(discriminator="type")
+]
 
 
 class NotionUsersListResponse(BaseModel):

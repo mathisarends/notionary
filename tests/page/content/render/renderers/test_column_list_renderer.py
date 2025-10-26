@@ -29,7 +29,9 @@ def syntax_registry() -> SyntaxDefinitionRegistry:
 
 
 @pytest.mark.asyncio
-async def test_column_list_block_should_be_handled(column_list_renderer: ColumnListRenderer, mock_block: Block) -> None:
+async def test_column_list_block_should_be_handled(
+    column_list_renderer: ColumnListRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.COLUMN_LIST
 
     assert column_list_renderer._can_handle(mock_block)
@@ -67,7 +69,9 @@ async def test_column_list_with_children_should_render_children_below_marker(
     render_context: MarkdownRenderingContext,
     syntax_registry: SyntaxDefinitionRegistry,
 ) -> None:
-    render_context.render_children = AsyncMock(return_value="::: column\nColumn 1\n::: column\nColumn 2")
+    render_context.render_children = AsyncMock(
+        return_value="::: column\nColumn 1\n::: column\nColumn 2"
+    )
     block = _create_column_list_block()
     render_context.block = block
     render_context.indent_level = 0
