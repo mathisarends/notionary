@@ -115,15 +115,6 @@ class SyntaxPromptRegistry:
             "Do NOT prefix local file paths with http:// or https://."
         )
 
-    def _generate_media_examples(
-        self, start_delimiter: str, end_delimiter: str, media_type: str
-    ) -> list[str]:
-        return [
-            f"{start_delimiter}https://example.com/{media_type}.ext{end_delimiter}",
-            f"{start_delimiter}path/to/{media_type}/file.ext{end_delimiter}",
-            f"{start_delimiter}https://cdn.example.com/{media_type}-sample.ext{end_delimiter}",
-        ]
-
     def _generate_url_media_examples(
         self, start_delimiter: str, end_delimiter: str, example_urls: list[str]
     ) -> list[str]:
@@ -169,12 +160,22 @@ class SyntaxPromptRegistry:
             element="Audio",
             description="Embeds an audio file into the page. Supports various audio formats like MP3, WAV, OGG.",
             is_multi_line=False,
-            few_shot_examples=self._generate_media_examples(
-                definition.start_delimiter, definition.end_delimiter, "audio"
+            few_shot_examples=self._generate_audio_examples(
+                definition.start_delimiter, definition.end_delimiter
             ),
             usage_notes=self._get_media_path_usage_notes(),
             supports_inline_rich_text=False,
         )
+
+    def _generate_audio_examples(
+        self, start_delimiter: str, end_delimiter: str
+    ) -> list[str]:
+        """Generate valid audio examples with real audio file extensions."""
+        return [
+            f"{start_delimiter}https://example.com/audio.mp3{end_delimiter}",
+            f"{start_delimiter}https://example.com/sound.wav{end_delimiter}",
+            f"{start_delimiter}https://example.com/music.ogg{end_delimiter}",
+        ]
 
     def _register_video_prompt(self) -> None:
         definition = self._syntax_definition_registry.get_video_syntax()
@@ -182,12 +183,22 @@ class SyntaxPromptRegistry:
             element="Video",
             description="Embeds a video file into the page. Supports various video formats like MP4, WebM, AVI.",
             is_multi_line=False,
-            few_shot_examples=self._generate_media_examples(
-                definition.start_delimiter, definition.end_delimiter, "video"
+            few_shot_examples=self._generate_video_examples(
+                definition.start_delimiter, definition.end_delimiter
             ),
             usage_notes=self._get_media_path_usage_notes(),
             supports_inline_rich_text=False,
         )
+
+    def _generate_video_examples(
+        self, start_delimiter: str, end_delimiter: str
+    ) -> list[str]:
+        """Generate valid video examples with real video file extensions."""
+        return [
+            f"{start_delimiter}https://example.com/video.mp4{end_delimiter}",
+            f"{start_delimiter}https://example.com/clip.mov{end_delimiter}",
+            f"{start_delimiter}https://www.youtube.com/watch?v=dQw4w9WgXcQ{end_delimiter}",
+        ]
 
     def _register_image_prompt(self) -> None:
         definition = self._syntax_definition_registry.get_image_syntax()
@@ -195,12 +206,22 @@ class SyntaxPromptRegistry:
             element="Image",
             description="Embeds an image into the page. Supports formats like PNG, JPG, GIF, WebP.",
             is_multi_line=False,
-            few_shot_examples=self._generate_media_examples(
-                definition.start_delimiter, definition.end_delimiter, "image"
+            few_shot_examples=self._generate_image_examples(
+                definition.start_delimiter, definition.end_delimiter
             ),
             usage_notes=self._get_media_path_usage_notes(),
             supports_inline_rich_text=False,
         )
+
+    def _generate_image_examples(
+        self, start_delimiter: str, end_delimiter: str
+    ) -> list[str]:
+        """Generate valid image examples with real image file extensions."""
+        return [
+            f"{start_delimiter}https://example.com/photo.jpg{end_delimiter}",
+            f"{start_delimiter}https://example.com/image.png{end_delimiter}",
+            f"{start_delimiter}https://example.com/graphic.webp{end_delimiter}",
+        ]
 
     def _register_file_prompt(self) -> None:
         definition = self._syntax_definition_registry.get_file_syntax()
@@ -208,12 +229,22 @@ class SyntaxPromptRegistry:
             element="File",
             description="Links to a downloadable file. Can be used for any file type.",
             is_multi_line=False,
-            few_shot_examples=self._generate_media_examples(
-                definition.start_delimiter, definition.end_delimiter, "file"
+            few_shot_examples=self._generate_file_examples(
+                definition.start_delimiter, definition.end_delimiter
             ),
             usage_notes=self._get_media_path_usage_notes(),
             supports_inline_rich_text=False,
         )
+
+    def _generate_file_examples(
+        self, start_delimiter: str, end_delimiter: str
+    ) -> list[str]:
+        """Generate valid file examples with various file extensions."""
+        return [
+            f"{start_delimiter}https://example.com/document.docx{end_delimiter}",
+            f"{start_delimiter}https://example.com/archive.zip{end_delimiter}",
+            f"{start_delimiter}https://example.com/data.csv{end_delimiter}",
+        ]
 
     def _register_pdf_prompt(self) -> None:
         definition = self._syntax_definition_registry.get_pdf_syntax()
@@ -221,12 +252,22 @@ class SyntaxPromptRegistry:
             element="PDF",
             description="Embeds a PDF document into the page for inline viewing.",
             is_multi_line=False,
-            few_shot_examples=self._generate_media_examples(
-                definition.start_delimiter, definition.end_delimiter, "document"
+            few_shot_examples=self._generate_pdf_examples(
+                definition.start_delimiter, definition.end_delimiter
             ),
             usage_notes=self._get_media_path_usage_notes(),
             supports_inline_rich_text=False,
         )
+
+    def _generate_pdf_examples(
+        self, start_delimiter: str, end_delimiter: str
+    ) -> list[str]:
+        """Generate valid PDF examples."""
+        return [
+            f"{start_delimiter}https://example.com/document.pdf{end_delimiter}",
+            f"{start_delimiter}https://example.com/manual.pdf{end_delimiter}",
+            f"{start_delimiter}https://example.com/report.pdf{end_delimiter}",
+        ]
 
     def _register_bookmark_prompt(self) -> None:
         definition = self._syntax_definition_registry.get_bookmark_syntax()
