@@ -37,6 +37,7 @@ class SyntaxDefinitionRegistryKey(StrEnum):
 
     CAPTION = "caption"
     SPACE = "space"
+    PARAGRAPH = "paragraph"
 
 
 @dataclass(frozen=True)
