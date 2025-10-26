@@ -177,7 +177,7 @@ def test_todo_with_nested_tasks(builder: MarkdownBuilder):
         .build()
     )
 
-    assert "- Complete Phase 1" in result
+    assert "- [x] Complete Phase 1" in result
     assert "Finished tasks:" in result
     assert "- [ ] Start Phase 2" in result
 

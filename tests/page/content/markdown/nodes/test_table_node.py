@@ -17,7 +17,8 @@ def table_delimiter(table_syntax: SyntaxDefinition) -> str:
 
 @pytest.fixture
 def table_separator(table_syntax: SyntaxDefinition) -> str:
-    return table_syntax.end_delimiter
+    # Separator for table rows is a dash character, not an end_delimiter
+    return "-"
 
 
 def test_table_markdown_node(table_delimiter: str, table_separator: str) -> None:
@@ -26,13 +27,13 @@ def test_table_markdown_node(table_delimiter: str, table_separator: str) -> None
         rows=[["Alice", "25", "Berlin"], ["Bob", "30", "Munich"]],
     )
 
-    d = table_delimiter
-    s = table_separator
+    delimiter = table_delimiter
+    separator = table_separator
     expected = (
-        f"{d} Name {d} Age {d} City {d}\n"
-        f"{d} {s} {d} {s} {d} {s} {d}\n"
-        f"{d} Alice {d} 25 {d} Berlin {d}\n"
-        f"{d} Bob {d} 30 {d} Munich {d}"
+        f"{delimiter} Name {delimiter} Age {delimiter} City {delimiter}\n"
+        f"{delimiter} {separator} {delimiter} {separator} {delimiter} {separator} {delimiter}\n"
+        f"{delimiter} Alice {delimiter} 25 {delimiter} Berlin {delimiter}\n"
+        f"{delimiter} Bob {delimiter} 30 {delimiter} Munich {delimiter}"
     )
 
     assert table.to_markdown() == expected

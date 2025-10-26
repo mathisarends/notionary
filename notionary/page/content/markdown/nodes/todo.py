@@ -24,9 +24,13 @@ class TodoMarkdownNode(ContainerNode):
 
     @override
     def to_markdown(self) -> str:
-        validated_marker = self._get_validated_marker()
-        checkbox_state = self._get_checkbox_state()
-        result = f"{validated_marker}{checkbox_state} {self.text}"
+        # Get the appropriate syntax based on checked state
+        if self.checked:
+            todo_syntax = self._syntax_registry.get_todo_done_syntax()
+        else:
+            todo_syntax = self._syntax_registry.get_todo_syntax()
+
+        result = f"{todo_syntax.start_delimiter} {self.text}"
         result += self.render_children()
         return result
 
@@ -34,7 +38,9 @@ class TodoMarkdownNode(ContainerNode):
         return self.marker if self.marker == self.VALID_MARKER else self.VALID_MARKER
 
     def _get_checkbox_state(self) -> str:
-        todo_syntax = self._syntax_registry.get_todo_syntax()
-        return (
-            todo_syntax.end_delimiter if self.checked else todo_syntax.start_delimiter
-        )
+        if self.checked:
+            todo_done_syntax = self._syntax_registry.get_todo_done_syntax()
+            return todo_done_syntax.start_delimiter
+        else:
+            todo_syntax = self._syntax_registry.get_todo_syntax()
+            return todo_syntax.start_delimiter

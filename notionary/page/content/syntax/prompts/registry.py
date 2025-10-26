@@ -7,8 +7,6 @@ from notionary.page.content.syntax.definition.registry import SyntaxDefinitionRe
 from notionary.page.content.syntax.prompts.models import SyntaxPromptData
 
 
-# TODO: Add base system prompt and text inline formatting prompts (refactor those aswell to support nested) | make it accesible for ai agents
-# also limit line length in ruff linter config
 class SyntaxPromptRegistry:
     def __init__(
         self,

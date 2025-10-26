@@ -39,10 +39,10 @@ class TableMarkdownNode(MarkdownNode):
         return f"{delimiter} {joined_cells} {delimiter}"
 
     def _build_separator_row(self) -> str:
-        table_syntax = self._syntax_registry.get_table_syntax()
         col_count = len(self.headers)
-        separators = [table_syntax.end_delimiter] * col_count
-        return self._format_row(separators)
+        separators = ["-"] * col_count
+        row = self._format_row(separators)
+        return row
 
     def _build_data_rows(self) -> list[str]:
         return [self._format_row(row) for row in self.rows]
