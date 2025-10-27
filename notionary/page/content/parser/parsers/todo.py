@@ -8,11 +8,15 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class TodoParser(LineParser):
-    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+    def __init__(
+        self,
+        syntax_registry: SyntaxDefinitionRegistry,
+        rich_text_converter: MarkdownRichTextConverter,
+    ) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_todo_syntax()
         self._syntax_done = syntax_registry.get_todo_done_syntax()
@@ -39,7 +43,9 @@ class TodoParser(LineParser):
         await self._process_nested_children(block, context)
         context.result_blocks.append(block)
 
-    async def _process_nested_children(self, block: CreateToDoBlock, context: BlockParsingContext) -> None:
+    async def _process_nested_children(
+        self, block: CreateToDoBlock, context: BlockParsingContext
+    ) -> None:
         child_lines = self._collect_child_lines(context)
         if not child_lines:
             return
@@ -54,12 +60,16 @@ class TodoParser(LineParser):
         parent_indent_level = context.get_line_indentation_level()
         return context.collect_indented_child_lines(parent_indent_level)
 
-    async def _parse_child_blocks(self, child_lines: list[str], context: BlockParsingContext) -> list[CreateToDoBlock]:
+    async def _parse_child_blocks(
+        self, child_lines: list[str], context: BlockParsingContext
+    ) -> list[CreateToDoBlock]:
         stripped_lines = self._remove_parent_indentation(child_lines, context)
         children_text = self._convert_lines_to_text(stripped_lines)
         return await context.parse_nested_markdown(children_text)
 
-    def _remove_parent_indentation(self, lines: list[str], context: BlockParsingContext) -> list[str]:
+    def _remove_parent_indentation(
+        self, lines: list[str], context: BlockParsingContext
+    ) -> list[str]:
         return context.strip_indentation_level(lines, levels=1)
 
     def _convert_lines_to_text(self, lines: list[str]) -> str:

@@ -3,7 +3,13 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Self
 
-from pydantic import BaseModel, ValidationInfo, field_validator, model_serializer, model_validator
+from pydantic import (
+    BaseModel,
+    ValidationInfo,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
 from notionary.shared.properties.type import PropertyType
 from notionary.shared.typings import JsonDict
@@ -93,7 +99,9 @@ class TimeUnit(StrEnum):
     YEARS = "years"
 
 
-type Operator = StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator
+type Operator = (
+    StringOperator | NumberOperator | BooleanOperator | DateOperator | ArrayOperator
+)
 type FilterValue = str | int | float | bool | list[str | int | float]
 
 
@@ -156,7 +164,10 @@ class FilterCondition(BaseModel):
             self._ensure_value_is_number()
         elif self.field_type == FieldType.BOOLEAN:
             self._ensure_value_is_boolean()
-        elif self.field_type in (FieldType.DATE, FieldType.DATETIME) or self.field_type in (
+        elif self.field_type in (
+            FieldType.DATE,
+            FieldType.DATETIME,
+        ) or self.field_type in (
             FieldType.ARRAY,
             FieldType.RELATION,
             FieldType.PEOPLE,
@@ -196,7 +207,9 @@ class FilterCondition(BaseModel):
         operator_value = value if isinstance(value, str) else value.value
 
         if not cls._is_operator_valid_for_field_type(operator_value, field_type):
-            raise ValueError(f"Operator '{operator_value}' is not valid for field type '{field_type}'")
+            raise ValueError(
+                f"Operator '{operator_value}' is not valid for field type '{field_type}'"
+            )
 
         return value
 
@@ -234,7 +247,10 @@ class PropertyFilter(BaseModel):
         if self.value is None:
             return self
 
-        if self.property_type in (PropertyType.PEOPLE, PropertyType.RELATION) and not isinstance(self.value, str):
+        if self.property_type in (
+            PropertyType.PEOPLE,
+            PropertyType.RELATION,
+        ) and not isinstance(self.value, str):
             raise ValueError(
                 f"Value for property type '{self.property_type.value}' must be a string, "
                 f"got {type(self.value).__name__}"
@@ -254,7 +270,9 @@ class PropertyFilter(BaseModel):
 
         return {
             "property": self.property,
-            property_type_str: {operator_str: filter_value if filter_value is not None else True},
+            property_type_str: {
+                operator_str: filter_value if filter_value is not None else True
+            },
         }
 
 

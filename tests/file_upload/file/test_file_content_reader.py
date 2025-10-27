@@ -22,7 +22,9 @@ def test_file(tmp_path: Path):
 
 class TestFileContentReader:
     @pytest.mark.asyncio
-    async def test_read_full_file(self, file_reader: FileContentReader, test_file: tuple[Path, bytes]):
+    async def test_read_full_file(
+        self, file_reader: FileContentReader, test_file: tuple[Path, bytes]
+    ):
         file_path, expected_content = test_file
 
         content = await file_reader.read_full_file(file_path)
@@ -30,7 +32,9 @@ class TestFileContentReader:
         assert content == expected_content
 
     @pytest.mark.asyncio
-    async def test_read_file_chunks(self, file_reader: FileContentReader, test_file: tuple[Path, bytes]):
+    async def test_read_file_chunks(
+        self, file_reader: FileContentReader, test_file: tuple[Path, bytes]
+    ):
         file_path, expected_content = test_file
         chunks = []
 
@@ -69,7 +73,9 @@ class TestFileContentReader:
         assert chunks[2] == b"A" * 5
 
     @pytest.mark.asyncio
-    async def test_bytes_to_chunks_exact_chunk_size(self, file_reader: FileContentReader):
+    async def test_bytes_to_chunks_exact_chunk_size(
+        self, file_reader: FileContentReader
+    ):
         test_bytes = b"B" * 20
         chunks = []
 
@@ -90,7 +96,9 @@ class TestFileContentReader:
         assert len(chunks) == 0
 
     @pytest.mark.asyncio
-    async def test_read_full_file_empty_file(self, file_reader: FileContentReader, tmp_path: Path):
+    async def test_read_full_file_empty_file(
+        self, file_reader: FileContentReader, tmp_path: Path
+    ):
         empty_file = tmp_path / "empty.txt"
         empty_file.write_bytes(b"")
 

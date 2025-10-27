@@ -17,7 +17,9 @@ class UserHttpClient(NotionHttpClient):
         return adapter.validate_python(response)
 
     async def get_all_workspace_users(self) -> list[UserResponseDto]:
-        all_entities = await paginate_notion_api(self._get_workspace_entities, page_size=100)
+        all_entities = await paginate_notion_api(
+            self._get_workspace_entities, page_size=100
+        )
 
         self.logger.info("Fetched %d total workspace users", len(all_entities))
         return all_entities

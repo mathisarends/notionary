@@ -22,7 +22,9 @@ def breadcrumb_renderer() -> BreadcrumbRenderer:
 
 
 @pytest.mark.asyncio
-async def test_breadcrumb_block_should_be_handled(breadcrumb_renderer: BreadcrumbRenderer, mock_block: Block) -> None:
+async def test_breadcrumb_block_should_be_handled(
+    breadcrumb_renderer: BreadcrumbRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.BREADCRUMB
 
     assert breadcrumb_renderer._can_handle(mock_block)

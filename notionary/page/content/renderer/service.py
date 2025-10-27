@@ -1,6 +1,8 @@
 from notionary.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
-from notionary.page.content.renderer.post_processing.service import MarkdownRenderingPostProcessor
+from notionary.page.content.renderer.post_processing.service import (
+    MarkdownRenderingPostProcessor,
+)
 from notionary.page.content.renderer.renderers import BlockRenderer
 from notionary.utils.mixins.logging import LoggingMixin
 
@@ -22,7 +24,9 @@ class NotionToMarkdownConverter(LoggingMixin):
         current_block_index = 0
 
         while current_block_index < len(blocks):
-            context = self._create_rendering_context(blocks, current_block_index, indent_level)
+            context = self._create_rendering_context(
+                blocks, current_block_index, indent_level
+            )
             await self._renderer_chain.handle(context)
 
             if context.markdown_result:
@@ -45,6 +49,8 @@ class NotionToMarkdownConverter(LoggingMixin):
             convert_children_callback=self.convert,
         )
 
-    def _join_rendered_blocks(self, rendered_parts: list[str], indent_level: int) -> str:
+    def _join_rendered_blocks(
+        self, rendered_parts: list[str], indent_level: int
+    ) -> str:
         separator = "\n\n" if indent_level == 0 else "\n"
         return separator.join(rendered_parts)

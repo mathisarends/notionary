@@ -8,7 +8,10 @@ from notionary.comments.schemas import (
     CommentListResponse,
 )
 from notionary.http.client import NotionHttpClient
-from notionary.utils.pagination import paginate_notion_api, paginate_notion_api_generator
+from notionary.utils.pagination import (
+    paginate_notion_api,
+    paginate_notion_api_generator,
+)
 
 
 class CommentClient(NotionHttpClient):
@@ -21,16 +24,24 @@ class CommentClient(NotionHttpClient):
         total_results_limit: int | None = None,
     ) -> AsyncGenerator[CommentDto]:
         async for comment in paginate_notion_api_generator(
-            self._list_comments_page, block_id=block_id, total_results_limit=total_results_limit
+            self._list_comments_page,
+            block_id=block_id,
+            total_results_limit=total_results_limit,
         ):
             yield comment
 
-    async def get_all_comments(self, block_id: str, *, total_results_limit: int | None = None) -> list[CommentDto]:
+    async def get_all_comments(
+        self, block_id: str, *, total_results_limit: int | None = None
+    ) -> list[CommentDto]:
         all_comments = await paginate_notion_api(
-            self._list_comments_page, block_id=block_id, total_results_limit=total_results_limit
+            self._list_comments_page,
+            block_id=block_id,
+            total_results_limit=total_results_limit,
         )
 
-        self.logger.debug("Retrieved %d total comments for block %s", len(all_comments), block_id)
+        self.logger.debug(
+            "Retrieved %d total comments for block %s", len(all_comments), block_id
+        )
         return all_comments
 
     async def _list_comments_page(
@@ -65,7 +76,9 @@ class CommentClient(NotionHttpClient):
         rich_text: list[RichText],
         discussion_id: str,
     ) -> CommentDto:
-        request = CommentCreateRequest.for_discussion(discussion_id=discussion_id, rich_text=rich_text)
+        request = CommentCreateRequest.for_discussion(
+            discussion_id=discussion_id, rich_text=rich_text
+        )
 
         body = request.model_dump(exclude_unset=True, exclude_none=True)
 

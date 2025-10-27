@@ -2,7 +2,12 @@ from dataclasses import dataclass
 
 import pytest
 
-from notionary.utils.fuzzy import _calculate_similarity, _find_best_matches, find_all_matches, find_best_match
+from notionary.utils.fuzzy import (
+    _calculate_similarity,
+    _find_best_matches,
+    find_all_matches,
+    find_best_match,
+)
 
 
 @dataclass
@@ -25,7 +30,9 @@ def sample_items() -> list[SampleItem]:
 
 
 def test_find_best_match_exact_match(sample_items: list[SampleItem]) -> None:
-    result = find_best_match("apple", sample_items, lambda x: x.name, min_similarity=0.0)
+    result = find_best_match(
+        "apple", sample_items, lambda x: x.name, min_similarity=0.0
+    )
 
     assert result is not None
     assert result.name == "apple"
@@ -39,26 +46,34 @@ def test_find_best_match_partial_match(sample_items: list[SampleItem]) -> None:
 
 
 def test_find_best_match_case_insensitive(sample_items: list[SampleItem]) -> None:
-    result = find_best_match("APPLE", sample_items, lambda x: x.name, min_similarity=0.0)
+    result = find_best_match(
+        "APPLE", sample_items, lambda x: x.name, min_similarity=0.0
+    )
 
     assert result is not None
     assert result.name == "apple"
 
 
 def test_find_best_match_with_title_extractor(sample_items: list[SampleItem]) -> None:
-    result = find_best_match("Mobile App", sample_items, lambda x: x.title, min_similarity=0.0)
+    result = find_best_match(
+        "Mobile App", sample_items, lambda x: x.title, min_similarity=0.0
+    )
 
     assert result is not None
     assert result.title == "Mobile Application"
 
 
-def test_find_best_match_no_match_below_threshold(sample_items: list[SampleItem]) -> None:
+def test_find_best_match_no_match_below_threshold(
+    sample_items: list[SampleItem],
+) -> None:
     result = find_best_match("xyz", sample_items, lambda x: x.name, min_similarity=0.5)
 
     assert result is None
 
 
-def test_find_best_match_no_match_with_high_threshold(sample_items: list[SampleItem]) -> None:
+def test_find_best_match_no_match_with_high_threshold(
+    sample_items: list[SampleItem],
+) -> None:
     result = find_best_match("appl", sample_items, lambda x: x.name, min_similarity=0.9)
 
     assert result is None
@@ -77,7 +92,9 @@ def test_find_best_match_empty_query(sample_items: list[SampleItem]) -> None:
 
 
 def test_find_best_matches_multiple_results(sample_items: list[SampleItem]) -> None:
-    results = _find_best_matches("app", sample_items, lambda x: x.name, min_similarity=0.3, limit=3)
+    results = _find_best_matches(
+        "app", sample_items, lambda x: x.name, min_similarity=0.3, limit=3
+    )
 
     assert len(results) <= 3
     assert len(results) > 0
@@ -86,13 +103,17 @@ def test_find_best_matches_multiple_results(sample_items: list[SampleItem]) -> N
 
 
 def test_find_best_matches_with_limit(sample_items: list[SampleItem]) -> None:
-    results = _find_best_matches("a", sample_items, lambda x: x.name, min_similarity=0.1, limit=2)
+    results = _find_best_matches(
+        "a", sample_items, lambda x: x.name, min_similarity=0.1, limit=2
+    )
 
     assert len(results) <= 2
 
 
 def test_find_best_matches_no_limit(sample_items: list[SampleItem]) -> None:
-    results = _find_best_matches("a", sample_items, lambda x: x.name, min_similarity=0.1)
+    results = _find_best_matches(
+        "a", sample_items, lambda x: x.name, min_similarity=0.1
+    )
 
     assert len(results) > 0
     for result in results:
@@ -152,20 +173,28 @@ def test_text_extractor_function() -> None:
 
 
 def test_find_all_matches(sample_items: list[SampleItem]) -> None:
-    results = find_all_matches("app", sample_items, lambda x: x.name, min_similarity=0.3)
+    results = find_all_matches(
+        "app", sample_items, lambda x: x.name, min_similarity=0.3
+    )
 
     assert len(results) > 0
     assert results[0].name == "app"
 
 
 def test_find_all_matches_with_high_threshold(sample_items: list[SampleItem]) -> None:
-    results = find_all_matches("xyz", sample_items, lambda x: x.name, min_similarity=0.8)
+    results = find_all_matches(
+        "xyz", sample_items, lambda x: x.name, min_similarity=0.8
+    )
 
     assert len(results) == 0
 
 
-def test_find_all_matches_returns_sorted_results(sample_items: list[SampleItem]) -> None:
-    results = find_all_matches("app", sample_items, lambda x: x.name, min_similarity=0.0)
+def test_find_all_matches_returns_sorted_results(
+    sample_items: list[SampleItem],
+) -> None:
+    results = find_all_matches(
+        "app", sample_items, lambda x: x.name, min_similarity=0.0
+    )
 
     assert len(results) > 1
     assert results[0].name == "app"

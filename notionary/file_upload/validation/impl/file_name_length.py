@@ -6,7 +6,9 @@ from notionary.file_upload.validation.port import FileUploadValidator
 
 
 class FileNameLengthValidator(FileUploadValidator):
-    def __init__(self, filename: str, file_upload_config: FileUploadConfig | None = None) -> None:
+    def __init__(
+        self, filename: str, file_upload_config: FileUploadConfig | None = None
+    ) -> None:
         self._filename = filename
 
         file_upload_config = file_upload_config or FileUploadConfig()

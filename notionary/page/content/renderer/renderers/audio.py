@@ -1,8 +1,15 @@
 from typing import override
 
-from notionary.blocks.schemas import Block, BlockType, ExternalFileWithCaption, NotionHostedFileWithCaption
-from notionary.page.content.renderer.renderers.file_like_block import FileLikeBlockRenderer
-from notionary.page.content.syntax import SyntaxDefinition
+from notionary.blocks.schemas import (
+    Block,
+    BlockType,
+    ExternalFileWithCaption,
+    NotionHostedFileWithCaption,
+)
+from notionary.page.content.renderer.renderers.file_like_block import (
+    FileLikeBlockRenderer,
+)
+from notionary.page.content.syntax.definition import EnclosedSyntaxDefinition
 
 
 class AudioRenderer(FileLikeBlockRenderer):
@@ -11,9 +18,11 @@ class AudioRenderer(FileLikeBlockRenderer):
         return block.type == BlockType.AUDIO
 
     @override
-    def _get_syntax(self) -> SyntaxDefinition:
+    def _get_syntax(self) -> EnclosedSyntaxDefinition:
         return self._syntax_registry.get_audio_syntax()
 
     @override
-    def _get_file_data(self, block: Block) -> ExternalFileWithCaption | NotionHostedFileWithCaption | None:
+    def _get_file_data(
+        self, block: Block
+    ) -> ExternalFileWithCaption | NotionHostedFileWithCaption | None:
         return block.audio

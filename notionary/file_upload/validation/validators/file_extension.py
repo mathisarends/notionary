@@ -1,7 +1,10 @@
 from pathlib import Path
 from typing import ClassVar, override
 
-from notionary.exceptions.file_upload import NoFileExtensionException, UnsupportedFileTypeException
+from notionary.exceptions.file_upload import (
+    NoFileExtensionException,
+    UnsupportedFileTypeException,
+)
 from notionary.file_upload.validation.models import (
     AudioExtension,
     AudioMimeType,
@@ -94,7 +97,9 @@ class FileExtensionValidator(FileUploadValidator):
 
         if not self._is_supported(extension):
             supported_by_category = self._get_supported_extensions_by_category()
-            raise UnsupportedFileTypeException(extension, self.filename, supported_by_category)
+            raise UnsupportedFileTypeException(
+                extension, self.filename, supported_by_category
+            )
 
     @staticmethod
     def _extract_extension(filename: str) -> str:
@@ -117,6 +122,10 @@ class FileExtensionValidator(FileUploadValidator):
     def _get_supported_extensions_by_category(self) -> dict[str, list[str]]:
         result = {}
         for category in FileCategory:
-            extensions = [ext for ext, cat in self.EXTENSION_TO_CATEGORY.items() if cat == category]
+            extensions = [
+                ext
+                for ext, cat in self.EXTENSION_TO_CATEGORY.items()
+                if cat == category
+            ]
             result[category.value] = extensions
         return result

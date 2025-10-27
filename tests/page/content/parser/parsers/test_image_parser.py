@@ -6,18 +6,20 @@ from notionary.blocks.schemas import CreateImageBlock
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.image import ImageParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 from notionary.shared.models.file import FileType
 
 
 @pytest.fixture
-def image_parser(syntax_registry: SyntaxRegistry) -> ImageParser:
+def image_parser(syntax_registry: SyntaxDefinitionRegistry) -> ImageParser:
     mock_file_upload = Mock(spec=NotionFileUpload)
-    return ImageParser(syntax_registry=syntax_registry, file_upload_service=mock_file_upload)
+    return ImageParser(
+        syntax_registry=syntax_registry, file_upload_service=mock_file_upload
+    )
 
 
 @pytest.fixture
-def make_image_syntax(syntax_registry: SyntaxRegistry):
+def make_image_syntax(syntax_registry: SyntaxDefinitionRegistry):
     syntax = syntax_registry.get_image_syntax()
 
     def _make(url: str) -> str:
@@ -50,12 +52,17 @@ async def test_image_with_url_containing_special_characters_should_extract_corre
     context: BlockParsingContext,
     make_image_syntax,
 ) -> None:
-    context.line = make_image_syntax("https://example.com/path/to/image.png?size=large&quality=high")
+    context.line = make_image_syntax(
+        "https://example.com/path/to/image.png?size=large&quality=high"
+    )
 
     await image_parser._process(context)
 
     block = context.result_blocks[0]
-    assert block.image.external.url == "https://example.com/path/to/image.png?size=large&quality=high"
+    assert (
+        block.image.external.url
+        == "https://example.com/path/to/image.png?size=large&quality=high"
+    )
 
 
 @pytest.mark.asyncio

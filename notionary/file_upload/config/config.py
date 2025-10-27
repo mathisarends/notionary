@@ -22,11 +22,18 @@ class FileUploadConfig(BaseModel):
     )
 
     max_upload_timeout: int = Field(
-        default=300, gt=0, description="Maximum time in seconds to wait for an upload to complete."
+        default=300,
+        gt=0,
+        description="Maximum time in seconds to wait for an upload to complete.",
     )
 
-    poll_interval: int = Field(default=2, gt=0, description="Interval in seconds for polling the upload status.")
+    poll_interval: int = Field(
+        default=2,
+        gt=0,
+        description="Interval in seconds for polling the upload status.",
+    )
 
     base_upload_path: Path | None = Field(
-        default=None, description="Optional default base path for resolving relative file uploads."
+        default=None,
+        description="Optional default base path for resolving relative file uploads.",
     )

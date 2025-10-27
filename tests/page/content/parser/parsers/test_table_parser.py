@@ -3,16 +3,23 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.schemas import CreateTableBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.table import TableParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def table_parser(mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxRegistry) -> TableParser:
-    return TableParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
+def table_parser(
+    mock_rich_text_converter: MarkdownRichTextConverter,
+    syntax_registry: SyntaxDefinitionRegistry,
+) -> TableParser:
+    return TableParser(
+        syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter
+    )
 
 
 @pytest.mark.asyncio
@@ -157,9 +164,13 @@ async def test_table_with_empty_lines_should_stop_at_content(
 
 @pytest.mark.asyncio
 async def test_table_with_inline_markdown_should_convert_rich_text(
-    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext, syntax_registry: SyntaxRegistry
+    mock_rich_text_converter: MarkdownRichTextConverter,
+    context: BlockParsingContext,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> None:
-    parser = TableParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
+    parser = TableParser(
+        syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter
+    )
 
     markdown = "| **Bold** | *Italic* |"
     context.line = markdown
@@ -181,7 +192,9 @@ async def test_table_inside_parent_context_should_not_be_handled(
 
 
 @pytest.mark.asyncio
-async def test_non_table_line_should_not_be_handled(table_parser: TableParser, context: BlockParsingContext) -> None:
+async def test_non_table_line_should_not_be_handled(
+    table_parser: TableParser, context: BlockParsingContext
+) -> None:
     context.line = "Not a table line"
 
     assert not table_parser._can_handle(context)

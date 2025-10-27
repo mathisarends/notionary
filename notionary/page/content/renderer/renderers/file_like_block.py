@@ -6,17 +6,21 @@ from notionary.blocks.schemas import (
     ExternalFileWithCaption,
     NotionHostedFileWithCaption,
 )
-from notionary.page.content.renderer.renderers.captioned_block import CaptionedBlockRenderer
-from notionary.page.content.syntax import SyntaxDefinition
+from notionary.page.content.renderer.renderers.captioned_block import (
+    CaptionedBlockRenderer,
+)
+from notionary.page.content.syntax.definition import EnclosedSyntaxDefinition
 
 
 class FileLikeBlockRenderer(CaptionedBlockRenderer):
     @abstractmethod
-    def _get_syntax(self) -> SyntaxDefinition:
+    def _get_syntax(self) -> EnclosedSyntaxDefinition:
         pass
 
     @abstractmethod
-    def _get_file_data(self, block: Block) -> ExternalFileWithCaption | NotionHostedFileWithCaption | None:
+    def _get_file_data(
+        self, block: Block
+    ) -> ExternalFileWithCaption | NotionHostedFileWithCaption | None:
         pass
 
     @override

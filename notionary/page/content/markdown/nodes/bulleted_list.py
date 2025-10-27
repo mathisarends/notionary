@@ -2,7 +2,7 @@ from typing import override
 
 from notionary.page.content.markdown.nodes.base import MarkdownNode
 from notionary.page.content.markdown.nodes.container import ContainerNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class BulletedListMarkdownNode(ContainerNode):
@@ -10,7 +10,7 @@ class BulletedListMarkdownNode(ContainerNode):
         self,
         texts: list[str],
         children: list[MarkdownNode | None] | None = None,
-        syntax_registry: SyntaxRegistry | None = None,
+        syntax_registry: SyntaxDefinitionRegistry | None = None,
     ) -> None:
         super().__init__(syntax_registry=syntax_registry)
         self.texts = texts
@@ -18,7 +18,9 @@ class BulletedListMarkdownNode(ContainerNode):
 
     @override
     def to_markdown(self) -> str:
-        list_items = [self._render_list_item(index, text) for index, text in enumerate(self.texts)]
+        list_items = [
+            self._render_list_item(index, text) for index, text in enumerate(self.texts)
+        ]
         return "\n".join(list_items)
 
     def _render_list_item(self, index: int, text: str) -> str:

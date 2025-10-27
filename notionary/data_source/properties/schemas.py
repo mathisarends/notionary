@@ -163,7 +163,9 @@ class DataSourceMultiSelectConfig(BaseModel):
 
 class DataSourceMultiSelectProperty(DataSourceProperty):
     type: Literal[PropertyType.MULTI_SELECT] = PropertyType.MULTI_SELECT
-    multi_select: DataSourceMultiSelectConfig = Field(default_factory=DataSourceMultiSelectConfig)
+    multi_select: DataSourceMultiSelectConfig = Field(
+        default_factory=DataSourceMultiSelectConfig
+    )
 
     @property
     def option_names(self) -> list[str]:
@@ -199,7 +201,9 @@ class DataSourceCreatedTimeConfig(BaseModel): ...
 
 class DataSourceCreatedTimeProperty(DataSourceProperty):
     type: Literal[PropertyType.CREATED_TIME] = PropertyType.CREATED_TIME
-    created_time: DataSourceCreatedTimeConfig = Field(default_factory=DataSourceCreatedTimeConfig)
+    created_time: DataSourceCreatedTimeConfig = Field(
+        default_factory=DataSourceCreatedTimeConfig
+    )
 
 
 class DataSourceCreatedByConfig(BaseModel): ...
@@ -207,7 +211,9 @@ class DataSourceCreatedByConfig(BaseModel): ...
 
 class DataSourceCreatedByProperty(DataSourceProperty):
     type: Literal[PropertyType.CREATED_BY] = PropertyType.CREATED_BY
-    created_by: DataSourceCreatedByConfig = Field(default_factory=DataSourceCreatedByConfig)
+    created_by: DataSourceCreatedByConfig = Field(
+        default_factory=DataSourceCreatedByConfig
+    )
 
 
 class DataSourceLastEditedTimeConfig(BaseModel): ...
@@ -215,7 +221,9 @@ class DataSourceLastEditedTimeConfig(BaseModel): ...
 
 class DataSourceLastEditedTimeProperty(DataSourceProperty):
     type: Literal[PropertyType.LAST_EDITED_TIME] = PropertyType.LAST_EDITED_TIME
-    last_edited_time: DataSourceLastEditedTimeConfig = Field(default_factory=DataSourceLastEditedTimeConfig)
+    last_edited_time: DataSourceLastEditedTimeConfig = Field(
+        default_factory=DataSourceLastEditedTimeConfig
+    )
 
 
 class DataSourceLastEditedByConfig(BaseModel): ...
@@ -223,7 +231,9 @@ class DataSourceLastEditedByConfig(BaseModel): ...
 
 class DataSourceLastEditedByProperty(DataSourceProperty):
     type: Literal[PropertyType.LAST_EDITED_BY] = PropertyType.LAST_EDITED_BY
-    last_edited_by: DataSourceLastEditedByConfig = Field(default_factory=DataSourceLastEditedByConfig)
+    last_edited_by: DataSourceLastEditedByConfig = Field(
+        default_factory=DataSourceLastEditedByConfig
+    )
 
 
 class DataSourceLastVisitedTimeConfig(BaseModel): ...
@@ -231,7 +241,9 @@ class DataSourceLastVisitedTimeConfig(BaseModel): ...
 
 class DataSourceLastVisitedTimeProperty(DataSourceProperty):
     type: Literal[PropertyType.LAST_VISITED_TIME] = PropertyType.LAST_VISITED_TIME
-    last_visited_time: DataSourceLastVisitedTimeConfig = Field(default_factory=DataSourceLastVisitedTimeConfig)
+    last_visited_time: DataSourceLastVisitedTimeConfig = Field(
+        default_factory=DataSourceLastVisitedTimeConfig
+    )
 
 
 class DataSourceTitleConfig(BaseModel): ...
@@ -247,7 +259,9 @@ class DataSourceRichTextConfig(BaseModel): ...
 
 class DataSourceRichTextProperty(DataSourceProperty):
     type: Literal[PropertyType.RICH_TEXT] = PropertyType.RICH_TEXT
-    rich_text: DataSourceRichTextConfig = Field(default_factory=DataSourceRichTextConfig)
+    rich_text: DataSourceRichTextConfig = Field(
+        default_factory=DataSourceRichTextConfig
+    )
 
 
 class DataSourceURLConfig(BaseModel): ...
@@ -300,7 +314,9 @@ class DataSourcePhoneNumberConfig(BaseModel): ...
 
 class DataSourcePhoneNumberProperty(DataSourceProperty):
     type: Literal[PropertyType.PHONE_NUMBER] = PropertyType.PHONE_NUMBER
-    phone_number: DataSourcePhoneNumberConfig = Field(default_factory=DataSourcePhoneNumberConfig)
+    phone_number: DataSourcePhoneNumberConfig = Field(
+        default_factory=DataSourcePhoneNumberConfig
+    )
 
 
 class DataSourceFilesConfig(BaseModel): ...
@@ -347,7 +363,9 @@ class DataSourceUniqueIdConfig(BaseModel):
 
 class DataSourceUniqueIdProperty(DataSourceProperty):
     type: Literal[PropertyType.UNIQUE_ID] = PropertyType.UNIQUE_ID
-    unique_id: DataSourceUniqueIdConfig = Field(default_factory=DataSourceUniqueIdConfig)
+    unique_id: DataSourceUniqueIdConfig = Field(
+        default_factory=DataSourceUniqueIdConfig
+    )
 
     @property
     def prefix(self) -> str | None:
@@ -383,7 +401,9 @@ class DataSourceVerificationConfig(BaseModel): ...
 
 class DataSourceVerificationProperty(DataSourceProperty):
     type: Literal[PropertyType.VERIFICATION] = PropertyType.VERIFICATION
-    verification: DataSourceVerificationConfig = Field(default_factory=DataSourceVerificationConfig)
+    verification: DataSourceVerificationConfig = Field(
+        default_factory=DataSourceVerificationConfig
+    )
 
 
 class DataSourceUnknownProperty(BaseModel):

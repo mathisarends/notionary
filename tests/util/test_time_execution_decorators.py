@@ -37,7 +37,9 @@ def test_time_execution_sync_logs_when_above_threshold(mock_logger: Mock) -> Non
     assert "took" in log_message
 
 
-def test_time_execution_sync_does_not_log_when_below_threshold(mock_logger: Mock) -> None:
+def test_time_execution_sync_does_not_log_when_below_threshold(
+    mock_logger: Mock,
+) -> None:
     with patch("logging.getLogger", return_value=mock_logger):
 
         @time_execution_sync(min_duration_to_log=999.0)
@@ -96,7 +98,9 @@ def test_time_execution_sync_passes_args_and_kwargs() -> None:
 
 
 @pytest.mark.asyncio
-async def test_time_execution_async_logs_when_above_threshold(mock_logger: Mock) -> None:
+async def test_time_execution_async_logs_when_above_threshold(
+    mock_logger: Mock,
+) -> None:
     with patch("logging.getLogger", return_value=mock_logger):
 
         @time_execution_async(min_duration_to_log=0.0)
@@ -114,7 +118,9 @@ async def test_time_execution_async_logs_when_above_threshold(mock_logger: Mock)
 
 
 @pytest.mark.asyncio
-async def test_time_execution_async_does_not_log_when_below_threshold(mock_logger: Mock) -> None:
+async def test_time_execution_async_does_not_log_when_below_threshold(
+    mock_logger: Mock,
+) -> None:
     with patch("logging.getLogger", return_value=mock_logger):
 
         @time_execution_async(min_duration_to_log=999.0)
@@ -168,7 +174,9 @@ async def test_time_execution_async_preserves_function_metadata() -> None:
 @pytest.mark.asyncio
 async def test_time_execution_async_passes_args_and_kwargs() -> None:
     @time_execution_async(min_duration_to_log=999.0)
-    async def async_function_with_params(a: int, b: str, c: bool = False) -> tuple[int, str, bool]:
+    async def async_function_with_params(
+        a: int, b: str, c: bool = False
+    ) -> tuple[int, str, bool]:
         return a, b, c
 
     result = await async_function_with_params(42, "test", c=True)
@@ -176,7 +184,9 @@ async def test_time_execution_async_passes_args_and_kwargs() -> None:
     assert result == (42, "test", True)
 
 
-def test_time_execution_sync_strips_dashes_from_additional_text(mock_logger: Mock) -> None:
+def test_time_execution_sync_strips_dashes_from_additional_text(
+    mock_logger: Mock,
+) -> None:
     with patch("logging.getLogger", return_value=mock_logger):
 
         @time_execution_sync(additional_text="---Operation---", min_duration_to_log=0.0)
@@ -191,7 +201,9 @@ def test_time_execution_sync_strips_dashes_from_additional_text(mock_logger: Moc
 
 
 @pytest.mark.asyncio
-async def test_time_execution_async_strips_dashes_from_additional_text(mock_logger: Mock) -> None:
+async def test_time_execution_async_strips_dashes_from_additional_text(
+    mock_logger: Mock,
+) -> None:
     with patch("logging.getLogger", return_value=mock_logger):
 
         @time_execution_async(additional_text="---AsyncOp---", min_duration_to_log=0.0)

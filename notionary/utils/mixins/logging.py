@@ -19,7 +19,9 @@ def configure_library_logging(level: str = "WARNING") -> None:
         library_logger.handlers.clear()
 
     handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+    handler.setFormatter(
+        logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    )
 
     library_logger.setLevel(log_level)
     library_logger.addHandler(handler)

@@ -2,21 +2,28 @@ import math
 from typing import override
 
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
-from notionary.page.content.syntax import MarkdownGrammar, SyntaxRegistry
+from notionary.page.content.syntax.definition import (
+    MarkdownGrammar,
+    SyntaxDefinitionRegistry,
+)
 from notionary.utils.decorators import time_execution_sync
 from notionary.utils.mixins.logging import LoggingMixin
 
 
 class IndentationNormalizer(PreProcessor, LoggingMixin):
     def __init__(
-        self, syntax_registry: SyntaxRegistry | None = None, markdown_grammar: MarkdownGrammar | None = None
+        self,
+        syntax_registry: SyntaxDefinitionRegistry | None = None,
+        markdown_grammar: MarkdownGrammar | None = None,
     ) -> None:
         super().__init__()
-        self._syntax_registry = syntax_registry or SyntaxRegistry()
+        self._syntax_registry = syntax_registry or SyntaxDefinitionRegistry()
         self._markdown_grammar = markdown_grammar or MarkdownGrammar()
 
         self._spaces_per_nesting_level = self._markdown_grammar.spaces_per_nesting_level
-        self._code_block_start_delimiter = self._syntax_registry.get_code_syntax().start_delimiter
+        self._code_block_start_delimiter = (
+            self._syntax_registry.get_code_syntax().start_delimiter
+        )
 
     @override
     @time_execution_sync()

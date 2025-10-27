@@ -1,20 +1,26 @@
 import re
 from typing import override
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.schemas import CreateCalloutBlock, CreateCalloutData
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 from notionary.shared.models.icon import EmojiIcon
 
 
 class CalloutParser(LineParser):
     DEFAULT_EMOJI = "💡"
 
-    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+    def __init__(
+        self,
+        syntax_registry: SyntaxDefinitionRegistry,
+        rich_text_converter: MarkdownRichTextConverter,
+    ) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_callout_syntax()
         self._pattern = self._syntax.regex_pattern
@@ -37,7 +43,9 @@ class CalloutParser(LineParser):
         else:
             context.result_blocks.append(block)
 
-    async def _process_nested_children(self, block: CreateCalloutBlock, context: BlockParsingContext) -> None:
+    async def _process_nested_children(
+        self, block: CreateCalloutBlock, context: BlockParsingContext
+    ) -> None:
         child_lines = self._collect_child_lines(context)
         if not child_lines:
             return
@@ -59,7 +67,9 @@ class CalloutParser(LineParser):
         children_text = self._convert_lines_to_text(stripped_lines)
         return await context.parse_nested_markdown(children_text)
 
-    def _remove_parent_indentation(self, lines: list[str], context: BlockParsingContext) -> list[str]:
+    def _remove_parent_indentation(
+        self, lines: list[str], context: BlockParsingContext
+    ) -> list[str]:
         return context.strip_indentation_level(lines, levels=1)
 
     def _convert_lines_to_text(self, lines: list[str]) -> str:

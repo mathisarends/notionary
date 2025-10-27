@@ -46,4 +46,6 @@ class FileUploadFile(BaseModel):
         return cls(file_upload=FileUploadedFileData(id=id))
 
 
-type File = Annotated[ExternalFile | NotionHostedFile | FileUploadFile, Field(discriminator="type")]
+type File = Annotated[
+    ExternalFile | NotionHostedFile | FileUploadFile, Field(discriminator="type")
+]

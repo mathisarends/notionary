@@ -6,8 +6,12 @@ from notionary.workspace.query.service import WorkspaceQueryService
 
 # !!! in the notion api mentions that reference datasources are not provided yet (it's a limiation of the API as of now)
 class DataSourceNameIdResolver(NameIdResolver):
-    def __init__(self, workspace_query_service: WorkspaceQueryService | None = None) -> None:
-        self._workspace_query_service = workspace_query_service or WorkspaceQueryService()
+    def __init__(
+        self, workspace_query_service: WorkspaceQueryService | None = None
+    ) -> None:
+        self._workspace_query_service = (
+            workspace_query_service or WorkspaceQueryService()
+        )
 
     @override
     async def resolve_name_to_id(self, name: str) -> str | None:
@@ -15,7 +19,9 @@ class DataSourceNameIdResolver(NameIdResolver):
             return None
 
         cleaned_name = name.strip()
-        data_source = await self._workspace_query_service.find_data_source(query=cleaned_name)
+        data_source = await self._workspace_query_service.find_data_source(
+            query=cleaned_name
+        )
         return data_source.id if data_source else None
 
     @override

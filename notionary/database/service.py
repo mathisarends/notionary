@@ -2,10 +2,14 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Self
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.data_source.service import NotionDataSource
 from notionary.database.client import NotionDatabaseHttpClient
-from notionary.database.database_metadata_update_client import DatabaseMetadataUpdateClient
+from notionary.database.database_metadata_update_client import (
+    DatabaseMetadataUpdateClient,
+)
 from notionary.database.schemas import NotionDatabaseDto
 from notionary.shared.entity.dto_parsers import (
     extract_description,
@@ -71,7 +75,8 @@ class NotionDatabase(Entity):
         client: NotionDatabaseHttpClient,
     ) -> Self:
         title, description = await asyncio.gather(
-            extract_title(dto, rich_text_converter), extract_description(dto, rich_text_converter)
+            extract_title(dto, rich_text_converter),
+            extract_description(dto, rich_text_converter),
         )
 
         metadata_update_client = DatabaseMetadataUpdateClient(database_id=dto.id)
@@ -120,5 +125,7 @@ class NotionDatabase(Entity):
         self._title = result.title[0].plain_text if result.title else ""
 
     async def set_description(self, description: str) -> None:
-        updated_description = await self.client.update_database_description(description=description)
+        updated_description = await self.client.update_database_description(
+            description=description
+        )
         self._description = updated_description

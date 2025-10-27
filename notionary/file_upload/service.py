@@ -27,7 +27,9 @@ class NotionFileUpload(LoggingMixin):
         self._config = config or FileUploadConfig()
         self._file_reader = file_reader or FileContentReader(config=self._config)
 
-    async def upload_file(self, file_path: Path, filename: str | None = None) -> FileUploadResponse:
+    async def upload_file(
+        self, file_path: Path, filename: str | None = None
+    ) -> FileUploadResponse:
         file_path = Path(file_path)
 
         if not file_path.is_absolute() and self._config.base_upload_path:
@@ -43,10 +45,15 @@ class NotionFileUpload(LoggingMixin):
 
         if self._fits_in_single_part(file_size):
             content = await self._file_reader.read_full_file(file_path)
-            return await self._upload_single_part_content(content, filename, content_type)
+            return await self._upload_single_part_content(
+                content, filename, content_type
+            )
         else:
             return await self._upload_multi_part_content(
-                filename, content_type, file_size, self._file_reader.read_file_chunks(file_path)
+                filename,
+                content_type,
+                file_size,
+                self._file_reader.read_file_chunks(file_path),
             )
 
     async def upload_from_bytes(
@@ -66,10 +73,15 @@ class NotionFileUpload(LoggingMixin):
         content_type = content_type or self._guess_content_type(filename)
 
         if self._fits_in_single_part(file_size):
-            return await self._upload_single_part_content(file_content, filename, content_type)
+            return await self._upload_single_part_content(
+                file_content, filename, content_type
+            )
 
         return await self._upload_multi_part_content(
-            filename, content_type, file_size, self._file_reader.bytes_to_chunks(file_content)
+            filename,
+            content_type,
+            file_size,
+            self._file_reader.bytes_to_chunks(file_content),
         )
 
     async def _upload_single_part_content(
@@ -86,7 +98,10 @@ class NotionFileUpload(LoggingMixin):
             filename=filename,
         )
 
-        self.logger.info("Single-part content sent, waiting for completion... (ID: %s)", file_upload.id)
+        self.logger.info(
+            "Single-part content sent, waiting for completion... (ID: %s)",
+            file_upload.id,
+        )
         return await self._wait_for_completion(file_upload.id)
 
     async def _upload_multi_part_content(
@@ -108,7 +123,10 @@ class NotionFileUpload(LoggingMixin):
 
         await self._client.complete_upload(file_upload.id)
 
-        self.logger.info("Multi-part content sent, waiting for completion... (ID: %s)", file_upload.id)
+        self.logger.info(
+            "Multi-part content sent, waiting for completion... (ID: %s)",
+            file_upload.id,
+        )
         return await self._wait_for_completion(file_upload.id)
 
     async def _send_parts(
@@ -133,7 +151,8 @@ class NotionFileUpload(LoggingMixin):
 
         except Exception as e:
             raise UploadFailedError(
-                file_upload_id=file_upload_id, reason=f"Failed to upload part {part_number}/{total_parts}: {e}"
+                file_upload_id=file_upload_id,
+                reason=f"Failed to upload part {part_number}/{total_parts}: {e}",
             ) from e
 
     def _fits_in_single_part(self, file_size: int) -> bool:
@@ -144,7 +163,9 @@ class NotionFileUpload(LoggingMixin):
         return content_type
 
     def _calculate_part_count(self, file_size: int) -> int:
-        return (file_size + self._config.multi_part_chunk_size - 1) // self._config.multi_part_chunk_size
+        return (
+            file_size + self._config.multi_part_chunk_size - 1
+        ) // self._config.multi_part_chunk_size
 
     async def get_upload_status(self, file_upload_id: str) -> str:
         try:
@@ -161,12 +182,16 @@ class NotionFileUpload(LoggingMixin):
         timeout = timeout_seconds or self._config.max_upload_timeout
 
         try:
-            return await asyncio.wait_for(self._poll_status_until_complete(file_upload_id), timeout=timeout)
+            return await asyncio.wait_for(
+                self._poll_status_until_complete(file_upload_id), timeout=timeout
+            )
 
         except TimeoutError as e:
             raise UploadTimeoutError(file_upload_id, timeout) from e
 
-    async def _poll_status_until_complete(self, file_upload_id: str) -> FileUploadResponse:
+    async def _poll_status_until_complete(
+        self, file_upload_id: str
+    ) -> FileUploadResponse:
         while True:
             upload_info = await self._client.get_file_upload(file_upload_id)
 
@@ -182,7 +207,8 @@ class NotionFileUpload(LoggingMixin):
     async def get_uploads(
         self,
         *,
-        filter_fn: Callable[[FileUploadQueryBuilder], FileUploadQueryBuilder] | None = None,
+        filter_fn: Callable[[FileUploadQueryBuilder], FileUploadQueryBuilder]
+        | None = None,
         query: FileUploadQuery | None = None,
     ) -> list[FileUploadResponse]:
         resolved_query = self._resolve_query(filter_fn=filter_fn, query=query)
@@ -191,7 +217,8 @@ class NotionFileUpload(LoggingMixin):
     async def iter_uploads(
         self,
         *,
-        filter_fn: Callable[[FileUploadQueryBuilder], FileUploadQueryBuilder] | None = None,
+        filter_fn: Callable[[FileUploadQueryBuilder], FileUploadQueryBuilder]
+        | None = None,
         query: FileUploadQuery | None = None,
     ) -> AsyncIterator[FileUploadResponse]:
         resolved_query = self._resolve_query(filter_fn=filter_fn, query=query)
@@ -200,7 +227,8 @@ class NotionFileUpload(LoggingMixin):
 
     def _resolve_query(
         self,
-        filter_fn: Callable[[FileUploadQueryBuilder], FileUploadQueryBuilder] | None = None,
+        filter_fn: Callable[[FileUploadQueryBuilder], FileUploadQueryBuilder]
+        | None = None,
         query: FileUploadQuery | None = None,
     ) -> FileUploadQuery:
         if filter_fn and query:

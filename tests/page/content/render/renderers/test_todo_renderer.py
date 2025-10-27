@@ -5,7 +5,9 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block, ToDoBlock, ToDoData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.todo import TodoRenderer
@@ -24,19 +26,25 @@ def _create_todo_block(todo_data: ToDoData | None) -> ToDoBlock:
 
 
 @pytest.fixture
-def todo_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> TodoRenderer:
+def todo_renderer(
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> TodoRenderer:
     return TodoRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
 
 
 @pytest.mark.asyncio
-async def test_todo_block_should_be_handled(todo_renderer: TodoRenderer, mock_block: Block) -> None:
+async def test_todo_block_should_be_handled(
+    todo_renderer: TodoRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.TO_DO
 
     assert todo_renderer._can_handle(mock_block)
 
 
 @pytest.mark.asyncio
-async def test_non_todo_block_should_not_be_handled(todo_renderer: TodoRenderer, mock_block: Block) -> None:
+async def test_non_todo_block_should_not_be_handled(
+    todo_renderer: TodoRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.PARAGRAPH
 
     assert not todo_renderer._can_handle(mock_block)
@@ -67,7 +75,9 @@ async def test_checked_todo_should_render_with_checked_checkbox(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Completed task")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Completed task")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Completed task"
+    )
 
     todo_data = _create_todo_data(rich_text, checked=True)
     block = _create_todo_block(todo_data)
@@ -115,7 +125,9 @@ async def test_todo_with_indent_level_should_indent_output(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Indented task")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Indented task")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Indented task"
+    )
 
     todo_data = _create_todo_data(rich_text)
     block = _create_todo_block(todo_data)
@@ -135,12 +147,16 @@ async def test_todo_with_children_should_render_children_with_indent(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Parent task")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Parent task")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Parent task"
+    )
 
     todo_data = _create_todo_data(rich_text)
     block = _create_todo_block(todo_data)
     render_context.block = block
-    render_context.render_children_with_additional_indent = AsyncMock(return_value="  Child content")
+    render_context.render_children_with_additional_indent = AsyncMock(
+        return_value="  Child content"
+    )
 
     await todo_renderer._process(render_context)
 

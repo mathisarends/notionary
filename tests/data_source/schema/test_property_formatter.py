@@ -53,9 +53,15 @@ def select_property():
         type=PropertyType.SELECT,
         select=DataSourceSelectConfig(
             options=[
-                DataSourcePropertyOption(id="opt-1", name="Todo", color=PropertyColor.DEFAULT),
-                DataSourcePropertyOption(id="opt-2", name="In Progress", color=PropertyColor.BLUE),
-                DataSourcePropertyOption(id="opt-3", name="Done", color=PropertyColor.GREEN),
+                DataSourcePropertyOption(
+                    id="opt-1", name="Todo", color=PropertyColor.DEFAULT
+                ),
+                DataSourcePropertyOption(
+                    id="opt-2", name="In Progress", color=PropertyColor.BLUE
+                ),
+                DataSourcePropertyOption(
+                    id="opt-3", name="Done", color=PropertyColor.GREEN
+                ),
             ]
         ),
     )
@@ -69,9 +75,15 @@ def multi_select_property():
         type=PropertyType.MULTI_SELECT,
         multi_select=DataSourceMultiSelectConfig(
             options=[
-                DataSourcePropertyOption(id="opt-1", name="Important", color=PropertyColor.RED),
-                DataSourcePropertyOption(id="opt-2", name="Urgent", color=PropertyColor.ORANGE),
-                DataSourcePropertyOption(id="opt-3", name="Review", color=PropertyColor.YELLOW),
+                DataSourcePropertyOption(
+                    id="opt-1", name="Important", color=PropertyColor.RED
+                ),
+                DataSourcePropertyOption(
+                    id="opt-2", name="Urgent", color=PropertyColor.ORANGE
+                ),
+                DataSourcePropertyOption(
+                    id="opt-3", name="Review", color=PropertyColor.YELLOW
+                ),
             ]
         ),
     )
@@ -85,9 +97,15 @@ def status_property():
         type=PropertyType.STATUS,
         status=DataSourceStatusConfig(
             options=[
-                DataSourcePropertyOption(id="opt-1", name="Not Started", color=PropertyColor.GRAY),
-                DataSourcePropertyOption(id="opt-2", name="Active", color=PropertyColor.BLUE),
-                DataSourcePropertyOption(id="opt-3", name="Completed", color=PropertyColor.GREEN),
+                DataSourcePropertyOption(
+                    id="opt-1", name="Not Started", color=PropertyColor.GRAY
+                ),
+                DataSourcePropertyOption(
+                    id="opt-2", name="Active", color=PropertyColor.BLUE
+                ),
+                DataSourcePropertyOption(
+                    id="opt-3", name="Completed", color=PropertyColor.GREEN
+                ),
             ]
         ),
     )
@@ -157,7 +175,9 @@ async def test_format_status_property_shows_statuses(
 
 @pytest.mark.asyncio
 async def test_format_relation_property_shows_linked_database(
-    formatter: PropertyFormatter, relation_property: DataSourceRelationProperty, mock_data_source_resolver
+    formatter: PropertyFormatter,
+    relation_property: DataSourceRelationProperty,
+    mock_data_source_resolver,
 ):
     result = await formatter.format_property(relation_property)
 
@@ -168,7 +188,9 @@ async def test_format_relation_property_shows_linked_database(
 
 @pytest.mark.asyncio
 async def test_format_relation_property_shows_available_entries(
-    formatter: PropertyFormatter, relation_property: DataSourceRelationProperty, mock_relation_fetcher
+    formatter: PropertyFormatter,
+    relation_property: DataSourceRelationProperty,
+    mock_relation_fetcher,
 ):
     result = await formatter.format_property(relation_property)
 
@@ -178,7 +200,9 @@ async def test_format_relation_property_shows_available_entries(
 
 
 @pytest.mark.asyncio
-async def test_format_relation_property_handles_fetch_error_gracefully(mock_data_source_resolver):
+async def test_format_relation_property_handles_fetch_error_gracefully(
+    mock_data_source_resolver,
+):
     failing_fetcher = AsyncMock(side_effect=Exception("Fetch failed"))
 
     formatter = PropertyFormatter(
@@ -210,7 +234,8 @@ async def test_format_standard_property_uses_registry_descriptor(
 
 @pytest.mark.asyncio
 async def test_format_property_includes_custom_description(
-    formatter: PropertyFormatter, rich_text_property_with_description: DataSourceRichTextProperty
+    formatter: PropertyFormatter,
+    rich_text_property_with_description: DataSourceRichTextProperty,
 ):
     result = await formatter.format_property(rich_text_property_with_description)
 

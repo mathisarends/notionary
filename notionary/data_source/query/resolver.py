@@ -14,7 +14,10 @@ from notionary.utils.mixins.logging import LoggingMixin
 
 
 class QueryResolver(LoggingMixin):
-    UUID_PATTERN = re.compile(r"^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$", re.IGNORECASE)
+    UUID_PATTERN = re.compile(
+        r"^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$",
+        re.IGNORECASE,
+    )
 
     def __init__(
         self,
@@ -24,7 +27,9 @@ class QueryResolver(LoggingMixin):
         self._user_resolver = user_resolver or PersonNameIdResolver()
         self._page_resolver = page_resolver or PageNameIdResolver()
 
-    async def resolve_params(self, params: DataSourceQueryParams) -> DataSourceQueryParams:
+    async def resolve_params(
+        self, params: DataSourceQueryParams
+    ) -> DataSourceQueryParams:
         if not params.filter:
             return params
 
@@ -38,7 +43,9 @@ class QueryResolver(LoggingMixin):
             return await self._resolve_compound_filter(filter)
         return filter
 
-    async def _resolve_compound_filter(self, compound: CompoundFilter) -> CompoundFilter:
+    async def _resolve_compound_filter(
+        self, compound: CompoundFilter
+    ) -> CompoundFilter:
         resolved_filters = []
         for filter in compound.filters:
             resolved = await self._resolve_filter(filter)
@@ -46,7 +53,9 @@ class QueryResolver(LoggingMixin):
 
         return CompoundFilter(operator=compound.operator, filters=resolved_filters)
 
-    async def _resolve_property_filter(self, prop_filter: PropertyFilter) -> PropertyFilter:
+    async def _resolve_property_filter(
+        self, prop_filter: PropertyFilter
+    ) -> PropertyFilter:
         if not self._is_resolvable_property_type(prop_filter.property_type):
             return prop_filter
 
@@ -56,7 +65,9 @@ class QueryResolver(LoggingMixin):
         if self._is_uuid(prop_filter.value):
             return prop_filter
 
-        resolved_value = await self._resolve_value(prop_filter.value, prop_filter.property_type)
+        resolved_value = await self._resolve_value(
+            prop_filter.value, prop_filter.property_type
+        )
 
         return PropertyFilter(
             property=prop_filter.property,

@@ -1,16 +1,20 @@
 from typing import override
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.schemas import BlockCreatePayload, CreateColumnListBlock, CreateColumnListData
+from notionary.blocks.schemas import (
+    BlockCreatePayload,
+    CreateColumnListBlock,
+    CreateColumnListData,
+)
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class ColumnListParser(LineParser):
-    def __init__(self, syntax_registry: SyntaxRegistry) -> None:
+    def __init__(self, syntax_registry: SyntaxDefinitionRegistry) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_column_list_syntax()
 
@@ -35,9 +39,13 @@ class ColumnListParser(LineParser):
         column_list_data = CreateColumnListData(children=[])
         return CreateColumnListBlock(column_list=column_list_data)
 
-    async def _populate_columns(self, block: CreateColumnListBlock, context: BlockParsingContext) -> None:
+    async def _populate_columns(
+        self, block: CreateColumnListBlock, context: BlockParsingContext
+    ) -> None:
         parent_indent_level = context.get_line_indentation_level()
-        child_lines = self._collect_children_allowing_empty_lines(context, parent_indent_level)
+        child_lines = self._collect_children_allowing_empty_lines(
+            context, parent_indent_level
+        )
 
         if not child_lines:
             return
@@ -46,7 +54,9 @@ class ColumnListParser(LineParser):
         block.column_list.children = column_blocks
         context.lines_consumed = len(child_lines)
 
-    async def _parse_column_children(self, child_lines: list[str], context: BlockParsingContext) -> list:
+    async def _parse_column_children(
+        self, child_lines: list[str], context: BlockParsingContext
+    ) -> list:
         stripped_lines = context.strip_indentation_level(child_lines, levels=1)
         child_markdown = "\n".join(stripped_lines)
         parsed_blocks = await context.parse_nested_markdown(child_markdown)
@@ -67,7 +77,9 @@ class ColumnListParser(LineParser):
 
         return child_lines
 
-    def _should_include_as_child(self, line: str, expected_indent: int, context: BlockParsingContext) -> bool:
+    def _should_include_as_child(
+        self, line: str, expected_indent: int, context: BlockParsingContext
+    ) -> bool:
         if not line.strip():
             return True
 

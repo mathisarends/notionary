@@ -5,7 +5,9 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block, ToggleBlock, ToggleData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.toggle import ToggleRenderer
@@ -24,19 +26,27 @@ def _create_toggle_block(toggle_data: ToggleData | None) -> ToggleBlock:
 
 
 @pytest.fixture
-def toggle_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> ToggleRenderer:
-    return ToggleRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
+def toggle_renderer(
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> ToggleRenderer:
+    return ToggleRenderer(
+        rich_text_markdown_converter=mock_rich_text_markdown_converter
+    )
 
 
 @pytest.mark.asyncio
-async def test_toggle_block_should_be_handled(toggle_renderer: ToggleRenderer, mock_block: Block) -> None:
+async def test_toggle_block_should_be_handled(
+    toggle_renderer: ToggleRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.TOGGLE
 
     assert toggle_renderer._can_handle(mock_block)
 
 
 @pytest.mark.asyncio
-async def test_non_toggle_block_should_not_be_handled(toggle_renderer: ToggleRenderer, mock_block: Block) -> None:
+async def test_non_toggle_block_should_not_be_handled(
+    toggle_renderer: ToggleRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.PARAGRAPH
 
     assert not toggle_renderer._can_handle(mock_block)
@@ -49,7 +59,9 @@ async def test_toggle_with_title_should_render_markdown_toggle(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Toggle Title")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Toggle Title")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Toggle Title"
+    )
 
     toggle_data = _create_toggle_data(rich_text)
     block = _create_toggle_block(toggle_data)
@@ -69,7 +81,9 @@ async def test_toggle_with_children_should_render_children_between_delimiters(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Toggle with content")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Toggle with content")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Toggle with content"
+    )
 
     toggle_data = _create_toggle_data(rich_text)
     block = _create_toggle_block(toggle_data)
@@ -124,7 +138,9 @@ async def test_toggle_with_indent_level_should_indent_delimiters(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Indented toggle")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Indented toggle")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Indented toggle"
+    )
 
     toggle_data = _create_toggle_data(rich_text)
     block = _create_toggle_block(toggle_data)

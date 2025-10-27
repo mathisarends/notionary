@@ -3,14 +3,19 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.page.content.parser.parsers.base import BlockParsingContext
-from notionary.page.content.syntax import MarkdownGrammar, SyntaxRegistry
+from notionary.page.content.syntax.definition import (
+    MarkdownGrammar,
+    SyntaxDefinitionRegistry,
+)
 
 
 @pytest.fixture
-def syntax_registry() -> SyntaxRegistry:
-    return SyntaxRegistry()
+def syntax_registry() -> SyntaxDefinitionRegistry:
+    return SyntaxDefinitionRegistry()
 
 
 @pytest.fixture
@@ -22,7 +27,9 @@ def markdown_grammar() -> MarkdownGrammar:
 def mock_rich_text_converter() -> MarkdownRichTextConverter:
     mock_obj = AsyncMock(spec=MarkdownRichTextConverter)
     converter = cast(MarkdownRichTextConverter, mock_obj)
-    converter.to_rich_text = AsyncMock(return_value=[{"type": "text", "text": {"content": "test"}}])
+    converter.to_rich_text = AsyncMock(
+        return_value=[{"type": "text", "text": {"content": "test"}}]
+    )
     return converter
 
 

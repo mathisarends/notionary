@@ -2,18 +2,23 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.schemas import CreateBulletedListItemBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.bulleted_list import BulletedListParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
 def bulleted_list_parser(
-    mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxRegistry
+    mock_rich_text_converter: MarkdownRichTextConverter,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> BulletedListParser:
-    return BulletedListParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
+    return BulletedListParser(
+        syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter
+    )
 
 
 @pytest.mark.asyncio
@@ -31,14 +36,20 @@ async def test_simple_bulleted_list_item_should_create_block(
 
 @pytest.mark.asyncio
 async def test_bulleted_list_with_inline_markdown_should_convert_rich_text(
-    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext, syntax_registry: SyntaxRegistry
+    mock_rich_text_converter: MarkdownRichTextConverter,
+    context: BlockParsingContext,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> None:
-    parser = BulletedListParser(rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry)
+    parser = BulletedListParser(
+        rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry
+    )
     context.line = "- Item with **bold** and *italic*"
 
     await parser._process(context)
 
-    mock_rich_text_converter.to_rich_text.assert_called_once_with("Item with **bold** and *italic*")
+    mock_rich_text_converter.to_rich_text.assert_called_once_with(
+        "Item with **bold** and *italic*"
+    )
 
 
 @pytest.mark.asyncio
@@ -127,15 +138,23 @@ async def test_bulleted_list_with_indented_children_should_parse_children(
     )
 
     # Mock child block creation
-    from notionary.blocks.schemas import CreateBulletedListItemBlock, CreateBulletedListItemData
+    from notionary.blocks.schemas import (
+        CreateBulletedListItemBlock,
+        CreateBulletedListItemData,
+    )
 
-    child_block = CreateBulletedListItemBlock(bulleted_list_item=CreateBulletedListItemData(rich_text=[]))
+    child_block = CreateBulletedListItemBlock(
+        bulleted_list_item=CreateBulletedListItemData(rich_text=[])
+    )
     context.parse_nested_markdown = AsyncMock(return_value=[child_block, child_block])
 
     await bulleted_list_parser._process(context)
 
     assert len(context.result_blocks) == 1
-    assert context.result_blocks[0].bulleted_list_item.children == [child_block, child_block]
+    assert context.result_blocks[0].bulleted_list_item.children == [
+        child_block,
+        child_block,
+    ]
     assert context.lines_consumed == 2
 
 

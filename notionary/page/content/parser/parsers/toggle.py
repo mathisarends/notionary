@@ -1,16 +1,22 @@
 from typing import override
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.schemas import BlockColor, CreateToggleBlock, CreateToggleData
 from notionary.page.content.parser.parsers import (
     BlockParsingContext,
     LineParser,
 )
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class ToggleParser(LineParser):
-    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+    def __init__(
+        self,
+        syntax_registry: SyntaxDefinitionRegistry,
+        rich_text_converter: MarkdownRichTextConverter,
+    ) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_toggle_syntax()
         self._heading_syntax = syntax_registry.get_toggleable_heading_syntax()
@@ -51,10 +57,14 @@ class ToggleParser(LineParser):
         title = match.group(1).strip()
         rich_text = await self._rich_text_converter.to_rich_text(title)
 
-        toggle_content = CreateToggleData(rich_text=rich_text, color=BlockColor.DEFAULT, children=[])
+        toggle_content = CreateToggleData(
+            rich_text=rich_text, color=BlockColor.DEFAULT, children=[]
+        )
         return CreateToggleBlock(toggle=toggle_content)
 
-    async def _process_nested_children(self, block: CreateToggleBlock, context: BlockParsingContext) -> None:
+    async def _process_nested_children(
+        self, block: CreateToggleBlock, context: BlockParsingContext
+    ) -> None:
         parent_indent_level = context.get_line_indentation_level()
         child_lines = context.collect_indented_child_lines(parent_indent_level)
 

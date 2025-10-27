@@ -50,7 +50,9 @@ class AccessPagePropertyWithoutDataSourceError(NotionaryException):
     }
 
     def __init__(self, parent_type: ParentType) -> None:
-        parent_desc = self._PARENT_DESCRIPTIONS.get(parent_type, f"its parent type is '{parent_type}'")
+        parent_desc = self._PARENT_DESCRIPTIONS.get(
+            parent_type, f"its parent type is '{parent_type}'"
+        )
         message = (
             f"Cannot access properties other than title because this page's parent is {parent_desc}. "
             "To use operations like property reading/writing, you need to use a page whose parent is a data source."

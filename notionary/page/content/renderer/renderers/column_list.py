@@ -33,7 +33,9 @@ class ColumnListRenderer(BlockRenderer):
     def _get_column_list_delimiter(self) -> str:
         return self._syntax_registry.get_column_list_syntax().start_delimiter
 
-    async def _render_children_with_indentation(self, context: MarkdownRenderingContext) -> str:
+    async def _render_children_with_indentation(
+        self, context: MarkdownRenderingContext
+    ) -> str:
         original_indent = context.indent_level
         context.indent_level += 1
 

@@ -5,18 +5,22 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block, NumberedListItemBlock, NumberedListItemData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.numbered_list import NumberedListRenderer
-from notionary.page.content.syntax import MarkdownGrammar
+from notionary.page.content.syntax.definition import MarkdownGrammar
 
 
 def _create_numbered_list_item_data(rich_text: list[RichText]) -> NumberedListItemData:
     return NumberedListItemData(rich_text=rich_text)
 
 
-def _create_numbered_list_item_block(list_item_data: NumberedListItemData | None) -> NumberedListItemBlock:
+def _create_numbered_list_item_block(
+    list_item_data: NumberedListItemData | None,
+) -> NumberedListItemBlock:
     mock_obj = Mock(spec=Block)
     numbered_list_item_block = cast(NumberedListItemBlock, mock_obj)
     numbered_list_item_block.type = BlockType.NUMBERED_LIST_ITEM
@@ -25,8 +29,12 @@ def _create_numbered_list_item_block(list_item_data: NumberedListItemData | None
 
 
 @pytest.fixture
-def numbered_list_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> NumberedListRenderer:
-    return NumberedListRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
+def numbered_list_renderer(
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> NumberedListRenderer:
+    return NumberedListRenderer(
+        rich_text_markdown_converter=mock_rich_text_markdown_converter
+    )
 
 
 @pytest.fixture
@@ -69,7 +77,9 @@ async def test_numbered_list_item_without_children_should_render_with_placeholde
     await numbered_list_renderer._process(render_context)
 
     # Mock indent_text adds 2 spaces
-    assert render_context.markdown_result == f"  {numbered_list_placeholder}. First item"
+    assert (
+        render_context.markdown_result == f"  {numbered_list_placeholder}. First item"
+    )
 
 
 @pytest.mark.asyncio
@@ -80,7 +90,9 @@ async def test_numbered_list_item_with_indentation_should_include_indent(
     numbered_list_placeholder: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("Nested item")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Nested item")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Nested item"
+    )
 
     list_item_data = _create_numbered_list_item_data(rich_text)
     block = _create_numbered_list_item_block(list_item_data)
@@ -90,7 +102,9 @@ async def test_numbered_list_item_with_indentation_should_include_indent(
     await numbered_list_renderer._process(render_context)
 
     # Mock indent_text always adds 2 spaces regardless of indent_level
-    assert render_context.markdown_result == f"  {numbered_list_placeholder}. Nested item"
+    assert (
+        render_context.markdown_result == f"  {numbered_list_placeholder}. Nested item"
+    )
     # Verify indent_text was called (real implementation would use indent_level)
     render_context.indent_text.assert_called_once()
 
@@ -103,8 +117,12 @@ async def test_numbered_list_item_with_children_should_render_with_newline_separ
     numbered_list_placeholder: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("Parent item")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Parent item")
-    render_context.render_children_with_additional_indent = AsyncMock(return_value="    Child content")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Parent item"
+    )
+    render_context.render_children_with_additional_indent = AsyncMock(
+        return_value="    Child content"
+    )
 
     list_item_data = _create_numbered_list_item_data(rich_text)
     block = _create_numbered_list_item_block(list_item_data)
@@ -113,7 +131,10 @@ async def test_numbered_list_item_with_children_should_render_with_newline_separ
     await numbered_list_renderer._process(render_context)
 
     # Mock indent_text adds 2 spaces
-    assert render_context.markdown_result == f"  {numbered_list_placeholder}. Parent item\n    Child content"
+    assert (
+        render_context.markdown_result
+        == f"  {numbered_list_placeholder}. Parent item\n    Child content"
+    )
 
 
 @pytest.mark.asyncio

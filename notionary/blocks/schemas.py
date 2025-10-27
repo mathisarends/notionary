@@ -34,7 +34,8 @@ class FileUploadFileWithCaption(CaptionMixin, FileUploadFile):
 
 
 type FileWithCaption = Annotated[
-    ExternalFileWithCaption | NotionHostedFileWithCaption | FileUploadFileWithCaption, Field(discriminator="type")
+    ExternalFileWithCaption | NotionHostedFileWithCaption | FileUploadFileWithCaption,
+    Field(discriminator="type"),
 ]
 
 

@@ -2,16 +2,23 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.schemas import CreateToggleBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.toggle import ToggleParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def toggle_parser(mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxRegistry) -> ToggleParser:
-    return ToggleParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
+def toggle_parser(
+    mock_rich_text_converter: MarkdownRichTextConverter,
+    syntax_registry: SyntaxDefinitionRegistry,
+) -> ToggleParser:
+    return ToggleParser(
+        syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter
+    )
 
 
 @pytest.mark.asyncio
@@ -34,7 +41,9 @@ async def test_toggle_with_indented_children_should_collect_them(
 ) -> None:
     context.line = "+++ Toggle Title"
     context.get_line_indentation_level = Mock(return_value=0)
-    context.collect_indented_child_lines = Mock(return_value=["    First line", "    Second line"])
+    context.collect_indented_child_lines = Mock(
+        return_value=["    First line", "    Second line"]
+    )
     context.strip_indentation_level = Mock(return_value=["First line", "Second line"])
     context.parse_nested_markdown = AsyncMock(return_value=[Mock(), Mock()])
 
@@ -84,16 +93,22 @@ async def test_toggleable_heading_pattern_should_not_be_handled(
 
 @pytest.mark.asyncio
 async def test_toggle_with_inline_markdown_should_convert_rich_text(
-    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext, syntax_registry: SyntaxRegistry
+    mock_rich_text_converter: MarkdownRichTextConverter,
+    context: BlockParsingContext,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> None:
-    parser = ToggleParser(rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry)
+    parser = ToggleParser(
+        rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry
+    )
     context.line = "+++ **Bold** and *italic* title"
     context.get_line_indentation_level = Mock(return_value=0)
     context.collect_indented_child_lines = Mock(return_value=[])
 
     await parser._process(context)
 
-    mock_rich_text_converter.to_rich_text.assert_called_once_with("**Bold** and *italic* title")
+    mock_rich_text_converter.to_rich_text.assert_called_once_with(
+        "**Bold** and *italic* title"
+    )
 
 
 @pytest.mark.asyncio
@@ -111,12 +126,16 @@ async def test_toggle_with_extra_whitespace_should_work(
 
 
 @pytest.mark.asyncio
-async def test_is_heading_start_with_heading_pattern_should_return_true(toggle_parser: ToggleParser) -> None:
+async def test_is_heading_start_with_heading_pattern_should_return_true(
+    toggle_parser: ToggleParser,
+) -> None:
     assert toggle_parser.is_heading_start("+++ # Heading")
     assert toggle_parser.is_heading_start("+++ ## Heading")
     assert toggle_parser.is_heading_start("+++ ### Heading")
 
 
 @pytest.mark.asyncio
-async def test_is_heading_start_with_toggle_pattern_should_return_false(toggle_parser: ToggleParser) -> None:
+async def test_is_heading_start_with_toggle_pattern_should_return_false(
+    toggle_parser: ToggleParser,
+) -> None:
     assert not toggle_parser.is_heading_start("+++ Toggle Title")

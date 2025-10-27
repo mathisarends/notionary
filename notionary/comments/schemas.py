@@ -61,7 +61,9 @@ class CommentAttachmentFileUploadType(StrEnum):
 
 class CommentAttachmentInput(BaseModel):
     file_upload_id: str
-    type: Literal[CommentAttachmentFileUploadType.FILE_UPLOAD] = CommentAttachmentFileUploadType.FILE_UPLOAD
+    type: Literal[CommentAttachmentFileUploadType.FILE_UPLOAD] = (
+        CommentAttachmentFileUploadType.FILE_UPLOAD
+    )
 
 
 # ---------------------------
@@ -80,7 +82,9 @@ class CustomDisplayName(BaseModel):
 
 
 class IntegrationDisplayName(BaseModel):
-    type: Literal[CommentDisplayNameType.INTEGRATION] = CommentDisplayNameType.INTEGRATION
+    type: Literal[CommentDisplayNameType.INTEGRATION] = (
+        CommentDisplayNameType.INTEGRATION
+    )
 
 
 class UserDisplayName(BaseModel):
@@ -92,7 +96,9 @@ class CustomCommentDisplayName(BaseModel):
     custom: CustomDisplayName
 
 
-type CommentDisplayNameInput = IntegrationDisplayName | UserDisplayName | CustomCommentDisplayName
+type CommentDisplayNameInput = (
+    IntegrationDisplayName | UserDisplayName | CustomCommentDisplayName
+)
 
 
 class CommentDisplayNameDto(BaseModel):

@@ -4,7 +4,12 @@ from dataclasses import dataclass
 from re import Match
 from typing import ClassVar
 
-from notionary.blocks.rich_text.models import MentionType, RichText, RichTextType, TextAnnotations
+from notionary.blocks.rich_text.models import (
+    MentionType,
+    RichText,
+    RichTextType,
+    TextAnnotations,
+)
 from notionary.blocks.rich_text.name_id_resolver import (
     DatabaseNameIdResolver,
     DataSourceNameIdResolver,
@@ -58,17 +63,32 @@ class MarkdownRichTextConverter:
         return [
             PatternHandler(RichTextPatterns.BOLD, self._handle_bold_pattern),
             PatternHandler(RichTextPatterns.ITALIC, self._handle_italic_pattern),
-            PatternHandler(RichTextPatterns.ITALIC_UNDERSCORE, self._handle_italic_pattern),
+            PatternHandler(
+                RichTextPatterns.ITALIC_UNDERSCORE, self._handle_italic_pattern
+            ),
             PatternHandler(RichTextPatterns.UNDERLINE, self._handle_underline_pattern),
-            PatternHandler(RichTextPatterns.STRIKETHROUGH, self._handle_strikethrough_pattern),
+            PatternHandler(
+                RichTextPatterns.STRIKETHROUGH, self._handle_strikethrough_pattern
+            ),
             PatternHandler(RichTextPatterns.CODE, self._handle_code_pattern),
             PatternHandler(RichTextPatterns.LINK, self._handle_link_pattern),
-            PatternHandler(RichTextPatterns.INLINE_EQUATION, self._handle_equation_pattern),
+            PatternHandler(
+                RichTextPatterns.INLINE_EQUATION, self._handle_equation_pattern
+            ),
             PatternHandler(RichTextPatterns.COLOR, self._handle_color_pattern),
-            PatternHandler(RichTextPatterns.PAGE_MENTION, self._handle_page_mention_pattern),
-            PatternHandler(RichTextPatterns.DATABASE_MENTION, self._handle_database_mention_pattern),
-            PatternHandler(RichTextPatterns.DATASOURCE_MENTION, self._handle_data_source_mention_pattern),
-            PatternHandler(RichTextPatterns.USER_MENTION, self._handle_user_mention_pattern),
+            PatternHandler(
+                RichTextPatterns.PAGE_MENTION, self._handle_page_mention_pattern
+            ),
+            PatternHandler(
+                RichTextPatterns.DATABASE_MENTION, self._handle_database_mention_pattern
+            ),
+            PatternHandler(
+                RichTextPatterns.DATASOURCE_MENTION,
+                self._handle_data_source_mention_pattern,
+            ),
+            PatternHandler(
+                RichTextPatterns.USER_MENTION, self._handle_user_mention_pattern
+            ),
         ]
 
     async def to_rich_text(self, text: str) -> list[RichText]:
@@ -106,12 +126,16 @@ class MarkdownRichTextConverter:
         for pattern_handler in self.format_handlers:
             match = re.search(pattern_handler.pattern, text)
             if match and match.start() < earliest_position:
-                earliest_match = PatternMatch(match=match, handler=pattern_handler.handler, position=match.start())
+                earliest_match = PatternMatch(
+                    match=match, handler=pattern_handler.handler, position=match.start()
+                )
                 earliest_position = match.start()
 
         return earliest_match
 
-    async def _process_pattern_match(self, pattern_match: PatternMatch) -> RichText | list[RichText]:
+    async def _process_pattern_match(
+        self, pattern_match: PatternMatch
+    ) -> RichText | list[RichText]:
         handler_method = pattern_match.handler
 
         if self._is_async_handler(handler_method):
@@ -169,9 +193,13 @@ class MarkdownRichTextConverter:
     def _apply_color_to_link_segment(self, segment: RichText, color: str) -> RichText:
         formatting = self._extract_formatting_attributes(segment.annotations)
 
-        return RichText.for_link(segment.plain_text, segment.text.link.url, color=color, **formatting)
+        return RichText.for_link(
+            segment.plain_text, segment.text.link.url, color=color, **formatting
+        )
 
-    def _apply_color_to_plain_text_segment(self, segment: RichText, color: str) -> RichText:
+    def _apply_color_to_plain_text_segment(
+        self, segment: RichText, color: str
+    ) -> RichText:
         if segment.type != RichTextType.TEXT:
             return segment
 
@@ -179,7 +207,9 @@ class MarkdownRichTextConverter:
 
         return RichText.from_plain_text(segment.plain_text, color=color, **formatting)
 
-    def _extract_formatting_attributes(self, annotations: TextAnnotations) -> dict[str, bool]:
+    def _extract_formatting_attributes(
+        self, annotations: TextAnnotations
+    ) -> dict[str, bool]:
         if not annotations:
             return {
                 "bold": False,
@@ -246,13 +276,17 @@ class MarkdownRichTextConverter:
             if resolved_id:
                 return create_mention_func(resolved_id)
             else:
-                return self._create_unresolved_mention_fallback(identifier, mention_type)
+                return self._create_unresolved_mention_fallback(
+                    identifier, mention_type
+                )
 
         except Exception:
             # If resolution throws an error, fallback to plain text
             return self._create_unresolved_mention_fallback(identifier, mention_type)
 
-    def _create_unresolved_mention_fallback(self, identifier: str, mention_type: MentionType) -> RichText:
+    def _create_unresolved_mention_fallback(
+        self, identifier: str, mention_type: MentionType
+    ) -> RichText:
         fallback_text = f"@{mention_type.value}[{identifier}]"
         return RichText.for_caption(fallback_text)
 

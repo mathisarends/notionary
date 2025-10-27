@@ -82,16 +82,22 @@ def properties_for_validation() -> dict[str, DataSourceProperty]:
 
 
 @pytest.fixture
-def builder(properties_for_validation: dict[str, DataSourceProperty]) -> DataSourceQueryBuilder:
+def builder(
+    properties_for_validation: dict[str, DataSourceProperty],
+) -> DataSourceQueryBuilder:
     return DataSourceQueryBuilder(properties=properties_for_validation)
 
 
-def test_string_operator_on_status_property_succeeds(builder: DataSourceQueryBuilder) -> None:
+def test_string_operator_on_status_property_succeeds(
+    builder: DataSourceQueryBuilder,
+) -> None:
     result = builder.where("Status").equals("Active").build()
     assert result.filter is not None
 
 
-def test_string_operator_on_select_property_succeeds(builder: DataSourceQueryBuilder) -> None:
+def test_string_operator_on_select_property_succeeds(
+    builder: DataSourceQueryBuilder,
+) -> None:
     """SELECT properties support equals (via StatusOperator), not contains"""
     result = builder.where("Priority").equals("High").build()
     assert result.filter is not None
@@ -120,12 +126,16 @@ def test_select_does_not_support_ends_with(builder: DataSourceQueryBuilder) -> N
     assert exc_info.value.property_name == "Priority"
 
 
-def test_array_operator_on_multi_select_succeeds(builder: DataSourceQueryBuilder) -> None:
+def test_array_operator_on_multi_select_succeeds(
+    builder: DataSourceQueryBuilder,
+) -> None:
     result = builder.where("Tags").array_contains("urgent").build()
     assert result.filter is not None
 
 
-def test_number_operator_on_number_property_succeeds(builder: DataSourceQueryBuilder) -> None:
+def test_number_operator_on_number_property_succeeds(
+    builder: DataSourceQueryBuilder,
+) -> None:
     result = builder.where("Count").greater_than(10).build()
     assert result.filter is not None
 
@@ -135,7 +145,9 @@ def test_boolean_operator_on_checkbox_succeeds(builder: DataSourceQueryBuilder) 
     assert result.filter is not None
 
 
-def test_array_operator_on_status_property_raises_error(builder: DataSourceQueryBuilder) -> None:
+def test_array_operator_on_status_property_raises_error(
+    builder: DataSourceQueryBuilder,
+) -> None:
     with pytest.raises(InvalidOperatorForPropertyType) as exc_info:
         builder.where("Status").array_contains("Active")
 
@@ -144,7 +156,9 @@ def test_array_operator_on_status_property_raises_error(builder: DataSourceQuery
     assert "contains" in str(exc_info.value).lower()
 
 
-def test_number_operator_on_status_property_raises_error(builder: DataSourceQueryBuilder) -> None:
+def test_number_operator_on_status_property_raises_error(
+    builder: DataSourceQueryBuilder,
+) -> None:
     with pytest.raises(InvalidOperatorForPropertyType) as exc_info:
         builder.where("Status").greater_than(5)
 
@@ -152,7 +166,9 @@ def test_number_operator_on_status_property_raises_error(builder: DataSourceQuer
     assert "greater_than" in str(exc_info.value).lower()
 
 
-def test_boolean_operator_on_select_property_raises_error(builder: DataSourceQueryBuilder) -> None:
+def test_boolean_operator_on_select_property_raises_error(
+    builder: DataSourceQueryBuilder,
+) -> None:
     with pytest.raises(InvalidOperatorForPropertyType) as exc_info:
         builder.where("Priority").is_true()
 
@@ -160,7 +176,9 @@ def test_boolean_operator_on_select_property_raises_error(builder: DataSourceQue
     assert "is_true" in str(exc_info.value).lower()
 
 
-def test_string_operator_on_checkbox_property_raises_error(builder: DataSourceQueryBuilder) -> None:
+def test_string_operator_on_checkbox_property_raises_error(
+    builder: DataSourceQueryBuilder,
+) -> None:
     with pytest.raises(InvalidOperatorForPropertyType) as exc_info:
         builder.where("Completed").contains("true")
 
@@ -168,7 +186,9 @@ def test_string_operator_on_checkbox_property_raises_error(builder: DataSourceQu
     assert "contains" in str(exc_info.value).lower()
 
 
-def test_string_operator_on_multi_select_raises_error(builder: DataSourceQueryBuilder) -> None:
+def test_string_operator_on_multi_select_raises_error(
+    builder: DataSourceQueryBuilder,
+) -> None:
     with pytest.raises(InvalidOperatorForPropertyType) as exc_info:
         builder.where("Tags").equals("urgent")
 
@@ -176,7 +196,9 @@ def test_string_operator_on_multi_select_raises_error(builder: DataSourceQueryBu
     assert "equals" in str(exc_info.value).lower()
 
 
-def test_number_operator_on_multi_select_raises_error(builder: DataSourceQueryBuilder) -> None:
+def test_number_operator_on_multi_select_raises_error(
+    builder: DataSourceQueryBuilder,
+) -> None:
     with pytest.raises(InvalidOperatorForPropertyType) as exc_info:
         builder.where("Tags").less_than(5)
 
@@ -184,7 +206,9 @@ def test_number_operator_on_multi_select_raises_error(builder: DataSourceQueryBu
     assert "less_than" in str(exc_info.value).lower()
 
 
-def test_error_message_includes_valid_operators(builder: DataSourceQueryBuilder) -> None:
+def test_error_message_includes_valid_operators(
+    builder: DataSourceQueryBuilder,
+) -> None:
     with pytest.raises(InvalidOperatorForPropertyType) as exc_info:
         builder.where("Status").array_contains("Active")
 
@@ -221,7 +245,9 @@ def test_validation_works_with_or_where(builder: DataSourceQueryBuilder) -> None
         builder.or_where("Tags").equals("urgent")
 
 
-def test_multiple_valid_operators_on_same_property(builder: DataSourceQueryBuilder) -> None:
+def test_multiple_valid_operators_on_same_property(
+    builder: DataSourceQueryBuilder,
+) -> None:
     result = (
         builder.where("Status")
         .equals("Active")

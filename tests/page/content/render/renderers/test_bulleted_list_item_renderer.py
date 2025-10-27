@@ -5,7 +5,9 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block, BulletedListItemBlock, BulletedListItemData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.bulleted_list import BulletedListRenderer
@@ -15,7 +17,9 @@ def _create_bulleted_list_data(rich_text: list[RichText]) -> BulletedListItemDat
     return BulletedListItemData(rich_text=rich_text)
 
 
-def _create_bulleted_list_block(list_data: BulletedListItemData | None) -> BulletedListItemBlock:
+def _create_bulleted_list_block(
+    list_data: BulletedListItemData | None,
+) -> BulletedListItemBlock:
     mock_obj = Mock(spec=Block)
     bulleted_list_item_block = cast(BulletedListItemBlock, mock_obj)
     bulleted_list_item_block.type = BlockType.BULLETED_LIST_ITEM
@@ -24,8 +28,12 @@ def _create_bulleted_list_block(list_data: BulletedListItemData | None) -> Bulle
 
 
 @pytest.fixture
-def bulleted_list_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> BulletedListRenderer:
-    return BulletedListRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
+def bulleted_list_renderer(
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> BulletedListRenderer:
+    return BulletedListRenderer(
+        rich_text_markdown_converter=mock_rich_text_markdown_converter
+    )
 
 
 @pytest.mark.asyncio
@@ -53,7 +61,9 @@ async def test_bulleted_list_with_text_should_render_markdown_list(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("List item text")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="List item text")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="List item text"
+    )
 
     list_data = _create_bulleted_list_data(rich_text)
     block = _create_bulleted_list_block(list_data)
@@ -101,7 +111,9 @@ async def test_bulleted_list_with_indent_level_should_indent_output(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Indented item")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Indented item")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Indented item"
+    )
 
     list_data = _create_bulleted_list_data(rich_text)
     block = _create_bulleted_list_block(list_data)
@@ -121,12 +133,16 @@ async def test_bulleted_list_with_children_should_render_children_with_indent(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Parent item")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Parent item")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Parent item"
+    )
 
     list_data = _create_bulleted_list_data(rich_text)
     block = _create_bulleted_list_block(list_data)
     render_context.block = block
-    render_context.render_children_with_additional_indent = AsyncMock(return_value="  Child content")
+    render_context.render_children_with_additional_indent = AsyncMock(
+        return_value="  Child content"
+    )
 
     await bulleted_list_renderer._process(render_context)
 
@@ -141,7 +157,9 @@ async def test_convert_bulleted_list_with_valid_data_should_return_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Test content")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Test content")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Test content"
+    )
 
     list_data = _create_bulleted_list_data(rich_text)
     block = _create_bulleted_list_block(list_data)
@@ -171,7 +189,9 @@ async def test_bulleted_list_with_nested_bulleted_list_child_should_indent_corre
     parent_rich_text = [RichText.from_plain_text("Parent item")]
     child_rich_text = [RichText.from_plain_text("Child item")]
 
-    child_block = _create_bulleted_list_block(_create_bulleted_list_data(child_rich_text))
+    child_block = _create_bulleted_list_block(
+        _create_bulleted_list_data(child_rich_text)
+    )
 
     parent_data = _create_bulleted_list_data(parent_rich_text)
     parent_block = _create_bulleted_list_block(parent_data)
@@ -185,14 +205,18 @@ async def test_bulleted_list_with_nested_bulleted_list_child_should_indent_corre
             return "Child item"
         return ""
 
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(side_effect=mock_converter_side_effect)
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        side_effect=mock_converter_side_effect
+    )
 
     async def render_children_mock(indent_increase):
         # Simulate rendering the child with increased indent
         return "  - Child item"
 
     render_context.block = parent_block
-    render_context.render_children_with_additional_indent = AsyncMock(side_effect=render_children_mock)
+    render_context.render_children_with_additional_indent = AsyncMock(
+        side_effect=render_children_mock
+    )
 
     await bulleted_list_renderer._process(render_context)
 

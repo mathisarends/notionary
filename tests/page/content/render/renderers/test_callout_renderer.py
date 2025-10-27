@@ -5,7 +5,9 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block, CalloutBlock, CalloutData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.callout import CalloutRenderer
@@ -16,7 +18,9 @@ def _create_emoji_icon(emoji: str) -> EmojiIcon:
     return EmojiIcon(emoji=emoji)
 
 
-def _create_callout_data(rich_text: list[RichText], icon: EmojiIcon | None = None) -> CalloutData:
+def _create_callout_data(
+    rich_text: list[RichText], icon: EmojiIcon | None = None
+) -> CalloutData:
     return CalloutData(rich_text=rich_text, icon=icon)
 
 
@@ -29,19 +33,27 @@ def _create_callout_block(callout_data: CalloutData | None) -> CalloutBlock:
 
 
 @pytest.fixture
-def callout_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> CalloutRenderer:
-    return CalloutRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
+def callout_renderer(
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> CalloutRenderer:
+    return CalloutRenderer(
+        rich_text_markdown_converter=mock_rich_text_markdown_converter
+    )
 
 
 @pytest.mark.asyncio
-async def test_callout_block_should_be_handled(callout_renderer: CalloutRenderer, mock_block: Block) -> None:
+async def test_callout_block_should_be_handled(
+    callout_renderer: CalloutRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.CALLOUT
 
     assert callout_renderer._can_handle(mock_block)
 
 
 @pytest.mark.asyncio
-async def test_non_callout_block_should_not_be_handled(callout_renderer: CalloutRenderer, mock_block: Block) -> None:
+async def test_non_callout_block_should_not_be_handled(
+    callout_renderer: CalloutRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.PARAGRAPH
 
     assert not callout_renderer._can_handle(mock_block)
@@ -54,7 +66,9 @@ async def test_callout_with_text_should_render_markdown_callout(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Important note")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Important note")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Important note"
+    )
 
     callout_data = _create_callout_data(rich_text)
     block = _create_callout_block(callout_data)
@@ -74,7 +88,9 @@ async def test_callout_with_emoji_should_include_emoji_in_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Warning message")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Warning message")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Warning message"
+    )
     emoji_icon = _create_emoji_icon("⚠️")
 
     callout_data = _create_callout_data(rich_text, emoji_icon)
@@ -124,7 +140,9 @@ async def test_callout_with_children_should_render_children(
 ) -> None:
     # Callout is now a single-line block, so it should NOT render children
     rich_text = [RichText.from_plain_text("Parent content")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Parent content")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Parent content"
+    )
 
     callout_data = _create_callout_data(rich_text)
     block = _create_callout_block(callout_data)
@@ -171,7 +189,9 @@ async def test_extract_callout_content_with_valid_data_should_return_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Test content")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Test content")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Test content"
+    )
 
     callout_data = _create_callout_data(rich_text)
     block = _create_callout_block(callout_data)

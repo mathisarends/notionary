@@ -140,7 +140,9 @@ class RichText(BaseModel):
     def mention_user(cls, user_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(type=MentionType.USER, user=MentionUserRef(id=user_id)),
+            mention=MentionObject(
+                type=MentionType.USER, user=MentionUserRef(id=user_id)
+            ),
             annotations=TextAnnotations(),
         )
 
@@ -148,7 +150,9 @@ class RichText(BaseModel):
     def mention_page(cls, page_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(type=MentionType.PAGE, page=MentionPageRef(id=page_id)),
+            mention=MentionObject(
+                type=MentionType.PAGE, page=MentionPageRef(id=page_id)
+            ),
             annotations=TextAnnotations(),
         )
 
@@ -156,7 +160,9 @@ class RichText(BaseModel):
     def mention_database(cls, database_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(type=MentionType.DATABASE, database=MentionDatabaseRef(id=database_id)),
+            mention=MentionObject(
+                type=MentionType.DATABASE, database=MentionDatabaseRef(id=database_id)
+            ),
             annotations=TextAnnotations(),
         )
 
@@ -164,7 +170,10 @@ class RichText(BaseModel):
     def mention_data_source(cls, data_source_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(type=MentionType.DATASOURCE, data_source=MentionDataSourceRef(id=data_source_id)),
+            mention=MentionObject(
+                type=MentionType.DATASOURCE,
+                data_source=MentionDataSourceRef(id=data_source_id),
+            ),
             annotations=TextAnnotations(),
         )
 

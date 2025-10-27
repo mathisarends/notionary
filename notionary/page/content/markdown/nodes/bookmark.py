@@ -1,8 +1,10 @@
 from typing import override
 
 from notionary.page.content.markdown.nodes.base import MarkdownNode
-from notionary.page.content.markdown.nodes.mixins.caption import CaptionMarkdownNodeMixin
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.markdown.nodes.mixins.caption import (
+    CaptionMarkdownNodeMixin,
+)
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class BookmarkMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
@@ -11,7 +13,7 @@ class BookmarkMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
         url: str,
         title: str | None = None,
         caption: str | None = None,
-        syntax_registry: SyntaxRegistry | None = None,
+        syntax_registry: SyntaxDefinitionRegistry | None = None,
     ) -> None:
         super().__init__(syntax_registry=syntax_registry)
         self.url = url

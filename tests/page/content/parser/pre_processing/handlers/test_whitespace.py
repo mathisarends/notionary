@@ -2,7 +2,9 @@ from textwrap import dedent
 
 import pytest
 
-from notionary.page.content.parser.pre_processsing.handlers.whitespace import WhitespacePreProcessor
+from notionary.page.content.parser.pre_processsing.handlers.whitespace import (
+    WhitespacePreProcessor,
+)
 
 
 @pytest.fixture
@@ -61,7 +63,10 @@ def test_text_with_common_indentation_removes_it(
 
 
 def test_code_block_preserves_relative_indentation(
-    processor: WhitespacePreProcessor, code_start_delimiter: str, code_end_delimiter: str, indent: str
+    processor: WhitespacePreProcessor,
+    code_start_delimiter: str,
+    code_end_delimiter: str,
+    indent: str,
 ) -> None:
     markdown = dedent(
         f"""
@@ -89,7 +94,10 @@ def test_code_block_preserves_relative_indentation(
 
 
 def test_code_block_with_different_indentation_levels(
-    processor: WhitespacePreProcessor, code_start_delimiter: str, code_end_delimiter: str, indent: str
+    processor: WhitespacePreProcessor,
+    code_start_delimiter: str,
+    code_end_delimiter: str,
+    indent: str,
 ) -> None:
     markdown = dedent(
         f"""
@@ -115,7 +123,10 @@ def test_code_block_with_different_indentation_levels(
 
 
 def test_code_block_with_zero_indentation_preserves_content(
-    processor: WhitespacePreProcessor, code_start_delimiter: str, code_end_delimiter: str, indent: str
+    processor: WhitespacePreProcessor,
+    code_start_delimiter: str,
+    code_end_delimiter: str,
+    indent: str,
 ) -> None:
     markdown = dedent(
         f"""
@@ -139,7 +150,10 @@ def test_code_block_with_zero_indentation_preserves_content(
 
 
 def test_multiple_code_blocks_processed_independently(
-    processor: WhitespacePreProcessor, code_start_delimiter: str, code_end_delimiter: str, indent: str
+    processor: WhitespacePreProcessor,
+    code_start_delimiter: str,
+    code_end_delimiter: str,
+    indent: str,
 ) -> None:
     markdown = dedent(
         f"""
@@ -175,7 +189,10 @@ def test_multiple_code_blocks_processed_independently(
 
 
 def test_code_block_without_language(
-    processor: WhitespacePreProcessor, code_start_delimiter: str, code_end_delimiter: str, indent: str
+    processor: WhitespacePreProcessor,
+    code_start_delimiter: str,
+    code_end_delimiter: str,
+    indent: str,
 ) -> None:
     markdown = dedent(
         f"""
@@ -199,7 +216,10 @@ def test_code_block_without_language(
 
 
 def test_empty_lines_in_code_block_preserved(
-    processor: WhitespacePreProcessor, code_start_delimiter: str, code_end_delimiter: str, indent: str
+    processor: WhitespacePreProcessor,
+    code_start_delimiter: str,
+    code_end_delimiter: str,
+    indent: str,
 ) -> None:
     markdown = dedent(
         f"""
@@ -225,7 +245,9 @@ def test_empty_lines_in_code_block_preserved(
 
 
 def test_code_block_with_no_content(
-    processor: WhitespacePreProcessor, code_start_delimiter: str, code_end_delimiter: str
+    processor: WhitespacePreProcessor,
+    code_start_delimiter: str,
+    code_end_delimiter: str,
 ) -> None:
     markdown = dedent(
         f"""
@@ -308,7 +330,9 @@ def test_text_with_consistent_indentation_gets_normalized(
     assert result == expected
 
 
-def test_preserves_indentation_in_lists_with_no_base_indent(processor: WhitespacePreProcessor, indent: str) -> None:
+def test_preserves_indentation_in_lists_with_no_base_indent(
+    processor: WhitespacePreProcessor, indent: str
+) -> None:
     markdown = dedent(
         f"""
         - Item 1
@@ -332,7 +356,9 @@ def test_preserves_indentation_in_lists_with_no_base_indent(processor: Whitespac
     assert result == expected
 
 
-def test_only_empty_lines_returns_empty_strings(processor: WhitespacePreProcessor) -> None:
+def test_only_empty_lines_returns_empty_strings(
+    processor: WhitespacePreProcessor,
+) -> None:
     markdown = """
 
 
@@ -343,7 +369,9 @@ def test_only_empty_lines_returns_empty_strings(processor: WhitespacePreProcesso
     assert result == "\n\n\n\n"
 
 
-def test_mixed_tabs_and_spaces_counted_correctly(processor: WhitespacePreProcessor) -> None:
+def test_mixed_tabs_and_spaces_counted_correctly(
+    processor: WhitespacePreProcessor,
+) -> None:
     markdown = "  Line with spaces\n\tLine with tab\nNo indent"
     result = processor.process(markdown)
     expected = "  Line with spaces\n\tLine with tab\nNo indent"
@@ -352,7 +380,9 @@ def test_mixed_tabs_and_spaces_counted_correctly(processor: WhitespacePreProcess
 
 
 def test_code_fence_with_indentation_is_detected(
-    processor: WhitespacePreProcessor, code_start_delimiter: str, code_end_delimiter: str
+    processor: WhitespacePreProcessor,
+    code_start_delimiter: str,
+    code_end_delimiter: str,
 ) -> None:
     markdown = dedent(
         f"""

@@ -5,8 +5,16 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, TableBlock, TableData, TableRowBlock, TableRowData
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
+from notionary.blocks.schemas import (
+    Block,
+    TableBlock,
+    TableData,
+    TableRowBlock,
+    TableRowData,
+)
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.table import TableRenderer
 
@@ -46,19 +54,25 @@ def _create_table_block(
 
 
 @pytest.fixture
-def table_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> TableRenderer:
+def table_renderer(
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> TableRenderer:
     return TableRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
 
 
 @pytest.mark.asyncio
-async def test_table_block_should_be_handled(table_renderer: TableRenderer, mock_block: Block) -> None:
+async def test_table_block_should_be_handled(
+    table_renderer: TableRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.TABLE
 
     assert table_renderer._can_handle(mock_block)
 
 
 @pytest.mark.asyncio
-async def test_non_table_block_should_not_be_handled(table_renderer: TableRenderer, mock_block: Block) -> None:
+async def test_non_table_block_should_not_be_handled(
+    table_renderer: TableRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.PARAGRAPH
 
     assert not table_renderer._can_handle(mock_block)
@@ -76,7 +90,9 @@ async def test_table_with_simple_data_should_render_markdown_table(
             return rich_text[0].plain_text
         return ""
 
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(side_effect=mock_to_markdown)
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        side_effect=mock_to_markdown
+    )
 
     # Create table with 2x2 cells
     row1_cells = [
@@ -144,7 +160,9 @@ async def test_table_with_indentation_should_indent_output(
             return rich_text[0].plain_text
         return ""
 
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(side_effect=mock_to_markdown)
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        side_effect=mock_to_markdown
+    )
 
     row_cells = [[RichText.from_plain_text("Cell")]]
     row = _create_table_row_block(row_cells)
@@ -171,8 +189,12 @@ async def test_table_with_children_blocks_should_render_children_with_indent(
             return rich_text[0].plain_text
         return ""
 
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(side_effect=mock_to_markdown)
-    render_context.render_children_with_additional_indent = AsyncMock(return_value="    Child content")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        side_effect=mock_to_markdown
+    )
+    render_context.render_children_with_additional_indent = AsyncMock(
+        return_value="    Child content"
+    )
 
     row_cells = [[RichText.from_plain_text("Cell")]]
     row = _create_table_row_block(row_cells)
@@ -308,7 +330,9 @@ async def test_extract_row_cells_should_convert_cells_to_markdown(
             return rich_text[0].plain_text
         return ""
 
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(side_effect=mock_to_markdown)
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        side_effect=mock_to_markdown
+    )
 
     cells = [
         [RichText.from_plain_text("Cell 1")],

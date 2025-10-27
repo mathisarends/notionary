@@ -44,7 +44,9 @@ class PagePropertyHttpClient(NotionHttpClient):
         property_type: type[PagePropertyT],
         current_property: PagePropertyT | None = None,
     ) -> NotionPageDto:
-        updated_property = self._create_updated_property(property_type, current_property, value)
+        updated_property = self._create_updated_property(
+            property_type, current_property, value
+        )
 
         properties = {property_name: updated_property}
         update_dto = PgePropertiesUpdateDto(properties=properties)
@@ -54,40 +56,64 @@ class PagePropertyHttpClient(NotionHttpClient):
     async def patch_title(self, property_name: str, title: str) -> NotionPageDto:
         return await self._patch_property(property_name, title, PageTitleProperty)
 
-    async def patch_rich_text_property(self, property_name: str, text: str) -> NotionPageDto:
+    async def patch_rich_text_property(
+        self, property_name: str, text: str
+    ) -> NotionPageDto:
         return await self._patch_property(property_name, text, PageRichTextProperty)
 
     async def patch_url_property(self, property_name: str, url: str) -> NotionPageDto:
         return await self._patch_property(property_name, url, PageURLProperty)
 
-    async def patch_email_property(self, property_name: str, email: str) -> NotionPageDto:
+    async def patch_email_property(
+        self, property_name: str, email: str
+    ) -> NotionPageDto:
         return await self._patch_property(property_name, email, PageEmailProperty)
 
-    async def patch_phone_property(self, property_name: str, phone: str) -> NotionPageDto:
+    async def patch_phone_property(
+        self, property_name: str, phone: str
+    ) -> NotionPageDto:
         return await self._patch_property(property_name, phone, PagePhoneNumberProperty)
 
-    async def patch_number_property(self, property_name: str, number: int | float) -> NotionPageDto:
+    async def patch_number_property(
+        self, property_name: str, number: int | float
+    ) -> NotionPageDto:
         return await self._patch_property(property_name, number, PageNumberProperty)
 
-    async def patch_checkbox_property(self, property_name: str, checked: bool) -> NotionPageDto:
+    async def patch_checkbox_property(
+        self, property_name: str, checked: bool
+    ) -> NotionPageDto:
         return await self._patch_property(property_name, checked, PageCheckboxProperty)
 
-    async def patch_select_property(self, property_name: str, value: str) -> NotionPageDto:
+    async def patch_select_property(
+        self, property_name: str, value: str
+    ) -> NotionPageDto:
         return await self._patch_property(property_name, value, PageSelectProperty)
 
-    async def patch_multi_select_property(self, property_name: str, values: list[str]) -> NotionPageDto:
-        return await self._patch_property(property_name, values, PageMultiSelectProperty)
+    async def patch_multi_select_property(
+        self, property_name: str, values: list[str]
+    ) -> NotionPageDto:
+        return await self._patch_property(
+            property_name, values, PageMultiSelectProperty
+        )
 
-    async def patch_date_property(self, property_name: str, date_value: str | dict) -> NotionPageDto:
+    async def patch_date_property(
+        self, property_name: str, date_value: str | dict
+    ) -> NotionPageDto:
         return await self._patch_property(property_name, date_value, PageDateProperty)
 
-    async def patch_status_property(self, property_name: str, status: str) -> NotionPageDto:
+    async def patch_status_property(
+        self, property_name: str, status: str
+    ) -> NotionPageDto:
         return await self._patch_property(property_name, status, PageStatusProperty)
 
-    async def patch_relation_property(self, property_name: str, relation_ids: str | list[str]) -> NotionPageDto:
+    async def patch_relation_property(
+        self, property_name: str, relation_ids: str | list[str]
+    ) -> NotionPageDto:
         if isinstance(relation_ids, str):
             relation_ids = [relation_ids]
-        return await self._patch_property(property_name, relation_ids, PageRelationProperty)
+        return await self._patch_property(
+            property_name, relation_ids, PageRelationProperty
+        )
 
     # TODO: Fix this shit here
     def _create_updated_property(
@@ -126,8 +152,12 @@ class PagePropertyHttpClient(NotionHttpClient):
             select_option = SelectOption(name=str(value))
             return PageSelectProperty(id=property_id, select=select_option)
         elif property_type == PageMultiSelectProperty:
-            multi_select_options = [SelectOption(id="", name=str(item)) for item in value]
-            return PageMultiSelectProperty(id=property_id, multi_select=multi_select_options)
+            multi_select_options = [
+                SelectOption(id="", name=str(item)) for item in value
+            ]
+            return PageMultiSelectProperty(
+                id=property_id, multi_select=multi_select_options
+            )
         elif property_type == PageDateProperty:
             if isinstance(value, dict) and "start" in value:
                 date_value = DateValue(**value)

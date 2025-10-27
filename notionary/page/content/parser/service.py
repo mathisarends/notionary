@@ -11,7 +11,10 @@ from notionary.utils.mixins.logging import LoggingMixin
 
 class MarkdownToNotionConverter(LoggingMixin):
     def __init__(
-        self, line_parser: LineParser, pre_processor: MarkdownPreProcessor, post_processor: BlockPostProcessor
+        self,
+        line_parser: LineParser,
+        pre_processor: MarkdownPreProcessor,
+        post_processor: BlockPostProcessor,
     ) -> None:
         self._line_parser = line_parser
         self._pre_processor = pre_processor

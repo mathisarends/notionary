@@ -1,20 +1,24 @@
 from typing import override
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block, BlockType
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class CalloutRenderer(BlockRenderer):
     def __init__(
         self,
-        syntax_registry: SyntaxRegistry | None = None,
+        syntax_registry: SyntaxDefinitionRegistry | None = None,
         rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
     ) -> None:
         super().__init__(syntax_registry=syntax_registry)
-        self._rich_text_markdown_converter = rich_text_markdown_converter or RichTextToMarkdownConverter()
+        self._rich_text_markdown_converter = (
+            rich_text_markdown_converter or RichTextToMarkdownConverter()
+        )
 
     @override
     def _can_handle(self, block: Block) -> bool:
@@ -30,9 +34,15 @@ class CalloutRenderer(BlockRenderer):
 
         icon = await self._extract_callout_icon(context.block)
 
-        callout_start_delimiter = self._syntax_registry.get_callout_syntax().start_delimiter
+        callout_start_delimiter = (
+            self._syntax_registry.get_callout_syntax().start_delimiter
+        )
 
-        result = f'{callout_start_delimiter}({content} "{icon}")' if icon else f"{callout_start_delimiter}({content})"
+        result = (
+            f'{callout_start_delimiter}({content} "{icon}")'
+            if icon
+            else f"{callout_start_delimiter}({content})"
+        )
 
         if context.indent_level > 0:
             result = context.indent_text(result)
@@ -47,4 +57,6 @@ class CalloutRenderer(BlockRenderer):
     async def _extract_callout_content(self, block: Block) -> str:
         if not block.callout or not block.callout.rich_text:
             return ""
-        return await self._rich_text_markdown_converter.to_markdown(block.callout.rich_text)
+        return await self._rich_text_markdown_converter.to_markdown(
+            block.callout.rich_text
+        )

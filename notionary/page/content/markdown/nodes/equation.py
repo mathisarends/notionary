@@ -1,11 +1,13 @@
 from typing import override
 
 from notionary.page.content.markdown.nodes.base import MarkdownNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class EquationMarkdownNode(MarkdownNode):
-    def __init__(self, expression: str, syntax_registry: SyntaxRegistry | None = None) -> None:
+    def __init__(
+        self, expression: str, syntax_registry: SyntaxDefinitionRegistry | None = None
+    ) -> None:
         super().__init__(syntax_registry=syntax_registry)
         self.expression = expression
 

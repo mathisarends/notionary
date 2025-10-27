@@ -60,5 +60,7 @@ def _create_extension_validator(filename: str) -> FileExtensionValidator:
     return FileExtensionValidator(filename=filename)
 
 
-def _create_size_validator(filename: str, file_size_bytes: int) -> FileUploadLimitValidator:
+def _create_size_validator(
+    filename: str, file_size_bytes: int
+) -> FileUploadLimitValidator:
     return FileUploadLimitValidator(filename=filename, file_size_bytes=file_size_bytes)

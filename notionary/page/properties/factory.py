@@ -7,12 +7,16 @@ from notionary.shared.models.parent import DataSourceParent, ParentType
 
 
 class PagePropertyHandlerFactory:
-    def create_from_page_response(self, page_response: NotionPageDto) -> PagePropertyHandler:
+    def create_from_page_response(
+        self, page_response: NotionPageDto
+    ) -> PagePropertyHandler:
         return PagePropertyHandler(
             properties=page_response.properties,
             parent_type=page_response.parent.type,
             page_url=page_response.url,
-            page_property_http_client=self._create_http_client(page_id=page_response.id),
+            page_property_http_client=self._create_http_client(
+                page_id=page_response.id
+            ),
             parent_data_source=self._extract_parent_data_source_id(page_response),
         )
 

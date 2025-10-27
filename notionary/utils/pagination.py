@@ -24,7 +24,9 @@ async def _fetch_data(
         request_params = _build_request_params(kwargs, next_cursor)
         response = await api_call(**request_params)
 
-        limited_results = _apply_result_limit(response.results, total_results_limit, total_fetched)
+        limited_results = _apply_result_limit(
+            response.results, total_results_limit, total_fetched
+        )
         total_fetched += len(limited_results)
 
         yield _create_limited_response(response, limited_results, api_page_size)
@@ -52,7 +54,9 @@ def _build_request_params(
     return params
 
 
-def _apply_result_limit(results: list[Any], total_limit: int | None, total_fetched: int) -> list[Any]:
+def _apply_result_limit(
+    results: list[Any], total_limit: int | None, total_fetched: int
+) -> list[Any]:
     if total_limit is None:
         return results
 
@@ -74,7 +78,11 @@ def _create_limited_response(
     results_were_limited_by_client = len(limited_results) < len(original.results)
     api_returned_full_page = len(original.results) == api_page_size
 
-    has_more_after_limit = original.has_more and not results_were_limited_by_client and api_returned_full_page
+    has_more_after_limit = (
+        original.has_more
+        and not results_were_limited_by_client
+        and api_returned_full_page
+    )
 
     return PaginatedResponse(
         results=limited_results,
@@ -89,7 +97,9 @@ async def paginate_notion_api(
     **kwargs,
 ) -> list[Any]:
     all_results = []
-    async for page in _fetch_data(api_call, total_results_limit=total_results_limit, **kwargs):
+    async for page in _fetch_data(
+        api_call, total_results_limit=total_results_limit, **kwargs
+    ):
         all_results.extend(page.results)
     return all_results
 

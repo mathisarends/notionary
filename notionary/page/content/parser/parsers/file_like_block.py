@@ -10,8 +10,8 @@ from notionary.blocks.schemas import (
 from notionary.exceptions.file_upload import UploadFailedError, UploadTimeoutError
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
-from notionary.page.content.syntax import SyntaxRegistry
-from notionary.page.content.syntax.models import SyntaxDefinition
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition.models import SyntaxDefinition
 from notionary.shared.models.file import ExternalFileData, FileUploadedFileData
 from notionary.utils.mixins.logging import LoggingMixin
 
@@ -19,13 +19,19 @@ _TBlock = TypeVar("_TBlock")
 
 
 class FileLikeBlockParser(LineParser, LoggingMixin, Generic[_TBlock]):
-    def __init__(self, syntax_registry: SyntaxRegistry, file_upload_service: NotionFileUpload | None = None) -> None:
+    def __init__(
+        self,
+        syntax_registry: SyntaxDefinitionRegistry,
+        file_upload_service: NotionFileUpload | None = None,
+    ) -> None:
         super().__init__(syntax_registry)
         self._syntax = self._get_syntax(syntax_registry)
         self._file_upload_service = file_upload_service or NotionFileUpload()
 
     @abstractmethod
-    def _get_syntax(self, syntax_registry: SyntaxRegistry) -> SyntaxDefinition:
+    def _get_syntax(
+        self, syntax_registry: SyntaxDefinitionRegistry
+    ) -> SyntaxDefinition:
         pass
 
     @abstractmethod
@@ -46,7 +52,9 @@ class FileLikeBlockParser(LineParser, LoggingMixin, Generic[_TBlock]):
 
         try:
             if self._is_external_url(path_or_url):
-                file_data = ExternalFileWithCaption(external=ExternalFileData(url=path_or_url))
+                file_data = ExternalFileWithCaption(
+                    external=ExternalFileData(url=path_or_url)
+                )
             else:
                 file_data = await self._upload_local_file(path_or_url)
 
@@ -56,15 +64,27 @@ class FileLikeBlockParser(LineParser, LoggingMixin, Generic[_TBlock]):
         except FileNotFoundError:
             self.logger.warning("File not found: '%s' - skipping block", path_or_url)
         except PermissionError:
-            self.logger.warning("No permission to read file: '%s' - skipping block", path_or_url)
+            self.logger.warning(
+                "No permission to read file: '%s' - skipping block", path_or_url
+            )
         except IsADirectoryError:
-            self.logger.warning("Path is a directory, not a file: '%s' - skipping block", path_or_url)
+            self.logger.warning(
+                "Path is a directory, not a file: '%s' - skipping block", path_or_url
+            )
         except (UploadFailedError, UploadTimeoutError) as e:
-            self.logger.warning("Upload failed for '%s': %s - skipping block", path_or_url, e)
+            self.logger.warning(
+                "Upload failed for '%s': %s - skipping block", path_or_url, e
+            )
         except OSError as e:
-            self.logger.warning("IO error reading file '%s': %s - skipping block", path_or_url, e)
+            self.logger.warning(
+                "IO error reading file '%s': %s - skipping block", path_or_url, e
+            )
         except Exception as e:
-            self.logger.warning("Unexpected error processing file '%s': %s - skipping block", path_or_url, e)
+            self.logger.warning(
+                "Unexpected error processing file '%s': %s - skipping block",
+                path_or_url,
+                e,
+            )
 
     def _extract_path_or_url(self, line: str) -> str | None:
         match = self._syntax.regex_pattern.search(line)

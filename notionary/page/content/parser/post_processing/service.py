@@ -9,7 +9,9 @@ class BlockPostProcessor:
     def register(self, processor: PostProcessor) -> None:
         self._processors.append(processor)
 
-    def process(self, created_blocks: list[BlockCreatePayload]) -> list[BlockCreatePayload]:
+    def process(
+        self, created_blocks: list[BlockCreatePayload]
+    ) -> list[BlockCreatePayload]:
         result = created_blocks
         for processor in self._processors:
             result = processor.process(created_blocks)

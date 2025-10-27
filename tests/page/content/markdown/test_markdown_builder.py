@@ -9,7 +9,13 @@ def builder() -> MarkdownBuilder:
 
 
 def test_simple_document(builder: MarkdownBuilder):
-    result = builder.h1("Welcome").paragraph("This is a test document.").space().divider().build()
+    result = (
+        builder.h1("Welcome")
+        .paragraph("This is a test document.")
+        .space()
+        .divider()
+        .build()
+    )
 
     assert "# Welcome" in result
     assert "This is a test document." in result
@@ -17,7 +23,10 @@ def test_simple_document(builder: MarkdownBuilder):
 
 def test_heading_with_nested_content(builder: MarkdownBuilder):
     result = builder.h2(
-        "Features", lambda b: b.paragraph("Key features:").bulleted_list(["Fast", "Simple", "Reliable"])
+        "Features",
+        lambda b: b.paragraph("Key features:").bulleted_list(
+            ["Fast", "Simple", "Reliable"]
+        ),
     ).build()
 
     assert "## Features" in result
@@ -41,7 +50,9 @@ def test_columns_with_content(builder: MarkdownBuilder):
 
 def test_columns_with_width_ratios(builder: MarkdownBuilder):
     result = builder.columns(
-        lambda col: col.paragraph("Sidebar"), lambda col: col.paragraph("Main content"), width_ratios=[0.3, 0.7]
+        lambda col: col.paragraph("Sidebar"),
+        lambda col: col.paragraph("Main content"),
+        width_ratios=[0.3, 0.7],
     ).build()
 
     assert "::: columns" in result
@@ -69,7 +80,9 @@ def test_callout_with_nested_content(builder: MarkdownBuilder):
     result = builder.callout_with_children(
         "Important note",
         emoji="⚠️",
-        builder_func=lambda b: b.paragraph("Please read carefully.").bulleted_list(["Point 1", "Point 2"]),
+        builder_func=lambda b: b.paragraph("Please read carefully.").bulleted_list(
+            ["Point 1", "Point 2"]
+        ),
     ).build()
 
     assert "[callout]" in result
@@ -82,7 +95,9 @@ def test_callout_with_nested_content(builder: MarkdownBuilder):
 def test_toggle_section(builder: MarkdownBuilder):
     result = builder.toggle(
         "Advanced Settings",
-        lambda b: b.h3("Configuration").paragraph("Details here").code("config = true", language="javascript"),
+        lambda b: b.h3("Configuration")
+        .paragraph("Details here")
+        .code("config = true", language="javascript"),
     ).build()
 
     assert "+++ Advanced Settings" in result
@@ -110,7 +125,8 @@ def test_simple_bulleted_list(builder: MarkdownBuilder):
 
 def test_quote_with_nested_content(builder: MarkdownBuilder):
     result = builder.quote(
-        "Life is what happens", lambda b: b.paragraph("— John Lennon").space().paragraph("From 1980 interview")
+        "Life is what happens",
+        lambda b: b.paragraph("— John Lennon").space().paragraph("From 1980 interview"),
     ).build()
 
     assert "> Life is what happens" in result
@@ -128,10 +144,14 @@ def test_simple_documentation_page(builder: MarkdownBuilder):
         .divider()
         .h2(
             "Getting Started",
-            lambda b: b.paragraph("Follow these steps:").numbered_list(["Install dependencies", "Run application"]),
+            lambda b: b.paragraph("Follow these steps:").numbered_list(
+                ["Install dependencies", "Run application"]
+            ),
         )
         .callout_with_children(
-            "Note", emoji="💡", builder_func=lambda b: b.paragraph("Make sure Python 3.9+ is installed")
+            "Note",
+            emoji="💡",
+            builder_func=lambda b: b.paragraph("Make sure Python 3.9+ is installed"),
         )
         .build()
     )
@@ -149,13 +169,15 @@ def test_todo_with_nested_tasks(builder: MarkdownBuilder):
     result = (
         builder.checked_todo(
             "Complete Phase 1",
-            lambda b: b.paragraph("Finished tasks:").bulleted_list(["Design", "Implementation", "Testing"]),
+            lambda b: b.paragraph("Finished tasks:").bulleted_list(
+                ["Design", "Implementation", "Testing"]
+            ),
         )
         .unchecked_todo("Start Phase 2")
         .build()
     )
 
-    assert "- Complete Phase 1" in result
+    assert "- [x] Complete Phase 1" in result
     assert "Finished tasks:" in result
     assert "- [ ] Start Phase 2" in result
 

@@ -4,14 +4,18 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.rich_text.name_id_resolver import (
     DatabaseNameIdResolver,
     DataSourceNameIdResolver,
     PageNameIdResolver,
     PersonNameIdResolver,
 )
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.factory import PageContentServiceFactory
 from notionary.page.content.parser.factory import ConverterChainFactory
@@ -78,17 +82,22 @@ def parser(
         file_upload_service=mock_file_upload,
     )
 
-    renderer_chain_factory = RendererChainFactory(rich_text_markdown_converter=rich_text_to_markdown_converter)
+    renderer_chain_factory = RendererChainFactory(
+        rich_text_markdown_converter=rich_text_to_markdown_converter
+    )
 
     factory = PageContentServiceFactory(
-        converter_chain_factory=converter_chain_factory, renderer_chain_factory=renderer_chain_factory
+        converter_chain_factory=converter_chain_factory,
+        renderer_chain_factory=renderer_chain_factory,
     )
 
     return factory._create_markdown_to_notion_converter()
 
 
 @pytest.mark.asyncio
-async def test_explicit_space_marker_creates_space_block(parser: MarkdownToNotionConverter):
+async def test_explicit_space_marker_creates_space_block(
+    parser: MarkdownToNotionConverter,
+):
     markdown = dedent("""
         First paragraph
 
@@ -107,7 +116,9 @@ async def test_explicit_space_marker_creates_space_block(parser: MarkdownToNotio
 
 
 @pytest.mark.asyncio
-async def test_single_empty_line_does_not_create_space_block(parser: MarkdownToNotionConverter):
+async def test_single_empty_line_does_not_create_space_block(
+    parser: MarkdownToNotionConverter,
+):
     markdown = dedent("""
         First paragraph
 
@@ -122,7 +133,9 @@ async def test_single_empty_line_does_not_create_space_block(parser: MarkdownToN
 
 
 @pytest.mark.asyncio
-async def test_two_consecutive_empty_lines_create_space_block(parser: MarkdownToNotionConverter):
+async def test_two_consecutive_empty_lines_create_space_block(
+    parser: MarkdownToNotionConverter,
+):
     markdown = dedent("""
         First paragraph
 
@@ -144,7 +157,9 @@ async def test_two_consecutive_empty_lines_create_space_block(parser: MarkdownTo
 
 
 @pytest.mark.asyncio
-async def test_three_consecutive_empty_lines_create_two_space_blocks(parser: MarkdownToNotionConverter):
+async def test_three_consecutive_empty_lines_create_two_space_blocks(
+    parser: MarkdownToNotionConverter,
+):
     markdown = dedent("""
         First paragraph
 
@@ -170,7 +185,9 @@ async def test_three_consecutive_empty_lines_create_two_space_blocks(parser: Mar
 
 
 @pytest.mark.asyncio
-async def test_multiple_space_blocks_with_mixed_syntax(parser: MarkdownToNotionConverter):
+async def test_multiple_space_blocks_with_mixed_syntax(
+    parser: MarkdownToNotionConverter,
+):
     markdown = dedent("""
         First paragraph
 
@@ -202,7 +219,9 @@ async def test_multiple_space_blocks_with_mixed_syntax(parser: MarkdownToNotionC
 
 
 @pytest.mark.asyncio
-async def test_empty_lines_at_start_create_space_block(parser: MarkdownToNotionConverter):
+async def test_empty_lines_at_start_create_space_block(
+    parser: MarkdownToNotionConverter,
+):
     markdown = dedent("""
 
 
@@ -221,7 +240,9 @@ async def test_empty_lines_at_start_create_space_block(parser: MarkdownToNotionC
 
 
 @pytest.mark.asyncio
-async def test_empty_lines_at_end_create_space_blocks(parser: MarkdownToNotionConverter):
+async def test_empty_lines_at_end_create_space_blocks(
+    parser: MarkdownToNotionConverter,
+):
     markdown = dedent("""
         First paragraph
 

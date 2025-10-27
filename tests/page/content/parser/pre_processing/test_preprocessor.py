@@ -1,6 +1,10 @@
-from notionary.page.content.parser.pre_processsing.handlers.column_syntax import ColumnSyntaxPreProcessor
+from notionary.page.content.parser.pre_processsing.handlers.column_syntax import (
+    ColumnSyntaxPreProcessor,
+)
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
-from notionary.page.content.parser.pre_processsing.handlers.whitespace import WhitespacePreProcessor
+from notionary.page.content.parser.pre_processsing.handlers.whitespace import (
+    WhitespacePreProcessor,
+)
 from notionary.page.content.parser.pre_processsing.service import MarkdownPreProcessor
 
 

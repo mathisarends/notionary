@@ -4,12 +4,14 @@ import pytest
 
 from notionary.blocks.schemas import CreateTableOfContentsBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
-from notionary.page.content.parser.parsers.table_of_contents import TableOfContentsParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.parser.parsers.table_of_contents import (
+    TableOfContentsParser,
+)
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def toc_parser(syntax_registry: SyntaxRegistry) -> TableOfContentsParser:
+def toc_parser(syntax_registry: SyntaxDefinitionRegistry) -> TableOfContentsParser:
     return TableOfContentsParser(syntax_registry=syntax_registry)
 
 

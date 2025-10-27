@@ -6,18 +6,20 @@ from notionary.blocks.schemas import BlockType, CreateAudioBlock
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.parser.context import BlockParsingContext
 from notionary.page.content.parser.parsers.audio import AudioParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 from notionary.shared.models.file import FileType
 
 
 @pytest.fixture
-def audio_parser(syntax_registry: SyntaxRegistry) -> AudioParser:
+def audio_parser(syntax_registry: SyntaxDefinitionRegistry) -> AudioParser:
     mock_file_upload = Mock(spec=NotionFileUpload)
-    return AudioParser(syntax_registry=syntax_registry, file_upload_service=mock_file_upload)
+    return AudioParser(
+        syntax_registry=syntax_registry, file_upload_service=mock_file_upload
+    )
 
 
 @pytest.fixture
-def make_audio_syntax(syntax_registry: SyntaxRegistry):
+def make_audio_syntax(syntax_registry: SyntaxDefinitionRegistry):
     syntax = syntax_registry.get_audio_syntax()
 
     def _make(url: str) -> str:
@@ -193,9 +195,7 @@ async def test_multiple_audio_patterns_should_use_first_match(
     context: BlockParsingContext,
     make_audio_syntax,
 ) -> None:
-    context.line = (
-        f"{make_audio_syntax('https://first.com/audio.mp3')} {make_audio_syntax('https://second.com/audio.mp3')}"
-    )
+    context.line = f"{make_audio_syntax('https://first.com/audio.mp3')} {make_audio_syntax('https://second.com/audio.mp3')}"
 
     await audio_parser._process(context)
 

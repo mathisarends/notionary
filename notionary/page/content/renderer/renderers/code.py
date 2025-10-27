@@ -2,7 +2,9 @@ from typing import override
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block
-from notionary.page.content.renderer.renderers.captioned_block import CaptionedBlockRenderer
+from notionary.page.content.renderer.renderers.captioned_block import (
+    CaptionedBlockRenderer,
+)
 
 
 class CodeRenderer(CaptionedBlockRenderer):
@@ -31,4 +33,6 @@ class CodeRenderer(CaptionedBlockRenderer):
     async def _extract_code_content(self, block: Block) -> str:
         if not block.code or not block.code.rich_text:
             return ""
-        return await self._rich_text_markdown_converter.to_markdown(block.code.rich_text)
+        return await self._rich_text_markdown_converter.to_markdown(
+            block.code.rich_text
+        )

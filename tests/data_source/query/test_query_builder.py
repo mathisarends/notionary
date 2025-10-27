@@ -381,7 +381,13 @@ def test_array_is_not_empty_filter(builder: DataSourceQueryBuilder) -> None:
 
 
 def test_multiple_conditions_with_and_where(builder: DataSourceQueryBuilder) -> None:
-    result = builder.where("Status").equals("Active").and_where("Price").greater_than(100).build()
+    result = (
+        builder.where("Status")
+        .equals("Active")
+        .and_where("Price")
+        .greater_than(100)
+        .build()
+    )
 
     assert result.filter is not None
     assert isinstance(result.filter, CompoundFilter)
@@ -438,7 +444,9 @@ def test_property_not_found_raises_exception(builder: DataSourceQueryBuilder) ->
     assert exc_info.value.property_name == "NonExistentProperty"
 
 
-def test_property_not_found_includes_suggestions(builder: DataSourceQueryBuilder) -> None:
+def test_property_not_found_includes_suggestions(
+    builder: DataSourceQueryBuilder,
+) -> None:
     with pytest.raises(DataSourcePropertyNotFound) as exc_info:
         status_property_with_typo = "Statu"
         builder.where(status_property_with_typo)
@@ -446,12 +454,16 @@ def test_property_not_found_includes_suggestions(builder: DataSourceQueryBuilder
     assert "Status" in exc_info.value.suggestions
 
 
-def test_filter_without_where_raises_value_error(builder: DataSourceQueryBuilder) -> None:
+def test_filter_without_where_raises_value_error(
+    builder: DataSourceQueryBuilder,
+) -> None:
     with pytest.raises(ValueError, match="No property selected"):
         builder.equals("test")
 
 
-def test_build_property_filter_validates_property_exists(builder: DataSourceQueryBuilder) -> None:
+def test_build_property_filter_validates_property_exists(
+    builder: DataSourceQueryBuilder,
+) -> None:
     builder._filters.append(
         FilterCondition(
             field="InvalidProperty",
@@ -470,7 +482,9 @@ def test_build_property_filter_validates_property_exists(builder: DataSourceQuer
 # ============================================================================
 
 
-def test_build_without_filters_returns_empty_params(builder: DataSourceQueryBuilder) -> None:
+def test_build_without_filters_returns_empty_params(
+    builder: DataSourceQueryBuilder,
+) -> None:
     result = builder.build()
 
     assert isinstance(result, DataSourceQueryParams)
@@ -519,8 +533,16 @@ def test_current_property_reset_after_filter(builder: DataSourceQueryBuilder) ->
     assert builder._current_property is None
 
 
-def test_can_chain_multiple_filters_with_property_reset(builder: DataSourceQueryBuilder) -> None:
-    result = builder.where("Status").equals("Active").and_where("Price").greater_than(100).build()
+def test_can_chain_multiple_filters_with_property_reset(
+    builder: DataSourceQueryBuilder,
+) -> None:
+    result = (
+        builder.where("Status")
+        .equals("Active")
+        .and_where("Price")
+        .greater_than(100)
+        .build()
+    )
 
     assert result.filter is not None
 
@@ -575,7 +597,9 @@ def test_order_by_created_time(builder: DataSourceQueryBuilder) -> None:
     assert result.sorts[0].direction == SortDirection.ASCENDING
 
 
-def test_order_by_created_time_default_descending(builder: DataSourceQueryBuilder) -> None:
+def test_order_by_created_time_default_descending(
+    builder: DataSourceQueryBuilder,
+) -> None:
     result = builder.order_by_created_time_descending().build()
 
     assert result.sorts is not None
@@ -653,18 +677,30 @@ def test_build_with_only_sorts_no_filter(builder: DataSourceQueryBuilder) -> Non
 
 
 def test_sort_serialization(builder: DataSourceQueryBuilder) -> None:
-    result = builder.order_by_property_name_descending("Price").order_by_created_time_descending().build()
+    result = (
+        builder.order_by_property_name_descending("Price")
+        .order_by_created_time_descending()
+        .build()
+    )
 
     serialized = result.model_dump()
 
     assert "sorts" in serialized
     assert len(serialized["sorts"]) == 2
     assert serialized["sorts"][0] == {"property": "Price", "direction": "descending"}
-    assert serialized["sorts"][1] == {"timestamp": "created_time", "direction": "descending"}
+    assert serialized["sorts"][1] == {
+        "timestamp": "created_time",
+        "direction": "descending",
+    }
 
 
 def test_filter_and_sort_serialization(builder: DataSourceQueryBuilder) -> None:
-    result = builder.where("Status").equals("Active").order_by_property_name_ascending("Price").build()
+    result = (
+        builder.where("Status")
+        .equals("Active")
+        .order_by_property_name_ascending("Price")
+        .build()
+    )
 
     serialized = result.model_dump()
 
@@ -692,7 +728,11 @@ def test_limit_with_filter(builder: DataSourceQueryBuilder) -> None:
 
 
 def test_limit_with_sort(builder: DataSourceQueryBuilder) -> None:
-    result = builder.order_by_property_name_descending("Price").total_results_limit(50).build()
+    result = (
+        builder.order_by_property_name_descending("Price")
+        .total_results_limit(50)
+        .build()
+    )
 
     assert result.sorts is not None
     assert result.total_results_limit == 50

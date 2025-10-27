@@ -5,30 +5,45 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, ExternalFileWithCaption, FileBlock, NotionHostedFileWithCaption
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
+from notionary.blocks.schemas import (
+    Block,
+    ExternalFileWithCaption,
+    FileBlock,
+    NotionHostedFileWithCaption,
+)
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.file import FileRenderer
 from notionary.shared.models.file import ExternalFileData, NotionHostedFileData
 
 
-def _create_file_data_with_external_url(url: str, name: str | None = None) -> ExternalFileWithCaption:
+def _create_file_data_with_external_url(
+    url: str, name: str | None = None
+) -> ExternalFileWithCaption:
     return ExternalFileWithCaption(external=ExternalFileData(url=url), name=name)
 
 
 def _create_file_data_with_notion_file(
     url: str, expiry_time: str, name: str | None = None
 ) -> NotionHostedFileWithCaption:
-    return NotionHostedFileWithCaption(file=NotionHostedFileData(url=url, expiry_time=expiry_time), name=name)
+    return NotionHostedFileWithCaption(
+        file=NotionHostedFileData(url=url, expiry_time=expiry_time), name=name
+    )
 
 
 def _create_file_data_with_caption(
     url: str, caption: list[RichText], name: str | None = None
 ) -> ExternalFileWithCaption:
-    return ExternalFileWithCaption(external=ExternalFileData(url=url), caption=caption, name=name)
+    return ExternalFileWithCaption(
+        external=ExternalFileData(url=url), caption=caption, name=name
+    )
 
 
-def _create_file_block(file_data: ExternalFileWithCaption | NotionHostedFileWithCaption | None) -> FileBlock:
+def _create_file_block(
+    file_data: ExternalFileWithCaption | NotionHostedFileWithCaption | None,
+) -> FileBlock:
     mock_obj = Mock(spec=Block)
     file_block = cast(FileBlock, mock_obj)
     file_block.type = BlockType.FILE
@@ -37,19 +52,25 @@ def _create_file_block(file_data: ExternalFileWithCaption | NotionHostedFileWith
 
 
 @pytest.fixture
-def file_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> FileRenderer:
+def file_renderer(
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> FileRenderer:
     return FileRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
 
 
 @pytest.mark.asyncio
-async def test_file_block_should_be_handled(file_renderer: FileRenderer, mock_block: Block) -> None:
+async def test_file_block_should_be_handled(
+    file_renderer: FileRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.FILE
 
     assert file_renderer._can_handle(mock_block)
 
 
 @pytest.mark.asyncio
-async def test_non_file_block_should_not_be_handled(file_renderer: FileRenderer, mock_block: Block) -> None:
+async def test_non_file_block_should_not_be_handled(
+    file_renderer: FileRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.PARAGRAPH
 
     assert not file_renderer._can_handle(mock_block)
@@ -60,7 +81,9 @@ async def test_file_with_external_url_and_name_should_render_markdown_link(
     file_renderer: FileRenderer,
     render_context: MarkdownRenderingContext,
 ) -> None:
-    file_data = _create_file_data_with_external_url("https://example.com/document.pdf", "document.pdf")
+    file_data = _create_file_data_with_external_url(
+        "https://example.com/document.pdf", "document.pdf"
+    )
     block = _create_file_block(file_data)
     render_context.block = block
 
@@ -88,7 +111,9 @@ async def test_file_with_notion_hosted_file_should_render_markdown_link(
     file_renderer: FileRenderer,
     render_context: MarkdownRenderingContext,
 ) -> None:
-    file_data = _create_file_data_with_notion_file("https://notion.so/file.zip", "2025-01-01", "archive.zip")
+    file_data = _create_file_data_with_notion_file(
+        "https://notion.so/file.zip", "2025-01-01", "archive.zip"
+    )
     block = _create_file_block(file_data)
     render_context.block = block
 
@@ -104,9 +129,13 @@ async def test_file_with_caption_should_include_caption_in_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     caption_rich_text = [RichText.from_plain_text("Important file")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Important file")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Important file"
+    )
 
-    file_data = _create_file_data_with_caption("https://example.com/file.zip", caption_rich_text, "data.zip")
+    file_data = _create_file_data_with_caption(
+        "https://example.com/file.zip", caption_rich_text, "data.zip"
+    )
     block = _create_file_block(file_data)
     render_context.block = block
 
@@ -147,7 +176,9 @@ async def test_file_with_missing_data_should_render_empty_string(
 async def test_extract_file_name_with_name_should_return_name(
     file_renderer: FileRenderer,
 ) -> None:
-    file_data = _create_file_data_with_external_url("https://example.com/file.zip", "document.zip")
+    file_data = _create_file_data_with_external_url(
+        "https://example.com/file.zip", "document.zip"
+    )
     block = _create_file_block(file_data)
 
     name = file_renderer._extract_file_name(block)

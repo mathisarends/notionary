@@ -5,13 +5,23 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
-from notionary.blocks.schemas import Block, Heading1Block, Heading2Block, Heading3Block, HeadingData
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
+from notionary.blocks.schemas import (
+    Block,
+    Heading1Block,
+    Heading2Block,
+    Heading3Block,
+    HeadingData,
+)
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.heading import HeadingRenderer
 
 
-def _create_heading_data(rich_text: list[RichText], is_toggleable: bool = False) -> HeadingData:
+def _create_heading_data(
+    rich_text: list[RichText], is_toggleable: bool = False
+) -> HeadingData:
     return HeadingData(rich_text=rich_text, is_toggleable=is_toggleable)
 
 
@@ -37,36 +47,54 @@ def _create_heading_block(
 
 
 @pytest.fixture
-def heading_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> HeadingRenderer:
-    return HeadingRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
+def heading_renderer(
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> HeadingRenderer:
+    return HeadingRenderer(
+        rich_text_markdown_converter=mock_rich_text_markdown_converter
+    )
 
 
 @pytest.mark.asyncio
-async def test_heading1_block_should_be_handled(heading_renderer: HeadingRenderer) -> None:
-    heading_data = _create_heading_data([RichText.from_plain_text("Heading 1")], is_toggleable=False)
+async def test_heading1_block_should_be_handled(
+    heading_renderer: HeadingRenderer,
+) -> None:
+    heading_data = _create_heading_data(
+        [RichText.from_plain_text("Heading 1")], is_toggleable=False
+    )
     block = _create_heading_block(BlockType.HEADING_1, heading_data)
 
     assert heading_renderer._can_handle(block)
 
 
 @pytest.mark.asyncio
-async def test_heading2_block_should_be_handled(heading_renderer: HeadingRenderer) -> None:
-    heading_data = _create_heading_data([RichText.from_plain_text("Heading 2")], is_toggleable=False)
+async def test_heading2_block_should_be_handled(
+    heading_renderer: HeadingRenderer,
+) -> None:
+    heading_data = _create_heading_data(
+        [RichText.from_plain_text("Heading 2")], is_toggleable=False
+    )
     block = _create_heading_block(BlockType.HEADING_2, heading_data)
 
     assert heading_renderer._can_handle(block)
 
 
 @pytest.mark.asyncio
-async def test_heading3_block_should_be_handled(heading_renderer: HeadingRenderer) -> None:
-    heading_data = _create_heading_data([RichText.from_plain_text("Heading 3")], is_toggleable=False)
+async def test_heading3_block_should_be_handled(
+    heading_renderer: HeadingRenderer,
+) -> None:
+    heading_data = _create_heading_data(
+        [RichText.from_plain_text("Heading 3")], is_toggleable=False
+    )
     block = _create_heading_block(BlockType.HEADING_3, heading_data)
 
     assert heading_renderer._can_handle(block)
 
 
 @pytest.mark.asyncio
-async def test_non_heading_block_should_not_be_handled(heading_renderer: HeadingRenderer, mock_block: Block) -> None:
+async def test_non_heading_block_should_not_be_handled(
+    heading_renderer: HeadingRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.PARAGRAPH
 
     assert not heading_renderer._can_handle(mock_block)
@@ -79,7 +107,9 @@ async def test_heading1_with_text_should_render_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Main Heading")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Main Heading")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Main Heading"
+    )
 
     heading_data = _create_heading_data(rich_text)
     block = _create_heading_block(BlockType.HEADING_1, heading_data)
@@ -115,7 +145,9 @@ async def test_heading3_with_text_should_render_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Sub-subheading")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Sub-subheading")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Sub-subheading"
+    )
 
     heading_data = _create_heading_data(rich_text)
     block = _create_heading_block(BlockType.HEADING_3, heading_data)
@@ -163,7 +195,9 @@ async def test_heading_with_indent_level_should_indent_output(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Indented Heading")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Indented Heading")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Indented Heading"
+    )
 
     heading_data = _create_heading_data(rich_text)
     block = _create_heading_block(BlockType.HEADING_1, heading_data)
@@ -180,7 +214,9 @@ async def test_heading_with_indent_level_should_indent_output(
 
 
 @pytest.mark.asyncio
-async def test_get_heading_level_for_heading1_should_return_1(heading_renderer: HeadingRenderer) -> None:
+async def test_get_heading_level_for_heading1_should_return_1(
+    heading_renderer: HeadingRenderer,
+) -> None:
     heading_data = _create_heading_data([RichText.from_plain_text("Test")])
     block = _create_heading_block(BlockType.HEADING_1, heading_data)
 
@@ -190,7 +226,9 @@ async def test_get_heading_level_for_heading1_should_return_1(heading_renderer: 
 
 
 @pytest.mark.asyncio
-async def test_get_heading_level_for_heading2_should_return_2(heading_renderer: HeadingRenderer) -> None:
+async def test_get_heading_level_for_heading2_should_return_2(
+    heading_renderer: HeadingRenderer,
+) -> None:
     heading_data = _create_heading_data([RichText.from_plain_text("Test")])
     block = _create_heading_block(BlockType.HEADING_2, heading_data)
 
@@ -200,7 +238,9 @@ async def test_get_heading_level_for_heading2_should_return_2(heading_renderer: 
 
 
 @pytest.mark.asyncio
-async def test_get_heading_level_for_heading3_should_return_3(heading_renderer: HeadingRenderer) -> None:
+async def test_get_heading_level_for_heading3_should_return_3(
+    heading_renderer: HeadingRenderer,
+) -> None:
     heading_data = _create_heading_data([RichText.from_plain_text("Test")])
     block = _create_heading_block(BlockType.HEADING_3, heading_data)
 
@@ -210,7 +250,9 @@ async def test_get_heading_level_for_heading3_should_return_3(heading_renderer: 
 
 
 @pytest.mark.asyncio
-async def test_get_heading_level_for_invalid_type_should_return_0(heading_renderer: HeadingRenderer) -> None:
+async def test_get_heading_level_for_invalid_type_should_return_0(
+    heading_renderer: HeadingRenderer,
+) -> None:
     block = Mock(spec=Block)
     block.type = BlockType.PARAGRAPH
 
@@ -225,7 +267,9 @@ async def test_get_heading_title_for_heading1_should_return_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Heading 1 Title")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Heading 1 Title")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Heading 1 Title"
+    )
 
     heading_data = _create_heading_data(rich_text)
     block = _create_heading_block(BlockType.HEADING_1, heading_data)
@@ -241,7 +285,9 @@ async def test_get_heading_title_for_heading2_should_return_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Heading 2 Title")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Heading 2 Title")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Heading 2 Title"
+    )
 
     heading_data = _create_heading_data(rich_text)
     block = _create_heading_block(BlockType.HEADING_2, heading_data)
@@ -257,7 +303,9 @@ async def test_get_heading_title_for_heading3_should_return_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Heading 3 Title")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Heading 3 Title")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Heading 3 Title"
+    )
 
     heading_data = _create_heading_data(rich_text)
     block = _create_heading_block(BlockType.HEADING_3, heading_data)
@@ -310,7 +358,9 @@ async def test_toggleable_heading_with_children_should_render_with_indentation(
     indent: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("Toggleable Heading")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Toggleable Heading")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Toggleable Heading"
+    )
 
     heading_data = _create_heading_data(rich_text, is_toggleable=True)
     block = _create_heading_block(BlockType.HEADING_2, heading_data)
@@ -335,7 +385,9 @@ async def test_toggleable_heading_without_children_should_render_heading_only(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Toggleable No Children")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Toggleable No Children")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Toggleable No Children"
+    )
 
     heading_data = _create_heading_data(rich_text, is_toggleable=True)
     block = _create_heading_block(BlockType.HEADING_1, heading_data)
@@ -356,13 +408,17 @@ async def test_toggleable_heading_with_nested_indent_should_handle_multiple_leve
     indent: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("Nested Heading")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Nested Heading")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Nested Heading"
+    )
 
     heading_data = _create_heading_data(rich_text, is_toggleable=True)
     block = _create_heading_block(BlockType.HEADING_3, heading_data)
     render_context.block = block
     render_context.indent_level = 1  # Already indented
-    render_context.render_children = AsyncMock(return_value=f"{indent}{indent}Deeply nested content")
+    render_context.render_children = AsyncMock(
+        return_value=f"{indent}{indent}Deeply nested content"
+    )
 
     await heading_renderer._process(render_context)
 

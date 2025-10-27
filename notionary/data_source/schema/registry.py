@@ -13,36 +13,52 @@ class DatabasePropertyTypeDescriptorRegistry:
     def __init__(self):
         self._DESCRIPTORS = {
             PropertyType.TITLE: PropertyTypeDescriptor(
-                display_name="Title", description="Required field for the main heading of the entry"
+                display_name="Title",
+                description="Required field for the main heading of the entry",
             ),
             PropertyType.RICH_TEXT: PropertyTypeDescriptor(
-                display_name="Rich Text", description="Free-form text field for additional information"
+                display_name="Rich Text",
+                description="Free-form text field for additional information",
             ),
-            PropertyType.NUMBER: PropertyTypeDescriptor(display_name="Number", description="Numeric value field"),
+            PropertyType.NUMBER: PropertyTypeDescriptor(
+                display_name="Number", description="Numeric value field"
+            ),
             PropertyType.CHECKBOX: PropertyTypeDescriptor(
                 display_name="Checkbox", description="Boolean value (true/false)"
             ),
-            PropertyType.DATE: PropertyTypeDescriptor(display_name="Date", description="Date or date range field"),
-            PropertyType.URL: PropertyTypeDescriptor(display_name="URL", description="Web address field"),
-            PropertyType.EMAIL: PropertyTypeDescriptor(display_name="Email", description="Email address field"),
+            PropertyType.DATE: PropertyTypeDescriptor(
+                display_name="Date", description="Date or date range field"
+            ),
+            PropertyType.URL: PropertyTypeDescriptor(
+                display_name="URL", description="Web address field"
+            ),
+            PropertyType.EMAIL: PropertyTypeDescriptor(
+                display_name="Email", description="Email address field"
+            ),
             PropertyType.PHONE_NUMBER: PropertyTypeDescriptor(
                 display_name="Phone Number", description="Phone number field"
             ),
             PropertyType.FILES: PropertyTypeDescriptor(
                 display_name="Files & Media", description="Upload or link to files"
             ),
-            PropertyType.PEOPLE: PropertyTypeDescriptor(display_name="People", description="Reference to Notion users"),
+            PropertyType.PEOPLE: PropertyTypeDescriptor(
+                display_name="People", description="Reference to Notion users"
+            ),
             PropertyType.SELECT: PropertyTypeDescriptor(
-                display_name="Single Select", description="Choose one option from available choices"
+                display_name="Single Select",
+                description="Choose one option from available choices",
             ),
             PropertyType.MULTI_SELECT: PropertyTypeDescriptor(
-                display_name="Multi Select", description="Choose multiple options from available choices"
+                display_name="Multi Select",
+                description="Choose multiple options from available choices",
             ),
             PropertyType.STATUS: PropertyTypeDescriptor(
-                display_name="Status", description="Track status with predefined options"
+                display_name="Status",
+                description="Track status with predefined options",
             ),
             PropertyType.RELATION: PropertyTypeDescriptor(
-                display_name="Relation", description="Link to entries in another database"
+                display_name="Relation",
+                description="Link to entries in another database",
             ),
             PropertyType.CREATED_TIME: PropertyTypeDescriptor(
                 display_name="Created Time",
@@ -97,7 +113,10 @@ class DatabasePropertyTypeDescriptorRegistry:
     def get_descriptor(self, property_type: PropertyType) -> PropertyTypeDescriptor:
         return self._DESCRIPTORS.get(
             property_type,
-            PropertyTypeDescriptor(display_name=self._format_unknown_type_name(property_type), description=""),
+            PropertyTypeDescriptor(
+                display_name=self._format_unknown_type_name(property_type),
+                description="",
+            ),
         )
 
     def _format_unknown_type_name(self, property_type: PropertyType) -> str:

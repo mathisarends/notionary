@@ -2,7 +2,9 @@ from notionary.exceptions.base import NotionaryException
 
 
 class EntityNotFound(NotionaryException):
-    def __init__(self, entity_type: str, query: str, available_titles: list[str] | None = None) -> None:
+    def __init__(
+        self, entity_type: str, query: str, available_titles: list[str] | None = None
+    ) -> None:
         self.entity_type = entity_type
         self.query = query
         self.available_titles = available_titles or []
@@ -41,7 +43,9 @@ class NoUsersInWorkspace(NotionaryException):
 
 
 class UserNotFound(NotionaryException):
-    def __init__(self, user_type: str, query: str, available_names: list[str] | None = None) -> None:
+    def __init__(
+        self, user_type: str, query: str, available_names: list[str] | None = None
+    ) -> None:
         self.user_type = user_type
         self.query = query
         self.available_names = available_names or []

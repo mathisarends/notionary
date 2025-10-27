@@ -3,16 +3,23 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.enums import BlockColor
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.schemas import CreateToDoBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.todo import TodoParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
-def todo_parser(mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxRegistry) -> TodoParser:
-    return TodoParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
+def todo_parser(
+    mock_rich_text_converter: MarkdownRichTextConverter,
+    syntax_registry: SyntaxDefinitionRegistry,
+) -> TodoParser:
+    return TodoParser(
+        syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter
+    )
 
 
 @pytest.mark.asyncio
@@ -70,7 +77,9 @@ async def test_todo_with_invalid_markers_should_not_be_handled(
 
 
 @pytest.mark.asyncio
-async def test_todo_with_leading_whitespace_should_work(todo_parser: TodoParser, context: BlockParsingContext) -> None:
+async def test_todo_with_leading_whitespace_should_work(
+    todo_parser: TodoParser, context: BlockParsingContext
+) -> None:
     context.line = "  - [ ] Indented todo"
 
     assert todo_parser._can_handle(context)
@@ -81,18 +90,26 @@ async def test_todo_with_leading_whitespace_should_work(todo_parser: TodoParser,
 
 @pytest.mark.asyncio
 async def test_todo_with_inline_markdown_should_convert_rich_text(
-    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext, syntax_registry: SyntaxRegistry
+    mock_rich_text_converter: MarkdownRichTextConverter,
+    context: BlockParsingContext,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> None:
-    parser = TodoParser(rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry)
+    parser = TodoParser(
+        rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry
+    )
     context.line = "- [ ] Todo with **bold** and *italic*"
 
     await parser._process(context)
 
-    mock_rich_text_converter.to_rich_text.assert_called_once_with("Todo with **bold** and *italic*")
+    mock_rich_text_converter.to_rich_text.assert_called_once_with(
+        "Todo with **bold** and *italic*"
+    )
 
 
 @pytest.mark.asyncio
-async def test_todo_with_special_characters_should_work(todo_parser: TodoParser, context: BlockParsingContext) -> None:
+async def test_todo_with_special_characters_should_work(
+    todo_parser: TodoParser, context: BlockParsingContext
+) -> None:
     context.line = "- [ ] Todo with äöü and emoji 📝"
 
     assert todo_parser._can_handle(context)
@@ -112,7 +129,9 @@ async def test_todo_inside_parent_context_should_not_be_handled(
 
 
 @pytest.mark.asyncio
-async def test_regular_list_item_should_not_be_handled(todo_parser: TodoParser, context: BlockParsingContext) -> None:
+async def test_regular_list_item_should_not_be_handled(
+    todo_parser: TodoParser, context: BlockParsingContext
+) -> None:
     context.line = "- Regular list item"
 
     assert not todo_parser._can_handle(context)
@@ -137,14 +156,18 @@ async def test_checkbox_with_other_character_should_not_be_handled(
 
 
 @pytest.mark.asyncio
-async def test_empty_line_should_not_be_handled(todo_parser: TodoParser, context: BlockParsingContext) -> None:
+async def test_empty_line_should_not_be_handled(
+    todo_parser: TodoParser, context: BlockParsingContext
+) -> None:
     context.line = ""
 
     assert not todo_parser._can_handle(context)
 
 
 @pytest.mark.asyncio
-async def test_todo_with_link_should_work(todo_parser: TodoParser, context: BlockParsingContext) -> None:
+async def test_todo_with_link_should_work(
+    todo_parser: TodoParser, context: BlockParsingContext
+) -> None:
     context.line = "- [ ] Check [this link](https://example.com)"
 
     assert todo_parser._can_handle(context)
@@ -188,7 +211,9 @@ async def test_todo_with_indented_children_should_parse_children(
         ]
     )
 
-    child_block = CreateToDoBlock(to_do=CreateToDoData(rich_text=[], checked=False, color=BlockColor.DEFAULT))
+    child_block = CreateToDoBlock(
+        to_do=CreateToDoData(rich_text=[], checked=False, color=BlockColor.DEFAULT)
+    )
     context.parse_nested_markdown = AsyncMock(return_value=[child_block, child_block])
 
     await todo_parser._process(context)

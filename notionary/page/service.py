@@ -2,7 +2,9 @@ from collections.abc import Callable
 from typing import Self
 
 from notionary.blocks.client import NotionBlockHttpClient
-from notionary.blocks.rich_text.rich_text_markdown_converter import convert_rich_text_to_markdown
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    convert_rich_text_to_markdown,
+)
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
 from notionary.page.content.factory import PageContentServiceFactory
@@ -71,7 +73,9 @@ class NotionPage(Entity):
         page_property_handler_factory: PagePropertyHandlerFactory,
     ) -> Self:
         title_task = cls._extract_title_from_dto(dto)
-        page_property_handler = page_property_handler_factory.create_from_page_response(dto)
+        page_property_handler = page_property_handler_factory.create_from_page_response(
+            dto
+        )
 
         title = await title_task
 
@@ -92,7 +96,9 @@ class NotionPage(Entity):
         comment_service = CommentService()
 
         page_content_service_factory = PageContentServiceFactory()
-        page_content_service = page_content_service_factory.create(page_id=dto.id, block_client=block_client)
+        page_content_service = page_content_service_factory.create(
+            page_id=dto.id, block_client=block_client
+        )
 
         metadata_update_client = PageMetadataUpdateClient(page_id=dto.id)
 
@@ -109,7 +115,11 @@ class NotionPage(Entity):
     @staticmethod
     async def _extract_title_from_dto(response: NotionPageDto) -> str:
         title_property = next(
-            (prop for prop in response.properties.values() if isinstance(prop, PageTitleProperty)),
+            (
+                prop
+                for prop in response.properties.values()
+                if isinstance(prop, PageTitleProperty)
+            ),
             None,
         )
         rich_text_title = title_property.title if title_property else []
@@ -135,10 +145,14 @@ class NotionPage(Entity):
         return await self._comment_service.list_all_comments_for_page(page_id=self._id)
 
     async def post_top_level_comment(self, comment: str) -> None:
-        await self._comment_service.create_comment_on_page(page_id=self._id, text=comment)
+        await self._comment_service.create_comment_on_page(
+            page_id=self._id, text=comment
+        )
 
     async def post_reply_to_discussion(self, discussion_id: str, comment: str) -> None:
-        await self._comment_service.reply_to_discussion_by_id(discussion_id=discussion_id, text=comment)
+        await self._comment_service.reply_to_discussion_by_id(
+            discussion_id=discussion_id, text=comment
+        )
 
     async def set_title(self, title: str) -> None:
         await self.properties.set_title_property(title)

@@ -38,13 +38,25 @@ class MarkdownBuilder:
     def __init__(self) -> None:
         self.children: list[MarkdownNode] = []
 
-    def h1(self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None) -> Self:
+    def h1(
+        self,
+        text: str,
+        builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None,
+    ) -> Self:
         return self._add_heading(text, 1, builder_func)
 
-    def h2(self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None) -> Self:
+    def h2(
+        self,
+        text: str,
+        builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None,
+    ) -> Self:
         return self._add_heading(text, 2, builder_func)
 
-    def h3(self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None) -> Self:
+    def h3(
+        self,
+        text: str,
+        builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None,
+    ) -> Self:
         return self._add_heading(text, 3, builder_func)
 
     def paragraph(self, text: str) -> Self:
@@ -55,7 +67,11 @@ class MarkdownBuilder:
         self.children.append(SpaceMarkdownNode())
         return self
 
-    def quote(self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None) -> Self:
+    def quote(
+        self,
+        text: str,
+        builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None,
+    ) -> Self:
         children = self._build_children(builder_func)
         self.children.append(QuoteMarkdownNode(text=text, children=children))
         return self
@@ -69,12 +85,16 @@ class MarkdownBuilder:
         return self
 
     def numbered_list_item(
-        self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None
+        self,
+        text: str,
+        builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None,
     ) -> Self:
         children = self._build_children(builder_func)
         wrapped = flatten_children(children)
         child_nodes = [wrapped] if wrapped else None
-        self.children.append(NumberedListMarkdownNode(texts=[text], children=child_nodes))
+        self.children.append(
+            NumberedListMarkdownNode(texts=[text], children=child_nodes)
+        )
         return self
 
     def bulleted_list(self, items: list[str]) -> Self:
@@ -82,12 +102,16 @@ class MarkdownBuilder:
         return self
 
     def bulleted_list_item(
-        self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None
+        self,
+        text: str,
+        builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None,
     ) -> Self:
         children = self._build_children(builder_func)
         wrapped = flatten_children(children)
         child_nodes = [wrapped] if wrapped else None
-        self.children.append(BulletedListMarkdownNode(texts=[text], children=child_nodes))
+        self.children.append(
+            BulletedListMarkdownNode(texts=[text], children=child_nodes)
+        )
         return self
 
     def todo(
@@ -97,14 +121,22 @@ class MarkdownBuilder:
         builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None,
     ) -> Self:
         children = self._build_children(builder_func)
-        self.children.append(TodoMarkdownNode(text=text, checked=checked, children=children))
+        self.children.append(
+            TodoMarkdownNode(text=text, checked=checked, children=children)
+        )
         return self
 
-    def checked_todo(self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None) -> Self:
+    def checked_todo(
+        self,
+        text: str,
+        builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None,
+    ) -> Self:
         return self.todo(text, checked=True, builder_func=builder_func)
 
     def unchecked_todo(
-        self, text: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None
+        self,
+        text: str,
+        builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None,
     ) -> Self:
         return self.todo(text, checked=False, builder_func=builder_func)
 
@@ -126,10 +158,14 @@ class MarkdownBuilder:
         builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None = None,
     ) -> Self:
         children = self._build_children(builder_func)
-        self.children.append(CalloutMarkdownNode(text=text, emoji=emoji, children=children))
+        self.children.append(
+            CalloutMarkdownNode(text=text, emoji=emoji, children=children)
+        )
         return self
 
-    def toggle(self, title: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder]) -> Self:
+    def toggle(
+        self, title: str, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder]
+    ) -> Self:
         children = self._build_children(builder_func)
         self.children.append(ToggleMarkdownNode(title=title, children=children))
         return self
@@ -154,20 +190,35 @@ class MarkdownBuilder:
         self.children.append(PdfMarkdownNode(url=url, caption=caption))
         return self
 
-    def bookmark(self, url: str, title: str | None = None, caption: str | None = None) -> Self:
-        self.children.append(BookmarkMarkdownNode(url=url, title=title, caption=caption))
+    def bookmark(
+        self, url: str, title: str | None = None, caption: str | None = None
+    ) -> Self:
+        self.children.append(
+            BookmarkMarkdownNode(url=url, title=title, caption=caption)
+        )
         return self
 
     def embed(self, url: str, caption: str | None = None) -> Self:
         self.children.append(EmbedMarkdownNode(url=url, caption=caption))
         return self
 
-    def code(self, code: str, language: CodingLanguage | None = None, caption: str | None = None) -> Self:
-        self.children.append(CodeMarkdownNode(code=code, language=language, caption=caption))
+    def code(
+        self,
+        code: str,
+        language: CodingLanguage | None = None,
+        caption: str | None = None,
+    ) -> Self:
+        self.children.append(
+            CodeMarkdownNode(code=code, language=language, caption=caption)
+        )
         return self
 
     def mermaid(self, diagram: str, caption: str | None = None) -> Self:
-        self.children.append(CodeMarkdownNode(code=diagram, language=CodingLanguage.MERMAID.value, caption=caption))
+        self.children.append(
+            CodeMarkdownNode(
+                code=diagram, language=CodingLanguage.MERMAID.value, caption=caption
+            )
+        )
         return self
 
     def table(self, headers: list[str], rows: list[list[str]]) -> Self:
@@ -196,16 +247,25 @@ class MarkdownBuilder:
         return self
 
     def build(self) -> str:
-        return "\n\n".join(child.to_markdown() for child in self.children if child is not None)
+        return "\n\n".join(
+            child.to_markdown() for child in self.children if child is not None
+        )
 
     def _add_heading(
-        self, text: str, level: int, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None
+        self,
+        text: str,
+        level: int,
+        builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None,
     ) -> Self:
         children = self._build_children(builder_func)
-        self.children.append(HeadingMarkdownNode(text=text, level=level, children=children))
+        self.children.append(
+            HeadingMarkdownNode(text=text, level=level, children=children)
+        )
         return self
 
-    def _build_children(self, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None) -> list[MarkdownNode]:
+    def _build_children(
+        self, builder_func: Callable[[MarkdownBuilder], MarkdownBuilder] | None
+    ) -> list[MarkdownNode]:
         if builder_func is None:
             return []
 
@@ -222,5 +282,7 @@ class MarkdownBuilder:
         for i, builder_func in enumerate(builder_funcs):
             width_ratio = width_ratios[i] if width_ratios else None
             children = self._build_children(builder_func)
-            columns.append(ColumnMarkdownNode(children=children, width_ratio=width_ratio))
+            columns.append(
+                ColumnMarkdownNode(children=children, width_ratio=width_ratio)
+            )
         return columns

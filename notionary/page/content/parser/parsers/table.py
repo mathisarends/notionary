@@ -1,14 +1,25 @@
 from typing import override
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.schemas import CreateTableBlock, CreateTableData, CreateTableRowBlock, TableRowData
+from notionary.blocks.schemas import (
+    CreateTableBlock,
+    CreateTableData,
+    CreateTableRowBlock,
+    TableRowData,
+)
 from notionary.page.content.parser.parsers import BlockParsingContext, LineParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class TableParser(LineParser):
-    def __init__(self, syntax_registry: SyntaxRegistry, rich_text_converter: MarkdownRichTextConverter) -> None:
+    def __init__(
+        self,
+        syntax_registry: SyntaxDefinitionRegistry,
+        rich_text_converter: MarkdownRichTextConverter,
+    ) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_table_syntax()
         self._separator_syntax = syntax_registry.get_table_row_syntax()
@@ -41,7 +52,9 @@ class TableParser(LineParser):
             context.lines_consumed = lines_consumed
             context.result_blocks.append(block)
 
-    def _collect_table_lines(self, table_lines: list[str], remaining_lines: list[str]) -> int:
+    def _collect_table_lines(
+        self, table_lines: list[str], remaining_lines: list[str]
+    ) -> int:
         lines_consumed = 0
 
         for index, line in enumerate(remaining_lines):
@@ -62,9 +75,13 @@ class TableParser(LineParser):
         return lines_consumed
 
     def _is_table_line(self, line: str) -> bool:
-        return self._syntax.regex_pattern.match(line) or self._separator_syntax.regex_pattern.match(line)
+        return self._syntax.regex_pattern.match(
+            line
+        ) or self._separator_syntax.regex_pattern.match(line)
 
-    async def _create_table_block(self, table_lines: list[str]) -> CreateTableBlock | None:
+    async def _create_table_block(
+        self, table_lines: list[str]
+    ) -> CreateTableBlock | None:
         if not table_lines:
             return None
 
@@ -93,7 +110,9 @@ class TableParser(LineParser):
                 return line_stripped
         return None
 
-    async def _process_table_rows(self, table_lines: list[str]) -> tuple[list[CreateTableRowBlock], bool]:
+    async def _process_table_rows(
+        self, table_lines: list[str]
+    ) -> tuple[list[CreateTableRowBlock], bool]:
         table_rows = []
         has_separator = False
 
@@ -122,7 +141,9 @@ class TableParser(LineParser):
         table_row_data = TableRowData(cells=rich_text_cells)
         return CreateTableRowBlock(table_row=table_row_data)
 
-    async def _convert_cells_to_rich_text(self, cells: list[str]) -> list[list[RichText]]:
+    async def _convert_cells_to_rich_text(
+        self, cells: list[str]
+    ) -> list[list[RichText]]:
         rich_text_cells = []
 
         for cell in cells:
@@ -132,7 +153,7 @@ class TableParser(LineParser):
         return rich_text_cells
 
     def _parse_table_row(self, row_text: str) -> list[str]:
-        """Parse a table row by splitting on the table delimiter from SyntaxRegistry."""
+        """Parse a table row by splitting on the table delimiter from SyntaxDefinitionRegistry."""
         row_content = row_text.strip()
         delimiter = self._syntax.start_delimiter
 

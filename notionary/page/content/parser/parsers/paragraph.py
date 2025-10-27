@@ -33,5 +33,7 @@ class ParagraphParser(LineParser):
             return None
 
         rich_text = await self._rich_text_converter.to_rich_text(text)
-        paragraph_content = CreateParagraphData(rich_text=rich_text, color=BlockColor.DEFAULT)
+        paragraph_content = CreateParagraphData(
+            rich_text=rich_text, color=BlockColor.DEFAULT
+        )
         return CreateParagraphBlock(paragraph=paragraph_content)

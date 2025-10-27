@@ -2,7 +2,9 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import MarkdownRichTextConverter
+from notionary.blocks.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.blocks.schemas import (
     CreateHeading1Block,
     CreateHeading2Block,
@@ -10,14 +12,17 @@ from notionary.blocks.schemas import (
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.heading import HeadingParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture
 def heading_parser(
-    mock_rich_text_converter: MarkdownRichTextConverter, syntax_registry: SyntaxRegistry
+    mock_rich_text_converter: MarkdownRichTextConverter,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> HeadingParser:
-    return HeadingParser(syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter)
+    return HeadingParser(
+        syntax_registry=syntax_registry, rich_text_converter=mock_rich_text_converter
+    )
 
 
 @pytest.mark.asyncio
@@ -124,14 +129,20 @@ async def test_heading_inside_parent_context_should_not_be_handled(
 
 @pytest.mark.asyncio
 async def test_heading_with_inline_markdown_should_convert_rich_text(
-    mock_rich_text_converter: MarkdownRichTextConverter, context: BlockParsingContext, syntax_registry: SyntaxRegistry
+    mock_rich_text_converter: MarkdownRichTextConverter,
+    context: BlockParsingContext,
+    syntax_registry: SyntaxDefinitionRegistry,
 ) -> None:
-    parser = HeadingParser(rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry)
+    parser = HeadingParser(
+        rich_text_converter=mock_rich_text_converter, syntax_registry=syntax_registry
+    )
     context.line = "# **Bold** and *italic*"
 
     await parser._process(context)
 
-    mock_rich_text_converter.to_rich_text.assert_called_once_with("**Bold** and *italic*")
+    mock_rich_text_converter.to_rich_text.assert_called_once_with(
+        "**Bold** and *italic*"
+    )
 
 
 @pytest.mark.asyncio
@@ -159,7 +170,9 @@ async def test_heading_with_special_characters_should_work(
 
 
 @pytest.mark.asyncio
-async def test_not_a_heading_should_not_be_handled(heading_parser: HeadingParser, context: BlockParsingContext) -> None:
+async def test_not_a_heading_should_not_be_handled(
+    heading_parser: HeadingParser, context: BlockParsingContext
+) -> None:
     context.line = "Normal text without heading"
 
     assert not heading_parser._can_handle(context)
@@ -209,7 +222,9 @@ async def test_heading_with_indented_children_should_become_toggleable(
 ) -> None:
     context.line = "## Heading with children"
     context.get_line_indentation_level = Mock(return_value=0)
-    context.collect_indented_child_lines = Mock(return_value=["    First child", "    Second child"])
+    context.collect_indented_child_lines = Mock(
+        return_value=["    First child", "    Second child"]
+    )
     context.strip_indentation_level = Mock(return_value=["First child", "Second child"])
     context.parse_nested_markdown = AsyncMock(return_value=[Mock(), Mock()])
 

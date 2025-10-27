@@ -5,7 +5,9 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import RichTextToMarkdownConverter
+from notionary.blocks.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.blocks.schemas import Block, QuoteBlock, QuoteData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.quote import QuoteRenderer
@@ -24,19 +26,25 @@ def _create_quote_block(quote_data: QuoteData | None) -> QuoteBlock:
 
 
 @pytest.fixture
-def quote_renderer(mock_rich_text_markdown_converter: RichTextToMarkdownConverter) -> QuoteRenderer:
+def quote_renderer(
+    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
+) -> QuoteRenderer:
     return QuoteRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
 
 
 @pytest.mark.asyncio
-async def test_quote_block_should_be_handled(quote_renderer: QuoteRenderer, mock_block: Block) -> None:
+async def test_quote_block_should_be_handled(
+    quote_renderer: QuoteRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.QUOTE
 
     assert quote_renderer._can_handle(mock_block)
 
 
 @pytest.mark.asyncio
-async def test_non_quote_block_should_not_be_handled(quote_renderer: QuoteRenderer, mock_block: Block) -> None:
+async def test_non_quote_block_should_not_be_handled(
+    quote_renderer: QuoteRenderer, mock_block: Block
+) -> None:
     mock_block.type = BlockType.PARAGRAPH
 
     assert not quote_renderer._can_handle(mock_block)
@@ -49,7 +57,9 @@ async def test_quote_with_single_line_should_render_blockquote(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("This is a quote")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="This is a quote")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="This is a quote"
+    )
 
     quote_data = _create_quote_data(rich_text)
     block = _create_quote_block(quote_data)
@@ -67,7 +77,9 @@ async def test_quote_with_multiple_lines_should_prefix_each_line(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Line one\nLine two\nLine three")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Line one\nLine two\nLine three")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Line one\nLine two\nLine three"
+    )
 
     quote_data = _create_quote_data(rich_text)
     block = _create_quote_block(quote_data)
@@ -117,7 +129,9 @@ async def test_quote_with_indent_level_should_indent_output(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Indented quote")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Indented quote")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Indented quote"
+    )
 
     quote_data = _create_quote_data(rich_text)
     block = _create_quote_block(quote_data)
@@ -136,12 +150,16 @@ async def test_quote_with_children_should_render_children_with_indent(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Parent quote")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Parent quote")
+    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+        return_value="Parent quote"
+    )
 
     quote_data = _create_quote_data(rich_text)
     block = _create_quote_block(quote_data)
     render_context.block = block
-    render_context.render_children_with_additional_indent = AsyncMock(return_value="  Child content")
+    render_context.render_children_with_additional_indent = AsyncMock(
+        return_value="  Child content"
+    )
 
     await quote_renderer._process(render_context)
 

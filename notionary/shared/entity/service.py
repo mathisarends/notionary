@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import Self, cast
 
 from notionary.file_upload.service import NotionFileUpload
-from notionary.shared.entity.entity_metadata_update_client import EntityMetadataUpdateClient
+from notionary.shared.entity.entity_metadata_update_client import (
+    EntityMetadataUpdateClient,
+)
 from notionary.shared.entity.schemas import EntityResponseDto
 from notionary.shared.models.file import ExternalFile, FileType, NotionHostedFile
 from notionary.shared.models.icon import EmojiIcon, IconType
@@ -165,25 +167,41 @@ class Entity(LoggingMixin, ABC):
         return await self._user_service.get_user_by_id(self._last_edited_by.id)
 
     async def set_emoji_icon(self, emoji: str) -> None:
-        entity_response = await self._entity_metadata_update_client.patch_emoji_icon(emoji)
+        entity_response = await self._entity_metadata_update_client.patch_emoji_icon(
+            emoji
+        )
         self._emoji_icon = self._extract_emoji_icon(entity_response)
         self._external_icon_url = None
 
     async def set_external_icon(self, icon_url: str) -> None:
-        entity_response = await self._entity_metadata_update_client.patch_external_icon(icon_url)
+        entity_response = await self._entity_metadata_update_client.patch_external_icon(
+            icon_url
+        )
         self._emoji_icon = None
         self._external_icon_url = self._extract_external_icon_url(entity_response)
 
-    async def set_icon_from_file(self, file_path: Path, filename: str | None = None) -> None:
-        upload_response = await self._file_upload_service.upload_file(file_path, filename)
+    async def set_icon_from_file(
+        self, file_path: Path, filename: str | None = None
+    ) -> None:
+        upload_response = await self._file_upload_service.upload_file(
+            file_path, filename
+        )
         await self._set_icon_from_file_upload(upload_response.id)
 
-    async def set_icon_from_bytes(self, file_content: bytes, filename: str, content_type: str | None = None) -> None:
-        upload_response = await self._file_upload_service.upload_from_bytes(file_content, filename, content_type)
+    async def set_icon_from_bytes(
+        self, file_content: bytes, filename: str, content_type: str | None = None
+    ) -> None:
+        upload_response = await self._file_upload_service.upload_from_bytes(
+            file_content, filename, content_type
+        )
         await self._set_icon_from_file_upload(upload_response.id)
 
     async def _set_icon_from_file_upload(self, file_upload_id: str) -> None:
-        entity_response = await self._entity_metadata_update_client.patch_icon_from_file_upload(file_upload_id)
+        entity_response = (
+            await self._entity_metadata_update_client.patch_icon_from_file_upload(
+                file_upload_id
+            )
+        )
         self._emoji_icon = None
         self._external_icon_url = self._extract_external_icon_url(entity_response)
 
@@ -193,21 +211,33 @@ class Entity(LoggingMixin, ABC):
         self._external_icon_url = None
 
     async def set_cover_image_by_url(self, image_url: str) -> None:
-        entity_response = await self._entity_metadata_update_client.patch_external_cover(image_url)
+        entity_response = (
+            await self._entity_metadata_update_client.patch_external_cover(image_url)
+        )
         self._cover_image_url = self._extract_cover_image_url(entity_response)
 
-    async def set_cover_image_from_file(self, file_path: Path, filename: str | None = None) -> None:
-        upload_response = await self._file_upload_service.upload_file(file_path, filename)
+    async def set_cover_image_from_file(
+        self, file_path: Path, filename: str | None = None
+    ) -> None:
+        upload_response = await self._file_upload_service.upload_file(
+            file_path, filename
+        )
         await self._set_cover_image_from_file_upload(upload_response.id)
 
     async def set_cover_image_from_bytes(
         self, file_content: bytes, filename: str, content_type: str | None = None
     ) -> None:
-        upload_response = await self._file_upload_service.upload_from_bytes(file_content, filename, content_type)
+        upload_response = await self._file_upload_service.upload_from_bytes(
+            file_content, filename, content_type
+        )
         await self._set_cover_image_from_file_upload(upload_response.id)
 
     async def _set_cover_image_from_file_upload(self, file_upload_id: str) -> None:
-        entity_response = await self._entity_metadata_update_client.patch_cover_from_file_upload(file_upload_id)
+        entity_response = (
+            await self._entity_metadata_update_client.patch_cover_from_file_upload(
+                file_upload_id
+            )
+        )
         self._cover_image_url = self._extract_cover_image_url(entity_response)
 
     async def set_random_gradient_cover(self) -> None:
@@ -246,7 +276,8 @@ class Entity(LoggingMixin, ABC):
 
     def _get_random_gradient_cover(self) -> str:
         DEFAULT_NOTION_COVERS: Sequence[str] = [
-            f"https://www.notion.so/images/page-cover/gradients_{i}.png" for i in range(1, 10)
+            f"https://www.notion.so/images/page-cover/gradients_{i}.png"
+            for i in range(1, 10)
         ]
 
         return random.choice(DEFAULT_NOTION_COVERS)

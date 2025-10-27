@@ -54,7 +54,9 @@ class BaseUser:
 
         expected_type = cls._get_expected_user_type()
         if user_dto.type != expected_type:
-            raise ValueError(f"User {user_id} is not a '{expected_type.value}', but '{user_dto.type.value}'")
+            raise ValueError(
+                f"User {user_id} is not a '{expected_type.value}', but '{user_dto.type.value}'"
+            )
 
         return cls.from_dto(user_dto)
 
@@ -105,7 +107,9 @@ class BaseUser:
     async def _get_all_users_of_type(cls, http_client: UserHttpClient) -> list[Self]:
         all_workspace_user_dtos = await http_client.get_all_workspace_users()
         expected_type = cls._get_expected_user_type()
-        filtered_dtos = [dto for dto in all_workspace_user_dtos if dto.type == expected_type]
+        filtered_dtos = [
+            dto for dto in all_workspace_user_dtos if dto.type == expected_type
+        ]
         return [cls.from_dto(dto) for dto in filtered_dtos]
 
     @classmethod

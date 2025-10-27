@@ -29,17 +29,23 @@ def resolver(mock_search_client: AsyncMock) -> DatabaseNameIdResolver:
 
 class TestDatabaseNameIdResolver:
     @pytest.mark.asyncio
-    async def test_resolve_database_id_with_empty_name(self, resolver: DatabaseNameIdResolver) -> None:
+    async def test_resolve_database_id_with_empty_name(
+        self, resolver: DatabaseNameIdResolver
+    ) -> None:
         result = await resolver.resolve_name_to_id("")
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_resolve_database_id_with_none(self, resolver: DatabaseNameIdResolver) -> None:
+    async def test_resolve_database_id_with_none(
+        self, resolver: DatabaseNameIdResolver
+    ) -> None:
         result = await resolver.resolve_name_to_id(None)
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_resolve_database_id_with_valid_uuid(self, resolver: DatabaseNameIdResolver) -> None:
+    async def test_resolve_database_id_with_valid_uuid(
+        self, resolver: DatabaseNameIdResolver
+    ) -> None:
         uuid_str = "12345678-1234-1234-1234-123456789abc"
         result = await resolver.resolve_name_to_id(uuid_str)
         # The resolver now searches by name and returns the actual ID from the search results
@@ -62,12 +68,16 @@ class TestDatabaseNameIdResolver:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_resolve_database_name_with_empty_id(self, resolver: DatabaseNameIdResolver) -> None:
+    async def test_resolve_database_name_with_empty_id(
+        self, resolver: DatabaseNameIdResolver
+    ) -> None:
         result = await resolver.resolve_id_to_name("")
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_resolve_database_name_with_none(self, resolver: DatabaseNameIdResolver) -> None:
+    async def test_resolve_database_name_with_none(
+        self, resolver: DatabaseNameIdResolver
+    ) -> None:
         result = await resolver.resolve_id_to_name(None)
         assert result is None
 
@@ -76,23 +86,37 @@ class TestDatabaseNameIdResolver:
         self, resolver: DatabaseNameIdResolver, mock_database: AsyncMock
     ) -> None:
         with patch("notionary.NotionDatabase.from_id", return_value=mock_database):
-            result = await resolver.resolve_id_to_name("12345678-1234-1234-1234-123456789abc")
+            result = await resolver.resolve_id_to_name(
+                "12345678-1234-1234-1234-123456789abc"
+            )
             assert result == "Test Database"
 
     @pytest.mark.asyncio
-    async def test_resolve_database_name_not_found(self, resolver: DatabaseNameIdResolver) -> None:
+    async def test_resolve_database_name_not_found(
+        self, resolver: DatabaseNameIdResolver
+    ) -> None:
         with patch("notionary.NotionDatabase.from_id", return_value=None):
-            result = await resolver.resolve_id_to_name("12345678-1234-1234-1234-123456789abc")
+            result = await resolver.resolve_id_to_name(
+                "12345678-1234-1234-1234-123456789abc"
+            )
             assert result is None
 
     @pytest.mark.asyncio
-    async def test_resolve_database_name_exception(self, resolver: DatabaseNameIdResolver) -> None:
-        with patch("notionary.NotionDatabase.from_id", side_effect=Exception("API Error")):
-            result = await resolver.resolve_id_to_name("12345678-1234-1234-1234-123456789abc")
+    async def test_resolve_database_name_exception(
+        self, resolver: DatabaseNameIdResolver
+    ) -> None:
+        with patch(
+            "notionary.NotionDatabase.from_id", side_effect=Exception("API Error")
+        ):
+            result = await resolver.resolve_id_to_name(
+                "12345678-1234-1234-1234-123456789abc"
+            )
             assert result is None
 
     @pytest.mark.asyncio
-    async def test_whitespace_handling(self, resolver: DatabaseNameIdResolver, mock_search_client: AsyncMock) -> None:
+    async def test_whitespace_handling(
+        self, resolver: DatabaseNameIdResolver, mock_search_client: AsyncMock
+    ) -> None:
         await resolver.resolve_name_to_id("  Test Database  ")
         mock_search_client.find_database.assert_called_once_with(query="Test Database")
 

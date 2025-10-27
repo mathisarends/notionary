@@ -7,7 +7,9 @@ from notionary.shared.models.icon import EmojiIcon, Icon
 
 class EntityMetadataUpdateClient(ABC):
     @abstractmethod
-    async def patch_metadata(self, updated_data: NotionEntityUpdateDto) -> EntityResponseDto: ...
+    async def patch_metadata(
+        self, updated_data: NotionEntityUpdateDto
+    ) -> EntityResponseDto: ...
 
     async def patch_emoji_icon(self, emoji: str) -> EntityResponseDto:
         icon = EmojiIcon(emoji=emoji)
@@ -18,7 +20,9 @@ class EntityMetadataUpdateClient(ABC):
         icon = ExternalFile.from_url(icon_url)
         return await self._patch_icon(icon)
 
-    async def patch_icon_from_file_upload(self, file_upload_id: str) -> EntityResponseDto:
+    async def patch_icon_from_file_upload(
+        self, file_upload_id: str
+    ) -> EntityResponseDto:
         icon = FileUploadFile.from_id(id=file_upload_id)
         return await self._patch_icon(icon)
 
@@ -34,7 +38,9 @@ class EntityMetadataUpdateClient(ABC):
         cover = ExternalFile.from_url(cover_url)
         return await self._patch_cover(cover)
 
-    async def patch_cover_from_file_upload(self, file_upload_id: str) -> EntityResponseDto:
+    async def patch_cover_from_file_upload(
+        self, file_upload_id: str
+    ) -> EntityResponseDto:
         cover = FileUploadFile.from_id(id=file_upload_id)
         return await self._patch_cover(cover)
 

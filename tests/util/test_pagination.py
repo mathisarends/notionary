@@ -28,7 +28,9 @@ def create_mock_api_with_pages(pages: list[PaginatedResponse]):
     async def mock_api(**kwargs) -> PaginatedResponse:  # pylint: disable=invalid-overridden-method
         nonlocal call_count
         if call_count >= len(pages):
-            raise ValueError(f"Unexpected call {call_count + 1}, only {len(pages)} pages defined")
+            raise ValueError(
+                f"Unexpected call {call_count + 1}, only {len(pages)} pages defined"
+            )
 
         response = pages[call_count]
         call_count += 1
@@ -103,7 +105,11 @@ async def test_pagination_passes_cursor_correctly() -> None:
 
     assert len(received_kwargs) == 2
     assert received_kwargs[0] == {"block_id": "test_block", "page_size": 10}
-    assert received_kwargs[1] == {"block_id": "test_block", "page_size": 10, "start_cursor": "cursor_abc"}
+    assert received_kwargs[1] == {
+        "block_id": "test_block",
+        "page_size": 10,
+        "start_cursor": "cursor_abc",
+    }
 
 
 @pytest.mark.asyncio

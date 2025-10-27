@@ -3,7 +3,7 @@ from enum import IntEnum
 from typing import override
 
 from notionary.page.content.renderer.post_processing.port import PostProcessor
-from notionary.page.content.syntax.grammar import MarkdownGrammar
+from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
 
 
 class _NumberingStyle(IntEnum):
@@ -89,7 +89,9 @@ class NumberedListPlaceholderReplacerPostProcessor(PostProcessor):
     def __init__(self, markdown_grammar: MarkdownGrammar | None = None) -> None:
         self._markdown_grammar = markdown_grammar or MarkdownGrammar()
         self._spaces_per_nesting_level = self._markdown_grammar.spaces_per_nesting_level
-        self._numbered_list_placeholder = self._markdown_grammar.numbered_list_placeholder
+        self._numbered_list_placeholder = (
+            self._markdown_grammar.numbered_list_placeholder
+        )
 
     @override
     def process(self, markdown_text: str) -> str:
@@ -130,23 +132,31 @@ class NumberedListPlaceholderReplacerPostProcessor(PostProcessor):
         return match.group(1) if match else ""
 
     def _extract_content(self, line: str) -> str:
-        match = re.match(rf"^\s*{re.escape(self._numbered_list_placeholder)}\.\s*(.*)", line)
+        match = re.match(
+            rf"^\s*{re.escape(self._numbered_list_placeholder)}\.\s*(.*)", line
+        )
         return match.group(1) if match else ""
 
     def _is_placeholder_list_item(self, line: str) -> bool:
-        return bool(re.match(rf"^\s*{re.escape(self._numbered_list_placeholder)}\.", line))
+        return bool(
+            re.match(rf"^\s*{re.escape(self._numbered_list_placeholder)}\.", line)
+        )
 
-    def _is_blank_between_list_items(self, lines: list[str], current_index: int, processed_lines: list[str]) -> bool:
+    def _is_blank_between_list_items(
+        self, lines: list[str], current_index: int, processed_lines: list[str]
+    ) -> bool:
         if not self._is_blank(lines[current_index]):
             return False
 
-        previous_line_was_list_item = processed_lines and self._looks_like_numbered_list_item(processed_lines[-1])
+        previous_line_was_list_item = (
+            processed_lines and self._looks_like_numbered_list_item(processed_lines[-1])
+        )
         if not previous_line_was_list_item:
             return False
 
-        next_line_is_list_item = current_index + 1 < len(lines) and self._is_placeholder_list_item(
-            lines[current_index + 1]
-        )
+        next_line_is_list_item = current_index + 1 < len(
+            lines
+        ) and self._is_placeholder_list_item(lines[current_index + 1])
         return next_line_is_list_item
 
     def _is_blank(self, line: str) -> bool:

@@ -6,18 +6,20 @@ from notionary.blocks.schemas import CreateVideoBlock
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.video import VideoParser
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 from notionary.shared.models.file import FileType
 
 
 @pytest.fixture
-def video_parser(syntax_registry: SyntaxRegistry) -> VideoParser:
+def video_parser(syntax_registry: SyntaxDefinitionRegistry) -> VideoParser:
     mock_file_upload = Mock(spec=NotionFileUpload)
-    return VideoParser(syntax_registry=syntax_registry, file_upload_service=mock_file_upload)
+    return VideoParser(
+        syntax_registry=syntax_registry, file_upload_service=mock_file_upload
+    )
 
 
 @pytest.fixture
-def make_video_syntax(syntax_registry: SyntaxRegistry):
+def make_video_syntax(syntax_registry: SyntaxDefinitionRegistry):
     syntax = syntax_registry.get_video_syntax()
 
     def _make(url: str) -> str:
@@ -65,7 +67,9 @@ async def test_video_with_direct_mp4_url_should_create_block(
     await video_parser._process(context)
 
     assert len(context.result_blocks) == 1
-    assert context.result_blocks[0].video.external.url == "https://example.com/video.mp4"
+    assert (
+        context.result_blocks[0].video.external.url == "https://example.com/video.mp4"
+    )
 
 
 @pytest.mark.asyncio

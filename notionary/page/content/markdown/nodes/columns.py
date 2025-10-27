@@ -2,7 +2,7 @@ from typing import override
 
 from notionary.page.content.markdown.nodes.base import MarkdownNode
 from notionary.page.content.markdown.nodes.container import ContainerNode
-from notionary.page.content.syntax import SyntaxRegistry
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class ColumnMarkdownNode(ContainerNode):
@@ -10,7 +10,7 @@ class ColumnMarkdownNode(ContainerNode):
         self,
         children: list[MarkdownNode] | None = None,
         width_ratio: float | None = None,
-        syntax_registry: SyntaxRegistry | None = None,
+        syntax_registry: SyntaxDefinitionRegistry | None = None,
     ):
         super().__init__(syntax_registry=syntax_registry)
         self.children = children or []
@@ -34,7 +34,7 @@ class ColumnListMarkdownNode(MarkdownNode):
     def __init__(
         self,
         columns: list[ColumnMarkdownNode] | None = None,
-        syntax_registry: SyntaxRegistry | None = None,
+        syntax_registry: SyntaxDefinitionRegistry | None = None,
     ):
         super().__init__(syntax_registry=syntax_registry)
         self.columns = columns or []
