@@ -49,9 +49,9 @@ class StructuredOutputMarkdownConverter:
         elif isinstance(node, ParagraphSchema):
             self._process_paragraph(node)
         elif isinstance(node, SpaceSchema):
-            self._process_space(node)
+            self._process_space()
         elif isinstance(node, DividerSchema):
-            self._process_divider(node)
+            self._process_divider()
         elif isinstance(node, QuoteSchema):
             self._process_quote(node)
         elif isinstance(node, BulletedListSchema):
@@ -114,10 +114,10 @@ class StructuredOutputMarkdownConverter:
     def _process_paragraph(self, node: ParagraphSchema) -> None:
         self.builder.paragraph(node.text)
 
-    def _process_space(self, node: SpaceSchema) -> None:
+    def _process_space(self) -> None:
         self.builder.space()
 
-    def _process_divider(self, node: DividerSchema) -> None:
+    def _process_divider(self) -> None:
         self.builder.divider()
 
     def _process_quote(self, node: QuoteSchema) -> None:
@@ -195,7 +195,6 @@ class StructuredOutputMarkdownConverter:
         self.builder.table(node.headers, node.rows)
 
     def _process_breadcrumb(self, node: BreadcrumbSchema) -> None:
-        """Process a breadcrumb node"""
         self.builder.breadcrumb()
 
     def _process_equation(self, node: EquationSchema) -> None:
@@ -232,8 +231,3 @@ class StructuredOutputMarkdownConverter:
             return builder
 
         return builder_func
-
-
-def structured_to_markdown(schema: MarkdownDocumentSchema) -> str:
-    converter = StructuredOutputMarkdownConverter()
-    return converter.convert(schema)
