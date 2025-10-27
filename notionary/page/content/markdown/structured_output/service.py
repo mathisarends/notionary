@@ -10,7 +10,6 @@ from notionary.page.content.markdown.structured_output.models import (
     CalloutSchema,
     CodeSchema,
     ColumnsSchema,
-    DividerSchema,
     EmbedSchema,
     EquationSchema,
     FileSchema,
@@ -24,7 +23,6 @@ from notionary.page.content.markdown.structured_output.models import (
     ParagraphSchema,
     PdfSchema,
     QuoteSchema,
-    SpaceSchema,
     TableOfContentsSchema,
     TableSchema,
     TodoListSchema,
@@ -32,9 +30,10 @@ from notionary.page.content.markdown.structured_output.models import (
     ToggleSchema,
     VideoSchema,
 )
+from notionary.utils.mixins.logging import LoggingMixin
 
 
-class StructuredOutputMarkdownConverter:
+class StructuredOutputMarkdownConverter(LoggingMixin):
     def __init__(self, builder: MarkdownBuilder | None = None) -> None:
         self.builder = builder or MarkdownBuilder()
 
@@ -44,60 +43,7 @@ class StructuredOutputMarkdownConverter:
         return self.builder.build()
 
     def _process_node(self, node: MarkdownNodeSchema) -> None:
-        if isinstance(node, HeadingSchema):
-            self._process_heading(node)
-        elif isinstance(node, ParagraphSchema):
-            self._process_paragraph(node)
-        elif isinstance(node, SpaceSchema):
-            self._process_space()
-        elif isinstance(node, DividerSchema):
-            self._process_divider()
-        elif isinstance(node, QuoteSchema):
-            self._process_quote(node)
-        elif isinstance(node, BulletedListSchema):
-            self._process_bulleted_list(node)
-        elif isinstance(node, BulletedListItemSchema):
-            self._process_bulleted_list_item(node)
-        elif isinstance(node, NumberedListSchema):
-            self._process_numbered_list(node)
-        elif isinstance(node, NumberedListItemSchema):
-            self._process_numbered_list_item(node)
-        elif isinstance(node, TodoSchema):
-            self._process_todo(node)
-        elif isinstance(node, TodoListSchema):
-            self._process_todo_list(node)
-        elif isinstance(node, CalloutSchema):
-            self._process_callout(node)
-        elif isinstance(node, ToggleSchema):
-            self._process_toggle(node)
-        elif isinstance(node, ImageSchema):
-            self._process_image(node)
-        elif isinstance(node, VideoSchema):
-            self._process_video(node)
-        elif isinstance(node, AudioSchema):
-            self._process_audio(node)
-        elif isinstance(node, FileSchema):
-            self._process_file(node)
-        elif isinstance(node, PdfSchema):
-            self._process_pdf(node)
-        elif isinstance(node, BookmarkSchema):
-            self._process_bookmark(node)
-        elif isinstance(node, EmbedSchema):
-            self._process_embed(node)
-        elif isinstance(node, CodeSchema):
-            self._process_code(node)
-        elif isinstance(node, MermaidSchema):
-            self._process_mermaid(node)
-        elif isinstance(node, TableSchema):
-            self._process_table(node)
-        elif isinstance(node, BreadcrumbSchema):
-            self._process_breadcrumb(node)
-        elif isinstance(node, EquationSchema):
-            self._process_equation(node)
-        elif isinstance(node, TableOfContentsSchema):
-            self._process_table_of_contents(node)
-        elif isinstance(node, ColumnsSchema):
-            self._process_columns(node)
+        node.process_with(self)
 
     def _process_heading(self, node: HeadingSchema) -> None:
         builder_func = (

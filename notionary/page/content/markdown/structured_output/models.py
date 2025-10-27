@@ -1,9 +1,16 @@
+from __future__ import annotations
+
 from enum import StrEnum
-from typing import Annotated, Literal
+from typing import TYPE_CHECKING, Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from notionary.blocks.enums import CodingLanguage
+
+if TYPE_CHECKING:
+    from notionary.page.content.markdown.structured_output.service import (
+        StructuredOutputMarkdownConverter,
+    )
 
 
 class MarkdownNodeType(StrEnum):
@@ -39,10 +46,18 @@ class MarkdownNodeType(StrEnum):
 class MarkdownNodeSchema(BaseModel):
     type: MarkdownNodeType
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement process_with()"
+        )
+
 
 class ParagraphSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.PARAGRAPH] = MarkdownNodeType.PARAGRAPH
     text: str = Field(description="The paragraph text content")
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_paragraph(self)
 
 
 class HeadingSchema(MarkdownNodeSchema):
@@ -53,13 +68,22 @@ class HeadingSchema(MarkdownNodeSchema):
         default=None, description="Optional child nodes"
     )
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_heading(self)
+
 
 class SpaceSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.SPACE] = MarkdownNodeType.SPACE
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_space()
+
 
 class DividerSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.DIVIDER] = MarkdownNodeType.DIVIDER
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_divider()
 
 
 class QuoteSchema(MarkdownNodeSchema):
@@ -69,10 +93,16 @@ class QuoteSchema(MarkdownNodeSchema):
         default=None, description="Optional child nodes"
     )
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_quote(self)
+
 
 class BulletedListSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.BULLETED_LIST] = MarkdownNodeType.BULLETED_LIST
     items: list[str] = Field(description="List of bullet point texts")
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_bulleted_list(self)
 
 
 class BulletedListItemSchema(MarkdownNodeSchema):
@@ -84,10 +114,16 @@ class BulletedListItemSchema(MarkdownNodeSchema):
         default=None, description="Optional nested content"
     )
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_bulleted_list_item(self)
+
 
 class NumberedListSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.NUMBERED_LIST] = MarkdownNodeType.NUMBERED_LIST
     items: list[str] = Field(description="List of numbered item texts")
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_numbered_list(self)
 
 
 class NumberedListItemSchema(MarkdownNodeSchema):
@@ -99,6 +135,9 @@ class NumberedListItemSchema(MarkdownNodeSchema):
         default=None, description="Optional nested content"
     )
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_numbered_list_item(self)
+
 
 class TodoSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.TODO] = MarkdownNodeType.TODO
@@ -108,6 +147,9 @@ class TodoSchema(MarkdownNodeSchema):
         default=None, description="Optional nested content"
     )
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_todo(self)
+
 
 class TodoListSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.TODO_LIST] = MarkdownNodeType.TODO_LIST
@@ -115,6 +157,9 @@ class TodoListSchema(MarkdownNodeSchema):
     completed: list[bool] | None = Field(
         default=None, description="List indicating which items are completed"
     )
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_todo_list(self)
 
 
 class CalloutSchema(MarkdownNodeSchema):
@@ -125,11 +170,17 @@ class CalloutSchema(MarkdownNodeSchema):
         default=None, description="Optional child nodes"
     )
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_callout(self)
+
 
 class ToggleSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.TOGGLE] = MarkdownNodeType.TOGGLE
     title: str = Field(description="The toggle title")
     children: list[MarkdownNodeSchema] = Field(description="Content inside the toggle")
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_toggle(self)
 
 
 class ImageSchema(MarkdownNodeSchema):
@@ -137,11 +188,17 @@ class ImageSchema(MarkdownNodeSchema):
     url: str = Field(description="Image URL")
     caption: str | None = Field(default=None, description="Optional caption")
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_image(self)
+
 
 class VideoSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.VIDEO] = MarkdownNodeType.VIDEO
     url: str = Field(description="Video URL")
     caption: str | None = Field(default=None, description="Optional caption")
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_video(self)
 
 
 class AudioSchema(MarkdownNodeSchema):
@@ -149,17 +206,26 @@ class AudioSchema(MarkdownNodeSchema):
     url: str = Field(description="Audio URL")
     caption: str | None = Field(default=None, description="Optional caption")
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_audio(self)
+
 
 class FileSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.FILE] = MarkdownNodeType.FILE
     url: str = Field(description="File URL")
     caption: str | None = Field(default=None, description="Optional caption")
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_file(self)
+
 
 class PdfSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.PDF] = MarkdownNodeType.PDF
     url: str = Field(description="PDF URL")
     caption: str | None = Field(default=None, description="Optional caption")
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_pdf(self)
 
 
 class BookmarkSchema(MarkdownNodeSchema):
@@ -168,11 +234,17 @@ class BookmarkSchema(MarkdownNodeSchema):
     title: str | None = Field(default=None, description="Optional title")
     caption: str | None = Field(default=None, description="Optional caption")
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_bookmark(self)
+
 
 class EmbedSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.EMBED] = MarkdownNodeType.EMBED
     url: str = Field(description="Embed URL")
     caption: str | None = Field(default=None, description="Optional caption")
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_embed(self)
 
 
 class CodeSchema(MarkdownNodeSchema):
@@ -183,11 +255,17 @@ class CodeSchema(MarkdownNodeSchema):
     )
     caption: str | None = Field(default=None, description="Optional caption")
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_code(self)
+
 
 class MermaidSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.MERMAID] = MarkdownNodeType.MERMAID
     diagram: str = Field(description="Mermaid diagram code")
     caption: str | None = Field(default=None, description="Optional caption")
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_mermaid(self)
 
 
 class TableSchema(MarkdownNodeSchema):
@@ -195,20 +273,32 @@ class TableSchema(MarkdownNodeSchema):
     headers: list[str] = Field(description="Table header row")
     rows: list[list[str]] = Field(description="Table data rows")
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_table(self)
+
 
 class BreadcrumbSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.BREADCRUMB] = MarkdownNodeType.BREADCRUMB
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_breadcrumb(self)
 
 
 class EquationSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.EQUATION] = MarkdownNodeType.EQUATION
     expression: str = Field(description="LaTeX equation expression")
 
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_equation(self)
+
 
 class TableOfContentsSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.TABLE_OF_CONTENTS] = (
         MarkdownNodeType.TABLE_OF_CONTENTS
     )
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_table_of_contents(self)
 
 
 class ColumnSchema(BaseModel):
@@ -219,6 +309,9 @@ class ColumnSchema(BaseModel):
 class ColumnsSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.COLUMNS] = MarkdownNodeType.COLUMNS
     columns: list[ColumnSchema] = Field(description="List of columns")
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_columns(self)
 
 
 AnyMarkdownNode = Annotated[
