@@ -24,6 +24,12 @@ jobs:
       - name: Install dependencies
         run: uv sync --group dev
 
+      - name: Run ruff linter
+        run: uv run ruff check .
+
+      - name: Run ruff formatter check
+        run: uv run ruff format --check .
+
       - name: Run tests with coverage (excluding integration tests)
         run: uv run pytest -m "not integration" --cov=notionary --cov-report=term --cov-report=json
 
