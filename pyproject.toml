@@ -42,6 +42,10 @@ dev = [
     "twine>=6.0.0",
 ]
 
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks tests as integration tests (potentially slow or network-dependent)",
+]
 
 [tool.ruff]
 target-version = "py313"
