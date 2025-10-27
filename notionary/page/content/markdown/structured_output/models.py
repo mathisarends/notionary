@@ -352,3 +352,53 @@ class MarkdownDocumentSchema(BaseModel):
     nodes: list[AnyMarkdownNode] = Field(
         description="List of markdown nodes in the document"
     )
+
+
+class OpenAIMarkdownNode(BaseModel):
+    """Flat node schema for OpenAI structured outputs - supports all node types"""
+
+    type: MarkdownNodeType = Field(description="Type of markdown node")
+
+    # Content fields
+    text: str | None = Field(
+        default=None, description="Text for paragraph, quote, list items, callout"
+    )
+    title: str | None = Field(default=None, description="Title for toggle or bookmark")
+    expression: str | None = Field(
+        default=None, description="LaTeX expression for equations"
+    )
+    code: str | None = Field(default=None, description="Code content")
+    diagram: str | None = Field(default=None, description="Mermaid diagram")
+
+    # List fields
+    items: list[str] | None = Field(default=None, description="Items for lists")
+
+    # Properties
+    level: Literal[1, 2, 3] | None = Field(default=None, description="Heading level")
+    checked: bool | None = Field(default=None, description="Todo checked status")
+    completed: list[bool] | None = Field(
+        default=None, description="Todo list completion"
+    )
+    emoji: str | None = Field(default=None, description="Callout emoji")
+
+    # Media
+    url: str | None = Field(default=None, description="URL for media/links")
+    caption: str | None = Field(default=None, description="Caption for media")
+    language: CodingLanguage | None = Field(default=None, description="Code language")
+
+    # Table
+    headers: list[str] | None = Field(default=None, description="Table headers")
+    rows: list[list[str]] | None = Field(default=None, description="Table rows")
+
+    # Nested
+    children: list[OpenAIMarkdownNode] | None = Field(
+        default=None, description="Child nodes"
+    )
+    columns: list[ColumnSchema] | None = Field(
+        default=None, description="Column layout"
+    )
+
+
+class OpenAIMarkdownDocument(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    nodes: list[OpenAIMarkdownNode] = Field(description="List of markdown nodes")
