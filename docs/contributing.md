@@ -6,7 +6,7 @@ Concise guide to get a change from idea to merged.
 
 Prerequisites:
 
-- Python 3.9+
+- Python 3.12+
 - uv (see: https://docs.astral.sh/uv/getting-started/installation/)
 
 ```bash
