@@ -13,7 +13,9 @@ from notionary.page.content.markdown.structured_output.models import (
     EmbedSchema,
     EquationSchema,
     FileSchema,
-    HeadingSchema,
+    Heading1Schema,
+    Heading2Schema,
+    Heading3Schema,
     ImageSchema,
     MarkdownDocumentSchema,
     MarkdownNodeSchema,
@@ -47,17 +49,23 @@ class StructuredOutputMarkdownConverter(LoggingMixin):
     def _process_node(self, node: MarkdownNodeSchema) -> None:
         node.process_with(self)
 
-    def _process_heading(self, node: HeadingSchema) -> None:
+    def _process_heading_1(self, node: Heading1Schema) -> None:
         builder_func = (
             self._create_children_builder(node.children) if node.children else None
         )
+        self.builder.h1(node.text, builder_func)
 
-        if node.level == 1:
-            self.builder.h1(node.text, builder_func)
-        elif node.level == 2:
-            self.builder.h2(node.text, builder_func)
-        elif node.level == 3:
-            self.builder.h3(node.text, builder_func)
+    def _process_heading_2(self, node: Heading2Schema) -> None:
+        builder_func = (
+            self._create_children_builder(node.children) if node.children else None
+        )
+        self.builder.h2(node.text, builder_func)
+
+    def _process_heading_3(self, node: Heading3Schema) -> None:
+        builder_func = (
+            self._create_children_builder(node.children) if node.children else None
+        )
+        self.builder.h3(node.text, builder_func)
 
     def _process_paragraph(self, node: ParagraphSchema) -> None:
         self.builder.paragraph(node.text)

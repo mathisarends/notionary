@@ -15,7 +15,9 @@ if TYPE_CHECKING:
 
 class MarkdownNodeType(StrEnum):
     PARAGRAPH = "paragraph"
-    HEADING = "heading"
+    HEADING_1 = "heading_1"
+    HEADING_2 = "heading_2"
+    HEADING_3 = "heading_3"
     SPACE = "space"
     DIVIDER = "divider"
     QUOTE = "quote"
@@ -60,16 +62,37 @@ class ParagraphSchema(MarkdownNodeSchema):
         processor._process_paragraph(self)
 
 
-class HeadingSchema(MarkdownNodeSchema):
-    type: Literal[MarkdownNodeType.HEADING] = MarkdownNodeType.HEADING
-    text: str = Field(description="The heading text")
-    level: Literal[1, 2, 3] = Field(description="Heading level (1-3)")
+class Heading1Schema(MarkdownNodeSchema):
+    type: Literal["heading_1"] = "heading_1"
+    text: str = Field(description="The heading 1 text")
     children: list[MarkdownNodeSchema] | None = Field(
         default=None, description="Optional child nodes"
     )
 
     def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
-        processor._process_heading(self)
+        processor._process_heading_1(self)
+
+
+class Heading2Schema(MarkdownNodeSchema):
+    type: Literal["heading_2"] = "heading_2"
+    text: str = Field(description="The heading 2 text")
+    children: list[MarkdownNodeSchema] | None = Field(
+        default=None, description="Optional child nodes"
+    )
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_heading_2(self)
+
+
+class Heading3Schema(MarkdownNodeSchema):
+    type: Literal["heading_3"] = "heading_3"
+    text: str = Field(description="The heading 3 text")
+    children: list[MarkdownNodeSchema] | None = Field(
+        default=None, description="Optional child nodes"
+    )
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_heading_3(self)
 
 
 class SpaceSchema(MarkdownNodeSchema):
@@ -327,7 +350,9 @@ class ColumnsSchema(MarkdownNodeSchema):
 
 
 type AnyMarkdownNode = Annotated[
-    HeadingSchema
+    Heading1Schema
+    | Heading2Schema
+    | Heading3Schema
     | ParagraphSchema
     | SpaceSchema
     | DividerSchema

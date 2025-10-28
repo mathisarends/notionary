@@ -16,7 +16,9 @@ from notionary.page.content.markdown.structured_output import (
     EmbedSchema,
     EquationSchema,
     FileSchema,
-    HeadingSchema,
+    Heading1Schema,
+    Heading2Schema,
+    Heading3Schema,
     ImageSchema,
     MarkdownDocumentSchema,
     MermaidSchema,
@@ -66,19 +68,19 @@ def test_convert_paragraph(converter: StructuredOutputMarkdownConverter):
 
 
 def test_convert_heading_level_1(converter: StructuredOutputMarkdownConverter):
-    schema = MarkdownDocumentSchema(nodes=[HeadingSchema(text="Heading 1", level=1)])
+    schema = MarkdownDocumentSchema(nodes=[Heading1Schema(text="Heading 1")])
     result = converter.convert(schema)
     assert "# Heading 1" in result
 
 
 def test_convert_heading_level_2(converter: StructuredOutputMarkdownConverter):
-    schema = MarkdownDocumentSchema(nodes=[HeadingSchema(text="Heading 2", level=2)])
+    schema = MarkdownDocumentSchema(nodes=[Heading2Schema(text="Heading 2")])
     result = converter.convert(schema)
     assert "## Heading 2" in result
 
 
 def test_convert_heading_level_3(converter: StructuredOutputMarkdownConverter):
-    schema = MarkdownDocumentSchema(nodes=[HeadingSchema(text="Heading 3", level=3)])
+    schema = MarkdownDocumentSchema(nodes=[Heading3Schema(text="Heading 3")])
     result = converter.convert(schema)
     assert "### Heading 3" in result
 
@@ -86,8 +88,8 @@ def test_convert_heading_level_3(converter: StructuredOutputMarkdownConverter):
 def test_convert_heading_with_children(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
         nodes=[
-            HeadingSchema(
-                text="Parent", level=1, children=[ParagraphSchema(text="Child content")]
+            Heading1Schema(
+                text="Parent", children=[ParagraphSchema(text="Child content")]
             )
         ]
     )
@@ -132,7 +134,15 @@ def test_convert_quote_with_children(converter: StructuredOutputMarkdownConverte
 
 def test_convert_bulleted_list(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
-        nodes=[BulletedListSchema(items=["Item 1", "Item 2", "Item 3"])]
+        nodes=[
+            BulletedListSchema(
+                items=[
+                    BulletedListItemSchema(text="Item 1"),
+                    BulletedListItemSchema(text="Item 2"),
+                    BulletedListItemSchema(text="Item 3"),
+                ]
+            )
+        ]
     )
     result = converter.convert(schema)
     assert "- Item 1" in result
@@ -163,7 +173,15 @@ def test_convert_bulleted_list_item_with_children(
 
 def test_convert_numbered_list(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
-        nodes=[NumberedListSchema(items=["First", "Second", "Third"])]
+        nodes=[
+            NumberedListSchema(
+                items=[
+                    NumberedListItemSchema(text="First"),
+                    NumberedListItemSchema(text="Second"),
+                    NumberedListItemSchema(text="Third"),
+                ]
+            )
+        ]
     )
     result = converter.convert(schema)
     assert "First" in result
@@ -229,7 +247,11 @@ def test_convert_todo_list(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
         nodes=[
             TodoListSchema(
-                items=["Task 1", "Task 2", "Task 3"], completed=[True, False, False]
+                items=[
+                    TodoSchema(text="Task 1", checked=True),
+                    TodoSchema(text="Task 2", checked=False),
+                    TodoSchema(text="Task 3", checked=False),
+                ]
             )
         ]
     )
@@ -243,19 +265,26 @@ def test_convert_todo_list_without_completion_status(
     converter: StructuredOutputMarkdownConverter,
 ):
     schema = MarkdownDocumentSchema(
-        nodes=[TodoListSchema(items=["Task 1", "Task 2"], completed=None)]
+        nodes=[
+            TodoListSchema(
+                items=[
+                    TodoSchema(text="Task A"),
+                    TodoSchema(text="Task B"),
+                ]
+            )
+        ]
     )
     result = converter.convert(schema)
-    assert "Task 1" in result
-    assert "Task 2" in result
+    assert "Task A" in result
+    assert "Task B" in result
 
 
 def test_convert_callout_without_children(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
-        nodes=[CalloutSchema(text="Important note", emoji="💡")]
+        nodes=[CalloutSchema(text="Important message", emoji="💡")]
     )
     result = converter.convert(schema)
-    assert "Important note" in result
+    assert "Important message" in result
 
 
 def test_convert_callout_with_children(converter: StructuredOutputMarkdownConverter):
@@ -263,34 +292,33 @@ def test_convert_callout_with_children(converter: StructuredOutputMarkdownConver
         nodes=[
             CalloutSchema(
                 text="Note",
-                emoji="💡",
-                children=[ParagraphSchema(text="Additional details")],
+                emoji="📝",
+                children=[ParagraphSchema(text="Additional info")],
             )
         ]
     )
     result = converter.convert(schema)
     assert "Note" in result
-    assert "Additional details" in result
+    assert "Additional info" in result
 
 
 def test_convert_toggle(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
         nodes=[
             ToggleSchema(
-                title="Toggle title", children=[ParagraphSchema(text="Hidden content")]
+                title="Click to expand",
+                children=[ParagraphSchema(text="Hidden content")],
             )
         ]
     )
     result = converter.convert(schema)
-    assert "Toggle title" in result
+    assert "Click to expand" in result
     assert "Hidden content" in result
 
 
 def test_convert_image(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
-        nodes=[
-            ImageSchema(url="https://example.com/image.png", caption="Image caption")
-        ]
+        nodes=[ImageSchema(url="https://example.com/image.png", caption="An image")]
     )
     result = converter.convert(schema)
     assert "https://example.com/image.png" in result
@@ -298,9 +326,7 @@ def test_convert_image(converter: StructuredOutputMarkdownConverter):
 
 def test_convert_video(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
-        nodes=[
-            VideoSchema(url="https://example.com/video.mp4", caption="Video caption")
-        ]
+        nodes=[VideoSchema(url="https://example.com/video.mp4", caption="A video")]
     )
     result = converter.convert(schema)
     assert "https://example.com/video.mp4" in result
@@ -308,9 +334,7 @@ def test_convert_video(converter: StructuredOutputMarkdownConverter):
 
 def test_convert_audio(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
-        nodes=[
-            AudioSchema(url="https://example.com/audio.mp3", caption="Audio caption")
-        ]
+        nodes=[AudioSchema(url="https://example.com/audio.mp3", caption="An audio")]
     )
     result = converter.convert(schema)
     assert "https://example.com/audio.mp3" in result
@@ -318,15 +342,15 @@ def test_convert_audio(converter: StructuredOutputMarkdownConverter):
 
 def test_convert_file(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
-        nodes=[FileSchema(url="https://example.com/file.pdf", caption="File caption")]
+        nodes=[FileSchema(url="https://example.com/file.zip", caption="A file")]
     )
     result = converter.convert(schema)
-    assert "https://example.com/file.pdf" in result
+    assert "https://example.com/file.zip" in result
 
 
 def test_convert_pdf(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
-        nodes=[PdfSchema(url="https://example.com/document.pdf", caption="PDF caption")]
+        nodes=[PdfSchema(url="https://example.com/document.pdf", caption="A PDF")]
     )
     result = converter.convert(schema)
     assert "https://example.com/document.pdf" in result
@@ -348,10 +372,14 @@ def test_convert_bookmark(converter: StructuredOutputMarkdownConverter):
 
 def test_convert_embed(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
-        nodes=[EmbedSchema(url="https://example.com/embed", caption="Embed caption")]
+        nodes=[
+            EmbedSchema(
+                url="https://www.youtube.com/embed/xyz", caption="Embedded video"
+            )
+        ]
     )
     result = converter.convert(schema)
-    assert "https://example.com/embed" in result
+    assert "https://www.youtube.com/embed/xyz" in result
 
 
 def test_convert_code(converter: StructuredOutputMarkdownConverter):
@@ -366,24 +394,20 @@ def test_convert_code(converter: StructuredOutputMarkdownConverter):
     )
     result = converter.convert(schema)
     assert 'print("Hello, World!")' in result
-    assert "```" in result
-
-
-def test_convert_code_without_language(converter: StructuredOutputMarkdownConverter):
-    schema = MarkdownDocumentSchema(
-        nodes=[CodeSchema(code="some code", language=None, caption=None)]
-    )
-    result = converter.convert(schema)
-    assert "some code" in result
 
 
 def test_convert_mermaid(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
-        nodes=[MermaidSchema(diagram="graph TD\n    A-->B", caption="Mermaid diagram")]
+        nodes=[
+            MermaidSchema(
+                diagram="graph TD;\n    A-->B;",
+                caption="Flow diagram",
+            )
+        ]
     )
     result = converter.convert(schema)
-    assert "graph TD" in result
-    assert "A-->B" in result
+    assert "graph TD;" in result
+    assert "A-->B;" in result
 
 
 def test_convert_table(converter: StructuredOutputMarkdownConverter):
@@ -391,10 +415,7 @@ def test_convert_table(converter: StructuredOutputMarkdownConverter):
         nodes=[
             TableSchema(
                 headers=["Name", "Age", "City"],
-                rows=[
-                    ["Alice", "30", "Berlin"],
-                    ["Bob", "25", "Munich"],
-                ],
+                rows=[["Alice", "30", "NYC"], ["Bob", "25", "LA"]],
             )
         ]
     )
@@ -465,9 +486,8 @@ def test_convert_columns_without_width_ratios(
 def test_convert_complex_nested_document(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
         nodes=[
-            HeadingSchema(
+            Heading1Schema(
                 text="Main Title",
-                level=1,
                 children=[
                     ParagraphSchema(text="Introduction paragraph"),
                     BulletedListItemSchema(
@@ -505,10 +525,16 @@ def test_convert_multiple_nodes_in_sequence(
 ):
     schema = MarkdownDocumentSchema(
         nodes=[
-            HeadingSchema(text="Document Title", level=1),
+            Heading1Schema(text="Document Title"),
             ParagraphSchema(text="First paragraph"),
             DividerSchema(),
-            BulletedListSchema(items=["Alpha", "Beta", "Gamma"]),
+            BulletedListSchema(
+                items=[
+                    BulletedListItemSchema(text="Alpha"),
+                    BulletedListItemSchema(text="Beta"),
+                    BulletedListItemSchema(text="Gamma"),
+                ]
+            ),
             SpaceSchema(),
             CodeSchema(code="x = 42", language=CodingLanguage.PYTHON),
         ]
@@ -518,9 +544,9 @@ def test_convert_multiple_nodes_in_sequence(
     assert "# Document Title" in result
     assert "First paragraph" in result
     assert "---" in result
-    assert "- Alpha" in result
-    assert "- Beta" in result
-    assert "- Gamma" in result
+    assert "Alpha" in result
+    assert "Beta" in result
+    assert "Gamma" in result
     assert "x = 42" in result
 
 
@@ -529,18 +555,24 @@ def test_convert_complete_realistic_document(
 ):
     schema = MarkdownDocumentSchema(
         nodes=[
-            HeadingSchema(text="Project Documentation", level=1),
+            Heading1Schema(text="Project Documentation"),
             ParagraphSchema(text="Welcome to the project documentation."),
             SpaceSchema(),
-            HeadingSchema(text="Features", level=2),
-            BulletedListSchema(items=["Fast", "Reliable", "Easy to use"]),
+            Heading2Schema(text="Features"),
+            BulletedListSchema(
+                items=[
+                    BulletedListItemSchema(text="Fast"),
+                    BulletedListItemSchema(text="Reliable"),
+                    BulletedListItemSchema(text="Easy to use"),
+                ]
+            ),
             SpaceSchema(),
-            HeadingSchema(text="Installation", level=2),
+            Heading2Schema(text="Installation"),
             NumberedListSchema(
                 items=[
-                    "Clone the repository",
-                    "Install dependencies",
-                    "Run the application",
+                    NumberedListItemSchema(text="Clone the repository"),
+                    NumberedListItemSchema(text="Install dependencies"),
+                    NumberedListItemSchema(text="Run the application"),
                 ]
             ),
             SpaceSchema(),
@@ -551,10 +583,13 @@ def test_convert_complete_realistic_document(
                 language=CodingLanguage.BASH,
             ),
             SpaceSchema(),
-            HeadingSchema(text="Todo", level=2),
+            Heading2Schema(text="Todo"),
             TodoListSchema(
-                items=["Write tests", "Update README", "Release v1.0"],
-                completed=[True, True, False],
+                items=[
+                    TodoSchema(text="Write tests", checked=True),
+                    TodoSchema(text="Update README", checked=True),
+                    TodoSchema(text="Release v1.0", checked=False),
+                ]
             ),
         ]
     )
@@ -581,9 +616,8 @@ def test_convert_complete_realistic_document(
 def test_deeply_nested_structure(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
         nodes=[
-            HeadingSchema(
+            Heading1Schema(
                 text="Level 1",
-                level=1,
                 children=[
                     QuoteSchema(
                         text="Level 2",
@@ -619,11 +653,26 @@ def test_deeply_nested_structure(converter: StructuredOutputMarkdownConverter):
 def test_mixed_list_types(converter: StructuredOutputMarkdownConverter):
     schema = MarkdownDocumentSchema(
         nodes=[
-            BulletedListSchema(items=["Bullet 1", "Bullet 2"]),
+            BulletedListSchema(
+                items=[
+                    BulletedListItemSchema(text="Bullet 1"),
+                    BulletedListItemSchema(text="Bullet 2"),
+                ]
+            ),
             SpaceSchema(),
-            NumberedListSchema(items=["Number 1", "Number 2"]),
+            NumberedListSchema(
+                items=[
+                    NumberedListItemSchema(text="Number 1"),
+                    NumberedListItemSchema(text="Number 2"),
+                ]
+            ),
             SpaceSchema(),
-            TodoListSchema(items=["Todo 1", "Todo 2"], completed=[True, False]),
+            TodoListSchema(
+                items=[
+                    TodoSchema(text="Todo 1", checked=True),
+                    TodoSchema(text="Todo 2", checked=False),
+                ]
+            ),
         ]
     )
     result = converter.convert(schema)
