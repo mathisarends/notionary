@@ -30,6 +30,7 @@ from notionary.page.content.markdown.structured_output.models import (
     ToggleSchema,
     VideoSchema,
 )
+from notionary.utils.decorators import time_execution_sync
 from notionary.utils.mixins.logging import LoggingMixin
 
 
@@ -37,6 +38,7 @@ class StructuredOutputMarkdownConverter(LoggingMixin):
     def __init__(self, builder: MarkdownBuilder | None = None) -> None:
         self.builder = builder or MarkdownBuilder()
 
+    @time_execution_sync()
     def convert(self, schema: MarkdownDocumentSchema) -> str:
         for node in schema.nodes:
             self._process_node(node)
@@ -73,7 +75,14 @@ class StructuredOutputMarkdownConverter(LoggingMixin):
         self.builder.quote(node.text, builder_func)
 
     def _process_bulleted_list(self, node: BulletedListSchema) -> None:
-        self.builder.bulleted_list(node.items)
+        has_children = any(item.children for item in node.items)
+
+        if has_children:
+            for item in node.items:
+                self._process_bulleted_list_item(item)
+        else:
+            texts = [item.text for item in node.items]
+            self.builder.bulleted_list(texts)
 
     def _process_bulleted_list_item(self, node: BulletedListItemSchema) -> None:
         builder_func = (
@@ -82,7 +91,14 @@ class StructuredOutputMarkdownConverter(LoggingMixin):
         self.builder.bulleted_list_item(node.text, builder_func)
 
     def _process_numbered_list(self, node: NumberedListSchema) -> None:
-        self.builder.numbered_list(node.items)
+        has_children = any(item.children for item in node.items)
+
+        if has_children:
+            for item in node.items:
+                self._process_numbered_list_item(item)
+        else:
+            texts = [item.text for item in node.items]
+            self.builder.numbered_list(texts)
 
     def _process_numbered_list_item(self, node: NumberedListItemSchema) -> None:
         builder_func = (
@@ -97,7 +113,15 @@ class StructuredOutputMarkdownConverter(LoggingMixin):
         self.builder.todo(node.text, checked=node.checked, builder_func=builder_func)
 
     def _process_todo_list(self, node: TodoListSchema) -> None:
-        self.builder.todo_list(node.items, node.completed)
+        has_children = any(item.children for item in node.items)
+
+        if has_children:
+            for todo_item in node.items:
+                self._process_todo(todo_item)
+        else:
+            texts = [item.text for item in node.items]
+            completed = [item.checked for item in node.items]
+            self.builder.todo_list(texts, completed)
 
     def _process_callout(self, node: CalloutSchema) -> None:
         if node.children:

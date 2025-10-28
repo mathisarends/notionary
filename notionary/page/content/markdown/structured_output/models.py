@@ -14,8 +14,6 @@ if TYPE_CHECKING:
 
 
 class MarkdownNodeType(StrEnum):
-    """Types of markdown nodes supported in the document structure."""
-
     PARAGRAPH = "paragraph"
     HEADING = "heading"
     SPACE = "space"
@@ -99,14 +97,6 @@ class QuoteSchema(MarkdownNodeSchema):
         processor._process_quote(self)
 
 
-class BulletedListSchema(MarkdownNodeSchema):
-    type: Literal[MarkdownNodeType.BULLETED_LIST] = MarkdownNodeType.BULLETED_LIST
-    items: list[str] = Field(description="List of bullet point texts")
-
-    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
-        processor._process_bulleted_list(self)
-
-
 class BulletedListItemSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.BULLETED_LIST_ITEM] = (
         MarkdownNodeType.BULLETED_LIST_ITEM
@@ -120,12 +110,14 @@ class BulletedListItemSchema(MarkdownNodeSchema):
         processor._process_bulleted_list_item(self)
 
 
-class NumberedListSchema(MarkdownNodeSchema):
-    type: Literal[MarkdownNodeType.NUMBERED_LIST] = MarkdownNodeType.NUMBERED_LIST
-    items: list[str] = Field(description="List of numbered item texts")
+class BulletedListSchema(MarkdownNodeSchema):
+    type: Literal[MarkdownNodeType.BULLETED_LIST] = MarkdownNodeType.BULLETED_LIST
+    items: list[BulletedListItemSchema] = Field(
+        description="List of BulletedListItemSchema objects. Each item must have 'type', 'text', and optionally 'children'"
+    )
 
     def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
-        processor._process_numbered_list(self)
+        processor._process_bulleted_list(self)
 
 
 class NumberedListItemSchema(MarkdownNodeSchema):
@@ -139,6 +131,16 @@ class NumberedListItemSchema(MarkdownNodeSchema):
 
     def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
         processor._process_numbered_list_item(self)
+
+
+class NumberedListSchema(MarkdownNodeSchema):
+    type: Literal[MarkdownNodeType.NUMBERED_LIST] = MarkdownNodeType.NUMBERED_LIST
+    items: list[NumberedListItemSchema] = Field(
+        description="List of NumberedListItemSchema objects. Each item must have 'type', 'text', and optionally 'children'"
+    )
+
+    def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
+        processor._process_numbered_list(self)
 
 
 class TodoSchema(MarkdownNodeSchema):
@@ -155,9 +157,8 @@ class TodoSchema(MarkdownNodeSchema):
 
 class TodoListSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.TODO_LIST] = MarkdownNodeType.TODO_LIST
-    items: list[str] = Field(description="List of todo item texts")
-    completed: list[bool] | None = Field(
-        default=None, description="List indicating which items are completed"
+    items: list[TodoSchema] = Field(
+        description="List of TodoSchema objects. Each item must have 'type', 'text', 'checked', and optionally 'children'"
     )
 
     def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
