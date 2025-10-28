@@ -121,7 +121,6 @@ class SyntaxPromptRegistry:
         return [f"{start_delimiter}{url}{end_delimiter}" for url in example_urls]
 
     def _register_defaults(self) -> None:
-        # Media elements
         self._register_audio_prompt()
         self._register_video_prompt()
         self._register_image_prompt()
@@ -130,20 +129,17 @@ class SyntaxPromptRegistry:
         self._register_bookmark_prompt()
         self._register_embed_prompt()
 
-        # Lists
         self._register_bulleted_list_prompt()
         self._register_numbered_list_prompt()
         self._register_todo_prompt()
         self._register_todo_done_prompt()
 
-        # Block containers
         self._register_toggle_prompt()
         self._register_callout_prompt()
         self._register_code_prompt()
         self._register_column_prompt()
         self._register_equation_prompt()
 
-        # Text blocks
         self._register_quote_prompt()
         self._register_heading_prompt()
         self._register_divider_prompt()

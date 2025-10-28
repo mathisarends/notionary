@@ -186,7 +186,7 @@ class Entity(LoggingMixin, ABC):
         upload_response = await self._file_upload_service.upload_file(
             file_path, filename
         )
-        await self._set_icon_from_file_upload(upload_response.id)
+        await self.set_icon_from_file_upload(upload_response.id)
 
     async def set_icon_from_bytes(
         self, file_content: bytes, filename: str, content_type: str | None = None
@@ -194,9 +194,9 @@ class Entity(LoggingMixin, ABC):
         upload_response = await self._file_upload_service.upload_from_bytes(
             file_content, filename, content_type
         )
-        await self._set_icon_from_file_upload(upload_response.id)
+        await self.set_icon_from_file_upload(upload_response.id)
 
-    async def _set_icon_from_file_upload(self, file_upload_id: str) -> None:
+    async def set_icon_from_file_upload(self, file_upload_id: str) -> None:
         entity_response = (
             await self._entity_metadata_update_client.patch_icon_from_file_upload(
                 file_upload_id
@@ -222,7 +222,7 @@ class Entity(LoggingMixin, ABC):
         upload_response = await self._file_upload_service.upload_file(
             file_path, filename
         )
-        await self._set_cover_image_from_file_upload(upload_response.id)
+        await self.set_cover_image_from_file_upload(upload_response.id)
 
     async def set_cover_image_from_bytes(
         self, file_content: bytes, filename: str, content_type: str | None = None
@@ -230,9 +230,9 @@ class Entity(LoggingMixin, ABC):
         upload_response = await self._file_upload_service.upload_from_bytes(
             file_content, filename, content_type
         )
-        await self._set_cover_image_from_file_upload(upload_response.id)
+        await self.set_cover_image_from_file_upload(upload_response.id)
 
-    async def _set_cover_image_from_file_upload(self, file_upload_id: str) -> None:
+    async def set_cover_image_from_file_upload(self, file_upload_id: str) -> None:
         entity_response = (
             await self._entity_metadata_update_client.patch_cover_from_file_upload(
                 file_upload_id
