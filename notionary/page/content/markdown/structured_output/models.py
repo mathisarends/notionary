@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 
 
 class MarkdownNodeType(StrEnum):
+    """Types of markdown nodes supported in the document structure."""
+
     PARAGRAPH = "paragraph"
     HEADING = "heading"
     SPACE = "space"
@@ -302,19 +304,28 @@ class TableOfContentsSchema(MarkdownNodeSchema):
 
 
 class ColumnSchema(BaseModel):
-    width_ratio: float | None = Field(default=None, description="Optional width ratio")
-    children: list[MarkdownNodeSchema] = Field(description="Column content")
+    """Single column in a multi-column layout."""
+
+    width_ratio: float | None = Field(
+        default=None,
+        description="Relative width of this column (e.g., 0.5 for half width). If not specified, columns are equal width",
+    )
+    children: list[MarkdownNodeSchema] = Field(
+        description="Content inside this column. Can contain any markdown nodes"
+    )
 
 
 class ColumnsSchema(MarkdownNodeSchema):
     type: Literal[MarkdownNodeType.COLUMNS] = MarkdownNodeType.COLUMNS
-    columns: list[ColumnSchema] = Field(description="List of columns")
+    columns: list[ColumnSchema] = Field(
+        description="List of columns in this layout. Each column contains its own content"
+    )
 
     def process_with(self, processor: StructuredOutputMarkdownConverter) -> None:
         processor._process_columns(self)
 
 
-AnyMarkdownNode = Annotated[
+type AnyMarkdownNode = Annotated[
     HeadingSchema
     | ParagraphSchema
     | SpaceSchema
@@ -350,55 +361,5 @@ class MarkdownDocumentSchema(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     nodes: list[AnyMarkdownNode] = Field(
-        description="List of markdown nodes in the document"
+        description="Ordered list of top-level markdown nodes in the document. Each node can contain nested children"
     )
-
-
-class OpenAIMarkdownNode(BaseModel):
-    """Flat node schema for OpenAI structured outputs - supports all node types"""
-
-    type: MarkdownNodeType = Field(description="Type of markdown node")
-
-    # Content fields
-    text: str | None = Field(
-        default=None, description="Text for paragraph, quote, list items, callout"
-    )
-    title: str | None = Field(default=None, description="Title for toggle or bookmark")
-    expression: str | None = Field(
-        default=None, description="LaTeX expression for equations"
-    )
-    code: str | None = Field(default=None, description="Code content")
-    diagram: str | None = Field(default=None, description="Mermaid diagram")
-
-    # List fields
-    items: list[str] | None = Field(default=None, description="Items for lists")
-
-    # Properties
-    level: Literal[1, 2, 3] | None = Field(default=None, description="Heading level")
-    checked: bool | None = Field(default=None, description="Todo checked status")
-    completed: list[bool] | None = Field(
-        default=None, description="Todo list completion"
-    )
-    emoji: str | None = Field(default=None, description="Callout emoji")
-
-    # Media
-    url: str | None = Field(default=None, description="URL for media/links")
-    caption: str | None = Field(default=None, description="Caption for media")
-    language: CodingLanguage | None = Field(default=None, description="Code language")
-
-    # Table
-    headers: list[str] | None = Field(default=None, description="Table headers")
-    rows: list[list[str]] | None = Field(default=None, description="Table rows")
-
-    # Nested
-    children: list[OpenAIMarkdownNode] | None = Field(
-        default=None, description="Child nodes"
-    )
-    columns: list[ColumnSchema] | None = Field(
-        default=None, description="Column layout"
-    )
-
-
-class OpenAIMarkdownDocument(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    nodes: list[OpenAIMarkdownNode] = Field(description="List of markdown nodes")
