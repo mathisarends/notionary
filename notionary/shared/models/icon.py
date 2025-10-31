@@ -1,9 +1,11 @@
 from enum import StrEnum
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from notionary.shared.models.file import File
+from notionary.shared.models.file import (
+    File,
+)
 
 
 class IconType(StrEnum):
@@ -18,4 +20,4 @@ class EmojiIcon(BaseModel):
     emoji: str
 
 
-type Icon = EmojiIcon | File
+type Icon = Annotated[EmojiIcon | File, Field(discriminator="type")]
