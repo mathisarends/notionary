@@ -32,7 +32,7 @@ class EntityResponseDto(BaseModel):
 
 
 class NotionEntityUpdateDto(BaseModel):
-    icon: File | None = None
+    icon: Icon | None = None
     cover: File | None = None
     in_trash: bool | None = None
 
