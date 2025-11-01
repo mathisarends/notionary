@@ -152,9 +152,7 @@ class PagePropertyHttpClient(NotionHttpClient):
             select_option = SelectOption(name=str(value))
             return PageSelectProperty(id=property_id, select=select_option)
         elif property_type == PageMultiSelectProperty:
-            multi_select_options = [
-                SelectOption(id="", name=str(item)) for item in value
-            ]
+            multi_select_options = [SelectOption(name=str(item)) for item in value]
             return PageMultiSelectProperty(
                 id=property_id, multi_select=multi_select_options
             )
