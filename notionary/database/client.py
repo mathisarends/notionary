@@ -1,11 +1,11 @@
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.database.schemas import (
     NotionDatabaseDto,
     NotionDatabaseUpdateDto,
 )
 from notionary.http.client import NotionHttpClient
+from notionary.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 
 
 class NotionDatabaseHttpClient(NotionHttpClient):
@@ -28,7 +28,7 @@ class NotionDatabaseHttpClient(NotionHttpClient):
         return NotionDatabaseDto.model_validate(response)
 
     async def update_database_title(self, title: str) -> NotionDatabaseDto:
-        from notionary.blocks.rich_text.markdown_rich_text_converter import (
+        from notionary.rich_text.markdown_rich_text_converter import (
             MarkdownRichTextConverter,
         )
 
@@ -39,7 +39,7 @@ class NotionDatabaseHttpClient(NotionHttpClient):
         return await self.patch_database(database_title_update_dto)
 
     async def update_database_description(self, description: str) -> str:
-        from notionary.blocks.rich_text.markdown_rich_text_converter import (
+        from notionary.rich_text.markdown_rich_text_converter import (
             MarkdownRichTextConverter,
         )
 

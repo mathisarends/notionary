@@ -3,9 +3,6 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Any, override
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.data_source.query.schema import DataSourceQueryParams
 from notionary.data_source.schemas import (
     DataSourceDto,
@@ -14,6 +11,9 @@ from notionary.data_source.schemas import (
 )
 from notionary.http.client import NotionHttpClient
 from notionary.page.schemas import NotionPageDto
+from notionary.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.shared.entity.entity_metadata_update_client import (
     EntityMetadataUpdateClient,
 )
@@ -57,7 +57,7 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
         await self.patch_metadata(update_data_source_dto)
 
     async def update_description(self, description: str) -> str:
-        from notionary.blocks.rich_text.markdown_rich_text_converter import (
+        from notionary.rich_text.markdown_rich_text_converter import (
             MarkdownRichTextConverter,
         )
 

@@ -4,13 +4,13 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from notionary.blocks.enums import BlockType, CodingLanguage
-from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.blocks.schemas import Block, CodeBlock, CodeData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.code import CodeRenderer
+from notionary.rich_text.models import RichText
+from notionary.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 
 
 def _create_code_data(

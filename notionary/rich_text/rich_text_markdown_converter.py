@@ -1,19 +1,19 @@
 from typing import ClassVar
 
-from notionary.blocks.rich_text.models import (
+from notionary.blocks.schemas import BlockColor
+from notionary.rich_text.models import (
     MentionDate,
     MentionType,
     RichText,
     RichTextType,
 )
-from notionary.blocks.rich_text.name_id_resolver import (
+from notionary.rich_text.name_id_resolver import (
     DatabaseNameIdResolver,
     DataSourceNameIdResolver,
     NameIdResolver,
     PageNameIdResolver,
     PersonNameIdResolver,
 )
-from notionary.blocks.schemas import BlockColor
 
 
 class RichTextToMarkdownConverter:

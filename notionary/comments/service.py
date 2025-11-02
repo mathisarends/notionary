@@ -1,11 +1,11 @@
 import asyncio
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import (
-    MarkdownRichTextConverter,
-)
 from notionary.comments.client import CommentClient
 from notionary.comments.factory import CommentFactory
 from notionary.comments.models import Comment
+from notionary.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 
 
 class CommentService:

@@ -1,6 +1,3 @@
-from notionary.blocks.rich_text.markdown_rich_text_converter import (
-    MarkdownRichTextConverter,
-)
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.parser.parsers import (
     AudioParser,
@@ -31,6 +28,9 @@ from notionary.page.content.parser.parsers import (
     VideoParser,
 )
 from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 
 
 class ConverterChainFactory:

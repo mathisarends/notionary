@@ -1,10 +1,10 @@
 import asyncio
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.comments.models import Comment
 from notionary.comments.schemas import CommentDto
+from notionary.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.user.base import BaseUser
 from notionary.user.client import UserHttpClient
 from notionary.utils.mixins.logging import LoggingMixin

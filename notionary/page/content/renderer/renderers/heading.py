@@ -1,12 +1,12 @@
 from typing import override
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.blocks.schemas import Block, BlockType, HeadingData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.base import BlockRenderer
 from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 
 
 class HeadingRenderer(BlockRenderer):

@@ -2,7 +2,6 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from notionary.blocks.rich_text.models import RichText
 from notionary.http.client import NotionHttpClient
 from notionary.page.properties.schemas import (
     DateValue,
@@ -24,6 +23,7 @@ from notionary.page.properties.schemas import (
     StatusOption,
 )
 from notionary.page.schemas import NotionPageDto, PgePropertiesUpdateDto
+from notionary.rich_text.models import RichText
 
 
 class PagePropertyHttpClient(NotionHttpClient):

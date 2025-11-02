@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from notionary.blocks.rich_text.name_id_resolver import DataSourceNameIdResolver
 from notionary.data_source.properties.schemas import (
     DataSourceNumberConfig,
     DataSourceNumberProperty,
@@ -18,6 +17,7 @@ from notionary.data_source.properties.schemas import (
     PropertyColor,
 )
 from notionary.data_source.schema.service import DataSourcePropertySchemaFormatter
+from notionary.rich_text.name_id_resolver import DataSourceNameIdResolver
 from notionary.shared.properties.type import PropertyType
 
 

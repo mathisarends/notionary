@@ -1,13 +1,13 @@
 import re
 from typing import override
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import (
-    MarkdownRichTextConverter,
-)
-from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.schemas import CodeData, CodingLanguage, CreateCodeBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
+from notionary.rich_text.models import RichText
 
 
 class CodeParser(LineParser):

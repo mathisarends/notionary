@@ -4,13 +4,13 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.blocks.schemas import Block, EmbedBlock, EmbedData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.embed import EmbedRenderer
+from notionary.rich_text.models import RichText
+from notionary.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 
 
 def _create_embed_data(url: str) -> EmbedData:

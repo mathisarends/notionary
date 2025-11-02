@@ -2,9 +2,6 @@ from typing import Self
 
 from notionary.blocks.client import NotionBlockHttpClient
 from notionary.blocks.content import BlockContentService, BlockContentServiceFactory
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    convert_rich_text_to_markdown,
-)
 from notionary.blocks.service import NotionBlock
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
@@ -15,6 +12,9 @@ from notionary.page.properties.factory import PagePropertyHandlerFactory
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.properties.service import PagePropertyHandler
 from notionary.page.schemas import NotionPageDto
+from notionary.rich_text.rich_text_markdown_converter import (
+    convert_rich_text_to_markdown,
+)
 from notionary.shared.entity.service import Entity
 from notionary.workspace.query.service import WorkspaceQueryService
 

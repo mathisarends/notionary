@@ -3,9 +3,6 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Never
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    convert_rich_text_to_markdown,
-)
 from notionary.exceptions.properties import (
     AccessPagePropertyWithoutDataSourceError,
     PagePropertyNotFoundError,
@@ -29,6 +26,9 @@ from notionary.page.properties.schemas import (
     PageStatusProperty,
     PageTitleProperty,
     PageURLProperty,
+)
+from notionary.rich_text.rich_text_markdown_converter import (
+    convert_rich_text_to_markdown,
 )
 from notionary.shared.models.parent import ParentType
 

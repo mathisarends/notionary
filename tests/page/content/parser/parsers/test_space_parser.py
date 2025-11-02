@@ -5,22 +5,22 @@ import pytest
 
 from notionary.blocks.content import BlockContentServiceFactory
 from notionary.blocks.enums import BlockType
-from notionary.blocks.rich_text.markdown_rich_text_converter import (
+from notionary.file_upload.service import NotionFileUpload
+from notionary.page.content.parser.factory import ConverterChainFactory
+from notionary.page.content.parser.service import MarkdownToNotionConverter
+from notionary.page.content.renderer.factory import RendererChainFactory
+from notionary.rich_text.markdown_rich_text_converter import (
     MarkdownRichTextConverter,
 )
-from notionary.blocks.rich_text.name_id_resolver import (
+from notionary.rich_text.name_id_resolver import (
     DatabaseNameIdResolver,
     DataSourceNameIdResolver,
     PageNameIdResolver,
     PersonNameIdResolver,
 )
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
+from notionary.rich_text.rich_text_markdown_converter import (
     RichTextToMarkdownConverter,
 )
-from notionary.file_upload.service import NotionFileUpload
-from notionary.page.content.parser.factory import ConverterChainFactory
-from notionary.page.content.parser.service import MarkdownToNotionConverter
-from notionary.page.content.renderer.factory import RendererChainFactory
 
 
 @pytest.fixture

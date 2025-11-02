@@ -3,8 +3,6 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from notionary.blocks.rich_text.name_id_resolver.page import PageNameIdResolver
-from notionary.blocks.rich_text.name_id_resolver.person import PersonNameIdResolver
 from notionary.data_source.query.resolver import QueryResolver
 from notionary.data_source.query.schema import (
     CompoundFilter,
@@ -14,6 +12,8 @@ from notionary.data_source.query.schema import (
     PropertyFilter,
     StringOperator,
 )
+from notionary.rich_text.name_id_resolver.page import PageNameIdResolver
+from notionary.rich_text.name_id_resolver.person import PersonNameIdResolver
 from notionary.shared.properties.type import PropertyType
 
 

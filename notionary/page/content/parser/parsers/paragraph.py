@@ -1,13 +1,13 @@
 from typing import override
 
 from notionary.blocks.enums import BlockColor
-from notionary.blocks.rich_text.markdown_rich_text_converter import (
-    MarkdownRichTextConverter,
-)
 from notionary.blocks.schemas import CreateParagraphBlock, CreateParagraphData
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
+)
+from notionary.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
 )
 
 

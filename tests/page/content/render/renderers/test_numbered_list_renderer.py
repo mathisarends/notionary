@@ -4,14 +4,14 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.blocks.schemas import Block, NumberedListItemBlock, NumberedListItemData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.numbered_list import NumberedListRenderer
 from notionary.page.content.syntax.definition import MarkdownGrammar
+from notionary.rich_text.models import RichText
+from notionary.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 
 
 def _create_numbered_list_item_data(rich_text: list[RichText]) -> NumberedListItemData:

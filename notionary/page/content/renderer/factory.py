@@ -1,6 +1,3 @@
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.page.content.renderer.renderers import (
     AudioRenderer,
     BlockRenderer,
@@ -30,6 +27,9 @@ from notionary.page.content.renderer.renderers import (
     VideoRenderer,
 )
 from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.rich_text.rich_text_markdown_converter import (
+    RichTextToMarkdownConverter,
+)
 
 
 class RendererChainFactory:

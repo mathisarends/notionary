@@ -2,7 +2,6 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from notionary.blocks.rich_text.models import RichText, TextContent
 from notionary.exceptions.properties import (
     AccessPagePropertyWithoutDataSourceError,
     PagePropertyNotFoundError,
@@ -27,6 +26,7 @@ from notionary.page.properties.schemas import (
     StatusOption,
 )
 from notionary.page.properties.service import PagePropertyHandler
+from notionary.rich_text.models import RichText, TextContent
 from notionary.shared.models.parent import ParentType
 
 # ============================================================================

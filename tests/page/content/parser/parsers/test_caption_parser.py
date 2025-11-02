@@ -2,9 +2,6 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import (
-    MarkdownRichTextConverter,
-)
 from notionary.blocks.schemas import (
     BlockCreatePayload,
     BlockType,
@@ -16,6 +13,9 @@ from notionary.blocks.schemas import (
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.caption import CaptionParser
 from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.rich_text.markdown_rich_text_converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.shared.models.file import ExternalFileData
 
 
