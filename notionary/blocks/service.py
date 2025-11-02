@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import Self
 
 from notionary.blocks.client import NotionBlockHttpClient
+from notionary.blocks.content.factory import BlockContentServiceFactory
+from notionary.blocks.content.service import BlockContentService
 from notionary.blocks.schemas import Block
 from notionary.user.base import BaseUser
 from notionary.user.service import UserService
@@ -13,8 +15,9 @@ class NotionBlock(LoggingMixin):
     def __init__(
         self,
         block: Block,
-        block_client: NotionBlockHttpClient | None = None,
-        user_service: UserService | None = None,
+        block_client: NotionBlockHttpClient,
+        block_content_service: BlockContentService,
+        user_service: UserService,
     ) -> None:
         self._id = block.id
         self._parent = block.parent
@@ -27,18 +30,39 @@ class NotionBlock(LoggingMixin):
         self._has_children = block.has_children
         self._block_data = block
 
-        self._block_client = block_client or NotionBlockHttpClient()
-        self._user_service = user_service or UserService()
+        self._block_client = block_client
+        self._block_content_service = block_content_service
+        self._user_service = user_service
 
     @classmethod
     async def from_id(cls, block_id: str) -> Self:
         block_client = NotionBlockHttpClient()
         block = await block_client.get_block_by_id(block_id)
-        return cls(block, block_client=block_client)
+        return cls._create_with_dependencies(block=block)
 
     @classmethod
     def from_block(cls, block: Block) -> Self:
-        return cls(block)
+        return cls._create_with_dependencies(block=block)
+
+    @classmethod
+    def _create_with_dependencies(
+        cls,
+        block: Block,
+    ) -> Self:
+        block_client = NotionBlockHttpClient()
+        user_service = UserService()
+
+        block_content_service_factory = BlockContentServiceFactory()
+        block_content_service = block_content_service_factory.create(
+            block_id=block.id, block_client=block_client
+        )
+
+        return cls(
+            block=block,
+            block_client=block_client,
+            block_content_service=block_content_service,
+            user_service=user_service,
+        )
 
     @property
     def id(self) -> str:
@@ -71,19 +95,17 @@ class NotionBlock(LoggingMixin):
         return await self._user_service.get_user_by_id(self._last_edited_by_dto.id)
 
     async def get_content_as_markdown(self) -> str:
-        """Convert block content to markdown format."""
-        ...
+        return await self._block_content_service.get_as_markdown()
 
     async def get_content_as_blocks(self) -> list[Block]:
-        blocks = await self._block_client.get_block_tree(block_id=self._id)
-        return blocks
+        return await self._block_content_service.get_as_blocks()
 
     async def get_children(self) -> list[NotionBlock]:
         if not self._has_children:
             return []
 
         blocks = await self._block_client.get_all_block_children(self._id)
-        return [self.from_block(block) for block in blocks]
+        return [self._create_with_dependencies(block=block) for block in blocks]
 
     async def delete(self) -> None:
         await self._block_client.delete_block(self._id)

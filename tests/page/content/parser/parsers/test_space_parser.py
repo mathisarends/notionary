@@ -2,8 +2,8 @@ from textwrap import dedent
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-from notionary.page.content.factory import BlockContentServiceFactory
 
+from notionary.blocks.content import BlockContentServiceFactory
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.markdown_rich_text_converter import (
     MarkdownRichTextConverter,
