@@ -1,4 +1,3 @@
-from collections.abc import Callable
 from typing import Self
 
 from notionary.blocks.client import NotionBlockHttpClient
@@ -137,6 +136,9 @@ class NotionPage(Entity):
     def archived(self) -> bool:
         return self._archived
 
+    def create_markdown_builder(self) -> MarkdownBuilder:
+        return MarkdownBuilder()
+
     @property
     def markdown_builder() -> MarkdownBuilder:
         return MarkdownBuilder()
@@ -158,16 +160,10 @@ class NotionPage(Entity):
         await self.properties.set_title_property(title)
         self._title = title
 
-    async def append_markdown(
-        self,
-        content: (str | Callable[[MarkdownBuilder], MarkdownBuilder]),
-    ) -> None:
+    async def append_markdown(self, content: str) -> None:
         await self._block_content_service.append_markdown(content=content)
 
-    async def replace_content(
-        self,
-        content: (str | Callable[[MarkdownBuilder], MarkdownBuilder]),
-    ) -> None:
+    async def replace_content(self, content: str) -> None:
         await self._block_content_service.clear()
         await self._block_content_service.append_markdown(content=content)
 

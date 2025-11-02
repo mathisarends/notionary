@@ -1,9 +1,7 @@
 import asyncio
-from collections.abc import Callable
 
 from notionary.blocks.client import NotionBlockHttpClient
 from notionary.blocks.schemas import Block
-from notionary.page.content.markdown.builder import MarkdownBuilder
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.page.content.renderer.service import NotionToMarkdownConverter
 from notionary.utils.decorators import async_retry, time_execution_async
@@ -53,33 +51,15 @@ class BlockContentService(LoggingMixin):
         await self._block_client.delete_block(block.id)
 
     @time_execution_async()
-    async def append_markdown(
-        self, content: str | Callable[[MarkdownBuilder], MarkdownBuilder]
-    ) -> None:
-        markdown = self._extract_markdown(content)
-        if not markdown:
+    async def append_markdown(self, content: str) -> None:
+        if not content:
             self.logger.debug(
                 "No markdown content to append for block: %s", self._block_id
             )
             return
 
-        blocks = await self._markdown_converter.convert(markdown)
+        blocks = await self._markdown_converter.convert(content)
         await self._append_blocks(blocks)
-
-    def _extract_markdown(
-        self, content: str | Callable[[MarkdownBuilder], MarkdownBuilder]
-    ) -> str:
-        if isinstance(content, str):
-            return content
-
-        if callable(content):
-            builder = MarkdownBuilder()
-            content(builder)
-            return builder.build()
-
-        raise ValueError(
-            "content must be either a string or a callable that takes a MarkdownBuilder"
-        )
 
     async def _append_blocks(self, blocks: list[Block]) -> None:
         await self._block_client.append_block_children(
