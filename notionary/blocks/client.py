@@ -1,3 +1,5 @@
+from pydantic import TypeAdapter
+
 from notionary.blocks.schemas import Block, BlockChildrenResponse, BlockCreatePayload
 from notionary.http.client import NotionHttpClient
 from notionary.shared.typings import JsonDict
@@ -8,35 +10,35 @@ from notionary.utils.pagination import paginate_notion_api
 class NotionBlockHttpClient(NotionHttpClient):
     BATCH_SIZE = 100
 
-    async def get_block(self, block_id: str) -> Block:
-        response = await self.get(f"blocks/{block_id}")
-        return Block.model_validate(response)
+    async def get_block_by_id(self, id: str) -> Block:
+        response = await self.get(f"blocks/{id}")
+        return TypeAdapter(Block).validate_python(response)
 
     async def delete_block(self, block_id: str) -> None:
         self.logger.debug("Deleting block: %s", block_id)
         await self.delete(f"blocks/{block_id}")
 
     @time_execution_async()
-    async def get_block_tree(self, parent_block_id: str) -> list[Block]:
-        blocks_at_this_level = await self.get_all_block_children(parent_block_id)
+    async def get_block_tree(self, block_id: str) -> list[Block]:
+        blocks_at_this_level = await self.get_all_block_children(block_id)
 
         for block in blocks_at_this_level:
             if block.has_children:
-                nested_children = await self.get_block_tree(parent_block_id=block.id)
+                nested_children = await self.get_block_tree(block_id=block.id)
                 block.children = nested_children
 
         return blocks_at_this_level
 
     @time_execution_async()
-    async def get_all_block_children(self, parent_block_id: str) -> list[Block]:
-        self.logger.debug("Retrieving all children for block: %s", parent_block_id)
+    async def get_all_block_children(self, block_id: str) -> list[Block]:
+        self.logger.debug("Retrieving all children for block: %s", block_id)
 
         all_blocks = await paginate_notion_api(
-            self.get_block_children, block_id=parent_block_id
+            self.get_block_children, block_id=block_id
         )
 
         self.logger.debug(
-            "Retrieved %d total children for block %s", len(all_blocks), parent_block_id
+            "Retrieved %d total children for block %s", len(all_blocks), block_id
         )
         return all_blocks
 

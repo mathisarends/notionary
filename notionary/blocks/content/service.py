@@ -1,41 +1,57 @@
 import asyncio
-from collections.abc import Callable
 
 from notionary.blocks.client import NotionBlockHttpClient
 from notionary.blocks.schemas import Block
-from notionary.page.content.markdown.builder import MarkdownBuilder
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.page.content.renderer.service import NotionToMarkdownConverter
 from notionary.utils.decorators import async_retry, time_execution_async
 from notionary.utils.mixins.logging import LoggingMixin
 
 
-class PageContentService(LoggingMixin):
+class BlockContentService(LoggingMixin):
     def __init__(
         self,
-        page_id: str,
+        block_id: str,
         block_client: NotionBlockHttpClient,
         markdown_converter: MarkdownToNotionConverter,
         notion_to_markdown_converter: NotionToMarkdownConverter,
     ) -> None:
-        self._page_id = page_id
+        self._block_id = block_id
         self._block_client = block_client
         self._markdown_converter = markdown_converter
         self._notion_to_markdown_converter = notion_to_markdown_converter
 
     @time_execution_async()
-    async def get_as_markdown(self) -> str:
-        blocks = await self._block_client.get_block_tree(parent_block_id=self._page_id)
+    async def get_children_as_markdown(self) -> str:
+        blocks = await self._block_client.get_block_tree(block_id=self._block_id)
         return await self._notion_to_markdown_converter.convert(blocks=blocks)
+
+    @time_execution_async()
+    async def get_block_tree_as_markdown(self) -> str:
+        block = await self._block_client.get_block_by_id(self._block_id)
+        children = await self._block_client.get_block_tree(block_id=self._block_id)
+        block.children = children if children else None
+        return await self._notion_to_markdown_converter.convert(blocks=[block])
+
+    @time_execution_async()
+    async def get_children_as_blocks(self) -> list[Block]:
+        return await self._block_client.get_block_tree(block_id=self._block_id)
+
+    @time_execution_async()
+    async def get_block_tree_as_blocks(self) -> list[Block]:
+        block = await self._block_client.get_block_by_id(self._block_id)
+        children = await self._block_client.get_block_tree(block_id=self._block_id)
+        block.children = children if children else None
+        return [block]
 
     @time_execution_async()
     async def clear(self) -> None:
         children_response = await self._block_client.get_block_children(
-            block_id=self._page_id
+            block_id=self._block_id
         )
 
         if not children_response or not children_response.results:
-            self.logger.debug("No blocks to delete for page: %s", self._page_id)
+            self.logger.debug("No blocks to delete for block: %s", self._block_id)
             return
 
         await asyncio.gather(
@@ -48,35 +64,17 @@ class PageContentService(LoggingMixin):
         await self._block_client.delete_block(block.id)
 
     @time_execution_async()
-    async def append_markdown(
-        self, content: str | Callable[[MarkdownBuilder], MarkdownBuilder]
-    ) -> None:
-        markdown = self._extract_markdown(content)
-        if not markdown:
+    async def append_markdown(self, content: str) -> None:
+        if not content:
             self.logger.debug(
-                "No markdown content to append for page: %s", self._page_id
+                "No markdown content to append for block: %s", self._block_id
             )
             return
 
-        blocks = await self._markdown_converter.convert(markdown)
+        blocks = await self._markdown_converter.convert(content)
         await self._append_blocks(blocks)
-
-    def _extract_markdown(
-        self, content: str | Callable[[MarkdownBuilder], MarkdownBuilder]
-    ) -> str:
-        if isinstance(content, str):
-            return content
-
-        if callable(content):
-            builder = MarkdownBuilder()
-            content(builder)
-            return builder.build()
-
-        raise ValueError(
-            "content must be either a string or a callable that takes a MarkdownBuilder"
-        )
 
     async def _append_blocks(self, blocks: list[Block]) -> None:
         await self._block_client.append_block_children(
-            block_id=self._page_id, children=blocks
+            block_id=self._block_id, children=blocks
         )
