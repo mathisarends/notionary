@@ -1,45 +1,27 @@
 import re
 from collections.abc import Callable
-from dataclasses import dataclass
 from re import Match
 from typing import ClassVar
 
 from notionary.blocks.schemas import BlockColor
-from notionary.rich_text.models import (
+from notionary.rich_text.markdown_to_rich_text.models import (
+    PatternHandler,
+    PatternMatch,
+)
+from notionary.rich_text.patterns import RichTextPatterns
+from notionary.rich_text.schemas import (
     MentionType,
     RichText,
     RichTextType,
     TextAnnotations,
 )
-from notionary.rich_text.name_id_resolver import (
+from notionary.shared.name_id_resolver import (
     DatabaseNameIdResolver,
     DataSourceNameIdResolver,
     NameIdResolver,
     PageNameIdResolver,
     PersonNameIdResolver,
 )
-from notionary.rich_text.rich_text_patterns import RichTextPatterns
-
-
-@dataclass
-class PatternMatch:
-    match: Match
-    handler: Callable[[Match], RichText | list[RichText]]
-    position: int
-
-    @property
-    def matched_text(self) -> str:
-        return self.match.group(0)
-
-    @property
-    def end_position(self) -> int:
-        return self.position + len(self.matched_text)
-
-
-@dataclass
-class PatternHandler:
-    pattern: str
-    handler: Callable[[Match], RichText | list[RichText]]
 
 
 class MarkdownRichTextConverter:
@@ -119,7 +101,6 @@ class MarkdownRichTextConverter:
         return segments
 
     def _find_earliest_pattern_match(self, text: str) -> PatternMatch | None:
-        """Find the pattern that appears earliest in the text."""
         earliest_match = None
         earliest_position = len(text)
 
@@ -303,7 +284,7 @@ class MarkdownRichTextConverter:
         return RichText.from_plain_text(match.group(1), strikethrough=True)
 
     def _handle_code_pattern(self, match: Match) -> RichText:
-        return RichText.from_plain_text(match.group(1), code=True)
+        return RichText.for_code_block(match.group(1))
 
     def _handle_link_pattern(self, match: Match) -> RichText:
         link_text, url = match.group(1), match.group(2)

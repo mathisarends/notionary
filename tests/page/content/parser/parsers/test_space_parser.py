@@ -9,17 +9,17 @@ from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.parser.factory import ConverterChainFactory
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.page.content.renderer.factory import RendererChainFactory
-from notionary.rich_text.markdown_rich_text_converter import (
+from notionary.rich_text.markdown_to_rich_text.service import (
     MarkdownRichTextConverter,
 )
-from notionary.rich_text.name_id_resolver import (
+from notionary.rich_text.rich_text_to_markdown.service import (
+    RichTextToMarkdownConverter,
+)
+from notionary.shared.name_id_resolver import (
     DatabaseNameIdResolver,
     DataSourceNameIdResolver,
     PageNameIdResolver,
     PersonNameIdResolver,
-)
-from notionary.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
 )
 
 

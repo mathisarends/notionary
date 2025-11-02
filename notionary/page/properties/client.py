@@ -23,7 +23,7 @@ from notionary.page.properties.schemas import (
     StatusOption,
 )
 from notionary.page.schemas import NotionPageDto, PgePropertiesUpdateDto
-from notionary.rich_text.models import RichText
+from notionary.rich_text.schemas import RichText
 
 
 class PagePropertyHttpClient(NotionHttpClient):

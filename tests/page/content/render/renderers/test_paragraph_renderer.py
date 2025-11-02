@@ -7,10 +7,10 @@ from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block, ParagraphBlock, ParagraphData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.paragraph import ParagraphRenderer
-from notionary.rich_text.models import RichText
-from notionary.rich_text.rich_text_markdown_converter import (
+from notionary.rich_text.rich_text_to_markdown.service import (
     RichTextToMarkdownConverter,
 )
+from notionary.rich_text.schemas import RichText
 
 
 def _create_paragraph_data(rich_text: list[RichText]) -> ParagraphData:

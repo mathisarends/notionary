@@ -6,7 +6,7 @@ import pytest
 from notionary.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.rich_text_markdown_converter import (
+from notionary.rich_text.rich_text_to_markdown.service import (
     RichTextToMarkdownConverter,
 )
 

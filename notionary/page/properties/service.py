@@ -27,7 +27,7 @@ from notionary.page.properties.schemas import (
     PageTitleProperty,
     PageURLProperty,
 )
-from notionary.rich_text.rich_text_markdown_converter import (
+from notionary.rich_text.rich_text_to_markdown.service import (
     convert_rich_text_to_markdown,
 )
 from notionary.shared.models.parent import ParentType

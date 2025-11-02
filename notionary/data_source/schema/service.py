@@ -11,7 +11,7 @@ from notionary.data_source.schema.registry import (
     DatabasePropertyTypeDescriptorRegistry,
     PropertyTypeDescriptor,
 )
-from notionary.rich_text.name_id_resolver import DataSourceNameIdResolver
+from notionary.shared.name_id_resolver import DataSourceNameIdResolver
 from notionary.shared.properties.type import PropertyType
 
 

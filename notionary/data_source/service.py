@@ -31,7 +31,7 @@ from notionary.exceptions.data_source.properties import (
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import NotionPageDto
-from notionary.rich_text.rich_text_markdown_converter import (
+from notionary.rich_text.rich_text_to_markdown.service import (
     RichTextToMarkdownConverter,
 )
 from notionary.shared.entity.dto_parsers import (

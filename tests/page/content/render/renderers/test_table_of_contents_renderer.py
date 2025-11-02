@@ -9,7 +9,7 @@ from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.table_of_contents import (
     TableOfContentsRenderer,
 )
-from notionary.rich_text.rich_text_markdown_converter import (
+from notionary.rich_text.rich_text_to_markdown.service import (
     RichTextToMarkdownConverter,
 )
 

@@ -12,7 +12,7 @@ from notionary.page.properties.factory import PagePropertyHandlerFactory
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.properties.service import PagePropertyHandler
 from notionary.page.schemas import NotionPageDto
-from notionary.rich_text.rich_text_markdown_converter import (
+from notionary.rich_text.rich_text_to_markdown.service import (
     convert_rich_text_to_markdown,
 )
 from notionary.shared.entity.service import Entity

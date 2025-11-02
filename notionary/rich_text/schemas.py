@@ -124,7 +124,6 @@ class RichText(BaseModel):
 
     @classmethod
     def for_code_block(cls, content: str) -> Self:
-        # keine annotations setzen → Notion Code-Highlight bleibt an
         return cls.for_caption(content)
 
     @classmethod

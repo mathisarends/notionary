@@ -1,13 +1,13 @@
 from typing import ClassVar
 
 from notionary.blocks.schemas import BlockColor
-from notionary.rich_text.models import (
+from notionary.rich_text.schemas import (
     MentionDate,
     MentionType,
     RichText,
     RichTextType,
 )
-from notionary.rich_text.name_id_resolver import (
+from notionary.shared.name_id_resolver import (
     DatabaseNameIdResolver,
     DataSourceNameIdResolver,
     NameIdResolver,

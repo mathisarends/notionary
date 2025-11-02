@@ -6,7 +6,7 @@ from notionary.blocks.schemas import CreateBulletedListItemBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.bulleted_list import BulletedListParser
 from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
-from notionary.rich_text.markdown_rich_text_converter import (
+from notionary.rich_text.markdown_to_rich_text.service import (
     MarkdownRichTextConverter,
 )
 

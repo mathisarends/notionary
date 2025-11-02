@@ -3,7 +3,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from notionary.rich_text.models import (
+from notionary.rich_text.rich_text_to_markdown.service import (
+    RichTextToMarkdownConverter,
+)
+from notionary.rich_text.schemas import (
     EquationObject,
     LinkObject,
     MentionDate,
@@ -16,14 +19,11 @@ from notionary.rich_text.models import (
     TextAnnotations,
     TextContent,
 )
-from notionary.rich_text.name_id_resolver import (
+from notionary.shared.name_id_resolver import (
     DatabaseNameIdResolver,
     DataSourceNameIdResolver,
     PageNameIdResolver,
     PersonNameIdResolver,
-)
-from notionary.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
 )
 
 

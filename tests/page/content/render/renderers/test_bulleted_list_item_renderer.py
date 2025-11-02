@@ -7,10 +7,10 @@ from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block, BulletedListItemBlock, BulletedListItemData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.bulleted_list import BulletedListRenderer
-from notionary.rich_text.models import RichText
-from notionary.rich_text.rich_text_markdown_converter import (
+from notionary.rich_text.rich_text_to_markdown.service import (
     RichTextToMarkdownConverter,
 )
+from notionary.rich_text.schemas import RichText
 
 
 def _create_bulleted_list_data(rich_text: list[RichText]) -> BulletedListItemData:

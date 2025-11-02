@@ -7,7 +7,7 @@ from notionary.comments.schemas import (
     CommentListResponse,
 )
 from notionary.http.client import NotionHttpClient
-from notionary.rich_text.models import RichText
+from notionary.rich_text.schemas import RichText
 from notionary.utils.pagination import (
     paginate_notion_api,
     paginate_notion_api_generator,

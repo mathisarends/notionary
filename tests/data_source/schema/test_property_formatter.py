@@ -17,7 +17,7 @@ from notionary.data_source.properties.schemas import (
     PropertyColor,
 )
 from notionary.data_source.schema.service import PropertyFormatter
-from notionary.rich_text.name_id_resolver import DataSourceNameIdResolver
+from notionary.shared.name_id_resolver import DataSourceNameIdResolver
 from notionary.shared.properties.type import PropertyType
 
 

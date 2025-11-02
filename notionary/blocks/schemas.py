@@ -5,7 +5,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from notionary.blocks.enums import BlockColor, BlockType, CodingLanguage
-from notionary.rich_text.models import RichText
+from notionary.rich_text.schemas import RichText
 from notionary.shared.models.file import ExternalFile, FileUploadFile, NotionHostedFile
 from notionary.shared.models.icon import Icon
 from notionary.shared.models.parent import Parent

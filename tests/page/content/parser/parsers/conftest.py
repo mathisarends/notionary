@@ -8,7 +8,7 @@ from notionary.page.content.syntax.definition import (
     MarkdownGrammar,
     SyntaxDefinitionRegistry,
 )
-from notionary.rich_text.markdown_rich_text_converter import (
+from notionary.rich_text.markdown_to_rich_text.service import (
     MarkdownRichTextConverter,
 )
 

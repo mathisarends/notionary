@@ -3,7 +3,7 @@ import asyncio
 from notionary.comments.client import CommentClient
 from notionary.comments.factory import CommentFactory
 from notionary.comments.models import Comment
-from notionary.rich_text.markdown_rich_text_converter import (
+from notionary.rich_text.markdown_to_rich_text.service import (
     MarkdownRichTextConverter,
 )
 
