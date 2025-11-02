@@ -1,3 +1,5 @@
+from pydantic import TypeAdapter
+
 from notionary.blocks.schemas import Block, BlockChildrenResponse, BlockCreatePayload
 from notionary.http.client import NotionHttpClient
 from notionary.shared.typings import JsonDict
@@ -8,9 +10,9 @@ from notionary.utils.pagination import paginate_notion_api
 class NotionBlockHttpClient(NotionHttpClient):
     BATCH_SIZE = 100
 
-    async def get_block(self, block_id: str) -> Block:
-        response = await self.get(f"blocks/{block_id}")
-        return Block.model_validate(response)
+    async def get_block_by_id(self, id: str) -> Block:
+        response = await self.get(f"blocks/{id}")
+        return TypeAdapter(Block).validate_python(response)
 
     async def delete_block(self, block_id: str) -> None:
         self.logger.debug("Deleting block: %s", block_id)

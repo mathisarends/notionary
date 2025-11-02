@@ -29,6 +29,11 @@ class PageContentService(LoggingMixin):
         return await self._notion_to_markdown_converter.convert(blocks=blocks)
 
     @time_execution_async()
+    async def get_as_blocks(self) -> list[Block]:
+        blocks = await self._block_client.get_block_tree(parent_block_id=self._page_id)
+        return blocks
+
+    @time_execution_async()
     async def clear(self) -> None:
         children_response = await self._block_client.get_block_children(
             block_id=self._page_id

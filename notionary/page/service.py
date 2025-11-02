@@ -5,6 +5,7 @@ from notionary.blocks.client import NotionBlockHttpClient
 from notionary.blocks.rich_text.rich_text_markdown_converter import (
     convert_rich_text_to_markdown,
 )
+from notionary.blocks.schemas import Block
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
 from notionary.page.content.factory import PageContentServiceFactory
@@ -174,5 +175,8 @@ class NotionPage(Entity):
     async def clear_page_content(self) -> None:
         await self._page_content_service.clear()
 
-    async def get_markdown_content(self) -> str:
+    async def get_content_as_markdown(self) -> str:
         return await self._page_content_service.get_as_markdown()
+
+    async def get_content_as_blocks(self) -> list[Block]:
+        return await self._page_content_service.get_as_blocks()
