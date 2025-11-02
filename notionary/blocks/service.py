@@ -5,6 +5,7 @@ from typing import Self
 from notionary.blocks.client import NotionBlockHttpClient
 from notionary.blocks.content.factory import BlockContentServiceFactory
 from notionary.blocks.content.service import BlockContentService
+from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block
 from notionary.user.base import BaseUser
 from notionary.user.service import UserService
@@ -29,6 +30,7 @@ class NotionBlock(LoggingMixin):
         self._in_trash = block.in_trash
         self._has_children = block.has_children
         self._block_data = block
+        self._type = block.type
 
         self._block_client = block_client
         self._block_content_service = block_content_service
@@ -88,17 +90,27 @@ class NotionBlock(LoggingMixin):
     def has_children(self) -> bool:
         return self._has_children
 
+    @property
+    def type(self) -> BlockType:
+        return self._type
+
     async def get_created_by_user(self) -> BaseUser | None:
         return await self._user_service.get_user_by_id(self._created_by_dto.id)
 
     async def get_last_edited_by_user(self) -> BaseUser | None:
         return await self._user_service.get_user_by_id(self._last_edited_by_dto.id)
 
-    async def get_content_as_markdown(self) -> str:
-        return await self._block_content_service.get_as_markdown()
+    async def get_block_tree_as_markdown(self) -> str:
+        return await self._block_content_service.get_block_tree_as_markdown()
 
-    async def get_content_as_blocks(self) -> list[Block]:
-        return await self._block_content_service.get_as_blocks()
+    async def get_children_as_markdown(self) -> str:
+        return await self._block_content_service.get_children_as_markdown()
+
+    async def get_block_tree_as_blocks(self) -> list[Block]:
+        return await self._block_content_service.get_block_tree_as_blocks()
+
+    async def get_children_as_blocks(self) -> list[Block]:
+        return await self._block_content_service.get_children_as_blocks()
 
     async def get_children(self) -> list[NotionBlock]:
         if not self._has_children:

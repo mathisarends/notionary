@@ -5,7 +5,7 @@ from notionary.blocks.content import BlockContentService, BlockContentServiceFac
 from notionary.blocks.rich_text.rich_text_markdown_converter import (
     convert_rich_text_to_markdown,
 )
-from notionary.blocks.schemas import Block
+from notionary.blocks.service import NotionBlock
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
 from notionary.page.content.markdown.builder import MarkdownBuilder
@@ -171,7 +171,8 @@ class NotionPage(Entity):
         await self._block_content_service.clear()
 
     async def get_content_as_markdown(self) -> str:
-        return await self._block_content_service.get_as_markdown()
+        return await self._block_content_service.get_children_as_markdown()
 
-    async def get_content_as_blocks(self) -> list[Block]:
-        return await self._block_content_service.get_as_blocks()
+    async def get_content_as_blocks(self) -> list[NotionBlock]:
+        blocks = await self._block_content_service.get_children_as_blocks()
+        return [NotionBlock.from_block(block) for block in blocks]

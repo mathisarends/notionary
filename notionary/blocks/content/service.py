@@ -22,14 +22,27 @@ class BlockContentService(LoggingMixin):
         self._notion_to_markdown_converter = notion_to_markdown_converter
 
     @time_execution_async()
-    async def get_as_markdown(self) -> str:
+    async def get_children_as_markdown(self) -> str:
         blocks = await self._block_client.get_block_tree(block_id=self._block_id)
         return await self._notion_to_markdown_converter.convert(blocks=blocks)
 
     @time_execution_async()
-    async def get_as_blocks(self) -> list[Block]:
-        blocks = await self._block_client.get_block_tree(block_id=self._block_id)
-        return blocks
+    async def get_block_tree_as_markdown(self) -> str:
+        block = await self._block_client.get_block_by_id(self._block_id)
+        children = await self._block_client.get_block_tree(block_id=self._block_id)
+        block.children = children if children else None
+        return await self._notion_to_markdown_converter.convert(blocks=[block])
+
+    @time_execution_async()
+    async def get_children_as_blocks(self) -> list[Block]:
+        return await self._block_client.get_block_tree(block_id=self._block_id)
+
+    @time_execution_async()
+    async def get_block_tree_as_blocks(self) -> list[Block]:
+        block = await self._block_client.get_block_by_id(self._block_id)
+        children = await self._block_client.get_block_tree(block_id=self._block_id)
+        block.children = children if children else None
+        return [block]
 
     @time_execution_async()
     async def clear(self) -> None:

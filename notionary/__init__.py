@@ -1,3 +1,4 @@
+from .blocks.service import NotionBlock
 from .data_source.service import NotionDataSource
 from .database.service import NotionDatabase
 from .file_upload import FileUploadQuery, FileUploadQueryBuilder, NotionFileUpload
@@ -38,6 +39,7 @@ __all__ = [
     "MarkdownDocumentSchema",
     "MarkdownNodeSchema",
     "MermaidSchema",
+    "NotionBlock",
     "NotionDataSource",
     "NotionDatabase",
     "NotionFileUpload",
