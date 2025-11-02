@@ -2,6 +2,7 @@ from textwrap import dedent
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+from notionary.page.content.factory import BlockContentServiceFactory
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.rich_text.markdown_rich_text_converter import (
@@ -17,7 +18,6 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import (
     RichTextToMarkdownConverter,
 )
 from notionary.file_upload.service import NotionFileUpload
-from notionary.page.content.factory import PageContentServiceFactory
 from notionary.page.content.parser.factory import ConverterChainFactory
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.page.content.renderer.factory import RendererChainFactory
@@ -86,7 +86,7 @@ def parser(
         rich_text_markdown_converter=rich_text_to_markdown_converter
     )
 
-    factory = PageContentServiceFactory(
+    factory = BlockContentServiceFactory(
         converter_chain_factory=converter_chain_factory,
         renderer_chain_factory=renderer_chain_factory,
     )

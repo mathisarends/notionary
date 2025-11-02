@@ -75,7 +75,7 @@ class NotionBlock(LoggingMixin):
         ...
 
     async def get_content_as_blocks(self) -> list[Block]:
-        blocks = await self._block_client.get_block_tree(parent_block_id=self._id)
+        blocks = await self._block_client.get_block_tree(block_id=self._id)
         return blocks
 
     async def get_children(self) -> list[NotionBlock]:

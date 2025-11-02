@@ -2,15 +2,14 @@ from collections.abc import Callable
 from typing import Self
 
 from notionary.blocks.client import NotionBlockHttpClient
+from notionary.blocks.content import BlockContentService, BlockContentServiceFactory
 from notionary.blocks.rich_text.rich_text_markdown_converter import (
     convert_rich_text_to_markdown,
 )
 from notionary.blocks.schemas import Block
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
-from notionary.page.content.factory import PageContentServiceFactory
 from notionary.page.content.markdown.builder import MarkdownBuilder
-from notionary.page.content.service import PageContentService
 from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
 from notionary.page.properties.factory import PagePropertyHandlerFactory
@@ -29,7 +28,7 @@ class NotionPage(Entity):
         page_property_handler: PagePropertyHandler,
         block_client: NotionBlockHttpClient,
         comment_service: CommentService,
-        page_content_service: PageContentService,
+        block_content_service: BlockContentService,
         metadata_update_client: PageMetadataUpdateClient,
     ) -> None:
         super().__init__(dto=dto)
@@ -39,7 +38,7 @@ class NotionPage(Entity):
 
         self._block_client = block_client
         self._comment_service = comment_service
-        self._page_content_service = page_content_service
+        self._block_content_service = block_content_service
         self._metadata_update_client = metadata_update_client
         self.properties = page_property_handler
 
@@ -96,9 +95,9 @@ class NotionPage(Entity):
         block_client = NotionBlockHttpClient()
         comment_service = CommentService()
 
-        page_content_service_factory = PageContentServiceFactory()
-        page_content_service = page_content_service_factory.create(
-            page_id=dto.id, block_client=block_client
+        block_content_service_factory = BlockContentServiceFactory()
+        block_content_service = block_content_service_factory.create(
+            block_id=dto.id, block_client=block_client
         )
 
         metadata_update_client = PageMetadataUpdateClient(page_id=dto.id)
@@ -109,7 +108,7 @@ class NotionPage(Entity):
             page_property_handler=page_property_handler,
             block_client=block_client,
             comment_service=comment_service,
-            page_content_service=page_content_service,
+            block_content_service=block_content_service,
             metadata_update_client=metadata_update_client,
         )
 
@@ -163,20 +162,20 @@ class NotionPage(Entity):
         self,
         content: (str | Callable[[MarkdownBuilder], MarkdownBuilder]),
     ) -> None:
-        await self._page_content_service.append_markdown(content=content)
+        await self._block_content_service.append_markdown(content=content)
 
     async def replace_content(
         self,
         content: (str | Callable[[MarkdownBuilder], MarkdownBuilder]),
     ) -> None:
-        await self._page_content_service.clear()
-        await self._page_content_service.append_markdown(content=content)
+        await self._block_content_service.clear()
+        await self._block_content_service.append_markdown(content=content)
 
     async def clear_page_content(self) -> None:
-        await self._page_content_service.clear()
+        await self._block_content_service.clear()
 
     async def get_content_as_markdown(self) -> str:
-        return await self._page_content_service.get_as_markdown()
+        return await self._block_content_service.get_as_markdown()
 
     async def get_content_as_blocks(self) -> list[Block]:
-        return await self._page_content_service.get_as_blocks()
+        return await self._block_content_service.get_as_blocks()

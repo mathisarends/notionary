@@ -19,26 +19,26 @@ class NotionBlockHttpClient(NotionHttpClient):
         await self.delete(f"blocks/{block_id}")
 
     @time_execution_async()
-    async def get_block_tree(self, parent_block_id: str) -> list[Block]:
-        blocks_at_this_level = await self.get_all_block_children(parent_block_id)
+    async def get_block_tree(self, block_id: str) -> list[Block]:
+        blocks_at_this_level = await self.get_all_block_children(block_id)
 
         for block in blocks_at_this_level:
             if block.has_children:
-                nested_children = await self.get_block_tree(parent_block_id=block.id)
+                nested_children = await self.get_block_tree(block_id=block.id)
                 block.children = nested_children
 
         return blocks_at_this_level
 
     @time_execution_async()
-    async def get_all_block_children(self, parent_block_id: str) -> list[Block]:
-        self.logger.debug("Retrieving all children for block: %s", parent_block_id)
+    async def get_all_block_children(self, block_id: str) -> list[Block]:
+        self.logger.debug("Retrieving all children for block: %s", block_id)
 
         all_blocks = await paginate_notion_api(
-            self.get_block_children, block_id=parent_block_id
+            self.get_block_children, block_id=block_id
         )
 
         self.logger.debug(
-            "Retrieved %d total children for block %s", len(all_blocks), parent_block_id
+            "Retrieved %d total children for block %s", len(all_blocks), block_id
         )
         return all_blocks
 

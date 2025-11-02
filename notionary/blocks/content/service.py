@@ -10,37 +10,37 @@ from notionary.utils.decorators import async_retry, time_execution_async
 from notionary.utils.mixins.logging import LoggingMixin
 
 
-class PageContentService(LoggingMixin):
+class BlockContentService(LoggingMixin):
     def __init__(
         self,
-        page_id: str,
+        block_id: str,
         block_client: NotionBlockHttpClient,
         markdown_converter: MarkdownToNotionConverter,
         notion_to_markdown_converter: NotionToMarkdownConverter,
     ) -> None:
-        self._page_id = page_id
+        self._block_id = block_id
         self._block_client = block_client
         self._markdown_converter = markdown_converter
         self._notion_to_markdown_converter = notion_to_markdown_converter
 
     @time_execution_async()
     async def get_as_markdown(self) -> str:
-        blocks = await self._block_client.get_block_tree(parent_block_id=self._page_id)
+        blocks = await self._block_client.get_block_tree(block_id=self._block_id)
         return await self._notion_to_markdown_converter.convert(blocks=blocks)
 
     @time_execution_async()
     async def get_as_blocks(self) -> list[Block]:
-        blocks = await self._block_client.get_block_tree(parent_block_id=self._page_id)
+        blocks = await self._block_client.get_block_tree(block_id=self._block_id)
         return blocks
 
     @time_execution_async()
     async def clear(self) -> None:
         children_response = await self._block_client.get_block_children(
-            block_id=self._page_id
+            block_id=self._block_id
         )
 
         if not children_response or not children_response.results:
-            self.logger.debug("No blocks to delete for page: %s", self._page_id)
+            self.logger.debug("No blocks to delete for block: %s", self._block_id)
             return
 
         await asyncio.gather(
@@ -59,7 +59,7 @@ class PageContentService(LoggingMixin):
         markdown = self._extract_markdown(content)
         if not markdown:
             self.logger.debug(
-                "No markdown content to append for page: %s", self._page_id
+                "No markdown content to append for block: %s", self._block_id
             )
             return
 
@@ -83,5 +83,5 @@ class PageContentService(LoggingMixin):
 
     async def _append_blocks(self, blocks: list[Block]) -> None:
         await self._block_client.append_block_children(
-            block_id=self._page_id, children=blocks
+            block_id=self._block_id, children=blocks
         )
