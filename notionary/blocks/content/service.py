@@ -72,10 +72,6 @@ class BlockContentService(LoggingMixin):
             return
 
         blocks = await self._markdown_converter.convert(content)
-        blocks_dict = [block.model_dump() for block in blocks]
-        import json
-
-        print(json.dumps(blocks_dict, indent=2))
         await self._append_blocks(blocks)
 
     async def _append_blocks(self, blocks: list[Block]) -> None:

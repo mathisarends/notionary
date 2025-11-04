@@ -24,7 +24,6 @@ class SyncedBlockParser(LineParser, LoggingMixin):
         if context.is_inside_parent_context():
             return False
 
-        # Erkennt ALLE >>> Blöcke
         return self._syntax.regex_pattern.match(context.line) is not None
 
     @override

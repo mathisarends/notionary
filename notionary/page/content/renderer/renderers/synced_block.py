@@ -24,9 +24,7 @@ class SyncedBlockRenderer(BlockRenderer):
         if is_original:
             await self._render_original_block(context)
         else:
-            await self._render_duplicate_block(
-                context, synced_data.synced_from.block_id
-            )
+            await self._render_duplicate_block(context)
 
     async def _render_original_block(self, context: MarkdownRenderingContext) -> None:
         syntax = self._syntax_registry.get_synced_block_syntax()
@@ -35,23 +33,35 @@ class SyncedBlockRenderer(BlockRenderer):
         if context.indent_level > 0:
             marker = context.indent_text(marker)
 
-        children_markdown = await context.render_children_with_additional_indent(1)
+        original_indent = context.indent_level
+        context.indent_level += 1
+        children_markdown = await context.render_children()
+        context.indent_level = original_indent
 
         if children_markdown:
             context.markdown_result = f"{marker}\n{children_markdown}"
         else:
             context.indent_level += 1
             no_content = context.indent_text(self.EMPTY_CONTENT_PLACEHOLDER)
-            context.indent_level -= 1
+            context.indent_level = original_indent
             context.markdown_result = f"{marker}\n{no_content}"
 
-    async def _render_duplicate_block(
-        self, context: MarkdownRenderingContext, original_block_id: str
-    ) -> None:
+    async def _render_duplicate_block(self, context: MarkdownRenderingContext) -> None:
+        synced_data = context.block.synced_block
         syntax = self._syntax_registry.get_synced_block_syntax()
-        reference = f"{syntax.start_delimiter} Synced from: {original_block_id}"
+        reference = (
+            f"{syntax.start_delimiter} Synced from: {synced_data.synced_from.block_id}"
+        )
 
         if context.indent_level > 0:
             reference = context.indent_text(reference)
 
-        context.markdown_result = reference
+        original_indent = context.indent_level
+        context.indent_level += 1
+        children_markdown = await context.render_children()
+        context.indent_level = original_indent
+
+        if children_markdown:
+            context.markdown_result = f"{reference}\n{children_markdown}"
+        else:
+            context.markdown_result = reference
