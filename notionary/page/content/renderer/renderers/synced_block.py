@@ -6,6 +6,8 @@ from notionary.page.content.renderer.renderers.base import BlockRenderer
 
 
 class SyncedBlockRenderer(BlockRenderer):
+    EMPTY_CONTENT_PLACEHOLDER = "no content available"
+
     @override
     def _can_handle(self, block: Block) -> bool:
         return block.type == BlockType.SYNCED_BLOCK
@@ -17,7 +19,6 @@ class SyncedBlockRenderer(BlockRenderer):
             return
 
         synced_data = context.block.synced_block
-
         is_original = synced_data.synced_from is None
 
         if is_original:
@@ -29,29 +30,26 @@ class SyncedBlockRenderer(BlockRenderer):
 
     async def _render_original_block(self, context: MarkdownRenderingContext) -> None:
         syntax = self._syntax_registry.get_synced_block_syntax()
-
-        # Add marker for original synced block
-        marker = f"{syntax.start_delimiter} Original Synced Block"
+        marker = f"{syntax.start_delimiter} Synced Block"
 
         if context.indent_level > 0:
             marker = context.indent_text(marker)
 
-        # Render children
-        children_markdown = await context.render_children()
+        children_markdown = await context.render_children_with_additional_indent(1)
 
         if children_markdown:
-            context.markdown_result = (
-                f"{marker}\n\n{children_markdown}\n\n{syntax.end_delimiter}"
-            )
+            context.markdown_result = f"{marker}\n{children_markdown}"
         else:
-            context.markdown_result = f"{marker}\n\n{syntax.end_delimiter}"
+            context.indent_level += 1
+            no_content = context.indent_text(self.EMPTY_CONTENT_PLACEHOLDER)
+            context.indent_level -= 1
+            context.markdown_result = f"{marker}\n{no_content}"
 
     async def _render_duplicate_block(
         self, context: MarkdownRenderingContext, original_block_id: str
     ) -> None:
         syntax = self._syntax_registry.get_synced_block_syntax()
-
-        reference = f"{syntax.start_delimiter} Synced from: {original_block_id} {syntax.end_delimiter}"
+        reference = f"{syntax.start_delimiter} Synced from: {original_block_id}"
 
         if context.indent_level > 0:
             reference = context.indent_text(reference)

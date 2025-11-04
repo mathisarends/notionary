@@ -378,8 +378,8 @@ class SyntaxDefinitionRegistry:
         delimiter = ">>>"
         definition = EnclosedSyntaxDefinition(
             start_delimiter=delimiter,
-            end_delimiter=delimiter,
+            end_delimiter="",
             regex_pattern=re.compile(rf"^{re.escape(delimiter)}\s+(.+)$"),
-            end_regex_pattern=re.compile(rf"^{re.escape(delimiter)}\s*$"),
+            end_regex_pattern=re.compile(r"^$"),
         )
         self._definitions[SyntaxDefinitionRegistryKey.SYNCED_BLOCK] = definition
