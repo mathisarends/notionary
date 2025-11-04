@@ -15,6 +15,12 @@ from notionary.utils.mixins.logging import LoggingMixin
 
 
 class SyncedBlockParser(LineParser, LoggingMixin):
+    ORIGINAL_SYNCED_BLOCK_NOT_SUPPORTED_MESSAGE = (
+        "Original Synced Blocks (without 'Synced from:') must be created via the "
+        "Notion UI and can then be referenced by block ID. This parser can only "
+        "process 'Synced from: <block-id>' references."
+    )
+
     def __init__(self, syntax_registry: SyntaxDefinitionRegistry) -> None:
         super().__init__(syntax_registry)
         self._syntax = syntax_registry.get_synced_block_syntax()
@@ -29,9 +35,7 @@ class SyncedBlockParser(LineParser, LoggingMixin):
     @override
     async def _process(self, context: BlockParsingContext) -> None:
         if not self._is_duplicate_block(context.line):
-            self.logger.warning(
-                "Original Synced Blocks (without 'Synced from:') must be created via the Notion UI and can then be referenced by block ID. This parser can only process 'Synced from: <block-id>' references."
-            )
+            self.logger.warning(self.ORIGINAL_SYNCED_BLOCK_NOT_SUPPORTED_MESSAGE)
             return
 
         self._process_duplicate_block(context)

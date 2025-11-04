@@ -111,6 +111,22 @@ async def test_original_synced_block_should_log_warning(
 
 
 @pytest.mark.asyncio
+async def test_original_synced_block_should_log_warning_with_message(
+    synced_block_parser: SyncedBlockParser,
+    context: BlockParsingContext,
+    syntax_registry: SyntaxDefinitionRegistry,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    syntax = syntax_registry.get_synced_block_syntax()
+    context.line = f"{syntax.start_delimiter} Synced Block"
+
+    await synced_block_parser._process(context)
+
+    expected_message = synced_block_parser.ORIGINAL_SYNCED_BLOCK_NOT_SUPPORTED_MESSAGE
+    assert expected_message in caplog.text
+
+
+@pytest.mark.asyncio
 async def test_synced_block_inside_parent_context_should_not_be_handled(
     synced_block_parser: SyncedBlockParser,
     context: BlockParsingContext,
