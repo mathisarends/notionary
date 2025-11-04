@@ -22,6 +22,7 @@ from notionary.page.content.renderer.renderers import (
     ParagraphRenderer,
     PdfRenderer,
     QuoteRenderer,
+    SyncedBlockRenderer,
     TableOfContentsRenderer,
     TableRenderer,
     TableRowHandler,
@@ -76,6 +77,7 @@ class RendererChainFactory:
         breadcrumb_handler = self._create_breadcrumb_renderer()
         table_handler = self._create_table_renderer()
         table_row_handler = self._create_table_row_handler()
+        synced_block_handler = self._create_synced_block_renderer()
 
         # Standard & Fallback
         paragraph_handler = self._create_paragraph_renderer()
@@ -105,6 +107,7 @@ class RendererChainFactory:
             .set_next(breadcrumb_handler)
             .set_next(table_handler)
             .set_next(table_row_handler)
+            .set_next(synced_block_handler)
             .set_next(paragraph_handler)
             .set_next(fallback_handler)
         )
@@ -227,6 +230,9 @@ class RendererChainFactory:
 
     def _create_table_row_handler(self) -> TableRowHandler:
         return TableRowHandler()
+
+    def _create_synced_block_renderer(self) -> SyncedBlockRenderer:
+        return SyncedBlockRenderer(syntax_registry=self._syntax_registry)
 
     def _create_paragraph_renderer(self) -> ParagraphRenderer:
         return ParagraphRenderer(

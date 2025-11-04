@@ -645,6 +645,82 @@ class CreateVideoBlock(BaseModel):
 
 
 # ============================================================================
+# Synced Block
+# ============================================================================
+
+
+class SyncedFromBlock(BaseModel):
+    type: Literal["block_id"] = "block_id"
+    block_id: str
+
+
+class SyncedBlockData(BaseModel):
+    synced_from: SyncedFromBlock | None = None
+    children: list[Block] | None = None
+
+
+class SyncedBlockBlock(BaseBlock):
+    type: Literal[BlockType.SYNCED_BLOCK] = BlockType.SYNCED_BLOCK
+    synced_block: SyncedBlockData
+
+
+class CreateSyncedBlockData(BaseModel):
+    synced_from: SyncedFromBlock | None = None
+    children: list[BlockCreatePayload] | None = None
+
+
+class CreateSyncedBlockBlock(BaseModel):
+    type: Literal[BlockType.SYNCED_BLOCK] = BlockType.SYNCED_BLOCK
+    synced_block: CreateSyncedBlockData
+
+
+# ============================================================================
+# Link Preview Block (Read-Only)
+# ============================================================================
+
+
+class LinkPreviewData(BaseModel):
+    url: str
+
+
+class LinkPreviewBlock(BaseBlock):
+    type: Literal[BlockType.LINK_PREVIEW] = BlockType.LINK_PREVIEW
+    link_preview: LinkPreviewData
+
+
+# ============================================================================
+# Link To Page Block
+# ============================================================================
+
+
+class LinkToPageData(BaseModel):
+    type: Literal["page_id", "database_id", "comment_id"]
+    page_id: str | None = None
+    database_id: str | None = None
+    comment_id: str | None = None
+
+
+class LinkToPageBlock(BaseBlock):
+    type: Literal[BlockType.LINK_TO_PAGE] = BlockType.LINK_TO_PAGE
+    link_to_page: LinkToPageData
+
+
+class CreateLinkToPageBlock(BaseModel):
+    type: Literal[BlockType.LINK_TO_PAGE] = BlockType.LINK_TO_PAGE
+    link_to_page: LinkToPageData
+
+
+# ============================================================================
+# Unsupported Block
+# ============================================================================
+
+
+class UnsupportedBlock(BaseBlock):
+    type: Literal[BlockType.UNSUPPORTED] = BlockType.UNSUPPORTED
+    unsupported: dict = {}
+
+
+# ============================================================================
 # Block Union Type
 # ============================================================================
 
@@ -678,6 +754,10 @@ type Block = Annotated[
         | ToDoBlock
         | ToggleBlock
         | VideoBlock
+        | SyncedBlockBlock
+        | LinkPreviewBlock
+        | LinkToPageBlock
+        | UnsupportedBlock
     ),
     Field(discriminator="type"),
 ]
@@ -728,6 +808,8 @@ type BlockCreatePayload = Annotated[
         | CreateToDoBlock
         | CreateToggleBlock
         | CreateVideoBlock
+        | CreateSyncedBlockBlock
+        | CreateLinkToPageBlock
     ),
     Field(discriminator="type"),
 ]

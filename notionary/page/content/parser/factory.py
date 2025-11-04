@@ -24,6 +24,7 @@ from notionary.page.content.parser.parsers import (
     PdfParser,
     QuoteParser,
     SpaceParser,
+    SyncedBlockParser,
     TableOfContentsParser,
     TableParser,
     TodoParser,
@@ -52,6 +53,7 @@ class ConverterChainFactory:
         column_parser = self._create_column_parser()
         column_list_parser = self._create_column_list_parser()
         toggle_parser = self._create_toggle_parser()
+        synced_block_parser = self._create_synced_block_parser()
 
         # Single-line blocks
         divider_parser = self._create_divider_parser()
@@ -84,6 +86,7 @@ class ConverterChainFactory:
             .set_next(column_parser)
             .set_next(column_list_parser)
             .set_next(toggle_parser)
+            .set_next(synced_block_parser)
             .set_next(divider_parser)
             .set_next(breadcrumb_parser)
             .set_next(table_of_contents_parser)
@@ -133,6 +136,9 @@ class ConverterChainFactory:
             syntax_registry=self._syntax_registry,
             rich_text_converter=self._rich_text_converter,
         )
+
+    def _create_synced_block_parser(self) -> SyncedBlockParser:
+        return SyncedBlockParser(syntax_registry=self._syntax_registry)
 
     def _create_divider_parser(self) -> DividerParser:
         return DividerParser(syntax_registry=self._syntax_registry)

@@ -18,6 +18,7 @@ from .numbered_list import NumberedListRenderer
 from .paragraph import ParagraphRenderer
 from .pdf import PdfRenderer
 from .quote import QuoteRenderer
+from .synced_block import SyncedBlockRenderer
 from .table import TableRenderer
 from .table_of_contents import TableOfContentsRenderer
 from .table_row import TableRowHandler
@@ -46,6 +47,7 @@ __all__ = [
     "ParagraphRenderer",
     "PdfRenderer",
     "QuoteRenderer",
+    "SyncedBlockRenderer",
     "TableOfContentsRenderer",
     "TableRenderer",
     "TableRowHandler",

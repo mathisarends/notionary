@@ -8,7 +8,15 @@ from notionary.blocks.rich_text.rich_text_markdown_converter import (
 )
 from notionary.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
-from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
+from notionary.page.content.syntax.definition import (
+    MarkdownGrammar,
+    SyntaxDefinitionRegistry,
+)
+
+
+@pytest.fixture
+def syntax_registry() -> SyntaxDefinitionRegistry:
+    return SyntaxDefinitionRegistry()
 
 
 @pytest.fixture
@@ -46,5 +54,6 @@ def render_context(mock_block: Block) -> MarkdownRenderingContext:
     context.indent_level = 0
     context.markdown_result = ""
     context.indent_text = Mock(side_effect=lambda text: f"  {text}")
+    context.render_children = AsyncMock(return_value="")
     context.render_children_with_additional_indent = AsyncMock(return_value="")
     return context
