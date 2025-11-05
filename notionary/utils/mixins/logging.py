@@ -10,7 +10,7 @@ logger = logging.getLogger("notionary")
 logger.addHandler(logging.NullHandler())
 
 
-def configure_library_logging(level: str = "WARNING") -> None:
+def _configure_library_logging(level: str = "WARNING") -> None:
     log_level = getattr(logging, level.upper(), logging.WARNING)
 
     library_logger = logging.getLogger("notionary")
@@ -40,7 +40,7 @@ def _auto_configure_from_environment() -> None:
     env_log_level = os.getenv("NOTIONARY_LOG_LEVEL")
 
     if env_log_level:
-        configure_library_logging(env_log_level)
+        _configure_library_logging(env_log_level)
 
 
 _auto_configure_from_environment()

@@ -16,14 +16,21 @@ type _AsyncDecorator = Callable[[_AsyncFunc], _AsyncFunc]
 
 
 def singleton(cls):
-    instance = [None]
+    # override new to ensure class type is preserved for type annotations
+    original_new = cls.__new__
+    instance = None
 
-    def wrapper(*args, **kwargs):
-        if instance[0] is None:
-            instance[0] = cls(*args, **kwargs)
-        return instance[0]
+    def new_new(cls_inner, *args, **kwargs):
+        nonlocal instance
+        if instance is None:
+            if original_new is object.__new__:
+                instance = original_new(cls_inner)
+            else:
+                instance = original_new(cls_inner, *args, **kwargs)
+        return instance
 
-    return wrapper
+    cls.__new__ = staticmethod(new_new)
+    return cls
 
 
 def time_execution_sync(

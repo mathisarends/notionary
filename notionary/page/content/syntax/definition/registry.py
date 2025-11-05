@@ -1,5 +1,3 @@
-import re
-
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
 from notionary.page.content.syntax.definition.models import (
     EnclosedSyntaxDefinition,
@@ -7,8 +5,10 @@ from notionary.page.content.syntax.definition.models import (
     SyntaxDefinition,
     SyntaxDefinitionRegistryKey,
 )
+from notionary.utils.decorators import singleton
 
 
+@singleton
 class SyntaxDefinitionRegistry:
     def __init__(
         self, markdown_markdown_grammar: MarkdownGrammar | None = None
@@ -101,24 +101,21 @@ class SyntaxDefinitionRegistry:
     def _create_media_syntax(
         self, media_type: str, url_pattern: str | None = None
     ) -> EnclosedSyntaxDefinition:
-        url_pattern = url_pattern or "[^)]+"
         return EnclosedSyntaxDefinition(
             start_delimiter=f"[{media_type}](",
             end_delimiter=")",
-            regex_pattern=re.compile(
-                rf"(?<!\!)\[{re.escape(media_type)}\]\(({url_pattern})\)"
+            regex_pattern=self._markdown_grammar.media_block_pattern(
+                media_type, url_pattern
             ),
-            end_regex_pattern=re.compile(r"\)"),
+            end_regex_pattern=self._markdown_grammar.media_end_pattern,
         )
 
     def _create_url_media_syntax(self, media_type: str) -> EnclosedSyntaxDefinition:
         return EnclosedSyntaxDefinition(
             start_delimiter=f"[{media_type}](",
             end_delimiter=")",
-            regex_pattern=re.compile(
-                rf"(?<!\!)\[{re.escape(media_type)}\]\((https?://[^\s)]+)\)"
-            ),
-            end_regex_pattern=re.compile(r"\)"),
+            regex_pattern=self._markdown_grammar.url_media_block_pattern(media_type),
+            end_regex_pattern=self._markdown_grammar.media_end_pattern,
         )
 
     def _register_defaults(self) -> None:
@@ -160,98 +157,92 @@ class SyntaxDefinitionRegistry:
     # Registration methods - SimpleSyntaxDefinition
     def _register_breadcrumb_syntax(self) -> None:
         definition = SimpleSyntaxDefinition(
-            start_delimiter="[breadcrumb]",
-            regex_pattern=re.compile(r"^\[breadcrumb\]\s*$", re.IGNORECASE),
+            start_delimiter=self._markdown_grammar.breadcrumb_delimiter,
+            regex_pattern=self._markdown_grammar.breadcrumb_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.BREADCRUMB] = definition
 
     def _register_bulleted_list_syntax(self) -> None:
         definition = SimpleSyntaxDefinition(
-            start_delimiter="- ",
-            regex_pattern=re.compile(r"^(\s*)-\s+(?!\[[ xX]\])(.+)$"),
+            start_delimiter=self._markdown_grammar.bulleted_list_delimiter,
+            regex_pattern=self._markdown_grammar.bulleted_list_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.BULLETED_LIST] = definition
 
     def _register_divider_syntax(self) -> None:
         definition = SimpleSyntaxDefinition(
-            start_delimiter="---",
-            regex_pattern=re.compile(r"^\s*-{3,}\s*$"),
+            start_delimiter=self._markdown_grammar.divider_delimiter,
+            regex_pattern=self._markdown_grammar.divider_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.DIVIDER] = definition
 
     def _register_numbered_list_syntax(self) -> None:
         definition = SimpleSyntaxDefinition(
-            start_delimiter="1. ",
-            regex_pattern=re.compile(r"^(\s*)(\d+)\.\s+(.+)$"),
+            start_delimiter=self._markdown_grammar.numbered_list_delimiter,
+            regex_pattern=self._markdown_grammar.numbered_list_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.NUMBERED_LIST] = definition
 
     def _register_quote_syntax(self) -> None:
         definition = SimpleSyntaxDefinition(
-            start_delimiter="> ",
-            regex_pattern=re.compile(r"^>(?!>)\s*(.+)$"),
+            start_delimiter=self._markdown_grammar.quote_delimiter,
+            regex_pattern=self._markdown_grammar.quote_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.QUOTE] = definition
 
     def _register_table_syntax(self) -> None:
-        delimiter = self._markdown_grammar.table_delimiter
         definition = SimpleSyntaxDefinition(
-            start_delimiter=delimiter,
-            regex_pattern=re.compile(
-                rf"^\s*{re.escape(delimiter)}(.+){re.escape(delimiter)}\s*$"
-            ),
+            start_delimiter=self._markdown_grammar.table_delimiter,
+            regex_pattern=self._markdown_grammar.table_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.TABLE] = definition
 
     def _register_table_row_syntax(self) -> None:
-        delimiter = self._markdown_grammar.table_delimiter
         definition = SimpleSyntaxDefinition(
-            start_delimiter=delimiter,
-            regex_pattern=re.compile(
-                rf"^\s*{re.escape(delimiter)}([\s\-:|]+){re.escape(delimiter)}\s*$"
-            ),
+            start_delimiter=self._markdown_grammar.table_delimiter,
+            regex_pattern=self._markdown_grammar.table_row_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.TABLE_ROW] = definition
 
     def _register_table_of_contents_syntax(self) -> None:
         definition = SimpleSyntaxDefinition(
-            start_delimiter="[toc]",
-            regex_pattern=re.compile(r"^\[toc\]$", re.IGNORECASE),
+            start_delimiter=self._markdown_grammar.table_of_contents_delimiter,
+            regex_pattern=self._markdown_grammar.table_of_contents_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.TABLE_OF_CONTENTS] = definition
 
     def _register_todo_syntax(self) -> None:
         definition = SimpleSyntaxDefinition(
-            start_delimiter="- [ ]",
-            regex_pattern=re.compile(r"^\s*-\s+\[ \]\s+(.+)$"),
+            start_delimiter=self._markdown_grammar.todo_delimiter,
+            regex_pattern=self._markdown_grammar.todo_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.TO_DO] = definition
 
     def _register_todo_done_syntax(self) -> None:
         definition = SimpleSyntaxDefinition(
-            start_delimiter="- [x]",
-            regex_pattern=re.compile(r"^\s*-\s+\[x\]\s+(.+)$", re.IGNORECASE),
+            start_delimiter=self._markdown_grammar.todo_done_delimiter,
+            regex_pattern=self._markdown_grammar.todo_done_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.TO_DO_DONE] = definition
 
     def _register_caption_syntax(self) -> None:
         definition = SimpleSyntaxDefinition(
-            start_delimiter="[caption]",
-            regex_pattern=re.compile(r"^\[caption\]\s+(\S.*)$"),
+            start_delimiter=self._markdown_grammar.caption_delimiter,
+            regex_pattern=self._markdown_grammar.caption_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.CAPTION] = definition
 
     def _register_space_syntax(self) -> None:
         definition = SimpleSyntaxDefinition(
-            start_delimiter="[space]",
-            regex_pattern=re.compile(r"^\[space\]\s*$"),
+            start_delimiter=self._markdown_grammar.space_delimiter,
+            regex_pattern=self._markdown_grammar.space_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.SPACE] = definition
 
     def _register_heading_syntax(self) -> None:
         definition = SimpleSyntaxDefinition(
-            start_delimiter="#",
-            regex_pattern=re.compile(r"^(#{1,3})[ \t]+(.+)$"),
+            start_delimiter=self._markdown_grammar.heading_delimiter,
+            regex_pattern=self._markdown_grammar.heading_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.HEADING] = definition
 
@@ -293,22 +284,19 @@ class SyntaxDefinitionRegistry:
 
     def _register_callout_syntax(self) -> None:
         definition = EnclosedSyntaxDefinition(
-            start_delimiter="[callout]",
-            end_delimiter=")",
-            regex_pattern=re.compile(
-                r'\[callout\](?:\(([^")]+?)(?:\s+"([^"]+)")?\)|(?:\s+([^"\n]+?)(?:\s+"([^"]+)")?)(?:\n|$))'
-            ),
-            end_regex_pattern=re.compile(r"\)"),
+            start_delimiter=self._markdown_grammar.callout_delimiter,
+            end_delimiter=self._markdown_grammar.media_end_delimiter,
+            regex_pattern=self._markdown_grammar.callout_pattern,
+            end_regex_pattern=self._markdown_grammar.callout_end_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.CALLOUT] = definition
 
     def _register_code_syntax(self) -> None:
-        code_delimiter = "```"
         definition = EnclosedSyntaxDefinition(
-            start_delimiter=code_delimiter,
-            end_delimiter=code_delimiter,
-            regex_pattern=re.compile("^" + re.escape(code_delimiter) + r"(\w*)\s*$"),
-            end_regex_pattern=re.compile("^" + re.escape(code_delimiter) + r"\s*$"),
+            start_delimiter=self._markdown_grammar.code_delimiter,
+            end_delimiter=self._markdown_grammar.code_delimiter,
+            regex_pattern=self._markdown_grammar.code_start_pattern,
+            end_regex_pattern=self._markdown_grammar.code_end_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.CODE] = definition
 
@@ -317,11 +305,8 @@ class SyntaxDefinitionRegistry:
         definition = EnclosedSyntaxDefinition(
             start_delimiter=f"{delimiter} column",
             end_delimiter=delimiter,
-            regex_pattern=re.compile(
-                rf"^{re.escape(delimiter)}\s*column(?:\s+(0?\.\d+|1(?:\.0?)?))??\s*$",
-                re.IGNORECASE | re.MULTILINE,
-            ),
-            end_regex_pattern=re.compile(rf"^{re.escape(delimiter)}\s*$", re.MULTILINE),
+            regex_pattern=self._markdown_grammar.column_pattern,
+            end_regex_pattern=self._markdown_grammar.column_end_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.COLUMN] = definition
 
@@ -330,42 +315,35 @@ class SyntaxDefinitionRegistry:
         definition = EnclosedSyntaxDefinition(
             start_delimiter=f"{delimiter} columns",
             end_delimiter=delimiter,
-            regex_pattern=re.compile(
-                rf"^{re.escape(delimiter)}\s*columns?\s*$", re.IGNORECASE
-            ),
-            end_regex_pattern=re.compile(rf"^{re.escape(delimiter)}\s*$"),
+            regex_pattern=self._markdown_grammar.column_list_pattern,
+            end_regex_pattern=self._markdown_grammar.column_list_end_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.COLUMN_LIST] = definition
 
     def _register_equation_syntax(self) -> None:
         definition = EnclosedSyntaxDefinition(
-            start_delimiter="$$",
-            end_delimiter="$$",
-            regex_pattern=re.compile(r"^\$\$\s*$"),
-            end_regex_pattern=re.compile(r"^\$\$\s*$"),
+            start_delimiter=self._markdown_grammar.equation_delimiter,
+            end_delimiter=self._markdown_grammar.equation_delimiter,
+            regex_pattern=self._markdown_grammar.equation_start_pattern,
+            end_regex_pattern=self._markdown_grammar.equation_end_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.EQUATION] = definition
 
     def _register_toggle_syntax(self) -> None:
-        delimiter = self._markdown_grammar.toggle_delimiter
         definition = EnclosedSyntaxDefinition(
-            start_delimiter=delimiter,
-            end_delimiter=delimiter,
-            regex_pattern=re.compile(rf"^{re.escape(delimiter)}\s+(.+)$"),
-            end_regex_pattern=re.compile(rf"^{re.escape(delimiter)}\s*$"),
+            start_delimiter=self._markdown_grammar.toggle_delimiter,
+            end_delimiter=self._markdown_grammar.toggle_delimiter,
+            regex_pattern=self._markdown_grammar.toggle_pattern,
+            end_regex_pattern=self._markdown_grammar.toggle_end_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.TOGGLE] = definition
 
     def _register_toggleable_heading_syntax(self) -> None:
         delimiter = self._markdown_grammar.toggle_delimiter
-        escaped_delimiter = re.escape(delimiter)
         definition = EnclosedSyntaxDefinition(
             start_delimiter=f"{delimiter} #",
             end_delimiter=delimiter,
-            regex_pattern=re.compile(
-                rf"^{escaped_delimiter}\s*(?P<level>#{{1,3}})(?!#)\s*(.+)$",
-                re.IGNORECASE,
-            ),
-            end_regex_pattern=re.compile(rf"^{escaped_delimiter}\s*$"),
+            regex_pattern=self._markdown_grammar.toggleable_heading_pattern,
+            end_regex_pattern=self._markdown_grammar.toggleable_heading_end_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.TOGGLEABLE_HEADING] = definition
