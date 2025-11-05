@@ -2,7 +2,7 @@ import asyncio
 
 from notionary.comments.models import Comment
 from notionary.comments.schemas import CommentDto
-from notionary.rich_text.rich_text_to_markdown.service import (
+from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
 from notionary.user.base import BaseUser

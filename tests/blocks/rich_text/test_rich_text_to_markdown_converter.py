@@ -3,14 +3,14 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from notionary.rich_text.rich_text_to_markdown.service import (
+from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
 from notionary.rich_text.schemas import (
     EquationObject,
     LinkObject,
+    Mention,
     MentionDate,
-    MentionObject,
     MentionPageRef,
     MentionType,
     MentionUserRef,
@@ -165,7 +165,7 @@ class TestRichTextToMarkdownConverter:
             RichText(
                 type=RichTextType.MENTION,
                 plain_text="Test Page",
-                mention=MentionObject(
+                mention=Mention(
                     type=MentionType.PAGE, page=MentionPageRef(id="page-123")
                 ),
             )
@@ -179,7 +179,7 @@ class TestRichTextToMarkdownConverter:
             RichText(
                 type=RichTextType.MENTION,
                 plain_text="John Doe",
-                mention=MentionObject(
+                mention=Mention(
                     type=MentionType.USER, user=MentionUserRef(id="user-123")
                 ),
             )
@@ -193,7 +193,7 @@ class TestRichTextToMarkdownConverter:
             RichText(
                 type=RichTextType.MENTION,
                 plain_text="2024-01-15",
-                mention=MentionObject(
+                mention=Mention(
                     type=MentionType.DATE,
                     date=MentionDate(start="2024-01-15", end="2024-01-20"),
                 ),

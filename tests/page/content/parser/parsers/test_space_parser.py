@@ -12,7 +12,7 @@ from notionary.page.content.renderer.factory import RendererChainFactory
 from notionary.rich_text.markdown_to_rich_text.service import (
     MarkdownRichTextConverter,
 )
-from notionary.rich_text.rich_text_to_markdown.service import (
+from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
 from notionary.shared.name_id_resolver import (

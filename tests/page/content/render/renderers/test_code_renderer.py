@@ -7,7 +7,7 @@ from notionary.blocks.enums import BlockType, CodingLanguage
 from notionary.blocks.schemas import Block, CodeBlock, CodeData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.code import CodeRenderer
-from notionary.rich_text.rich_text_to_markdown.service import (
+from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
 from notionary.rich_text.schemas import RichText

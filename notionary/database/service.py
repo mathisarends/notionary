@@ -8,7 +8,7 @@ from notionary.database.database_metadata_update_client import (
     DatabaseMetadataUpdateClient,
 )
 from notionary.database.schemas import NotionDatabaseDto
-from notionary.rich_text.rich_text_to_markdown.service import (
+from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
 from notionary.shared.entity.dto_parsers import (

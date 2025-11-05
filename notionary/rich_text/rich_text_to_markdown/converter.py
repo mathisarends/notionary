@@ -3,19 +3,16 @@ from typing import ClassVar
 
 from notionary.blocks.schemas import BlockColor
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
+from notionary.rich_text.rich_text_to_markdown.mentions.registry import (
+    MentionHandlerRegistryFactory,
+)
+from notionary.rich_text.rich_text_to_markdown.mentions.registry.service import (
+    MentionHandlerRegistry,
+)
 from notionary.rich_text.schemas import (
-    MentionDate,
-    MentionType,
     RichText,
     RichTextType,
     TextAnnotations,
-)
-from notionary.shared.name_id_resolver import (
-    DatabaseNameIdResolver,
-    DataSourceNameIdResolver,
-    NameIdResolver,
-    PageNameIdResolver,
-    PersonNameIdResolver,
 )
 
 
@@ -31,17 +28,14 @@ class RichTextToMarkdownConverter:
     def __init__(
         self,
         *,
-        page_resolver: NameIdResolver | None = None,
-        database_resolver: NameIdResolver | None = None,
-        data_source_resolver: NameIdResolver | None = None,
-        person_resolver: NameIdResolver | None = None,
         markdown_grammar: MarkdownGrammar | None = None,
+        mention_handler_registry: MentionHandlerRegistry | None = None,
     ) -> None:
-        self.page_resolver = page_resolver or PageNameIdResolver()
-        self.database_resolver = database_resolver or DatabaseNameIdResolver()
-        self.data_source_resolver = data_source_resolver or DataSourceNameIdResolver()
-        self.person_resolver = person_resolver or PersonNameIdResolver()
         self._markdown_grammar = markdown_grammar or MarkdownGrammar()
+        if mention_handler_registry is None:
+            factory = MentionHandlerRegistryFactory(self._markdown_grammar)
+            mention_handler_registry = factory.create()
+        self._mention_handler_registry = mention_handler_registry
 
     async def to_markdown(self, rich_text: list[RichText]) -> str:
         if not rich_text:
@@ -126,8 +120,16 @@ class RichTextToMarkdownConverter:
         return f"{self._markdown_grammar.inline_equation_wrapper}{obj.equation.expression}{self._markdown_grammar.inline_equation_wrapper}"
 
     async def _convert_mention(self, obj: RichText) -> str:
-        mention_markdown = await self._extract_mention_markdown(obj)
-        return mention_markdown if mention_markdown else ""
+        if not obj.mention:
+            return ""
+
+        mention = obj.mention
+        handler = self._mention_handler_registry.get_handler(mention.type)
+
+        if not handler:
+            return ""
+
+        return await handler.handle(mention)
 
     def _extract_plain_content(self, obj: RichText) -> str:
         if obj.plain_text:
@@ -137,73 +139,6 @@ class RichTextToMarkdownConverter:
             return obj.text.content
 
         return ""
-
-    async def _extract_mention_markdown(self, obj: RichText) -> str | None:
-        if not obj.mention:
-            return None
-
-        mention = obj.mention
-
-        if mention.type == MentionType.PAGE and mention.page:
-            return await self._extract_page_mention_markdown(mention.page.id)
-
-        if mention.type == MentionType.DATABASE and mention.database:
-            return await self._extract_database_mention_markdown(mention.database.id)
-
-        if mention.type == MentionType.DATASOURCE and mention.data_source:
-            return await self._extract_data_source_mention_markdown(
-                mention.data_source.id
-            )
-
-        if mention.type == MentionType.USER and mention.user:
-            return await self._extract_user_mention_markdown(mention.user.id)
-
-        if mention.type == MentionType.DATE and mention.date:
-            return self._extract_date_mention_markdown(mention.date)
-
-        return None
-
-    async def _extract_page_mention_markdown(self, page_id: str) -> str:
-        page_name = await self.page_resolver.resolve_id_to_name(page_id)
-        return self._format_mention(
-            self._markdown_grammar.page_mention_prefix, page_name or page_id
-        )
-
-    async def _extract_database_mention_markdown(self, database_id: str) -> str:
-        database_name = await self.database_resolver.resolve_id_to_name(database_id)
-        return self._format_mention(
-            self._markdown_grammar.database_mention_prefix, database_name or database_id
-        )
-
-    async def _extract_data_source_mention_markdown(self, data_source_id: str) -> str:
-        data_source_name = await self.data_source_resolver.resolve_id_to_name(
-            data_source_id
-        )
-        return self._format_mention(
-            self._markdown_grammar.datasource_mention_prefix,
-            data_source_name or data_source_id,
-        )
-
-    async def _extract_user_mention_markdown(self, user_id: str) -> str:
-        user_name = await self.person_resolver.resolve_id_to_name(user_id)
-        return self._format_mention(
-            self._markdown_grammar.user_mention_prefix, user_name or user_id
-        )
-
-    def _format_mention(self, prefix: str, name: str) -> str:
-        return f"{prefix}{name}{self._markdown_grammar.mention_suffix}"
-
-    def _extract_date_mention_markdown(self, date_mention: MentionDate) -> str:
-        date_range = self._format_date_range(date_mention)
-        return self._format_mention(
-            self._markdown_grammar.date_mention_prefix, date_range
-        )
-
-    def _format_date_range(self, date_mention: MentionDate) -> str:
-        if date_mention.end:
-            return f"{date_mention.start}–{date_mention.end}"
-
-        return date_mention.start
 
     def _apply_text_formatting_to_content(
         self, obj: RichText, content: str, skip_color: bool = False

@@ -8,7 +8,7 @@ from notionary.blocks.schemas import Block, NumberedListItemBlock, NumberedListI
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.numbered_list import NumberedListRenderer
 from notionary.page.content.syntax.definition import MarkdownGrammar
-from notionary.rich_text.rich_text_to_markdown.service import (
+from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
 from notionary.rich_text.schemas import RichText

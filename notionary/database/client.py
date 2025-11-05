@@ -3,7 +3,7 @@ from notionary.database.schemas import (
     NotionDatabaseUpdateDto,
 )
 from notionary.http.client import NotionHttpClient
-from notionary.rich_text.rich_text_to_markdown.service import (
+from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
 

@@ -11,7 +11,7 @@ from notionary.data_source.schemas import (
 )
 from notionary.http.client import NotionHttpClient
 from notionary.page.schemas import NotionPageDto
-from notionary.rich_text.rich_text_to_markdown.service import (
+from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
 from notionary.shared.entity.entity_metadata_update_client import (

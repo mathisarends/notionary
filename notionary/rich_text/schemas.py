@@ -81,7 +81,7 @@ class MentionTemplateMention(BaseModel):
     type: TemplateMentionType
 
 
-class MentionObject(BaseModel):
+class Mention(BaseModel):
     type: MentionType
     user: MentionUserRef | None = None
     page: MentionPageRef | None = None
@@ -100,7 +100,7 @@ class RichText(BaseModel):
     plain_text: str = ""
     href: str | None = None
 
-    mention: MentionObject | None = None
+    mention: Mention | None = None
 
     equation: EquationObject | None = None
 
@@ -139,9 +139,7 @@ class RichText(BaseModel):
     def mention_user(cls, user_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(
-                type=MentionType.USER, user=MentionUserRef(id=user_id)
-            ),
+            mention=Mention(type=MentionType.USER, user=MentionUserRef(id=user_id)),
             annotations=TextAnnotations(),
         )
 
@@ -149,9 +147,7 @@ class RichText(BaseModel):
     def mention_page(cls, page_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(
-                type=MentionType.PAGE, page=MentionPageRef(id=page_id)
-            ),
+            mention=Mention(type=MentionType.PAGE, page=MentionPageRef(id=page_id)),
             annotations=TextAnnotations(),
         )
 
@@ -159,7 +155,7 @@ class RichText(BaseModel):
     def mention_database(cls, database_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(
+            mention=Mention(
                 type=MentionType.DATABASE, database=MentionDatabaseRef(id=database_id)
             ),
             annotations=TextAnnotations(),
@@ -169,7 +165,7 @@ class RichText(BaseModel):
     def mention_data_source(cls, data_source_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(
+            mention=Mention(
                 type=MentionType.DATASOURCE,
                 data_source=MentionDataSourceRef(id=data_source_id),
             ),

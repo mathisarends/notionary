@@ -27,7 +27,7 @@ from notionary.page.content.renderer.renderers import (
     VideoRenderer,
 )
 from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
-from notionary.rich_text.rich_text_to_markdown.service import (
+from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
 
