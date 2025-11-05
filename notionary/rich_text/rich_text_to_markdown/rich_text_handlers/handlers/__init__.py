@@ -1,11 +1,10 @@
-from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.handlers.equation import (
+from .inline_equation import (
     EquationHandler,
 )
-from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.handlers.text import (
+from .mention import MentionRichTextHandler
+from .text import (
     TextHandler,
 )
-
-from .mention import MentionRichTextHandler
 
 __all__ = [
     "EquationHandler",
