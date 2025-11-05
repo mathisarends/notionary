@@ -1,6 +1,8 @@
 from typing import override
 
-from notionary.rich_text.rich_text_to_markdown.mention.port import MentionHandler
+from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.handlers.mention.handlers.base import (
+    MentionHandler,
+)
 from notionary.rich_text.schemas import Mention, MentionDate
 
 

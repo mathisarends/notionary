@@ -52,6 +52,7 @@ class MarkdownGrammar:
         self._color_middle = "}"
         self._color_suffix = "=="
         self._inline_equation_wrapper = "$"
+        self._background_color_wrapper = "=="
 
     @property
     def spaces_per_nesting_level(self) -> int:
@@ -204,6 +205,10 @@ class MarkdownGrammar:
     @property
     def inline_equation_wrapper(self) -> str:
         return self._inline_equation_wrapper
+
+    @property
+    def background_color_wrapper(self) -> str:
+        return self._background_color_wrapper
 
     # Pattern Definitions
     @cached_property

@@ -3,47 +3,43 @@ from typing import ClassVar
 
 from notionary.blocks.schemas import BlockColor
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.rich_text_to_markdown.mention import (
-    MentionHandlerRegistry,
-    MentionHandlerRegistryFactory,
+from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.factory import (
+    create_rich_text_handler_registry,
 )
-from notionary.rich_text.schemas import (
-    RichText,
-    RichTextType,
-    TextAnnotations,
+from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.registry import (
+    RichTextHandlerRegistry,
 )
+from notionary.rich_text.schemas import RichText, TextAnnotations
+from notionary.utils.mixins.logging import LoggingMixin
 
 
-# TODO: Add handlers for rich text type | test them thoroughlty and refactor this class here
 @dataclass
 class ColorGroup:
     color: BlockColor
     objects: list[RichText]
 
 
-class RichTextToMarkdownConverter:
+class RichTextToMarkdownConverter(LoggingMixin):
     VALID_COLORS: ClassVar[set[str]] = {color.value for color in BlockColor}
 
     def __init__(
         self,
         *,
         markdown_grammar: MarkdownGrammar | None = None,
-        mention_handler_registry: MentionHandlerRegistry | None = None,
+        rich_text_handler_registry: RichTextHandlerRegistry | None = None,
     ) -> None:
         self._markdown_grammar = markdown_grammar or MarkdownGrammar()
-        if mention_handler_registry is None:
-            factory = MentionHandlerRegistryFactory(self._markdown_grammar)
-            mention_handler_registry = factory.create()
-        self._mention_handler_registry = mention_handler_registry
+        self._rich_text_handler_registry = (
+            rich_text_handler_registry
+            or create_rich_text_handler_registry(self._markdown_grammar)
+        )
 
     async def to_markdown(self, rich_text: list[RichText]) -> str:
         if not rich_text:
             return ""
 
         color_groups = self._group_by_color(rich_text)
-        markdown_parts = [
-            await self._convert_group_to_markdown(group) for group in color_groups
-        ]
+        markdown_parts = await self._convert_groups_to_markdown(color_groups)
 
         return "".join(markdown_parts)
 
@@ -52,15 +48,11 @@ class RichTextToMarkdownConverter:
             return []
 
         groups: list[ColorGroup] = []
-        current_color = (
-            rich_text[0].annotations.color
-            if rich_text[0].annotations
-            else BlockColor.DEFAULT
-        )
+        current_color = self._extract_color(rich_text[0])
         current_group: list[RichText] = []
 
         for obj in rich_text:
-            obj_color = obj.annotations.color if obj.annotations else BlockColor.DEFAULT
+            obj_color = self._extract_color(obj)
 
             if obj_color == current_color:
                 current_group.append(obj)
@@ -72,129 +64,91 @@ class RichTextToMarkdownConverter:
         groups.append(ColorGroup(color=current_color, objects=current_group))
         return groups
 
+    def _extract_color(self, obj: RichText) -> BlockColor:
+        if obj.annotations and obj.annotations.color:
+            return obj.annotations.color
+        return BlockColor.DEFAULT
+
+    async def _convert_groups_to_markdown(self, groups: list[ColorGroup]) -> list[str]:
+        return [await self._convert_group_to_markdown(group) for group in groups]
+
     async def _convert_group_to_markdown(self, group: ColorGroup) -> str:
         if self._should_apply_color(group.color):
             return await self._convert_colored_group(group)
-
         return await self._convert_uncolored_group(group)
 
     def _should_apply_color(self, color: BlockColor) -> bool:
         return color != BlockColor.DEFAULT and color.value in self.VALID_COLORS
 
     async def _convert_colored_group(self, group: ColorGroup) -> str:
-        inner_parts = [
-            await self._convert_rich_text_to_markdown(obj, skip_color=True)
-            for obj in group.objects
-        ]
+        inner_parts = await self._convert_rich_texts_without_color(group.objects)
         combined_content = "".join(inner_parts)
         return self._wrap_with_color(combined_content, group.color)
 
     async def _convert_uncolored_group(self, group: ColorGroup) -> str:
-        parts = [
-            await self._convert_rich_text_to_markdown(obj) for obj in group.objects
-        ]
+        parts = await self._convert_rich_texts_with_color(group.objects)
         return "".join(parts)
+
+    async def _convert_rich_texts_without_color(
+        self, objects: list[RichText]
+    ) -> list[str]:
+        return [
+            await self._convert_rich_text_to_markdown(obj, skip_color=True)
+            for obj in objects
+        ]
+
+    async def _convert_rich_texts_with_color(
+        self, objects: list[RichText]
+    ) -> list[str]:
+        return [await self._convert_rich_text_to_markdown(obj) for obj in objects]
+
+    async def _convert_rich_text_to_markdown(
+        self, obj: RichText, skip_color: bool = False
+    ) -> str:
+        handler = self._get_handler_for(obj)
+        if not handler:
+            return ""
+
+        result = await handler.handle(obj)
+
+        if self._should_apply_color_to_result(obj, skip_color):
+            result = self._apply_color_formatting(obj.annotations, result)
+
+        return result
+
+    def _get_handler_for(self, obj: RichText):
+        handler = self._rich_text_handler_registry.get_handler(obj.type)
+        if not handler:
+            self.logger.warning(
+                f"No handler found for rich text type: {obj.type}. Skipping."
+            )
+        return handler
+
+    def _should_apply_color_to_result(self, obj: RichText, skip_color: bool) -> bool:
+        return not skip_color and obj.annotations is not None
+
+    def _apply_color_formatting(
+        self, annotations: TextAnnotations, content: str
+    ) -> str:
+        if not self._has_valid_color(annotations):
+            return content
+        return self._wrap_with_color(content, annotations.color)
+
+    def _has_valid_color(self, annotations: TextAnnotations) -> bool:
+        if annotations.color is None:
+            return False
+        return self._should_apply_color(annotations.color)
 
     def _wrap_with_color(self, content: str, color: BlockColor) -> str:
         base_color = color.get_base_color()
 
         if color.is_background():
-            return f"=={{{base_color}}}{content}=="
+            return self._wrap_with_background_color(content, base_color)
+        return self._wrap_with_foreground_color(content, base_color)
 
+    def _wrap_with_background_color(self, content: str, base_color: str) -> str:
+        wrapper = self._markdown_grammar.background_color_wrapper
+        return f"{wrapper}{{{base_color}}}{content}{wrapper}"
+
+    def _wrap_with_foreground_color(self, content: str, base_color: str) -> str:
         return f"{{{base_color}}}{content}"
-
-    async def _convert_rich_text_to_markdown(
-        self, obj: RichText, skip_color: bool = False
-    ) -> str:
-        if obj.type == RichTextType.EQUATION and obj.equation:
-            return self._convert_equation(obj)
-
-        if obj.type == RichTextType.MENTION:
-            return await self._convert_mention(obj)
-
-        content = self._extract_plain_content(obj)
-        return self._apply_text_formatting_to_content(obj, content, skip_color)
-
-    def _convert_equation(self, obj: RichText) -> str:
-        return f"{self._markdown_grammar.inline_equation_wrapper}{obj.equation.expression}{self._markdown_grammar.inline_equation_wrapper}"
-
-    async def _convert_mention(self, obj: RichText) -> str:
-        if not obj.mention:
-            return ""
-
-        mention = obj.mention
-        handler = self._mention_handler_registry.get_handler(mention.type)
-
-        if not handler:
-            return ""
-
-        return await handler.handle(mention)
-
-    def _extract_plain_content(self, obj: RichText) -> str:
-        if obj.plain_text:
-            return obj.plain_text
-
-        if obj.text:
-            return obj.text.content
-
-        return ""
-
-    def _apply_text_formatting_to_content(
-        self, obj: RichText, content: str, skip_color: bool = False
-    ) -> str:
-        content = self._apply_link_formatting(obj, content)
-
-        if not obj.annotations:
-            return content
-
-        content = self._apply_inline_formatting(obj.annotations, content)
-
-        if not skip_color:
-            content = self._apply_color_formatting(obj.annotations, content)
-
-        return content
-
-    def _apply_link_formatting(self, obj: RichText, content: str) -> str:
-        if not (obj.text and obj.text.link):
-            return content
-
-        return (
-            f"{self._markdown_grammar.link_prefix}"
-            f"{content}"
-            f"{self._markdown_grammar.link_middle}"
-            f"{obj.text.link.url}"
-            f"{self._markdown_grammar.link_suffix}"
-        )
-
-    def _apply_inline_formatting(
-        self, annotations: TextAnnotations, content: str
-    ) -> str:
-        if annotations.code:
-            content = self._wrap_with(content, self._markdown_grammar.code_wrapper)
-
-        if annotations.strikethrough:
-            content = self._wrap_with(
-                content, self._markdown_grammar.strikethrough_wrapper
-            )
-
-        if annotations.italic:
-            content = self._wrap_with(content, self._markdown_grammar.italic_wrapper)
-
-        if annotations.underline:
-            content = self._wrap_with(content, self._markdown_grammar.underline_wrapper)
-
-        if annotations.bold:
-            content = self._wrap_with(content, self._markdown_grammar.bold_wrapper)
-
-        return content
-
-    def _apply_color_formatting(
-        self, annotations: TextAnnotations, content: str
-    ) -> str:
-        if not self._should_apply_color(annotations.color):
-            return content
-
-        return self._wrap_with_color(content, annotations.color)
-
-    def _wrap_with(self, content: str, wrapper: str) -> str:
-        return f"{wrapper}{content}{wrapper}"

@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 
+from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
+from notionary.rich_text.schemas import RichText
+
 
 class RichTextHandler(ABC):
-    @abstractmethod
-    def handle(
-        self,
-    ) -> str:
-        pass
+    def __init__(self, markdown_grammar: MarkdownGrammar):
+        self._markdown_grammar = markdown_grammar
 
-    # TOOD: Implement this here
-    ...
+    @abstractmethod
+    async def handle(self, rich_text: RichText) -> str:
+        pass
