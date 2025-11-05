@@ -284,7 +284,7 @@ class MarkdownRichTextConverter:
         return RichText.from_plain_text(match.group(1), strikethrough=True)
 
     def _handle_code_pattern(self, match: Match) -> RichText:
-        return RichText.for_code_block(match.group(1))
+        return RichText.from_plain_text(match.group(1), code=True)
 
     def _handle_link_pattern(self, match: Match) -> RichText:
         link_text, url = match.group(1), match.group(2)

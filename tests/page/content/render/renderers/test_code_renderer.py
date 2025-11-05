@@ -7,6 +7,7 @@ from notionary.blocks.enums import BlockType, CodingLanguage
 from notionary.blocks.schemas import Block, CodeBlock, CodeData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.code import CodeRenderer
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
@@ -37,9 +38,13 @@ def _create_code_block(code_data: CodeData | None) -> CodeBlock:
 
 @pytest.fixture
 def code_renderer(
+    syntax_registry: SyntaxDefinitionRegistry,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> CodeRenderer:
-    return CodeRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
+    return CodeRenderer(
+        syntax_registry=syntax_registry,
+        rich_text_markdown_converter=mock_rich_text_markdown_converter,
+    )
 
 
 @pytest.mark.asyncio

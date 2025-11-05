@@ -27,6 +27,7 @@ from notionary.page.content.renderer.renderers import (
     VideoRenderer,
 )
 from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
 from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
@@ -37,11 +38,13 @@ class RendererChainFactory:
         self,
         rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
         syntax_registry: SyntaxDefinitionRegistry | None = None,
+        markdown_grammar: MarkdownGrammar | None = None,
     ) -> None:
         self._rich_text_markdown_converter = (
             rich_text_markdown_converter or RichTextToMarkdownConverter()
         )
         self._syntax_registry = syntax_registry or SyntaxDefinitionRegistry()
+        self._markdown_grammar = markdown_grammar or MarkdownGrammar()
 
     def create(self) -> BlockRenderer:
         # Strukturelle Blocks
@@ -167,6 +170,7 @@ class RendererChainFactory:
         return NumberedListRenderer(
             syntax_registry=self._syntax_registry,
             rich_text_markdown_converter=self._rich_text_markdown_converter,
+            markdown_grammar=self._markdown_grammar,
         )
 
     def _create_bookmark_renderer(self) -> BookmarkRenderer:
@@ -222,16 +226,18 @@ class RendererChainFactory:
 
     def _create_table_renderer(self) -> TableRenderer:
         return TableRenderer(
-            rich_text_markdown_converter=self._rich_text_markdown_converter
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
         )
 
     def _create_table_row_handler(self) -> TableRowHandler:
-        return TableRowHandler()
+        return TableRowHandler(syntax_registry=self._syntax_registry)
 
     def _create_paragraph_renderer(self) -> ParagraphRenderer:
         return ParagraphRenderer(
-            rich_text_markdown_converter=self._rich_text_markdown_converter
+            syntax_registry=self._syntax_registry,
+            rich_text_markdown_converter=self._rich_text_markdown_converter,
         )
 
     def _create_fallback_renderer(self) -> FallbackRenderer:
-        return FallbackRenderer()
+        return FallbackRenderer(syntax_registry=self._syntax_registry)

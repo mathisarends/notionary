@@ -12,6 +12,7 @@ from notionary.blocks.schemas import (
 )
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.pdf import PdfRenderer
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
@@ -49,9 +50,13 @@ def _create_pdf_block(
 
 @pytest.fixture
 def pdf_renderer(
+    syntax_registry: SyntaxDefinitionRegistry,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> PdfRenderer:
-    return PdfRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
+    return PdfRenderer(
+        syntax_registry=syntax_registry,
+        rich_text_markdown_converter=mock_rich_text_markdown_converter,
+    )
 
 
 @pytest.mark.asyncio

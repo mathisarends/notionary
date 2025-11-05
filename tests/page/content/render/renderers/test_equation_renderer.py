@@ -1,3 +1,4 @@
+from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -6,6 +7,7 @@ from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import EquationBlock, EquationData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.equation import EquationRenderer
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 def _create_equation_data(expression: str) -> EquationData:
@@ -13,15 +15,16 @@ def _create_equation_data(expression: str) -> EquationData:
 
 
 def _create_equation_block(equation_data: EquationData | None) -> EquationBlock:
-    block = Mock(spec=EquationBlock)
+    mock_obj = Mock(spec=EquationBlock)
+    block = cast(EquationBlock, mock_obj)
     block.type = BlockType.EQUATION
     block.equation = equation_data
     return block
 
 
 @pytest.fixture
-def equation_renderer() -> EquationRenderer:
-    return EquationRenderer()
+def equation_renderer(syntax_registry: SyntaxDefinitionRegistry) -> EquationRenderer:
+    return EquationRenderer(syntax_registry=syntax_registry)
 
 
 @pytest.mark.asyncio

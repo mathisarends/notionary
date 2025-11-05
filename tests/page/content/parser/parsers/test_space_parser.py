@@ -69,12 +69,7 @@ def parser(
         person_resolver=mock_user_resolver,
     )
 
-    rich_text_to_markdown_converter = RichTextToMarkdownConverter(
-        page_resolver=mock_page_resolver,
-        database_resolver=mock_database_resolver,
-        data_source_resolver=mock_data_source_resolver,
-        person_resolver=mock_user_resolver,
-    )
+    rich_text_to_markdown_converter = RichTextToMarkdownConverter()
 
     mock_file_upload = Mock(spec=NotionFileUpload)
     converter_chain_factory = ConverterChainFactory(

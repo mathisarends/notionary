@@ -7,6 +7,7 @@ from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block, BulletedListItemBlock, BulletedListItemData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.bulleted_list import BulletedListRenderer
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
@@ -29,10 +30,12 @@ def _create_bulleted_list_block(
 
 @pytest.fixture
 def bulleted_list_renderer(
+    syntax_registry: SyntaxDefinitionRegistry,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> BulletedListRenderer:
     return BulletedListRenderer(
-        rich_text_markdown_converter=mock_rich_text_markdown_converter
+        syntax_registry=syntax_registry,
+        rich_text_markdown_converter=mock_rich_text_markdown_converter,
     )
 
 

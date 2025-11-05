@@ -9,9 +9,6 @@ from notionary.blocks.schemas import Block, ColumnBlock, ColumnData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.column import ColumnRenderer
 from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
-from notionary.rich_text.rich_text_to_markdown.converter import (
-    RichTextToMarkdownConverter,
-)
 
 
 def _create_column_data(width_ratio: float | None = None) -> ColumnData:
@@ -27,15 +24,8 @@ def _create_column_block(column_data: ColumnData | None) -> ColumnBlock:
 
 
 @pytest.fixture
-def column_renderer(
-    mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
-) -> ColumnRenderer:
-    return ColumnRenderer()
-
-
-@pytest.fixture
-def syntax_registry() -> SyntaxDefinitionRegistry:
-    return SyntaxDefinitionRegistry()
+def column_renderer(syntax_registry: SyntaxDefinitionRegistry) -> ColumnRenderer:
+    return ColumnRenderer(syntax_registry=syntax_registry)
 
 
 @pytest.mark.asyncio

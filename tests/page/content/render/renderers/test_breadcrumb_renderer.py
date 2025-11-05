@@ -7,6 +7,7 @@ from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block, BreadcrumbBlock
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.breadcrumb import BreadcrumbRenderer
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 def _create_breadcrumb_block() -> BreadcrumbBlock:
@@ -17,8 +18,10 @@ def _create_breadcrumb_block() -> BreadcrumbBlock:
 
 
 @pytest.fixture
-def breadcrumb_renderer() -> BreadcrumbRenderer:
-    return BreadcrumbRenderer()
+def breadcrumb_renderer(
+    syntax_registry: SyntaxDefinitionRegistry,
+) -> BreadcrumbRenderer:
+    return BreadcrumbRenderer(syntax_registry=syntax_registry)
 
 
 @pytest.mark.asyncio

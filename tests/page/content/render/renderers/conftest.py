@@ -5,6 +5,7 @@ import pytest
 
 from notionary.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
 from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
@@ -14,6 +15,11 @@ from notionary.rich_text.rich_text_to_markdown.converter import (
 @pytest.fixture
 def markdown_grammar() -> MarkdownGrammar:
     return MarkdownGrammar()
+
+
+@pytest.fixture
+def syntax_registry() -> SyntaxDefinitionRegistry:
+    return SyntaxDefinitionRegistry()
 
 
 @pytest.fixture

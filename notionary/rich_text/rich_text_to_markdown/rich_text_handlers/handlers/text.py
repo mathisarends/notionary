@@ -28,8 +28,8 @@ class TextHandler(RichTextHandler):
         if not obj.annotations:
             return content
 
-        content = self._apply_inline_formatting(obj.annotations, content)
         # Note: Color formatting is handled at the converter level for proper grouping
+        content = self._apply_inline_formatting(obj.annotations, content)
 
         return content
 

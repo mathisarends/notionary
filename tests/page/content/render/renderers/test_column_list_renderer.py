@@ -19,13 +19,10 @@ def _create_column_list_block() -> ColumnListBlock:
 
 
 @pytest.fixture
-def column_list_renderer() -> ColumnListRenderer:
-    return ColumnListRenderer()
-
-
-@pytest.fixture
-def syntax_registry() -> SyntaxDefinitionRegistry:
-    return SyntaxDefinitionRegistry()
+def column_list_renderer(
+    syntax_registry: SyntaxDefinitionRegistry,
+) -> ColumnListRenderer:
+    return ColumnListRenderer(syntax_registry=syntax_registry)
 
 
 @pytest.mark.asyncio

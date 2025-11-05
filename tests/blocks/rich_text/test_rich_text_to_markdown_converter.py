@@ -1,6 +1,3 @@
-from typing import cast
-from unittest.mock import AsyncMock
-
 import pytest
 
 from notionary.rich_text.rich_text_to_markdown.converter import (
@@ -19,59 +16,11 @@ from notionary.rich_text.schemas import (
     TextAnnotations,
     TextContent,
 )
-from notionary.shared.name_id_resolver import (
-    DatabaseNameIdResolver,
-    DataSourceNameIdResolver,
-    PageNameIdResolver,
-    PersonNameIdResolver,
-)
 
 
 @pytest.fixture
-def mock_page_resolver() -> PageNameIdResolver:
-    mock_obj = AsyncMock(spec=PageNameIdResolver)
-    resolver = cast(PageNameIdResolver, mock_obj)
-    resolver.resolve_id_to_name.return_value = "Test Page"
-    return resolver
-
-
-@pytest.fixture
-def mock_database_resolver() -> DatabaseNameIdResolver:
-    mock_obj = AsyncMock(spec=DatabaseNameIdResolver)
-    resolver = cast(DatabaseNameIdResolver, mock_obj)
-    resolver.resolve_id_to_name.return_value = "Tasks DB"
-    return resolver
-
-
-@pytest.fixture
-def mock_data_source_resolver() -> DataSourceNameIdResolver:
-    mock_obj = AsyncMock(spec=DataSourceNameIdResolver)
-    resolver = cast(DataSourceNameIdResolver, mock_obj)
-    resolver.resolve_id_to_name.return_value = "Test DataSource"
-    return resolver
-
-
-@pytest.fixture
-def mock_user_resolver() -> PersonNameIdResolver:
-    mock_obj = AsyncMock(spec=PersonNameIdResolver)
-    resolver = cast(PersonNameIdResolver, mock_obj)
-    resolver.resolve_id_to_name.return_value = "John Doe"
-    return resolver
-
-
-@pytest.fixture
-def converter(
-    mock_page_resolver: AsyncMock,
-    mock_database_resolver: AsyncMock,
-    mock_data_source_resolver: AsyncMock,
-    mock_user_resolver: AsyncMock,
-) -> RichTextToMarkdownConverter:
-    return RichTextToMarkdownConverter(
-        page_resolver=mock_page_resolver,
-        database_resolver=mock_database_resolver,
-        data_source_resolver=mock_data_source_resolver,
-        person_resolver=mock_user_resolver,
-    )
+def converter() -> RichTextToMarkdownConverter:
+    return RichTextToMarkdownConverter()
 
 
 class TestRichTextToMarkdownConverter:
@@ -171,7 +120,8 @@ class TestRichTextToMarkdownConverter:
             )
         ]
         result = await converter.to_markdown(rich_text)
-        assert result == "@page[Test Page]"
+        # Falls back to ID since no resolver is mocked
+        assert result == "@page[page-123]"
 
     @pytest.mark.asyncio
     async def test_user_mention(self, converter: RichTextToMarkdownConverter) -> None:
@@ -185,7 +135,8 @@ class TestRichTextToMarkdownConverter:
             )
         ]
         result = await converter.to_markdown(rich_text)
-        assert result == "@user[John Doe]"
+        # Falls back to ID since no resolver is mocked
+        assert result == "@user[user-123]"
 
     @pytest.mark.asyncio
     async def test_date_mention(self, converter: RichTextToMarkdownConverter) -> None:

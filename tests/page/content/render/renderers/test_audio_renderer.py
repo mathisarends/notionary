@@ -12,6 +12,7 @@ from notionary.blocks.schemas import (
 )
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.audio import AudioRenderer
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
@@ -97,9 +98,13 @@ def _create_audio_block_with_both_sources(
 
 @pytest.fixture
 def audio_renderer(
+    syntax_registry: SyntaxDefinitionRegistry,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> AudioRenderer:
-    return AudioRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
+    return AudioRenderer(
+        syntax_registry=syntax_registry,
+        rich_text_markdown_converter=mock_rich_text_markdown_converter,
+    )
 
 
 @pytest.mark.asyncio

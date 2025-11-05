@@ -15,16 +15,13 @@ from notionary.rich_text.rich_text_to_markdown.converter import (
 class NumberedListRenderer(BlockRenderer):
     def __init__(
         self,
-        syntax_registry: SyntaxDefinitionRegistry | None = None,
-        rich_text_markdown_converter: RichTextToMarkdownConverter | None = None,
-        markdown_grammar: MarkdownGrammar | None = None,
+        syntax_registry: SyntaxDefinitionRegistry,
+        rich_text_markdown_converter: RichTextToMarkdownConverter,
+        markdown_grammar: MarkdownGrammar,
     ) -> None:
         super().__init__(syntax_registry=syntax_registry)
-        self._rich_text_markdown_converter = (
-            rich_text_markdown_converter or RichTextToMarkdownConverter()
-        )
+        self._rich_text_markdown_converter = rich_text_markdown_converter
 
-        markdown_grammar = markdown_grammar or MarkdownGrammar()
         self._numbered_list_placeholder = markdown_grammar.numbered_list_placeholder
 
     @override
