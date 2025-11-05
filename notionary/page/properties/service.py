@@ -28,7 +28,7 @@ from notionary.page.properties.schemas import (
     PageURLProperty,
 )
 from notionary.rich_text.rich_text_to_markdown.service import (
-    convert_rich_text_to_markdown,
+    RichTextToMarkdownConverter,
 )
 from notionary.shared.models.parent import ParentType
 
@@ -44,6 +44,7 @@ class PagePropertyHandler:
         page_url: str,
         page_property_http_client: PagePropertyHttpClient,
         parent_data_source: str,
+        rich_text_converter: RichTextToMarkdownConverter | None = None,
     ) -> None:
         self._properties = properties
         self._parent_type = parent_type
@@ -52,6 +53,7 @@ class PagePropertyHandler:
         self._parent_data_source_id = parent_data_source
         self._parent_data_source: NotionDataSource | None = None
         self._data_source_loaded = False
+        self._rich_text_converter = rich_text_converter or RichTextToMarkdownConverter()
 
     # =========================================================================
     # Reader Methods
@@ -67,7 +69,7 @@ class PagePropertyHandler:
 
     async def get_value_of_title_property(self, name: str) -> str:
         title_property = self._get_typed_property_or_raise(name, PageTitleProperty)
-        return await convert_rich_text_to_markdown(title_property.title)
+        return await self._rich_text_converter.to_markdown(title_property.title)
 
     def get_values_of_people_property(self, property_name: str) -> list[str]:
         people_prop = self._get_typed_property_or_raise(
@@ -121,7 +123,7 @@ class PagePropertyHandler:
         rich_text_property = self._get_typed_property_or_raise(
             name, PageRichTextProperty
         )
-        return await convert_rich_text_to_markdown(rich_text_property.rich_text)
+        return await self._rich_text_converter.to_markdown(rich_text_property.rich_text)
 
     def get_value_of_email_property(self, name: str) -> str | None:
         email_property = self._get_typed_property_or_raise(name, PageEmailProperty)

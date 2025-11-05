@@ -1,6 +1,7 @@
 from typing import ClassVar
 
 from notionary.blocks.schemas import BlockColor
+from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
 from notionary.rich_text.schemas import (
     MentionDate,
     MentionType,
@@ -26,11 +27,13 @@ class RichTextToMarkdownConverter:
         database_resolver: NameIdResolver | None = None,
         data_source_resolver: NameIdResolver | None = None,
         person_resolver: NameIdResolver | None = None,
+        markdown_grammar: MarkdownGrammar | None = None,
     ) -> None:
         self.page_resolver = page_resolver or PageNameIdResolver()
         self.database_resolver = database_resolver or DatabaseNameIdResolver()
         self.data_source_resolver = data_source_resolver or DataSourceNameIdResolver()
         self.person_resolver = person_resolver or PersonNameIdResolver()
+        self._markdown_grammar = markdown_grammar or MarkdownGrammar()
 
     async def to_markdown(self, rich_text: list[RichText]) -> str:
         if not rich_text:
@@ -83,27 +86,27 @@ class RichTextToMarkdownConverter:
 
     async def _extract_page_mention_markdown(self, page_id: str) -> str:
         page_name = await self.page_resolver.resolve_id_to_name(page_id)
-        return f"@page[{page_name or page_id}]"
+        return f"{self._markdown_grammar.page_mention_prefix}{page_name or page_id}{self._markdown_grammar.mention_suffix}"
 
     async def _extract_database_mention_markdown(self, database_id: str) -> str:
         database_name = await self.database_resolver.resolve_id_to_name(database_id)
-        return f"@database[{database_name or database_id}]"
+        return f"{self._markdown_grammar.database_mention_prefix}{database_name or database_id}{self._markdown_grammar.mention_suffix}"
 
     async def _extract_data_source_mention_markdown(self, data_source_id: str) -> str:
         data_source_name = await self.data_source_resolver.resolve_id_to_name(
             data_source_id
         )
-        return f"@datasource[{data_source_name or data_source_id}]"
+        return f"{self._markdown_grammar.datasource_mention_prefix}{data_source_name or data_source_id}{self._markdown_grammar.mention_suffix}"
 
     async def _extract_user_mention_markdown(self, user_id: str) -> str:
         user_name = await self.person_resolver.resolve_id_to_name(user_id)
-        return f"@user[{user_name or user_id}]"
+        return f"{self._markdown_grammar.user_mention_prefix}{user_name or user_id}{self._markdown_grammar.mention_suffix}"
 
     def _extract_date_mention_markdown(self, date_mention: MentionDate) -> str:
         date_range = date_mention.start
         if date_mention.end:
             date_range += f"–{date_mention.end}"
-        return f"@date[{date_range}]"
+        return f"{self._markdown_grammar.date_mention_prefix}{date_range}{self._markdown_grammar.mention_suffix}"
 
     def _apply_text_formatting_to_content(self, obj: RichText, content: str) -> str:
         if obj.text and obj.text.link:
@@ -118,8 +121,6 @@ class RichTextToMarkdownConverter:
             content = f"`{content}`"
         if annotations.strikethrough:
             content = f"~~{content}~~"
-        if annotations.underline:
-            content = f"__{content}__"
         if annotations.italic:
             content = f"*{content}*"
         if annotations.bold:
@@ -129,23 +130,6 @@ class RichTextToMarkdownConverter:
             annotations.color != BlockColor.DEFAULT
             and annotations.color in self.VALID_COLORS
         ):
-            content = f"({annotations.color}:{content})"
+            content = f"=={{{annotations.color}}}{content}=="
 
         return content
-
-
-async def convert_rich_text_to_markdown(
-    rich_text: list[RichText],
-    *,
-    page_resolver: NameIdResolver | None = None,
-    database_resolver: NameIdResolver | None = None,
-    data_source_resolver: NameIdResolver | None = None,
-    person_resolver: NameIdResolver | None = None,
-) -> str:
-    converter = RichTextToMarkdownConverter(
-        page_resolver=page_resolver,
-        database_resolver=database_resolver,
-        data_source_resolver=data_source_resolver,
-        person_resolver=person_resolver,
-    )
-    return await converter.to_markdown(rich_text)

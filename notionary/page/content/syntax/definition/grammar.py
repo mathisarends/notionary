@@ -31,6 +31,14 @@ class MarkdownGrammar:
         self._callout_delimiter = "[callout]"
         self._media_end_delimiter = ")"
 
+        # Mention Delimiters
+        self._page_mention_prefix = "@page["
+        self._database_mention_prefix = "@database["
+        self._datasource_mention_prefix = "@datasource["
+        self._user_mention_prefix = "@user["
+        self._date_mention_prefix = "@date["
+        self._mention_suffix = "]"
+
     @property
     def spaces_per_nesting_level(self) -> int:
         return self._spaces_per_nesting_level
@@ -110,6 +118,30 @@ class MarkdownGrammar:
     @property
     def media_end_delimiter(self) -> str:
         return self._media_end_delimiter
+
+    @property
+    def page_mention_prefix(self) -> str:
+        return self._page_mention_prefix
+
+    @property
+    def database_mention_prefix(self) -> str:
+        return self._database_mention_prefix
+
+    @property
+    def datasource_mention_prefix(self) -> str:
+        return self._datasource_mention_prefix
+
+    @property
+    def user_mention_prefix(self) -> str:
+        return self._user_mention_prefix
+
+    @property
+    def date_mention_prefix(self) -> str:
+        return self._date_mention_prefix
+
+    @property
+    def mention_suffix(self) -> str:
+        return self._mention_suffix
 
     # Pattern Definitions
     @cached_property

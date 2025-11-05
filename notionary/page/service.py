@@ -13,7 +13,7 @@ from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.properties.service import PagePropertyHandler
 from notionary.page.schemas import NotionPageDto
 from notionary.rich_text.rich_text_to_markdown.service import (
-    convert_rich_text_to_markdown,
+    RichTextToMarkdownConverter,
 )
 from notionary.shared.entity.service import Entity
 from notionary.workspace.query.service import WorkspaceQueryService
@@ -29,6 +29,7 @@ class NotionPage(Entity):
         comment_service: CommentService,
         block_content_service: BlockContentService,
         metadata_update_client: PageMetadataUpdateClient,
+        rich_text_converter: RichTextToMarkdownConverter | None = None,
     ) -> None:
         super().__init__(dto=dto)
 
@@ -39,6 +40,7 @@ class NotionPage(Entity):
         self._comment_service = comment_service
         self._block_content_service = block_content_service
         self._metadata_update_client = metadata_update_client
+        self._rich_text_converter = rich_text_converter or RichTextToMarkdownConverter()
         self.properties = page_property_handler
 
     @classmethod
@@ -100,6 +102,7 @@ class NotionPage(Entity):
         )
 
         metadata_update_client = PageMetadataUpdateClient(page_id=dto.id)
+        rich_text_converter = RichTextToMarkdownConverter()
 
         return cls(
             dto=dto,
@@ -109,6 +112,7 @@ class NotionPage(Entity):
             comment_service=comment_service,
             block_content_service=block_content_service,
             metadata_update_client=metadata_update_client,
+            rich_text_converter=rich_text_converter,
         )
 
     @staticmethod
@@ -122,7 +126,8 @@ class NotionPage(Entity):
             None,
         )
         rich_text_title = title_property.title if title_property else []
-        return await convert_rich_text_to_markdown(rich_text_title)
+        converter = RichTextToMarkdownConverter()
+        return await converter.to_markdown(rich_text_title)
 
     @property
     def _entity_metadata_update_client(self) -> PageMetadataUpdateClient:
