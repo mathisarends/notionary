@@ -1,8 +1,11 @@
-from notionary.rich_text.rich_text_to_markdown.mentions.port import MentionHandler
+from typing import override
+
+from notionary.rich_text.rich_text_to_markdown.mention.port import MentionHandler
 from notionary.rich_text.schemas import Mention, MentionDate
 
 
 class DateMentionHandler(MentionHandler):
+    @override
     async def handle(self, mention: Mention) -> str:
         if not mention.date:
             return ""

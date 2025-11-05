@@ -1,8 +1,8 @@
-from notionary.rich_text.rich_text_to_markdown.mentions.port import MentionHandler
+from notionary.rich_text.rich_text_to_markdown.mention.port import MentionHandler
 from notionary.rich_text.schemas import MentionType
 
 
-class MentionHandlerRegistry:
+class RichTextHandlerRegistry:
     def __init__(self):
         self._handlers: dict[MentionType, MentionHandler] = {}
 

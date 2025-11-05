@@ -3,11 +3,9 @@ from typing import ClassVar
 
 from notionary.blocks.schemas import BlockColor
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.rich_text_to_markdown.mentions.registry import (
-    MentionHandlerRegistryFactory,
-)
-from notionary.rich_text.rich_text_to_markdown.mentions.registry.service import (
+from notionary.rich_text.rich_text_to_markdown.mention import (
     MentionHandlerRegistry,
+    MentionHandlerRegistryFactory,
 )
 from notionary.rich_text.schemas import (
     RichText,
@@ -16,6 +14,7 @@ from notionary.rich_text.schemas import (
 )
 
 
+# TODO: Add handlers for rich text type | test them thoroughlty and refactor this class here
 @dataclass
 class ColorGroup:
     color: BlockColor

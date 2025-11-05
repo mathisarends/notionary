@@ -1,12 +1,12 @@
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.rich_text_to_markdown.mentions.handlers import (
+from notionary.rich_text.rich_text_to_markdown.mention.handlers import (
     DatabaseMentionHandler,
     DataSourceMentionHandler,
     DateMentionHandler,
     PageMentionHandler,
     UserMentionHandler,
 )
-from notionary.rich_text.rich_text_to_markdown.mentions.registry.service import (
+from notionary.rich_text.rich_text_to_markdown.mention.registry import (
     MentionHandlerRegistry,
 )
 from notionary.rich_text.schemas import MentionType
