@@ -39,6 +39,20 @@ class MarkdownGrammar:
         self._date_mention_prefix = "@date["
         self._mention_suffix = "]"
 
+        # Rich Text Formatting
+        self._link_prefix = "["
+        self._link_middle = "]("
+        self._link_suffix = ")"
+        self._code_wrapper = "`"
+        self._strikethrough_wrapper = "~~"
+        self._italic_wrapper = "*"
+        self._underline_wrapper = "__"
+        self._bold_wrapper = "**"
+        self._color_prefix = "=={"
+        self._color_middle = "}"
+        self._color_suffix = "=="
+        self._inline_equation_wrapper = "$"
+
     @property
     def spaces_per_nesting_level(self) -> int:
         return self._spaces_per_nesting_level
@@ -142,6 +156,54 @@ class MarkdownGrammar:
     @property
     def mention_suffix(self) -> str:
         return self._mention_suffix
+
+    @property
+    def link_prefix(self) -> str:
+        return self._link_prefix
+
+    @property
+    def link_middle(self) -> str:
+        return self._link_middle
+
+    @property
+    def link_suffix(self) -> str:
+        return self._link_suffix
+
+    @property
+    def code_wrapper(self) -> str:
+        return self._code_wrapper
+
+    @property
+    def strikethrough_wrapper(self) -> str:
+        return self._strikethrough_wrapper
+
+    @property
+    def italic_wrapper(self) -> str:
+        return self._italic_wrapper
+
+    @property
+    def underline_wrapper(self) -> str:
+        return self._underline_wrapper
+
+    @property
+    def bold_wrapper(self) -> str:
+        return self._bold_wrapper
+
+    @property
+    def color_prefix(self) -> str:
+        return self._color_prefix
+
+    @property
+    def color_middle(self) -> str:
+        return self._color_middle
+
+    @property
+    def color_suffix(self) -> str:
+        return self._color_suffix
+
+    @property
+    def inline_equation_wrapper(self) -> str:
+        return self._inline_equation_wrapper
 
     # Pattern Definitions
     @cached_property
