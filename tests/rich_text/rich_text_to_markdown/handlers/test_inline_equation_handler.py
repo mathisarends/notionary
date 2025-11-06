@@ -1,7 +1,7 @@
 import pytest
 
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.handlers.inline_equation import (
+from notionary.rich_text.rich_text_to_markdown.handlers.inline_equation import (
     EquationHandler,
 )
 from notionary.rich_text.schemas import EquationObject, RichText, RichTextType

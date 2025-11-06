@@ -1,5 +1,5 @@
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.port import (
+from notionary.rich_text.rich_text_to_markdown.handlers.port import (
     RichTextHandler,
 )
 from notionary.rich_text.schemas import RichText, TextAnnotations

@@ -1,4 +1,4 @@
-from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.handlers.mention.handlers.base import (
+from notionary.rich_text.rich_text_to_markdown.handlers.mention.handlers.base import (
     MentionHandler,
 )
 from notionary.rich_text.schemas import MentionType

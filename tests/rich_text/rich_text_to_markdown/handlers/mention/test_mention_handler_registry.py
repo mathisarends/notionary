@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.handlers.mention.registry import (
+from notionary.rich_text.rich_text_to_markdown.handlers.mention.registry import (
     MentionHandlerRegistry,
 )
 from notionary.rich_text.schemas import MentionType

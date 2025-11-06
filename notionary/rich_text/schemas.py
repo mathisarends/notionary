@@ -139,11 +139,16 @@ class RichText(BaseModel):
     equation: EquationObject | None = None
 
     @classmethod
-    def from_plain_text(cls, content: str, **ann) -> Self:
+    def from_plain_text(
+        cls, content: str, annotations: TextAnnotations | None = None, **ann
+    ) -> Self:
+        if annotations is None:
+            annotations = TextAnnotations(**ann) if ann else TextAnnotations()
+
         return cls(
             type=RichTextType.TEXT,
             text=TextContent(content=content),
-            annotations=TextAnnotations(**ann) if ann else TextAnnotations(),
+            annotations=annotations,
             plain_text=content,
         )
 
@@ -161,11 +166,16 @@ class RichText(BaseModel):
         return cls.for_caption(content)
 
     @classmethod
-    def for_link(cls, content: str, url: str, **ann) -> Self:
+    def for_link(
+        cls, content: str, url: str, annotations: TextAnnotations | None = None, **ann
+    ) -> Self:
+        if annotations is None:
+            annotations = TextAnnotations(**ann) if ann else TextAnnotations()
+
         return cls(
             type=RichTextType.TEXT,
             text=TextContent(content=content, link=LinkObject(url=url)),
-            annotations=TextAnnotations(**ann) if ann else TextAnnotations(),
+            annotations=annotations,
             plain_text=content,
         )
 

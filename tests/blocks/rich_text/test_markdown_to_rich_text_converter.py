@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -57,12 +57,25 @@ def converter(
     mock_data_source_resolver: DataSourceNameIdResolver,
     mock_user_resolver: PersonNameIdResolver,
 ) -> MarkdownRichTextConverter:
-    return MarkdownRichTextConverter(
-        page_resolver=mock_page_resolver,
-        database_resolver=mock_database_resolver,
-        data_source_resolver=mock_data_source_resolver,
-        person_resolver=mock_user_resolver,
-    )
+    with (
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.PageNameIdResolver",
+            return_value=mock_page_resolver,
+        ),
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.DatabaseNameIdResolver",
+            return_value=mock_database_resolver,
+        ),
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.DataSourceNameIdResolver",
+            return_value=mock_data_source_resolver,
+        ),
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.PersonNameIdResolver",
+            return_value=mock_user_resolver,
+        ),
+    ):
+        return MarkdownRichTextConverter()
 
 
 @pytest.mark.asyncio

@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.registry import (
+from notionary.rich_text.rich_text_to_markdown.handlers.registry import (
     RichTextHandlerRegistry,
 )
 from notionary.rich_text.schemas import RichTextType

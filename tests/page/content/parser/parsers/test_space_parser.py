@@ -1,5 +1,5 @@
 from textwrap import dedent
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -62,12 +62,25 @@ def parser(
     mock_data_source_resolver: AsyncMock,
     mock_user_resolver: AsyncMock,
 ) -> MarkdownToNotionConverter:
-    markdown_rich_text_converter = MarkdownRichTextConverter(
-        page_resolver=mock_page_resolver,
-        database_resolver=mock_database_resolver,
-        data_source_resolver=mock_data_source_resolver,
-        person_resolver=mock_user_resolver,
-    )
+    with (
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.PageNameIdResolver",
+            return_value=mock_page_resolver,
+        ),
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.DatabaseNameIdResolver",
+            return_value=mock_database_resolver,
+        ),
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.DataSourceNameIdResolver",
+            return_value=mock_data_source_resolver,
+        ),
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.PersonNameIdResolver",
+            return_value=mock_user_resolver,
+        ),
+    ):
+        markdown_rich_text_converter = MarkdownRichTextConverter()
 
     rich_text_to_markdown_converter = RichTextToMarkdownConverter()
 

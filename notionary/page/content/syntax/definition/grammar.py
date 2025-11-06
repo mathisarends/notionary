@@ -210,9 +210,7 @@ class MarkdownGrammar:
     def background_color_wrapper(self) -> str:
         return self._background_color_wrapper
 
-    # Helper Methods
     def _create_mention_pattern(self, prefix: str) -> re.Pattern:
-        """Helper to create mention patterns dynamically from delimiters."""
         escaped_prefix = re.escape(prefix)
         escaped_suffix = re.escape(self._mention_suffix)
         return re.compile(rf"{escaped_prefix}([^{escaped_suffix}]+){escaped_suffix}")

@@ -1,73 +1,33 @@
-from dataclasses import dataclass
 from typing import ClassVar
 
 from notionary.blocks.schemas import BlockColor
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.factory import (
-    create_rich_text_handler_registry,
+from notionary.rich_text.rich_text_to_markdown.color_chunker import (
+    ColorGroup,
+    chunk_by_color,
 )
-from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.registry import (
-    RichTextHandlerRegistry,
+from notionary.rich_text.rich_text_to_markdown.handlers.factory import (
+    create_rich_text_handler_registry,
 )
 from notionary.rich_text.schemas import RichText, TextAnnotations
 from notionary.utils.mixins.logging import LoggingMixin
 
 
-@dataclass
-class ColorGroup:
-    color: BlockColor
-    objects: list[RichText]
-
-
 class RichTextToMarkdownConverter(LoggingMixin):
     VALID_COLORS: ClassVar[set[str]] = {color.value for color in BlockColor}
 
-    def __init__(
-        self,
-        *,
-        markdown_grammar: MarkdownGrammar | None = None,
-        rich_text_handler_registry: RichTextHandlerRegistry | None = None,
-    ) -> None:
+    def __init__(self, markdown_grammar: MarkdownGrammar | None = None) -> None:
+        self._rich_text_handler_registry = create_rich_text_handler_registry()
         self._markdown_grammar = markdown_grammar or MarkdownGrammar()
-        self._rich_text_handler_registry = (
-            rich_text_handler_registry
-            or create_rich_text_handler_registry(self._markdown_grammar)
-        )
 
     async def to_markdown(self, rich_text: list[RichText]) -> str:
         if not rich_text:
             return ""
 
-        color_groups = self._group_by_color(rich_text)
+        color_groups = chunk_by_color(rich_text)
         markdown_parts = await self._convert_groups_to_markdown(color_groups)
 
         return "".join(markdown_parts)
-
-    def _group_by_color(self, rich_text: list[RichText]) -> list[ColorGroup]:
-        if not rich_text:
-            return []
-
-        groups: list[ColorGroup] = []
-        current_color = self._extract_color(rich_text[0])
-        current_group: list[RichText] = []
-
-        for obj in rich_text:
-            obj_color = self._extract_color(obj)
-
-            if obj_color == current_color:
-                current_group.append(obj)
-            else:
-                groups.append(ColorGroup(color=current_color, objects=current_group))
-                current_color = obj_color
-                current_group = [obj]
-
-        groups.append(ColorGroup(color=current_color, objects=current_group))
-        return groups
-
-    def _extract_color(self, obj: RichText) -> BlockColor:
-        if obj.annotations and obj.annotations.color:
-            return obj.annotations.color
-        return BlockColor.DEFAULT
 
     async def _convert_groups_to_markdown(self, groups: list[ColorGroup]) -> list[str]:
         return [await self._convert_group_to_markdown(group) for group in groups]

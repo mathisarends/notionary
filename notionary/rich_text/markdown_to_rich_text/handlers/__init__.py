@@ -1,9 +1,9 @@
 from .base import BasePatternHandler
 from .factory import create_pattern_handler_registry
-from .registry import PatternHandlerRegistry
+from .matcher import PatternMatcher
 
 __all__ = [
     "BasePatternHandler",
-    "PatternHandlerRegistry",
+    "PatternMatcher",
     "create_pattern_handler_registry",
 ]

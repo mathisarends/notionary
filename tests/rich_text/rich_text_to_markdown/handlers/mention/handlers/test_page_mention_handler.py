@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.handlers.mention.handlers.page import (
+from notionary.rich_text.rich_text_to_markdown.handlers.mention.handlers.page import (
     PageMentionHandler,
 )
 from notionary.rich_text.schemas import (

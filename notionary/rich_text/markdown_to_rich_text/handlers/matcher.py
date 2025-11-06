@@ -6,7 +6,7 @@ from notionary.rich_text.markdown_to_rich_text.models import PatternMatch
 from notionary.rich_text.schemas import RichText
 
 
-class PatternHandlerRegistry:
+class PatternMatcher:
     def __init__(self, handlers: list[BasePatternHandler]) -> None:
         self._handlers = handlers
 

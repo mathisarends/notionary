@@ -1,46 +1,126 @@
+import re
+from dataclasses import dataclass
+from typing import ClassVar
+
+from notionary.blocks.schemas import BlockColor
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
 from notionary.rich_text.markdown_to_rich_text.handlers.factory import (
     create_pattern_handler_registry,
 )
-from notionary.rich_text.schemas import RichText
-from notionary.shared.name_id_resolver import (
-    DatabaseNameIdResolver,
-    DataSourceNameIdResolver,
-    NameIdResolver,
-    PageNameIdResolver,
-    PersonNameIdResolver,
-)
+from notionary.rich_text.schemas import RichText, RichTextType
+
+
+@dataclass
+class ColorGroup:
+    color: BlockColor | None
+    text: str
 
 
 class MarkdownRichTextConverter:
-    def __init__(
-        self,
-        *,
-        page_resolver: NameIdResolver | None = None,
-        database_resolver: NameIdResolver | None = None,
-        data_source_resolver: NameIdResolver | None = None,
-        person_resolver: NameIdResolver | None = None,
-        markdown_grammar: MarkdownGrammar | None = None,
-    ):
-        self.page_resolver = page_resolver or PageNameIdResolver()
-        self.database_resolver = database_resolver or DatabaseNameIdResolver()
-        self.data_source_resolver = data_source_resolver or DataSourceNameIdResolver()
-        self.person_resolver = person_resolver or PersonNameIdResolver()
-        self.markdown_grammar = markdown_grammar or MarkdownGrammar()
+    VALID_COLORS: ClassVar[set[str]] = {color.value for color in BlockColor}
 
-        self._handler_registry = create_pattern_handler_registry(
-            page_resolver=self.page_resolver,
-            database_resolver=self.database_resolver,
-            data_source_resolver=self.data_source_resolver,
-            person_resolver=self.person_resolver,
-            grammar=self.markdown_grammar,
-            converter=self,
-        )
+    def __init__(self) -> None:
+        self.markdown_grammar = MarkdownGrammar()
+        self._handler_registry = create_pattern_handler_registry()
 
     async def to_rich_text(self, text: str) -> list[RichText]:
         if not text:
             return []
+
+        color_groups = self._extract_color_groups(text)
+        segments: list[RichText] = []
+
+        for group in color_groups:
+            group_segments = await self._parse_text_without_color(group.text)
+
+            if group.color:
+                group_segments = self._apply_color_to_segments(
+                    group_segments, group.color
+                )
+
+            segments.extend(group_segments)
+
+        return segments
+
+    def _extract_color_groups(self, text: str) -> list[ColorGroup]:
+        groups: list[ColorGroup] = []
+        remaining_text = text
+
+        bg_wrapper = self.markdown_grammar.background_color_wrapper
+        valid_colors_pattern = "|".join(
+            [c.replace("_background", "") for c in self.VALID_COLORS]
+        )
+
+        while remaining_text:
+            fg_pattern = re.compile(
+                rf"\(({valid_colors_pattern}):(.+?)\)", re.IGNORECASE
+            )
+            fg_match = fg_pattern.search(remaining_text)
+            bg_pattern = re.compile(
+                rf"{re.escape(bg_wrapper)}\{{({valid_colors_pattern})\}}(.+?){re.escape(bg_wrapper)}",
+                re.IGNORECASE,
+            )
+            bg_match = bg_pattern.search(remaining_text)
+
+            earliest_match = self._get_earliest_color_match(fg_match, bg_match)
+
+            if not earliest_match:
+                if remaining_text:
+                    groups.append(ColorGroup(color=None, text=remaining_text))
+                break
+
+            match, is_background = earliest_match
+            before_match = remaining_text[: match.start()]
+
+            if before_match:
+                groups.append(ColorGroup(color=None, text=before_match))
+
+            color_name = match.group(1).lower()
+            content = match.group(2)
+
+            if is_background:
+                color = BlockColor(f"{color_name}_background")
+            else:
+                color = BlockColor(color_name)
+            groups.append(ColorGroup(color=color, text=content))
+
+            remaining_text = remaining_text[match.end() :]
+
+        return groups
+
+    def _get_earliest_color_match(
+        self, fg_match, bg_match
+    ) -> tuple[re.Match, bool] | None:
+        if fg_match and bg_match:
+            if fg_match.start() < bg_match.start():
+                return (fg_match, False)
+            return (bg_match, True)
+        elif fg_match:
+            return (fg_match, False)
+        elif bg_match:
+            return (bg_match, True)
+        return None
+
+    async def _parse_text_without_color(self, text: str) -> list[RichText]:
         return await self._split_text_into_segments(text)
+
+    def _apply_color_to_segments(
+        self, segments: list[RichText], color: BlockColor
+    ) -> list[RichText]:
+        colored_segments = []
+        for segment in segments:
+            if segment.type == RichTextType.TEXT and segment.text:
+                colored_segment = segment.model_copy(deep=True)
+                if colored_segment.annotations:
+                    colored_segment.annotations.color = color
+                else:
+                    from notionary.rich_text.schemas import TextAnnotations
+
+                    colored_segment.annotations = TextAnnotations(color=color)
+                colored_segments.append(colored_segment)
+            else:
+                colored_segments.append(segment)
+        return colored_segments
 
     async def _split_text_into_segments(self, text: str) -> list[RichText]:
         segments: list[RichText] = []

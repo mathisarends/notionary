@@ -1,7 +1,7 @@
 import pytest
 
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.handlers.text import (
+from notionary.rich_text.rich_text_to_markdown.handlers.text import (
     TextHandler,
 )
 from notionary.rich_text.schemas import (

@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.handlers.mention.handlers.data_source import (
+from notionary.rich_text.rich_text_to_markdown.handlers.mention.handlers.data_source import (
     DataSourceMentionHandler,
 )
 from notionary.rich_text.schemas import DataSourceMention, MentionDataSourceRef

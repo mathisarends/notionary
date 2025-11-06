@@ -1,14 +1,15 @@
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.handlers.mention.registry import (
+from notionary.rich_text.rich_text_to_markdown.handlers.mention.registry import (
     MentionHandlerRegistry,
 )
-from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.port import (
+from notionary.rich_text.rich_text_to_markdown.handlers.port import (
     RichTextHandler,
 )
 from notionary.rich_text.schemas import RichText
+from notionary.utils.mixins.logging import LoggingMixin
 
 
-class MentionRichTextHandler(RichTextHandler):
+class MentionRichTextHandler(RichTextHandler, LoggingMixin):
     def __init__(
         self,
         markdown_grammar: MarkdownGrammar,
@@ -25,6 +26,9 @@ class MentionRichTextHandler(RichTextHandler):
         handler = self._mention_handler_registry.get_handler(mention.type)
 
         if not handler:
+            self.logger.warning(
+                f"No handler found for mention type: {mention.type}. Skipping."
+            )
             return ""
 
         return await handler.handle(mention)
