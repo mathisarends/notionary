@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Self
 
 from notionary.user.service import UserService
@@ -39,98 +39,60 @@ class NotionWorkspace:
     def name(self) -> str:
         return self._name
 
+    def get_query_builder(self) -> NotionWorkspaceQueryConfigBuilder:
+        return NotionWorkspaceQueryConfigBuilder()
+
     async def get_pages(
-        self,
-        *,
-        filter_fn: Callable[
-            [NotionWorkspaceQueryConfigBuilder], NotionWorkspaceQueryConfigBuilder
-        ]
-        | None = None,
-        query_config: WorkspaceQueryConfig | None = None,
+        self, query_config: WorkspaceQueryConfig | None = None
     ) -> list[NotionPage]:
-        if filter_fn is not None and query_config is not None:
-            raise ValueError("Use either filter_fn OR query_config, not both")
+        if query_config is None:
+            query_config = WorkspaceQueryConfig(
+                object_type=WorkspaceQueryObjectType.PAGE
+            )
+        else:
+            query_config.object_type = WorkspaceQueryObjectType.PAGE
 
-        resolved_config = self._resolve_query_config(
-            filter_fn, query_config, WorkspaceQueryObjectType.PAGE
-        )
-        return await self._query_service.get_pages(resolved_config)
+        return await self._query_service.get_pages(query_config)
 
-    async def get_pages_stream(
-        self,
-        *,
-        filter_fn: Callable[
-            [NotionWorkspaceQueryConfigBuilder], NotionWorkspaceQueryConfigBuilder
-        ]
-        | None = None,
-        query_config: WorkspaceQueryConfig | None = None,
+    async def iter_pages(
+        self, query_config: WorkspaceQueryConfig | None = None
     ) -> AsyncIterator[NotionPage]:
-        if filter_fn is not None and query_config is not None:
-            raise ValueError("Use either filter_fn OR query_config, not both")
+        if query_config is None:
+            query_config = WorkspaceQueryConfig(
+                object_type=WorkspaceQueryObjectType.PAGE
+            )
+        else:
+            query_config.object_type = WorkspaceQueryObjectType.PAGE
 
-        resolved_config = self._resolve_query_config(
-            filter_fn, query_config, WorkspaceQueryObjectType.PAGE
-        )
-        async for page in self._query_service.get_pages_stream(resolved_config):
+        async for page in self._query_service.get_pages_stream(query_config):
             yield page
 
     async def get_data_sources(
-        self,
-        *,
-        filter_fn: Callable[
-            [NotionWorkspaceQueryConfigBuilder], NotionWorkspaceQueryConfigBuilder
-        ]
-        | None = None,
-        query_config: WorkspaceQueryConfig | None = None,
+        self, query_config: WorkspaceQueryConfig | None = None
     ) -> list[NotionDataSource]:
-        if filter_fn is not None and query_config is not None:
-            raise ValueError("Use either filter_fn OR query_config, not both")
+        if query_config is None:
+            query_config = WorkspaceQueryConfig(
+                object_type=WorkspaceQueryObjectType.DATA_SOURCE
+            )
+        else:
+            query_config.object_type = WorkspaceQueryObjectType.DATA_SOURCE
 
-        resolved_config = self._resolve_query_config(
-            filter_fn, query_config, WorkspaceQueryObjectType.DATA_SOURCE
-        )
-        return await self._query_service.get_data_sources(resolved_config)
+        return await self._query_service.get_data_sources(query_config)
 
-    async def get_data_sources_stream(
-        self,
-        *,
-        filter_fn: Callable[
-            [NotionWorkspaceQueryConfigBuilder], NotionWorkspaceQueryConfigBuilder
-        ]
-        | None = None,
-        query_config: WorkspaceQueryConfig | None = None,
+    async def iter_data_sources(
+        self, query_config: WorkspaceQueryConfig | None = None
     ) -> AsyncIterator[NotionDataSource]:
-        if filter_fn is not None and query_config is not None:
-            raise ValueError("Use either filter_fn OR query_config, not both")
+        if query_config is None:
+            query_config = WorkspaceQueryConfig(
+                object_type=WorkspaceQueryObjectType.DATA_SOURCE
+            )
+        else:
+            query_config.object_type = WorkspaceQueryObjectType.DATA_SOURCE
 
-        resolved_config = self._resolve_query_config(
-            filter_fn, query_config, WorkspaceQueryObjectType.DATA_SOURCE
-        )
         async for data_source in self._query_service.get_data_sources_stream(
-            resolved_config
+            query_config
         ):
             yield data_source
-
-    def _resolve_query_config(
-        self,
-        filter_fn: Callable[
-            [NotionWorkspaceQueryConfigBuilder], NotionWorkspaceQueryConfigBuilder
-        ]
-        | None,
-        query_config: WorkspaceQueryConfig | None,
-        expected_object_type: WorkspaceQueryObjectType,
-    ) -> WorkspaceQueryConfig:
-        if filter_fn is not None:
-            builder = NotionWorkspaceQueryConfigBuilder()
-            configured_builder = filter_fn(builder)
-            query_config = configured_builder.build()
-
-        if query_config is None:
-            query_config = WorkspaceQueryConfig(object_type=expected_object_type)
-        else:
-            query_config.object_type = expected_object_type
-
-        return query_config
 
     async def get_users(self) -> list[PersonUser]:
         return [user async for user in self._user_service.list_users_stream()]
