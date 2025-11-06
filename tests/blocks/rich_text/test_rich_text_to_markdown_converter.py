@@ -122,7 +122,6 @@ class TestRichTextToMarkdownConverter:
             )
         ]
         result = await converter.to_markdown(rich_text)
-        # Falls back to ID since no resolver is mocked
         assert result == "@page[page-123]"
 
     @pytest.mark.asyncio
