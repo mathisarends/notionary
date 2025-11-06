@@ -3,12 +3,12 @@ from typing import override
 from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.handlers.mention.handlers.base import (
     MentionHandler,
 )
-from notionary.rich_text.schemas import Mention, MentionDate
+from notionary.rich_text.schemas import DateMention, MentionDate
 
 
 class DateMentionHandler(MentionHandler):
     @override
-    async def handle(self, mention: Mention) -> str:
+    async def handle(self, mention: DateMention) -> str:
         if not mention.date:
             return ""
 

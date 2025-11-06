@@ -4,7 +4,7 @@ from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
 from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.handlers.mention.handlers.base import (
     MentionHandler,
 )
-from notionary.rich_text.schemas import Mention
+from notionary.rich_text.schemas import PageMention
 from notionary.shared.name_id_resolver.port import NameIdResolver
 
 
@@ -16,7 +16,7 @@ class PageMentionHandler(MentionHandler):
         self._page_resolver = page_resolver
 
     @override
-    async def handle(self, mention: Mention) -> str:
+    async def handle(self, mention: PageMention) -> str:
         if not mention.page:
             return ""
 

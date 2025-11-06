@@ -4,7 +4,7 @@ from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
 from notionary.rich_text.rich_text_to_markdown.rich_text_handlers.handlers.mention.handlers.base import (
     MentionHandler,
 )
-from notionary.rich_text.schemas import Mention
+from notionary.rich_text.schemas import DatabaseMention
 from notionary.shared.name_id_resolver.port import NameIdResolver
 
 
@@ -16,7 +16,7 @@ class DatabaseMentionHandler(MentionHandler):
         self._database_resolver = database_resolver
 
     @override
-    async def handle(self, mention: Mention) -> str:
+    async def handle(self, mention: DatabaseMention) -> str:
         if not mention.database:
             return ""
 

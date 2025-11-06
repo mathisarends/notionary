@@ -4,17 +4,18 @@ from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
 from notionary.rich_text.schemas import (
+    DateMention,
     EquationObject,
     LinkObject,
-    Mention,
     MentionDate,
     MentionPageRef,
-    MentionType,
     MentionUserRef,
+    PageMention,
     RichText,
     RichTextType,
     TextAnnotations,
     TextContent,
+    UserMention,
 )
 
 
@@ -114,9 +115,7 @@ class TestRichTextToMarkdownConverter:
             RichText(
                 type=RichTextType.MENTION,
                 plain_text="Test Page",
-                mention=Mention(
-                    type=MentionType.PAGE, page=MentionPageRef(id="page-123")
-                ),
+                mention=PageMention(page=MentionPageRef(id="page-123")),
             )
         ]
         result = await converter.to_markdown(rich_text)
@@ -129,9 +128,7 @@ class TestRichTextToMarkdownConverter:
             RichText(
                 type=RichTextType.MENTION,
                 plain_text="John Doe",
-                mention=Mention(
-                    type=MentionType.USER, user=MentionUserRef(id="user-123")
-                ),
+                mention=UserMention(user=MentionUserRef(id="user-123")),
             )
         ]
         result = await converter.to_markdown(rich_text)
@@ -144,9 +141,8 @@ class TestRichTextToMarkdownConverter:
             RichText(
                 type=RichTextType.MENTION,
                 plain_text="2024-01-15",
-                mention=Mention(
-                    type=MentionType.DATE,
-                    date=MentionDate(start="2024-01-15", end="2024-01-20"),
+                mention=DateMention(
+                    date=MentionDate(start="2024-01-15", end="2024-01-20")
                 ),
             )
         ]
