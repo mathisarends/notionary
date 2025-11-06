@@ -355,11 +355,11 @@ class SyntaxDefinitionRegistry:
         self._definitions[SyntaxDefinitionRegistryKey.TOGGLEABLE_HEADING] = definition
 
     def _register_synced_block_syntax(self) -> None:
-        delimiter = ">>>"
+        grammar = MarkdownGrammar()
         definition = EnclosedSyntaxDefinition(
-            start_delimiter=delimiter,
+            start_delimiter=grammar.synced_block_delimiter,
             end_delimiter="",
-            regex_pattern=re.compile(rf"^{re.escape(delimiter)}\s+(.+)$"),
+            regex_pattern=grammar.synced_block_pattern,
             end_regex_pattern=re.compile(r"^$"),
         )
         self._definitions[SyntaxDefinitionRegistryKey.SYNCED_BLOCK] = definition

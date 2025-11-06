@@ -30,6 +30,7 @@ class MarkdownGrammar:
         self._equation_delimiter = "$$"
         self._callout_delimiter = "[callout]"
         self._media_end_delimiter = ")"
+        self._synced_block_delimiter = ">>>"
 
         # Mention Delimiters
         self._page_mention_prefix = "@page["
@@ -133,6 +134,10 @@ class MarkdownGrammar:
     @property
     def media_end_delimiter(self) -> str:
         return self._media_end_delimiter
+
+    @property
+    def synced_block_delimiter(self) -> str:
+        return self._synced_block_delimiter
 
     @property
     def page_mention_prefix(self) -> str:
@@ -387,7 +392,6 @@ class MarkdownGrammar:
     def color_pattern(self) -> re.Pattern:
         return re.compile(r"\((\w+):(.+?)\)")
 
-    # Mention Patterns - dynamisch aus Delimiters gebaut
     @cached_property
     def page_mention_pattern(self) -> re.Pattern:
         return self._create_mention_pattern(self._page_mention_prefix)
@@ -407,3 +411,7 @@ class MarkdownGrammar:
     @cached_property
     def date_mention_pattern(self) -> re.Pattern:
         return self._create_mention_pattern(self._date_mention_prefix)
+
+    @cached_property
+    def synced_block_pattern(self) -> re.Pattern:
+        return re.compile(r"^>>>\s+(.+)$")
