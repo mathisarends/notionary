@@ -21,6 +21,7 @@ class SyntaxDefinitionRegistryKey(StrEnum):
     CALLOUT = "callout"
     QUOTE = "quote"
     CODE = "code"
+    SYNCED_BLOCK = "synced_block"
 
     COLUMN_LIST = "column_list"
     COLUMN = "column"

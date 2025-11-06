@@ -20,6 +20,7 @@ from .paragraph import ParagraphParser
 from .pdf import PdfParser
 from .quote import QuoteParser
 from .space import SpaceParser
+from .synced_block import SyncedBlockParser
 from .table import TableParser
 from .table_of_contents import TableOfContentsParser
 from .todo import TodoParser
@@ -50,6 +51,7 @@ __all__ = [
     "PdfParser",
     "QuoteParser",
     "SpaceParser",
+    "SyncedBlockParser",
     "TableOfContentsParser",
     "TableParser",
     "TodoParser",

@@ -1,3 +1,5 @@
+import re
+
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
 from notionary.page.content.syntax.definition.models import (
     EnclosedSyntaxDefinition,
@@ -98,6 +100,9 @@ class SyntaxDefinitionRegistry:
     def get_toggleable_heading_syntax(self) -> EnclosedSyntaxDefinition:
         return self._definitions[SyntaxDefinitionRegistryKey.TOGGLEABLE_HEADING]
 
+    def get_synced_block_syntax(self) -> EnclosedSyntaxDefinition:
+        return self._definitions[SyntaxDefinitionRegistryKey.SYNCED_BLOCK]
+
     def _create_media_syntax(
         self, media_type: str, url_pattern: str | None = None
     ) -> EnclosedSyntaxDefinition:
@@ -135,6 +140,7 @@ class SyntaxDefinitionRegistry:
         self._register_todo_done_syntax()
 
         # Block containers (enclosed)
+        self._register_synced_block_syntax()
         self._register_toggle_syntax()
         self._register_toggleable_heading_syntax()
         self._register_callout_syntax()
@@ -347,3 +353,13 @@ class SyntaxDefinitionRegistry:
             end_regex_pattern=self._markdown_grammar.toggleable_heading_end_pattern,
         )
         self._definitions[SyntaxDefinitionRegistryKey.TOGGLEABLE_HEADING] = definition
+
+    def _register_synced_block_syntax(self) -> None:
+        delimiter = ">>>"
+        definition = EnclosedSyntaxDefinition(
+            start_delimiter=delimiter,
+            end_delimiter="",
+            regex_pattern=re.compile(rf"^{re.escape(delimiter)}\s+(.+)$"),
+            end_regex_pattern=re.compile(r"^$"),
+        )
+        self._definitions[SyntaxDefinitionRegistryKey.SYNCED_BLOCK] = definition
