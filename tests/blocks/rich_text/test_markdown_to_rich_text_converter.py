@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from notionary.rich_text.markdown_to_rich_text.service import (
+from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )
 from notionary.rich_text.schemas import (

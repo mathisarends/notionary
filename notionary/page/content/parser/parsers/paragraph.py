@@ -6,7 +6,7 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
-from notionary.rich_text.markdown_to_rich_text.service import (
+from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )
 

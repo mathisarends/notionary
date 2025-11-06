@@ -6,7 +6,7 @@ from notionary.blocks.schemas import CreateToggleBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.toggle import ToggleParser
 from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
-from notionary.rich_text.markdown_to_rich_text.service import (
+from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )
 

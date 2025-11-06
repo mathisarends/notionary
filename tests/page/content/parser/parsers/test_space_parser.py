@@ -9,7 +9,7 @@ from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.parser.factory import ConverterChainFactory
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.page.content.renderer.factory import RendererChainFactory
-from notionary.rich_text.markdown_to_rich_text.service import (
+from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )
 from notionary.rich_text.rich_text_to_markdown.converter import (

@@ -210,6 +210,13 @@ class MarkdownGrammar:
     def background_color_wrapper(self) -> str:
         return self._background_color_wrapper
 
+    # Helper Methods
+    def _create_mention_pattern(self, prefix: str) -> re.Pattern:
+        """Helper to create mention patterns dynamically from delimiters."""
+        escaped_prefix = re.escape(prefix)
+        escaped_suffix = re.escape(self._mention_suffix)
+        return re.compile(rf"{escaped_prefix}([^{escaped_suffix}]+){escaped_suffix}")
+
     # Pattern Definitions
     @cached_property
     def breadcrumb_pattern(self) -> re.Pattern:
@@ -345,3 +352,60 @@ class MarkdownGrammar:
     @cached_property
     def toggleable_heading_end_pattern(self) -> re.Pattern:
         return re.compile(rf"^{re.escape(self.toggle_delimiter)}\s*$")
+
+    @cached_property
+    def bold_pattern(self) -> re.Pattern:
+        return re.compile(r"\*\*(.+?)\*\*")
+
+    @cached_property
+    def italic_pattern(self) -> re.Pattern:
+        return re.compile(r"\*(.+?)\*")
+
+    @cached_property
+    def italic_underscore_pattern(self) -> re.Pattern:
+        return re.compile(r"_([^_]+?)_")
+
+    @cached_property
+    def underline_pattern(self) -> re.Pattern:
+        return re.compile(r"__(.+?)__")
+
+    @cached_property
+    def strikethrough_pattern(self) -> re.Pattern:
+        return re.compile(r"~~(.+?)~~")
+
+    @cached_property
+    def inline_code_pattern(self) -> re.Pattern:
+        return re.compile(r"`(.+?)`")
+
+    @cached_property
+    def link_pattern(self) -> re.Pattern:
+        return re.compile(r"\[(.+?)\]\((.+?)\)")
+
+    @cached_property
+    def inline_equation_pattern(self) -> re.Pattern:
+        return re.compile(r"\$(.+?)\$")
+
+    @cached_property
+    def color_pattern(self) -> re.Pattern:
+        return re.compile(r"\((\w+):(.+?)\)")
+
+    # Mention Patterns - dynamisch aus Delimiters gebaut
+    @cached_property
+    def page_mention_pattern(self) -> re.Pattern:
+        return self._create_mention_pattern(self._page_mention_prefix)
+
+    @cached_property
+    def database_mention_pattern(self) -> re.Pattern:
+        return self._create_mention_pattern(self._database_mention_prefix)
+
+    @cached_property
+    def datasource_mention_pattern(self) -> re.Pattern:
+        return self._create_mention_pattern(self._datasource_mention_prefix)
+
+    @cached_property
+    def user_mention_pattern(self) -> re.Pattern:
+        return self._create_mention_pattern(self._user_mention_prefix)
+
+    @cached_property
+    def date_mention_pattern(self) -> re.Pattern:
+        return self._create_mention_pattern(self._date_mention_prefix)
