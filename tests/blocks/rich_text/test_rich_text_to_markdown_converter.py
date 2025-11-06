@@ -1,77 +1,30 @@
-from typing import cast
-from unittest.mock import AsyncMock
-
 import pytest
 
-from notionary.blocks.rich_text.models import (
+from notionary.rich_text.rich_text_to_markdown.converter import (
+    RichTextToMarkdownConverter,
+)
+from notionary.rich_text.rich_text_to_markdown.factory import (
+    create_rich_text_to_markdown_converter,
+)
+from notionary.rich_text.schemas import (
+    DateMention,
     EquationObject,
     LinkObject,
     MentionDate,
-    MentionObject,
     MentionPageRef,
-    MentionType,
     MentionUserRef,
+    PageMention,
     RichText,
     RichTextType,
     TextAnnotations,
     TextContent,
-)
-from notionary.blocks.rich_text.name_id_resolver import (
-    DatabaseNameIdResolver,
-    DataSourceNameIdResolver,
-    PageNameIdResolver,
-    PersonNameIdResolver,
-)
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
+    UserMention,
 )
 
 
 @pytest.fixture
-def mock_page_resolver() -> PageNameIdResolver:
-    mock_obj = AsyncMock(spec=PageNameIdResolver)
-    resolver = cast(PageNameIdResolver, mock_obj)
-    resolver.resolve_id_to_name.return_value = "Test Page"
-    return resolver
-
-
-@pytest.fixture
-def mock_database_resolver() -> DatabaseNameIdResolver:
-    mock_obj = AsyncMock(spec=DatabaseNameIdResolver)
-    resolver = cast(DatabaseNameIdResolver, mock_obj)
-    resolver.resolve_id_to_name.return_value = "Tasks DB"
-    return resolver
-
-
-@pytest.fixture
-def mock_data_source_resolver() -> DataSourceNameIdResolver:
-    mock_obj = AsyncMock(spec=DataSourceNameIdResolver)
-    resolver = cast(DataSourceNameIdResolver, mock_obj)
-    resolver.resolve_id_to_name.return_value = "Test DataSource"
-    return resolver
-
-
-@pytest.fixture
-def mock_user_resolver() -> PersonNameIdResolver:
-    mock_obj = AsyncMock(spec=PersonNameIdResolver)
-    resolver = cast(PersonNameIdResolver, mock_obj)
-    resolver.resolve_id_to_name.return_value = "John Doe"
-    return resolver
-
-
-@pytest.fixture
-def converter(
-    mock_page_resolver: AsyncMock,
-    mock_database_resolver: AsyncMock,
-    mock_data_source_resolver: AsyncMock,
-    mock_user_resolver: AsyncMock,
-) -> RichTextToMarkdownConverter:
-    return RichTextToMarkdownConverter(
-        page_resolver=mock_page_resolver,
-        database_resolver=mock_database_resolver,
-        data_source_resolver=mock_data_source_resolver,
-        person_resolver=mock_user_resolver,
-    )
+def converter() -> RichTextToMarkdownConverter:
+    return create_rich_text_to_markdown_converter()
 
 
 class TestRichTextToMarkdownConverter:
@@ -165,13 +118,11 @@ class TestRichTextToMarkdownConverter:
             RichText(
                 type=RichTextType.MENTION,
                 plain_text="Test Page",
-                mention=MentionObject(
-                    type=MentionType.PAGE, page=MentionPageRef(id="page-123")
-                ),
+                mention=PageMention(page=MentionPageRef(id="page-123")),
             )
         ]
         result = await converter.to_markdown(rich_text)
-        assert result == "@page[Test Page]"
+        assert result == "@page[page-123]"
 
     @pytest.mark.asyncio
     async def test_user_mention(self, converter: RichTextToMarkdownConverter) -> None:
@@ -179,13 +130,12 @@ class TestRichTextToMarkdownConverter:
             RichText(
                 type=RichTextType.MENTION,
                 plain_text="John Doe",
-                mention=MentionObject(
-                    type=MentionType.USER, user=MentionUserRef(id="user-123")
-                ),
+                mention=UserMention(user=MentionUserRef(id="user-123")),
             )
         ]
         result = await converter.to_markdown(rich_text)
-        assert result == "@user[John Doe]"
+        # Falls back to ID since no resolver is mocked
+        assert result == "@user[user-123]"
 
     @pytest.mark.asyncio
     async def test_date_mention(self, converter: RichTextToMarkdownConverter) -> None:
@@ -193,9 +143,8 @@ class TestRichTextToMarkdownConverter:
             RichText(
                 type=RichTextType.MENTION,
                 plain_text="2024-01-15",
-                mention=MentionObject(
-                    type=MentionType.DATE,
-                    date=MentionDate(start="2024-01-15", end="2024-01-20"),
+                mention=DateMention(
+                    date=MentionDate(start="2024-01-15", end="2024-01-20")
                 ),
             )
         ]

@@ -1,10 +1,7 @@
 from typing import Self
 
 from notionary.blocks.client import NotionBlockHttpClient
-from notionary.blocks.content import BlockContentService, BlockContentServiceFactory
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    convert_rich_text_to_markdown,
-)
+from notionary.blocks.content import BlockContentService, create_block_content_service
 from notionary.blocks.service import NotionBlock
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
@@ -15,6 +12,10 @@ from notionary.page.properties.factory import PagePropertyHandlerFactory
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.properties.service import PagePropertyHandler
 from notionary.page.schemas import NotionPageDto
+from notionary.rich_text.rich_text_to_markdown import (
+    RichTextToMarkdownConverter,
+    create_rich_text_to_markdown_converter,
+)
 from notionary.shared.entity.service import Entity
 from notionary.workspace.query.service import WorkspaceQueryService
 
@@ -29,6 +30,7 @@ class NotionPage(Entity):
         comment_service: CommentService,
         block_content_service: BlockContentService,
         metadata_update_client: PageMetadataUpdateClient,
+        rich_text_converter: RichTextToMarkdownConverter | None = None,
     ) -> None:
         super().__init__(dto=dto)
 
@@ -39,6 +41,7 @@ class NotionPage(Entity):
         self._comment_service = comment_service
         self._block_content_service = block_content_service
         self._metadata_update_client = metadata_update_client
+        self._rich_text_converter = rich_text_converter or RichTextToMarkdownConverter()
         self.properties = page_property_handler
 
     @classmethod
@@ -94,12 +97,12 @@ class NotionPage(Entity):
         block_client = NotionBlockHttpClient()
         comment_service = CommentService()
 
-        block_content_service_factory = BlockContentServiceFactory()
-        block_content_service = block_content_service_factory.create(
+        block_content_service = create_block_content_service(
             block_id=dto.id, block_client=block_client
         )
 
         metadata_update_client = PageMetadataUpdateClient(page_id=dto.id)
+        rich_text_converter = create_rich_text_to_markdown_converter()
 
         return cls(
             dto=dto,
@@ -109,6 +112,7 @@ class NotionPage(Entity):
             comment_service=comment_service,
             block_content_service=block_content_service,
             metadata_update_client=metadata_update_client,
+            rich_text_converter=rich_text_converter,
         )
 
     @staticmethod
@@ -122,7 +126,8 @@ class NotionPage(Entity):
             None,
         )
         rich_text_title = title_property.title if title_property else []
-        return await convert_rich_text_to_markdown(rich_text_title)
+        converter = create_rich_text_to_markdown_converter()
+        return await converter.to_markdown(rich_text_title)
 
     @property
     def _entity_metadata_update_client(self) -> PageMetadataUpdateClient:

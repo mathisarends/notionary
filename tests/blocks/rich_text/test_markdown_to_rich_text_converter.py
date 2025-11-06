@@ -1,16 +1,20 @@
 from typing import cast
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import (
+from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
+from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )
-from notionary.blocks.rich_text.models import (
+from notionary.rich_text.markdown_to_rich_text.handlers.factory import (
+    create_pattern_matcher,
+)
+from notionary.rich_text.schemas import (
     MentionType,
     RichTextType,
 )
-from notionary.blocks.rich_text.name_id_resolver import (
+from notionary.shared.name_id_resolver import (
     DatabaseNameIdResolver,
     DataSourceNameIdResolver,
     PageNameIdResolver,
@@ -57,12 +61,27 @@ def converter(
     mock_data_source_resolver: DataSourceNameIdResolver,
     mock_user_resolver: PersonNameIdResolver,
 ) -> MarkdownRichTextConverter:
-    return MarkdownRichTextConverter(
-        page_resolver=mock_page_resolver,
-        database_resolver=mock_database_resolver,
-        data_source_resolver=mock_data_source_resolver,
-        person_resolver=mock_user_resolver,
-    )
+    with (
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.PageNameIdResolver",
+            return_value=mock_page_resolver,
+        ),
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.DatabaseNameIdResolver",
+            return_value=mock_database_resolver,
+        ),
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.DataSourceNameIdResolver",
+            return_value=mock_data_source_resolver,
+        ),
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.PersonNameIdResolver",
+            return_value=mock_user_resolver,
+        ),
+    ):
+        pattern_matcher = create_pattern_matcher()
+        grammar = MarkdownGrammar()
+        return MarkdownRichTextConverter(pattern_matcher, grammar)
 
 
 @pytest.mark.asyncio

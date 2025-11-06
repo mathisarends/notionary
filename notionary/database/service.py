@@ -2,15 +2,15 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Self
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.data_source.service import NotionDataSource
 from notionary.database.client import NotionDatabaseHttpClient
 from notionary.database.database_metadata_update_client import (
     DatabaseMetadataUpdateClient,
 )
 from notionary.database.schemas import NotionDatabaseDto
+from notionary.rich_text.rich_text_to_markdown.converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.shared.entity.dto_parsers import (
     extract_description,
     extract_title,

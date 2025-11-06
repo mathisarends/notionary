@@ -4,13 +4,14 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.blocks.schemas import Block, CalloutBlock, CalloutData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.callout import CalloutRenderer
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.rich_text.rich_text_to_markdown.converter import (
+    RichTextToMarkdownConverter,
+)
+from notionary.rich_text.schemas import RichText
 from notionary.shared.models.icon import EmojiIcon
 
 
@@ -34,10 +35,12 @@ def _create_callout_block(callout_data: CalloutData | None) -> CalloutBlock:
 
 @pytest.fixture
 def callout_renderer(
+    syntax_registry: SyntaxDefinitionRegistry,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> CalloutRenderer:
     return CalloutRenderer(
-        rich_text_markdown_converter=mock_rich_text_markdown_converter
+        syntax_registry=syntax_registry,
+        rich_text_markdown_converter=mock_rich_text_markdown_converter,
     )
 
 

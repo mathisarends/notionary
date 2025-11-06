@@ -1,7 +1,6 @@
 import pytest
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.rich_text.models import RichText, RichTextType
 from notionary.blocks.schemas import (
     CodeData,
     CreateCalloutBlock,
@@ -17,6 +16,7 @@ from notionary.blocks.schemas import (
 from notionary.page.content.parser.post_processing.handlers.rich_text_length_truncation import (
     RichTextLengthTruncationPostProcessor,
 )
+from notionary.rich_text.schemas import RichText, RichTextType
 
 
 @pytest.fixture

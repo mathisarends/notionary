@@ -1,9 +1,5 @@
 from typing import override
 
-from notionary.blocks.rich_text.markdown_rich_text_converter import (
-    MarkdownRichTextConverter,
-)
-from notionary.blocks.rich_text.models import RichText
 from notionary.blocks.schemas import (
     CreateTableBlock,
     CreateTableData,
@@ -12,6 +8,10 @@ from notionary.blocks.schemas import (
 )
 from notionary.page.content.parser.parsers import BlockParsingContext, LineParser
 from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.rich_text.markdown_to_rich_text.converter import (
+    MarkdownRichTextConverter,
+)
+from notionary.rich_text.schemas import RichText
 
 
 class TableParser(LineParser):

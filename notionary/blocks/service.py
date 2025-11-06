@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Self
 
 from notionary.blocks.client import NotionBlockHttpClient
-from notionary.blocks.content.factory import BlockContentServiceFactory
+from notionary.blocks.content.factory import create_block_content_service
 from notionary.blocks.content.service import BlockContentService
 from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block
@@ -54,8 +54,7 @@ class NotionBlock(LoggingMixin):
         block_client = NotionBlockHttpClient()
         user_service = UserService()
 
-        block_content_service_factory = BlockContentServiceFactory()
-        block_content_service = block_content_service_factory.create(
+        block_content_service = create_block_content_service(
             block_id=block.id, block_client=block_client
         )
 

@@ -4,13 +4,14 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.blocks.schemas import Block, BookmarkBlock, BookmarkData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.bookmark import BookmarkRenderer
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.rich_text.rich_text_to_markdown.converter import (
+    RichTextToMarkdownConverter,
+)
+from notionary.rich_text.schemas import RichText
 
 
 def _create_bookmark_data(url: str) -> BookmarkData:
@@ -45,10 +46,12 @@ def _create_bookmark_block_with_caption(
 
 @pytest.fixture
 def bookmark_renderer(
+    syntax_registry: SyntaxDefinitionRegistry,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> BookmarkRenderer:
     return BookmarkRenderer(
-        rich_text_markdown_converter=mock_rich_text_markdown_converter
+        syntax_registry=syntax_registry,
+        rich_text_markdown_converter=mock_rich_text_markdown_converter,
     )
 
 

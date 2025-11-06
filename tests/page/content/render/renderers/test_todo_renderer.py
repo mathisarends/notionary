@@ -4,13 +4,14 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.blocks.schemas import Block, ToDoBlock, ToDoData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.todo import TodoRenderer
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.rich_text.rich_text_to_markdown.converter import (
+    RichTextToMarkdownConverter,
+)
+from notionary.rich_text.schemas import RichText
 
 
 def _create_todo_data(rich_text: list[RichText], checked: bool = False) -> ToDoData:
@@ -27,9 +28,13 @@ def _create_todo_block(todo_data: ToDoData | None) -> ToDoBlock:
 
 @pytest.fixture
 def todo_renderer(
+    syntax_registry: SyntaxDefinitionRegistry,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> TodoRenderer:
-    return TodoRenderer(rich_text_markdown_converter=mock_rich_text_markdown_converter)
+    return TodoRenderer(
+        syntax_registry=syntax_registry,
+        rich_text_markdown_converter=mock_rich_text_markdown_converter,
+    )
 
 
 @pytest.mark.asyncio

@@ -3,25 +3,23 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
-from notionary.page.content.syntax.definition import (
-    MarkdownGrammar,
-    SyntaxDefinitionRegistry,
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
+from notionary.rich_text.rich_text_to_markdown.converter import (
+    RichTextToMarkdownConverter,
 )
-
-
-@pytest.fixture
-def syntax_registry() -> SyntaxDefinitionRegistry:
-    return SyntaxDefinitionRegistry()
 
 
 @pytest.fixture
 def markdown_grammar() -> MarkdownGrammar:
     return MarkdownGrammar()
+
+
+@pytest.fixture
+def syntax_registry() -> SyntaxDefinitionRegistry:
+    return SyntaxDefinitionRegistry()
 
 
 @pytest.fixture
@@ -54,6 +52,5 @@ def render_context(mock_block: Block) -> MarkdownRenderingContext:
     context.indent_level = 0
     context.markdown_result = ""
     context.indent_text = Mock(side_effect=lambda text: f"  {text}")
-    context.render_children = AsyncMock(return_value="")
     context.render_children_with_additional_indent = AsyncMock(return_value="")
     return context

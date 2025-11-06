@@ -1,6 +1,5 @@
 from collections.abc import Awaitable, Callable
 
-from notionary.blocks.rich_text.name_id_resolver import DataSourceNameIdResolver
 from notionary.data_source.properties.schemas import (
     DataSourceMultiSelectProperty,
     DataSourceProperty,
@@ -12,6 +11,7 @@ from notionary.data_source.schema.registry import (
     DatabasePropertyTypeDescriptorRegistry,
     PropertyTypeDescriptor,
 )
+from notionary.shared.name_id_resolver import DataSourceNameIdResolver
 from notionary.shared.properties.type import PropertyType
 
 

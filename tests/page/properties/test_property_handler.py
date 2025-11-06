@@ -1,8 +1,7 @@
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
-from notionary.blocks.rich_text.models import RichText, TextContent
 from notionary.exceptions.properties import (
     AccessPagePropertyWithoutDataSourceError,
     PagePropertyNotFoundError,
@@ -27,6 +26,7 @@ from notionary.page.properties.schemas import (
     StatusOption,
 )
 from notionary.page.properties.service import PagePropertyHandler
+from notionary.rich_text.schemas import RichText, TextContent
 from notionary.shared.models.parent import ParentType
 
 # ============================================================================
@@ -238,13 +238,12 @@ def test_get_select_property_when_none(handler: PagePropertyHandler) -> None:
 
 @pytest.mark.asyncio
 async def test_get_title_property_value(handler: PagePropertyHandler) -> None:
-    with patch(
-        "notionary.page.properties.service.convert_rich_text_to_markdown"
-    ) as mock_convert:
-        mock_convert.return_value = "Test Title"
-        title = await handler.get_value_of_title_property("Title")
-        assert title == "Test Title"
-        mock_convert.assert_called_once()
+    handler._rich_text_converter = AsyncMock()
+    handler._rich_text_converter.to_markdown = AsyncMock(return_value="Test Title")
+
+    title = await handler.get_value_of_title_property("Title")
+    assert title == "Test Title"
+    handler._rich_text_converter.to_markdown.assert_called_once()
 
 
 def test_get_multiselect_property_values(handler: PagePropertyHandler) -> None:
@@ -280,13 +279,14 @@ def test_get_date_property_when_none(handler: PagePropertyHandler) -> None:
 
 @pytest.mark.asyncio
 async def test_get_rich_text_property_value(handler: PagePropertyHandler) -> None:
-    with patch(
-        "notionary.page.properties.service.convert_rich_text_to_markdown"
-    ) as mock_convert:
-        mock_convert.return_value = "Rich text content"
-        text = await handler.get_value_of_rich_text_property("Description")
-        assert text == "Rich text content"
-        mock_convert.assert_called_once()
+    handler._rich_text_converter = AsyncMock()
+    handler._rich_text_converter.to_markdown = AsyncMock(
+        return_value="Rich text content"
+    )
+
+    text = await handler.get_value_of_rich_text_property("Description")
+    assert text == "Rich text content"
+    handler._rich_text_converter.to_markdown.assert_called_once()
 
 
 def test_get_email_property_value(handler: PagePropertyHandler) -> None:

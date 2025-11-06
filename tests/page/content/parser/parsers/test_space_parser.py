@@ -1,26 +1,17 @@
 from textwrap import dedent
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from notionary.blocks.content import BlockContentServiceFactory
 from notionary.blocks.enums import BlockType
-from notionary.blocks.rich_text.markdown_rich_text_converter import (
-    MarkdownRichTextConverter,
-)
-from notionary.blocks.rich_text.name_id_resolver import (
+from notionary.page.content.parser.factory import create_markdown_to_notion_converter
+from notionary.page.content.parser.service import MarkdownToNotionConverter
+from notionary.shared.name_id_resolver import (
     DatabaseNameIdResolver,
     DataSourceNameIdResolver,
     PageNameIdResolver,
     PersonNameIdResolver,
 )
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
-from notionary.file_upload.service import NotionFileUpload
-from notionary.page.content.parser.factory import ConverterChainFactory
-from notionary.page.content.parser.service import MarkdownToNotionConverter
-from notionary.page.content.renderer.factory import RendererChainFactory
 
 
 @pytest.fixture
@@ -62,36 +53,25 @@ def parser(
     mock_data_source_resolver: AsyncMock,
     mock_user_resolver: AsyncMock,
 ) -> MarkdownToNotionConverter:
-    markdown_rich_text_converter = MarkdownRichTextConverter(
-        page_resolver=mock_page_resolver,
-        database_resolver=mock_database_resolver,
-        data_source_resolver=mock_data_source_resolver,
-        person_resolver=mock_user_resolver,
-    )
-
-    rich_text_to_markdown_converter = RichTextToMarkdownConverter(
-        page_resolver=mock_page_resolver,
-        database_resolver=mock_database_resolver,
-        data_source_resolver=mock_data_source_resolver,
-        person_resolver=mock_user_resolver,
-    )
-
-    mock_file_upload = Mock(spec=NotionFileUpload)
-    converter_chain_factory = ConverterChainFactory(
-        rich_text_converter=markdown_rich_text_converter,
-        file_upload_service=mock_file_upload,
-    )
-
-    renderer_chain_factory = RendererChainFactory(
-        rich_text_markdown_converter=rich_text_to_markdown_converter
-    )
-
-    factory = BlockContentServiceFactory(
-        converter_chain_factory=converter_chain_factory,
-        renderer_chain_factory=renderer_chain_factory,
-    )
-
-    return factory._create_markdown_to_notion_converter()
+    with (
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.PageNameIdResolver",
+            return_value=mock_page_resolver,
+        ),
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.DatabaseNameIdResolver",
+            return_value=mock_database_resolver,
+        ),
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.DataSourceNameIdResolver",
+            return_value=mock_data_source_resolver,
+        ),
+        patch(
+            "notionary.rich_text.markdown_to_rich_text.handlers.factory.PersonNameIdResolver",
+            return_value=mock_user_resolver,
+        ),
+    ):
+        return create_markdown_to_notion_converter()
 
 
 @pytest.mark.asyncio

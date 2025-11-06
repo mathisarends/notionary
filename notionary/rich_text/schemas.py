@@ -1,7 +1,7 @@
 from enum import StrEnum
-from typing import Self
+from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from notionary.blocks.enums import BlockColor
 
@@ -50,46 +50,80 @@ class EquationObject(BaseModel):
 
 
 class MentionUserRef(BaseModel):
-    id: str  # Notion user id
+    id: str
+
+
+class UserMention(BaseModel):
+    type: Literal[MentionType.USER] = MentionType.USER
+    user: MentionUserRef | None = None
 
 
 class MentionPageRef(BaseModel):
     id: str
 
 
+class PageMention(BaseModel):
+    type: Literal[MentionType.PAGE] = MentionType.PAGE
+    page: MentionPageRef | None = None
+
+
 class MentionDatabaseRef(BaseModel):
     id: str
+
+
+class DatabaseMention(BaseModel):
+    type: Literal[MentionType.DATABASE] = MentionType.DATABASE
+    database: MentionDatabaseRef | None = None
 
 
 class MentionDataSourceRef(BaseModel):
     id: str
 
 
-class MentionLinkPreview(BaseModel):
-    url: str
+class DataSourceMention(BaseModel):
+    type: Literal[MentionType.DATASOURCE] = MentionType.DATASOURCE
+    data_source: MentionDataSourceRef | None = None
 
 
 class MentionDate(BaseModel):
-    # entspricht Notion date object (start Pflicht, end/time_zone optional)
-    start: str  # ISO 8601 date or datetime
+    start: str
     end: str | None = None
     time_zone: str | None = None
 
 
+class DateMention(BaseModel):
+    type: Literal[MentionType.DATE] = MentionType.DATE
+    date: MentionDate | None = None
+
+
+class MentionLinkPreview(BaseModel):
+    url: str
+
+
+class LinkPreviewMention(BaseModel):
+    type: Literal[MentionType.LINK_PREVIEW] = MentionType.LINK_PREVIEW
+    link_preview: MentionLinkPreview
+
+
 class MentionTemplateMention(BaseModel):
-    # Notion hat zwei Template-Mention-Typen
     type: TemplateMentionType
 
 
-class MentionObject(BaseModel):
-    type: MentionType
-    user: MentionUserRef | None = None
-    page: MentionPageRef | None = None
-    database: MentionDatabaseRef | None = None
-    data_source: MentionDataSourceRef | None = None
-    date: MentionDate | None = None
-    link_preview: MentionLinkPreview | None = None
-    template_mention: MentionTemplateMention | None = None
+class TemplateMention(BaseModel):
+    type: Literal[MentionType.TEMPLATE_MENTION] = MentionType.TEMPLATE_MENTION
+    template_mention: MentionTemplateMention
+
+
+type Mention = Annotated[
+    UserMention
+    | PageMention
+    | DatabaseMention
+    | DataSourceMention
+    | DateMention
+    | LinkPreviewMention
+    | TemplateMention,
+    Field(discriminator="type"),
+]
 
 
 class RichText(BaseModel):
@@ -100,16 +134,21 @@ class RichText(BaseModel):
     plain_text: str = ""
     href: str | None = None
 
-    mention: MentionObject | None = None
+    mention: Mention | None = None
 
     equation: EquationObject | None = None
 
     @classmethod
-    def from_plain_text(cls, content: str, **ann) -> Self:
+    def from_plain_text(
+        cls, content: str, annotations: TextAnnotations | None = None, **ann
+    ) -> Self:
+        if annotations is None:
+            annotations = TextAnnotations(**ann) if ann else TextAnnotations()
+
         return cls(
             type=RichTextType.TEXT,
             text=TextContent(content=content),
-            annotations=TextAnnotations(**ann) if ann else TextAnnotations(),
+            annotations=annotations,
             plain_text=content,
         )
 
@@ -124,15 +163,19 @@ class RichText(BaseModel):
 
     @classmethod
     def for_code_block(cls, content: str) -> Self:
-        # keine annotations setzen → Notion Code-Highlight bleibt an
         return cls.for_caption(content)
 
     @classmethod
-    def for_link(cls, content: str, url: str, **ann) -> Self:
+    def for_link(
+        cls, content: str, url: str, annotations: TextAnnotations | None = None, **ann
+    ) -> Self:
+        if annotations is None:
+            annotations = TextAnnotations(**ann) if ann else TextAnnotations()
+
         return cls(
             type=RichTextType.TEXT,
             text=TextContent(content=content, link=LinkObject(url=url)),
-            annotations=TextAnnotations(**ann) if ann else TextAnnotations(),
+            annotations=annotations,
             plain_text=content,
         )
 
@@ -140,9 +183,7 @@ class RichText(BaseModel):
     def mention_user(cls, user_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(
-                type=MentionType.USER, user=MentionUserRef(id=user_id)
-            ),
+            mention=UserMention(user=MentionUserRef(id=user_id)),
             annotations=TextAnnotations(),
         )
 
@@ -150,9 +191,7 @@ class RichText(BaseModel):
     def mention_page(cls, page_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(
-                type=MentionType.PAGE, page=MentionPageRef(id=page_id)
-            ),
+            mention=PageMention(page=MentionPageRef(id=page_id)),
             annotations=TextAnnotations(),
         )
 
@@ -160,9 +199,7 @@ class RichText(BaseModel):
     def mention_database(cls, database_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(
-                type=MentionType.DATABASE, database=MentionDatabaseRef(id=database_id)
-            ),
+            mention=DatabaseMention(database=MentionDatabaseRef(id=database_id)),
             annotations=TextAnnotations(),
         )
 
@@ -170,9 +207,8 @@ class RichText(BaseModel):
     def mention_data_source(cls, data_source_id: str) -> Self:
         return cls(
             type=RichTextType.MENTION,
-            mention=MentionObject(
-                type=MentionType.DATASOURCE,
-                data_source=MentionDataSourceRef(id=data_source_id),
+            mention=DataSourceMention(
+                data_source=MentionDataSourceRef(id=data_source_id)
             ),
             annotations=TextAnnotations(),
         )

@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from notionary.blocks.rich_text.name_id_resolver.person import PersonNameIdResolver
+from notionary.shared.name_id_resolver.person import PersonNameIdResolver
 
 
 @pytest.fixture

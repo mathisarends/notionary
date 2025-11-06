@@ -4,13 +4,14 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from notionary.blocks.enums import BlockType
-from notionary.blocks.rich_text.models import RichText
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.blocks.schemas import Block, ToggleBlock, ToggleData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.toggle import ToggleRenderer
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.rich_text.rich_text_to_markdown.converter import (
+    RichTextToMarkdownConverter,
+)
+from notionary.rich_text.schemas import RichText
 
 
 def _create_toggle_data(rich_text: list[RichText]) -> ToggleData:
@@ -27,10 +28,12 @@ def _create_toggle_block(toggle_data: ToggleData | None) -> ToggleBlock:
 
 @pytest.fixture
 def toggle_renderer(
+    syntax_registry: SyntaxDefinitionRegistry,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> ToggleRenderer:
     return ToggleRenderer(
-        rich_text_markdown_converter=mock_rich_text_markdown_converter
+        syntax_registry=syntax_registry,
+        rich_text_markdown_converter=mock_rich_text_markdown_converter,
     )
 
 

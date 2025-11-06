@@ -1,14 +1,14 @@
 import re
 from uuid import UUID
 
-from notionary.blocks.rich_text.name_id_resolver.page import PageNameIdResolver
-from notionary.blocks.rich_text.name_id_resolver.person import PersonNameIdResolver
 from notionary.data_source.query.schema import (
     CompoundFilter,
     DataSourceQueryParams,
     NotionFilter,
     PropertyFilter,
 )
+from notionary.shared.name_id_resolver.page import PageNameIdResolver
+from notionary.shared.name_id_resolver.person import PersonNameIdResolver
 from notionary.shared.properties.type import PropertyType
 from notionary.utils.mixins.logging import LoggingMixin
 

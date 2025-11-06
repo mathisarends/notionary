@@ -6,7 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from notionary.blocks.rich_text.models import RichText
+from notionary.rich_text.schemas import RichText
 
 
 class CommentParentType(StrEnum):

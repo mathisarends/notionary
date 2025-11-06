@@ -1,6 +1,6 @@
 from typing import override
 
-from notionary.blocks.rich_text.name_id_resolver.port import NameIdResolver
+from notionary.shared.name_id_resolver.port import NameIdResolver
 from notionary.workspace.query.service import WorkspaceQueryService
 
 

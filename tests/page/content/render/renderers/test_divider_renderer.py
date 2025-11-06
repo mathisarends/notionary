@@ -7,6 +7,7 @@ from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block, DividerBlock
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.divider import DividerRenderer
+from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 def _create_divider_block() -> DividerBlock:
@@ -17,8 +18,8 @@ def _create_divider_block() -> DividerBlock:
 
 
 @pytest.fixture
-def divider_renderer() -> DividerRenderer:
-    return DividerRenderer()
+def divider_renderer(syntax_registry: SyntaxDefinitionRegistry) -> DividerRenderer:
+    return DividerRenderer(syntax_registry=syntax_registry)
 
 
 @pytest.mark.asyncio

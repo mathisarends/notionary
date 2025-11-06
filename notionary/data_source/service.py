@@ -4,9 +4,6 @@ import asyncio
 from collections.abc import AsyncIterator, Callable
 from typing import TYPE_CHECKING, Self
 
-from notionary.blocks.rich_text.rich_text_markdown_converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.data_source.http.client import DataSourceClient
 from notionary.data_source.http.data_source_instance_client import (
     DataSourceInstanceClient,
@@ -34,6 +31,9 @@ from notionary.exceptions.data_source.properties import (
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import NotionPageDto
+from notionary.rich_text.rich_text_to_markdown.converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.shared.entity.dto_parsers import (
     extract_description,
     extract_title,

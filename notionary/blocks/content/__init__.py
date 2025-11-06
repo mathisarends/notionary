@@ -1,7 +1,7 @@
-from .factory import BlockContentServiceFactory
+from .factory import create_block_content_service
 from .service import BlockContentService
 
 __all__ = [
     "BlockContentService",
-    "BlockContentServiceFactory",
+    "create_block_content_service",
 ]

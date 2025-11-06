@@ -3,7 +3,7 @@ from typing import Any, Literal, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from notionary.blocks.rich_text.models import RichText
+from notionary.rich_text.schemas import RichText
 from notionary.shared.models.file import File
 from notionary.shared.properties.type import PropertyType
 from notionary.shared.typings import JsonDict

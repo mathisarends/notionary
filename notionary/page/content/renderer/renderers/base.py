@@ -8,8 +8,8 @@ from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class BlockRenderer(ABC):
-    def __init__(self, syntax_registry: SyntaxDefinitionRegistry | None = None) -> None:
-        self._syntax_registry = syntax_registry or SyntaxDefinitionRegistry()
+    def __init__(self, syntax_registry: SyntaxDefinitionRegistry) -> None:
+        self._syntax_registry = syntax_registry
         self._next_handler: BlockRenderer | None = None
 
     def set_next(self, handler: BlockRenderer) -> BlockRenderer:

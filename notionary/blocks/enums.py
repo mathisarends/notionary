@@ -6,25 +6,32 @@ from typing import Self
 
 class BlockColor(StrEnum):
     BLUE = "blue"
-    BLUE_BACKGROUND = "blue_background"
     BROWN = "brown"
-    BROWN_BACKGROUND = "brown_background"
     DEFAULT = "default"
     GRAY = "gray"
-    GRAY_BACKGROUND = "gray_background"
     GREEN = "green"
-    GREEN_BACKGROUND = "green_background"
     ORANGE = "orange"
-    ORANGE_BACKGROUND = "orange_background"
     YELLOW = "yellow"
-    YELLOW_BACKGROUND = "yellow_background"
     PINK = "pink"
-    PINK_BACKGROUND = "pink_background"
     PURPLE = "purple"
-    PURPLE_BACKGROUND = "purple_background"
     RED = "red"
-    RED_BACKGROUND = "red_background"
+
+    BLUE_BACKGROUND = "blue_background"
+    BROWN_BACKGROUND = "brown_background"
     DEFAULT_BACKGROUND = "default_background"
+    GRAY_BACKGROUND = "gray_background"
+    GREEN_BACKGROUND = "green_background"
+    ORANGE_BACKGROUND = "orange_background"
+    YELLOW_BACKGROUND = "yellow_background"
+    PINK_BACKGROUND = "pink_background"
+    PURPLE_BACKGROUND = "purple_background"
+    RED_BACKGROUND = "red_background"
+
+    def is_background(self) -> bool:
+        return self.value.endswith("_background")
+
+    def get_base_color(self) -> str:
+        return self.value.replace("_background", "")
 
 
 class BlockType(StrEnum):
