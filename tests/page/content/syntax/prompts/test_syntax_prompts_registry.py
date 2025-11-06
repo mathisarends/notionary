@@ -1,18 +1,7 @@
 import pytest
 
 from notionary.blocks.enums import BlockType
-from notionary.page.content.parser.factory import ConverterChainFactory
-from notionary.page.content.parser.post_processing.handlers import (
-    RichTextLengthTruncationPostProcessor,
-)
-from notionary.page.content.parser.post_processing.service import BlockPostProcessor
-from notionary.page.content.parser.pre_processsing.handlers import (
-    ColumnSyntaxPreProcessor,
-    IndentationNormalizer,
-    VideoFormatPreProcessor,
-    WhitespacePreProcessor,
-)
-from notionary.page.content.parser.pre_processsing.service import MarkdownPreProcessor
+from notionary.page.content.parser.factory import create_markdown_to_notion_converter
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.page.content.syntax.definition.models import SyntaxDefinitionRegistryKey
 from notionary.page.content.syntax.prompts.registry import SyntaxPromptRegistry
@@ -25,23 +14,7 @@ def syntax_prompt_registry() -> SyntaxPromptRegistry:
 
 @pytest.fixture
 def markdown_converter() -> MarkdownToNotionConverter:
-    converter_chain_factory = ConverterChainFactory()
-    line_parser = converter_chain_factory.create()
-
-    markdown_pre_processor = MarkdownPreProcessor()
-    markdown_pre_processor.register(ColumnSyntaxPreProcessor())
-    markdown_pre_processor.register(WhitespacePreProcessor())
-    markdown_pre_processor.register(IndentationNormalizer())
-    markdown_pre_processor.register(VideoFormatPreProcessor())
-
-    block_post_processor = BlockPostProcessor()
-    block_post_processor.register(RichTextLengthTruncationPostProcessor())
-
-    return MarkdownToNotionConverter(
-        line_parser=line_parser,
-        pre_processor=markdown_pre_processor,
-        post_processor=block_post_processor,
-    )
+    return create_markdown_to_notion_converter()
 
 
 @pytest.mark.integration

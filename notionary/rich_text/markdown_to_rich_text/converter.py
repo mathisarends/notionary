@@ -4,9 +4,7 @@ from typing import ClassVar
 
 from notionary.blocks.schemas import BlockColor
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.markdown_to_rich_text.handlers.factory import (
-    create_pattern_handler_registry,
-)
+from notionary.rich_text.markdown_to_rich_text.handlers.matcher import PatternMatcher
 from notionary.rich_text.schemas import RichText, RichTextType
 
 
@@ -16,12 +14,15 @@ class ColorGroup:
     text: str
 
 
+# TODO: Erstellen nur noch über factory
 class MarkdownRichTextConverter:
     VALID_COLORS: ClassVar[set[str]] = {color.value for color in BlockColor}
 
-    def __init__(self) -> None:
-        self.markdown_grammar = MarkdownGrammar()
-        self._handler_registry = create_pattern_handler_registry()
+    def __init__(
+        self, pattern_matcher: PatternMatcher, grammar: MarkdownGrammar
+    ) -> None:
+        self._pattern_matcher = pattern_matcher
+        self._markdown_grammar = grammar
 
     async def to_rich_text(self, text: str) -> list[RichText]:
         if not text:
@@ -46,7 +47,7 @@ class MarkdownRichTextConverter:
         groups: list[ColorGroup] = []
         remaining_text = text
 
-        bg_wrapper = self.markdown_grammar.background_color_wrapper
+        bg_wrapper = self._markdown_grammar.background_color_wrapper
         valid_colors_pattern = "|".join(
             [c.replace("_background", "") for c in self.VALID_COLORS]
         )
@@ -127,7 +128,7 @@ class MarkdownRichTextConverter:
         remaining_text = text
 
         while remaining_text:
-            pattern_match = self._handler_registry.find_earliest_match(remaining_text)
+            pattern_match = self._pattern_matcher.find_earliest_match(remaining_text)
 
             if not pattern_match:
                 segments.append(RichText.from_plain_text(remaining_text))
@@ -137,7 +138,7 @@ class MarkdownRichTextConverter:
             if plain_text_before:
                 segments.append(RichText.from_plain_text(plain_text_before))
 
-            pattern_result = await self._handler_registry.process_match(pattern_match)
+            pattern_result = await self._pattern_matcher.process_match(pattern_match)
             self._add_pattern_result_to_segments(segments, pattern_result)
 
             remaining_text = remaining_text[pattern_match.end_position :]

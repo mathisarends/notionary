@@ -3,8 +3,12 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
 from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
+)
+from notionary.rich_text.markdown_to_rich_text.handlers.factory import (
+    create_pattern_matcher,
 )
 from notionary.rich_text.schemas import (
     MentionType,
@@ -75,7 +79,9 @@ def converter(
             return_value=mock_user_resolver,
         ),
     ):
-        return MarkdownRichTextConverter()
+        pattern_matcher = create_pattern_matcher()
+        grammar = MarkdownGrammar()
+        return MarkdownRichTextConverter(pattern_matcher, grammar)
 
 
 @pytest.mark.asyncio

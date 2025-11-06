@@ -3,8 +3,9 @@ import asyncio
 from notionary.comments.client import CommentClient
 from notionary.comments.factory import CommentFactory
 from notionary.comments.models import Comment
-from notionary.rich_text.markdown_to_rich_text.converter import (
+from notionary.rich_text.markdown_to_rich_text import (
     MarkdownRichTextConverter,
+    create_markdown_to_rich_text_converter,
 )
 
 
@@ -17,7 +18,9 @@ class CommentService:
     ) -> None:
         self.client = client or CommentClient()
         self.factory = factory or CommentFactory()
-        self._converter = markdown_rich_text_converter or MarkdownRichTextConverter()
+        self._converter = (
+            markdown_rich_text_converter or create_markdown_to_rich_text_converter()
+        )
 
     async def list_all_comments_for_page(self, page_id: str) -> list[Comment]:
         comment_dtos = [dto async for dto in self.client.iter_comments(page_id)]

@@ -6,8 +6,8 @@ from notionary.rich_text.rich_text_to_markdown.color_chunker import (
     ColorGroup,
     chunk_by_color,
 )
-from notionary.rich_text.rich_text_to_markdown.handlers.factory import (
-    create_rich_text_handler_registry,
+from notionary.rich_text.rich_text_to_markdown.handlers.registry import (
+    RichTextHandlerRegistry,
 )
 from notionary.rich_text.schemas import RichText, TextAnnotations
 from notionary.utils.mixins.logging import LoggingMixin
@@ -16,9 +16,13 @@ from notionary.utils.mixins.logging import LoggingMixin
 class RichTextToMarkdownConverter(LoggingMixin):
     VALID_COLORS: ClassVar[set[str]] = {color.value for color in BlockColor}
 
-    def __init__(self, markdown_grammar: MarkdownGrammar | None = None) -> None:
-        self._rich_text_handler_registry = create_rich_text_handler_registry()
-        self._markdown_grammar = markdown_grammar or MarkdownGrammar()
+    def __init__(
+        self,
+        markdown_grammar: MarkdownGrammar,
+        rich_text_handler_registry: RichTextHandlerRegistry,
+    ) -> None:
+        self._markdown_grammar = markdown_grammar
+        self._rich_text_handler_registry = rich_text_handler_registry
 
     async def to_markdown(self, rich_text: list[RichText]) -> str:
         if not rich_text:

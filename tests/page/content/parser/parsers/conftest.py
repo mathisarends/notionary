@@ -8,8 +8,9 @@ from notionary.page.content.syntax.definition import (
     MarkdownGrammar,
     SyntaxDefinitionRegistry,
 )
-from notionary.rich_text.markdown_to_rich_text.converter import (
+from notionary.rich_text.markdown_to_rich_text import (
     MarkdownRichTextConverter,
+    create_markdown_to_rich_text_converter,
 )
 
 
@@ -21,6 +22,11 @@ def syntax_registry() -> SyntaxDefinitionRegistry:
 @pytest.fixture
 def markdown_grammar() -> MarkdownGrammar:
     return MarkdownGrammar()
+
+
+@pytest.fixture
+def markdown_rich_text_converter() -> MarkdownRichTextConverter:
+    return create_markdown_to_rich_text_converter()
 
 
 @pytest.fixture

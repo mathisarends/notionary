@@ -27,8 +27,9 @@ from notionary.page.properties.schemas import (
     PageTitleProperty,
     PageURLProperty,
 )
-from notionary.rich_text.rich_text_to_markdown.converter import (
+from notionary.rich_text.rich_text_to_markdown import (
     RichTextToMarkdownConverter,
+    create_rich_text_to_markdown_converter,
 )
 from notionary.shared.models.parent import ParentType
 
@@ -53,7 +54,9 @@ class PagePropertyHandler:
         self._parent_data_source_id = parent_data_source
         self._parent_data_source: NotionDataSource | None = None
         self._data_source_loaded = False
-        self._rich_text_converter = rich_text_converter or RichTextToMarkdownConverter()
+        self._rich_text_converter = (
+            rich_text_converter or create_rich_text_to_markdown_converter()
+        )
 
     # =========================================================================
     # Reader Methods

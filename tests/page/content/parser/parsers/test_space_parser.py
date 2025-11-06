@@ -1,20 +1,11 @@
 from textwrap import dedent
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from notionary.blocks.content import BlockContentServiceFactory
 from notionary.blocks.enums import BlockType
-from notionary.file_upload.service import NotionFileUpload
-from notionary.page.content.parser.factory import ConverterChainFactory
+from notionary.page.content.parser.factory import create_markdown_to_notion_converter
 from notionary.page.content.parser.service import MarkdownToNotionConverter
-from notionary.page.content.renderer.factory import RendererChainFactory
-from notionary.rich_text.markdown_to_rich_text.converter import (
-    MarkdownRichTextConverter,
-)
-from notionary.rich_text.rich_text_to_markdown.converter import (
-    RichTextToMarkdownConverter,
-)
 from notionary.shared.name_id_resolver import (
     DatabaseNameIdResolver,
     DataSourceNameIdResolver,
@@ -80,26 +71,7 @@ def parser(
             return_value=mock_user_resolver,
         ),
     ):
-        markdown_rich_text_converter = MarkdownRichTextConverter()
-
-    rich_text_to_markdown_converter = RichTextToMarkdownConverter()
-
-    mock_file_upload = Mock(spec=NotionFileUpload)
-    converter_chain_factory = ConverterChainFactory(
-        rich_text_converter=markdown_rich_text_converter,
-        file_upload_service=mock_file_upload,
-    )
-
-    renderer_chain_factory = RendererChainFactory(
-        rich_text_markdown_converter=rich_text_to_markdown_converter
-    )
-
-    factory = BlockContentServiceFactory(
-        converter_chain_factory=converter_chain_factory,
-        renderer_chain_factory=renderer_chain_factory,
-    )
-
-    return factory._create_markdown_to_notion_converter()
+        return create_markdown_to_notion_converter()
 
 
 @pytest.mark.asyncio

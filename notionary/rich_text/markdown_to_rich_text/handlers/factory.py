@@ -28,7 +28,7 @@ from notionary.shared.name_id_resolver import (
 )
 
 
-def create_pattern_handler_registry() -> PatternMatcher:
+def create_pattern_matcher() -> PatternMatcher:
     grammar = MarkdownGrammar()
     page_resolver = PageNameIdResolver()
     database_resolver = DatabaseNameIdResolver()

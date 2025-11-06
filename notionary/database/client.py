@@ -28,22 +28,22 @@ class NotionDatabaseHttpClient(NotionHttpClient):
         return NotionDatabaseDto.model_validate(response)
 
     async def update_database_title(self, title: str) -> NotionDatabaseDto:
-        from notionary.rich_text.markdown_to_rich_text.converter import (
-            MarkdownRichTextConverter,
+        from notionary.rich_text.markdown_to_rich_text import (
+            create_markdown_rich_text_converter,
         )
 
-        markdown_rich_text_formatter = MarkdownRichTextConverter()
+        markdown_rich_text_formatter = create_markdown_rich_text_converter()
         database_rich_text = await markdown_rich_text_formatter.to_rich_text(title)
 
         database_title_update_dto = NotionDatabaseUpdateDto(title=database_rich_text)
         return await self.patch_database(database_title_update_dto)
 
     async def update_database_description(self, description: str) -> str:
-        from notionary.rich_text.markdown_to_rich_text.converter import (
-            MarkdownRichTextConverter,
+        from notionary.rich_text.markdown_to_rich_text import (
+            create_markdown_rich_text_converter,
         )
 
-        markdown_to_rich_text_converter = MarkdownRichTextConverter()
+        markdown_to_rich_text_converter = create_markdown_rich_text_converter()
         rich_text_description = await markdown_to_rich_text_converter.to_rich_text(
             description
         )

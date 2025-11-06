@@ -57,11 +57,11 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
         await self.patch_metadata(update_data_source_dto)
 
     async def update_description(self, description: str) -> str:
-        from notionary.rich_text.markdown_to_rich_text.converter import (
-            MarkdownRichTextConverter,
+        from notionary.rich_text.markdown_to_rich_text import (
+            create_markdown_rich_text_converter,
         )
 
-        markdown_rich_text_converter = MarkdownRichTextConverter()
+        markdown_rich_text_converter = create_markdown_rich_text_converter()
         rich_text_description = await markdown_rich_text_converter.to_rich_text(
             description
         )

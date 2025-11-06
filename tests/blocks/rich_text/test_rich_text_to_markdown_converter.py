@@ -3,6 +3,9 @@ import pytest
 from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
+from notionary.rich_text.rich_text_to_markdown.factory import (
+    create_rich_text_to_markdown_converter,
+)
 from notionary.rich_text.schemas import (
     DateMention,
     EquationObject,
@@ -21,7 +24,7 @@ from notionary.rich_text.schemas import (
 
 @pytest.fixture
 def converter() -> RichTextToMarkdownConverter:
-    return RichTextToMarkdownConverter()
+    return create_rich_text_to_markdown_converter()
 
 
 class TestRichTextToMarkdownConverter:
