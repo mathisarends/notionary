@@ -6,9 +6,7 @@ from notionary.rich_text.rich_text_to_markdown.color_chunker import (
     ColorGroup,
     chunk_by_color,
 )
-from notionary.rich_text.rich_text_to_markdown.handlers.registry import (
-    RichTextHandlerRegistry,
-)
+from notionary.rich_text.rich_text_to_markdown.registry import RichTextHandlerRegistry
 from notionary.rich_text.schemas import RichText, TextAnnotations
 from notionary.utils.mixins.logging import LoggingMixin
 
