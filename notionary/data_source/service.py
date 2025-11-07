@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Self
 
 from notionary.data_source.http.client import DataSourceClient
@@ -274,20 +274,9 @@ class NotionDataSource(Entity):
 
     async def get_pages(
         self,
-        *,
-        filter_fn: Callable[[DataSourceQueryBuilder], DataSourceQueryBuilder]
-        | None = None,
         query_params: DataSourceQueryParams | None = None,
     ) -> list[NotionPage]:
         from notionary import NotionPage
-
-        if filter_fn is not None and query_params is not None:
-            raise ValueError("Use either filter_fn OR query_params, not both")
-
-        if filter_fn is not None:
-            builder = DataSourceQueryBuilder(properties=self._properties)
-            configured_builder = filter_fn(builder)
-            query_params = configured_builder.build()
 
         resolved_params = await self._resolve_query_params_if_needed(query_params)
         query_response = await self._data_source_client.query(
@@ -297,20 +286,9 @@ class NotionDataSource(Entity):
 
     async def iter_pages(
         self,
-        *,
-        filter_fn: Callable[[DataSourceQueryBuilder], DataSourceQueryBuilder]
-        | None = None,
         query_params: DataSourceQueryParams | None = None,
     ) -> AsyncIterator[NotionPage]:
         from notionary import NotionPage
-
-        if filter_fn is not None and query_params is not None:
-            raise ValueError("Use either filter_fn OR query_params, not both")
-
-        if filter_fn is not None:
-            builder = DataSourceQueryBuilder(properties=self._properties)
-            configured_builder = filter_fn(builder)
-            query_params = configured_builder.build()
 
         resolved_params = await self._resolve_query_params_if_needed(query_params)
 

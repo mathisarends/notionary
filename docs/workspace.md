@@ -25,37 +25,28 @@ workspace = await NotionWorkspace.from_current_integration()
 
 ## Querying pages and data sources
 
-Workspace search is powered by Notion's Search API. In Notionary, you can provide a configuration via a small builder function or pass an explicit `WorkspaceQueryConfig`.
+Workspace search is powered by Notion's Search API. In Notionary, you must provide an explicit `WorkspaceQueryConfig` built with `NotionWorkspaceQueryConfigBuilder`.
 
-### Quick builder function
-
-```python
-from notionary import NotionWorkspace
-from notionary.workspace.query.builder import NotionWorkspaceQueryConfigBuilder
-
-workspace = NotionWorkspace()
-
-pages = await workspace.get_pages(
-	lambda b: b.with_pages_only().with_query("roadmap").with_page_size(10)
-)
-
-data_sources = await workspace.get_data_sources(
-	lambda b: b.with_data_sources_only().with_query("engineering").with_page_size(5)
-)
-```
-
-### Explicit configuration
+### Building and executing queries
 
 ```python
 from notionary import NotionWorkspace
 from notionary.workspace.query.builder import NotionWorkspaceQueryConfigBuilder
 
-workspace = NotionWorkspace()
+workspace = await NotionWorkspace.from_current_integration()
 
-builder = NotionWorkspaceQueryConfigBuilder().with_pages_only().with_query("docs").with_page_size(10)
-config = builder.build()
-
+# Build config for pages
+builder = NotionWorkspaceQueryConfigBuilder()
+config = builder.with_pages_only().with_query("roadmap").with_page_size(10).build()
 pages = await workspace.get_pages(config)
+
+# Build config for data sources
+builder = NotionWorkspaceQueryConfigBuilder()
+config = builder.with_data_sources_only().with_query("engineering").with_page_size(5).build()
+data_sources = await workspace.get_data_sources(config)
+
+# Get all pages without filters
+all_pages = await workspace.get_pages()
 ```
 
 ### Streaming results (memory-efficient)
@@ -64,14 +55,27 @@ The stream variants return an async generator that yields `NotionPage` or `Notio
 
 ```python
 from notionary import NotionWorkspace
+from notionary.workspace.query.builder import NotionWorkspaceQueryConfigBuilder
 
-workspace = NotionWorkspace()
+workspace = await NotionWorkspace.from_current_integration()
 
-async for page in workspace.get_pages_stream(lambda b: b.with_pages_only().with_query("spec")):
+# Stream pages with filter
+builder = NotionWorkspaceQueryConfigBuilder()
+config = builder.with_pages_only().with_query("spec").build()
+
+async for page in workspace.iter_pages(config):
 	print(page.title)
 
-async for ds in workspace.get_data_sources_stream(lambda b: b.with_data_sources_only().with_query("team")):
+# Stream data sources with filter
+builder = NotionWorkspaceQueryConfigBuilder()
+config = builder.with_data_sources_only().with_query("team").build()
+
+async for ds in workspace.iter_data_sources(config):
 	print(ds.title)
+
+# Stream all pages
+async for page in workspace.iter_pages():
+	print(page.title)
 ```
 
 ## Finding by best match

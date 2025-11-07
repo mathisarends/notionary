@@ -101,45 +101,54 @@ for title in related_titles:
 
 ## Querying pages
 
-The `NotionDataSource` exposes top-level query helpers to find pages (rows) that belong to a data source. You can build filters with the `DataSourceQueryBuilder` and run them synchronously (collecting results) or as an async stream.
+The `NotionDataSource` exposes top-level query helpers to find pages (rows) that belong to a data source. You must build filters explicitly with the `DataSourceQueryBuilder` and then pass the resulting params to query methods.
 
-### Using the builder directly
+### Building query params
 
 ```python
-builder = data_source.filter()
+# Get the builder from the data source
+builder = data_source.get_query_builder()
+
+# Configure filters and sorting
 params = builder.where("Status").equals("In Progress").order_by_last_edited_time().build()
 
+# Execute the query
 pages = await data_source.get_pages(query_params=params)
 ```
 
-### Convenient helpers
-
-`NotionDataSource` provides convenience helpers that accept a small builder function:
+### Query with params
 
 ```python
-pages = await data_source.query_pages(lambda b: b.where("Status").equals("In Progress").order_by("Effort"))
-
-async for page in data_source.query_pages_stream(lambda b: b.where("Tags").array_contains("API")):
-    print(page.title)
-
-builder = data_source.filter()
-params = builder.where("Phase").equals("Design").build()
+builder = data_source.get_query_builder()
+params = builder.where("Status").equals("In Progress").order_by("Effort").build()
 pages = await data_source.get_pages(query_params=params)
 
+# Or get all pages without filters
 all_pages = await data_source.get_pages()
-
-async for p in data_source.get_pages_stream():
-    print(p.title)
 ```
 
-Stream methods (like `query_stream` and `get_pages_stream`) return an async generator that yields `NotionPage` objects as they are fetched from the API. This approach is memory-efficient because it does not load the entire result set into memory, and it works well for automated pipelines or streaming processing where you can consume pages one-by-one.
+### Streaming results (memory-efficient)
+
+The stream variant returns an async generator that yields `NotionPage` objects as they are fetched. This is memory-efficient and well-suited for automated pipelines since you can process items one-by-one without loading the entire result set into memory.
+
+```python
+# Stream with filters
+builder = data_source.get_query_builder()
+params = builder.where("Tags").array_contains("API").build()
+
+async for page in data_source.iter_pages(query_params=params):
+    print(page.title)
+
+# Stream all pages
+async for page in data_source.iter_pages():
+    print(page.title)
+```
 
 Notes:
 
-- `filter()` returns a pre-seeded `DataSourceQueryBuilder` using the data source's property definitions.
-- `query()` accepts a function that receives a builder and should return the configured builder; it resolves the params and returns a list of `NotionPage` objects.
-- `query_stream()` works similarly but yields pages asynchronously as they are fetched.
-- `get_pages()` and `get_pages_stream()` also accept an optional `query_params` object if you already built the params yourself.
+- `get_query_builder()` returns a `DataSourceQueryBuilder` pre-configured with the data source's property definitions
+- `get_pages()` accepts an optional `query_params` object; without it, fetches all pages
+- `iter_pages()` works similarly but yields pages asynchronously as they are fetched
 
 ## Reference
 
