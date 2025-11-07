@@ -1,11 +1,19 @@
 from textwrap import dedent
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
 from notionary.blocks.enums import BlockType
+from notionary.file_upload.service import NotionFileUpload
 from notionary.page.content.parser.factory import create_markdown_to_notion_converter
+from notionary.page.content.parser.parsers.factory import create_line_parser
 from notionary.page.content.parser.service import MarkdownToNotionConverter
+from notionary.rich_text.markdown_to_rich_text.factory import (
+    create_markdown_to_rich_text_converter,
+)
+from notionary.rich_text.markdown_to_rich_text.handlers import (
+    create_pattern_matcher,
+)
 from notionary.shared.name_id_resolver import (
     DatabaseNameIdResolver,
     DataSourceNameIdResolver,
@@ -39,7 +47,7 @@ def mock_data_source_resolver() -> AsyncMock:
 
 
 @pytest.fixture
-def mock_user_resolver() -> AsyncMock:
+def mock_person_resolver() -> AsyncMock:
     resolver: PersonNameIdResolver = AsyncMock(spec=PersonNameIdResolver)
     resolver.resolve_name_to_id.return_value = "user-789"
     resolver.resolve_id_to_name.return_value = "John Doe"
@@ -48,30 +56,30 @@ def mock_user_resolver() -> AsyncMock:
 
 @pytest.fixture
 def parser(
-    mock_page_resolver: AsyncMock,
-    mock_database_resolver: AsyncMock,
-    mock_data_source_resolver: AsyncMock,
-    mock_user_resolver: AsyncMock,
+    mock_page_resolver,
+    mock_database_resolver,
+    mock_data_source_resolver,
+    mock_person_resolver,
 ) -> MarkdownToNotionConverter:
-    with (
-        patch(
-            "notionary.rich_text.markdown_to_rich_text.handlers.factory.PageNameIdResolver",
-            return_value=mock_page_resolver,
-        ),
-        patch(
-            "notionary.rich_text.markdown_to_rich_text.handlers.factory.DatabaseNameIdResolver",
-            return_value=mock_database_resolver,
-        ),
-        patch(
-            "notionary.rich_text.markdown_to_rich_text.handlers.factory.DataSourceNameIdResolver",
-            return_value=mock_data_source_resolver,
-        ),
-        patch(
-            "notionary.rich_text.markdown_to_rich_text.handlers.factory.PersonNameIdResolver",
-            return_value=mock_user_resolver,
-        ),
-    ):
-        return create_markdown_to_notion_converter()
+    mock_file_upload = AsyncMock(spec=NotionFileUpload)
+
+    pattern_matcher = create_pattern_matcher(
+        page_resolver=mock_page_resolver,
+        database_resolver=mock_database_resolver,
+        data_source_resolver=mock_data_source_resolver,
+        person_resolver=mock_person_resolver,
+    )
+
+    rich_text_converter = create_markdown_to_rich_text_converter(
+        pattern_matcher=pattern_matcher
+    )
+
+    line_parser = create_line_parser(
+        file_upload_service=mock_file_upload,
+        rich_text_converter=rich_text_converter,
+    )
+
+    return create_markdown_to_notion_converter(line_parser=line_parser)
 
 
 @pytest.mark.asyncio

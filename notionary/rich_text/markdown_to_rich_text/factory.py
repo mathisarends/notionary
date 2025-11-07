@@ -5,10 +5,13 @@ from notionary.rich_text.markdown_to_rich_text.converter import (
 from notionary.rich_text.markdown_to_rich_text.handlers.factory import (
     create_pattern_matcher,
 )
+from notionary.rich_text.markdown_to_rich_text.handlers.matcher import PatternMatcher
 
 
-def create_markdown_to_rich_text_converter() -> MarkdownRichTextConverter:
-    pattern_matcher = create_pattern_matcher()
+def create_markdown_to_rich_text_converter(
+    pattern_matcher: PatternMatcher | None = None,
+) -> MarkdownRichTextConverter:
+    pattern_matcher = pattern_matcher or create_pattern_matcher()
     markdown_grammar = MarkdownGrammar()
 
     return MarkdownRichTextConverter(

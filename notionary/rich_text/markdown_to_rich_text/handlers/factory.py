@@ -28,12 +28,17 @@ from notionary.shared.name_id_resolver import (
 )
 
 
-def create_pattern_matcher() -> PatternMatcher:
+def create_pattern_matcher(
+    page_resolver: PageNameIdResolver | None = None,
+    database_resolver: DatabaseNameIdResolver | None = None,
+    data_source_resolver: DataSourceNameIdResolver | None = None,
+    person_resolver: PersonNameIdResolver | None = None,
+) -> PatternMatcher:
     grammar = MarkdownGrammar()
-    page_resolver = PageNameIdResolver()
-    database_resolver = DatabaseNameIdResolver()
-    data_source_resolver = DataSourceNameIdResolver()
-    person_resolver = PersonNameIdResolver()
+    page_resolver = page_resolver or PageNameIdResolver()
+    database_resolver = database_resolver or DatabaseNameIdResolver()
+    data_source_resolver = data_source_resolver or DataSourceNameIdResolver()
+    person_resolver = person_resolver or PersonNameIdResolver()
 
     handlers: list[BasePatternHandler] = [
         UnderlinePatternHandler(grammar),

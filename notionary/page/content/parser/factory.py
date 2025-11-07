@@ -1,3 +1,4 @@
+from notionary.page.content.parser.parsers import LineParser
 from notionary.page.content.parser.parsers.factory import create_line_parser
 from notionary.page.content.parser.post_processing.factory import (
     create_markdown_to_rich_text_post_processor,
@@ -8,8 +9,10 @@ from notionary.page.content.parser.pre_processsing.factory import (
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 
 
-def create_markdown_to_notion_converter() -> MarkdownToNotionConverter:
-    line_parser = create_line_parser()
+def create_markdown_to_notion_converter(
+    line_parser: LineParser | None = None,
+) -> MarkdownToNotionConverter:
+    line_parser = line_parser or create_line_parser()
     markdown_pre_processor = create_markdown_to_rich_text_pre_processor()
     block_post_processor = create_markdown_to_rich_text_post_processor()
 

@@ -28,14 +28,22 @@ from notionary.page.content.parser.parsers import (
     VideoParser,
 )
 from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
+from notionary.rich_text.markdown_to_rich_text.converter import (
+    MarkdownRichTextConverter,
+)
 from notionary.rich_text.markdown_to_rich_text.factory import (
     create_markdown_to_rich_text_converter,
 )
 
 
-def create_line_parser() -> LineParser:
-    file_upload_service = NotionFileUpload()
-    rich_text_converter = create_markdown_to_rich_text_converter()
+def create_line_parser(
+    file_upload_service: NotionFileUpload | None = None,
+    rich_text_converter: MarkdownRichTextConverter | None = None,
+) -> LineParser:
+    file_upload_service = file_upload_service or NotionFileUpload()
+    rich_text_converter = (
+        rich_text_converter or create_markdown_to_rich_text_converter()
+    )
     syntax_registry = SyntaxDefinitionRegistry()
 
     code_parser = CodeParser(

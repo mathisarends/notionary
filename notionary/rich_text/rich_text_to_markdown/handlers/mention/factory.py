@@ -1,4 +1,7 @@
 from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
+from notionary.rich_text.rich_text_to_markdown.handlers.mention.handler import (
+    MentionRichTextHandler,
+)
 from notionary.rich_text.rich_text_to_markdown.handlers.mention.handlers import (
     DatabaseMentionHandler,
     DataSourceMentionHandler,
@@ -18,36 +21,60 @@ from notionary.shared.name_id_resolver import (
 )
 
 
-def create_mention_handler_registry(
+def create_mention_rich_text_handler(
     markdown_grammar: MarkdownGrammar | None = None,
+    page_resolver: PageNameIdResolver | None = None,
+    database_resolver: DatabaseNameIdResolver | None = None,
+    data_source_resolver: DataSourceNameIdResolver | None = None,
+    person_resolver: PersonNameIdResolver | None = None,
+) -> MentionRichTextHandler:
+    markdown_grammar = markdown_grammar or MarkdownGrammar()
+    mention_handler_registry = _create_mention_handler_registry(
+        markdown_grammar,
+        page_resolver,
+        database_resolver,
+        data_source_resolver,
+        person_resolver,
+    )
+    return MentionRichTextHandler(
+        markdown_grammar=markdown_grammar,
+        mention_handler_registry=mention_handler_registry,
+    )
+
+
+def _create_mention_handler_registry(
+    markdown_grammar: MarkdownGrammar,
+    page_resolver: PageNameIdResolver | None = None,
+    database_resolver: DatabaseNameIdResolver | None = None,
+    data_source_resolver: DataSourceNameIdResolver | None = None,
+    person_resolver: PersonNameIdResolver | None = None,
 ) -> MentionHandlerRegistry:
-    grammar = markdown_grammar or MarkdownGrammar()
-    page_resolver = PageNameIdResolver()
-    database_resolver = DatabaseNameIdResolver()
-    data_source_resolver = DataSourceNameIdResolver()
-    person_resolver = PersonNameIdResolver()
+    page_resolver = page_resolver or PageNameIdResolver()
+    database_resolver = database_resolver or DatabaseNameIdResolver()
+    data_source_resolver = data_source_resolver or DataSourceNameIdResolver()
+    person_resolver = person_resolver or PersonNameIdResolver()
 
     registry = MentionHandlerRegistry()
 
     registry.register(
         MentionType.PAGE,
-        PageMentionHandler(grammar, page_resolver),
+        PageMentionHandler(markdown_grammar, page_resolver),
     )
     registry.register(
         MentionType.DATABASE,
-        DatabaseMentionHandler(grammar, database_resolver),
+        DatabaseMentionHandler(markdown_grammar, database_resolver),
     )
     registry.register(
         MentionType.DATASOURCE,
-        DataSourceMentionHandler(grammar, data_source_resolver),
+        DataSourceMentionHandler(markdown_grammar, data_source_resolver),
     )
     registry.register(
         MentionType.USER,
-        UserMentionHandler(grammar, person_resolver),
+        UserMentionHandler(markdown_grammar, person_resolver),
     )
     registry.register(
         MentionType.DATE,
-        DateMentionHandler(grammar),
+        DateMentionHandler(markdown_grammar),
     )
 
     return registry
