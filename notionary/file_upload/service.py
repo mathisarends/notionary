@@ -1,13 +1,14 @@
 import asyncio
 import mimetypes
-from collections.abc import AsyncGenerator, AsyncIterator, Callable
+from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
 
 from notionary.exceptions.file_upload import UploadFailedError, UploadTimeoutError
 from notionary.file_upload.client import FileUploadHttpClient
 from notionary.file_upload.config import NOTION_SINGLE_PART_MAX_SIZE, FileUploadConfig
 from notionary.file_upload.file.reader import FileContentReader
-from notionary.file_upload.query import FileUploadQuery, FileUploadQueryBuilder
+from notionary.file_upload.query import FileUploadQuery
+from notionary.file_upload.query.builder import FileUploadQueryBuilder
 from notionary.file_upload.schemas import FileUploadResponse, FileUploadStatus
 from notionary.file_upload.validation.factory import (
     create_bytes_upload_validation_service,
@@ -27,8 +28,15 @@ class NotionFileUpload(LoggingMixin):
         self._config = config or FileUploadConfig()
         self._file_reader = file_reader or FileContentReader(config=self._config)
 
+    def get_query_builder(self) -> FileUploadQueryBuilder:
+        return FileUploadQueryBuilder()
+
     async def upload_file(
-        self, file_path: Path, filename: str | None = None
+        self,
+        file_path: Path,
+        filename: str | None = None,
+        *,
+        wait_for_completion: bool = True,
     ) -> FileUploadResponse:
         file_path = Path(file_path)
 
@@ -46,7 +54,7 @@ class NotionFileUpload(LoggingMixin):
         if self._fits_in_single_part(file_size):
             content = await self._file_reader.read_full_file(file_path)
             return await self._upload_single_part_content(
-                content, filename, content_type
+                content, filename, content_type, wait_for_completion
             )
         else:
             return await self._upload_multi_part_content(
@@ -54,6 +62,7 @@ class NotionFileUpload(LoggingMixin):
                 content_type,
                 file_size,
                 self._file_reader.read_file_chunks(file_path),
+                wait_for_completion,
             )
 
     async def upload_from_bytes(
@@ -61,6 +70,8 @@ class NotionFileUpload(LoggingMixin):
         file_content: bytes,
         filename: str,
         content_type: str | None = None,
+        *,
+        wait_for_completion: bool = True,
     ) -> FileUploadResponse:
         file_size = len(file_content)
 
@@ -74,7 +85,7 @@ class NotionFileUpload(LoggingMixin):
 
         if self._fits_in_single_part(file_size):
             return await self._upload_single_part_content(
-                file_content, filename, content_type
+                file_content, filename, content_type, wait_for_completion
             )
 
         return await self._upload_multi_part_content(
@@ -82,10 +93,15 @@ class NotionFileUpload(LoggingMixin):
             content_type,
             file_size,
             self._file_reader.bytes_to_chunks(file_content),
+            wait_for_completion,
         )
 
     async def _upload_single_part_content(
-        self, content: bytes, filename: str, content_type: str | None
+        self,
+        content: bytes,
+        filename: str,
+        content_type: str | None,
+        wait_for_completion: bool,
     ) -> FileUploadResponse:
         file_upload = await self._client.create_single_part_upload(
             filename=filename,
@@ -97,6 +113,13 @@ class NotionFileUpload(LoggingMixin):
             file_content=content,
             filename=filename,
         )
+
+        if not wait_for_completion:
+            self.logger.info(
+                "Single-part content sent (ID: %s), not waiting for completion",
+                file_upload.id,
+            )
+            return file_upload
 
         self.logger.info(
             "Single-part content sent, waiting for completion... (ID: %s)",
@@ -110,6 +133,7 @@ class NotionFileUpload(LoggingMixin):
         content_type: str | None,
         file_size: int,
         chunk_generator: AsyncGenerator[bytes],
+        wait_for_completion: bool,
     ) -> FileUploadResponse:
         part_count = self._calculate_part_count(file_size)
 
@@ -122,6 +146,13 @@ class NotionFileUpload(LoggingMixin):
         await self._send_parts(file_upload.id, filename, part_count, chunk_generator)
 
         await self._client.complete_upload(file_upload.id)
+
+        if not wait_for_completion:
+            self.logger.info(
+                "Multi-part content sent (ID: %s), not waiting for completion",
+                file_upload.id,
+            )
+            return file_upload
 
         self.logger.info(
             "Multi-part content sent, waiting for completion... (ID: %s)",
@@ -206,37 +237,15 @@ class NotionFileUpload(LoggingMixin):
 
     async def get_uploads(
         self,
-        *,
-        filter_fn: Callable[[FileUploadQueryBuilder], FileUploadQueryBuilder]
-        | None = None,
         query: FileUploadQuery | None = None,
     ) -> list[FileUploadResponse]:
-        resolved_query = self._resolve_query(filter_fn=filter_fn, query=query)
+        resolved_query = query or FileUploadQuery()
         return await self._client.list_file_uploads(query=resolved_query)
 
     async def iter_uploads(
         self,
-        *,
-        filter_fn: Callable[[FileUploadQueryBuilder], FileUploadQueryBuilder]
-        | None = None,
         query: FileUploadQuery | None = None,
     ) -> AsyncIterator[FileUploadResponse]:
-        resolved_query = self._resolve_query(filter_fn=filter_fn, query=query)
+        resolved_query = query or FileUploadQuery()
         async for upload in self._client.list_file_uploads_stream(query=resolved_query):
             yield upload
-
-    def _resolve_query(
-        self,
-        filter_fn: Callable[[FileUploadQueryBuilder], FileUploadQueryBuilder]
-        | None = None,
-        query: FileUploadQuery | None = None,
-    ) -> FileUploadQuery:
-        if filter_fn and query:
-            raise ValueError("Use either filter_fn OR query, not both")
-
-        if filter_fn:
-            builder = FileUploadQueryBuilder()
-            configured_builder = filter_fn(builder)
-            return configured_builder.build()
-
-        return query or FileUploadQuery()

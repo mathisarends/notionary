@@ -1,10 +1,10 @@
 import pytest
 
-from notionary.page.content.syntax.definition import (
+from notionary.markdown.syntax.definition import (
     MarkdownGrammar,
     SyntaxDefinitionRegistry,
 )
-from notionary.page.content.syntax.definition.models import SyntaxDefinition
+from notionary.markdown.syntax.definition.models import SyntaxDefinition
 
 
 @pytest.fixture

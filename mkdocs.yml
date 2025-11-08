@@ -31,11 +31,20 @@ nav:
 
   - Documentation:
       - Page: page.md
-      - Datasource: data_source.md
-      - Workspace: workspace.md
+      - Data Source:
+        - data_source/index.md
+      - Workspace:
+        - workspace/index.md
       - Database: database.md
+      - File Upload:
+        - Overview: file_upload/index.md
+        - Integration: file_upload/integration.md
+        - Query: file_upload/query.md
+        - Resolver: file_upload/resolver.md
 
       - Blocks:
+          - Overview: blocks/blocks.md
+          - Markdown Lookup:  blocks/markdown_lookup.md
           - Breadcrumb: blocks/breadcrumb.md
           - Bulleted List: blocks/bulleted_list.md
           - Callout: blocks/callout.md
@@ -48,19 +57,18 @@ nav:
           - Heading: blocks/heading.md
           - Image: blocks/image.md
           - Numbered List: blocks/numbered_list.md
-          - Overview: blocks/blocks.md
           - Paragraph: blocks/paragraph.md
           - PDF: blocks/pdf.md
           - Quote: blocks/quote.md
           - Rich Text: blocks/rich_text.md
           - Space: blocks/space.md
+          - Synced Block: blocks/synced_block.md
           - Table: blocks/table.md
           - Table of Contents: blocks/table_of_contents.md
           - Todo: blocks/todo.md
           - Toggle: blocks/toggle.md
           - Video: blocks/video.md
 
-  - Shoutouts: shoutouts.md
   - Contributing: contributing.md
 
 repo_url: https://github.com/mathisarends/notionary

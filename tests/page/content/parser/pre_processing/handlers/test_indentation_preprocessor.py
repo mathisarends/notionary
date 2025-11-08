@@ -1,9 +1,9 @@
 import pytest
 
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.pre_processsing.handlers import (
     IndentationNormalizer,
 )
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture

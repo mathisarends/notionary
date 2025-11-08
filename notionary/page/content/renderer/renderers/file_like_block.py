@@ -6,10 +6,10 @@ from notionary.blocks.schemas import (
     ExternalFileWithCaption,
     NotionHostedFileWithCaption,
 )
+from notionary.markdown.syntax.definition.models import EnclosedSyntaxDefinition
 from notionary.page.content.renderer.renderers.captioned_block import (
     CaptionedBlockRenderer,
 )
-from notionary.page.content.syntax.definition import EnclosedSyntaxDefinition
 
 
 class FileLikeBlockRenderer(CaptionedBlockRenderer):

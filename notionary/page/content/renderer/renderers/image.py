@@ -6,10 +6,10 @@ from notionary.blocks.schemas import (
     ExternalFileWithCaption,
     NotionHostedFileWithCaption,
 )
+from notionary.markdown.syntax.definition.models import SyntaxDefinition
 from notionary.page.content.renderer.renderers.file_like_block import (
     FileLikeBlockRenderer,
 )
-from notionary.page.content.syntax.definition import SyntaxDefinition
 
 
 class ImageRenderer(FileLikeBlockRenderer):

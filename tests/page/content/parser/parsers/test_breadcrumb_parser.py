@@ -3,9 +3,9 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.schemas import BlockType, CreateBreadcrumbBlock
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.breadcrumb import BreadcrumbParser
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture

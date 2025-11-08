@@ -9,9 +9,9 @@ from notionary.blocks.schemas import (
 )
 from notionary.exceptions.file_upload import UploadFailedError, UploadTimeoutError
 from notionary.file_upload.service import NotionFileUpload
+from notionary.markdown.syntax.definition.models import SyntaxDefinition
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
-from notionary.page.content.syntax.definition.models import SyntaxDefinition
 from notionary.shared.models.file import ExternalFileData, FileUploadedFileData
 from notionary.utils.mixins.logging import LoggingMixin
 

@@ -3,11 +3,11 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.schemas import CreateTableOfContentsBlock
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.table_of_contents import (
     TableOfContentsParser,
 )
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture

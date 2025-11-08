@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from notionary.blocks.schemas import BlockColor
-from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
+from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
 from notionary.rich_text.rich_text_to_markdown.color_chunker import (
     ColorGroup,
     chunk_by_color,

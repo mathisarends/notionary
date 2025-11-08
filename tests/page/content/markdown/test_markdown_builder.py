@@ -1,6 +1,6 @@
 import pytest
 
-from notionary.page.content.markdown.builder import MarkdownBuilder
+from notionary import MarkdownBuilder
 
 
 @pytest.fixture

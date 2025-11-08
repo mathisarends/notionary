@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Awaitable, Callable
 
 from notionary.blocks.schemas import BlockCreatePayload
-from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
+from notionary.markdown import MarkdownGrammar
 
 
 class ParentBlockContext:

@@ -5,9 +5,9 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block, BulletedListItemBlock, BulletedListItemData
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.bulleted_list import BulletedListRenderer
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )

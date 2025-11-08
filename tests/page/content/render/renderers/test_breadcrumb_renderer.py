@@ -5,9 +5,9 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block, BreadcrumbBlock
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.breadcrumb import BreadcrumbRenderer
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 def _create_breadcrumb_block() -> BreadcrumbBlock:
