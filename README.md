@@ -25,12 +25,12 @@ Perfect for developers building AI agents, automation workflows, and dynamic con
 
 ## Why Notionary?
 
-- **AI-Native Design** - Built specifically for AI agents with schema-driven markdown syntax
-- **Smart Discovery** - Find pages and databases by name with fuzzy matching—no more hunting for IDs
-- **Extended Markdown** - Rich syntax for toggles, columns, callouts, and media uploads
-- **Async-First** - Modern Python with full async/await support and high performance
-- **Round-Trip** - Read existing content, modify it, and write it back while preserving formatting
-- **Complete Coverage** - Every Notion block type supported with type safety
+- **AI-friendly** – Composable APIs that drop cleanly into agent workflows
+- **Smart discovery** – Find pages/databases by title with fuzzy matching (no ID spelunking)
+- **Extended Markdown** – Toggles, columns, callouts, media, equations, tables, TOC
+- **Async-first** – Modern Python with full `async` / `await`
+- **Round‑trip content** – Read a page as Markdown, transform, write back
+- **Full coverage** – All Notion block types with sensible defaults and type safety
 
 ---
 
@@ -80,11 +80,19 @@ content = """
 | Implementation | Bob | 2024-03-22 |
 
 +++ Budget Details
-See attached spreadsheet...
-+++
+  See attached spreadsheet...
 """
 
 await page.append_markdown(content)
+```
+
+Read or replace content:
+
+```python
+existing = await page.get_markdown_content()
+print(existing)
+
+await page.replace_content("# Fresh Start\nThis page was rewritten.")
 ```
 
 ### Complete Block Support
@@ -96,10 +104,26 @@ Every Notion block type with extended syntax:
 | **Toggles**   | `+++ Title\nContent\n+++`                    | Collapsible sections         |
 | **Columns**   | `::: columns\n::: column\nContent\n:::\n:::` | Side-by-side layouts         |
 | **Tables**    | Standard markdown tables                     | Structured data              |
-| **Media**     | `[video](./file.mp4)(caption:Description)`   | Auto-uploading files         |
+| **Media**     | `[video](https://example.com/file.mp4)`      | External media URLs          |
 | **Code**      | Standard code fences with captions           | Code snippets                |
 | **Equations** | `$LaTeX$`                                    | Mathematical expressions     |
 | **TOC**       | `[toc]`                     | Auto-generated navigation    |
+
+---
+
+## Architecture Overview
+
+```mermaid
+flowchart TD
+  WS[Workspace] --> DB[(Database)]
+  WS --> PG[Page]
+  DB --> DS[(Data Source)]
+  DS --> PG
+  WS --> USR[Users]
+  PG --> BLK[Blocks]
+  PG --> CM[Comments]
+  PG --> PROP[Properties]
+```
 
 ---
 
@@ -117,9 +141,9 @@ Every Notion block type with extended syntax:
 
 ### Extended Markdown
 
-- Rich syntax beyond standard markdown
-- Callouts, toggles, columns, media uploads
-- Schema provided for AI agent integration
+- Rich syntax beyond vanilla Markdown
+- Callouts, toggles, columns, media embeds & uploads
+- Fine-grained indentation + custom delimiters
 
 ### Modern Python
 
@@ -138,9 +162,9 @@ Every Notion block type with extended syntax:
 
 ### AI-Ready Architecture
 
-- Schema-driven syntax for LLM prompts
-- Perfect for AI content generation
-- Handles complex nested structures
+- Predictable models enable prompt chaining
+- Ideal for autonomous content generation
+- Handles complex nested block structures
 
 ### Complete Coverage
 
@@ -154,11 +178,87 @@ Every Notion block type with extended syntax:
 
 ---
 
-## Examples & Documentation
+## More Examples
 
 ### Full Documentation
 
-[**mathisarends.github.io/notionary**](https://mathisarends.github.io/notionary/) - Complete API reference, guides, and tutorials
+### Build Markdown programmatically (4-space indentation for nesting)
+
+```python
+from notionary import MarkdownBuilder
+
+markdown = (
+  MarkdownBuilder()
+  .h2("Setup Guide")
+  .paragraph("Basic steps.")
+  .toggle("Advanced Options", lambda b:
+        b.paragraph("Power user settings.")
+         .bulleted_list(["Debug mode", "Custom timeouts"]))
+  .columns(
+    lambda c: c.paragraph("Left column"),
+    lambda c: c.paragraph("Right column")
+  )
+  .build()
+)
+
+page = await NotionPage.from_title("Playground")
+await page.append_markdown(markdown)
+```
+
+### Workspace discovery
+
+```python
+from notionary import NotionWorkspace, NotionWorkspaceQueryConfigBuilder
+
+workspace = await NotionWorkspace.from_current_integration()
+builder = NotionWorkspaceQueryConfigBuilder()
+config = (
+    builder
+    .with_pages_only()
+    .with_query("roadmap")
+    .with_page_size(5)
+    .build()
+)
+pages = await workspace.get_pages(config)
+for p in pages:
+    print(p.title)
+```
+
+### Data Source queries & options
+
+```python
+from notionary import NotionDataSource
+
+ds = await NotionDataSource.from_title("Engineering Backlog")
+status_labels = ds.get_status_options_by_property_name("Status")
+print(status_labels)
+
+builder = ds.get_query_builder()
+params = (
+    builder
+    .where("Status")
+    .equals("In Progress")
+    .order_by_last_edited_time()
+    .build()
+)
+pages = await ds.get_pages(query_params=params)
+```
+
+### Page property writes
+
+```python
+page = await NotionPage.from_title("Sprint Board")
+
+await page.properties.set_select_property_by_option_name("Phase", "Design")
+await page.properties.set_multi_select_property_by_option_names("Tags", ["Backend", "API"])
+await page.properties.set_status_property_by_option_name("Status", "In Progress")
+```
+
+---
+
+### Full Documentation
+
+[**mathisarends.github.io/notionary**](https://mathisarends.github.io/notionary/) – Complete API reference, guides, and tutorials
 
 ---
 
