@@ -2,9 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from notionary.file_upload.file_system.models import FileInfo
-from notionary.file_upload.file_system.resolver import FilePathResolver
-from notionary.file_upload.validation.models import FileCategory
+from notionary import FileInfo, FilePathResolver
+from notionary.file_upload.models import FileCategory
 
 
 @pytest.fixture

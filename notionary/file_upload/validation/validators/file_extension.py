@@ -5,12 +5,12 @@ from notionary.exceptions.file_upload import (
     NoFileExtensionException,
     UnsupportedFileTypeException,
 )
+from notionary.file_upload.models import FileCategory
 from notionary.file_upload.validation.models import (
     AudioExtension,
     AudioMimeType,
     DocumentExtension,
     DocumentMimeType,
-    FileCategory,
     ImageExtension,
     ImageMimeType,
     VideoExtension,

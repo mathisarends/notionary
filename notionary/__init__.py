@@ -2,6 +2,7 @@ from .blocks.service import NotionBlock
 from .data_source.service import NotionDataSource
 from .database.service import NotionDatabase
 from .file_upload import (
+    FileCategory,
     FileInfo,
     FilePathResolver,
     FileUploadQuery,
@@ -34,6 +35,7 @@ __all__ = [
     "DividerSchema",
     "EmbedSchema",
     "EquationSchema",
+    "FileCategory",
     "FileInfo",
     "FilePathResolver",
     "FileSchema",

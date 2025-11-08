@@ -3,10 +3,10 @@ from pathlib import Path
 from typing import ClassVar
 
 from notionary.file_upload.file_system.models import FileInfo
+from notionary.file_upload.models import FileCategory
 from notionary.file_upload.validation.models import (
     AudioExtension,
     DocumentExtension,
-    FileCategory,
     ImageExtension,
     VideoExtension,
 )

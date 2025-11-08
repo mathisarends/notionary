@@ -36,7 +36,11 @@ nav:
       - Workspace:
         - workspace/index.md
       - Database: database.md
-      - File Upload: file_upload.md
+      - File Upload:
+        - Overview: file_upload/index.md
+        - Integration: file_upload/integration.md
+        - Query: file_upload/query.md
+        - Resolver: file_upload/resolver.md
 
       - Blocks:
           - Overview: blocks/blocks.md

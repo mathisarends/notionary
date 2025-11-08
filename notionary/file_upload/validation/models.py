@@ -125,10 +125,3 @@ class VideoMimeType(StrEnum):
     WEBM = "video/webm"
     QUICKTIME = "video/quicktime"
     MPEG = "video/mpeg"
-
-
-class FileCategory(StrEnum):
-    AUDIO = "audio"
-    DOCUMENT = "document"
-    IMAGE = "image"
-    VIDEO = "video"
