@@ -175,7 +175,7 @@ class NotionPage(Entity):
     async def clear_page_content(self) -> None:
         await self._block_content_service.clear()
 
-    async def get_content_as_markdown(self) -> str:
+    async def get_markdown_content(self) -> str:
         return await self._block_content_service.get_children_as_markdown()
 
     async def get_content_as_blocks(self) -> list[NotionBlock]:
