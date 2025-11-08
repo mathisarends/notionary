@@ -31,8 +31,9 @@ from notionary.exceptions.data_source.properties import (
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import NotionPageDto
-from notionary.rich_text.rich_text_to_markdown.converter import (
+from notionary.rich_text.rich_text_to_markdown import (
     RichTextToMarkdownConverter,
+    create_rich_text_to_markdown_converter,
 )
 from notionary.shared.entity.dto_parsers import (
     extract_description,
@@ -81,7 +82,7 @@ class NotionDataSource(Entity):
         rich_text_converter: RichTextToMarkdownConverter | None = None,
     ) -> Self:
         client = data_source_client or DataSourceClient()
-        converter = rich_text_converter or RichTextToMarkdownConverter()
+        converter = rich_text_converter or create_rich_text_to_markdown_converter()
         data_source_dto = await client.get_data_source(data_source_id)
         return await cls._create_from_dto(data_source_dto, converter)
 
