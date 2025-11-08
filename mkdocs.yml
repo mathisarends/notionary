@@ -45,7 +45,6 @@ nav:
       - Blocks:
           - Overview: blocks/blocks.md
           - Markdown Lookup:  blocks/markdown_lookup.md
-          - Structured Ouput: blocks/structured_output.md
           - Breadcrumb: blocks/breadcrumb.md
           - Bulleted List: blocks/bulleted_list.md
           - Callout: blocks/callout.md
@@ -63,13 +62,13 @@ nav:
           - Quote: blocks/quote.md
           - Rich Text: blocks/rich_text.md
           - Space: blocks/space.md
+          - Synced Block: blocks/synced_block.md
           - Table: blocks/table.md
           - Table of Contents: blocks/table_of_contents.md
           - Todo: blocks/todo.md
           - Toggle: blocks/toggle.md
           - Video: blocks/video.md
 
-  - Shoutouts: shoutouts.md
   - Contributing: contributing.md
 
 repo_url: https://github.com/mathisarends/notionary
