@@ -1,7 +1,13 @@
 from .blocks.service import NotionBlock
 from .data_source.service import NotionDataSource
 from .database.service import NotionDatabase
-from .file_upload import FileUploadQuery, FileUploadQueryBuilder, NotionFileUpload
+from .file_upload import (
+    FileInfo,
+    FilePathResolver,
+    FileUploadQuery,
+    FileUploadQueryBuilder,
+    NotionFileUpload,
+)
 from .page.content import SyntaxPromptRegistry
 from .page.content.markdown.builder import MarkdownBuilder
 from .page.content.markdown.structured_output import (
@@ -28,6 +34,8 @@ __all__ = [
     "DividerSchema",
     "EmbedSchema",
     "EquationSchema",
+    "FileInfo",
+    "FilePathResolver",
     "FileSchema",
     "FileUploadQuery",
     "FileUploadQueryBuilder",

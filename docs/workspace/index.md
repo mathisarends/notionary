@@ -1,3 +1,5 @@
+# Workspace
+
 A `Workspace` represents the global scope of your Notion integration. It lets you search across all pages and data sources in the workspace and enumerate users. Use it when you need discovery by keyword or want to iterate across many entities.
 
 ```mermaid

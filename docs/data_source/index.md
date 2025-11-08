@@ -1,4 +1,8 @@
+# Datasource
+
 A `DataSource` represents a structured collection of rows (pages) inside a database. It exposes metadata (title, description, icon, cover, archive state) and typed property definitions. Pages created in or returned from a data source adopt these property schemas.
+
+ i want to see
 
 ```mermaid
 flowchart TD
@@ -132,7 +136,6 @@ all_pages = await data_source.get_pages()
 The stream variant returns an async generator that yields `NotionPage` objects as they are fetched. This is memory-efficient and well-suited for automated pipelines since you can process items one-by-one without loading the entire result set into memory.
 
 ```python
-# Stream with filters
 builder = data_source.get_query_builder()
 params = builder.where("Tags").array_contains("API").build()
 

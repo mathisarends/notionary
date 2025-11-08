@@ -31,11 +31,17 @@ nav:
 
   - Documentation:
       - Page: page.md
-      - Datasource: data_source.md
-      - Workspace: workspace.md
+      - Data Source:
+        - data_source/index.md
+      - Workspace:
+        - workspace/index.md
       - Database: database.md
+      - File Upload: file_upload.md
 
       - Blocks:
+          - Overview: blocks/blocks.md
+          - Markdown Lookup:  blocks/markdown_lookup.md
+          - Structured Ouput: blocks/structured_output.md
           - Breadcrumb: blocks/breadcrumb.md
           - Bulleted List: blocks/bulleted_list.md
           - Callout: blocks/callout.md
@@ -48,7 +54,6 @@ nav:
           - Heading: blocks/heading.md
           - Image: blocks/image.md
           - Numbered List: blocks/numbered_list.md
-          - Overview: blocks/blocks.md
           - Paragraph: blocks/paragraph.md
           - PDF: blocks/pdf.md
           - Quote: blocks/quote.md
