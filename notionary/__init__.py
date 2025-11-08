@@ -9,11 +9,11 @@ from .file_upload import (
     FileUploadQueryBuilder,
     NotionFileUpload,
 )
-from .page.content import SyntaxPromptRegistry
-from .page.content.markdown.builder import MarkdownBuilder
-from .page.content.markdown.structured_output import (
+from .markdown import (
+    MarkdownBuilder,
     MarkdownDocumentSchema,
     StructuredOutputMarkdownConverter,
+    SyntaxPromptRegistry,
 )
 from .page.service import NotionPage
 from .workspace import (

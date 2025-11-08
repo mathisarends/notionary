@@ -4,9 +4,9 @@ import pytest
 
 from notionary.blocks.schemas import CreateFileBlock
 from notionary.file_upload.service import NotionFileUpload
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.file import FileParser
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 from notionary.shared.models.file import FileType
 
 

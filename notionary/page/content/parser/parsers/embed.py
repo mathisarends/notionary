@@ -1,8 +1,8 @@
 from typing import override
 
 from notionary.blocks.schemas import CreateEmbedBlock, EmbedData
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class EmbedParser(LineParser):

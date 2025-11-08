@@ -5,7 +5,7 @@ from notionary.blocks.content import BlockContentService, create_block_content_s
 from notionary.blocks.service import NotionBlock
 from notionary.comments.models import Comment
 from notionary.comments.service import CommentService
-from notionary.page.content.markdown.builder import MarkdownBuilder
+from notionary.markdown.builder import MarkdownBuilder
 from notionary.page.page_http_client import NotionPageHttpClient
 from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
 from notionary.page.properties.factory import PagePropertyHandlerFactory

@@ -1,6 +1,6 @@
 from re import Pattern
 
-from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
+from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
 from notionary.rich_text.markdown_to_rich_text.handlers.mention.base import (
     MentionPatternHandler,
 )

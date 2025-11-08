@@ -5,11 +5,11 @@ from notionary.exceptions.block_parsing import (
     InsufficientColumnsError,
     InvalidColumnRatioSumError,
 )
-from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
-from notionary.page.content.syntax.definition import (
+from notionary.markdown.syntax.definition import (
     MarkdownGrammar,
     SyntaxDefinitionRegistry,
 )
+from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
 from notionary.utils.decorators import time_execution_sync
 from notionary.utils.mixins.logging import LoggingMixin
 

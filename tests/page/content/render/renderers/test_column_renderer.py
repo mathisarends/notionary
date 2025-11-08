@@ -6,9 +6,9 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block, ColumnBlock, ColumnData
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.column import ColumnRenderer
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 def _create_column_data(width_ratio: float | None = None) -> ColumnData:

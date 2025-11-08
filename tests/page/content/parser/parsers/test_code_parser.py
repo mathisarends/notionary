@@ -3,9 +3,9 @@ from unittest.mock import Mock
 import pytest
 
 from notionary.blocks.schemas import CodingLanguage, CreateCodeBlock
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.code import CodeParser
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )

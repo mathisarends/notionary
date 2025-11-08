@@ -2,11 +2,11 @@ from typing import override
 
 from notionary.blocks.enums import BlockColor
 from notionary.blocks.schemas import CreateParagraphBlock, CreateParagraphData
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 class SpaceParser(LineParser):

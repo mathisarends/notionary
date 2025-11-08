@@ -1,11 +1,11 @@
 from typing import override
 
 from notionary.blocks.schemas import CreateFileBlock, ExternalFileWithCaption
-from notionary.page.content.parser.parsers.file_like_block import FileLikeBlockParser
-from notionary.page.content.syntax.definition import (
+from notionary.markdown.syntax.definition import (
     SyntaxDefinition,
     SyntaxDefinitionRegistry,
 )
+from notionary.page.content.parser.parsers.file_like_block import FileLikeBlockParser
 
 
 class FileParser(FileLikeBlockParser[CreateFileBlock]):

@@ -1,8 +1,8 @@
 import pytest
 
 from notionary.blocks.enums import CodingLanguage
-from notionary.page.content.markdown.builder import MarkdownBuilder
-from notionary.page.content.markdown.structured_output import (
+from notionary.markdown import MarkdownBuilder
+from notionary.markdown.structured_output import (
     AudioSchema,
     BookmarkSchema,
     BreadcrumbSchema,

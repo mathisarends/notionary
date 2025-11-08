@@ -4,9 +4,9 @@ import pytest
 
 from notionary.blocks.schemas import BlockType, CreateAudioBlock
 from notionary.file_upload.service import NotionFileUpload
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.context import BlockParsingContext
 from notionary.page.content.parser.parsers.audio import AudioParser
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 from notionary.shared.models.file import FileType
 
 

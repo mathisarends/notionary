@@ -3,11 +3,11 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from notionary.page.content.parser.parsers.base import BlockParsingContext
-from notionary.page.content.syntax.definition import (
+from notionary.markdown.syntax.definition import (
     MarkdownGrammar,
     SyntaxDefinitionRegistry,
 )
+from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.rich_text.markdown_to_rich_text import (
     MarkdownRichTextConverter,
     create_markdown_to_rich_text_converter,

@@ -1,4 +1,4 @@
-from notionary.page.content.markdown.nodes import ParagraphMarkdownNode
+from notionary.markdown.nodes import ParagraphMarkdownNode
 
 
 def test_paragraph_markdown_node() -> None:

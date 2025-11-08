@@ -2,8 +2,8 @@ import re
 from enum import IntEnum
 from typing import override
 
+from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
 from notionary.page.content.renderer.post_processing.port import PostProcessor
-from notionary.page.content.syntax.definition.grammar import MarkdownGrammar
 
 
 class _NumberingStyle(IntEnum):

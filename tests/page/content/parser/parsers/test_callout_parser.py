@@ -3,9 +3,9 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from notionary.blocks.schemas import CreateCalloutBlock
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.context import BlockParsingContext
 from notionary.page.content.parser.parsers.callout import CalloutParser
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture

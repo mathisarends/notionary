@@ -4,11 +4,10 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.file_upload.service import NotionFileUpload
+from notionary.markdown import SyntaxDefinitionRegistryKey, SyntaxPromptRegistry
 from notionary.page.content.parser.factory import create_markdown_to_notion_converter
 from notionary.page.content.parser.parsers.factory import create_line_parser
 from notionary.page.content.parser.service import MarkdownToNotionConverter
-from notionary.page.content.syntax.definition.models import SyntaxDefinitionRegistryKey
-from notionary.page.content.syntax.prompts.registry import SyntaxPromptRegistry
 from notionary.rich_text.markdown_to_rich_text.factory import (
     create_markdown_to_rich_text_converter,
 )

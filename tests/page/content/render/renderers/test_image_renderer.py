@@ -10,9 +10,9 @@ from notionary.blocks.schemas import (
     ImageBlock,
     NotionHostedFileWithCaption,
 )
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.image import ImageRenderer
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )

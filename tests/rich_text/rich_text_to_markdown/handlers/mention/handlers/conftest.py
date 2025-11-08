@@ -1,6 +1,6 @@
 import pytest
 
-from notionary.page.content.syntax.definition import MarkdownGrammar
+from notionary.markdown.syntax.definition import MarkdownGrammar
 
 
 @pytest.fixture

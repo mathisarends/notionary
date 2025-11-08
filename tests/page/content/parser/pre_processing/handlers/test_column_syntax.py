@@ -6,12 +6,12 @@ from notionary.exceptions.block_parsing import (
     InsufficientColumnsError,
     InvalidColumnRatioSumError,
 )
-from notionary.page.content.parser.pre_processsing.handlers.column_syntax import (
-    ColumnSyntaxPreProcessor,
-)
-from notionary.page.content.syntax.definition import (
+from notionary.markdown.syntax.definition import (
     MarkdownGrammar,
     SyntaxDefinitionRegistry,
+)
+from notionary.page.content.parser.pre_processsing.handlers.column_syntax import (
+    ColumnSyntaxPreProcessor,
 )
 
 

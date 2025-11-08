@@ -5,11 +5,11 @@ import pytest
 
 from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block, TableOfContentsBlock
+from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.table_of_contents import (
     TableOfContentsRenderer,
 )
-from notionary.page.content.syntax.definition import SyntaxDefinitionRegistry
 
 
 def _create_table_of_contents_block() -> TableOfContentsBlock:
