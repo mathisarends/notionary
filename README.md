@@ -13,7 +13,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/mathisarends/fc0568b66a20fbbaa5018205861c0da9/raw/notionary-coverage.json)](https://github.com/mathisarends/notionary)
 [![Downloads](https://img.shields.io/pypi/dm/notionary?color=blue)](https://pypi.org/project/notionary/)
-[![Documentation](https://img.shields.io/badge/docs-notionary-blue?style=flat&logo=readthedocs)](https://mathisarends.github.io/notionary/)
+[![Documentation](https://img.shields.io/badge/docs-notionary-blue?style=flat&logo=readthedocs)](https://mathisarends.github.io/notionary/intro)
 [![Notion API](https://img.shields.io/badge/Notion%20API-Official-000000?logo=notion&logoColor=white)](https://developers.notion.com/)
 
 **Transform complex Notion API interactions into simple, Pythonic code.**
