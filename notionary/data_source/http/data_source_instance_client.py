@@ -58,10 +58,10 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
 
     async def update_description(self, description: str) -> str:
         from notionary.rich_text.markdown_to_rich_text import (
-            create_markdown_rich_text_converter,
+            create_markdown_to_rich_text_converter,
         )
 
-        markdown_rich_text_converter = create_markdown_rich_text_converter()
+        markdown_rich_text_converter = create_markdown_to_rich_text_converter()
         rich_text_description = await markdown_rich_text_converter.to_rich_text(
             description
         )
@@ -82,13 +82,13 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
     async def query(
         self, query_params: DataSourceQueryParams | None = None
     ) -> QueryDataSourceResponse:
-        query_params_dict = query_params.to_api_params() if query_params else {}
+        query_params_dict = query_params.model_dump() if query_params else {}
         total_result_limit = query_params.total_results_limit if query_params else None
 
         all_results = await paginate_notion_api(
             self._make_query_request,
             query_data=query_params_dict or {},
-            total_result_limit=total_result_limit,
+            total_results_limit=total_result_limit,
         )
 
         return QueryDataSourceResponse(

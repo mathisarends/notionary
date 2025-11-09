@@ -319,7 +319,19 @@ class DataSourceQueryParams(BaseModel):
         if self.sorts is not None and len(self.sorts) > 0:
             result["sorts"] = [sort.model_dump() for sort in self.sorts]
 
+        self._limit_page_size_to_total_results_if_useful()
+
         if self.page_size is not None:
             result["page_size"] = self.page_size
 
         return result
+
+    def _limit_page_size_to_total_results_if_useful(self) -> None:
+        if self.total_results_limit is None:
+            return
+
+        if self.total_results_limit <= 100:
+            if self.page_size is None:
+                self.page_size = self.total_results_limit
+            else:
+                self.page_size = min(self.page_size, self.total_results_limit)
