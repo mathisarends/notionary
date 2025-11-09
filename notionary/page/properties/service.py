@@ -345,7 +345,7 @@ class PagePropertyHandler:
             return []
 
         pages = await asyncio.gather(
-            *[NotionPage.from_title(title=title) for title in page_titles]
+            *[NotionPage.from_title(title) for title in page_titles]
         )
 
         return [page.id for page in pages if page]
