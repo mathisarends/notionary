@@ -49,8 +49,6 @@ def _build_request_params(
     cursor: str | None,
 ) -> dict[str, Any]:
     params = base_kwargs.copy()
-    # Remove pagination control params that shouldn't be sent to the API
-    params.pop("total_result_limit", None)
     if cursor:
         params["start_cursor"] = cursor
     return params

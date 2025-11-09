@@ -88,7 +88,7 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
         all_results = await paginate_notion_api(
             self._make_query_request,
             query_data=query_params_dict or {},
-            total_result_limit=total_result_limit,
+            total_results_limit=total_result_limit,
         )
 
         return QueryDataSourceResponse(
