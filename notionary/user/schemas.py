@@ -14,10 +14,6 @@ class WorkspaceOwnerType(StrEnum):
     WORKSPACE = "workspace"
 
 
-class PersonUserDto(BaseModel):
-    email: str | None = None
-
-
 class BotOwnerDto(BaseModel):
     type: WorkspaceOwnerType
     workspace: bool | None = None
@@ -33,22 +29,19 @@ class BotUserDto(BaseModel):
     workspace_limits: WorkspaceLimits | None = None
 
 
-class NotionUserBase(BaseModel):
-    object: Literal["user"] = "user"
+class _UserBase(BaseModel):
     id: str
-
     type: UserType
-
     name: str | None = None
     avatar_url: str | None = None
 
 
-class PersonUserResponseDto(NotionUserBase):
+class PersonUserResponseDto(_UserBase):
     type: Literal[UserType.PERSON] = UserType.PERSON
-    person: PersonUserDto
+    email: str | None = None
 
 
-class BotUserResponseDto(NotionUserBase):
+class BotUserResponseDto(_UserBase):
     type: Literal[UserType.BOT] = UserType.BOT
     bot: BotUserDto
 
@@ -58,12 +51,7 @@ UserResponseDto = Annotated[
 ]
 
 
-class NotionUsersListResponse(BaseModel):
+class UsersListResponseDto(BaseModel):
     results: list[UserResponseDto]
     next_cursor: str | None = None
     has_more: bool
-
-
-class PartialUserDto(BaseModel):
-    object: Literal["user"] = "user"
-    id: str

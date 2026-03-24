@@ -1,33 +1,24 @@
-import logging
 import os
 from types import TracebackType
 from typing import Self
 
 from notionary.http import HttpClient
-from notionary.namespaces.blocks import BlocksNamespace
-from notionary.namespaces.databases import DatabasesNamespace
-from notionary.namespaces.pages import PagesNamespace
-from notionary.namespaces.workspace import WorkspaceNamespace
-
-logger = logging.getLogger(__name__)
+from notionary.user import UsersNamespace
 
 
 class Notionary:
-    def __init__(self, token: str | None = None) -> None:
-        self._http = HttpClient(token or self._resolve_token())
+    def __init__(self, api_key: str | None = None) -> None:
+        self._http = HttpClient(self._resolve_api_key(api_key))
 
-        self.pages = PagesNamespace(self._http)
-        self.databases = DatabasesNamespace(self._http)
-        self.blocks = BlocksNamespace(self._http)
-        self.workspace = WorkspaceNamespace(self._http)
+        self.users = UsersNamespace(self._http)
 
-    def _resolve_token() -> str:
-        token = os.getenv("NOTION_API_KEY")
-        if not token:
+    def _resolve_api_key(self, api_key: str | None) -> str:
+        resolved = api_key or os.getenv("NOTION_API_KEY")
+        if not resolved:
             raise ValueError(
-                "Notion token must be provided via NOTION_API_KEY environment variable"
+                "No Notion API key found. Pass api_key= or set NOTION_API_KEY."
             )
-        return token
+        return resolved
 
     async def close(self) -> None:
         await self._http.close()

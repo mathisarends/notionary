@@ -1,7 +1,8 @@
+import os
 from collections.abc import AsyncGenerator
 
 from notionary.data_source.schemas import DataSourceDto
-from notionary.http.client import NotionHttpClient
+from notionary.http.client import HttpClient
 from notionary.page.schemas import NotionPageDto
 from notionary.shared.typings import JsonDict
 from notionary.utils.pagination import paginate_notion_api_generator
@@ -9,11 +10,25 @@ from notionary.workspace.query.models import WorkspaceQueryConfig
 from notionary.workspace.schemas import DataSourceSearchResponse, PageSearchResponse
 
 
+def _default_http() -> HttpClient:
+    token = next(
+        (
+            os.getenv(v)
+            for v in ("NOTION_SECRET", "NOTION_INTEGRATION_KEY", "NOTION_TOKEN")
+            if os.getenv(v)
+        ),
+        None,
+    )
+    if not token:
+        raise ValueError("No Notion API token found in environment variables.")
+    return HttpClient(token)
+
+
 class WorkspaceClient:
     DEFAULT_PAGE_SIZE = 100
 
-    def __init__(self, http_client: NotionHttpClient | None = None) -> None:
-        self._http_client = http_client or NotionHttpClient()
+    def __init__(self, http: HttpClient | None = None) -> None:
+        self._http = http or _default_http()
 
     async def query_pages_stream(
         self,
@@ -61,4 +76,4 @@ class WorkspaceClient:
 
     async def _execute_search(self, config: WorkspaceQueryConfig) -> JsonDict:
         serialized_config = config.model_dump(exclude_none=True, by_alias=True)
-        return await self._http_client.post("search", serialized_config)
+        return await self._http.post("search", serialized_config)
