@@ -3,6 +3,7 @@ from types import TracebackType
 from typing import Self
 
 from notionary.http import HttpClient
+from notionary.page import PageNamespace
 from notionary.user import UsersNamespace
 
 
@@ -11,6 +12,7 @@ class Notionary:
         self._http = HttpClient(self._resolve_api_key(api_key))
 
         self.users = UsersNamespace(self._http)
+        self.pages = PageNamespace(self._http)
 
     def _resolve_api_key(self, api_key: str | None) -> str:
         resolved = api_key or os.getenv("NOTION_API_KEY")

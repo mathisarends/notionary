@@ -16,7 +16,6 @@ from notionary.workspace.query.service import WorkspaceQueryService
 
 if TYPE_CHECKING:
     from notionary import NotionDataSource, NotionPage
-    from notionary.user import BotUser, PersonUser
 
 
 class WorkspaceNamespace:
@@ -28,17 +27,28 @@ class WorkspaceNamespace:
     def get_query_builder(self) -> NotionWorkspaceQueryConfigBuilder:
         return NotionWorkspaceQueryConfigBuilder()
 
-    async def get_pages(
+    async def list_pages(
         self, query_config: WorkspaceQueryConfig | None = None
     ) -> list[NotionPage]:
         config = self._pages_config(query_config)
         return await self._query_service.get_pages(config)
+
+    async def get_pages(
+        self, query_config: WorkspaceQueryConfig | None = None
+    ) -> list[NotionPage]:
+        return await self.list_pages(query_config)
 
     async def iter_pages(
         self, query_config: WorkspaceQueryConfig | None = None
     ) -> AsyncIterator[NotionPage]:
         config = self._pages_config(query_config)
         async for page in self._query_service.get_pages_stream(config):
+            yield page
+
+    async def list_pages_stream(
+        self, query_config: WorkspaceQueryConfig | None = None
+    ) -> AsyncIterator[NotionPage]:
+        async for page in self.iter_pages(query_config):
             yield page
 
     async def get_data_sources(
@@ -53,27 +63,6 @@ class WorkspaceNamespace:
         config = self._data_sources_config(query_config)
         async for ds in self._query_service.get_data_sources_stream(config):
             yield ds
-
-    async def get_users(self) -> list[PersonUser]:
-        return await self._user_service.list_users()
-
-    async def get_users_stream(self) -> AsyncIterator[PersonUser]:
-        async for user in self._user_service.list_users_stream():
-            yield user
-
-    async def get_bot_users(self) -> list[BotUser]:
-        return await self._user_service.list_bot_users()
-
-    async def get_bot_users_stream(self) -> AsyncIterator[BotUser]:
-        async for user in self._user_service.list_bot_users_stream():
-            yield user
-
-    async def search_users(self, query: str) -> list[PersonUser]:
-        return await self._user_service.search_users(query)
-
-    async def search_users_stream(self, query: str) -> AsyncIterator[PersonUser]:
-        async for user in self._user_service.search_users_stream(query):
-            yield user
 
     @staticmethod
     def _pages_config(

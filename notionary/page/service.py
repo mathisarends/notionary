@@ -34,8 +34,8 @@ class NotionPage(Entity):
     ) -> None:
         super().__init__(dto=dto)
 
-        self._title = title
-        self._archived = dto.archived
+        self.title = title
+        self.archived = dto.archived
 
         self._block_client = block_client
         self._comment_service = comment_service
@@ -139,27 +139,15 @@ class NotionPage(Entity):
     def _entity_metadata_update_client(self) -> PageMetadataUpdateClient:
         return self._metadata_update_client
 
-    @property
-    def title(self) -> str:
-        return self._title
-
-    @property
-    def archived(self) -> bool:
-        return self._archived
-
     def create_markdown_builder(self) -> MarkdownBuilder:
         return MarkdownBuilder()
 
-    @property
-    def markdown_builder() -> MarkdownBuilder:
-        return MarkdownBuilder()
-
     async def get_comments(self) -> list[Comment]:
-        return await self._comment_service.list_all_comments_for_page(page_id=self._id)
+        return await self._comment_service.list_all_comments_for_page(page_id=self.id)
 
     async def post_top_level_comment(self, comment: str) -> None:
         await self._comment_service.create_comment_on_page(
-            page_id=self._id, text=comment
+            page_id=self.id, text=comment
         )
 
     async def post_reply_to_discussion(self, discussion_id: str, comment: str) -> None:
@@ -169,7 +157,7 @@ class NotionPage(Entity):
 
     async def set_title(self, title: str) -> None:
         await self.properties.set_title_property(title)
-        self._title = title
+        self.title = title
 
     async def append_markdown(self, content: str) -> None:
         await self._block_content_service.append_markdown(content=content)

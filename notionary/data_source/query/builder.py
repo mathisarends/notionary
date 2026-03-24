@@ -1,4 +1,3 @@
-from collections.abc import Callable
 from typing import Self
 
 from notionary.data_source.properties.schemas import DataSourceProperty
@@ -26,7 +25,6 @@ from notionary.data_source.query.schema import (
 )
 from notionary.data_source.query.validator import QueryValidator
 from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound
-from notionary.utils.date import parse_date
 
 
 class DataSourceQueryBuilder:
@@ -34,11 +32,9 @@ class DataSourceQueryBuilder:
         self,
         properties: dict[str, DataSourceProperty],
         query_validator: QueryValidator | None = None,
-        date_parser: Callable[[str], str] = parse_date,
     ) -> None:
         self._properties = properties
         self._query_validator = query_validator or QueryValidator()
-        self._date_parser = date_parser
 
         self._filters: list[InternalFilterCondition] = []
         self._sorts: list[NotionSort] = []
@@ -123,18 +119,6 @@ class DataSourceQueryBuilder:
     def before(self, date: str) -> Self:
         parsed_date = self._date_parser(date)
         return self._add_filter(DateOperator.BEFORE, parsed_date)
-
-    def after(self, date: str) -> Self:
-        parsed_date = self._date_parser(date)
-        return self._add_filter(DateOperator.AFTER, parsed_date)
-
-    def on_or_before(self, date: str) -> Self:
-        parsed_date = self._date_parser(date)
-        return self._add_filter(DateOperator.ON_OR_BEFORE, parsed_date)
-
-    def on_or_after(self, date: str) -> Self:
-        parsed_date = self._date_parser(date)
-        return self._add_filter(DateOperator.ON_OR_AFTER, parsed_date)
 
     def array_contains(self, value: str) -> Self:
         return self._add_filter(ArrayOperator.CONTAINS, value)

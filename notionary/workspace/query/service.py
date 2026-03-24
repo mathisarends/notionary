@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import difflib
 from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING
 
@@ -9,13 +10,33 @@ from notionary.exceptions.search import (
     DataSourceNotFound,
     PageNotFound,
 )
-from notionary.utils.fuzzy import find_all_matches
 from notionary.workspace.client import WorkspaceClient
 from notionary.workspace.query.builder import NotionWorkspaceQueryConfigBuilder
 from notionary.workspace.query.models import SearchableEntity, WorkspaceQueryConfig
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase, NotionDataSource, NotionPage
+
+
+def _fuzzy_similarity(query: str, target: str) -> float:
+    return difflib.SequenceMatcher(
+        isjunk=None,
+        a=query.lower().strip(),
+        b=target.lower().strip(),
+    ).ratio()
+
+
+def _fuzzy_find_all(
+    query: str,
+    items: list[SearchableEntity],
+    min_similarity: float,
+) -> list[SearchableEntity]:
+    scored = [(item, _fuzzy_similarity(query, item.title)) for item in items]
+    return [
+        item
+        for item, score in sorted(scored, key=lambda x: x[1], reverse=True)
+        if score >= min_similarity
+    ]
 
 
 class WorkspaceQueryService:
@@ -134,10 +155,9 @@ class WorkspaceQueryService:
     def _get_fuzzy_suggestions(
         self, search_results: list[SearchableEntity], query: str
     ) -> list[str]:
-        sorted_by_similarity = find_all_matches(
+        sorted_by_similarity = _fuzzy_find_all(
             query=query,
             items=search_results,
-            text_extractor=lambda entity: entity.title,
             min_similarity=0.6,
         )
 

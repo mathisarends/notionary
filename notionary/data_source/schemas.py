@@ -2,9 +2,9 @@ from pydantic import BaseModel
 
 from notionary.data_source.properties.schemas import AnyDataSourceProperty
 from notionary.page.schemas import NotionPageDto
-from notionary.rich_text.schemas import RichText
 from notionary.shared.entity.schemas import EntityResponseDto, NotionEntityUpdateDto
 from notionary.shared.models.parent import Parent
+from notionary.shared.rich_text.schemas import RichText
 
 
 class UpdateDataSourceDto(NotionEntityUpdateDto):
