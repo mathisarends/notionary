@@ -1,4 +1,5 @@
 import logging
+from collections.abc import AsyncGenerator
 from typing import Any
 
 import httpx
@@ -12,6 +13,7 @@ from notionary.http.exceptions import (
     NotionServerError,
     NotionValidationError,
 )
+from notionary.http.schemas import PaginatedResponse
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +64,88 @@ class HttpClient:
             return response.json()
         except httpx.HTTPStatusError as e:
             raise self._map_error(e) from e
+
+    async def paginate(
+        self,
+        endpoint: str,
+        total_results_limit: int | None = None,
+        **kwargs,
+    ) -> list[Any]:
+        results: list[Any] = []
+        async for page in self._fetch_pages(endpoint, total_results_limit, **kwargs):
+            results.extend(page.results)
+        return results
+
+    async def paginate_stream(
+        self,
+        endpoint: str,
+        total_results_limit: int | None = None,
+        **kwargs,
+    ) -> AsyncGenerator[Any]:
+        async for page in self._fetch_pages(endpoint, total_results_limit, **kwargs):
+            for item in page.results:
+                yield item
+
+    async def _fetch_pages(
+        self,
+        endpoint: str,
+        total_results_limit: int | None = None,
+        **kwargs,
+    ) -> AsyncGenerator[PaginatedResponse]:
+        next_cursor: str | None = None
+        has_more = True
+        total_fetched = 0
+        api_page_size: int = kwargs.get("page_size", 100)
+
+        while has_more and self._below_limit(total_results_limit, total_fetched):
+            params = {**kwargs}
+            if next_cursor:
+                params["start_cursor"] = next_cursor
+
+            response = PaginatedResponse.model_validate(
+                await self.post(endpoint, data=params)
+            )
+
+            results = self._slice_to_limit(
+                response.results, total_results_limit, total_fetched
+            )
+            total_fetched += len(results)
+
+            yield self._build_page_response(response, results, api_page_size)
+
+            if not self._below_limit(total_results_limit, total_fetched):
+                break
+
+            has_more = response.has_more
+            next_cursor = response.next_cursor
+
+    @staticmethod
+    def _below_limit(limit: int | None, fetched: int) -> bool:
+        return limit is None or fetched < limit
+
+    @staticmethod
+    def _slice_to_limit(
+        results: list[Any], limit: int | None, fetched: int
+    ) -> list[Any]:
+        if limit is None:
+            return results
+        return results[: limit - fetched]
+
+    @staticmethod
+    def _build_page_response(
+        original: PaginatedResponse,
+        results: list[Any],
+        api_page_size: int,
+    ) -> PaginatedResponse:
+        client_truncated = len(results) < len(original.results)
+        full_page = len(original.results) == api_page_size
+        has_more = original.has_more and not client_truncated and full_page
+
+        return PaginatedResponse(
+            results=results,
+            has_more=has_more,
+            next_cursor=original.next_cursor if has_more else None,
+        )
 
     @staticmethod
     def _map_error(e: httpx.HTTPStatusError) -> NotionError:

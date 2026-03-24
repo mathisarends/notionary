@@ -1,7 +1,7 @@
 from typing import override
 
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
-from notionary.utils.decorators import time_execution_sync
+from notionary.shared.decorators import time_execution_sync
 
 
 class WhitespacePreProcessor(PreProcessor):

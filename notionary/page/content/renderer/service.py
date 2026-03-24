@@ -4,7 +4,7 @@ from notionary.page.content.renderer.post_processing.service import (
     MarkdownRenderingPostProcessor,
 )
 from notionary.page.content.renderer.renderers import BlockRenderer
-from notionary.utils.decorators import timed
+from notionary.shared.decorators import timed
 
 
 class NotionToMarkdownConverter:

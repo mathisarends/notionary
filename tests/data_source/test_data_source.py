@@ -24,8 +24,8 @@ from notionary.shared.models.parent import PageParent, ParentType, WorkspacePare
 from notionary.shared.name_id_resolver.page import PageNameIdResolver
 from notionary.shared.name_id_resolver.person import PersonNameIdResolver
 from notionary.shared.properties.type import PropertyType
+from notionary.user.namespace import UserService
 from notionary.user.schemas import PartialUserDto
-from notionary.user.service import UserService
 
 
 @pytest.fixture

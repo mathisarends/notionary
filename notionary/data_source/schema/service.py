@@ -8,8 +8,8 @@ from notionary.data_source.properties.schemas import (
     DataSourceStatusProperty,
 )
 from notionary.data_source.schema.registry import (
-    DatabasePropertyTypeDescriptorRegistry,
     PropertyTypeDescriptor,
+    get_descriptor,
 )
 from notionary.shared.name_id_resolver import DataSourceNameIdResolver
 from notionary.shared.properties.type import PropertyType
@@ -23,13 +23,9 @@ class PropertyFormatter:
         relation_options_fetcher: Callable[
             [DataSourceRelationProperty], Awaitable[list[str]]
         ],
-        type_descriptor_registry: DatabasePropertyTypeDescriptorRegistry | None = None,
         data_source_resolver: DataSourceNameIdResolver | None = None,
     ) -> None:
         self._relation_options_fetcher = relation_options_fetcher
-        self._type_descriptor_registry = (
-            type_descriptor_registry or DatabasePropertyTypeDescriptorRegistry()
-        )
         self._data_source_resolver = data_source_resolver or DataSourceNameIdResolver()
 
     async def format_property(self, prop: DataSourceProperty) -> list[str]:
@@ -38,7 +34,7 @@ class PropertyFormatter:
         if specific_details:
             return [*specific_details, *self._format_custom_description(prop)]
 
-        descriptor = self._type_descriptor_registry.get_descriptor(prop.type)
+        descriptor = get_descriptor(prop.type)
         return [
             *self._format_property_description(descriptor),
             *self._format_custom_description(prop),
