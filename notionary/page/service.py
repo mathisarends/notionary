@@ -19,7 +19,6 @@ from notionary.shared.rich_text.rich_text_to_markdown.converter import (
 from notionary.shared.rich_text.rich_text_to_markdown.factory import (
     create_rich_text_to_markdown_converter,
 )
-from notionary.workspace.query.service import WorkspaceQueryService
 
 
 class Page(Entity):
@@ -47,28 +46,14 @@ class Page(Entity):
         self.properties = page_property_handler
 
     @classmethod
-    async def from_id(
-        cls,
-        page_id: str,
-        page_property_handler_factory: PagePropertyHandlerFactory | None = None,
-        token: str | None = None,
-    ) -> Self:
-        factory = page_property_handler_factory or PagePropertyHandlerFactory()
-        dto = await cls._fetch_page_dto(page_id, token=token)
-        return await cls._create_from_dto(dto, factory, token=token)
+    async def from_id(cls, page_id: str) -> Self:
+        factory = PagePropertyHandlerFactory()
+        dto = await cls._fetch_page_dto(page_id)
+        return await cls._create_from_dto(dto, factory)
 
     @classmethod
-    async def from_title(
-        cls,
-        page_title: str,
-        search_service: WorkspaceQueryService | None = None,
-    ) -> Self:
-        service = search_service or WorkspaceQueryService()
-        return await service.find_page(page_title)
-
-    @classmethod
-    async def _fetch_page_dto(cls, page_id: str, token: str | None = None) -> PageDto:
-        async with PageHttpClient(page_id=page_id, token=token) as client:
+    async def _fetch_page_dto(cls, page_id: str) -> PageDto:
+        async with PageHttpClient(page_id=page_id) as client:
             return await client.get_page()
 
     @classmethod
@@ -76,7 +61,6 @@ class Page(Entity):
         cls,
         dto: PageDto,
         page_property_handler_factory: PagePropertyHandlerFactory,
-        token: str | None = None,
     ) -> Self:
         title_task = cls._extract_title_from_dto(dto)
         page_property_handler = page_property_handler_factory.create_from_page_response(
@@ -89,7 +73,6 @@ class Page(Entity):
             dto=dto,
             title=title,
             page_property_handler=page_property_handler,
-            token=token,
         )
 
     @classmethod
@@ -98,16 +81,15 @@ class Page(Entity):
         dto: PageDto,
         title: str,
         page_property_handler: PagePropertyHandler,
-        token: str | None = None,
     ) -> Self:
-        block_client = NotionBlockHttpClient(token=token)
+        block_client = NotionBlockHttpClient()
         comment_service = CommentService()
 
         block_content_service = create_block_content_service(
             block_id=dto.id, block_client=block_client
         )
 
-        metadata_update_client = PageMetadataUpdateClient(page_id=dto.id, token=token)
+        metadata_update_client = PageMetadataUpdateClient(page_id=dto.id)
         rich_text_converter = create_rich_text_to_markdown_converter()
 
         return cls(

@@ -16,7 +16,6 @@ from notionary.shared.entity.dto_parsers import (
     extract_title,
 )
 from notionary.shared.entity.service import Entity
-from notionary.workspace.query.service import WorkspaceQueryService
 
 type _DataSourceFactory = Callable[[str], Awaitable[DataSource]]
 
@@ -44,31 +43,14 @@ class Database(Entity):
         self._metadata_update_client = metadata_update_client
 
     @classmethod
-    async def from_id(
-        cls,
-        database_id: str,
-        rich_text_converter: RichTextToMarkdownConverter | None = None,
-        database_client: DatabaseHttpClient | None = None,
-        token: str | None = None,
-    ) -> Self:
-        converter = rich_text_converter or RichTextToMarkdownConverter()
-        client = database_client or DatabaseHttpClient(
-            database_id=database_id, token=token
-        )
+    async def from_id(cls, database_id: str) -> Self:
+        client = DatabaseHttpClient(database_id=database_id)
+        converter = RichTextToMarkdownConverter()
 
         async with client:
             response_dto = await client.get_database()
 
-        return await cls._create_from_dto(response_dto, converter, client, token=token)
-
-    @classmethod
-    async def from_title(
-        cls,
-        database_title: str,
-        search_service: WorkspaceQueryService | None = None,
-    ) -> Self:
-        service = search_service or WorkspaceQueryService()
-        return await service.find_database(database_title)
+        return await cls._create_from_dto(response_dto, converter, client)
 
     @classmethod
     async def _create_from_dto(
@@ -76,16 +58,13 @@ class Database(Entity):
         dto: DatabaseDto,
         rich_text_converter: RichTextToMarkdownConverter,
         client: DatabaseHttpClient,
-        token: str | None = None,
     ) -> Self:
         title, description = await asyncio.gather(
             extract_title(dto, rich_text_converter),
             extract_description(dto, rich_text_converter),
         )
 
-        metadata_update_client = DatabaseMetadataUpdateClient(
-            database_id=dto.id, token=token
-        )
+        metadata_update_client = DatabaseMetadataUpdateClient(database_id=dto.id)
 
         return cls(
             dto=dto,

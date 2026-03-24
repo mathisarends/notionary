@@ -45,7 +45,6 @@ from notionary.shared.entity.entity_metadata_update_client import (
 )
 from notionary.shared.entity.service import Entity
 from notionary.user.namespace import UserService
-from notionary.workspace.query.service import WorkspaceQueryService
 
 if TYPE_CHECKING:
     from notionary import Database, Page
@@ -78,25 +77,11 @@ class DataSource(Entity):
         self.query_resolver = query_resolver or QueryResolver()
 
     @classmethod
-    async def from_id(
-        cls,
-        data_source_id: str,
-        data_source_client: DataSourceClient | None = None,
-        rich_text_converter: RichTextToMarkdownConverter | None = None,
-    ) -> Self:
-        client = data_source_client or DataSourceClient()
-        converter = rich_text_converter or create_rich_text_to_markdown_converter()
+    async def from_id(cls, data_source_id: str) -> Self:
+        client = DataSourceClient()
+        converter = create_rich_text_to_markdown_converter()
         data_source_dto = await client.get_data_source(data_source_id)
         return await cls._create_from_dto(data_source_dto, converter)
-
-    @classmethod
-    async def from_title(
-        cls,
-        data_source_title: str,
-        search_service: WorkspaceQueryService | None = None,
-    ) -> Self:
-        service = search_service or WorkspaceQueryService()
-        return await service.find_data_source(data_source_title)
 
     @classmethod
     async def _create_from_dto(

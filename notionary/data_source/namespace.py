@@ -1,3 +1,4 @@
+import difflib
 from collections.abc import AsyncIterator
 
 from notionary.data_source.data_source import DataSource
@@ -6,7 +7,19 @@ from notionary.data_source.search import (
     SortDirection,
     SortTimestamp,
 )
+from notionary.exceptions.search import DataSourceNotFound
 from notionary.http.client import HttpClient
+
+
+def _fuzzy_suggestions(
+    query: str, items: list[DataSource], top_n: int = 5
+) -> list[str]:
+    scored = [
+        (item, difflib.SequenceMatcher(None, query.lower(), item.title.lower()).ratio())
+        for item in items
+    ]
+    scored.sort(key=lambda x: x[1], reverse=True)
+    return [item.title for item, score in scored[:top_n] if score >= 0.6]
 
 
 class DataSourceNamespace:
@@ -53,7 +66,16 @@ class DataSourceNamespace:
         return await self.list(query=query)
 
     async def from_title(self, title: str) -> DataSource:
-        return await DataSource.from_title(title)
+        candidates = await self.list(query=title, page_size=100)
+
+        exact = next(
+            (ds for ds in candidates if ds.title.lower() == title.lower()), None
+        )
+        if exact:
+            return exact
+
+        suggestions = _fuzzy_suggestions(title, candidates)
+        raise DataSourceNotFound(title, suggestions)
 
     async def from_id(self, data_source_id: str) -> DataSource:
         return await DataSource.from_id(data_source_id)
