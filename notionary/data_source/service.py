@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Self
 
@@ -43,11 +44,13 @@ from notionary.shared.entity.entity_metadata_update_client import (
     EntityMetadataUpdateClient,
 )
 from notionary.shared.entity.service import Entity
-from notionary.user.service import UserService
+from notionary.user.namespace import UserService
 from notionary.workspace.query.service import WorkspaceQueryService
 
 if TYPE_CHECKING:
     from notionary import NotionDatabase, NotionPage
+
+logger = logging.getLogger(__name__)
 
 
 class NotionDataSource(Entity):
@@ -149,14 +152,14 @@ class NotionDataSource(Entity):
 
     async def archive(self) -> None:
         if self._archived:
-            self.logger.info("Data source is already archived.")
+            logger.info("Data source is already archived.")
             return
         await self._data_source_client.archive()
         self._archived = True
 
     async def unarchive(self) -> None:
         if not self._archived:
-            self.logger.info("Data source is not archived.")
+            logger.info("Data source is not archived.")
             return
         await self._data_source_client.unarchive()
         self._archived = False

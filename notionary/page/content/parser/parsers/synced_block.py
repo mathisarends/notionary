@@ -1,3 +1,4 @@
+import logging
 import re
 from typing import override
 
@@ -11,10 +12,11 @@ from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
-from notionary.utils.mixins.logging import LoggingMixin
+
+logger = logging.getLogger(__name__)
 
 
-class SyncedBlockParser(LineParser, LoggingMixin):
+class SyncedBlockParser(LineParser):
     ORIGINAL_SYNCED_BLOCK_NOT_SUPPORTED_MESSAGE = (
         "Original Synced Blocks (without 'Synced from:') must be created via the "
         "Notion UI and can then be referenced by block ID. This parser can only "
@@ -35,7 +37,7 @@ class SyncedBlockParser(LineParser, LoggingMixin):
     @override
     async def _process(self, context: BlockParsingContext) -> None:
         if not self._is_duplicate_block(context.line):
-            self.logger.warning(self.ORIGINAL_SYNCED_BLOCK_NOT_SUPPORTED_MESSAGE)
+            logger.warning(self.ORIGINAL_SYNCED_BLOCK_NOT_SUPPORTED_MESSAGE)
             return
 
         self._process_duplicate_block(context)

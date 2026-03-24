@@ -7,10 +7,9 @@ from notionary.exceptions import UnsupportedVideoFormatError
 from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
 from notionary.utils.decorators import time_execution_sync
-from notionary.utils.mixins.logging import LoggingMixin
 
 
-class VideoFormatPreProcessor(PreProcessor, LoggingMixin):
+class VideoFormatPreProcessor(PreProcessor):
     YOUTUBE_WATCH_PATTERN = re.compile(
         r"^https?://(?:www\.)?youtube\.com/watch\?.*v=[\w-]+", re.IGNORECASE
     )

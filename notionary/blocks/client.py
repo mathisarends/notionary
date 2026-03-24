@@ -1,10 +1,14 @@
+import logging
+
 from pydantic import TypeAdapter
 
 from notionary.blocks.schemas import Block, BlockChildrenResponse, BlockCreatePayload
 from notionary.http.client import NotionHttpClient
 from notionary.shared.typings import JsonDict
-from notionary.utils.decorators import time_execution_async
+from notionary.utils.decorators import timed
 from notionary.utils.pagination import paginate_notion_api
+
+logger = logging.getLogger(__name__)
 
 
 class NotionBlockHttpClient(NotionHttpClient):
@@ -18,10 +22,10 @@ class NotionBlockHttpClient(NotionHttpClient):
         return TypeAdapter(Block).validate_python(response)
 
     async def delete_block(self, block_id: str) -> None:
-        self.logger.debug("Deleting block: %s", block_id)
+        logger.debug("Deleting block: %s", block_id)
         await self.delete(f"blocks/{block_id}")
 
-    @time_execution_async()
+    @timed()
     async def get_block_tree(self, block_id: str) -> list[Block]:
         blocks_at_this_level = await self.get_all_block_children(block_id)
 
@@ -32,15 +36,15 @@ class NotionBlockHttpClient(NotionHttpClient):
 
         return blocks_at_this_level
 
-    @time_execution_async()
+    @timed()
     async def get_all_block_children(self, block_id: str) -> list[Block]:
-        self.logger.debug("Retrieving all children for block: %s", block_id)
+        logger.debug("Retrieving all children for block: %s", block_id)
 
         all_blocks = await paginate_notion_api(
             self.get_block_children, block_id=block_id
         )
 
-        self.logger.debug(
+        logger.debug(
             "Retrieved %d total children for block %s", len(all_blocks), block_id
         )
         return all_blocks
@@ -48,7 +52,7 @@ class NotionBlockHttpClient(NotionHttpClient):
     async def get_block_children(
         self, block_id: str, start_cursor: str | None = None, page_size: int = 100
     ) -> BlockChildrenResponse:
-        self.logger.debug("Retrieving children of block: %s", block_id)
+        logger.debug("Retrieving children of block: %s", block_id)
 
         params = {"page_size": min(page_size, 100)}
         if start_cursor:
@@ -64,10 +68,10 @@ class NotionBlockHttpClient(NotionHttpClient):
         insert_after_block_id: str | None = None,
     ) -> BlockChildrenResponse | None:
         if not children:
-            self.logger.warning("No children provided to append")
+            logger.warning("No children provided to append")
             return None
 
-        self.logger.debug("Appending %d children to block: %s", len(children), block_id)
+        logger.debug("Appending %d children to block: %s", len(children), block_id)
 
         batches = self._split_into_batches(children)
 
@@ -110,15 +114,13 @@ class NotionBlockHttpClient(NotionHttpClient):
         initial_after_block_id: str | None = None,
     ) -> BlockChildrenResponse:
         total_blocks = sum(len(batch) for batch in batches)
-        self.logger.info(
-            "Appending %d blocks in %d batches", total_blocks, len(batches)
-        )
+        logger.info("Appending %d blocks in %d batches", total_blocks, len(batches))
 
         all_responses = []
         after_block_id = initial_after_block_id
 
         for batch_index, batch in enumerate(batches, start=1):
-            self.logger.debug(
+            logger.debug(
                 "Processing batch %d/%d (%d blocks)",
                 batch_index,
                 len(batches),
@@ -134,9 +136,9 @@ class NotionBlockHttpClient(NotionHttpClient):
             if response.results:
                 after_block_id = response.results[-1].id
 
-            self.logger.debug("Completed batch %d/%d", batch_index, len(batches))
+            logger.debug("Completed batch %d/%d", batch_index, len(batches))
 
-        self.logger.info("Successfully appended all blocks in %d batches", len(batches))
+        logger.info("Successfully appended all blocks in %d batches", len(batches))
         return self._merge_responses(all_responses)
 
     def _merge_responses(

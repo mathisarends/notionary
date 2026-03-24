@@ -2,17 +2,19 @@
 Handles request limits for rich texts (see https://developers.notion.com/reference/request-limits)
 """
 
+import logging
 from typing import Any, override
 
 from notionary.blocks.schemas import BlockCreatePayload
 from notionary.page.content.parser.post_processing.port import PostProcessor
 from notionary.rich_text.schemas import RichText, RichTextType
-from notionary.utils.mixins.logging import LoggingMixin
+
+logger = logging.getLogger(__name__)
 
 type _NestedBlockList = BlockCreatePayload | list["_NestedBlockList"]
 
 
-class RichTextLengthTruncationPostProcessor(PostProcessor, LoggingMixin):
+class RichTextLengthTruncationPostProcessor(PostProcessor):
     NOTION_MAX_LENGTH = 2000
     ELLIPSIS = "..."
 
@@ -102,7 +104,7 @@ class RichTextLengthTruncationPostProcessor(PostProcessor, LoggingMixin):
         original_length = len(rich_text.text.content)
         rich_text.text.content = self._create_truncated_text(rich_text.text.content)
 
-        self.logger.warning(
+        logger.warning(
             "Truncating text content from %d to %d characters",
             original_length,
             self.max_text_length,

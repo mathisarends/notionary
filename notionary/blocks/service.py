@@ -8,11 +8,10 @@ from notionary.blocks.content.service import BlockContentService
 from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block
 from notionary.user.base import BaseUser
-from notionary.user.service import UserService
-from notionary.utils.mixins.logging import LoggingMixin
+from notionary.user.namespace import UserService
 
 
-class NotionBlock(LoggingMixin):
+class NotionBlock:
     def __init__(
         self,
         block: Block,

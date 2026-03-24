@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import mimetypes
 from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
@@ -14,10 +15,11 @@ from notionary.file_upload.validation.factory import (
     create_bytes_upload_validation_service,
     create_file_upload_validation_service,
 )
-from notionary.utils.mixins.logging import LoggingMixin
+
+logger = logging.getLogger(__name__)
 
 
-class NotionFileUpload(LoggingMixin):
+class NotionFileUpload:
     def __init__(
         self,
         client: FileUploadHttpClient | None = None,
@@ -115,13 +117,13 @@ class NotionFileUpload(LoggingMixin):
         )
 
         if not wait_for_completion:
-            self.logger.info(
+            logger.info(
                 "Single-part content sent (ID: %s), not waiting for completion",
                 file_upload.id,
             )
             return file_upload
 
-        self.logger.info(
+        logger.info(
             "Single-part content sent, waiting for completion... (ID: %s)",
             file_upload.id,
         )
@@ -148,13 +150,13 @@ class NotionFileUpload(LoggingMixin):
         await self._client.complete_upload(file_upload.id)
 
         if not wait_for_completion:
-            self.logger.info(
+            logger.info(
                 "Multi-part content sent (ID: %s), not waiting for completion",
                 file_upload.id,
             )
             return file_upload
 
-        self.logger.info(
+        logger.info(
             "Multi-part content sent, waiting for completion... (ID: %s)",
             file_upload.id,
         )
@@ -177,7 +179,7 @@ class NotionFileUpload(LoggingMixin):
                     part_number=part_number,
                 )
 
-                self.logger.debug("Uploaded part %d/%d", part_number, total_parts)
+                logger.debug("Uploaded part %d/%d", part_number, total_parts)
                 part_number += 1
 
         except Exception as e:
@@ -227,7 +229,7 @@ class NotionFileUpload(LoggingMixin):
             upload_info = await self._client.get_file_upload(file_upload_id)
 
             if upload_info.status == FileUploadStatus.UPLOADED:
-                self.logger.info("Upload completed: %s", file_upload_id)
+                logger.info("Upload completed: %s", file_upload_id)
                 return upload_info
 
             if upload_info.status == FileUploadStatus.FAILED:

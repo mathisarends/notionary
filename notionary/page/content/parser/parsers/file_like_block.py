@@ -1,3 +1,4 @@
+import logging
 from abc import abstractmethod
 from pathlib import Path
 from typing import Generic, TypeVar, override
@@ -13,12 +14,13 @@ from notionary.markdown.syntax.definition.models import SyntaxDefinition
 from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 from notionary.shared.models.file import ExternalFileData, FileUploadedFileData
-from notionary.utils.mixins.logging import LoggingMixin
+
+logger = logging.getLogger(__name__)
 
 _TBlock = TypeVar("_TBlock")
 
 
-class FileLikeBlockParser(LineParser, LoggingMixin, Generic[_TBlock]):
+class FileLikeBlockParser(LineParser, Generic[_TBlock]):
     def __init__(
         self,
         syntax_registry: SyntaxDefinitionRegistry,
@@ -62,25 +64,25 @@ class FileLikeBlockParser(LineParser, LoggingMixin, Generic[_TBlock]):
             context.result_blocks.append(block)
 
         except FileNotFoundError:
-            self.logger.warning("File not found: '%s' - skipping block", path_or_url)
+            logger.warning("File not found: '%s' - skipping block", path_or_url)
         except PermissionError:
-            self.logger.warning(
+            logger.warning(
                 "No permission to read file: '%s' - skipping block", path_or_url
             )
         except IsADirectoryError:
-            self.logger.warning(
+            logger.warning(
                 "Path is a directory, not a file: '%s' - skipping block", path_or_url
             )
         except (UploadFailedError, UploadTimeoutError) as e:
-            self.logger.warning(
+            logger.warning(
                 "Upload failed for '%s': %s - skipping block", path_or_url, e
             )
         except OSError as e:
-            self.logger.warning(
+            logger.warning(
                 "IO error reading file '%s': %s - skipping block", path_or_url, e
             )
         except Exception as e:
-            self.logger.warning(
+            logger.warning(
                 "Unexpected error processing file '%s': %s - skipping block",
                 path_or_url,
                 e,
@@ -101,7 +103,7 @@ class FileLikeBlockParser(LineParser, LoggingMixin, Generic[_TBlock]):
 
     async def _upload_local_file(self, file_path: str) -> FileUploadFileWithCaption:
         path = Path(file_path)
-        self.logger.debug("Uploading local file: '%s'", path)
+        logger.debug("Uploading local file: '%s'", path)
         upload_response = await self._file_upload_service.upload_file(path)
 
         return FileUploadFileWithCaption(

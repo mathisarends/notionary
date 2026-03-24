@@ -1,3 +1,4 @@
+import logging
 from collections.abc import AsyncGenerator
 
 from notionary.comments.schemas import (
@@ -12,6 +13,8 @@ from notionary.utils.pagination import (
     paginate_notion_api,
     paginate_notion_api_generator,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class CommentClient(NotionHttpClient):
@@ -39,7 +42,7 @@ class CommentClient(NotionHttpClient):
             total_results_limit=total_results_limit,
         )
 
-        self.logger.debug(
+        logger.debug(
             "Retrieved %d total comments for block %s", len(all_comments), block_id
         )
         return all_comments

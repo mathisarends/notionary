@@ -4,11 +4,10 @@ from notionary.page.content.renderer.post_processing.service import (
     MarkdownRenderingPostProcessor,
 )
 from notionary.page.content.renderer.renderers import BlockRenderer
-from notionary.utils.decorators import time_execution_async
-from notionary.utils.mixins.logging import LoggingMixin
+from notionary.utils.decorators import timed
 
 
-class NotionToMarkdownConverter(LoggingMixin):
+class NotionToMarkdownConverter:
     def __init__(
         self,
         renderer_chain: BlockRenderer,
@@ -17,7 +16,7 @@ class NotionToMarkdownConverter(LoggingMixin):
         self._renderer_chain = renderer_chain
         self._post_processor = post_processor
 
-    @time_execution_async()
+    @timed()
     async def convert(self, blocks: list[Block], indent_level: int = 0) -> str:
         if not blocks:
             return ""

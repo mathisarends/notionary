@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Iterator
 from pathlib import Path
 from typing import ClassVar
@@ -10,10 +11,11 @@ from notionary.file_upload.validation.models import (
     ImageExtension,
     VideoExtension,
 )
-from notionary.utils.mixins.logging import LoggingMixin
+
+logger = logging.getLogger(__name__)
 
 
-class FilePathResolver(LoggingMixin):
+class FilePathResolver:
     SUPPORTED_EXTENSIONS: ClassVar[set[str]] = (
         {ext.value for ext in AudioExtension}
         | {ext.value for ext in DocumentExtension}
@@ -31,9 +33,7 @@ class FilePathResolver(LoggingMixin):
     def __init__(self, base_path: Path | str | None = None):
         self._base_path = Path(base_path) if base_path else Path.cwd()
         self._base_path = self._base_path.resolve()
-        self.logger.info(
-            "Initialized FileSystemService with base path: %s", self._base_path
-        )
+        logger.info("Initialized FileSystemService with base path: %s", self._base_path)
 
     @property
     def base_path(self) -> Path:
@@ -43,11 +43,11 @@ class FilePathResolver(LoggingMixin):
         file_path = Path(filename)
 
         if file_path.is_absolute():
-            self.logger.debug("Using absolute path: %s", file_path)
+            logger.debug("Using absolute path: %s", file_path)
             return file_path
 
         resolved = (self._base_path / file_path).resolve()
-        self.logger.debug("Resolved '%s' to: %s", filename, resolved)
+        logger.debug("Resolved '%s' to: %s", filename, resolved)
         return resolved
 
     def list_files(
@@ -57,7 +57,7 @@ class FilePathResolver(LoggingMixin):
         only_supported: bool = True,
         categories: list[FileCategory] | None = None,
     ) -> list[FileInfo]:
-        self.logger.info(
+        logger.info(
             "Scanning directory: %s (pattern='%s', recursive=%s, only_supported=%s, categories=%s)",
             self._base_path,
             pattern,
@@ -76,39 +76,37 @@ class FilePathResolver(LoggingMixin):
 
             if only_supported and not self._is_supported_file(path, categories):
                 skipped_unsupported += 1
-                self.logger.debug("Skipping unsupported file: %s", path.name)
+                logger.debug("Skipping unsupported file: %s", path.name)
                 continue
 
             try:
                 files.append(self._get_file_info(path.relative_to(self._base_path)))
             except (ValueError, OSError) as e:
-                self.logger.warning("Could not process file %s: %s", path.name, e)
+                logger.warning("Could not process file %s: %s", path.name, e)
                 continue
 
         if skipped_unsupported > 0:
-            self.logger.info("Skipped %d unsupported files", skipped_unsupported)
+            logger.info("Skipped %d unsupported files", skipped_unsupported)
 
         if not files and only_supported:
-            self.logger.warning(
-                "No supported files found in directory: %s", self._base_path
-            )
+            logger.warning("No supported files found in directory: %s", self._base_path)
 
-        self.logger.info("Found %d file(s)", len(files))
+        logger.info("Found %d file(s)", len(files))
         return files
 
     def _get_file_info(self, filename: str | Path) -> FileInfo:
         absolute_path = self.resolve_path(filename)
 
         if not absolute_path.exists():
-            self.logger.error("File not found: %s", absolute_path)
+            logger.error("File not found: %s", absolute_path)
             raise FileNotFoundError(f"File not found: {absolute_path}")
 
         if not absolute_path.is_file():
-            self.logger.error("Path is not a file: %s", absolute_path)
+            logger.error("Path is not a file: %s", absolute_path)
             raise ValueError(f"Path is not a file: {absolute_path}")
 
         stat = absolute_path.stat()
-        self.logger.debug(
+        logger.debug(
             "Retrieved file info for '%s' (%.2f KB)",
             absolute_path.name,
             stat.st_size / 1024,
@@ -128,7 +126,7 @@ class FilePathResolver(LoggingMixin):
         only_supported: bool = True,
         categories: list[FileCategory] | None = None,
     ) -> Iterator[FileInfo]:
-        self.logger.info(
+        logger.info(
             "Iterating files in: %s (pattern='%s', recursive=%s, only_supported=%s, categories=%s)",
             self._base_path,
             pattern,
@@ -145,23 +143,23 @@ class FilePathResolver(LoggingMixin):
                 continue
 
             if only_supported and not self._is_supported_file(path, categories):
-                self.logger.debug("Skipping unsupported file: %s", path.name)
+                logger.debug("Skipping unsupported file: %s", path.name)
                 continue
 
             try:
                 files_yielded += 1
                 yield self._get_file_info(path.relative_to(self._base_path))
             except (ValueError, OSError) as e:
-                self.logger.warning("Could not process file %s: %s", path.name, e)
+                logger.warning("Could not process file %s: %s", path.name, e)
                 continue
 
-        self.logger.info("Iterated through %d file(s)", files_yielded)
+        logger.info("Iterated through %d file(s)", files_yielded)
 
     def file_exists(self, filename: str | Path) -> bool:
         try:
             path = self.resolve_path(filename)
             exists = path.exists() and path.is_file()
-            self.logger.debug("File exists check for '%s': %s", filename, exists)
+            logger.debug("File exists check for '%s': %s", filename, exists)
             return exists
         except (ValueError, OSError):
             return False

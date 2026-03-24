@@ -1,11 +1,15 @@
 import re
 from functools import cached_property
 
-from notionary.utils.decorators import singleton
 
-
-@singleton
 class MarkdownGrammar:
+    _instance: "MarkdownGrammar | None" = None
+
+    def __new__(cls) -> "MarkdownGrammar":
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self) -> None:
         # Configuration
         self._spaces_per_nesting_level = 4

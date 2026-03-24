@@ -1,8 +1,11 @@
+import logging
 import random
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Self, cast
+
+from notionary.user.base import BaseUser
 
 from notionary.file_upload.service import NotionFileUpload
 from notionary.shared.entity.entity_metadata_update_client import (
@@ -12,13 +15,13 @@ from notionary.shared.entity.schemas import EntityResponseDto
 from notionary.shared.models.file import ExternalFile, FileType, NotionHostedFile
 from notionary.shared.models.icon import EmojiIcon, IconType
 from notionary.shared.models.parent import ParentType
-from notionary.user.base import BaseUser
-from notionary.user.service import UserService
-from notionary.utils.mixins.logging import LoggingMixin
+from notionary.user.namespace import UserService
 from notionary.utils.uuid_utils import extract_uuid
 
+logger = logging.getLogger(__name__)
 
-class Entity(LoggingMixin, ABC):
+
+class Entity(ABC):
     def __init__(
         self,
         dto: EntityResponseDto,
@@ -250,7 +253,7 @@ class Entity(LoggingMixin, ABC):
 
     async def move_to_trash(self) -> None:
         if self._in_trash:
-            self.logger.warning("Entity is already in trash.")
+            logger.warning("Entity is already in trash.")
             return
 
         entity_response = await self._entity_metadata_update_client.move_to_trash()
@@ -258,7 +261,7 @@ class Entity(LoggingMixin, ABC):
 
     async def restore_from_trash(self) -> None:
         if not self._in_trash:
-            self.logger.warning("Entity is not in trash.")
+            logger.warning("Entity is not in trash.")
             return
 
         entity_response = await self._entity_metadata_update_client.restore_from_trash()

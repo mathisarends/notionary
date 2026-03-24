@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from notionary.comments.models import Comment
 from notionary.comments.schemas import CommentDto
@@ -8,10 +9,11 @@ from notionary.rich_text.rich_text_to_markdown import (
 )
 from notionary.user.base import BaseUser
 from notionary.user.client import UserHttpClient
-from notionary.utils.mixins.logging import LoggingMixin
+
+logger = logging.getLogger(__name__)
 
 
-class CommentFactory(LoggingMixin):
+class CommentFactory:
     UNKNOWN_AUTHOR = "Unknown Author"
 
     def __init__(
@@ -37,7 +39,7 @@ class CommentFactory(LoggingMixin):
         try:
             return await BaseUser.from_id_auto(created_by_id, self.http_client)
         except Exception:
-            self.logger.warning(
+            logger.warning(
                 f"Failed to resolve user name for user_id: {created_by_id}",
                 exc_info=True,
             )

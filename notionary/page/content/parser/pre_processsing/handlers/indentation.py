@@ -1,3 +1,4 @@
+import logging
 import math
 from typing import override
 
@@ -7,10 +8,11 @@ from notionary.markdown.syntax.definition import (
 )
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
 from notionary.utils.decorators import time_execution_sync
-from notionary.utils.mixins.logging import LoggingMixin
+
+logger = logging.getLogger(__name__)
 
 
-class IndentationNormalizer(PreProcessor, LoggingMixin):
+class IndentationNormalizer(PreProcessor):
     def __init__(
         self,
         syntax_registry: SyntaxDefinitionRegistry | None = None,
@@ -34,7 +36,7 @@ class IndentationNormalizer(PreProcessor, LoggingMixin):
         normalized = self._normalize_to_markdown_indentation(markdown_text)
 
         if normalized != markdown_text:
-            self.logger.warning(
+            logger.warning(
                 "Corrected non-standard indentation. Check the result for formatting errors and use consistent indentation in the source."
             )
 

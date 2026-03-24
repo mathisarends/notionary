@@ -6,10 +6,9 @@ from notionary.page.content.parser.parsers import (
 from notionary.page.content.parser.parsers.base import LineParser
 from notionary.page.content.parser.post_processing.service import BlockPostProcessor
 from notionary.page.content.parser.pre_processsing.service import MarkdownPreProcessor
-from notionary.utils.mixins.logging import LoggingMixin
 
 
-class MarkdownToNotionConverter(LoggingMixin):
+class MarkdownToNotionConverter:
     def __init__(
         self,
         line_parser: LineParser,

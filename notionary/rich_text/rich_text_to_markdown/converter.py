@@ -1,3 +1,4 @@
+import logging
 from typing import ClassVar
 
 from notionary.blocks.schemas import BlockColor
@@ -8,10 +9,11 @@ from notionary.rich_text.rich_text_to_markdown.color_chunker import (
 )
 from notionary.rich_text.rich_text_to_markdown.registry import RichTextHandlerRegistry
 from notionary.rich_text.schemas import RichText, TextAnnotations
-from notionary.utils.mixins.logging import LoggingMixin
+
+logger = logging.getLogger(__name__)
 
 
-class RichTextToMarkdownConverter(LoggingMixin):
+class RichTextToMarkdownConverter:
     VALID_COLORS: ClassVar[set[str]] = {color.value for color in BlockColor}
 
     def __init__(
@@ -81,7 +83,7 @@ class RichTextToMarkdownConverter(LoggingMixin):
     def _get_handler_for(self, obj: RichText):
         handler = self._rich_text_handler_registry.get_handler(obj.type)
         if not handler:
-            self.logger.warning(
+            logger.warning(
                 f"No handler found for rich text type: {obj.type}. Skipping."
             )
         return handler

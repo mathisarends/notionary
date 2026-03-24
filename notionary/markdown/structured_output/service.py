@@ -33,10 +33,9 @@ from notionary.markdown.structured_output import (
     VideoSchema,
 )
 from notionary.utils.decorators import time_execution_sync
-from notionary.utils.mixins.logging import LoggingMixin
 
 
-class StructuredOutputMarkdownConverter(LoggingMixin):
+class StructuredOutputMarkdownConverter:
     def __init__(self, builder: MarkdownBuilder | None = None) -> None:
         self.builder = builder or MarkdownBuilder()
 

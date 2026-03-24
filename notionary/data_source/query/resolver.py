@@ -10,10 +10,9 @@ from notionary.data_source.query.schema import (
 from notionary.shared.name_id_resolver.page import PageNameIdResolver
 from notionary.shared.name_id_resolver.person import PersonNameIdResolver
 from notionary.shared.properties.type import PropertyType
-from notionary.utils.mixins.logging import LoggingMixin
 
 
-class QueryResolver(LoggingMixin):
+class QueryResolver:
     UUID_PATTERN = re.compile(
         r"^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$",
         re.IGNORECASE,

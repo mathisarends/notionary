@@ -1,3 +1,4 @@
+import logging
 import re
 from typing import override
 
@@ -11,10 +12,11 @@ from notionary.markdown.syntax.definition import (
 )
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
 from notionary.utils.decorators import time_execution_sync
-from notionary.utils.mixins.logging import LoggingMixin
+
+logger = logging.getLogger(__name__)
 
 
-class ColumnSyntaxPreProcessor(PreProcessor, LoggingMixin):
+class ColumnSyntaxPreProcessor(PreProcessor):
     _RATIO_TOLERANCE = 0.0001
     _MINIMUM_COLUMNS = 2
 
@@ -111,7 +113,7 @@ class ColumnSyntaxPreProcessor(PreProcessor, LoggingMixin):
 
     def _validate_minimum_column_count(self, column_count: int) -> None:
         if column_count < self._MINIMUM_COLUMNS:
-            self.logger.error(
+            logger.error(
                 f"Column list must contain at least {self._MINIMUM_COLUMNS} columns, found {column_count}"
             )
             raise InsufficientColumnsError(column_count)
@@ -136,7 +138,7 @@ class ColumnSyntaxPreProcessor(PreProcessor, LoggingMixin):
         total_ratio = sum(ratios)
 
         if not self._is_ratio_sum_valid(total_ratio):
-            self.logger.error(
+            logger.error(
                 f"Column ratios must sum to 1.0 (±{self._RATIO_TOLERANCE}), but sum to {total_ratio:.4f}"
             )
             raise InvalidColumnRatioSumError(total_ratio, self._RATIO_TOLERANCE)
