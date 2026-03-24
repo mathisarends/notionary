@@ -1,12 +1,11 @@
 from enum import StrEnum
 from typing import Any, Literal, TypeVar
 
+from notionary.rich_text.schemas import RichText
 from pydantic import BaseModel, ConfigDict, Field
 
-from notionary.rich_text.schemas import RichText
 from notionary.shared.models.file import File
 from notionary.shared.properties.type import PropertyType
-from notionary.shared.typings import JsonDict
 from notionary.user.schemas import PersonUserResponseDto, UserResponseDto
 
 # ============================================================================
@@ -234,17 +233,17 @@ class PageRelationProperty(PageProperty):
 
 class PageButtonProperty(PageProperty):
     type: Literal[PropertyType.BUTTON] = PropertyType.BUTTON
-    button: JsonDict = Field(default_factory=dict)
+    button: dict[str, Any] = Field(default_factory=dict)
 
 
 class PageLocationProperty(PageProperty):
     type: Literal[PropertyType.LOCATION] = PropertyType.LOCATION
-    location: JsonDict | None = None
+    location: dict[str, Any] | None = None
 
 
 class PagePlaceProperty(PageProperty):
     type: Literal[PropertyType.PLACE] = PropertyType.PLACE
-    place: JsonDict | None = None
+    place: dict[str, Any] | None = None
 
 
 class PageVerificationProperty(PageProperty):

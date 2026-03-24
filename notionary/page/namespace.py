@@ -3,6 +3,7 @@ from collections.abc import AsyncIterator
 
 from notionary.exceptions.search import PageNotFound
 from notionary.http.client import HttpClient
+from notionary.page.factory import PageFactory
 from notionary.page.search import PageSearchClient
 from notionary.page.search.schemas import SortDirection, SortTimestamp
 from notionary.page.service import Page
@@ -20,6 +21,7 @@ def _fuzzy_suggestions(query: str, pages: list[Page], top_n: int = 5) -> list[st
 class PageNamespace:
     def __init__(self, http: HttpClient) -> None:
         self._search_client = PageSearchClient(http)
+        self._factory = PageFactory(http)
 
     async def list(
         self,
@@ -55,7 +57,7 @@ class PageNamespace:
             page_size=page_size,
             total_results_limit=total_results_limit,
         ):
-            yield await Page.from_id(dto.id)
+            yield await self._factory.from_dto(dto)
 
     async def from_title(self, title: str) -> Page:
         candidates = await self.list(query=title, page_size=100)
@@ -68,4 +70,4 @@ class PageNamespace:
         raise PageNotFound(title, suggestions)
 
     async def from_id(self, page_id: str) -> Page:
-        return await Page.from_id(page_id)
+        return await self._factory.from_id(page_id)

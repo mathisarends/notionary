@@ -55,3 +55,8 @@ class UsersListResponseDto(BaseModel):
     results: list[UserResponseDto]
     next_cursor: str | None = None
     has_more: bool
+
+
+class PartialUserDto(BaseModel):
+    object: Literal["user"] = "user"
+    id: str

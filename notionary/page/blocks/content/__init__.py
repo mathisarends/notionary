@@ -1,7 +1,5 @@
-from .factory import create_block_content_service
-from .service import BlockContentService
+from .service import PageContent
 
 __all__ = [
-    "BlockContentService",
-    "create_block_content_service",
+    "PageContent",
 ]

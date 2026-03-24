@@ -1,15 +1,14 @@
 import logging
 from collections.abc import AsyncGenerator
 
-from notionary.comments.schemas import (
+from notionary.http.client import HttpClient
+from notionary.page.comments.schemas import (
     CommentCreateRequest,
     CommentDto,
     CommentListRequest,
     CommentListResponse,
 )
-from notionary.rich_text.schemas import RichText
-
-from notionary.http.client import NotionHttpClient
+from notionary.shared.rich_text.schemas import RichText
 from notionary.utils.pagination import (
     paginate_notion_api,
     paginate_notion_api_generator,
@@ -18,9 +17,9 @@ from notionary.utils.pagination import (
 logger = logging.getLogger(__name__)
 
 
-class CommentClient(NotionHttpClient):
-    def __init__(self) -> None:
-        super().__init__()
+class CommentClient:
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     async def iter_comments(
         self,
@@ -60,7 +59,9 @@ class CommentClient(NotionHttpClient):
             start_cursor=start_cursor,
             page_size=page_size,
         )
-        resp = await self.get("comments", params=request.model_dump(exclude_none=True))
+        resp = await self._http.get(
+            "comments", params=request.model_dump(exclude_none=True)
+        )
         return CommentListResponse.model_validate(resp)
 
     async def create_comment_for_page(
@@ -72,7 +73,7 @@ class CommentClient(NotionHttpClient):
 
         body = request.model_dump(exclude_unset=True, exclude_none=True)
 
-        resp = await self.post("comments", data=body)
+        resp = await self._http.post("comments", data=body)
         return CommentDto.model_validate(resp)
 
     async def create_comment_for_discussion(
@@ -86,5 +87,5 @@ class CommentClient(NotionHttpClient):
 
         body = request.model_dump(exclude_unset=True, exclude_none=True)
 
-        resp = await self.post("comments", data=body)
+        resp = await self._http.post("comments", data=body)
         return CommentDto.model_validate(resp)

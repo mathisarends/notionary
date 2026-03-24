@@ -1,45 +1,37 @@
 import asyncio
 
-from notionary.comments.client import CommentClient
-from notionary.comments.factory import CommentFactory
-from notionary.comments.models import Comment
-from notionary.rich_text.markdown_to_rich_text import (
-    MarkdownRichTextConverter,
+from notionary.http.client import HttpClient
+from notionary.page.comments.client import CommentClient
+from notionary.page.comments.factory import CommentFactory
+from notionary.page.comments.models import Comment
+from notionary.shared.rich_text.markdown_to_rich_text.factory import (
     create_markdown_to_rich_text_converter,
 )
 
 
-class CommentService:
-    def __init__(
-        self,
-        client: CommentClient | None = None,
-        factory: CommentFactory | None = None,
-        markdown_rich_text_converter: MarkdownRichTextConverter | None = None,
-    ) -> None:
-        self.client = client or CommentClient()
-        self.factory = factory or CommentFactory()
-        self._converter = (
-            markdown_rich_text_converter or create_markdown_to_rich_text_converter()
+class PageComments:
+    def __init__(self, page_id: str, http: HttpClient) -> None:
+        self._page_id = page_id
+        self._client = CommentClient(http)
+        self._factory = CommentFactory()
+        self._converter = create_markdown_to_rich_text_converter()
+
+    async def list_all(self) -> list[Comment]:
+        dtos = [dto async for dto in self._client.iter_comments(self._page_id)]
+        return list(
+            await asyncio.gather(*(self._factory.create_from_dto(dto) for dto in dtos))
         )
 
-    async def list_all_comments_for_page(self, page_id: str) -> list[Comment]:
-        comment_dtos = [dto async for dto in self.client.iter_comments(page_id)]
-
-        comments = await asyncio.gather(
-            *(self.factory.create_from_dto(dto) for dto in comment_dtos)
-        )
-        return comments
-
-    async def create_comment_on_page(self, page_id: str, text: str) -> Comment:
+    async def create(self, text: str) -> Comment:
         rich_text = await self._converter.to_rich_text(text)
-        comment_dto = await self.client.create_comment_for_page(
-            rich_text=rich_text, page_id=page_id
+        dto = await self._client.create_comment_for_page(
+            rich_text=rich_text, page_id=self._page_id
         )
-        return await self.factory.create_from_dto(comment_dto)
+        return await self._factory.create_from_dto(dto)
 
-    async def reply_to_discussion_by_id(self, discussion_id: str, text: str) -> Comment:
+    async def reply_to(self, discussion_id: str, text: str) -> Comment:
         rich_text = await self._converter.to_rich_text(text)
-        comment_dto = await self.client.create_comment_for_discussion(
+        dto = await self._client.create_comment_for_discussion(
             rich_text=rich_text, discussion_id=discussion_id
         )
-        return await self.factory.create_from_dto(comment_dto)
+        return await self._factory.create_from_dto(dto)

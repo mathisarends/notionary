@@ -38,4 +38,6 @@ class DatabaseParent(BaseModel):
     database_id: str
 
 
-Parent = DataSourceParent | PageParent | BlockParent | WorkspaceParent | DatabaseParent
+type Parent = (
+    DataSourceParent | PageParent | BlockParent | WorkspaceParent | DatabaseParent
+)

@@ -1,81 +1,43 @@
 import asyncio
 import logging
 
-from notionary.blocks.client import NotionBlockHttpClient
-from notionary.blocks.schemas import Block
-
+from notionary.page.blocks.client import BlockClient
+from notionary.page.blocks.schemas import Block
 from notionary.page.content.parser.service import MarkdownToNotionConverter
 from notionary.page.content.renderer.service import NotionToMarkdownConverter
-from notionary.shared.decorators import timed, with_retry
+from notionary.shared.decorators import with_retry
 
 logger = logging.getLogger(__name__)
 
 
-class BlockContentService:
-    def __init__(
-        self,
-        block_id: str,
-        block_client: NotionBlockHttpClient,
-        markdown_converter: MarkdownToNotionConverter,
-        notion_to_markdown_converter: NotionToMarkdownConverter,
-    ) -> None:
-        self._block_id = block_id
-        self._block_client = block_client
-        self._markdown_converter = markdown_converter
-        self._notion_to_markdown_converter = notion_to_markdown_converter
+class PageContent:
+    def __init__(self, page_id: str) -> None:
+        self._page_id = page_id
+        self._client = BlockClient()
+        self._to_notion = MarkdownToNotionConverter()
+        self._to_markdown = NotionToMarkdownConverter()
 
-    @timed()
-    async def get_children_as_markdown(self) -> str:
-        blocks = await self._block_client.get_block_tree(block_id=self._block_id)
-        return await self._notion_to_markdown_converter.convert(blocks=blocks)
+    async def get_markdown(self) -> str:
+        blocks = await self._client.get_block_tree(block_id=self._page_id)
+        return await self._to_markdown.convert(blocks=blocks)
 
-    @timed()
-    async def get_block_tree_as_markdown(self) -> str:
-        block = await self._block_client.get_block_by_id(self._block_id)
-        children = await self._block_client.get_block_tree(block_id=self._block_id)
-        block.children = children if children else None
-        return await self._notion_to_markdown_converter.convert(blocks=[block])
-
-    @timed()
-    async def get_children_as_blocks(self) -> list[Block]:
-        return await self._block_client.get_block_tree(block_id=self._block_id)
-
-    @timed()
-    async def get_block_tree_as_blocks(self) -> list[Block]:
-        block = await self._block_client.get_block_by_id(self._block_id)
-        children = await self._block_client.get_block_tree(block_id=self._block_id)
-        block.children = children if children else None
-        return [block]
-
-    @timed()
-    async def clear(self) -> None:
-        children_response = await self._block_client.get_block_children(
-            block_id=self._block_id
-        )
-
-        if not children_response or not children_response.results:
-            logger.debug("No blocks to delete for block: %s", self._block_id)
+    async def append(self, content: str) -> None:
+        if not content:
+            logger.debug("No markdown content to append for page: %s", self._page_id)
             return
-
-        await asyncio.gather(
-            *[self._delete_single_block(block) for block in children_response.results]
+        blocks = await self._to_notion.convert(content)
+        await self._client.append_block_children(
+            block_id=self._page_id, children=blocks
         )
+
+    async def clear(self) -> None:
+        children = await self._client.get_block_children(block_id=self._page_id)
+        if not children or not children.results:
+            logger.debug("No blocks to delete for page: %s", self._page_id)
+            return
+        await asyncio.gather(*[self._delete_block(block) for block in children.results])
 
     @with_retry(max_retries=10, initial_delay=0.2, backoff_factor=1.5)
-    async def _delete_single_block(self, block: Block) -> None:
+    async def _delete_block(self, block: Block) -> None:
         logger.debug("Deleting block: %s", block.id)
-        await self._block_client.delete_block(block.id)
-
-    @timed()
-    async def append_markdown(self, content: str) -> None:
-        if not content:
-            logger.debug("No markdown content to append for block: %s", self._block_id)
-            return
-
-        blocks = await self._markdown_converter.convert(content)
-        await self._append_blocks(blocks)
-
-    async def _append_blocks(self, blocks: list[Block]) -> None:
-        await self._block_client.append_block_children(
-            block_id=self._block_id, children=blocks
-        )
+        await self._client.delete_block(block.id)

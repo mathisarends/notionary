@@ -1,8 +1,8 @@
-from notionary.http.client import NotionHttpClient
+from notionary.http import HttpClient
 from notionary.page.schemas import PageDto
 
 
-class PageHttpClient(NotionHttpClient):
+class PageHttpClient(HttpClient):
     def __init__(
         self,
         page_id: str,

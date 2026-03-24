@@ -1,27 +1,28 @@
 import logging
 from typing import ClassVar
 
-from notionary.blocks.schemas import BlockColor
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.rich_text_to_markdown.color_chunker import (
+from notionary.page.blocks.enums import BlockColor
+from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
+from notionary.shared.rich_text.rich_text_to_markdown.color_chunker import (
     ColorGroup,
     chunk_by_color,
 )
-from notionary.rich_text.rich_text_to_markdown.registry import RichTextHandlerRegistry
-from notionary.rich_text.schemas import RichText, TextAnnotations
+from notionary.shared.rich_text.rich_text_to_markdown.registry.service import (
+    RichTextHandlerRegistry,
+)
+from notionary.shared.rich_text.schemas import RichText, TextAnnotations
 
 logger = logging.getLogger(__name__)
 
 
 class RichTextToMarkdownConverter:
-    VALID_COLORS: ClassVar[set[str]] = {color.value for color in BlockColor}
+    _VALID_COLORS: ClassVar[set[str]] = {color.value for color in BlockColor}
 
     def __init__(
         self,
-        markdown_grammar: MarkdownGrammar,
         rich_text_handler_registry: RichTextHandlerRegistry,
     ) -> None:
-        self._markdown_grammar = markdown_grammar
+        self._markdown_grammar = MarkdownGrammar()
         self._rich_text_handler_registry = rich_text_handler_registry
 
     async def to_markdown(self, rich_text: list[RichText]) -> str:
@@ -42,7 +43,7 @@ class RichTextToMarkdownConverter:
         return await self._convert_uncolored_group(group)
 
     def _should_apply_color(self, color: BlockColor) -> bool:
-        return color != BlockColor.DEFAULT and color.value in self.VALID_COLORS
+        return color != BlockColor.DEFAULT and color.value in self._VALID_COLORS
 
     async def _convert_colored_group(self, group: ColorGroup) -> str:
         inner_parts = await self._convert_rich_texts_without_color(group.objects)

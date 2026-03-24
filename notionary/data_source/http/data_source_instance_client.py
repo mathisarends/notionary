@@ -18,7 +18,6 @@ from notionary.page.schemas import PageDto
 from notionary.shared.entity.entity_metadata_update_client import (
     EntityMetadataUpdateClient,
 )
-from notionary.shared.typings import JsonDict
 from notionary.utils.pagination import (
     paginate_notion_api,
     paginate_notion_api_generator,
@@ -113,7 +112,7 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
 
     async def _make_query_request(
         self,
-        query_data: JsonDict,
+        query_data: dict[str, Any],
         start_cursor: str | None = None,
         page_size: int | None = None,
     ) -> QueryDataSourceResponse:

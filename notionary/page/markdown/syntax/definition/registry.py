@@ -1,22 +1,21 @@
 import re
 
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
-from notionary.markdown.syntax.definition.models import (
+from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
+from notionary.page.markdown.syntax.definition.models import (
     EnclosedSyntaxDefinition,
     SimpleSyntaxDefinition,
     SyntaxDefinition,
     SyntaxDefinitionRegistryKey,
 )
-
 from notionary.shared.decorators import singleton
 
 
 @singleton
 class SyntaxDefinitionRegistry:
     def __init__(
-        self, markdown_markdown_grammar: MarkdownGrammar | None = None
+        self,
     ) -> None:
-        self._markdown_grammar = markdown_markdown_grammar or MarkdownGrammar()
+        self._markdown_grammar = MarkdownGrammar()
         self._definitions: dict[SyntaxDefinitionRegistryKey, SyntaxDefinition] = {}
         self._register_defaults()
 
@@ -356,11 +355,10 @@ class SyntaxDefinitionRegistry:
         self._definitions[SyntaxDefinitionRegistryKey.TOGGLEABLE_HEADING] = definition
 
     def _register_synced_block_syntax(self) -> None:
-        grammar = MarkdownGrammar()
         definition = EnclosedSyntaxDefinition(
-            start_delimiter=grammar.synced_block_delimiter,
+            start_delimiter=self._markdown_grammar.synced_block_delimiter,
             end_delimiter="",
-            regex_pattern=grammar.synced_block_pattern,
+            regex_pattern=self._markdown_grammar.synced_block_pattern,
             end_regex_pattern=re.compile(r"^$"),
         )
         self._definitions[SyntaxDefinitionRegistryKey.SYNCED_BLOCK] = definition

@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from typing import Self
 
-from notionary.blocks.client import NotionBlockHttpClient
+from notionary.blocks.client import BlockClient
 from notionary.blocks.content.factory import create_block_content_service
 from notionary.blocks.content.service import BlockContentService
 from notionary.blocks.enums import BlockType
 from notionary.blocks.schemas import Block
 from notionary.user.base import BaseUser
-
 from notionary.user.namespace import UserService
 
 
@@ -16,7 +15,7 @@ class NotionBlock:
     def __init__(
         self,
         block: Block,
-        block_client: NotionBlockHttpClient,
+        block_client: BlockClient,
         block_content_service: BlockContentService,
         user_service: UserService,
     ) -> None:
@@ -38,7 +37,7 @@ class NotionBlock:
 
     @classmethod
     async def from_id(cls, block_id: str, token: str | None = None) -> Self:
-        block_client = NotionBlockHttpClient(token=token)
+        block_client = BlockClient(token=token)
         block = await block_client.get_block_by_id(block_id)
         return cls._create_with_dependencies(block=block, token=token)
 
@@ -52,7 +51,7 @@ class NotionBlock:
         block: Block,
         token: str | None = None,
     ) -> Self:
-        block_client = NotionBlockHttpClient(token=token)
+        block_client = BlockClient(token=token)
         user_service = UserService()
 
         block_content_service = create_block_content_service(
