@@ -37,10 +37,10 @@ class NotionBlock(LoggingMixin):
         self._user_service = user_service
 
     @classmethod
-    async def from_id(cls, block_id: str) -> Self:
-        block_client = NotionBlockHttpClient()
+    async def from_id(cls, block_id: str, token: str | None = None) -> Self:
+        block_client = NotionBlockHttpClient(token=token)
         block = await block_client.get_block_by_id(block_id)
-        return cls._create_with_dependencies(block=block)
+        return cls._create_with_dependencies(block=block, token=token)
 
     @classmethod
     def from_block(cls, block: Block) -> Self:
@@ -50,8 +50,9 @@ class NotionBlock(LoggingMixin):
     def _create_with_dependencies(
         cls,
         block: Block,
+        token: str | None = None,
     ) -> Self:
-        block_client = NotionBlockHttpClient()
+        block_client = NotionBlockHttpClient(token=token)
         user_service = UserService()
 
         block_content_service = create_block_content_service(

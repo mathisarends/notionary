@@ -10,6 +10,9 @@ from notionary.utils.pagination import paginate_notion_api
 class NotionBlockHttpClient(NotionHttpClient):
     BATCH_SIZE = 100
 
+    def __init__(self, token: str | None = None, timeout: int = 30) -> None:
+        super().__init__(token=token, timeout=timeout)
+
     async def get_block_by_id(self, id: str) -> Block:
         response = await self.get(f"blocks/{id}")
         return TypeAdapter(Block).validate_python(response)

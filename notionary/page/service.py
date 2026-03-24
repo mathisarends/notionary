@@ -49,10 +49,11 @@ class NotionPage(Entity):
         cls,
         page_id: str,
         page_property_handler_factory: PagePropertyHandlerFactory | None = None,
+        token: str | None = None,
     ) -> Self:
         factory = page_property_handler_factory or PagePropertyHandlerFactory()
-        dto = await cls._fetch_page_dto(page_id)
-        return await cls._create_from_dto(dto, factory)
+        dto = await cls._fetch_page_dto(page_id, token=token)
+        return await cls._create_from_dto(dto, factory, token=token)
 
     @classmethod
     async def from_title(
@@ -64,8 +65,10 @@ class NotionPage(Entity):
         return await service.find_page(page_title)
 
     @classmethod
-    async def _fetch_page_dto(cls, page_id: str) -> NotionPageDto:
-        async with NotionPageHttpClient(page_id=page_id) as client:
+    async def _fetch_page_dto(
+        cls, page_id: str, token: str | None = None
+    ) -> NotionPageDto:
+        async with NotionPageHttpClient(page_id=page_id, token=token) as client:
             return await client.get_page()
 
     @classmethod
@@ -73,6 +76,7 @@ class NotionPage(Entity):
         cls,
         dto: NotionPageDto,
         page_property_handler_factory: PagePropertyHandlerFactory,
+        token: str | None = None,
     ) -> Self:
         title_task = cls._extract_title_from_dto(dto)
         page_property_handler = page_property_handler_factory.create_from_page_response(
@@ -85,6 +89,7 @@ class NotionPage(Entity):
             dto=dto,
             title=title,
             page_property_handler=page_property_handler,
+            token=token,
         )
 
     @classmethod
@@ -93,15 +98,16 @@ class NotionPage(Entity):
         dto: NotionPageDto,
         title: str,
         page_property_handler: PagePropertyHandler,
+        token: str | None = None,
     ) -> Self:
-        block_client = NotionBlockHttpClient()
+        block_client = NotionBlockHttpClient(token=token)
         comment_service = CommentService()
 
         block_content_service = create_block_content_service(
             block_id=dto.id, block_client=block_client
         )
 
-        metadata_update_client = PageMetadataUpdateClient(page_id=dto.id)
+        metadata_update_client = PageMetadataUpdateClient(page_id=dto.id, token=token)
         rich_text_converter = create_rich_text_to_markdown_converter()
 
         return cls(

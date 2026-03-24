@@ -15,9 +15,10 @@ class GenericEntityMetadataUpdateClient(NotionHttpClient, EntityMetadataUpdateCl
         entity_id: str,
         path_segment: str,
         response_dto_class: type[ResponseType],
+        token: str | None = None,
         timeout: int = 30,
     ) -> None:
-        super().__init__(timeout)
+        super().__init__(token=token, timeout=timeout)
         self._entity_id = entity_id
         self._path_segment = path_segment
         self._response_dto_class = response_dto_class

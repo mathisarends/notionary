@@ -9,8 +9,10 @@ from notionary.rich_text.rich_text_to_markdown.converter import (
 
 
 class NotionDatabaseHttpClient(NotionHttpClient):
-    def __init__(self, database_id: str, timeout: int = 30) -> None:
-        super().__init__(timeout)
+    def __init__(
+        self, database_id: str, token: str | None = None, timeout: int = 30
+    ) -> None:
+        super().__init__(token=token, timeout=timeout)
         self._database_id = database_id
 
     async def get_database(self) -> NotionDatabaseDto:

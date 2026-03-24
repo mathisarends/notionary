@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from notionary.user import BotUser, PersonUser
 
 
-class NotionWorkspace:
+class WorkspaceNamespace:
     def __init__(
         self,
         name: str | None = None,

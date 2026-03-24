@@ -1,207 +1,82 @@
-import asyncio
-import os
+import logging
+from typing import Any
 
 import httpx
-from dotenv import load_dotenv
 
-from notionary.exceptions.api import (
-    NotionApiError,
+from notionary.http.exceptions import (
     NotionAuthenticationError,
-    NotionConnectionError,
+    NotionError,
+    NotionNotFoundError,
     NotionPermissionError,
     NotionRateLimitError,
-    NotionResourceNotFoundError,
     NotionServerError,
     NotionValidationError,
 )
-from notionary.http.models import HttpMethod
-from notionary.shared.typings import JsonDict
-from notionary.utils.mixins.logging import LoggingMixin
 
-load_dotenv(override=True)
+logger = logging.getLogger(__name__)
 
 
-class NotionHttpClient(LoggingMixin):
-    BASE_URL = "https://api.notion.com/v1"
-    NOTION_VERSION = "2025-09-03"
+class HttpClient:
+    _BASE_URL = "https://api.notion.com/v1"
+    _NOTION_VERSION = "2025-09-03"
 
-    def __init__(self, timeout: int = 30):
-        self.token = self._find_token()
-        if not self.token:
-            raise ValueError(
-                "No Notion API token found in environment variables. Please set one of these environment variables: "
-                "NOTION_SECRET, NOTION_INTEGRATION_KEY, or NOTION_TOKEN"
-            )
-
-        self.headers = {
-            "Authorization": f"Bearer {self.token}",
-            "Content-Type": "application/json",
-            "Notion-Version": self.NOTION_VERSION,
-        }
-
-        self.client: httpx.AsyncClient | None = None
-        self.timeout = timeout
-        self._is_initialized = False
-
-    def __del__(self):
-        if not hasattr(self, "client") or not self.client:
-            return
-
-        try:
-            loop = asyncio.get_event_loop()
-            if not loop.is_running():
-                self.logger.warning(
-                    "Event loop not running, could not auto-close NotionHttpClient"
-                )
-                return
-
-            loop.create_task(self.close())
-            self.logger.debug("Created cleanup task for NotionHttpClient")
-        except RuntimeError:
-            self.logger.warning(
-                "No event loop available for auto-closing NotionHttpClient"
-            )
-
-    async def __aenter__(self):
-        await self._ensure_initialized()
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.close()
+    def __init__(self, token: str, timeout: int = 30) -> None:
+        self._client = httpx.AsyncClient(
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+                "Notion-Version": self._NOTION_VERSION,
+            },
+            timeout=timeout,
+        )
 
     async def close(self) -> None:
-        if not hasattr(self, "client") or not self.client:
-            return
-
-        await self.client.aclose()
-        self.client = None
-        self._is_initialized = False
-        self.logger.debug("NotionHttpClient closed")
+        await self._client.aclose()
 
     async def get(
-        self, endpoint: str, params: JsonDict | None = None
-    ) -> JsonDict | None:
-        return await self._make_request(HttpMethod.GET, endpoint, params=params)
+        self, endpoint: str, params: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        return await self._request("GET", endpoint, params=params)
 
     async def post(
-        self, endpoint: str, data: JsonDict | None = None
-    ) -> JsonDict | None:
-        return await self._make_request(HttpMethod.POST, endpoint, data)
+        self, endpoint: str, data: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        return await self._request("POST", endpoint, json=data)
 
     async def patch(
-        self, endpoint: str, data: JsonDict | None = None
-    ) -> JsonDict | None:
-        return await self._make_request(HttpMethod.PATCH, endpoint, data)
+        self, endpoint: str, data: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        return await self._request("PATCH", endpoint, json=data)
 
-    async def delete(self, endpoint: str) -> JsonDict | None:
-        return await self._make_request(HttpMethod.DELETE, endpoint)
+    async def delete(self, endpoint: str) -> dict[str, Any]:
+        return await self._request("DELETE", endpoint)
 
-    async def _make_request(
-        self,
-        method: HttpMethod,
-        endpoint: str,
-        data: JsonDict | None = None,
-        params: JsonDict | None = None,
-    ) -> JsonDict | None:
-        await self._ensure_initialized()
+    async def _request(self, method: str, endpoint: str, **kwargs) -> dict[str, Any]:
+        url = f"{self._BASE_URL}/{endpoint.lstrip('/')}"
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
-        url = f"{self.BASE_URL}/{endpoint.lstrip('/')}"
+        logger.debug("%s %s", method, url)
         try:
-            self.logger.debug("Sending %s request to %s", method.value.upper(), url)
-
-            request_kwargs = {}
-
-            # Add query parameters for GET requests
-            if params:
-                request_kwargs["params"] = params
-
-            if (
-                method.value in [HttpMethod.POST.value, HttpMethod.PATCH.value]
-                and data is not None
-            ):
-                request_kwargs["json"] = data
-
-            response: httpx.Response = await getattr(self.client, method.value)(
-                url, **request_kwargs
-            )
-
+            response = await self._client.request(method, url, **kwargs)
             response.raise_for_status()
-            result_data = response.json()
-            self.logger.debug("Request successful: %s", url)
-            return result_data
-
+            return response.json()
         except httpx.HTTPStatusError as e:
-            self._handle_http_status_error(e)
-        except httpx.RequestError as e:
-            raise NotionConnectionError(
-                f"Failed to connect to Notion API: {e!s}. Please check your internet connection and try again."
-            ) from e
+            raise self._map_error(e) from e
 
-    def _handle_http_status_error(self, e: httpx.HTTPStatusError) -> None:
-        status_code = e.response.status_code
-        response_text = e.response.text
-
-        if status_code == 401:
-            raise NotionAuthenticationError(
-                "Invalid or missing API key. Please check your Notion integration token.",
-                status_code=status_code,
-                response_text=response_text,
-            )
-        if status_code == 403:
-            raise NotionPermissionError(
-                "Insufficient permissions. Please check your integration settings at "
-                "https://www.notion.so/profile/integrations and ensure the integration "
-                "has access to the required pages/databases.",
-                status_code=status_code,
-                response_text=response_text,
-            )
-        if status_code == 404:
-            raise NotionResourceNotFoundError(
-                "The requested resource was not found. Please verify the page/database/datasource ID.",
-                status_code=status_code,
-                response_text=response_text,
-            )
-        if status_code == 400:
-            raise NotionValidationError(
-                f"Invalid request data. Please check your input parameters: {response_text}",
-                status_code=status_code,
-                response_text=response_text,
-            )
-        if status_code == 429:
-            raise NotionRateLimitError(
-                "Rate limit exceeded. Please wait before making more requests.",
-                status_code=status_code,
-                response_text=response_text,
-            )
-        if 500 <= status_code < 600:
-            raise NotionServerError(
-                "Notion API server error. Please try again later.",
-                status_code=status_code,
-                response_text=response_text,
-            )
-
-        raise NotionApiError(
-            f"API request failed with status {status_code}: {response_text}",
-            status_code=status_code,
-            response_text=response_text,
-        )
-
-    def _find_token(self) -> str | None:
-        token = next(
-            (
-                os.getenv(var)
-                for var in ("NOTION_SECRET", "NOTION_INTEGRATION_KEY", "NOTION_TOKEN")
-                if os.getenv(var)
-            ),
-            None,
-        )
-        if token:
-            return token
-        self.logger.warning("No Notion API token found in environment variables")
-        return None
-
-    async def _ensure_initialized(self) -> None:
-        if not self._is_initialized or not self.client:
-            self.client = httpx.AsyncClient(headers=self.headers, timeout=self.timeout)
-            self._is_initialized = True
-            self.logger.debug("NotionHttpClient initialized")
+    @staticmethod
+    def _map_error(e: httpx.HTTPStatusError) -> NotionError:
+        match e.response.status_code:
+            case 400:
+                return NotionValidationError(e.response.text)
+            case 401:
+                return NotionAuthenticationError(e.response.text)
+            case 403:
+                return NotionPermissionError(e.response.text)
+            case 404:
+                return NotionNotFoundError(e.response.text)
+            case 429:
+                return NotionRateLimitError(e.response.text)
+            case c if 500 <= c < 600:
+                return NotionServerError(e.response.text)
+            case _:
+                return NotionError(e.response.text)

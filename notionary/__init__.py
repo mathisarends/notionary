@@ -16,6 +16,7 @@ from .markdown import (
     SyntaxPromptRegistry,
 )
 from .page.service import NotionPage
+from .service import Notionary
 from .workspace import (
     NotionWorkspace,
     NotionWorkspaceQueryConfigBuilder,
@@ -37,6 +38,7 @@ __all__ = [
     "NotionPage",
     "NotionWorkspace",
     "NotionWorkspaceQueryConfigBuilder",
+    "Notionary",
     "StructuredOutputMarkdownConverter",
     "SyntaxPromptRegistry",
     "WorkspaceQueryConfig",

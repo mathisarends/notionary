@@ -49,14 +49,17 @@ class NotionDatabase(Entity):
         database_id: str,
         rich_text_converter: RichTextToMarkdownConverter | None = None,
         database_client: NotionDatabaseHttpClient | None = None,
+        token: str | None = None,
     ) -> Self:
         converter = rich_text_converter or RichTextToMarkdownConverter()
-        client = database_client or NotionDatabaseHttpClient(database_id=database_id)
+        client = database_client or NotionDatabaseHttpClient(
+            database_id=database_id, token=token
+        )
 
         async with client:
             response_dto = await client.get_database()
 
-        return await cls._create_from_dto(response_dto, converter, client)
+        return await cls._create_from_dto(response_dto, converter, client, token=token)
 
     @classmethod
     async def from_title(
@@ -73,13 +76,16 @@ class NotionDatabase(Entity):
         dto: NotionDatabaseDto,
         rich_text_converter: RichTextToMarkdownConverter,
         client: NotionDatabaseHttpClient,
+        token: str | None = None,
     ) -> Self:
         title, description = await asyncio.gather(
             extract_title(dto, rich_text_converter),
             extract_description(dto, rich_text_converter),
         )
 
-        metadata_update_client = DatabaseMetadataUpdateClient(database_id=dto.id)
+        metadata_update_client = DatabaseMetadataUpdateClient(
+            database_id=dto.id, token=token
+        )
 
         return cls(
             dto=dto,
