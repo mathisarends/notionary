@@ -30,9 +30,9 @@ class DataSourceNameIdResolver(NameIdResolver):
             return None
 
         try:
-            from notionary import NotionDataSource
+            from notionary import DataSource
 
-            data_source = await NotionDataSource.from_id(data_source_id)
+            data_source = await DataSource.from_id(data_source_id)
             return data_source.title if data_source else None
         except Exception:
             return None

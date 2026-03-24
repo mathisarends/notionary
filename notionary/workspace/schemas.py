@@ -3,11 +3,11 @@ from typing import Generic, Literal, TypeVar
 from pydantic import BaseModel
 
 from notionary.data_source.schemas import DataSourceDto
-from notionary.page.schemas import NotionPageDto
+from notionary.page.schemas import PageDto
 
 T = TypeVar("T", bound=BaseModel)
 
-PageOrDataSource = DataSourceDto | NotionPageDto
+PageOrDataSource = DataSourceDto | PageDto
 
 
 class SearchResponse(BaseModel, Generic[T]):
@@ -17,5 +17,5 @@ class SearchResponse(BaseModel, Generic[T]):
     type: Literal["page_or_data_source"]
 
 
-PageSearchResponse = SearchResponse[NotionPageDto]
+PageSearchResponse = SearchResponse[PageDto]
 DataSourceSearchResponse = SearchResponse[DataSourceDto]

@@ -23,9 +23,9 @@ class DatabaseNameIdResolver(NameIdResolver):
             return None
 
         try:
-            from notionary import NotionDatabase
+            from notionary import Database
 
-            database = await NotionDatabase.from_id(database_id)
+            database = await Database.from_id(database_id)
             return database.title if database else None
         except Exception:
             return None

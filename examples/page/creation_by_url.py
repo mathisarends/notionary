@@ -1,13 +1,13 @@
 import asyncio
 
-from notionary import NotionPage
+from notionary import Page
 
 # Replace with your desired page url (just copy from notion)
 PAGE_URL = "https://www.notion.so/your-page-url"
 
 
 async def main() -> None:
-    page = await NotionPage.from_url(PAGE_URL)
+    page = await Page.from_url(PAGE_URL)
     print(f"Found page: {page.title} (URL: {page.url})")
 
     content = await page.get_markdown_content()

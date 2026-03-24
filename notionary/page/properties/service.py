@@ -3,6 +3,11 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Never
 
+from notionary.rich_text.rich_text_to_markdown import (
+    RichTextToMarkdownConverter,
+    create_rich_text_to_markdown_converter,
+)
+
 from notionary.exceptions.properties import (
     AccessPagePropertyWithoutDataSourceError,
     PagePropertyNotFoundError,
@@ -27,14 +32,10 @@ from notionary.page.properties.schemas import (
     PageTitleProperty,
     PageURLProperty,
 )
-from notionary.rich_text.rich_text_to_markdown import (
-    RichTextToMarkdownConverter,
-    create_rich_text_to_markdown_converter,
-)
 from notionary.shared.models.parent import ParentType
 
 if TYPE_CHECKING:
-    from notionary import NotionDataSource
+    from notionary import DataSource
 
 
 class PagePropertyHandler:
@@ -52,7 +53,7 @@ class PagePropertyHandler:
         self._page_url = page_url
         self._property_http_client = page_property_http_client
         self._parent_data_source_id = parent_data_source
-        self._parent_data_source: NotionDataSource | None = None
+        self._parent_data_source: DataSource | None = None
         self._data_source_loaded = False
         self._rich_text_converter = (
             rich_text_converter or create_rich_text_to_markdown_converter()
@@ -87,15 +88,13 @@ class PagePropertyHandler:
         return created_time_property.created_time
 
     async def get_values_of_relation_property(self, name: str) -> list[str]:
-        from notionary import NotionPage
+        from notionary import Page
 
         relation_property = self._get_typed_property_or_raise(
             name, PageRelationProperty
         )
         relation_page_ids = [rel.id for rel in relation_property.relation]
-        notion_pages = [
-            await NotionPage.from_id(page_id) for page_id in relation_page_ids
-        ]
+        notion_pages = [await Page.from_id(page_id) for page_id in relation_page_ids]
         return [page.title for page in notion_pages if page]
 
     def get_values_of_multiselect_property(self, name: str) -> list[str]:
@@ -293,19 +292,19 @@ class PagePropertyHandler:
         self._properties = updated_page.properties
 
     async def _ensure_data_source_loaded(self) -> None:
-        from notionary import NotionDataSource
+        from notionary import DataSource
 
         if self._data_source_loaded:
             return
 
         self._parent_data_source = (
-            await NotionDataSource.from_id(self._parent_data_source_id)
+            await DataSource.from_id(self._parent_data_source_id)
             if self._parent_data_source_id
             else None
         )
         self._data_source_loaded = True
 
-    async def _get_parent_data_source_or_raise(self) -> NotionDataSource:
+    async def _get_parent_data_source_or_raise(self) -> DataSource:
         await self._ensure_data_source_loaded()
 
         if not self._parent_data_source:
@@ -339,13 +338,11 @@ class PagePropertyHandler:
         )
 
     async def _convert_page_titles_to_ids(self, page_titles: list[str]) -> list[str]:
-        from notionary import NotionPage
+        from notionary import Page
 
         if not page_titles:
             return []
 
-        pages = await asyncio.gather(
-            *[NotionPage.from_title(title) for title in page_titles]
-        )
+        pages = await asyncio.gather(*[Page.from_title(title) for title in page_titles])
 
         return [page.id for page in pages if page]

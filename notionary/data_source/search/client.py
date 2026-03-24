@@ -1,11 +1,15 @@
 from collections.abc import AsyncGenerator
 
+from notionary.data_source.schemas import DataSourceDto
+from notionary.data_source.search.schemas import (
+    DataSourceQueryConfig,
+    SortDirection,
+    SortTimestamp,
+)
 from notionary.http import HttpClient
-from notionary.page.schemas import PageDto
-from notionary.page.search.schemas import PageQueryConfig, SortDirection, SortTimestamp
 
 
-class PageSearchClient:
+class DataSourceSearchClient:
     def __init__(self, http: HttpClient) -> None:
         self._http = http
 
@@ -16,8 +20,8 @@ class PageSearchClient:
         sort_timestamp: SortTimestamp = SortTimestamp.LAST_EDITED_TIME,
         page_size: int = 100,
         total_results_limit: int | None = None,
-    ) -> AsyncGenerator[PageDto]:
-        config = PageQueryConfig(
+    ) -> AsyncGenerator[DataSourceDto]:
+        config = DataSourceQueryConfig(
             query=query,
             sort_direction=sort_direction,
             sort_timestamp=sort_timestamp,
@@ -29,4 +33,4 @@ class PageSearchClient:
             total_results_limit=config.total_results_limit,
             **config.model_dump(),
         ):
-            yield PageDto.model_validate(item)
+            yield DataSourceDto.model_validate(item)

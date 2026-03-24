@@ -2,7 +2,7 @@ from collections.abc import AsyncGenerator
 
 from notionary.data_source.schemas import DataSourceDto
 from notionary.http.client import HttpClient
-from notionary.page.schemas import NotionPageDto
+from notionary.page.schemas import PageDto
 from notionary.workspace.query.models import WorkspaceQueryConfig
 
 
@@ -13,14 +13,14 @@ class WorkspaceClient:
     async def query_pages_stream(
         self,
         search_config: WorkspaceQueryConfig,
-    ) -> AsyncGenerator[NotionPageDto]:
+    ) -> AsyncGenerator[PageDto]:
         params = self._to_api_params(search_config)
         async for item in self._http.paginate_stream(
             "search",
             total_results_limit=search_config.total_results_limit,
             **params,
         ):
-            yield NotionPageDto.model_validate(item)
+            yield PageDto.model_validate(item)
 
     async def query_data_sources_stream(
         self,

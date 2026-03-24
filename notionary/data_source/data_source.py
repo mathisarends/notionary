@@ -31,7 +31,7 @@ from notionary.exceptions.data_source.properties import (
 )
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.properties.schemas import PageTitleProperty
-from notionary.page.schemas import NotionPageDto
+from notionary.page.schemas import PageDto
 from notionary.rich_text.rich_text_to_markdown import (
     RichTextToMarkdownConverter,
     create_rich_text_to_markdown_converter,
@@ -48,12 +48,12 @@ from notionary.user.namespace import UserService
 from notionary.workspace.query.service import WorkspaceQueryService
 
 if TYPE_CHECKING:
-    from notionary import NotionDatabase, NotionPage
+    from notionary import Database, Page
 
 logger = logging.getLogger(__name__)
 
 
-class NotionDataSource(Entity):
+class DataSource(Entity):
     def __init__(
         self,
         dto: DataSourceDto,
@@ -69,7 +69,7 @@ class NotionDataSource(Entity):
             dto=dto, user_service=user_service, file_upload_service=file_upload_service
         )
 
-        self._parent_database: NotionDatabase | None = None
+        self._parent_database: Database | None = None
         self._title = title
         self._archived = dto.archived
         self._description = description
@@ -143,7 +143,7 @@ class NotionDataSource(Entity):
     def data_source_query_builder(self) -> DataSourceQueryBuilder:
         return DataSourceQueryBuilder(properties=self._properties)
 
-    async def create_blank_page(self, title: str | None = None) -> NotionPage:
+    async def create_blank_page(self, title: str | None = None) -> Page:
         return await self._data_source_client.create_blank_page(title=title)
 
     async def set_title(self, title: str) -> None:
@@ -235,7 +235,7 @@ class NotionDataSource(Entity):
 
         return page_titles
 
-    def _extract_title_from_notion_page_dto(self, page: NotionPageDto) -> str | None:
+    def _extract_title_from_notion_page_dto(self, page: PageDto) -> str | None:
         if not page.properties:
             return None
 
@@ -279,27 +279,27 @@ class NotionDataSource(Entity):
     async def get_pages(
         self,
         query_params: DataSourceQueryParams | None = None,
-    ) -> list[NotionPage]:
-        from notionary import NotionPage
+    ) -> list[Page]:
+        from notionary import Page
 
         resolved_params = await self._resolve_query_params_if_needed(query_params)
         query_response = await self._data_source_client.query(
             query_params=resolved_params
         )
-        return [await NotionPage.from_id(page.id) for page in query_response.results]
+        return [await Page.from_id(page.id) for page in query_response.results]
 
     async def iter_pages(
         self,
         query_params: DataSourceQueryParams | None = None,
-    ) -> AsyncIterator[NotionPage]:
-        from notionary import NotionPage
+    ) -> AsyncIterator[Page]:
+        from notionary import Page
 
         resolved_params = await self._resolve_query_params_if_needed(query_params)
 
         async for page in self._data_source_client.query_stream(
             query_params=resolved_params
         ):
-            yield await NotionPage.from_id(page.id)
+            yield await Page.from_id(page.id)
 
     async def _resolve_query_params_if_needed(
         self,

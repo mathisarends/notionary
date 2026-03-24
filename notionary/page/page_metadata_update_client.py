@@ -1,7 +1,7 @@
 from typing import override
 
 from notionary.http.client import NotionHttpClient
-from notionary.page.schemas import NotionPageDto
+from notionary.page.schemas import PageDto
 from notionary.shared.entity.entity_metadata_update_client import (
     EntityMetadataUpdateClient,
 )
@@ -16,9 +16,7 @@ class PageMetadataUpdateClient(NotionHttpClient, EntityMetadataUpdateClient):
         self._page_id = page_id
 
     @override
-    async def patch_metadata(
-        self, updated_data: NotionEntityUpdateDto
-    ) -> NotionPageDto:
+    async def patch_metadata(self, updated_data: NotionEntityUpdateDto) -> PageDto:
         updated_data_dict = updated_data.model_dump(
             exclude_unset=True, exclude_none=True
         )
@@ -26,4 +24,4 @@ class PageMetadataUpdateClient(NotionHttpClient, EntityMetadataUpdateClient):
         response_dict = await self.patch(
             f"pages/{self._page_id}", data=updated_data_dict
         )
-        return NotionPageDto.model_validate(response_dict)
+        return PageDto.model_validate(response_dict)

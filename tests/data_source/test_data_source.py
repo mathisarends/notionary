@@ -2,6 +2,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
+from notionary.data_source.data_source import DataSource
 from notionary.data_source.http.data_source_instance_client import (
     DataSourceInstanceClient,
 )
@@ -15,7 +16,6 @@ from notionary.data_source.properties.schemas import (
 )
 from notionary.data_source.query.resolver import QueryResolver
 from notionary.data_source.schemas import DataSourceDto
-from notionary.data_source.service import NotionDataSource
 from notionary.exceptions.data_source import (
     DataSourcePropertyNotFound,
     DataSourcePropertyTypeError,
@@ -128,7 +128,7 @@ def data_source(
     test_properties: dict,
     mock_query_resolver: QueryResolver,
     monkeypatch,
-) -> NotionDataSource:
+) -> DataSource:
     from notionary.file_upload.service import NotionFileUpload
 
     monkeypatch.setattr(
@@ -137,7 +137,7 @@ def data_source(
 
     mock_file_upload_service = Mock(spec=NotionFileUpload)
 
-    return NotionDataSource(
+    return DataSource(
         dto=base_dto,
         title="Test Data Source",
         description="Test description",
@@ -163,7 +163,7 @@ def data_source(
     ],
 )
 def test_get_options_by_property_type(
-    data_source: NotionDataSource,
+    data_source: DataSource,
     property_name: str,
     expected_options: list[str],
 ) -> None:
@@ -178,7 +178,7 @@ def test_get_options_by_property_type(
 
 
 def test_get_property_with_wrong_type_raises_error(
-    data_source: NotionDataSource,
+    data_source: DataSource,
 ) -> None:
     with pytest.raises(DataSourcePropertyTypeError) as exc_info:
         data_source.get_select_options_by_property_name("Tags")
@@ -189,27 +189,27 @@ def test_get_property_with_wrong_type_raises_error(
     assert "DataSourceMultiSelectProperty" in error_msg
 
 
-def test_property_not_found_raises_error(data_source: NotionDataSource) -> None:
+def test_property_not_found_raises_error(data_source: DataSource) -> None:
     with pytest.raises(DataSourcePropertyNotFound) as exc_info:
         data_source.get_select_options_by_property_name("NonExistent")
 
     assert "NonExistent" in str(exc_info.value)
 
 
-def test_property_not_found_includes_suggestions(data_source: NotionDataSource) -> None:
+def test_property_not_found_includes_suggestions(data_source: DataSource) -> None:
     with pytest.raises(DataSourcePropertyNotFound) as exc_info:
         data_source.get_select_options_by_property_name("Priorit")
 
     assert "Priority" in str(exc_info.value)
 
 
-def test_case_sensitive_property_lookup(data_source: NotionDataSource) -> None:
+def test_case_sensitive_property_lookup(data_source: DataSource) -> None:
     with pytest.raises(DataSourcePropertyNotFound):
         data_source.get_select_options_by_property_name("priority")
 
 
 def test_properties_getter_returns_all_properties(
-    data_source: NotionDataSource,
+    data_source: DataSource,
 ) -> None:
     properties = data_source.properties
 
@@ -240,7 +240,7 @@ def test_properties_getter_returns_all_properties(
     ],
 )
 async def test_get_options_for_property_async(
-    data_source: NotionDataSource,
+    data_source: DataSource,
     property_name: str,
     expected_options: list[str],
 ) -> None:

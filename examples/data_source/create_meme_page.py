@@ -5,13 +5,13 @@ This demonstrates the full power of Notionary's markdown conversion capabilities
 
 import asyncio
 
-from notionary import MarkdownBuilder, NotionDataSource
+from notionary import DataSource, MarkdownBuilder
 
 DATA_SOURCE_TITLE = "Inbox"
 
 
 async def main() -> None:
-    data_source = await NotionDataSource.from_title(DATA_SOURCE_TITLE)
+    data_source = await DataSource.from_title(DATA_SOURCE_TITLE)
     print(f"Found datasource: {data_source.title} (URL: {data_source.url})")
 
     page = await data_source.create_blank_page(title="Never Gonna Give You Up")

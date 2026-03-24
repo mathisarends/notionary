@@ -1,14 +1,15 @@
 import asyncio
 
-from notionary import NotionPage
 from notionary.comments import Comment
+
+from notionary import Page
 
 # Replace with title of your page
 PAGE_TITLE = "Neue super page"
 
 
 async def main() -> None:
-    page = await NotionPage.from_title(PAGE_TITLE)
+    page = await Page.from_title(PAGE_TITLE)
     print(f"Found page: {page.title} (URL: {page.url})")
 
     comments = await page.get_comments()

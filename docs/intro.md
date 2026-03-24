@@ -20,7 +20,7 @@ pip install notionary
 
 ```python
 # Find a page and update it with rich content
-page = await NotionPage.from_title("My Project")
+page = await Page.from_title("My Project")
 await page.replace_content("""
 # 🚀 Project Overview
 

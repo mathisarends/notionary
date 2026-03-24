@@ -2,7 +2,7 @@
 
 A `DataSource` represents a structured collection of rows (pages) inside a database. It exposes metadata (title, description, icon, cover, archive state) and typed property definitions. Pages created in or returned from a data source adopt these property schemas.
 
- i want to see
+i want to see
 
 ```mermaid
 flowchart TD
@@ -28,21 +28,21 @@ flowchart TD
 ## Instantiating a Data Source
 
 ```python
-from notionary import NotionDataSource
+from notionary import DataSource
 
-data_source = await NotionDataSource.from_id("your-data-source-id")
+data_source = await DataSource.from_id("your-data-source-id")
 ```
 
 ```python
-from notionary import NotionDataSource
+from notionary import DataSource
 
-data_source = await NotionDataSource.from_title("Features Backlog")
+data_source = await DataSource.from_title("Features Backlog")
 ```
 
 ```python
-from notionary import NotionDataSource
+from notionary import DataSource
 
-data_source = await NotionDataSource.from_url("https://www.notion.so/your-workspace/your-data-source-id")
+data_source = await DataSource.from_url("https://www.notion.so/your-workspace/your-data-source-id")
 ```
 
 `from_title` / `from_url` use the Notion search API to find the best match.
@@ -105,7 +105,7 @@ for title in related_titles:
 
 ## Querying pages
 
-The `NotionDataSource` exposes top-level query helpers to find pages (rows) that belong to a data source. You must build filters explicitly with the `DataSourceQueryBuilder` and then pass the resulting params to query methods.
+The `DataSource` exposes top-level query helpers to find pages (rows) that belong to a data source. You must build filters explicitly with the `DataSourceQueryBuilder` and then pass the resulting params to query methods.
 
 ### Building query params
 
@@ -133,7 +133,7 @@ all_pages = await data_source.get_pages()
 
 ### Streaming results (memory-efficient)
 
-The stream variant returns an async generator that yields `NotionPage` objects as they are fetched. This is memory-efficient and well-suited for automated pipelines since you can process items one-by-one without loading the entire result set into memory.
+The stream variant returns an async generator that yields `Page` objects as they are fetched. This is memory-efficient and well-suited for automated pipelines since you can process items one-by-one without loading the entire result set into memory.
 
 ```python
 builder = data_source.get_query_builder()

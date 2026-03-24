@@ -11,7 +11,7 @@ class _DataSourceDiscoveryDto(BaseModel):
     name: str
 
 
-class NotionDatabaseDto(EntityResponseDto):
+class DatabaseDto(EntityResponseDto):
     title: list[RichText]
     description: list[RichText]
     is_inline: bool
@@ -21,7 +21,7 @@ class NotionDatabaseDto(EntityResponseDto):
     public_url: str | None = None
 
 
-class NotionDatabaseUpdateDto(BaseModel):
+class DatabaseUpdateDto(BaseModel):
     title: list[RichText] | None = None
     icon: Icon | None = None
     cover: File | None = None

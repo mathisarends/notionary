@@ -2,12 +2,12 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Self
 
-from notionary.data_source.service import NotionDataSource
-from notionary.database.client import NotionDatabaseHttpClient
+from notionary.data_source.data_source import DataSource
+from notionary.database.client import DatabaseHttpClient
 from notionary.database.database_metadata_update_client import (
     DatabaseMetadataUpdateClient,
 )
-from notionary.database.schemas import NotionDatabaseDto
+from notionary.database.schemas import DatabaseDto
 from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
@@ -18,17 +18,17 @@ from notionary.shared.entity.dto_parsers import (
 from notionary.shared.entity.service import Entity
 from notionary.workspace.query.service import WorkspaceQueryService
 
-type _DataSourceFactory = Callable[[str], Awaitable[NotionDataSource]]
+type _DataSourceFactory = Callable[[str], Awaitable[DataSource]]
 
 
-class NotionDatabase(Entity):
+class Database(Entity):
     def __init__(
         self,
-        dto: NotionDatabaseDto,
+        dto: DatabaseDto,
         title: str,
         description: str | None,
         data_source_ids: list[str],
-        client: NotionDatabaseHttpClient,
+        client: DatabaseHttpClient,
         metadata_update_client: DatabaseMetadataUpdateClient,
     ) -> None:
         super().__init__(dto=dto)
@@ -37,7 +37,7 @@ class NotionDatabase(Entity):
         self._description = description
         self._is_inline = dto.is_inline
 
-        self._data_sources: list[NotionDataSource] | None = None
+        self._data_sources: list[DataSource] | None = None
         self._data_source_ids = data_source_ids
 
         self.client = client
@@ -48,11 +48,11 @@ class NotionDatabase(Entity):
         cls,
         database_id: str,
         rich_text_converter: RichTextToMarkdownConverter | None = None,
-        database_client: NotionDatabaseHttpClient | None = None,
+        database_client: DatabaseHttpClient | None = None,
         token: str | None = None,
     ) -> Self:
         converter = rich_text_converter or RichTextToMarkdownConverter()
-        client = database_client or NotionDatabaseHttpClient(
+        client = database_client or DatabaseHttpClient(
             database_id=database_id, token=token
         )
 
@@ -73,9 +73,9 @@ class NotionDatabase(Entity):
     @classmethod
     async def _create_from_dto(
         cls,
-        dto: NotionDatabaseDto,
+        dto: DatabaseDto,
         rich_text_converter: RichTextToMarkdownConverter,
-        client: NotionDatabaseHttpClient,
+        client: DatabaseHttpClient,
         token: str | None = None,
     ) -> Self:
         title, description = await asyncio.gather(
@@ -113,8 +113,8 @@ class NotionDatabase(Entity):
 
     async def get_data_sources(
         self,
-        data_source_factory: _DataSourceFactory = NotionDataSource.from_id,
-    ) -> list[NotionDataSource]:
+        data_source_factory: _DataSourceFactory = DataSource.from_id,
+    ) -> list[DataSource]:
         if self._data_sources is None:
             self._data_sources = await self._load_data_sources(data_source_factory)
         return self._data_sources
@@ -122,7 +122,7 @@ class NotionDatabase(Entity):
     async def _load_data_sources(
         self,
         data_source_factory: _DataSourceFactory,
-    ) -> list[NotionDataSource]:
+    ) -> list[DataSource]:
         tasks = [data_source_factory(ds_id) for ds_id in self._data_source_ids]
         return list(await asyncio.gather(*tasks))
 

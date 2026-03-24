@@ -2,14 +2,12 @@ from typing import cast
 
 from notionary.page.properties.client import PagePropertyHttpClient
 from notionary.page.properties.service import PagePropertyHandler
-from notionary.page.schemas import NotionPageDto
+from notionary.page.schemas import PageDto
 from notionary.shared.models.parent import DataSourceParent, ParentType
 
 
 class PagePropertyHandlerFactory:
-    def create_from_page_response(
-        self, page_response: NotionPageDto
-    ) -> PagePropertyHandler:
+    def create_from_page_response(self, page_response: PageDto) -> PagePropertyHandler:
         return PagePropertyHandler(
             properties=page_response.properties,
             parent_type=page_response.parent.type,
@@ -23,7 +21,7 @@ class PagePropertyHandlerFactory:
     def _create_http_client(self, page_id: str) -> PagePropertyHttpClient:
         return PagePropertyHttpClient(page_id=page_id)
 
-    def _extract_parent_data_source_id(self, response: NotionPageDto) -> str | None:
+    def _extract_parent_data_source_id(self, response: PageDto) -> str | None:
         if response.parent.type != ParentType.DATA_SOURCE_ID:
             return None
         data_source_parent = cast(DataSourceParent, response.parent)

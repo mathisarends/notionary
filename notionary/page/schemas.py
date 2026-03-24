@@ -4,7 +4,7 @@ from notionary.page.properties.schemas import AnyPageProperty
 from notionary.shared.entity.schemas import EntityResponseDto
 
 
-class NotionPageDto(EntityResponseDto):
+class PageDto(EntityResponseDto):
     archived: bool
     properties: dict[str, AnyPageProperty]
 

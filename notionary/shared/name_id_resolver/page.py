@@ -22,9 +22,9 @@ class PageNameIdResolver(NameIdResolver):
             return None
 
         try:
-            from notionary import NotionPage
+            from notionary import Page
 
-            page = await NotionPage.from_id(page_id)
+            page = await Page.from_id(page_id)
             return page.title if page else None
         except Exception:
             return None

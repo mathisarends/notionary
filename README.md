@@ -61,10 +61,10 @@ _Create rich database entries with properties, content, and beautiful formatting
 ### Find → Create → Update Flow
 
 ```python
-from notionary import NotionPage
+from notionary import Page
 
 # Find pages by name with fuzzy matching
-page = await NotionPage.from_title("Meeting Notes")
+page = await Page.from_title("Meeting Notes")
 
 # Define rich content with extended markdown
 content = """
@@ -99,15 +99,15 @@ await page.replace_content("# Fresh Start\nThis page was rewritten.")
 
 Every Notion block type with extended syntax:
 
-| Block Type    | Markdown Syntax                              | Use Case                     |
-| ------------- | -------------------------------------------- | ---------------------------- |
-| **Toggles**   | `+++ Title\nContent\n+++`                    | Collapsible sections         |
-| **Columns**   | `::: columns\n::: column\nContent\n:::\n:::` | Side-by-side layouts         |
-| **Tables**    | Standard markdown tables                     | Structured data              |
-| **Media**     | `[video](https://example.com/file.mp4)`      | External media URLs          |
-| **Code**      | Standard code fences with captions           | Code snippets                |
-| **Equations** | `$LaTeX$`                                    | Mathematical expressions     |
-| **TOC**       | `[toc]`                     | Auto-generated navigation    |
+| Block Type    | Markdown Syntax                              | Use Case                  |
+| ------------- | -------------------------------------------- | ------------------------- |
+| **Toggles**   | `+++ Title\nContent\n+++`                    | Collapsible sections      |
+| **Columns**   | `::: columns\n::: column\nContent\n:::\n:::` | Side-by-side layouts      |
+| **Tables**    | Standard markdown tables                     | Structured data           |
+| **Media**     | `[video](https://example.com/file.mp4)`      | External media URLs       |
+| **Code**      | Standard code fences with captions           | Code snippets             |
+| **Equations** | `$LaTeX$`                                    | Mathematical expressions  |
+| **TOC**       | `[toc]`                                      | Auto-generated navigation |
 
 ---
 
@@ -201,7 +201,7 @@ markdown = (
   .build()
 )
 
-page = await NotionPage.from_title("Playground")
+page = await Page.from_title("Playground")
 await page.append_markdown(markdown)
 ```
 
@@ -227,9 +227,9 @@ for p in pages:
 ### Data Source queries & options
 
 ```python
-from notionary import NotionDataSource
+from notionary import DataSource
 
-ds = await NotionDataSource.from_title("Engineering Backlog")
+ds = await DataSource.from_title("Engineering Backlog")
 status_labels = ds.get_status_options_by_property_name("Status")
 print(status_labels)
 
@@ -247,7 +247,7 @@ pages = await ds.get_pages(query_params=params)
 ### Page property writes
 
 ```python
-page = await NotionPage.from_title("Sprint Board")
+page = await Page.from_title("Sprint Board")
 
 await page.properties.set_select_property_by_option_name("Phase", "Design")
 await page.properties.set_multi_select_property_by_option_names("Tags", ["Backend", "API"])

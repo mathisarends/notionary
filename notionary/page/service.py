@@ -1,29 +1,31 @@
 from typing import Self
 
-from notionary.blocks.client import NotionBlockHttpClient
-from notionary.blocks.content import BlockContentService, create_block_content_service
-from notionary.blocks.service import NotionBlock
-from notionary.comments.models import Comment
-from notionary.comments.service import CommentService
-from notionary.markdown.builder import MarkdownBuilder
-from notionary.page.page_http_client import NotionPageHttpClient
+from notionary.page.blocks.client import NotionBlockHttpClient
+from notionary.page.blocks.content.factory import create_block_content_service
+from notionary.page.blocks.content.service import BlockContentService
+from notionary.page.blocks.service import NotionBlock
+from notionary.page.comments.service import CommentService
+from notionary.page.markdown.builder import MarkdownBuilder
+from notionary.page.page_http_client import PageHttpClient
 from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
 from notionary.page.properties.factory import PagePropertyHandlerFactory
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.properties.service import PagePropertyHandler
-from notionary.page.schemas import NotionPageDto
-from notionary.rich_text.rich_text_to_markdown import (
+from notionary.page.schemas import PageDto
+from notionary.shared.entity.service import Entity
+from notionary.shared.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
+)
+from notionary.shared.rich_text.rich_text_to_markdown.factory import (
     create_rich_text_to_markdown_converter,
 )
-from notionary.shared.entity.service import Entity
 from notionary.workspace.query.service import WorkspaceQueryService
 
 
-class NotionPage(Entity):
+class Page(Entity):
     def __init__(
         self,
-        dto: NotionPageDto,
+        dto: PageDto,
         title: str,
         page_property_handler: PagePropertyHandler,
         block_client: NotionBlockHttpClient,
@@ -65,16 +67,14 @@ class NotionPage(Entity):
         return await service.find_page(page_title)
 
     @classmethod
-    async def _fetch_page_dto(
-        cls, page_id: str, token: str | None = None
-    ) -> NotionPageDto:
-        async with NotionPageHttpClient(page_id=page_id, token=token) as client:
+    async def _fetch_page_dto(cls, page_id: str, token: str | None = None) -> PageDto:
+        async with PageHttpClient(page_id=page_id, token=token) as client:
             return await client.get_page()
 
     @classmethod
     async def _create_from_dto(
         cls,
-        dto: NotionPageDto,
+        dto: PageDto,
         page_property_handler_factory: PagePropertyHandlerFactory,
         token: str | None = None,
     ) -> Self:
@@ -95,7 +95,7 @@ class NotionPage(Entity):
     @classmethod
     def _create_with_dependencies(
         cls,
-        dto: NotionPageDto,
+        dto: PageDto,
         title: str,
         page_property_handler: PagePropertyHandler,
         token: str | None = None,
@@ -122,7 +122,7 @@ class NotionPage(Entity):
         )
 
     @staticmethod
-    async def _extract_title_from_dto(response: NotionPageDto) -> str:
+    async def _extract_title_from_dto(response: PageDto) -> str:
         title_property = next(
             (
                 prop
@@ -142,8 +142,8 @@ class NotionPage(Entity):
     def create_markdown_builder(self) -> MarkdownBuilder:
         return MarkdownBuilder()
 
-    async def get_comments(self) -> list[Comment]:
-        return await self._comment_service.list_all_comments_for_page(page_id=self.id)
+    """ async def get_comments(self) -> list[Comment]:
+        return await self._comment_service.list_all_comments_for_page(page_id=self.id) """
 
     async def post_top_level_comment(self, comment: str) -> None:
         await self._comment_service.create_comment_on_page(

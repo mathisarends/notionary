@@ -85,7 +85,7 @@ class TestPageNameIdResolver:
     async def test_resolve_page_name_success(
         self, resolver: PageNameIdResolver, mock_page: AsyncMock
     ) -> None:
-        with patch("notionary.NotionPage.from_id", return_value=mock_page):
+        with patch("notionary.Page.from_id", return_value=mock_page):
             result = await resolver.resolve_id_to_name(
                 "12345678-1234-1234-1234-123456789abc"
             )
@@ -95,7 +95,7 @@ class TestPageNameIdResolver:
     async def test_resolve_page_name_not_found(
         self, resolver: PageNameIdResolver
     ) -> None:
-        with patch("notionary.NotionPage.from_id", return_value=None):
+        with patch("notionary.Page.from_id", return_value=None):
             result = await resolver.resolve_id_to_name(
                 "12345678-1234-1234-1234-123456789abc"
             )
@@ -105,7 +105,7 @@ class TestPageNameIdResolver:
     async def test_resolve_page_name_exception(
         self, resolver: PageNameIdResolver
     ) -> None:
-        with patch("notionary.NotionPage.from_id", side_effect=Exception("API Error")):
+        with patch("notionary.Page.from_id", side_effect=Exception("API Error")):
             result = await resolver.resolve_id_to_name(
                 "12345678-1234-1234-1234-123456789abc"
             )

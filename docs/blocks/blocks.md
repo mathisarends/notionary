@@ -7,7 +7,7 @@ You choose the authoring style; Notionary handles all conversion details (IDs, n
 
 ```mermaid
 classDiagram
-    class NotionPage {
+    class Page {
         +append_markdown()
         +replace_content()
         +get_markdown_content()
@@ -29,7 +29,7 @@ classDiagram
     class ImageBlock
     class CodeBlock
 
-    NotionPage *-- Block : renders
+    Page *-- Block : renders
     MarkdownBuilder --> Block : produces
     Block <|-- HeadingBlock
     Block <|-- ParagraphBlock
@@ -40,7 +40,6 @@ classDiagram
 ```
 
 > The public API surface for content is intentionally small: you only need `page.append_markdown()` and optionally the `MarkdownBuilder` functions.
-
 
 ---
 
@@ -60,7 +59,6 @@ The following blocks use indentation for nesting:
 - [Todo](./todo.md)
 
 For each, child content is indented by one or more levels.
-
 
 ### Captions
 
@@ -89,7 +87,6 @@ To add extra vertical space between content, use either two consecutive empty li
 See the [Spacing block documentation](./space.md) for details and examples.
 
 ---
-
 
 ## Philosophy
 
@@ -183,9 +180,9 @@ await page.append_markdown(lambda b: (
 ## Minimal End‑to‑End Example
 
 ```python
-from notionary import NotionPage
+from notionary import Page
 
-page = await NotionPage.from_title("Docs Sandbox")
+page = await Page.from_title("Docs Sandbox")
 
 await page.replace_content(lambda b: (
     b.h1("API Overview", level=1)

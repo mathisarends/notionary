@@ -1,5 +1,6 @@
 from typing import Any
 
+from notionary.rich_text.schemas import RichText
 from pydantic import BaseModel
 
 from notionary.http.client import NotionHttpClient
@@ -22,8 +23,7 @@ from notionary.page.properties.schemas import (
     SelectOption,
     StatusOption,
 )
-from notionary.page.schemas import NotionPageDto, PgePropertiesUpdateDto
-from notionary.rich_text.schemas import RichText
+from notionary.page.schemas import PageDto, PgePropertiesUpdateDto
 
 
 class PagePropertyHttpClient(NotionHttpClient):
@@ -31,11 +31,11 @@ class PagePropertyHttpClient(NotionHttpClient):
         super().__init__()
         self._page_id = page_id
 
-    async def patch_page(self, data: BaseModel) -> NotionPageDto:
+    async def patch_page(self, data: BaseModel) -> PageDto:
         data_dict = data.model_dump(exclude_unset=True, exclude_none=True)
 
         result_dict = await self.patch(f"pages/{self._page_id}", data=data_dict)
-        return NotionPageDto.model_validate(result_dict)
+        return PageDto.model_validate(result_dict)
 
     async def _patch_property(
         self,
@@ -43,7 +43,7 @@ class PagePropertyHttpClient(NotionHttpClient):
         value: Any,
         property_type: type[PagePropertyT],
         current_property: PagePropertyT | None = None,
-    ) -> NotionPageDto:
+    ) -> PageDto:
         updated_property = self._create_updated_property(
             property_type, current_property, value
         )
@@ -53,62 +53,52 @@ class PagePropertyHttpClient(NotionHttpClient):
 
         return await self.patch_page(update_dto)
 
-    async def patch_title(self, property_name: str, title: str) -> NotionPageDto:
+    async def patch_title(self, property_name: str, title: str) -> PageDto:
         return await self._patch_property(property_name, title, PageTitleProperty)
 
-    async def patch_rich_text_property(
-        self, property_name: str, text: str
-    ) -> NotionPageDto:
+    async def patch_rich_text_property(self, property_name: str, text: str) -> PageDto:
         return await self._patch_property(property_name, text, PageRichTextProperty)
 
-    async def patch_url_property(self, property_name: str, url: str) -> NotionPageDto:
+    async def patch_url_property(self, property_name: str, url: str) -> PageDto:
         return await self._patch_property(property_name, url, PageURLProperty)
 
-    async def patch_email_property(
-        self, property_name: str, email: str
-    ) -> NotionPageDto:
+    async def patch_email_property(self, property_name: str, email: str) -> PageDto:
         return await self._patch_property(property_name, email, PageEmailProperty)
 
-    async def patch_phone_property(
-        self, property_name: str, phone: str
-    ) -> NotionPageDto:
+    async def patch_phone_property(self, property_name: str, phone: str) -> PageDto:
         return await self._patch_property(property_name, phone, PagePhoneNumberProperty)
 
     async def patch_number_property(
         self, property_name: str, number: int | float
-    ) -> NotionPageDto:
+    ) -> PageDto:
         return await self._patch_property(property_name, number, PageNumberProperty)
 
     async def patch_checkbox_property(
         self, property_name: str, checked: bool
-    ) -> NotionPageDto:
+    ) -> PageDto:
         return await self._patch_property(property_name, checked, PageCheckboxProperty)
 
-    async def patch_select_property(
-        self, property_name: str, value: str
-    ) -> NotionPageDto:
+    async def patch_select_property(self, property_name: str, value: str) -> PageDto:
         return await self._patch_property(property_name, value, PageSelectProperty)
 
     async def patch_multi_select_property(
         self, property_name: str, values: list[str]
-    ) -> NotionPageDto:
+    ) -> PageDto:
         return await self._patch_property(
             property_name, values, PageMultiSelectProperty
         )
 
     async def patch_date_property(
         self, property_name: str, date_value: str | dict
-    ) -> NotionPageDto:
+    ) -> PageDto:
         return await self._patch_property(property_name, date_value, PageDateProperty)
 
-    async def patch_status_property(
-        self, property_name: str, status: str
-    ) -> NotionPageDto:
+    async def patch_status_property(self, property_name: str, status: str) -> PageDto:
         return await self._patch_property(property_name, status, PageStatusProperty)
 
     async def patch_relation_property(
         self, property_name: str, relation_ids: str | list[str]
-    ) -> NotionPageDto:
+    ) -> PageDto:
         if isinstance(relation_ids, str):
             relation_ids = [relation_ids]
         return await self._patch_property(

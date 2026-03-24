@@ -85,7 +85,7 @@ class TestDatabaseNameIdResolver:
     async def test_resolve_database_name_success(
         self, resolver: DatabaseNameIdResolver, mock_database: AsyncMock
     ) -> None:
-        with patch("notionary.NotionDatabase.from_id", return_value=mock_database):
+        with patch("notionary.Database.from_id", return_value=mock_database):
             result = await resolver.resolve_id_to_name(
                 "12345678-1234-1234-1234-123456789abc"
             )
@@ -95,7 +95,7 @@ class TestDatabaseNameIdResolver:
     async def test_resolve_database_name_not_found(
         self, resolver: DatabaseNameIdResolver
     ) -> None:
-        with patch("notionary.NotionDatabase.from_id", return_value=None):
+        with patch("notionary.Database.from_id", return_value=None):
             result = await resolver.resolve_id_to_name(
                 "12345678-1234-1234-1234-123456789abc"
             )
@@ -105,9 +105,7 @@ class TestDatabaseNameIdResolver:
     async def test_resolve_database_name_exception(
         self, resolver: DatabaseNameIdResolver
     ) -> None:
-        with patch(
-            "notionary.NotionDatabase.from_id", side_effect=Exception("API Error")
-        ):
+        with patch("notionary.Database.from_id", side_effect=Exception("API Error")):
             result = await resolver.resolve_id_to_name(
                 "12345678-1234-1234-1234-123456789abc"
             )

@@ -5,21 +5,21 @@ A `Page` in Notionary is a class for working with Notion pages. It allows you to
 You can create a Page object in Notionary using several methods:
 
 ```python
-from notionary import NotionPage
+from notionary import Page
 
-page = await NotionPage.from_id("your-page-id")
+page = await Page.from_id("your-page-id")
 ```
 
 ```python
-from notionary import NotionPage
+from notionary import Page
 
-page = await NotionPage.from_title("My Project")
+page = await Page.from_title("My Project")
 ```
 
 ```python
-from notionary import NotionPage
+from notionary import Page
 
-page = await NotionPage.from_url("https://www.notion.so/your-workspace/your-page-id")
+page = await Page.from_url("https://www.notion.so/your-workspace/your-page-id")
 ```
 
 Most likely you want to use the `from_title` method as it's the most human readable format.

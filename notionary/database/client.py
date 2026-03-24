@@ -1,6 +1,6 @@
 from notionary.database.schemas import (
-    NotionDatabaseDto,
-    NotionDatabaseUpdateDto,
+    DatabaseDto,
+    DatabaseUpdateDto,
 )
 from notionary.http.client import NotionHttpClient
 from notionary.rich_text.rich_text_to_markdown.converter import (
@@ -8,28 +8,28 @@ from notionary.rich_text.rich_text_to_markdown.converter import (
 )
 
 
-class NotionDatabaseHttpClient(NotionHttpClient):
+class DatabaseHttpClient(NotionHttpClient):
     def __init__(
         self, database_id: str, token: str | None = None, timeout: int = 30
     ) -> None:
         super().__init__(token=token, timeout=timeout)
         self._database_id = database_id
 
-    async def get_database(self) -> NotionDatabaseDto:
+    async def get_database(self) -> DatabaseDto:
         response = await self.get(f"databases/{self._database_id}")
-        return NotionDatabaseDto.model_validate(response)
+        return DatabaseDto.model_validate(response)
 
     async def patch_database(
-        self, update_database_dto: NotionDatabaseUpdateDto
-    ) -> NotionDatabaseDto:
+        self, update_database_dto: DatabaseUpdateDto
+    ) -> DatabaseDto:
         update_database_dto_dict = update_database_dto.model_dump(exclude_none=True)
 
         response = await self.patch(
             f"databases/{self._database_id}", data=update_database_dto_dict
         )
-        return NotionDatabaseDto.model_validate(response)
+        return DatabaseDto.model_validate(response)
 
-    async def update_database_title(self, title: str) -> NotionDatabaseDto:
+    async def update_database_title(self, title: str) -> DatabaseDto:
         from notionary.rich_text.markdown_to_rich_text import (
             create_markdown_rich_text_converter,
         )
@@ -37,7 +37,7 @@ class NotionDatabaseHttpClient(NotionHttpClient):
         markdown_rich_text_formatter = create_markdown_rich_text_converter()
         database_rich_text = await markdown_rich_text_formatter.to_rich_text(title)
 
-        database_title_update_dto = NotionDatabaseUpdateDto(title=database_rich_text)
+        database_title_update_dto = DatabaseUpdateDto(title=database_rich_text)
         return await self.patch_database(database_title_update_dto)
 
     async def update_database_description(self, description: str) -> str:
@@ -50,7 +50,7 @@ class NotionDatabaseHttpClient(NotionHttpClient):
             description
         )
 
-        database_description_update_dto = NotionDatabaseUpdateDto(
+        database_description_update_dto = DatabaseUpdateDto(
             description=rich_text_description
         )
         update_database_response = await self.patch_database(

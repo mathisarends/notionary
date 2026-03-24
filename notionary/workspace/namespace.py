@@ -15,7 +15,7 @@ from notionary.workspace.query.models import (
 from notionary.workspace.query.service import WorkspaceQueryService
 
 if TYPE_CHECKING:
-    from notionary import NotionDataSource, NotionPage
+    from notionary import DataSource, Page
 
 
 class WorkspaceNamespace:
@@ -29,37 +29,37 @@ class WorkspaceNamespace:
 
     async def list_pages(
         self, query_config: WorkspaceQueryConfig | None = None
-    ) -> list[NotionPage]:
+    ) -> list[Page]:
         config = self._pages_config(query_config)
         return await self._query_service.get_pages(config)
 
     async def get_pages(
         self, query_config: WorkspaceQueryConfig | None = None
-    ) -> list[NotionPage]:
+    ) -> list[Page]:
         return await self.list_pages(query_config)
 
     async def iter_pages(
         self, query_config: WorkspaceQueryConfig | None = None
-    ) -> AsyncIterator[NotionPage]:
+    ) -> AsyncIterator[Page]:
         config = self._pages_config(query_config)
         async for page in self._query_service.get_pages_stream(config):
             yield page
 
     async def list_pages_stream(
         self, query_config: WorkspaceQueryConfig | None = None
-    ) -> AsyncIterator[NotionPage]:
+    ) -> AsyncIterator[Page]:
         async for page in self.iter_pages(query_config):
             yield page
 
     async def get_data_sources(
         self, query_config: WorkspaceQueryConfig | None = None
-    ) -> list[NotionDataSource]:
+    ) -> list[DataSource]:
         config = self._data_sources_config(query_config)
         return await self._query_service.get_data_sources(config)
 
     async def iter_data_sources(
         self, query_config: WorkspaceQueryConfig | None = None
-    ) -> AsyncIterator[NotionDataSource]:
+    ) -> AsyncIterator[DataSource]:
         config = self._data_sources_config(query_config)
         async for ds in self._query_service.get_data_sources_stream(config):
             yield ds

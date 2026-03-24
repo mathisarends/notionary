@@ -3,6 +3,10 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Any, override
 
+from notionary.rich_text.rich_text_to_markdown.converter import (
+    RichTextToMarkdownConverter,
+)
+
 from notionary.data_source.query.schema import DataSourceQueryParams
 from notionary.data_source.schemas import (
     DataSourceDto,
@@ -10,10 +14,7 @@ from notionary.data_source.schemas import (
     UpdateDataSourceDto,
 )
 from notionary.http.client import NotionHttpClient
-from notionary.page.schemas import NotionPageDto
-from notionary.rich_text.rich_text_to_markdown.converter import (
-    RichTextToMarkdownConverter,
-)
+from notionary.page.schemas import PageDto
 from notionary.shared.entity.entity_metadata_update_client import (
     EntityMetadataUpdateClient,
 )
@@ -24,7 +25,7 @@ from notionary.utils.pagination import (
 )
 
 if TYPE_CHECKING:
-    from notionary import NotionPage
+    from notionary import Page
 
 
 class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
@@ -127,8 +128,8 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
         )
         return QueryDataSourceResponse.model_validate(response)
 
-    async def create_blank_page(self, title: str | None = None) -> NotionPage:
-        from notionary import NotionPage
+    async def create_blank_page(self, title: str | None = None) -> Page:
+        from notionary import Page
 
         data = {
             "parent": {
@@ -142,5 +143,5 @@ class DataSourceInstanceClient(NotionHttpClient, EntityMetadataUpdateClient):
             data["properties"]["Name"] = {"title": [{"text": {"content": title}}]}
 
         response = await self.post("pages", data=data)
-        page_creation_response = NotionPageDto.model_validate(response)
-        return await NotionPage.from_id(page_creation_response.id)
+        page_creation_response = PageDto.model_validate(response)
+        return await Page.from_id(page_creation_response.id)

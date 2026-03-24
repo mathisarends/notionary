@@ -1,12 +1,12 @@
 import asyncio
 
-from notionary import NotionDataSource
+from notionary import DataSource
 
 DATA_SOURCE_TITLE = "Inbox"
 
 
 async def main() -> None:
-    data_source = await NotionDataSource.from_title(DATA_SOURCE_TITLE)
+    data_source = await DataSource.from_title(DATA_SOURCE_TITLE)
     print(f"Found datasource: {data_source.title} (URL: {data_source.url})")
 
     query = (

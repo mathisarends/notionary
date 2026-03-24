@@ -53,7 +53,7 @@ all_pages = await workspace.get_pages()
 
 ### Streaming results (memory-efficient)
 
-The stream variants return an async generator that yields `NotionPage` or `NotionDataSource` objects as they are fetched. This is memory-efficient and well-suited for automated pipelines since you can process items one-by-one without loading the entire result set into memory.
+The stream variants return an async generator that yields `Page` or `DataSource` objects as they are fetched. This is memory-efficient and well-suited for automated pipelines since you can process items one-by-one without loading the entire result set into memory.
 
 ```python
 from notionary import NotionWorkspace
@@ -96,7 +96,7 @@ ds = await workspace._query_service.find_data_source("Engineering Backlog", min_
 db = await workspace._query_service.find_database("Product")
 ```
 
-Note: The finders currently live on the underlying `WorkspaceQueryService` and return fully-instantiated `NotionPage`, `NotionDataSource`, or `NotionDatabase` objects.
+Note: The finders currently live on the underlying `WorkspaceQueryService` and return fully-instantiated `Page`, `DataSource`, or `Database` objects.
 
 ## Users
 

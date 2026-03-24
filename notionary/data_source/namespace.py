@@ -1,14 +1,17 @@
 from collections.abc import AsyncIterator
 
+from notionary.data_source.data_source import DataSource
+from notionary.data_source.search import (
+    DataSourceSearchClient,
+    SortDirection,
+    SortTimestamp,
+)
 from notionary.http.client import HttpClient
-from notionary.page.search import PageSearchClient
-from notionary.page.search.schemas import SortDirection, SortTimestamp
-from notionary.page.service import Page
 
 
-class PageNamespace:
+class DataSourceNamespace:
     def __init__(self, http: HttpClient) -> None:
-        self._search_client = PageSearchClient(http)
+        self._search_client = DataSourceSearchClient(http)
 
     async def list(
         self,
@@ -17,10 +20,10 @@ class PageNamespace:
         sort_timestamp: SortTimestamp = SortTimestamp.LAST_EDITED_TIME,
         page_size: int = 100,
         total_results_limit: int | None = None,
-    ) -> list[Page]:
+    ) -> list[DataSource]:
         return [
-            page
-            async for page in self.iter(
+            ds
+            async for ds in self.iter(
                 query=query,
                 sort_direction=sort_direction,
                 sort_timestamp=sort_timestamp,
@@ -36,7 +39,7 @@ class PageNamespace:
         sort_timestamp: SortTimestamp = SortTimestamp.LAST_EDITED_TIME,
         page_size: int = 100,
         total_results_limit: int | None = None,
-    ) -> AsyncIterator[Page]:
+    ) -> AsyncIterator[DataSource]:
         async for dto in self._search_client.stream(
             query=query,
             sort_direction=sort_direction,
@@ -44,10 +47,13 @@ class PageNamespace:
             page_size=page_size,
             total_results_limit=total_results_limit,
         ):
-            yield await Page.from_id(dto.id)
+            yield await DataSource.from_id(dto.id)
 
-    async def from_title(self, title: str) -> Page:
-        return await Page.from_title(title)
+    async def search(self, query: str) -> list[DataSource]:
+        return await self.list(query=query)
 
-    async def from_id(self, page_id: str) -> Page:
-        return await Page.from_id(page_id)
+    async def from_title(self, title: str) -> DataSource:
+        return await DataSource.from_title(title)
+
+    async def from_id(self, data_source_id: str) -> DataSource:
+        return await DataSource.from_id(data_source_id)

@@ -15,7 +15,7 @@ from notionary.workspace.query.builder import NotionWorkspaceQueryConfigBuilder
 from notionary.workspace.query.models import SearchableEntity, WorkspaceQueryConfig
 
 if TYPE_CHECKING:
-    from notionary import NotionDatabase, NotionDataSource, NotionPage
+    from notionary import Database, DataSource, Page
 
 
 def _fuzzy_similarity(query: str, target: str) -> float:
@@ -45,45 +45,43 @@ class WorkspaceQueryService:
 
     async def get_pages_stream(
         self, search_config: WorkspaceQueryConfig
-    ) -> AsyncIterator[NotionPage]:
-        from notionary import NotionPage
+    ) -> AsyncIterator[Page]:
+        from notionary import Page
 
         async for page_dto in self._client.query_pages_stream(search_config):
-            yield await NotionPage.from_id(page_dto.id)
+            yield await Page.from_id(page_dto.id)
 
-    async def get_pages(self, search_config: WorkspaceQueryConfig) -> list[NotionPage]:
-        from notionary import NotionPage
+    async def get_pages(self, search_config: WorkspaceQueryConfig) -> list[Page]:
+        from notionary import Page
 
         page_dtos = [
             dto async for dto in self._client.query_pages_stream(search_config)
         ]
-        page_tasks = [NotionPage.from_id(dto.id) for dto in page_dtos]
+        page_tasks = [Page.from_id(dto.id) for dto in page_dtos]
         return await asyncio.gather(*page_tasks)
 
     async def get_data_sources_stream(
         self, search_config: WorkspaceQueryConfig
-    ) -> AsyncIterator[NotionDataSource]:
-        from notionary import NotionDataSource
+    ) -> AsyncIterator[DataSource]:
+        from notionary import DataSource
 
         async for data_source_dto in self._client.query_data_sources_stream(
             search_config
         ):
-            yield await NotionDataSource.from_id(data_source_dto.id)
+            yield await DataSource.from_id(data_source_dto.id)
 
     async def get_data_sources(
         self, search_config: WorkspaceQueryConfig
-    ) -> list[NotionDataSource]:
-        from notionary import NotionDataSource
+    ) -> list[DataSource]:
+        from notionary import DataSource
 
         data_source_dtos = [
             dto async for dto in self._client.query_data_sources_stream(search_config)
         ]
-        data_source_tasks = [
-            NotionDataSource.from_id(dto.id) for dto in data_source_dtos
-        ]
+        data_source_tasks = [DataSource.from_id(dto.id) for dto in data_source_dtos]
         return await asyncio.gather(*data_source_tasks)
 
-    async def find_data_source(self, query: str) -> NotionDataSource:
+    async def find_data_source(self, query: str) -> DataSource:
         config = (
             NotionWorkspaceQueryConfigBuilder()
             .with_query(query)
@@ -94,7 +92,7 @@ class WorkspaceQueryService:
         data_sources = await self.get_data_sources(config)
         return self._find_exact_match(data_sources, query, DataSourceNotFound)
 
-    async def find_page(self, query: str) -> NotionPage:
+    async def find_page(self, query: str) -> Page:
         config = (
             NotionWorkspaceQueryConfigBuilder()
             .with_query(query)
@@ -105,7 +103,7 @@ class WorkspaceQueryService:
         pages = await self.get_pages(config)
         return self._find_exact_match(pages, query, PageNotFound)
 
-    async def find_database(self, query: str) -> NotionDatabase:
+    async def find_database(self, query: str) -> Database:
         config = (
             NotionWorkspaceQueryConfigBuilder()
             .with_query(query)
@@ -123,7 +121,7 @@ class WorkspaceQueryService:
         parent_database_ids = [id for id in parent_database_ids if id is not None]
 
         parent_database_tasks = [
-            NotionDatabase.from_id(db_id) for db_id in parent_database_ids
+            Database.from_id(db_id) for db_id in parent_database_ids
         ]
         parent_databases = await asyncio.gather(*parent_database_tasks)
         potential_databases = [

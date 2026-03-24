@@ -14,7 +14,7 @@ import random
 import time
 import traceback
 
-from notionary import NotionPage
+from notionary import Page
 
 YOUR_PAGE_NAME = "Jarvis Clipboard"
 
@@ -82,7 +82,7 @@ async def main():
     """Tests batch processing by appending many blocks to a Notion page."""
     try:
         print("Searching for page by name...")
-        page = await NotionPage.from_title(YOUR_PAGE_NAME)
+        page = await Page.from_title(YOUR_PAGE_NAME)
 
         print(f'✅ Found: "{page.title}" {page.emoji_icon} → {page.url}')
 
