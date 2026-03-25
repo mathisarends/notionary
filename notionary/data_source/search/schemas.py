@@ -1,17 +1,8 @@
-from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator, model_serializer
 
-
-class SortDirection(StrEnum):
-    ASCENDING = "ascending"
-    DESCENDING = "descending"
-
-
-class SortTimestamp(StrEnum):
-    LAST_EDITED_TIME = "last_edited_time"
-    CREATED_TIME = "created_time"
+from notionary.shared.sorting import SortDirection, SortTimestamp
 
 
 class DataSourceQueryConfig(BaseModel):

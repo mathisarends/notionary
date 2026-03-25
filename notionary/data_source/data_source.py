@@ -1,17 +1,12 @@
-from __future__ import annotations
-
-import asyncio
 import logging
 from collections.abc import AsyncIterator
-from typing import TYPE_CHECKING, Self
 
+from notionary.data_source.data_source_instance_client import (
+    DataSourceInstanceClient,
+)
 from notionary.data_source.exceptions import (
     DataSourcePropertyNotFound,
     DataSourcePropertyTypeError,
-)
-from notionary.data_source.http.client import DataSourceClient
-from notionary.data_source.http.data_source_instance_client import (
-    DataSourceInstanceClient,
 )
 from notionary.data_source.properties.schemas import (
     DataSourceMultiSelectProperty,
@@ -27,31 +22,23 @@ from notionary.data_source.query import (
     DataSourceQueryParams,
     QueryResolver,
 )
-from notionary.data_source.schema.service import DataSourcePropertySchemaFormatter
 from notionary.data_source.schemas import DataSourceDto
-from notionary.file_upload.service import NotionFileUpload
+from notionary.database import Database
+from notionary.page import Page
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import PageDto
-from notionary.rich_text.rich_text_to_markdown import (
-    RichTextToMarkdownConverter,
-)
-from notionary.shared.entity.dto_parsers import (
-    extract_description,
-    extract_title,
-)
+from notionary.shared.entity.cover import EntityCover
 from notionary.shared.entity.entity_metadata_update_client import (
     EntityMetadataUpdateClient,
 )
-from notionary.shared.entity.service import Entity
-from notionary.user.namespace import UserService
-
-if TYPE_CHECKING:
-    from notionary import Database, Page
+from notionary.shared.entity.metadata import EntityMetadata
+from notionary.shared.entity.trash import EntityTrash
+from notionary.shared.icon.icon import EntityIcon
 
 logger = logging.getLogger(__name__)
 
 
-class DataSource(Entity):
+class DataSource:
     def __init__(
         self,
         dto: DataSourceDto,
@@ -59,13 +46,14 @@ class DataSource(Entity):
         description: str | None,
         properties: dict[str, DataSourceProperty],
         data_source_instance_client: DataSourceInstanceClient,
+        entity_update_client: EntityMetadataUpdateClient,
         query_resolver: QueryResolver | None = None,
-        user_service: UserService | None = None,
-        file_upload_service: NotionFileUpload | None = None,
     ) -> None:
-        super().__init__(
-            dto=dto, user_service=user_service, file_upload_service=file_upload_service
-        )
+        self.metadata = EntityMetadata.from_dto(dto)
+
+        self._icon = EntityIcon(dto, entity_update_client)
+        self._cover = EntityCover(dto, entity_update_client)
+        self._trash = EntityTrash(dto, entity_update_client)
 
         self._parent_database: Database | None = None
         self._title = title
@@ -75,37 +63,41 @@ class DataSource(Entity):
         self._data_source_client = data_source_instance_client
         self.query_resolver = query_resolver or QueryResolver()
 
-    @classmethod
-    async def from_id(cls, data_source_id: str) -> Self:
-        client = DataSourceClient()
-        converter = RichTextToMarkdownConverter()
-        data_source_dto = await client.get_data_source(data_source_id)
-        return await cls._create_from_dto(data_source_dto, converter)
-
-    @classmethod
-    async def _create_from_dto(
-        cls,
-        dto: DataSourceDto,
-        rich_text_converter: RichTextToMarkdownConverter,
-    ) -> Self:
-        title, description = await asyncio.gather(
-            extract_title(dto, rich_text_converter),
-            extract_description(dto, rich_text_converter),
-        )
-
-        data_source_instance_client = DataSourceInstanceClient(data_source_id=dto.id)
-
-        return cls(
-            dto=dto,
-            title=title,
-            description=description,
-            properties=dto.properties,
-            data_source_instance_client=data_source_instance_client,
-        )
+    @property
+    def id(self) -> str:
+        return self.metadata.id
 
     @property
-    def _entity_metadata_update_client(self) -> EntityMetadataUpdateClient:
-        return self._data_source_client
+    def url(self) -> str:
+        return self.metadata.url
+
+    @property
+    def in_trash(self) -> bool:
+        return self._trash.in_trash
+
+    async def trash(self) -> None:
+        await self._trash.trash()
+
+    async def restore(self) -> None:
+        await self._trash.restore()
+
+    async def set_icon_emoji(self, emoji: str) -> None:
+        await self._icon.set_emoji(emoji)
+
+    async def set_icon_url(self, url: str) -> None:
+        await self._icon.set_from_url(url)
+
+    async def remove_icon(self) -> None:
+        await self._icon.remove()
+
+    async def set_cover(self, url: str) -> None:
+        await self._cover.set_from_url(url)
+
+    async def random_cover(self) -> None:
+        await self._cover.set_random_gradient()
+
+    async def remove_cover(self) -> None:
+        await self._cover.remove()
 
     @property
     def title(self) -> str:
@@ -126,9 +118,6 @@ class DataSource(Entity):
     @property
     def data_source_query_builder(self) -> DataSourceQueryBuilder:
         return DataSourceQueryBuilder(properties=self._properties)
-
-    async def create_blank_page(self, title: str | None = None) -> Page:
-        return await self._data_source_client.create_blank_page(title=title)
 
     async def set_title(self, title: str) -> None:
         data_source_dto = await self._data_source_client.update_title(title)
@@ -152,6 +141,46 @@ class DataSource(Entity):
         self._description = await self._data_source_client.update_description(
             description
         )
+
+    async def create_blank_page(self, title: str | None = None) -> Page:
+        return await self._data_source_client.create_blank_page(title=title)
+
+    async def get_pages(
+        self,
+        query_params: DataSourceQueryParams | None = None,
+    ) -> list[Page]:
+        from notionary import Page
+
+        resolved_params = await self._resolve_query_params_if_needed(query_params)
+        query_response = await self._data_source_client.query(
+            query_params=resolved_params
+        )
+        return [await Page.from_id(page.id) for page in query_response.results]
+
+    async def iter_pages(
+        self,
+        query_params: DataSourceQueryParams | None = None,
+    ) -> AsyncIterator[Page]:
+        from notionary import Page
+
+        resolved_params = await self._resolve_query_params_if_needed(query_params)
+
+        async for page in self._data_source_client.query_stream(
+            query_params=resolved_params
+        ):
+            yield await Page.from_id(page.id)
+
+    async def _resolve_query_params_if_needed(
+        self,
+        query_params: DataSourceQueryParams | None,
+    ) -> DataSourceQueryParams | None:
+        if query_params is None:
+            return None
+        return await self.query_resolver.resolve_params(query_params)
+
+    # ── Properties ───────────────────────────────────────────────
+    def get_query_builder(self) -> DataSourceQueryBuilder:
+        return DataSourceQueryBuilder(properties=self._properties)
 
     async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
         prop = self._properties.get(property_name)
@@ -256,50 +285,3 @@ class DataSource(Entity):
             )
 
         return prop
-
-    def get_query_builder(self) -> DataSourceQueryBuilder:
-        return DataSourceQueryBuilder(properties=self._properties)
-
-    async def get_pages(
-        self,
-        query_params: DataSourceQueryParams | None = None,
-    ) -> list[Page]:
-        from notionary import Page
-
-        resolved_params = await self._resolve_query_params_if_needed(query_params)
-        query_response = await self._data_source_client.query(
-            query_params=resolved_params
-        )
-        return [await Page.from_id(page.id) for page in query_response.results]
-
-    async def iter_pages(
-        self,
-        query_params: DataSourceQueryParams | None = None,
-    ) -> AsyncIterator[Page]:
-        from notionary import Page
-
-        resolved_params = await self._resolve_query_params_if_needed(query_params)
-
-        async for page in self._data_source_client.query_stream(
-            query_params=resolved_params
-        ):
-            yield await Page.from_id(page.id)
-
-    async def _resolve_query_params_if_needed(
-        self,
-        query_params: DataSourceQueryParams | None,
-    ) -> DataSourceQueryParams | None:
-        if query_params is None:
-            return None
-
-        return await self.query_resolver.resolve_params(query_params)
-
-    async def get_schema_description(self) -> str:
-        formatter = DataSourcePropertySchemaFormatter(
-            relation_options_fetcher=self._get_relation_options
-        )
-        return await formatter.format(
-            title=self._title,
-            description=self._description,
-            properties=self._properties,
-        )

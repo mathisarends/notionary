@@ -16,18 +16,6 @@ class NoFileExtensionException(NotionaryException):
         self.filename = filename
 
 
-class FileSizeException(NotionaryException):
-    def __init__(self, filename: str, file_size_bytes: int, max_size_bytes: int):
-        file_size_mb = file_size_bytes / (1024 * 1024)
-        max_size_mb = max_size_bytes / (1024 * 1024)
-        super().__init__(
-            f"File '{filename}' is too large ({file_size_mb:.2f} MB). Maximum allowed size is {max_size_mb:.2f} MB."
-        )
-        self.filename = filename
-        self.file_size_bytes = file_size_bytes
-        self.max_size_bytes = max_size_bytes
-
-
 class FileNotFoundError(NotionaryException):
     def __init__(self, file_path: str):
         super().__init__(f"File does not exist: {file_path}")

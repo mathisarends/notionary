@@ -1,6 +1,6 @@
 from typing import TypeVar, override
 
-from notionary.http.client import NotionHttpClient
+from notionary.http.client import HttpClient
 from notionary.shared.entity.entity_metadata_update_client import (
     EntityMetadataUpdateClient,
 )
@@ -9,19 +9,18 @@ from notionary.shared.entity.schemas import EntityResponseDto, NotionEntityUpdat
 ResponseType = TypeVar("ResponseType", bound=EntityResponseDto)
 
 
-class GenericEntityMetadataUpdateClient(NotionHttpClient, EntityMetadataUpdateClient):
+class GenericEntityMetadataUpdateClient(EntityMetadataUpdateClient):
     def __init__(
         self,
         entity_id: str,
         path_segment: str,
         response_dto_class: type[ResponseType],
-        token: str | None = None,
-        timeout: int = 30,
+        http: HttpClient,
     ) -> None:
-        super().__init__(token=token, timeout=timeout)
         self._entity_id = entity_id
         self._path_segment = path_segment
         self._response_dto_class = response_dto_class
+        self._http = http
 
     @override
     async def patch_metadata(self, updated_data: NotionEntityUpdateDto) -> ResponseType:
@@ -30,5 +29,5 @@ class GenericEntityMetadataUpdateClient(NotionHttpClient, EntityMetadataUpdateCl
         )
         url = f"{self._path_segment}/{self._entity_id}"
 
-        response_dict = await self.patch(url, data=updated_data_dict)
+        response_dict = await self._http.patch(url, data=updated_data_dict)
         return self._response_dto_class.model_validate(response_dict)

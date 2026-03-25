@@ -1,12 +1,10 @@
 import asyncio
 
 from notionary.database.client import DatabaseHttpClient
-from notionary.database.database_metadata_update_client import (
-    DatabaseMetadataUpdateClient,
-)
 from notionary.database.schemas import DatabaseDto
 from notionary.database.service import Database
 from notionary.http.client import HttpClient
+from notionary.shared.entity.client import GenericEntityMetadataUpdateClient
 from notionary.shared.entity.dto_parsers import extract_description, extract_title
 from notionary.shared.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
@@ -29,7 +27,12 @@ class DatabaseFactory:
         )
 
         client = DatabaseHttpClient(database_id=dto.id)
-        metadata_update_client = DatabaseMetadataUpdateClient(database_id=dto.id)
+        entity_update_client = GenericEntityMetadataUpdateClient(
+            entity_id=dto.id,
+            path_segment="databases",
+            response_dto_class=DatabaseDto,
+            http=self._http,
+        )
 
         return Database(
             dto=dto,
@@ -37,7 +40,7 @@ class DatabaseFactory:
             description=description,
             data_source_ids=[ds.id for ds in dto.data_sources],
             client=client,
-            metadata_update_client=metadata_update_client,
+            entity_update_client=entity_update_client,
         )
 
     async def _fetch_dto(self, database_id: str) -> DatabaseDto:

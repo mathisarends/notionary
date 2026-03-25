@@ -1,4 +1,3 @@
-from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator, model_serializer
@@ -7,6 +6,7 @@ from notionary.shared.entity.schemas import EntityResponseDto
 from notionary.shared.models.file import File
 from notionary.shared.models.icon import Icon
 from notionary.shared.rich_text.schemas import RichText
+from notionary.shared.sorting import SortDirection, SortTimestamp
 
 
 class _DataSourceDiscoveryDto(BaseModel):
@@ -30,16 +30,6 @@ class DatabaseUpdateDto(BaseModel):
     cover: File | None = None
     archived: bool | None = None
     description: list[RichText] | None = None
-
-
-class SortDirection(StrEnum):
-    ASCENDING = "ascending"
-    DESCENDING = "descending"
-
-
-class SortTimestamp(StrEnum):
-    LAST_EDITED_TIME = "last_edited_time"
-    CREATED_TIME = "created_time"
 
 
 class DatabaseQueryConfig(BaseModel):

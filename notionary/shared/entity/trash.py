@@ -15,22 +15,18 @@ class EntityTrash:
         update_client: EntityMetadataUpdateClient,
     ) -> None:
         self._client = update_client
-        self._in_trash = dto.in_trash
+        self.in_trash = dto.in_trash
 
-    @property
-    def in_trash(self) -> bool:
-        return self._in_trash
-
-    async def move_to_trash(self) -> None:
-        if self._in_trash:
+    async def trash(self) -> None:
+        if self.in_trash:
             logger.warning("Entity is already in trash.")
             return
         response = await self._client.move_to_trash()
-        self._in_trash = response.in_trash
+        self.in_trash = response.in_trash
 
     async def restore(self) -> None:
-        if not self._in_trash:
+        if not self.in_trash:
             logger.warning("Entity is not in trash.")
             return
         response = await self._client.restore_from_trash()
-        self._in_trash = response.in_trash
+        self.in_trash = response.in_trash

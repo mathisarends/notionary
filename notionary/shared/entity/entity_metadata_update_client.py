@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from notionary.shared.entity.schemas import EntityResponseDto, NotionEntityUpdateDto
-from notionary.shared.models.file import ExternalFile, FileUploadFile
+from notionary.shared.models.file import ExternalFile
 from notionary.shared.models.icon import EmojiIcon, Icon
 
 
@@ -20,12 +20,6 @@ class EntityMetadataUpdateClient(ABC):
         icon = ExternalFile.from_url(icon_url)
         return await self._patch_icon(icon)
 
-    async def patch_icon_from_file_upload(
-        self, file_upload_id: str
-    ) -> EntityResponseDto:
-        icon = FileUploadFile.from_id(id=file_upload_id)
-        return await self._patch_icon(icon)
-
     async def _patch_icon(self, icon: Icon) -> EntityResponseDto:
         update_dto = NotionEntityUpdateDto(icon=icon)
         return await self.patch_metadata(update_dto)
@@ -36,12 +30,6 @@ class EntityMetadataUpdateClient(ABC):
 
     async def patch_external_cover(self, cover_url: str) -> EntityResponseDto:
         cover = ExternalFile.from_url(cover_url)
-        return await self._patch_cover(cover)
-
-    async def patch_cover_from_file_upload(
-        self, file_upload_id: str
-    ) -> EntityResponseDto:
-        cover = FileUploadFile.from_id(id=file_upload_id)
         return await self._patch_cover(cover)
 
     async def _patch_cover(self, cover: Icon) -> EntityResponseDto:

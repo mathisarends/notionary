@@ -3,16 +3,19 @@ from collections.abc import Awaitable, Callable
 
 from notionary.data_source.data_source import DataSource
 from notionary.database.client import DatabaseHttpClient
-from notionary.database.database_metadata_update_client import (
-    DatabaseMetadataUpdateClient,
-)
 from notionary.database.schemas import DatabaseDto
-from notionary.shared.entity.service import Entity
+from notionary.shared.entity.cover import EntityCover
+from notionary.shared.entity.entity_metadata_update_client import (
+    EntityMetadataUpdateClient,
+)
+from notionary.shared.entity.metadata import EntityMetadata
+from notionary.shared.entity.trash import EntityTrash
+from notionary.shared.icon.icon import EntityIcon
 
 type _DataSourceFactory = Callable[[str], Awaitable[DataSource]]
 
 
-class Database(Entity):
+class Database:
     def __init__(
         self,
         dto: DatabaseDto,
@@ -20,9 +23,13 @@ class Database(Entity):
         description: str | None,
         data_source_ids: list[str],
         client: DatabaseHttpClient,
-        metadata_update_client: DatabaseMetadataUpdateClient,
+        entity_update_client: EntityMetadataUpdateClient,
     ) -> None:
-        super().__init__(dto=dto)
+        self.metadata = EntityMetadata.from_dto(dto)
+
+        self._icon = EntityIcon(dto, entity_update_client)
+        self._cover = EntityCover(dto, entity_update_client)
+        self._trash = EntityTrash(dto, entity_update_client)
 
         self.title = title
         self.description = description
@@ -30,12 +37,43 @@ class Database(Entity):
 
         self._data_sources: list[DataSource] | None = None
         self._data_source_ids = data_source_ids
+        self._client = client
 
-        self.client = client
-        self.metadata_update_client = metadata_update_client
+    @property
+    def id(self) -> str:
+        return self.metadata.id
 
-    def get_description(self) -> str | None:
-        return self._description
+    @property
+    def url(self) -> str:
+        return self.metadata.url
+
+    @property
+    def in_trash(self) -> bool:
+        return self._trash.in_trash
+
+    async def trash(self) -> None:
+        await self._trash.trash()
+
+    async def restore(self) -> None:
+        await self._trash.restore()
+
+    async def set_icon_emoji(self, emoji: str) -> None:
+        await self._icon.set_emoji(emoji)
+
+    async def set_icon_url(self, url: str) -> None:
+        await self._icon.set_from_url(url)
+
+    async def remove_icon(self) -> None:
+        await self._icon.remove()
+
+    async def set_cover(self, url: str) -> None:
+        await self._cover.set_from_url(url)
+
+    async def random_cover(self) -> None:
+        await self._cover.set_random_gradient()
+
+    async def remove_cover(self) -> None:
+        await self._cover.remove()
 
     async def get_data_sources(
         self,
@@ -51,15 +89,3 @@ class Database(Entity):
     ) -> list[DataSource]:
         tasks = [data_source_factory(ds_id) for ds_id in self._data_source_ids]
         return list(await asyncio.gather(*tasks))
-
-    # async def set_title(self, title: str) -> None:
-    #     rich_text = await converter.to_rich_text(title)
-    #     result = await self.client.update_database_title(rich_text)
-    #     self._title = result.title[0].plain_text if result.title else ""
-
-    # async def set_description(self, description: str) -> None:
-    #     md_to_rt = create_markdown_rich_text_converter()
-    #     rich_text = await md_to_rt.to_rich_text(description)
-    #     result = await self.client.update_database_description(rich_text)
-    #     rt_to_md = RichTextToMarkdownConverter()
-    #     self._description = await rt_to_md.to_markdown(result.description)

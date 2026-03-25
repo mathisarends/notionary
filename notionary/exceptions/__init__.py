@@ -6,7 +6,6 @@ from notionary.data_source.exceptions import (
 from notionary.database.exceptions import DatabaseNotFound
 from notionary.exceptions.base import NotionaryException
 from notionary.file_upload.exceptions import (
-    FileSizeException,
     NoFileExtensionException,
     UnsupportedFileTypeException,
 )
@@ -33,9 +32,6 @@ from notionary.page.exceptions import (
 from notionary.shared.exceptions import EntityNotFound
 from notionary.user.exceptions import NoUsersInWorkspace, UserNotFound
 
-NotionApiError = NotionError
-NotionResourceNotFoundError = NotionNotFoundError
-
 __all__ = [
     "AccessPagePropertyWithoutDataSourceError",
     "DataSourceNotFound",
@@ -43,16 +39,15 @@ __all__ = [
     "DataSourcePropertyTypeError",
     "DatabaseNotFound",
     "EntityNotFound",
-    "FileSizeException",
     "InsufficientColumnsError",
     "InvalidColumnRatioSumError",
     "NoFileExtensionException",
     "NoUsersInWorkspace",
-    "NotionApiError",
     "NotionAuthenticationError",
     "NotionConnectionError",
+    "NotionError",
+    "NotionNotFoundError",
     "NotionRateLimitError",
-    "NotionResourceNotFoundError",
     "NotionServerError",
     "NotionValidationError",
     "NotionaryException",

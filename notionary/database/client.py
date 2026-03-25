@@ -3,7 +3,7 @@ from notionary.database.schemas import (
     DatabaseUpdateDto,
 )
 from notionary.http.client import HttpClient
-from notionary.shared.rich_text.schemas import RichText
+from notionary.rich_text.schemas import RichText
 
 
 class DatabaseHttpClient:

@@ -12,6 +12,7 @@ from pydantic import (
 )
 
 from notionary.shared.properties.type import PropertyType
+from notionary.shared.sorting import SortDirection
 
 
 class FieldType(StrEnum):
@@ -79,11 +80,6 @@ class ArrayOperator(StrEnum):
 class LogicalOperator(StrEnum):
     AND = "and"
     OR = "or"
-
-
-class SortDirection(StrEnum):
-    ASCENDING = "ascending"
-    DESCENDING = "descending"
 
 
 class TimestampType(StrEnum):

@@ -1,6 +1,9 @@
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+from notionary.data_source.http.data_source_instance_client import (
+    DataSourceInstanceClient,
+)
 from notionary.shared.name_id_resolver.page import PageNameIdResolver
 from notionary.shared.name_id_resolver.person import PersonNameIdResolver
 
@@ -8,9 +11,6 @@ from notionary.data_source.data_source import DataSource
 from notionary.data_source.exceptions import (
     DataSourcePropertyNotFound,
     DataSourcePropertyTypeError,
-)
-from notionary.data_source.http.data_source_instance_client import (
-    DataSourceInstanceClient,
 )
 from notionary.data_source.properties.schemas import (
     DataSourceMultiSelectProperty,
@@ -24,7 +24,6 @@ from notionary.data_source.query.resolver import QueryResolver
 from notionary.data_source.schemas import DataSourceDto
 from notionary.shared.models.parent import PageParent, ParentType, WorkspaceParent
 from notionary.shared.properties.type import PropertyType
-from notionary.user.namespace import UserService
 from notionary.user.schemas import PartialUserDto
 
 
@@ -127,15 +126,8 @@ def data_source(
     base_dto: DataSourceDto,
     test_properties: dict,
     mock_query_resolver: QueryResolver,
-    monkeypatch,
 ) -> DataSource:
-    from notionary.file_upload.service import NotionFileUpload
-
-    monkeypatch.setattr(
-        "notionary.shared.entity.service.UserService", lambda: Mock(spec=UserService)
-    )
-
-    mock_file_upload_service = Mock(spec=NotionFileUpload)
+    mock_update_client = Mock()
 
     return DataSource(
         dto=base_dto,
@@ -143,9 +135,8 @@ def data_source(
         description="Test description",
         properties=test_properties,
         data_source_instance_client=Mock(spec=DataSourceInstanceClient),
+        entity_update_client=mock_update_client,
         query_resolver=mock_query_resolver,
-        user_service=Mock(spec=UserService),
-        file_upload_service=mock_file_upload_service,
     )
 
 

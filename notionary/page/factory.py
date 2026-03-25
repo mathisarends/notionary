@@ -1,11 +1,11 @@
 from notionary.http.client import HttpClient
-from notionary.page.blocks.client import BlockClient
+from notionary.page.blocks.service import PageContent
 from notionary.page.comments.service import PageComments
-from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
 from notionary.page.properties.factory import PagePropertyHandlerFactory
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import PageDto
 from notionary.page.service import Page
+from notionary.shared.entity.client import GenericEntityMetadataUpdateClient
 from notionary.shared.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
 
 
@@ -19,7 +19,13 @@ class PageFactory:
 
     async def from_dto(self, dto: PageDto) -> Page:
         title = await _extract_page_title(dto)
-        block_client = BlockClient(self._http)
+
+        entity_update_client = GenericEntityMetadataUpdateClient(
+            entity_id=dto.id,
+            path_segment="pages",
+            response_dto_class=PageDto,
+            http=self._http,
+        )
 
         return Page(
             dto=dto,
@@ -27,10 +33,9 @@ class PageFactory:
             page_property_handler=PagePropertyHandlerFactory().create_from_page_response(
                 dto
             ),
-            block_client=block_client,
-            # page_content=create_block_content_service(dto.id, block_client),
-            page_comments=PageComments(page_id=dto.id, http=self._http),
-            metadata_update_client=PageMetadataUpdateClient(dto.id, self._http),
+            content=PageContent(page_id=dto.id),
+            comments=PageComments(page_id=dto.id, http=self._http),
+            metadata_update_client=entity_update_client,
         )
 
     async def _fetch_dto(self, page_id: str) -> PageDto:
