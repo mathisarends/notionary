@@ -1,11 +1,9 @@
+from notionary.http.client import HttpClient
 from notionary.page.blocks.service import PageContent
 from notionary.page.comments.service import PageComments
 from notionary.page.properties.service import PagePropertyHandler
 from notionary.page.schemas import PageDto
 from notionary.shared.entity.cover import EntityCover
-from notionary.shared.entity.entity_metadata_update_client import (
-    EntityMetadataUpdateClient,
-)
 from notionary.shared.entity.metadata import EntityMetadata
 from notionary.shared.entity.trash import EntityTrash
 from notionary.shared.icon.icon import EntityIcon
@@ -19,13 +17,14 @@ class Page:
         page_property_handler: PagePropertyHandler,
         content: PageContent,
         comments: PageComments,
-        metadata_update_client: EntityMetadataUpdateClient,
+        http: HttpClient,
     ) -> None:
         self.metadata = EntityMetadata.from_dto(dto)
 
-        self._icon = EntityIcon(dto, metadata_update_client)
-        self._cover = EntityCover(dto, metadata_update_client)
-        self._trash = EntityTrash(dto, metadata_update_client)
+        path = f"pages/{dto.id}"
+        self._icon = EntityIcon(dto, http, path)
+        self._cover = EntityCover(dto, http, path)
+        self._trash = EntityTrash(dto, http, path)
 
         self.title = title
         self.archived = dto.archived
