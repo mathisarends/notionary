@@ -1,4 +1,4 @@
-from notionary.blocks.schemas import BlockCreatePayload
+from notionary.page.blocks.schemas import BlockCreatePayload
 from notionary.page.content.parser.parsers import (
     BlockParsingContext,
     ParentBlockContext,

@@ -1,30 +1,40 @@
-from ..file_upload.exceptions import (
+from notionary.data_source.exceptions import (
+    DataSourceNotFound,
+    DataSourcePropertyNotFound,
+    DataSourcePropertyTypeError,
+)
+from notionary.database.exceptions import DatabaseNotFound
+from notionary.exceptions.base import NotionaryException
+from notionary.file_upload.exceptions import (
     FileSizeException,
     NoFileExtensionException,
     UnsupportedFileTypeException,
 )
-from .api import (
-    NotionApiError,
+from notionary.http.exceptions import (
     NotionAuthenticationError,
     NotionConnectionError,
+    NotionError,
+    NotionNotFoundError,
     NotionRateLimitError,
-    NotionResourceNotFoundError,
     NotionServerError,
     NotionValidationError,
 )
-from .base import NotionaryException
-from .block_parsing import (
+from notionary.page.content.exceptions import (
     InsufficientColumnsError,
     InvalidColumnRatioSumError,
     UnsupportedVideoFormatError,
 )
-from .data_source import DataSourcePropertyNotFound, DataSourcePropertyTypeError
-from .properties import (
+from notionary.page.exceptions import (
     AccessPagePropertyWithoutDataSourceError,
+    PageNotFound,
     PagePropertyNotFoundError,
     PagePropertyTypeError,
 )
-from .search import DatabaseNotFound, DataSourceNotFound, EntityNotFound, PageNotFound
+from notionary.shared.exceptions import EntityNotFound
+from notionary.user.exceptions import NoUsersInWorkspace, UserNotFound
+
+NotionApiError = NotionError
+NotionResourceNotFoundError = NotionNotFoundError
 
 __all__ = [
     "AccessPagePropertyWithoutDataSourceError",
@@ -37,6 +47,7 @@ __all__ = [
     "InsufficientColumnsError",
     "InvalidColumnRatioSumError",
     "NoFileExtensionException",
+    "NoUsersInWorkspace",
     "NotionApiError",
     "NotionAuthenticationError",
     "NotionConnectionError",
@@ -50,4 +61,5 @@ __all__ = [
     "PagePropertyTypeError",
     "UnsupportedFileTypeException",
     "UnsupportedVideoFormatError",
+    "UserNotFound",
 ]

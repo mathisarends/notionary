@@ -2,7 +2,13 @@ import difflib
 from typing import ClassVar
 
 from notionary.exceptions.base import NotionaryException
+from notionary.shared.exceptions import EntityNotFound
 from notionary.shared.models.parent import ParentType
+
+
+class PageNotFound(EntityNotFound):
+    def __init__(self, query: str, available_titles: list[str] | None = None) -> None:
+        super().__init__("page", query, available_titles)
 
 
 class PagePropertyNotFoundError(NotionaryException):

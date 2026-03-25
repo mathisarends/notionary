@@ -15,7 +15,7 @@ from notionary.data_source.properties.schemas import (
     DataSourceURLProperty,
 )
 from notionary.data_source.query.builder import DataSourceQueryBuilder
-from notionary.exceptions.data_source.builder import InvalidOperatorForPropertyType
+from notionary.data_source.query.exceptions import InvalidOperatorForPropertyType
 from notionary.shared.properties.type import PropertyType
 
 

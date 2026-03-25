@@ -1,6 +1,6 @@
 [project]
 name = "notionary"
-version = "0.5.3"
+version = "0.6.0"
 description = "Python library for programmatic Notion workspace management - databases, pages, and content with advanced Markdown support"
 authors = [{ name = "Mathis Arends", email = "mathisarends27@gmail.com" }]
 requires-python = ">=3.12"
@@ -10,19 +10,22 @@ dependencies = [
     "httpx>=0.28.0",
     "pydantic>=2.11.4",
     "aiofiles>=24.1.0,<25.0.0",
-    "python-dotenv>=1.0.1,<2.0.0",
-    "openai>=2.21.0",
 ]
+
+[project.scripts]
+notionary = "notionary.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/mathisarends/notionary"
 
+[project.optional-dependencies]
+cli = [
+    "typer>=0.24.1",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.hatch.build.targets.sdist]
-include = ["/notionary", "/README.md"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["notionary"]
@@ -31,21 +34,11 @@ packages = ["notionary"]
 dev = [
     "mkdocs>=1.6.1,<2",
     "mkdocs-material>=9.6.15,<10",
-    "black>=25.1.0,<26",
     "pytest>=8.4.1,<9",
     "pytest-asyncio>=1.1.0,<2",
     "pytest-mock>=3.14.1,<4",
-    "pytest-cov>=6.2.1,<7",
-    "isort>=6.0.1,<7",
-    "mypy>=1.17.1,<2",
-    "ruff>=0.13.1",
     "pre-commit>=4.3.0",
-    "twine>=6.0.0",
-]
-
-[tool.pytest.ini_options]
-markers = [
-    "integration: marks tests as integration tests (potentially slow or network-dependent)",
+    "python-dotenv>=1.0.1,<2.0.0",
 ]
 
 [tool.ruff]

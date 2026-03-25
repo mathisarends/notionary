@@ -1,14 +1,14 @@
 from textwrap import dedent
 
 import pytest
-
-from notionary.exceptions.block_parsing import (
-    InsufficientColumnsError,
-    InvalidColumnRatioSumError,
-)
 from notionary.markdown.syntax.definition import (
     MarkdownGrammar,
     SyntaxDefinitionRegistry,
+)
+
+from notionary.page.content.exceptions import (
+    InsufficientColumnsError,
+    InvalidColumnRatioSumError,
 )
 from notionary.page.content.parser.pre_processsing.handlers.column_syntax import (
     ColumnSyntaxPreProcessor,

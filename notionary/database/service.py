@@ -52,26 +52,14 @@ class Database(Entity):
         tasks = [data_source_factory(ds_id) for ds_id in self._data_source_ids]
         return list(await asyncio.gather(*tasks))
 
-    async def set_title(self, title: str) -> None:
-        from notionary.rich_text.markdown_to_rich_text import (
-            create_markdown_rich_text_converter,
-        )
+    # async def set_title(self, title: str) -> None:
+    #     rich_text = await converter.to_rich_text(title)
+    #     result = await self.client.update_database_title(rich_text)
+    #     self._title = result.title[0].plain_text if result.title else ""
 
-        converter = create_markdown_rich_text_converter()
-        rich_text = await converter.to_rich_text(title)
-        result = await self.client.update_database_title(rich_text)
-        self._title = result.title[0].plain_text if result.title else ""
-
-    async def set_description(self, description: str) -> None:
-        from notionary.rich_text.markdown_to_rich_text import (
-            create_markdown_rich_text_converter,
-        )
-        from notionary.rich_text.rich_text_to_markdown.converter import (
-            RichTextToMarkdownConverter,
-        )
-
-        md_to_rt = create_markdown_rich_text_converter()
-        rich_text = await md_to_rt.to_rich_text(description)
-        result = await self.client.update_database_description(rich_text)
-        rt_to_md = RichTextToMarkdownConverter()
-        self._description = await rt_to_md.to_markdown(result.description)
+    # async def set_description(self, description: str) -> None:
+    #     md_to_rt = create_markdown_rich_text_converter()
+    #     rich_text = await md_to_rt.to_rich_text(description)
+    #     result = await self.client.update_database_description(rich_text)
+    #     rt_to_md = RichTextToMarkdownConverter()
+    #     self._description = await rt_to_md.to_markdown(result.description)

@@ -1,8 +1,14 @@
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+from notionary.shared.name_id_resolver.page import PageNameIdResolver
+from notionary.shared.name_id_resolver.person import PersonNameIdResolver
 
 from notionary.data_source.data_source import DataSource
+from notionary.data_source.exceptions import (
+    DataSourcePropertyNotFound,
+    DataSourcePropertyTypeError,
+)
 from notionary.data_source.http.data_source_instance_client import (
     DataSourceInstanceClient,
 )
@@ -16,13 +22,7 @@ from notionary.data_source.properties.schemas import (
 )
 from notionary.data_source.query.resolver import QueryResolver
 from notionary.data_source.schemas import DataSourceDto
-from notionary.exceptions.data_source import (
-    DataSourcePropertyNotFound,
-    DataSourcePropertyTypeError,
-)
 from notionary.shared.models.parent import PageParent, ParentType, WorkspaceParent
-from notionary.shared.name_id_resolver.page import PageNameIdResolver
-from notionary.shared.name_id_resolver.person import PersonNameIdResolver
 from notionary.shared.properties.type import PropertyType
 from notionary.user.namespace import UserService
 from notionary.user.schemas import PartialUserDto

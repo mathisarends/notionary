@@ -1,12 +1,12 @@
 from collections.abc import AsyncIterator
 
 from notionary.data_source.data_source import DataSource
+from notionary.data_source.exceptions import DataSourceNotFound
 from notionary.data_source.search import (
     DataSourceSearchClient,
     SortDirection,
     SortTimestamp,
 )
-from notionary.exceptions.search import DataSourceNotFound
 from notionary.http.client import HttpClient
 from notionary.shared.fuzzy import fuzzy_suggestions
 

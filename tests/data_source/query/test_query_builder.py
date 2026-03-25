@@ -1,5 +1,6 @@
 import pytest
 
+from notionary.data_source.exceptions import DataSourcePropertyNotFound
 from notionary.data_source.properties.schemas import (
     DataSourceCheckboxProperty,
     DataSourceDateProperty,
@@ -29,7 +30,6 @@ from notionary.data_source.query.schema import (
     TimestampSort,
     TimestampType,
 )
-from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound
 from notionary.shared.properties.type import PropertyType
 
 

@@ -1,27 +1,27 @@
 from typing import override
 
 from notionary.database.schemas import DatabaseDto
-from notionary.http.client import NotionHttpClient
+from notionary.http.client import HttpClient
 from notionary.shared.entity.entity_metadata_update_client import (
     EntityMetadataUpdateClient,
 )
 from notionary.shared.entity.schemas import NotionEntityUpdateDto
 
 
-class DatabaseMetadataUpdateClient(NotionHttpClient, EntityMetadataUpdateClient):
-    def __init__(
-        self, database_id: str, token: str | None = None, timeout: int = 30
-    ) -> None:
-        super().__init__(token=token, timeout=timeout)
+class DatabaseMetadataUpdateClient(EntityMetadataUpdateClient):
+    def __init__(self, database_id: str, http: HttpClient) -> None:
         self._database_id = database_id
+        self._http = http
 
     @override
-    async def patch_metadata(self, updated_data: NotionEntityUpdateDto) -> DatabaseDto:
+    async def patch_metadata(
+        self, database_id: str, updated_data: NotionEntityUpdateDto
+    ) -> DatabaseDto:
         updated_data_dict = updated_data.model_dump(
             exclude_unset=True, exclude_none=True
         )
 
-        response_dict = await self.patch(
-            f"databases/{self._database_id}", data=updated_data_dict
+        response_dict = await self._http.patch(
+            f"databases/{database_id}", data=updated_data_dict
         )
         return DatabaseDto.model_validate(response_dict)

@@ -24,3 +24,7 @@ class NotionRateLimitError(NotionError):
 
 class NotionServerError(NotionError):
     pass
+
+
+class NotionConnectionError(NotionError):
+    pass

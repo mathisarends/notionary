@@ -3,8 +3,9 @@ from typing import override
 from urllib.parse import urlparse
 
 from notionary.blocks.enums import VideoFileType
-from notionary.exceptions import UnsupportedVideoFormatError
 from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+
+from notionary.page.content.exceptions import UnsupportedVideoFormatError
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
 from notionary.shared.decorators import time_execution_sync
 

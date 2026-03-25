@@ -1,11 +1,11 @@
 from typing import override
 
-from notionary.blocks.schemas import BreadcrumbData, CreateBreadcrumbBlock
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.schemas import BreadcrumbData, CreateBreadcrumbBlock
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 
 
 class BreadcrumbParser(LineParser):

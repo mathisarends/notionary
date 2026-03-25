@@ -18,6 +18,9 @@ class ExternalFile(BaseModel):
     type: Literal[FileType.EXTERNAL] = FileType.EXTERNAL
     external: ExternalFileData
 
+    def get_url(self) -> str:
+        return self.external.url
+
     @classmethod
     def from_url(cls, url: str) -> Self:
         return cls(external=ExternalFileData(url=url))
@@ -32,6 +35,9 @@ class NotionHostedFile(BaseModel):
     type: Literal[FileType.FILE] = FileType.FILE
     file: NotionHostedFileData
 
+    def get_url(self) -> str:
+        return self.file.url
+
 
 class FileUploadedFileData(BaseModel):
     id: str
@@ -41,9 +47,8 @@ class FileUploadFile(BaseModel):
     type: Literal[FileType.FILE_UPLOAD] = FileType.FILE_UPLOAD
     file_upload: FileUploadedFileData
 
-    @classmethod
-    def from_id(cls, id: str) -> Self:
-        return cls(file_upload=FileUploadedFileData(id=id))
+    def get_url(self) -> None:
+        return None
 
 
 type File = Annotated[

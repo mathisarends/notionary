@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Never
 
-from notionary.exceptions.properties import (
+from notionary.page.exceptions import (
     AccessPagePropertyWithoutDataSourceError,
     PagePropertyNotFoundError,
     PagePropertyTypeError,

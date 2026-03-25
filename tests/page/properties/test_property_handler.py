@@ -4,7 +4,7 @@ import pytest
 from notionary.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
 from notionary.rich_text.schemas import RichText, TextContent
 
-from notionary.exceptions.properties import (
+from notionary.page.exceptions import (
     AccessPagePropertyWithoutDataSourceError,
     PagePropertyNotFoundError,
     PagePropertyTypeError,

@@ -2,13 +2,14 @@ import logging
 import re
 from typing import override
 
-from notionary.exceptions.block_parsing import (
-    InsufficientColumnsError,
-    InvalidColumnRatioSumError,
-)
 from notionary.markdown.syntax.definition import (
     MarkdownGrammar,
     SyntaxDefinitionRegistry,
+)
+
+from notionary.page.content.exceptions import (
+    InsufficientColumnsError,
+    InvalidColumnRatioSumError,
 )
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
 from notionary.shared.decorators import time_execution_sync

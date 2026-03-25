@@ -1,5 +1,6 @@
 from typing import Self
 
+from notionary.data_source.exceptions import DataSourcePropertyNotFound
 from notionary.data_source.properties.schemas import DataSourceProperty
 from notionary.data_source.query.schema import (
     ArrayOperator,
@@ -24,7 +25,6 @@ from notionary.data_source.query.schema import (
     TimestampType,
 )
 from notionary.data_source.query.validator import QueryValidator
-from notionary.exceptions.data_source.properties import DataSourcePropertyNotFound
 
 
 class DataSourceQueryBuilder:

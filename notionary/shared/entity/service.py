@@ -6,17 +6,12 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Self, cast
 
-from notionary.file_upload.service import NotionFileUpload
-from notionary.user.base import BaseUser
-
 from notionary.shared.entity.entity_metadata_update_client import (
     EntityMetadataUpdateClient,
 )
 from notionary.shared.entity.schemas import EntityResponseDto
-from notionary.shared.models.file import ExternalFile, FileType, NotionHostedFile
 from notionary.shared.models.icon import EmojiIcon, IconType
 from notionary.shared.models.parent import ParentType
-from notionary.user.namespace import UserService
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +19,10 @@ _UUID_RAW_PATTERN = re.compile(r"([a-f0-9]{32})")
 _UUID_PATTERN = re.compile(
     r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
 )
+
+_DEFAULT_NOTION_COVERS: Sequence[str] = [
+    f"https://www.notion.so/images/page-cover/gradients_{i}.png" for i in range(1, 10)
+]
 
 
 def _is_valid_uuid(uuid: str) -> bool:
@@ -44,8 +43,8 @@ class Entity(ABC):
     def __init__(
         self,
         dto: EntityResponseDto,
-        user_service: UserService | None = None,
-        file_upload_service: NotionFileUpload | None = None,
+        # user_service: UserService | None = None,
+        # file_upload_service: NotionFileUpload | None = None,
     ) -> None:
         self.id = dto.id
         self.created_time = dto.created_time
@@ -58,49 +57,25 @@ class Entity(ABC):
         self.public_url = dto.public_url
 
         self.emoji_icon = self._extract_emoji_icon(dto)
-        self.external_icon_url = self._extract_external_icon_url(dto)
-        self.cover_image_url = self._extract_cover_image_url(dto)
+        self.icon_url = self._extract_icon_url(dto)
+        self.cover_url = self._extract_cover_url(dto)
 
-        self._user_service = user_service or UserService()
-        self._file_upload_service = file_upload_service or NotionFileUpload()
+        # self._user_service = user_service or UserService()
+        # self._file_upload_service = file_upload_service or NotionFileUpload()
 
     @staticmethod
     def _extract_emoji_icon(dto: EntityResponseDto) -> str | None:
-        if dto.icon is None:
+        if dto.icon is None or dto.icon.type is not IconType.EMOJI:
             return None
-        if dto.icon.type is not IconType.EMOJI:
-            return None
-
-        emoji_icon = cast(EmojiIcon, dto.icon)
-        return emoji_icon.emoji
+        return cast(EmojiIcon, dto.icon).emoji
 
     @staticmethod
-    def _extract_external_icon_url(dto: EntityResponseDto) -> str | None:
-        if dto.icon is None:
-            return None
-
-        if dto.icon.type == IconType.EXTERNAL:
-            external_icon = cast(ExternalFile, dto.icon)
-            return external_icon.external.url
-        elif dto.icon.type == IconType.FILE:
-            notion_file_icon = cast(NotionHostedFile, dto.icon)
-            return notion_file_icon.file.url
-
-        return None
+    def _extract_icon_url(dto: EntityResponseDto) -> str | None:
+        return dto.icon.get_url() if dto.icon else None
 
     @staticmethod
-    def _extract_cover_image_url(dto: EntityResponseDto) -> str | None:
-        if dto.cover is None:
-            return None
-
-        if dto.cover.type == FileType.EXTERNAL:
-            external_cover = cast(ExternalFile, dto.cover)
-            return external_cover.external.url
-        elif dto.cover.type == FileType.FILE:
-            notion_file_cover = cast(NotionHostedFile, dto.cover)
-            return notion_file_cover.file.url
-
-        return None
+    def _extract_cover_url(dto: EntityResponseDto) -> str | None:
+        return dto.cover.get_url() if dto.cover else None
 
     @classmethod
     @abstractmethod
@@ -123,22 +98,22 @@ class Entity(ABC):
     @abstractmethod
     def _entity_metadata_update_client(self) -> EntityMetadataUpdateClient: ...
 
-    def get_parent_database_id_if_present(self) -> str | None:
+    def parent_database_id(self) -> str | None:
         if self.parent.type == ParentType.DATABASE_ID:
             return self.parent.database_id
         return None
 
-    def get_parent_data_source_id_if_present(self) -> str | None:
+    def parent_data_source_id(self) -> str | None:
         if self.parent.type == ParentType.DATA_SOURCE_ID:
             return self.parent.data_source_id
         return None
 
-    def get_parent_page_id_if_present(self) -> str | None:
+    def parent_page_id(self) -> str | None:
         if self.parent.type == ParentType.PAGE_ID:
             return self.parent.page_id
         return None
 
-    def get_parent_block_id_if_present(self) -> str | None:
+    def parent_block_id(self) -> str | None:
         if self.parent.type == ParentType.BLOCK_ID:
             return self.parent.block_id
         return None
@@ -146,123 +121,97 @@ class Entity(ABC):
     def is_workspace_parent(self) -> bool:
         return self.parent.type == ParentType.WORKSPACE
 
-    async def get_created_by_user(self) -> BaseUser | None:
-        return await self._user_service.get_user_by_id(self.created_by.id)
+    async def set_emoji(self, emoji: str) -> None:
+        response = await self._entity_metadata_update_client.patch_emoji_icon(emoji)
+        self.emoji_icon = self._extract_emoji_icon(response)
+        self.icon_url = None
 
-    async def get_last_edited_by_user(self) -> BaseUser | None:
-        return await self._user_service.get_user_by_id(self.last_edited_by.id)
-
-    async def set_emoji_icon(self, emoji: str) -> None:
-        entity_response = await self._entity_metadata_update_client.patch_emoji_icon(
-            emoji
-        )
-        self.emoji_icon = self._extract_emoji_icon(entity_response)
-        self.external_icon_url = None
-
-    async def set_external_icon(self, icon_url: str) -> None:
-        entity_response = await self._entity_metadata_update_client.patch_external_icon(
+    async def set_icon(self, icon_url: str) -> None:
+        response = await self._entity_metadata_update_client.patch_external_icon(
             icon_url
         )
         self.emoji_icon = None
-        self.external_icon_url = self._extract_external_icon_url(entity_response)
+        self.icon_url = self._extract_icon_url(response)
 
-    async def set_icon_from_file(
-        self, file_path: Path, filename: str | None = None
-    ) -> None:
-        upload_response = await self._file_upload_service.upload_file(
-            file_path, filename
-        )
-        await self.set_icon_from_file_upload(upload_response.id)
+    async def set_icon_file(self, file_path: Path, filename: str | None = None) -> None:
+        upload = await self._file_upload_service.upload_file(file_path, filename)
+        await self.set_icon_upload(upload.id)
 
-    async def set_icon_from_bytes(
+    async def set_icon_bytes(
         self, file_content: bytes, filename: str, content_type: str | None = None
     ) -> None:
-        upload_response = await self._file_upload_service.upload_from_bytes(
+        upload = await self._file_upload_service.upload_from_bytes(
             file_content, filename, content_type
         )
-        await self.set_icon_from_file_upload(upload_response.id)
+        await self.set_icon_upload(upload.id)
 
-    async def set_icon_from_file_upload(self, file_upload_id: str) -> None:
-        entity_response = (
+    async def set_icon_upload(self, file_upload_id: str) -> None:
+        response = (
             await self._entity_metadata_update_client.patch_icon_from_file_upload(
                 file_upload_id
             )
         )
         self.emoji_icon = None
-        self.external_icon_url = self._extract_external_icon_url(entity_response)
+        self.icon_url = self._extract_icon_url(response)
 
     async def remove_icon(self) -> None:
         await self._entity_metadata_update_client.remove_icon()
         self.emoji_icon = None
-        self.external_icon_url = None
+        self.icon_url = None
 
-    async def set_cover_image_by_url(self, image_url: str) -> None:
-        entity_response = (
-            await self._entity_metadata_update_client.patch_external_cover(image_url)
+    async def set_cover(self, image_url: str) -> None:
+        response = await self._entity_metadata_update_client.patch_external_cover(
+            image_url
         )
-        self.cover_image_url = self._extract_cover_image_url(entity_response)
+        self.cover_url = self._extract_cover_url(response)
 
-    async def set_cover_image_from_file(
+    async def set_cover_file(
         self, file_path: Path, filename: str | None = None
     ) -> None:
-        upload_response = await self._file_upload_service.upload_file(
-            file_path, filename
-        )
-        await self.set_cover_image_from_file_upload(upload_response.id)
+        upload = await self._file_upload_service.upload_file(file_path, filename)
+        await self.set_cover_upload(upload.id)
 
-    async def set_cover_image_from_bytes(
+    async def set_cover_bytes(
         self, file_content: bytes, filename: str, content_type: str | None = None
     ) -> None:
-        upload_response = await self._file_upload_service.upload_from_bytes(
+        upload = await self._file_upload_service.upload_from_bytes(
             file_content, filename, content_type
         )
-        await self.set_cover_image_from_file_upload(upload_response.id)
+        await self.set_cover_upload(upload.id)
 
-    async def set_cover_image_from_file_upload(self, file_upload_id: str) -> None:
-        entity_response = (
+    async def set_cover_upload(self, file_upload_id: str) -> None:
+        response = (
             await self._entity_metadata_update_client.patch_cover_from_file_upload(
                 file_upload_id
             )
         )
-        self.cover_image_url = self._extract_cover_image_url(entity_response)
+        self.cover_url = self._extract_cover_url(response)
 
-    async def set_random_gradient_cover(self) -> None:
-        random_cover_url = self._get_random_gradient_cover()
-        await self.set_cover_image_by_url(random_cover_url)
+    async def random_cover(self) -> None:
+        await self.set_cover(random.choice(_DEFAULT_NOTION_COVERS))
 
-    async def remove_cover_image(self) -> None:
+    async def remove_cover(self) -> None:
         await self._entity_metadata_update_client.remove_cover()
-        self.cover_image_url = None
+        self.cover_url = None
 
-    async def move_to_trash(self) -> None:
+    async def trash(self) -> None:
         if self.in_trash:
             logger.warning("Entity is already in trash.")
             return
+        response = await self._entity_metadata_update_client.move_to_trash()
+        self.in_trash = response.in_trash
 
-        entity_response = await self._entity_metadata_update_client.move_to_trash()
-        self.in_trash = entity_response.in_trash
-
-    async def restore_from_trash(self) -> None:
+    async def restore(self) -> None:
         if not self.in_trash:
             logger.warning("Entity is not in trash.")
             return
-
-        entity_response = await self._entity_metadata_update_client.restore_from_trash()
-        self.in_trash = entity_response.in_trash
+        response = await self._entity_metadata_update_client.restore_from_trash()
+        self.in_trash = response.in_trash
 
     def __repr__(self) -> str:
-        attrs = []
-        for key, value in self.__dict__.items():
-            if not key.startswith("_"):
-                attrs.append(f"{key}={value!r}")
-
-        attrs_str = ", ".join(attrs)
-        return f"{self.__class__.__name__}({attrs_str})"
-
-    def _get_random_gradient_cover(self) -> str:
-        DEFAULT_NOTION_COVERS: Sequence[str] = [
-            f"https://www.notion.so/images/page-cover/gradients_{i}.png"
-            for i in range(1, 10)
+        attrs = [
+            f"{key}={value!r}"
+            for key, value in self.__dict__.items()
+            if not key.startswith("_")
         ]
-
-        return random.choice(DEFAULT_NOTION_COVERS)
+        return f"{self.__class__.__name__}({', '.join(attrs)})"

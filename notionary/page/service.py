@@ -1,4 +1,4 @@
-from notionary.page.blocks import PageContent
+from notionary.page.blocks.service import PageContent
 from notionary.page.comments.service import PageComments
 from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
 from notionary.page.properties.service import PagePropertyHandler

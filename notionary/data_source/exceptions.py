@@ -1,6 +1,12 @@
 import difflib
 
 from notionary.exceptions.base import NotionaryException
+from notionary.shared.exceptions import EntityNotFound
+
+
+class DataSourceNotFound(EntityNotFound):
+    def __init__(self, query: str, available_titles: list[str] | None = None) -> None:
+        super().__init__("data source", query, available_titles)
 
 
 class DataSourcePropertyNotFound(NotionaryException):
@@ -13,7 +19,6 @@ class DataSourcePropertyNotFound(NotionaryException):
     ) -> None:
         self.property_name = property_name
 
-        # Calculate suggestions from available properties
         if available_properties:
             self.suggestions = difflib.get_close_matches(
                 property_name, available_properties, n=max_suggestions, cutoff=cutoff

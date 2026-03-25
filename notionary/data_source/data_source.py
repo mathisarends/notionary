@@ -5,6 +5,10 @@ import logging
 from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Self
 
+from notionary.data_source.exceptions import (
+    DataSourcePropertyNotFound,
+    DataSourcePropertyTypeError,
+)
 from notionary.data_source.http.client import DataSourceClient
 from notionary.data_source.http.data_source_instance_client import (
     DataSourceInstanceClient,
@@ -25,10 +29,6 @@ from notionary.data_source.query import (
 )
 from notionary.data_source.schema.service import DataSourcePropertySchemaFormatter
 from notionary.data_source.schemas import DataSourceDto
-from notionary.exceptions.data_source.properties import (
-    DataSourcePropertyNotFound,
-    DataSourcePropertyTypeError,
-)
 from notionary.file_upload.service import NotionFileUpload
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import PageDto

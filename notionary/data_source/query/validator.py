@@ -1,6 +1,7 @@
 from typing import ClassVar
 
 from notionary.data_source.properties.schemas import DataSourceProperty
+from notionary.data_source.query.exceptions import InvalidOperatorForPropertyType
 from notionary.data_source.query.schema import (
     ArrayOperator,
     BooleanOperator,
@@ -10,7 +11,6 @@ from notionary.data_source.query.schema import (
     SelectOperator,
     StringOperator,
 )
-from notionary.exceptions.data_source.builder import InvalidOperatorForPropertyType
 from notionary.shared.properties.type import PropertyType
 
 

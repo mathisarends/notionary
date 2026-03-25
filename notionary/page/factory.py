@@ -1,6 +1,5 @@
 from notionary.http.client import HttpClient
 from notionary.page.blocks.client import BlockClient
-from notionary.page.blocks.content.factory import create_block_content_service
 from notionary.page.comments.service import PageComments
 from notionary.page.page_metadata_update_client import PageMetadataUpdateClient
 from notionary.page.properties.factory import PagePropertyHandlerFactory
@@ -29,7 +28,7 @@ class PageFactory:
                 dto
             ),
             block_client=block_client,
-            page_content=create_block_content_service(dto.id, block_client),
+            # page_content=create_block_content_service(dto.id, block_client),
             page_comments=PageComments(page_id=dto.id, http=self._http),
             metadata_update_client=PageMetadataUpdateClient(dto.id, self._http),
         )
