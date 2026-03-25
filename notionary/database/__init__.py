@@ -1,10 +1,10 @@
-from .database import Database
 from .namespace import (
     DatabaseNamespace,
     DatabaseQueryConfig,
     SortDirection,
     SortTimestamp,
 )
+from .service import Database
 
 __all__ = [
     "Database",

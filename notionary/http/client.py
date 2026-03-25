@@ -90,6 +90,7 @@ class HttpClient:
         self,
         endpoint: str,
         total_results_limit: int | None = None,
+        method: str = "POST",
         **kwargs,
     ) -> AsyncGenerator[PaginatedResponse]:
         next_cursor: str | None = None
@@ -102,9 +103,11 @@ class HttpClient:
             if next_cursor:
                 params["start_cursor"] = next_cursor
 
-            response = PaginatedResponse.model_validate(
-                await self.post(endpoint, data=params)
-            )
+            if method.upper() == "GET":
+                raw = await self.get(endpoint, params=params)
+            else:
+                raw = await self.post(endpoint, data=params)
+            response = PaginatedResponse.model_validate(raw)
 
             results = self._slice_to_limit(
                 response.results, total_results_limit, total_fetched

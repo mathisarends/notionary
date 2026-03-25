@@ -1,11 +1,11 @@
 from enum import StrEnum
 from typing import Any, Literal, TypeVar
 
-from notionary.rich_text.schemas import RichText
 from pydantic import BaseModel, ConfigDict, Field
 
 from notionary.shared.models.file import File
 from notionary.shared.properties.type import PropertyType
+from notionary.shared.rich_text.schemas import RichText
 from notionary.user.schemas import PersonUserResponseDto, UserResponseDto
 
 # ============================================================================

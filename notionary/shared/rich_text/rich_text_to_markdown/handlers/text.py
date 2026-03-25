@@ -1,8 +1,8 @@
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.rich_text_to_markdown.handlers.port import (
+from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
+from notionary.shared.rich_text.rich_text_to_markdown.handlers.port import (
     RichTextHandler,
 )
-from notionary.rich_text.schemas import RichText, TextAnnotations
+from notionary.shared.rich_text.schemas import RichText, TextAnnotations
 
 
 class TextHandler(RichTextHandler):

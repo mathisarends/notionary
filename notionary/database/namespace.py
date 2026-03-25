@@ -1,13 +1,14 @@
 import difflib
 from collections.abc import AsyncIterator
 
-from notionary.database.database import Database
+from notionary.database.factory import DatabaseFactory
 from notionary.database.schemas import (
     DatabaseDto,
     DatabaseQueryConfig,
     SortDirection,
     SortTimestamp,
 )
+from notionary.database.service import Database
 from notionary.exceptions.search import DatabaseNotFound
 from notionary.http.client import HttpClient
 
@@ -24,6 +25,7 @@ def _fuzzy_suggestions(query: str, items: list[Database], top_n: int = 5) -> lis
 class DatabaseNamespace:
     def __init__(self, http: HttpClient) -> None:
         self._http = http
+        self._factory = DatabaseFactory(http)
 
     async def list(
         self,
@@ -65,7 +67,7 @@ class DatabaseNamespace:
             **config.model_dump(),
         ):
             dto = DatabaseDto.model_validate(item)
-            yield await Database.from_id(dto.id)
+            yield await self._factory.from_id(dto.id)
 
     async def search(self, query: str) -> list[Database]:
         return await self.list(query=query)
@@ -83,4 +85,4 @@ class DatabaseNamespace:
         raise DatabaseNotFound(title, suggestions)
 
     async def from_id(self, database_id: str) -> Database:
-        return await Database.from_id(database_id)
+        return await self._factory.from_id(database_id)

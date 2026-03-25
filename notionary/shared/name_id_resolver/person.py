@@ -1,13 +1,14 @@
 from typing import override
 
-from notionary.shared.name_id_resolver.port import NameIdResolver
-from notionary.user.client import UserHttpClient
 from notionary.user.person import PersonUser
+
+from notionary.shared.name_id_resolver.port import NameIdResolver
+from notionary.user.client import UserClient
 
 
 class PersonNameIdResolver(NameIdResolver):
     def __init__(
-        self, person_user_factory=None, http_client: UserHttpClient | None = None
+        self, person_user_factory=None, http_client: UserClient | None = None
     ) -> None:
         if person_user_factory is None:
             person_user_factory = PersonUser

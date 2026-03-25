@@ -1,6 +1,11 @@
 from unittest.mock import AsyncMock
 
 import pytest
+from notionary.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
+from notionary.rich_text.rich_text_to_markdown.handlers.mention import (
+    create_mention_rich_text_handler,
+)
+from notionary.rich_text.schemas import RichText, TextContent
 
 from notionary.exceptions.properties import (
     AccessPagePropertyWithoutDataSourceError,
@@ -26,16 +31,6 @@ from notionary.page.properties.schemas import (
     StatusOption,
 )
 from notionary.page.properties.service import PagePropertyHandler
-from notionary.rich_text.rich_text_to_markdown import (
-    create_rich_text_to_markdown_converter,
-)
-from notionary.rich_text.rich_text_to_markdown.handlers.mention import (
-    create_mention_rich_text_handler,
-)
-from notionary.rich_text.rich_text_to_markdown.registry import (
-    create_rich_text_handler_registry,
-)
-from notionary.rich_text.schemas import RichText, TextContent
 from notionary.shared.models.parent import ParentType
 
 # ============================================================================
@@ -207,12 +202,7 @@ def handler(
         data_source_resolver=mock_data_source_resolver,
         person_resolver=mock_person_resolver,
     )
-    registry = create_rich_text_handler_registry(
-        mention_rich_text_handler=mention_handler
-    )
-    converter = create_rich_text_to_markdown_converter(
-        rich_text_handler_registry=registry
-    )
+    converter = RichTextToMarkdownConverter(mention_handler=mention_handler)
 
     return PagePropertyHandler(
         properties=sample_properties,
@@ -239,12 +229,7 @@ def handler_without_data_source(
         data_source_resolver=mock_data_source_resolver,
         person_resolver=mock_person_resolver,
     )
-    registry = create_rich_text_handler_registry(
-        mention_rich_text_handler=mention_handler
-    )
-    converter = create_rich_text_to_markdown_converter(
-        rich_text_handler_registry=registry
-    )
+    converter = RichTextToMarkdownConverter(mention_handler=mention_handler)
 
     return PagePropertyHandler(
         properties=sample_properties,

@@ -1,16 +1,24 @@
 import logging
 from typing import ClassVar
 
-from notionary.page.blocks.enums import BlockColor
+from notionary.page.blocks.schemas import BlockColor
 from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
 from notionary.shared.rich_text.rich_text_to_markdown.color_chunker import (
     ColorGroup,
     chunk_by_color,
 )
-from notionary.shared.rich_text.rich_text_to_markdown.registry.service import (
-    RichTextHandlerRegistry,
+from notionary.shared.rich_text.rich_text_to_markdown.handlers.inline_equation import (
+    EquationHandler,
 )
-from notionary.shared.rich_text.schemas import RichText, TextAnnotations
+from notionary.shared.rich_text.rich_text_to_markdown.handlers.mention import (
+    MentionRichTextHandler,
+    create_mention_rich_text_handler,
+)
+from notionary.shared.rich_text.rich_text_to_markdown.handlers.port import (
+    RichTextHandler,
+)
+from notionary.shared.rich_text.rich_text_to_markdown.handlers.text import TextHandler
+from notionary.shared.rich_text.schemas import RichText, RichTextType, TextAnnotations
 
 logger = logging.getLogger(__name__)
 
@@ -20,10 +28,15 @@ class RichTextToMarkdownConverter:
 
     def __init__(
         self,
-        rich_text_handler_registry: RichTextHandlerRegistry,
+        mention_handler: MentionRichTextHandler | None = None,
     ) -> None:
         self._markdown_grammar = MarkdownGrammar()
-        self._rich_text_handler_registry = rich_text_handler_registry
+        self._handlers: dict[RichTextType, RichTextHandler] = {
+            RichTextType.TEXT: TextHandler(self._markdown_grammar),
+            RichTextType.EQUATION: EquationHandler(self._markdown_grammar),
+            RichTextType.MENTION: mention_handler
+            or create_mention_rich_text_handler(self._markdown_grammar),
+        }
 
     async def to_markdown(self, rich_text: list[RichText]) -> str:
         if not rich_text:
@@ -81,8 +94,8 @@ class RichTextToMarkdownConverter:
 
         return result
 
-    def _get_handler_for(self, obj: RichText):
-        handler = self._rich_text_handler_registry.get_handler(obj.type)
+    def _get_handler_for(self, obj: RichText) -> RichTextHandler | None:
+        handler = self._handlers.get(obj.type)
         if not handler:
             logger.warning(
                 f"No handler found for rich text type: {obj.type}. Skipping."

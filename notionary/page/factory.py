@@ -7,9 +7,7 @@ from notionary.page.properties.factory import PagePropertyHandlerFactory
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import PageDto
 from notionary.page.service import Page
-from notionary.shared.rich_text.rich_text_to_markdown.factory import (
-    create_rich_text_to_markdown_converter,
-)
+from notionary.shared.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
 
 
 class PageFactory:
@@ -46,5 +44,5 @@ async def _extract_page_title(dto: PageDto) -> str:
         (p for p in dto.properties.values() if isinstance(p, PageTitleProperty)),
         None,
     )
-    converter = create_rich_text_to_markdown_converter()
+    converter = RichTextToMarkdownConverter()
     return await converter.convert(title_property.title if title_property else [])

@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class BlockClient:
-    BATCH_SIZE = 100
+    _BATCH_SIZE = 100
 
     def __init__(self, client: HttpClient) -> None:
         self._client = client
@@ -64,8 +64,8 @@ class BlockClient:
             return None
 
         batches = [
-            children[i : i + self.BATCH_SIZE]
-            for i in range(0, len(children), self.BATCH_SIZE)
+            children[i : i + self._BATCH_SIZE]
+            for i in range(0, len(children), self._BATCH_SIZE)
         ]
 
         if len(batches) == 1:

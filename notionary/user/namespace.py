@@ -1,31 +1,31 @@
 from typing import cast
 
 from notionary.http import HttpClient
-from notionary.user.client import UserHttpClient
+from notionary.user.client import UserClient
 from notionary.user.models import BotUser, PersonUser
 from notionary.user.schemas import BotUserResponseDto, PersonUserResponseDto, UserType
 
 
 class UsersNamespace:
     def __init__(self, http: HttpClient) -> None:
-        self._client = UserHttpClient(http)
+        self._client = UserClient(http)
 
     async def list_users(self) -> list[PersonUser]:
-        users = await self._client.get_all_workspace_users()
+        users = await self._client.list()
         return [self._to_person(u) for u in users if u.type == UserType.PERSON]
 
     async def list_bots(self) -> list[BotUser]:
-        users = await self._client.get_all_workspace_users()
+        users = await self._client.list()
         return [self._to_bot(u) for u in users if u.type == UserType.BOT]
 
     async def get(self, user_id: str) -> PersonUser | BotUser:
-        dto = await self._client.get_user_by_id(user_id)
+        dto = await self._client.get(user_id)
         if dto.type == UserType.PERSON:
             return self._to_person(dto)
         return self._to_bot(dto)
 
     async def me(self) -> BotUser:
-        dto = await self._client.get_current_integration_bot()
+        dto = await self._client.me()
         return self._to_bot(dto)
 
     async def search(self, query: str) -> list[PersonUser]:

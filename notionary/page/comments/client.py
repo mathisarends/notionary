@@ -2,17 +2,8 @@ import logging
 from collections.abc import AsyncGenerator
 
 from notionary.http.client import HttpClient
-from notionary.page.comments.schemas import (
-    CommentCreateRequest,
-    CommentDto,
-    CommentListRequest,
-    CommentListResponse,
-)
+from notionary.page.comments.schemas import CommentCreateRequest, CommentDto
 from notionary.shared.rich_text.schemas import RichText
-from notionary.utils.pagination import (
-    paginate_notion_api,
-    paginate_notion_api_generator,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -26,66 +17,48 @@ class CommentClient:
         block_id: str,
         total_results_limit: int | None = None,
     ) -> AsyncGenerator[CommentDto]:
-        async for comment in paginate_notion_api_generator(
-            self._list_comments_page,
-            block_id=block_id,
+        async for item in self._http.paginate_stream(
+            "comments",
             total_results_limit=total_results_limit,
+            method="GET",
+            block_id=block_id,
         ):
-            yield comment
+            yield CommentDto.model_validate(item)
 
     async def get_all_comments(
-        self, block_id: str, *, total_results_limit: int | None = None
-    ) -> list[CommentDto]:
-        all_comments = await paginate_notion_api(
-            self._list_comments_page,
-            block_id=block_id,
-            total_results_limit=total_results_limit,
-        )
-
-        logger.debug(
-            "Retrieved %d total comments for block %s", len(all_comments), block_id
-        )
-        return all_comments
-
-    async def _list_comments_page(
         self,
         block_id: str,
         *,
-        start_cursor: str | None = None,
-        page_size: int = 100,
-    ) -> CommentListResponse:
-        request = CommentListRequest(
+        total_results_limit: int | None = None,
+    ) -> list[CommentDto]:
+        items = await self._http.paginate(
+            "comments",
+            total_results_limit=total_results_limit,
+            method="GET",
             block_id=block_id,
-            start_cursor=start_cursor,
-            page_size=page_size,
         )
-        resp = await self._http.get(
-            "comments", params=request.model_dump(exclude_none=True)
+        comments = [CommentDto.model_validate(item) for item in items]
+        logger.debug(
+            "Retrieved %d total comments for block %s", len(comments), block_id
         )
-        return CommentListResponse.model_validate(resp)
+        return comments
 
     async def create_comment_for_page(
         self,
         rich_text: list[RichText],
         page_id: str,
     ) -> CommentDto:
-        request = CommentCreateRequest.for_page(page_id=page_id, rich_text=rich_text)
-
-        body = request.model_dump(exclude_unset=True, exclude_none=True)
-
-        resp = await self._http.post("comments", data=body)
-        return CommentDto.model_validate(resp)
+        body = CommentCreateRequest.for_page(
+            page_id=page_id, rich_text=rich_text
+        ).model_dump(exclude_unset=True, exclude_none=True)
+        return CommentDto.model_validate(await self._http.post("comments", data=body))
 
     async def create_comment_for_discussion(
         self,
         rich_text: list[RichText],
         discussion_id: str,
     ) -> CommentDto:
-        request = CommentCreateRequest.for_discussion(
+        body = CommentCreateRequest.for_discussion(
             discussion_id=discussion_id, rich_text=rich_text
-        )
-
-        body = request.model_dump(exclude_unset=True, exclude_none=True)
-
-        resp = await self._http.post("comments", data=body)
-        return CommentDto.model_validate(resp)
+        ).model_dump(exclude_unset=True, exclude_none=True)
+        return CommentDto.model_validate(await self._http.post("comments", data=body))

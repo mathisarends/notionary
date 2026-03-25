@@ -3,9 +3,7 @@ from notionary.database.schemas import (
     DatabaseUpdateDto,
 )
 from notionary.http.client import NotionHttpClient
-from notionary.rich_text.rich_text_to_markdown.converter import (
-    RichTextToMarkdownConverter,
-)
+from notionary.shared.rich_text.schemas import RichText
 
 
 class DatabaseHttpClient(NotionHttpClient):
@@ -29,35 +27,10 @@ class DatabaseHttpClient(NotionHttpClient):
         )
         return DatabaseDto.model_validate(response)
 
-    async def update_database_title(self, title: str) -> DatabaseDto:
-        from notionary.rich_text.markdown_to_rich_text import (
-            create_markdown_rich_text_converter,
-        )
+    async def update_database_title(self, title: list[RichText]) -> DatabaseDto:
+        return await self.patch_database(DatabaseUpdateDto(title=title))
 
-        markdown_rich_text_formatter = create_markdown_rich_text_converter()
-        database_rich_text = await markdown_rich_text_formatter.to_rich_text(title)
-
-        database_title_update_dto = DatabaseUpdateDto(title=database_rich_text)
-        return await self.patch_database(database_title_update_dto)
-
-    async def update_database_description(self, description: str) -> str:
-        from notionary.rich_text.markdown_to_rich_text import (
-            create_markdown_rich_text_converter,
-        )
-
-        markdown_to_rich_text_converter = create_markdown_rich_text_converter()
-        rich_text_description = await markdown_to_rich_text_converter.to_rich_text(
-            description
-        )
-
-        database_description_update_dto = DatabaseUpdateDto(
-            description=rich_text_description
-        )
-        update_database_response = await self.patch_database(
-            database_description_update_dto
-        )
-
-        rich_text_to_markdown_converter = RichTextToMarkdownConverter()
-        return await rich_text_to_markdown_converter.to_markdown(
-            update_database_response.description
-        )
+    async def update_database_description(
+        self, description: list[RichText]
+    ) -> DatabaseDto:
+        return await self.patch_database(DatabaseUpdateDto(description=description))

@@ -1,16 +1,7 @@
 import pytest
-
-from notionary.rich_text.rich_text_to_markdown import (
-    create_rich_text_to_markdown_converter,
-)
-from notionary.rich_text.rich_text_to_markdown.converter import (
-    RichTextToMarkdownConverter,
-)
+from notionary.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
 from notionary.rich_text.rich_text_to_markdown.handlers.mention.factory import (
     create_mention_rich_text_handler,
-)
-from notionary.rich_text.rich_text_to_markdown.registry.factory import (
-    create_rich_text_handler_registry,
 )
 from notionary.rich_text.schemas import (
     DateMention,
@@ -41,10 +32,7 @@ def converter(
         data_source_resolver=mock_data_source_resolver,
         person_resolver=mock_person_resolver,
     )
-    registry = create_rich_text_handler_registry(
-        mention_rich_text_handler=mention_handler
-    )
-    return create_rich_text_to_markdown_converter(rich_text_handler_registry=registry)
+    return RichTextToMarkdownConverter(mention_handler=mention_handler)
 
 
 @pytest.mark.asyncio

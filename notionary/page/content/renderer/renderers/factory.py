@@ -1,5 +1,9 @@
 from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
 from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.rich_text.rich_text_to_markdown import (
+    RichTextToMarkdownConverter,
+)
+
 from notionary.page.content.renderer.renderers import (
     AudioRenderer,
     BlockRenderer,
@@ -28,13 +32,10 @@ from notionary.page.content.renderer.renderers import (
     ToggleRenderer,
     VideoRenderer,
 )
-from notionary.rich_text.rich_text_to_markdown import (
-    create_rich_text_to_markdown_converter,
-)
 
 
 def create_renderer_chain() -> BlockRenderer:
-    rich_text_markdown_converter = create_rich_text_to_markdown_converter()
+    rich_text_markdown_converter = RichTextToMarkdownConverter()
     syntax_registry = SyntaxDefinitionRegistry()
     markdown_grammar = MarkdownGrammar()
 

@@ -3,11 +3,6 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Never
 
-from notionary.rich_text.rich_text_to_markdown import (
-    RichTextToMarkdownConverter,
-    create_rich_text_to_markdown_converter,
-)
-
 from notionary.exceptions.properties import (
     AccessPagePropertyWithoutDataSourceError,
     PagePropertyNotFoundError,
@@ -33,6 +28,7 @@ from notionary.page.properties.schemas import (
     PageURLProperty,
 )
 from notionary.shared.models.parent import ParentType
+from notionary.shared.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
 
 if TYPE_CHECKING:
     from notionary import DataSource
@@ -55,9 +51,7 @@ class PagePropertyHandler:
         self._parent_data_source_id = parent_data_source
         self._parent_data_source: DataSource | None = None
         self._data_source_loaded = False
-        self._rich_text_converter = (
-            rich_text_converter or create_rich_text_to_markdown_converter()
-        )
+        self._rich_text_converter = rich_text_converter or RichTextToMarkdownConverter()
 
     # =========================================================================
     # Reader Methods

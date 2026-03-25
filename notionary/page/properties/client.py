@@ -1,9 +1,8 @@
 from typing import Any
 
-from notionary.rich_text.schemas import RichText
 from pydantic import BaseModel
 
-from notionary.http.client import NotionHttpClient
+from notionary.http.client import HttpClient
 from notionary.page.properties.schemas import (
     DateValue,
     PageCheckboxProperty,
@@ -24,9 +23,10 @@ from notionary.page.properties.schemas import (
     StatusOption,
 )
 from notionary.page.schemas import PageDto, PgePropertiesUpdateDto
+from notionary.shared.rich_text.schemas import RichText
 
 
-class PagePropertyHttpClient(NotionHttpClient):
+class PagePropertyHttpClient(HttpClient):
     def __init__(self, page_id: str) -> None:
         super().__init__()
         self._page_id = page_id

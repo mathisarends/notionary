@@ -1,6 +1,5 @@
 import asyncio
 from collections.abc import Awaitable, Callable
-from typing import Self
 
 from notionary.data_source.data_source import DataSource
 from notionary.database.client import DatabaseHttpClient
@@ -8,13 +7,6 @@ from notionary.database.database_metadata_update_client import (
     DatabaseMetadataUpdateClient,
 )
 from notionary.database.schemas import DatabaseDto
-from notionary.rich_text.rich_text_to_markdown.converter import (
-    RichTextToMarkdownConverter,
-)
-from notionary.shared.entity.dto_parsers import (
-    extract_description,
-    extract_title,
-)
 from notionary.shared.entity.service import Entity
 
 type _DataSourceFactory = Callable[[str], Awaitable[DataSource]]
@@ -41,39 +33,6 @@ class Database(Entity):
 
         self.client = client
         self._metadata_update_client = metadata_update_client
-
-    @classmethod
-    async def from_id(cls, database_id: str) -> Self:
-        client = DatabaseHttpClient(database_id=database_id)
-        converter = RichTextToMarkdownConverter()
-
-        async with client:
-            response_dto = await client.get_database()
-
-        return await cls._create_from_dto(response_dto, converter, client)
-
-    @classmethod
-    async def _create_from_dto(
-        cls,
-        dto: DatabaseDto,
-        rich_text_converter: RichTextToMarkdownConverter,
-        client: DatabaseHttpClient,
-    ) -> Self:
-        title, description = await asyncio.gather(
-            extract_title(dto, rich_text_converter),
-            extract_description(dto, rich_text_converter),
-        )
-
-        metadata_update_client = DatabaseMetadataUpdateClient(database_id=dto.id)
-
-        return cls(
-            dto=dto,
-            title=title,
-            description=description,
-            data_source_ids=[ds.id for ds in dto.data_sources],
-            client=client,
-            metadata_update_client=metadata_update_client,
-        )
 
     @property
     def _entity_metadata_update_client(self) -> DatabaseMetadataUpdateClient:
@@ -106,11 +65,25 @@ class Database(Entity):
         return list(await asyncio.gather(*tasks))
 
     async def set_title(self, title: str) -> None:
-        result = await self.client.update_database_title(title=title)
+        from notionary.rich_text.markdown_to_rich_text import (
+            create_markdown_rich_text_converter,
+        )
+
+        converter = create_markdown_rich_text_converter()
+        rich_text = await converter.to_rich_text(title)
+        result = await self.client.update_database_title(rich_text)
         self._title = result.title[0].plain_text if result.title else ""
 
     async def set_description(self, description: str) -> None:
-        updated_description = await self.client.update_database_description(
-            description=description
+        from notionary.rich_text.markdown_to_rich_text import (
+            create_markdown_rich_text_converter,
         )
-        self._description = updated_description
+        from notionary.rich_text.rich_text_to_markdown.converter import (
+            RichTextToMarkdownConverter,
+        )
+
+        md_to_rt = create_markdown_rich_text_converter()
+        rich_text = await md_to_rt.to_rich_text(description)
+        result = await self.client.update_database_description(rich_text)
+        rt_to_md = RichTextToMarkdownConverter()
+        self._description = await rt_to_md.to_markdown(result.description)

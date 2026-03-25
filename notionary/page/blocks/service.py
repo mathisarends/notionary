@@ -1,122 +1,43 @@
-from __future__ import annotations
+import asyncio
+import logging
 
-from typing import Self
+from notionary.page.blocks.client import BlockClient
+from notionary.page.blocks.schemas import Block
+from notionary.page.content.parser.service import MarkdownToNotionConverter
+from notionary.page.content.renderer.service import NotionToMarkdownConverter
+from notionary.shared.decorators import with_retry
 
-from notionary.blocks.client import BlockClient
-from notionary.blocks.content.factory import create_block_content_service
-from notionary.blocks.content.service import BlockContentService
-from notionary.blocks.enums import BlockType
-from notionary.blocks.schemas import Block
-from notionary.user.base import BaseUser
-from notionary.user.namespace import UserService
+logger = logging.getLogger(__name__)
 
 
-class NotionBlock:
-    def __init__(
-        self,
-        block: Block,
-        block_client: BlockClient,
-        block_content_service: BlockContentService,
-        user_service: UserService,
-    ) -> None:
-        self._id = block.id
-        self._parent = block.parent
-        self._created_time = block.created_time
-        self._last_edited_time = block.last_edited_time
-        self._created_by_dto = block.created_by
-        self._last_edited_by_dto = block.last_edited_by
-        self._archived = block.archived
-        self._in_trash = block.in_trash
-        self._has_children = block.has_children
-        self._block_data = block
-        self._type = block.type
+class PageContent:
+    def __init__(self, page_id: str) -> None:
+        self._page_id = page_id
+        self._client = BlockClient()
+        self._to_notion = MarkdownToNotionConverter()
+        self._to_markdown = NotionToMarkdownConverter()
 
-        self._block_client = block_client
-        self._block_content_service = block_content_service
-        self._user_service = user_service
+    async def get_markdown(self) -> str:
+        blocks = await self._client.get_block_tree(block_id=self._page_id)
+        return await self._to_markdown.convert(blocks=blocks)
 
-    @classmethod
-    async def from_id(cls, block_id: str, token: str | None = None) -> Self:
-        block_client = BlockClient(token=token)
-        block = await block_client.get_block_by_id(block_id)
-        return cls._create_with_dependencies(block=block, token=token)
-
-    @classmethod
-    def from_block(cls, block: Block) -> Self:
-        return cls._create_with_dependencies(block=block)
-
-    @classmethod
-    def _create_with_dependencies(
-        cls,
-        block: Block,
-        token: str | None = None,
-    ) -> Self:
-        block_client = BlockClient(token=token)
-        user_service = UserService()
-
-        block_content_service = create_block_content_service(
-            block_id=block.id, block_client=block_client
+    async def append(self, content: str) -> None:
+        if not content:
+            logger.debug("No markdown content to append for page: %s", self._page_id)
+            return
+        blocks = await self._to_notion.convert(content)
+        await self._client.append_block_children(
+            block_id=self._page_id, children=blocks
         )
 
-        return cls(
-            block=block,
-            block_client=block_client,
-            block_content_service=block_content_service,
-            user_service=user_service,
-        )
+    async def clear(self) -> None:
+        children = await self._client.get_block_children(block_id=self._page_id)
+        if not children or not children.results:
+            logger.debug("No blocks to delete for page: %s", self._page_id)
+            return
+        await asyncio.gather(*[self._delete_block(block) for block in children.results])
 
-    @property
-    def id(self) -> str:
-        return self._id
-
-    @property
-    def created_time(self) -> str:
-        return self._created_time
-
-    @property
-    def last_edited_time(self) -> str:
-        return self._last_edited_time
-
-    @property
-    def archived(self) -> bool:
-        return self._archived
-
-    @property
-    def in_trash(self) -> bool:
-        return self._in_trash
-
-    @property
-    def has_children(self) -> bool:
-        return self._has_children
-
-    @property
-    def type(self) -> BlockType:
-        return self._type
-
-    async def get_created_by_user(self) -> BaseUser | None:
-        return await self._user_service.get_user_by_id(self._created_by_dto.id)
-
-    async def get_last_edited_by_user(self) -> BaseUser | None:
-        return await self._user_service.get_user_by_id(self._last_edited_by_dto.id)
-
-    async def get_block_tree_as_markdown(self) -> str:
-        return await self._block_content_service.get_block_tree_as_markdown()
-
-    async def get_children_as_markdown(self) -> str:
-        return await self._block_content_service.get_children_as_markdown()
-
-    async def get_block_tree_as_blocks(self) -> list[Block]:
-        return await self._block_content_service.get_block_tree_as_blocks()
-
-    async def get_children_as_blocks(self) -> list[Block]:
-        return await self._block_content_service.get_children_as_blocks()
-
-    async def get_children(self) -> list[NotionBlock]:
-        if not self._has_children:
-            return []
-
-        blocks = await self._block_client.get_all_block_children(self._id)
-        return [self._create_with_dependencies(block=block) for block in blocks]
-
-    async def delete(self) -> None:
-        await self._block_client.delete_block(self._id)
+    @with_retry(max_retries=10, initial_delay=0.2, backoff_factor=1.5)
+    async def _delete_block(self, block: Block) -> None:
+        logger.debug("Deleting block: %s", block.id)
+        await self._client.delete_block(block.id)
