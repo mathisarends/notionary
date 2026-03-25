@@ -22,9 +22,9 @@ class Page:
         self.metadata = EntityMetadata.from_dto(dto)
 
         path = f"pages/{dto.id}"
-        self._icon = EntityIcon(dto, http, path)
-        self._cover = EntityCover(dto, http, path)
-        self._trash = EntityTrash(dto, http, path)
+        self._icon = EntityIcon(dto=dto, http=http, path=path)
+        self._cover = EntityCover(dto=dto, http=http, path=path)
+        self._trash = EntityTrash(dto=dto, http=http, path=path)
 
         self.title = title
         self.archived = dto.archived

@@ -1,13 +1,13 @@
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-from notionary.data_source.http.data_source_instance_client import (
-    DataSourceInstanceClient,
-)
 from notionary.shared.name_id_resolver.page import PageNameIdResolver
 from notionary.shared.name_id_resolver.person import PersonNameIdResolver
 
 from notionary.data_source.data_source import DataSource
+from notionary.data_source.data_source_instance_client import (
+    DataSourceInstanceClient,
+)
 from notionary.data_source.exceptions import (
     DataSourcePropertyNotFound,
     DataSourcePropertyTypeError,
@@ -127,7 +127,7 @@ def data_source(
     test_properties: dict,
     mock_query_resolver: QueryResolver,
 ) -> DataSource:
-    mock_update_client = Mock()
+    mock_http = Mock()
 
     return DataSource(
         dto=base_dto,
@@ -135,7 +135,7 @@ def data_source(
         description="Test description",
         properties=test_properties,
         data_source_instance_client=Mock(spec=DataSourceInstanceClient),
-        entity_update_client=mock_update_client,
+        http=mock_http,
         query_resolver=mock_query_resolver,
     )
 

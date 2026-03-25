@@ -5,7 +5,6 @@ from notionary.page.properties.factory import PagePropertyHandlerFactory
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import PageDto
 from notionary.page.service import Page
-from notionary.shared.entity.client import GenericEntityMetadataUpdateClient
 from notionary.shared.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
 
 
@@ -20,13 +19,6 @@ class PageFactory:
     async def from_dto(self, dto: PageDto) -> Page:
         title = await _extract_page_title(dto)
 
-        entity_update_client = GenericEntityMetadataUpdateClient(
-            entity_id=dto.id,
-            path_segment="pages",
-            response_dto_class=PageDto,
-            http=self._http,
-        )
-
         return Page(
             dto=dto,
             title=title,
@@ -35,7 +27,7 @@ class PageFactory:
             ),
             content=PageContent(page_id=dto.id),
             comments=PageComments(page_id=dto.id, http=self._http),
-            metadata_update_client=entity_update_client,
+            http=self._http,
         )
 
     async def _fetch_dto(self, page_id: str) -> PageDto:

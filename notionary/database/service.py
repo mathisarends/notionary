@@ -4,10 +4,8 @@ from collections.abc import Awaitable, Callable
 from notionary.data_source.data_source import DataSource
 from notionary.database.client import DatabaseHttpClient
 from notionary.database.schemas import DatabaseDto
+from notionary.http.client import HttpClient
 from notionary.shared.entity.cover import EntityCover
-from notionary.shared.entity.entity_metadata_update_client import (
-    EntityMetadataUpdateClient,
-)
 from notionary.shared.entity.metadata import EntityMetadata
 from notionary.shared.entity.trash import EntityTrash
 from notionary.shared.icon.icon import EntityIcon
@@ -23,13 +21,14 @@ class Database:
         description: str | None,
         data_source_ids: list[str],
         client: DatabaseHttpClient,
-        entity_update_client: EntityMetadataUpdateClient,
+        http: HttpClient,
     ) -> None:
         self.metadata = EntityMetadata.from_dto(dto)
 
-        self._icon = EntityIcon(dto, entity_update_client)
-        self._cover = EntityCover(dto, entity_update_client)
-        self._trash = EntityTrash(dto, entity_update_client)
+        path = f"databases/{dto.id}"
+        self._icon = EntityIcon(dto, http, path)
+        self._cover = EntityCover(dto, http, path)
+        self._trash = EntityTrash(dto, http, path)
 
         self.title = title
         self.description = description

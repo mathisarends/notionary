@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING
 
 from notionary.data_source.query.schema import DataSourceQueryParams
 from notionary.data_source.schemas import (
@@ -14,20 +14,16 @@ from notionary.page.schemas import PageDto
 from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )
-from notionary.shared.entity.entity_metadata_update_client import (
-    EntityMetadataUpdateClient,
-)
 
 if TYPE_CHECKING:
     from notionary import Page
 
 
-class DataSourceInstanceClient(EntityMetadataUpdateClient):
+class DataSourceInstanceClient:
     def __init__(self, http: HttpClient, data_source_id: str) -> None:
         self._http = http
         self._data_source_id = data_source_id
 
-    @override
     async def patch_metadata(
         self, update_data_source_dto: UpdateDataSourceDto
     ) -> DataSourceDto:

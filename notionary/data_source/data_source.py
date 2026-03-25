@@ -24,13 +24,11 @@ from notionary.data_source.query import (
 )
 from notionary.data_source.schemas import DataSourceDto
 from notionary.database import Database
+from notionary.http.client import HttpClient
 from notionary.page import Page
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import PageDto
 from notionary.shared.entity.cover import EntityCover
-from notionary.shared.entity.entity_metadata_update_client import (
-    EntityMetadataUpdateClient,
-)
 from notionary.shared.entity.metadata import EntityMetadata
 from notionary.shared.entity.trash import EntityTrash
 from notionary.shared.icon.icon import EntityIcon
@@ -46,14 +44,15 @@ class DataSource:
         description: str | None,
         properties: dict[str, DataSourceProperty],
         data_source_instance_client: DataSourceInstanceClient,
-        entity_update_client: EntityMetadataUpdateClient,
+        http: HttpClient,
         query_resolver: QueryResolver | None = None,
     ) -> None:
         self.metadata = EntityMetadata.from_dto(dto)
 
-        self._icon = EntityIcon(dto, entity_update_client)
-        self._cover = EntityCover(dto, entity_update_client)
-        self._trash = EntityTrash(dto, entity_update_client)
+        path = f"databases/{dto.id}"
+        self._icon = EntityIcon(dto, http, path)
+        self._cover = EntityCover(dto, http, path)
+        self._trash = EntityTrash(dto, http, path)
 
         self._parent_database: Database | None = None
         self._title = title
