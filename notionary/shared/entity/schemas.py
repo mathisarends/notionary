@@ -1,23 +1,15 @@
-from enum import StrEnum
-from typing import Protocol
+from typing import Literal
 
 from pydantic import BaseModel
 
-from notionary.rich_text.schemas import RichText
 from notionary.shared.models.file import File
 from notionary.shared.models.icon import Icon
 from notionary.shared.models.parent import Parent
 from notionary.user.schemas import PartialUserDto
 
 
-class _EntityType(StrEnum):
-    PAGE = "page"
-    DATA_SOURCE = "data_source"
-    DATABASE = "database"
-
-
 class EntityResponseDto(BaseModel):
-    object: _EntityType
+    object: Literal["page", "database", "data_source"]
     id: str
     created_time: str
     created_by: PartialUserDto
@@ -28,18 +20,9 @@ class EntityResponseDto(BaseModel):
     parent: Parent
     in_trash: bool
     url: str
-    public_url: str | None = None
 
 
 class NotionEntityUpdateDto(BaseModel):
     icon: Icon | None = None
     cover: File | None = None
     in_trash: bool | None = None
-
-
-class Titled(Protocol):
-    title: list[RichText]
-
-
-class Describable(Protocol):
-    description: list[RichText] | None

@@ -14,7 +14,6 @@ class PageNotFound(EntityNotFound):
 class PagePropertyNotFoundError(NotionaryException):
     def __init__(
         self,
-        page_url: str,
         property_name: str,
         available_properties: list[str] | None = None,
         max_suggestions: int = 3,
@@ -33,7 +32,7 @@ class PagePropertyNotFoundError(NotionaryException):
         if self.suggestions:
             suggestions_str = "', '".join(self.suggestions)
             message += f" Did you mean '{suggestions_str}'?"
-        message += f" Please check the page at {page_url} to verify if the property exists and is correctly named."
+        message += " Please check the page to verify if the property exists and is correctly named."
         super().__init__(message)
 
 

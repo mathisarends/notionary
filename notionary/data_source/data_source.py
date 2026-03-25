@@ -29,9 +29,8 @@ from notionary.page import Page
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import PageDto
 from notionary.shared.entity.cover import EntityCover
-from notionary.shared.entity.metadata import EntityMetadata
+from notionary.shared.entity.icon import EntityIcon
 from notionary.shared.entity.trash import EntityTrash
-from notionary.shared.icon.icon import EntityIcon
 
 logger = logging.getLogger(__name__)
 
@@ -40,14 +39,12 @@ class DataSource:
     def __init__(
         self,
         dto: DataSourceDto,
-        title: str,
-        description: str | None,
         properties: dict[str, DataSourceProperty],
         data_source_instance_client: DataSourceInstanceClient,
         http: HttpClient,
         query_resolver: QueryResolver | None = None,
     ) -> None:
-        self.metadata = EntityMetadata.from_dto(dto)
+        self.metadata: DataSourceDto = dto
 
         path = f"databases/{dto.id}"
         self._icon = EntityIcon(dto, http, path)
@@ -55,9 +52,7 @@ class DataSource:
         self._trash = EntityTrash(dto, http, path)
 
         self._parent_database: Database | None = None
-        self._title = title
         self._archived = dto.archived
-        self._description = description
         self._properties = properties or {}
         self._data_source_client = data_source_instance_client
         self.query_resolver = query_resolver or QueryResolver()
@@ -100,7 +95,7 @@ class DataSource:
 
     @property
     def title(self) -> str:
-        return self._title
+        return "".join(rt.plain_text for rt in self.metadata.title)
 
     @property
     def archived(self) -> bool:
@@ -108,7 +103,8 @@ class DataSource:
 
     @property
     def description(self) -> str | None:
-        return self._description
+        text = "".join(rt.plain_text for rt in self.metadata.description)
+        return text if text else None
 
     @property
     def properties(self) -> dict[str, DataSourceProperty]:
@@ -119,8 +115,7 @@ class DataSource:
         return DataSourceQueryBuilder(properties=self._properties)
 
     async def set_title(self, title: str) -> None:
-        data_source_dto = await self._data_source_client.update_title(title)
-        self._title = data_source_dto.title
+        self.metadata = await self._data_source_client.update_title(title)
 
     async def archive(self) -> None:
         if self._archived:
@@ -137,9 +132,7 @@ class DataSource:
         self._archived = False
 
     async def update_description(self, description: str) -> None:
-        self._description = await self._data_source_client.update_description(
-            description
-        )
+        self.metadata = await self._data_source_client.update_description(description)
 
     async def create_blank_page(self, title: str | None = None) -> Page:
         return await self._data_source_client.create_blank_page(title=title)

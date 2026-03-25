@@ -1,11 +1,13 @@
 from notionary.http.client import HttpClient
-from notionary.page.blocks.service import PageContent
 from notionary.page.comments.service import PageComments
+from notionary.page.content import PageContent
+from notionary.page.page import Page
 from notionary.page.properties.factory import PagePropertyHandlerFactory
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import PageDto
-from notionary.page.service import Page
-from notionary.shared.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
+from notionary.rich_text.rich_text_to_markdown.converter import (
+    RichTextToMarkdownConverter,
+)
 
 
 class PageFactory:
@@ -23,7 +25,7 @@ class PageFactory:
             dto=dto,
             title=title,
             page_property_handler=PagePropertyHandlerFactory().create_from_page_response(
-                dto
+                dto, http=self._http
             ),
             content=PageContent(page_id=dto.id),
             comments=PageComments(page_id=dto.id, http=self._http),

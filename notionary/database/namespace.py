@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 
+from notionary.database.database import Database
 from notionary.database.exceptions import DatabaseNotFound
 from notionary.database.factory import DatabaseFactory
 from notionary.database.schemas import (
@@ -8,7 +9,6 @@ from notionary.database.schemas import (
     SortDirection,
     SortTimestamp,
 )
-from notionary.database.service import Database
 from notionary.http.client import HttpClient
 from notionary.shared.fuzzy import fuzzy_suggestions
 

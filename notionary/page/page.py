@@ -1,12 +1,9 @@
 from notionary.http.client import HttpClient
-from notionary.page.blocks.service import PageContent
 from notionary.page.comments.service import PageComments
+from notionary.page.content import PageContent
 from notionary.page.properties.service import PagePropertyHandler
 from notionary.page.schemas import PageDto
-from notionary.shared.entity.cover import EntityCover
-from notionary.shared.entity.metadata import EntityMetadata
-from notionary.shared.entity.trash import EntityTrash
-from notionary.shared.icon.icon import EntityIcon
+from notionary.shared.entity import EntityCover, EntityIcon, EntityTrash
 
 
 class Page:
@@ -19,7 +16,7 @@ class Page:
         comments: PageComments,
         http: HttpClient,
     ) -> None:
-        self.metadata = EntityMetadata.from_dto(dto)
+        self.metadata: PageDto = dto
 
         path = f"pages/{dto.id}"
         self._icon = EntityIcon(dto=dto, http=http, path=path)
@@ -95,5 +92,5 @@ class Page:
         await self._comments.reply_to(discussion_id, text)
 
     async def rename(self, title: str) -> None:
-        await self.properties.set_title_property(title)
+        await self.properties.set_title(title)
         self.title = title

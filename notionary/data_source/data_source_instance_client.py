@@ -1,7 +1,4 @@
-from __future__ import annotations
-
 from collections.abc import AsyncIterator
-from typing import TYPE_CHECKING
 
 from notionary.data_source.query.schema import DataSourceQueryParams
 from notionary.data_source.schemas import (
@@ -10,13 +7,11 @@ from notionary.data_source.schemas import (
     UpdateDataSourceDto,
 )
 from notionary.http.client import HttpClient
+from notionary.page import Page
 from notionary.page.schemas import PageDto
-from notionary.rich_text.rich_text_to_markdown.converter import (
-    RichTextToMarkdownConverter,
+from notionary.rich_text.markdown_to_rich_text.factory import (
+    create_markdown_to_rich_text_converter,
 )
-
-if TYPE_CHECKING:
-    from notionary import Page
 
 
 class DataSourceInstanceClient:
@@ -47,28 +42,13 @@ class DataSourceInstanceClient:
         update_data_source_dto = UpdateDataSourceDto(archived=False)
         await self.patch_metadata(update_data_source_dto)
 
-    async def update_description(self, description: str) -> str:
-        from notionary.rich_text.markdown_to_rich_text import (
-            create_markdown_to_rich_text_converter,
-        )
-
+    async def update_description(self, description: str) -> DataSourceDto:
         markdown_rich_text_converter = create_markdown_to_rich_text_converter()
         rich_text_description = await markdown_rich_text_converter.to_rich_text(
             description
         )
         update_data_source_dto = UpdateDataSourceDto(description=rich_text_description)
-
-        updated_data_source_dto = await self.patch_metadata(update_data_source_dto)
-
-        markdown_rich_text_converter = RichTextToMarkdownConverter()
-        updated_markdown_description = (
-            await markdown_rich_text_converter.to_markdown(
-                updated_data_source_dto.description
-            )
-            if updated_data_source_dto.description
-            else None
-        )
-        return updated_markdown_description
+        return await self.patch_metadata(update_data_source_dto)
 
     async def query(
         self, query_params: DataSourceQueryParams | None = None
@@ -102,8 +82,6 @@ class DataSourceInstanceClient:
             yield PageDto.model_validate(result)
 
     async def create_blank_page(self, title: str | None = None) -> Page:
-        from notionary import Page
-
         data = {
             "parent": {
                 "type": "data_source_id",

@@ -1,4 +1,3 @@
-import asyncio
 from collections.abc import Awaitable, Callable
 
 from notionary.data_source.data_source import DataSource
@@ -6,37 +5,28 @@ from notionary.database.client import DatabaseHttpClient
 from notionary.database.schemas import DatabaseDto
 from notionary.http.client import HttpClient
 from notionary.shared.entity.cover import EntityCover
-from notionary.shared.entity.metadata import EntityMetadata
+from notionary.shared.entity.icon import EntityIcon
 from notionary.shared.entity.trash import EntityTrash
-from notionary.shared.icon.icon import EntityIcon
 
 type _DataSourceFactory = Callable[[str], Awaitable[DataSource]]
 
 
+# TODO: Title und Description hier mit einer async api abfragen bitte
 class Database:
     def __init__(
         self,
         dto: DatabaseDto,
-        title: str,
-        description: str | None,
-        data_source_ids: list[str],
-        client: DatabaseHttpClient,
         http: HttpClient,
     ) -> None:
-        self.metadata = EntityMetadata.from_dto(dto)
+        self.metadata: DatabaseDto = dto
 
         path = f"databases/{dto.id}"
         self._icon = EntityIcon(dto, http, path)
         self._cover = EntityCover(dto, http, path)
         self._trash = EntityTrash(dto, http, path)
 
-        self.title = title
-        self.description = description
         self.is_inline = dto.is_inline
-
-        self._data_sources: list[DataSource] | None = None
-        self._data_source_ids = data_source_ids
-        self._client = client
+        self._client = DatabaseHttpClient(http=http, database_id=self.id)
 
     @property
     def id(self) -> str:
@@ -73,18 +63,3 @@ class Database:
 
     async def remove_cover(self) -> None:
         await self._cover.remove()
-
-    async def get_data_sources(
-        self,
-        data_source_factory: _DataSourceFactory = DataSource.from_id,
-    ) -> list[DataSource]:
-        if self._data_sources is None:
-            self._data_sources = await self._load_data_sources(data_source_factory)
-        return self._data_sources
-
-    async def _load_data_sources(
-        self,
-        data_source_factory: _DataSourceFactory,
-    ) -> list[DataSource]:
-        tasks = [data_source_factory(ds_id) for ds_id in self._data_source_ids]
-        return list(await asyncio.gather(*tasks))

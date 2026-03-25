@@ -1,15 +1,13 @@
-from __future__ import annotations
-
-import asyncio
-from typing import TYPE_CHECKING, Never
+from collections.abc import Coroutine
+from typing import Any
 
 from notionary.page.exceptions import (
-    AccessPagePropertyWithoutDataSourceError,
     PagePropertyNotFoundError,
     PagePropertyTypeError,
 )
 from notionary.page.properties.client import PagePropertyHttpClient
 from notionary.page.properties.schemas import (
+    AnyPageProperty,
     PageCheckboxProperty,
     PageCreatedTimeProperty,
     PageDateProperty,
@@ -19,7 +17,6 @@ from notionary.page.properties.schemas import (
     PagePeopleProperty,
     PagePhoneNumberProperty,
     PageProperty,
-    PagePropertyT,
     PageRelationProperty,
     PageRichTextProperty,
     PageSelectProperty,
@@ -27,163 +24,198 @@ from notionary.page.properties.schemas import (
     PageTitleProperty,
     PageURLProperty,
 )
-from notionary.shared.models.parent import ParentType
-from notionary.shared.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
-
-if TYPE_CHECKING:
-    from notionary import DataSource
+from notionary.page.schemas import PageDto
+from notionary.rich_text.rich_text_to_markdown.converter import (
+    RichTextToMarkdownConverter,
+)
 
 
 class PagePropertyHandler:
     def __init__(
         self,
-        properties: dict[str, PageProperty],
-        parent_type: ParentType,
-        page_url: str,
+        properties: dict[str, AnyPageProperty],
         page_property_http_client: PagePropertyHttpClient,
-        parent_data_source: str,
-        rich_text_converter: RichTextToMarkdownConverter | None = None,
     ) -> None:
         self._properties = properties
-        self._parent_type = parent_type
-        self._page_url = page_url
         self._property_http_client = page_property_http_client
-        self._parent_data_source_id = parent_data_source
-        self._parent_data_source: DataSource | None = None
         self._data_source_loaded = False
-        self._rich_text_converter = rich_text_converter or RichTextToMarkdownConverter()
+        self._rich_text_converter = RichTextToMarkdownConverter()
 
-    # =========================================================================
-    # Reader Methods
-    # =========================================================================
+    def get_status(self, name: str) -> str | None:
+        prop = self._get_typed_property_or_raise(name, PageStatusProperty)
+        return prop.status.name if prop.status else None
 
-    def get_value_of_status_property(self, name: str) -> str | None:
-        status_property = self._get_typed_property_or_raise(name, PageStatusProperty)
-        return status_property.status.name if status_property.status else None
+    def get_select(self, name: str) -> str | None:
+        prop = self._get_typed_property_or_raise(name, PageSelectProperty)
+        return prop.select.name if prop.select else None
 
-    def get_value_of_select_property(self, name: str) -> str | None:
-        select_property = self._get_typed_property_or_raise(name, PageSelectProperty)
-        return select_property.select.name if select_property.select else None
+    async def get_title(self, name: str) -> str:
+        prop = self._get_typed_property_or_raise(name, PageTitleProperty)
+        return await self._rich_text_converter.to_markdown(prop.title)
 
-    async def get_value_of_title_property(self, name: str) -> str:
-        title_property = self._get_typed_property_or_raise(name, PageTitleProperty)
-        return await self._rich_text_converter.to_markdown(title_property.title)
+    def get_people(self, property_name: str) -> list[str]:
+        prop = self._get_typed_property_or_raise(property_name, PagePeopleProperty)
+        return [person.name for person in prop.people if person.name]
 
-    def get_values_of_people_property(self, property_name: str) -> list[str]:
-        people_prop = self._get_typed_property_or_raise(
-            property_name, PagePeopleProperty
-        )
-        return [person.name for person in people_prop.people if person.name]
-
-    def get_value_of_created_time_property(self, name: str) -> str | None:
-        created_time_property = self._get_typed_property_or_raise(
+    def get_created_time(self, name: str) -> str | None:
+        return self._get_typed_property_or_raise(
             name, PageCreatedTimeProperty
-        )
-        return created_time_property.created_time
+        ).created_time
 
-    async def get_values_of_relation_property(self, name: str) -> list[str]:
-        from notionary import Page
+    def get_relation_ids(self, name: str) -> list[str]:
+        prop = self._get_typed_property_or_raise(name, PageRelationProperty)
+        return [rel.id for rel in prop.relation]
 
-        relation_property = self._get_typed_property_or_raise(
-            name, PageRelationProperty
-        )
-        relation_page_ids = [rel.id for rel in relation_property.relation]
-        notion_pages = [await Page.from_id(page_id) for page_id in relation_page_ids]
-        return [page.title for page in notion_pages if page]
+    def get_multiselect(self, name: str) -> list[str]:
+        prop = self._get_typed_property_or_raise(name, PageMultiSelectProperty)
+        return [option.name for option in prop.multi_select]
 
-    def get_values_of_multiselect_property(self, name: str) -> list[str]:
-        multiselect_property = self._get_typed_property_or_raise(
-            name, PageMultiSelectProperty
-        )
-        return [option.name for option in multiselect_property.multi_select]
+    def get_url(self, name: str) -> str | None:
+        return self._get_typed_property_or_raise(name, PageURLProperty).url
 
-    def get_value_of_url_property(self, name: str) -> str | None:
-        url_property = self._get_typed_property_or_raise(name, PageURLProperty)
-        return url_property.url
+    def get_number(self, name: str) -> float | None:
+        return self._get_typed_property_or_raise(name, PageNumberProperty).number
 
-    def get_value_of_number_property(self, name: str) -> float | None:
-        number_property = self._get_typed_property_or_raise(name, PageNumberProperty)
-        return number_property.number
+    def get_checkbox(self, name: str) -> bool:
+        return self._get_typed_property_or_raise(name, PageCheckboxProperty).checkbox
 
-    def get_value_of_checkbox_property(self, name: str) -> bool:
-        checkbox_property = self._get_typed_property_or_raise(
-            name, PageCheckboxProperty
-        )
-        return checkbox_property.checkbox
+    def get_date(self, name: str) -> str | None:
+        prop = self._get_typed_property_or_raise(name, PageDateProperty)
+        return prop.date.start if prop.date else None
 
-    def get_value_of_date_property(self, name: str) -> str | None:
-        date_property = self._get_typed_property_or_raise(name, PageDateProperty)
-        return date_property.date.start if date_property.date else None
+    async def get_rich_text(self, name: str) -> str:
+        prop = self._get_typed_property_or_raise(name, PageRichTextProperty)
+        return await self._rich_text_converter.to_markdown(prop.rich_text)
 
-    async def get_value_of_rich_text_property(self, name: str) -> str:
-        rich_text_property = self._get_typed_property_or_raise(
-            name, PageRichTextProperty
-        )
-        return await self._rich_text_converter.to_markdown(rich_text_property.rich_text)
+    def get_email(self, name: str) -> str | None:
+        return self._get_typed_property_or_raise(name, PageEmailProperty).email
 
-    def get_value_of_email_property(self, name: str) -> str | None:
-        email_property = self._get_typed_property_or_raise(name, PageEmailProperty)
-        return email_property.email
-
-    def get_value_of_phone_number_property(self, name: str) -> str | None:
-        phone_property = self._get_typed_property_or_raise(
+    def get_phone(self, name: str) -> str | None:
+        return self._get_typed_property_or_raise(
             name, PagePhoneNumberProperty
-        )
-        return phone_property.phone_number
+        ).phone_number
 
-    # =========================================================================
-    # Options Getters
-    # =========================================================================
-
-    async def get_select_options_by_property_name(
-        self, property_name: str
-    ) -> list[str]:
-        data_source = await self._get_parent_data_source_or_raise()
-        return data_source.get_select_options_by_property_name(property_name)
-
-    async def get_multi_select_options_by_property_name(
-        self, property_name: str
-    ) -> list[str]:
-        data_source = await self._get_parent_data_source_or_raise()
-        return data_source.get_multi_select_options_by_property_name(property_name)
-
-    async def get_status_options_by_property_name(
-        self, property_name: str
-    ) -> list[str]:
-        data_source = await self._get_parent_data_source_or_raise()
-        return data_source.get_status_options_by_property_name(property_name)
-
-    async def get_relation_options_by_property_name(
-        self, property_name: str
-    ) -> list[str]:
-        data_source = await self._get_parent_data_source_or_raise()
-        return await data_source.get_relation_options_by_property_name(property_name)
-
-    async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
-        data_source = await self._get_parent_data_source_or_raise()
-        return await data_source.get_options_for_property_by_name(property_name)
-
-    async def get_schema_description(self, property_name: str) -> str:
-        data_source = await self._get_parent_data_source_or_raise()
-        return await data_source.get_schema_description(property_name)
-
-    # =========================================================================
-    # Writer Methods
-    # =========================================================================
-
-    async def set_title_property(self, title: str) -> None:
+    async def set_title(self, title: str) -> None:
         title_property_name = self._extract_title_property_name()
-
-        self._get_typed_property_or_raise(title_property_name, PageTitleProperty)
-        updated_page = await self._property_http_client.patch_title(
-            title_property_name, title
+        await self._apply_patch(
+            title_property_name,
+            PageTitleProperty,
+            self._property_http_client.patch_title(title_property_name, title),
         )
-        self._properties = updated_page.properties
+
+    async def set_rich_text(self, property_name: str, text: str) -> None:
+        await self._apply_patch(
+            property_name,
+            PageRichTextProperty,
+            self._property_http_client.patch_rich_text_property(property_name, text),
+        )
+
+    async def set_url(self, property_name: str, url: str) -> None:
+        await self._apply_patch(
+            property_name,
+            PageURLProperty,
+            self._property_http_client.patch_url_property(property_name, url),
+        )
+
+    async def set_email(self, property_name: str, email: str) -> None:
+        await self._apply_patch(
+            property_name,
+            PageEmailProperty,
+            self._property_http_client.patch_email_property(property_name, email),
+        )
+
+    async def set_phone(self, property_name: str, phone_number: str) -> None:
+        await self._apply_patch(
+            property_name,
+            PagePhoneNumberProperty,
+            self._property_http_client.patch_phone_property(
+                property_name, phone_number
+            ),
+        )
+
+    async def set_number(self, property_name: str, number: int | float) -> None:
+        await self._apply_patch(
+            property_name,
+            PageNumberProperty,
+            self._property_http_client.patch_number_property(property_name, number),
+        )
+
+    async def set_checkbox(self, property_name: str, checked: bool) -> None:
+        await self._apply_patch(
+            property_name,
+            PageCheckboxProperty,
+            self._property_http_client.patch_checkbox_property(property_name, checked),
+        )
+
+    async def set_date(self, property_name: str, date_value: str | dict) -> None:
+        await self._apply_patch(
+            property_name,
+            PageDateProperty,
+            self._property_http_client.patch_date_property(property_name, date_value),
+        )
+
+    async def set_select(self, property_name: str, option_name: str) -> None:
+        await self._apply_patch(
+            property_name,
+            PageSelectProperty,
+            self._property_http_client.patch_select_property(
+                property_name, option_name
+            ),
+        )
+
+    async def set_multiselect(
+        self, property_name: str, option_names: list[str]
+    ) -> None:
+        await self._apply_patch(
+            property_name,
+            PageMultiSelectProperty,
+            self._property_http_client.patch_multi_select_property(
+                property_name, option_names
+            ),
+        )
+
+    async def set_status(self, property_name: str, status: str) -> None:
+        await self._apply_patch(
+            property_name,
+            PageStatusProperty,
+            self._property_http_client.patch_status_property(property_name, status),
+        )
+
+    async def set_relation(self, property_name: str, page_ids: list[str]) -> None:
+        await self._apply_patch(
+            property_name,
+            PageRelationProperty,
+            self._property_http_client.patch_relation_property(property_name, page_ids),
+        )
+
+    async def _apply_patch[T: PageProperty](
+        self,
+        name: str,
+        expected_type: type[T],
+        coro: Coroutine[Any, Any, PageDto],
+    ) -> None:
+        self._get_typed_property_or_raise(name, expected_type)
+        self._properties = (await coro).properties
+
+    def _get_typed_property_or_raise[T: PageProperty](
+        self, name: str, property_type: type[T]
+    ) -> T:
+        prop = self._properties.get(name)
+
+        if prop is None:
+            raise PagePropertyNotFoundError(
+                property_name=name,
+                available_properties=list(self._properties.keys()),
+            )
+        if not isinstance(prop, property_type):
+            raise PagePropertyTypeError(
+                property_name=name,
+                actual_type=type(prop).__name__,
+            )
+
+        return prop
 
     def _extract_title_property_name(self) -> str | None:
-        if not self._properties:
-            return None
-
         return next(
             (
                 key
@@ -192,151 +224,3 @@ class PagePropertyHandler:
             ),
             None,
         )
-
-    async def set_rich_text_property(self, property_name: str, text: str) -> None:
-        self._get_typed_property_or_raise(property_name, PageRichTextProperty)
-        updated_page = await self._property_http_client.patch_rich_text_property(
-            property_name, text
-        )
-        self._properties = updated_page.properties
-
-    async def set_url_property(self, property_name: str, url: str) -> None:
-        self._get_typed_property_or_raise(property_name, PageURLProperty)
-        updated_page = await self._property_http_client.patch_url_property(
-            property_name, url
-        )
-        self._properties = updated_page.properties
-
-    async def set_email_property(self, property_name: str, email: str) -> None:
-        self._get_typed_property_or_raise(property_name, PageEmailProperty)
-        updated_page = await self._property_http_client.patch_email_property(
-            property_name, email
-        )
-        self._properties = updated_page.properties
-
-    async def set_phone_number_property(
-        self, property_name: str, phone_number: str
-    ) -> None:
-        self._get_typed_property_or_raise(property_name, PagePhoneNumberProperty)
-        updated_page = await self._property_http_client.patch_phone_property(
-            property_name, phone_number
-        )
-        self._properties = updated_page.properties
-
-    async def set_number_property(
-        self, property_name: str, number: int | float
-    ) -> None:
-        self._get_typed_property_or_raise(property_name, PageNumberProperty)
-        updated_page = await self._property_http_client.patch_number_property(
-            property_name, number
-        )
-        self._properties = updated_page.properties
-
-    async def set_checkbox_property(self, property_name: str, checked: bool) -> None:
-        self._get_typed_property_or_raise(property_name, PageCheckboxProperty)
-        updated_page = await self._property_http_client.patch_checkbox_property(
-            property_name, checked
-        )
-        self._properties = updated_page.properties
-
-    async def set_date_property(
-        self, property_name: str, date_value: str | dict
-    ) -> None:
-        self._get_typed_property_or_raise(property_name, PageDateProperty)
-        updated_page = await self._property_http_client.patch_date_property(
-            property_name, date_value
-        )
-        self._properties = updated_page.properties
-
-    async def set_select_property_by_option_name(
-        self, property_name: str, option_name: str
-    ) -> None:
-        self._get_typed_property_or_raise(property_name, PageSelectProperty)
-        updated_page = await self._property_http_client.patch_select_property(
-            property_name, option_name
-        )
-        self._properties = updated_page.properties
-
-    async def set_multi_select_property_by_option_names(
-        self, property_name: str, option_names: list[str]
-    ) -> None:
-        self._get_typed_property_or_raise(property_name, PageMultiSelectProperty)
-        updated_page = await self._property_http_client.patch_multi_select_property(
-            property_name, option_names
-        )
-        self._properties = updated_page.properties
-
-    async def set_status_property_by_option_name(
-        self, property_name: str, status: str
-    ) -> None:
-        self._get_typed_property_or_raise(property_name, PageStatusProperty)
-        updated_page = await self._property_http_client.patch_status_property(
-            property_name, status
-        )
-        self._properties = updated_page.properties
-
-    async def set_relation_property_by_page_titles(
-        self, property_name: str, page_titles: list[str]
-    ) -> None:
-        self._get_typed_property_or_raise(property_name, PageRelationProperty)
-        relation_ids = await self._convert_page_titles_to_ids(page_titles)
-        updated_page = await self._property_http_client.patch_relation_property(
-            property_name, relation_ids
-        )
-        self._properties = updated_page.properties
-
-    async def _ensure_data_source_loaded(self) -> None:
-        from notionary import DataSource
-
-        if self._data_source_loaded:
-            return
-
-        self._parent_data_source = (
-            await DataSource.from_id(self._parent_data_source_id)
-            if self._parent_data_source_id
-            else None
-        )
-        self._data_source_loaded = True
-
-    async def _get_parent_data_source_or_raise(self) -> DataSource:
-        await self._ensure_data_source_loaded()
-
-        if not self._parent_data_source:
-            raise AccessPagePropertyWithoutDataSourceError(self._parent_type)
-        return self._parent_data_source
-
-    def _get_typed_property_or_raise(
-        self, name: str, property_type: type[PagePropertyT]
-    ) -> PagePropertyT:
-        prop = self._properties.get(name)
-
-        if prop is None:
-            self._handle_prop_not_found(name)
-
-        if not isinstance(prop, property_type):
-            self._handle_incorrect_type(name, type(prop))
-
-        return prop
-
-    def _handle_prop_not_found(self, name: str) -> Never:
-        raise PagePropertyNotFoundError(
-            property_name=name,
-            page_url=self._page_url,
-            available_properties=list(self._properties.keys()),
-        )
-
-    def _handle_incorrect_type(self, property_name: str, actual_type: type) -> Never:
-        raise PagePropertyTypeError(
-            property_name=property_name,
-            actual_type=actual_type.__name__,
-        )
-
-    async def _convert_page_titles_to_ids(self, page_titles: list[str]) -> list[str]:
-        from notionary import Page
-
-        if not page_titles:
-            return []
-
-        pages = await asyncio.gather(*[Page.from_title(title) for title in page_titles])
-
-        return [page.id for page in pages if page]

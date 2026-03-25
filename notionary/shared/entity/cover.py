@@ -1,10 +1,9 @@
 import random
 from collections.abc import Sequence
-from typing import cast
 
 from notionary.http.client import HttpClient
 from notionary.shared.entity.schemas import EntityResponseDto, NotionEntityUpdateDto
-from notionary.shared.models.file import ExternalFile, FileType, NotionHostedFile
+from notionary.shared.models.file import ExternalFile
 
 
 class EntityCover:
@@ -45,8 +44,4 @@ class EntityCover:
     def _extract_url(dto: EntityResponseDto) -> str | None:
         if dto.cover is None:
             return None
-        if dto.cover.type == FileType.EXTERNAL:
-            return cast(ExternalFile, dto.cover).external.url
-        if dto.cover.type == FileType.FILE:
-            return cast(NotionHostedFile, dto.cover).file.url
-        return None
+        return dto.cover.get_url()

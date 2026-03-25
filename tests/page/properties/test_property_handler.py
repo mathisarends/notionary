@@ -1,8 +1,6 @@
 from unittest.mock import AsyncMock
 
 import pytest
-from notionary.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
-from notionary.rich_text.schemas import RichText, TextContent
 
 from notionary.page.exceptions import (
     AccessPagePropertyWithoutDataSourceError,
@@ -28,6 +26,8 @@ from notionary.page.properties.schemas import (
     StatusOption,
 )
 from notionary.page.properties.service import PagePropertyHandler
+from notionary.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
+from notionary.rich_text.schemas import RichText, TextContent
 from notionary.shared.models.parent import ParentType
 
 # ============================================================================
@@ -219,25 +219,20 @@ def handler_without_data_source(
 # ============================================================================
 
 
-def test_get_status_property_value(handler: PagePropertyHandler) -> None:
-    status = handler.get_value_of_status_property("Status")
-    assert status == "In Progress"
-
-
 def test_get_status_property_when_none(handler: PagePropertyHandler) -> None:
     handler._properties["Status"] = create_status_property(status_name=None)
-    status = handler.get_value_of_status_property("Status")
+    status = handler.get_status("Status")
     assert status is None
 
 
 def test_get_select_property_value(handler: PagePropertyHandler) -> None:
-    priority = handler.get_value_of_select_property("Priority")
+    priority = handler.get_select("Priority")
     assert priority == "High"
 
 
 def test_get_select_property_when_none(handler: PagePropertyHandler) -> None:
     handler._properties["Priority"] = create_select_property(option_name=None)
-    priority = handler.get_value_of_select_property("Priority")
+    priority = handler.get_select("Priority")
     assert priority is None
 
 
@@ -246,39 +241,39 @@ async def test_get_title_property_value(handler: PagePropertyHandler) -> None:
     handler._rich_text_converter = AsyncMock()
     handler._rich_text_converter.to_markdown = AsyncMock(return_value="Test Title")
 
-    title = await handler.get_value_of_title_property("Title")
+    title = await handler.get_title("Title")
     assert title == "Test Title"
     handler._rich_text_converter.to_markdown.assert_called_once()
 
 
 def test_get_multiselect_property_values(handler: PagePropertyHandler) -> None:
-    tags = handler.get_values_of_multiselect_property("Tags")
+    tags = handler.get_multiselect("Tags")
     assert tags == ["Tag1", "Tag2"]
 
 
 def test_get_url_property_value(handler: PagePropertyHandler) -> None:
-    url = handler.get_value_of_url_property("URL")
+    url = handler.get_url("URL")
     assert url == "https://example.com"
 
 
 def test_get_number_property_value(handler: PagePropertyHandler) -> None:
-    count = handler.get_value_of_number_property("Count")
+    count = handler.get_number("Count")
     assert count == 42.5
 
 
 def test_get_checkbox_property_value(handler: PagePropertyHandler) -> None:
-    done = handler.get_value_of_checkbox_property("Done")
+    done = handler.get_checkbox("Done")
     assert done is True
 
 
 def test_get_date_property_value(handler: PagePropertyHandler) -> None:
-    date = handler.get_value_of_date_property("Due Date")
+    date = handler.get_date("Due Date")
     assert date == "2025-01-15"
 
 
 def test_get_date_property_when_none(handler: PagePropertyHandler) -> None:
     handler._properties["Due Date"] = create_date_property(start_date=None)
-    date = handler.get_value_of_date_property("Due Date")
+    date = handler.get_date("Due Date")
     assert date is None
 
 
@@ -289,29 +284,29 @@ async def test_get_rich_text_property_value(handler: PagePropertyHandler) -> Non
         return_value="Rich text content"
     )
 
-    text = await handler.get_value_of_rich_text_property("Description")
+    text = await handler.get_rich_text("Description")
     assert text == "Rich text content"
     handler._rich_text_converter.to_markdown.assert_called_once()
 
 
 def test_get_email_property_value(handler: PagePropertyHandler) -> None:
-    email = handler.get_value_of_email_property("Email")
+    email = handler.get_email("Email")
     assert email == "test@example.com"
 
 
 def test_get_phone_property_value(handler: PagePropertyHandler) -> None:
-    phone = handler.get_value_of_phone_number_property("Phone")
+    phone = handler.get_phone("Phone")
     assert phone == "+1234567890"
 
 
 def test_get_created_time_property_value(handler: PagePropertyHandler) -> None:
-    created = handler.get_value_of_created_time_property("Created")
+    created = handler.get_created_time("Created")
     assert created == "2025-01-15T10:00:00.000Z"
 
 
 def test_empty_multiselect_returns_empty_list(handler: PagePropertyHandler) -> None:
     handler._properties["Tags"] = create_multiselect_property(options=[])
-    tags = handler.get_values_of_multiselect_property("Tags")
+    tags = handler.get_multiselect("Tags")
     assert tags == []
 
 
@@ -322,14 +317,14 @@ def test_empty_multiselect_returns_empty_list(handler: PagePropertyHandler) -> N
 
 def test_property_not_found_raises_error(handler: PagePropertyHandler) -> None:
     with pytest.raises(PagePropertyNotFoundError) as exc_info:
-        handler.get_value_of_status_property("NonExistent")
+        handler.get_status("NonExistent")
 
     assert "NonExistent" in str(exc_info.value)
 
 
 def test_wrong_property_type_raises_error(handler: PagePropertyHandler) -> None:
     with pytest.raises(PagePropertyTypeError) as exc_info:
-        handler.get_value_of_select_property("Status")
+        handler.get_select("Status")
 
     assert "Status" in str(exc_info.value)
 
