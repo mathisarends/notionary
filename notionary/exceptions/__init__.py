@@ -1,4 +1,4 @@
-from ..shared.file_upload.exceptions import (
+from ..file_upload.exceptions import (
     FileSizeException,
     NoFileExtensionException,
     UnsupportedFileTypeException,

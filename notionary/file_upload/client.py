@@ -1,13 +1,13 @@
 from collections.abc import AsyncGenerator
 
-from notionary.http import HttpClient
-from notionary.shared.file_upload.schemas import (
+from notionary.file_upload.schemas import (
     FileUploadCompleteRequest,
     FileUploadCreateRequest,
     FileUploadQuery,
     FileUploadResponse,
     UploadMode,
 )
+from notionary.http import HttpClient
 
 
 class FileUploadHttpClient:

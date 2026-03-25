@@ -1,4 +1,3 @@
-import difflib
 from collections.abc import AsyncIterator
 
 from notionary.exceptions.search import PageNotFound
@@ -7,15 +6,7 @@ from notionary.page.factory import PageFactory
 from notionary.page.search import PageSearchClient
 from notionary.page.search.schemas import SortDirection, SortTimestamp
 from notionary.page.service import Page
-
-
-def _fuzzy_suggestions(query: str, pages: list[Page], top_n: int = 5) -> list[str]:
-    scored = [
-        (page, difflib.SequenceMatcher(None, query.lower(), page.title.lower()).ratio())
-        for page in pages
-    ]
-    scored.sort(key=lambda x: x[1], reverse=True)
-    return [page.title for page, score in scored[:top_n] if score >= 0.6]
+from notionary.shared.fuzzy import fuzzy_suggestions
 
 
 class PageNamespace:
@@ -66,7 +57,7 @@ class PageNamespace:
         if exact:
             return exact
 
-        suggestions = _fuzzy_suggestions(title, candidates)
+        suggestions = fuzzy_suggestions(title, candidates)
         raise PageNotFound(title, suggestions)
 
     async def from_id(self, page_id: str) -> Page:

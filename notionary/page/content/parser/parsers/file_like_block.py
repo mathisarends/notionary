@@ -12,11 +12,11 @@ from notionary.file_upload.service import NotionFileUpload
 from notionary.markdown.syntax.definition.models import SyntaxDefinition
 from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 
-from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
-from notionary.shared.file_upload.exceptions import (
+from notionary.file_upload.exceptions import (
     UploadFailedError,
     UploadTimeoutError,
 )
+from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
 from notionary.shared.models.file import ExternalFileData, FileUploadedFileData
 
 logger = logging.getLogger(__name__)

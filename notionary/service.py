@@ -4,9 +4,9 @@ from typing import Self
 
 from notionary.data_source import DataSourceNamespace
 from notionary.database import DatabaseNamespace
+from notionary.file_upload import FileUploads
 from notionary.http import HttpClient
 from notionary.page import PageNamespace
-from notionary.shared.file_upload import FileUploads
 from notionary.user import UsersNamespace
 
 

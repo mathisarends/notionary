@@ -1,4 +1,3 @@
-import difflib
 from collections.abc import AsyncIterator
 
 from notionary.data_source.data_source import DataSource
@@ -9,17 +8,7 @@ from notionary.data_source.search import (
 )
 from notionary.exceptions.search import DataSourceNotFound
 from notionary.http.client import HttpClient
-
-
-def _fuzzy_suggestions(
-    query: str, items: list[DataSource], top_n: int = 5
-) -> list[str]:
-    scored = [
-        (item, difflib.SequenceMatcher(None, query.lower(), item.title.lower()).ratio())
-        for item in items
-    ]
-    scored.sort(key=lambda x: x[1], reverse=True)
-    return [item.title for item, score in scored[:top_n] if score >= 0.6]
+from notionary.shared.fuzzy import fuzzy_suggestions
 
 
 class DataSourceNamespace:
@@ -74,7 +63,7 @@ class DataSourceNamespace:
         if exact:
             return exact
 
-        suggestions = _fuzzy_suggestions(title, candidates)
+        suggestions = fuzzy_suggestions(title, candidates)
         raise DataSourceNotFound(title, suggestions)
 
     async def from_id(self, data_source_id: str) -> DataSource:

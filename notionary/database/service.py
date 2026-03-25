@@ -24,27 +24,15 @@ class Database(Entity):
     ) -> None:
         super().__init__(dto=dto)
 
-        self._title = title
-        self._description = description
-        self._is_inline = dto.is_inline
+        self.title = title
+        self.description = description
+        self.is_inline = dto.is_inline
 
         self._data_sources: list[DataSource] | None = None
         self._data_source_ids = data_source_ids
 
         self.client = client
-        self._metadata_update_client = metadata_update_client
-
-    @property
-    def _entity_metadata_update_client(self) -> DatabaseMetadataUpdateClient:
-        return self._metadata_update_client
-
-    @property
-    def title(self) -> str:
-        return self._title
-
-    @property
-    def is_inline(self) -> bool:
-        return self._is_inline
+        self.metadata_update_client = metadata_update_client
 
     def get_description(self) -> str | None:
         return self._description

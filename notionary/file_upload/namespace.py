@@ -7,9 +7,8 @@ from pathlib import Path
 
 import aiofiles
 
-from notionary.http import HttpClient
-from notionary.shared.file_upload.client import FileUploadHttpClient
-from notionary.shared.file_upload.exceptions import (
+from notionary.file_upload.client import FileUploadHttpClient
+from notionary.file_upload.exceptions import (
     FilenameTooLongError,
     FileNotFoundError,
     NoFileExtensionException,
@@ -17,12 +16,13 @@ from notionary.shared.file_upload.exceptions import (
     UploadFailedError,
     UploadTimeoutError,
 )
-from notionary.shared.file_upload.schemas import (
+from notionary.file_upload.schemas import (
     FileUploadConfig,
     FileUploadQuery,
     FileUploadResponse,
     FileUploadStatus,
 )
+from notionary.http import HttpClient
 
 logger = logging.getLogger(__name__)
 
