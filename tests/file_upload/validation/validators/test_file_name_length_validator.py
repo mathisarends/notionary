@@ -1,8 +1,8 @@
 import pytest
-
-from notionary.exceptions.file_upload import FilenameTooLongError
 from notionary.file_upload.config.constants import NOTION_MAX_FILENAME_BYTES
 from notionary.file_upload.validation.validators import FileNameLengthValidator
+
+from notionary.shared.file_upload.exceptions import FilenameTooLongError
 
 
 @pytest.mark.asyncio

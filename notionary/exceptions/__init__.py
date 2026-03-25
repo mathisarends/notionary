@@ -1,3 +1,8 @@
+from ..shared.file_upload.exceptions import (
+    FileSizeException,
+    NoFileExtensionException,
+    UnsupportedFileTypeException,
+)
 from .api import (
     NotionApiError,
     NotionAuthenticationError,
@@ -14,11 +19,6 @@ from .block_parsing import (
     UnsupportedVideoFormatError,
 )
 from .data_source import DataSourcePropertyNotFound, DataSourcePropertyTypeError
-from .file_upload import (
-    FileSizeException,
-    NoFileExtensionException,
-    UnsupportedFileTypeException,
-)
 from .properties import (
     AccessPagePropertyWithoutDataSourceError,
     PagePropertyNotFoundError,

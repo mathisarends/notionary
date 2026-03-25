@@ -1,12 +1,12 @@
 from pathlib import Path
 
 import pytest
+from notionary.file_upload.validation.validators import FileExtensionValidator
 
-from notionary.exceptions.file_upload import (
+from notionary.shared.file_upload.exceptions import (
     NoFileExtensionException,
     UnsupportedFileTypeException,
 )
-from notionary.file_upload.validation.validators import FileExtensionValidator
 
 
 @pytest.fixture

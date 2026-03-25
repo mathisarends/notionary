@@ -1,9 +1,9 @@
 from pathlib import Path
 
 import pytest
-
-from notionary.exceptions.file_upload import FileNotFoundError
 from notionary.file_upload.validation.validators import FileExistsValidator
+
+from notionary.shared.file_upload.exceptions import FileNotFoundError
 
 
 @pytest.fixture

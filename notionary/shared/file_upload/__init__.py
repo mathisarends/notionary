@@ -1,13 +1,5 @@
-from .file_system import FileInfo, FilePathResolver
-from .models import FileCategory
-from .query import FileUploadQuery, FileUploadQueryBuilder
-from .service import NotionFileUpload
+from .namespace import FileUploads
 
 __all__ = [
-    "FileCategory",
-    "FileInfo",
-    "FilePathResolver",
-    "FileUploadQuery",
-    "FileUploadQueryBuilder",
-    "NotionFileUpload",
+    "FileUploads",
 ]

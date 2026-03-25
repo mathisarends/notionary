@@ -1,25 +1,24 @@
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
-from notionary.rich_text.rich_text_to_markdown.handlers.mention.handler import (
-    MentionRichTextHandler,
-)
-from notionary.rich_text.rich_text_to_markdown.handlers.mention.handlers import (
-    DatabaseMentionHandler,
-    DataSourceMentionHandler,
-    DateMentionHandler,
-    PageMentionHandler,
-    UserMentionHandler,
-)
-from notionary.rich_text.rich_text_to_markdown.handlers.mention.registry import (
-    MentionHandlerRegistry,
-)
-from notionary.rich_text.schemas import MentionType
-
 from notionary.shared.name_id_resolver import (
     DatabaseNameIdResolver,
     DataSourceNameIdResolver,
     PageNameIdResolver,
     PersonNameIdResolver,
 )
+
+from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
+from notionary.shared.rich_text.rich_text_to_markdown.handlers.mention.handler import (
+    MentionRichTextHandler,
+)
+from notionary.shared.rich_text.rich_text_to_markdown.handlers.mention.handlers import (
+    DatabaseMentionHandler,
+    DateMentionHandler,
+    PageMentionHandler,
+    UserMentionHandler,
+)
+from notionary.shared.rich_text.rich_text_to_markdown.handlers.mention.registry import (
+    MentionHandlerRegistry,
+)
+from notionary.shared.rich_text.schemas import MentionType
 
 
 def create_mention_rich_text_handler(
@@ -64,10 +63,6 @@ def _create_mention_handler_registry(
     registry.register(
         MentionType.DATABASE,
         DatabaseMentionHandler(markdown_grammar, database_resolver),
-    )
-    registry.register(
-        MentionType.DATASOURCE,
-        DataSourceMentionHandler(markdown_grammar, data_source_resolver),
     )
     registry.register(
         MentionType.USER,

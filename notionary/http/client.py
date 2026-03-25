@@ -45,6 +45,21 @@ class HttpClient:
     ) -> dict[str, Any]:
         return await self._request("POST", endpoint, json=data)
 
+    async def post_multipart(
+        self,
+        endpoint: str,
+        files: dict[str, Any],
+        data: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        url = f"{self._BASE_URL}/{endpoint.lstrip('/')}"
+        logger.debug("POST multipart %s", url)
+        try:
+            response = await self._client.post(url, files=files, data=data)
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as e:
+            raise self._map_error(e) from e
+
     async def patch(
         self, endpoint: str, data: dict[str, Any] | None = None
     ) -> dict[str, Any]:

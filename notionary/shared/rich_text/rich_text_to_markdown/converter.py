@@ -12,7 +12,6 @@ from notionary.shared.rich_text.rich_text_to_markdown.handlers.inline_equation i
 )
 from notionary.shared.rich_text.rich_text_to_markdown.handlers.mention import (
     MentionRichTextHandler,
-    create_mention_rich_text_handler,
 )
 from notionary.shared.rich_text.rich_text_to_markdown.handlers.port import (
     RichTextHandler,
@@ -35,7 +34,7 @@ class RichTextToMarkdownConverter:
             RichTextType.TEXT: TextHandler(self._markdown_grammar),
             RichTextType.EQUATION: EquationHandler(self._markdown_grammar),
             RichTextType.MENTION: mention_handler
-            or create_mention_rich_text_handler(self._markdown_grammar),
+            or MentionRichTextHandler(self._markdown_grammar),
         }
 
     async def to_markdown(self, rich_text: list[RichText]) -> str:

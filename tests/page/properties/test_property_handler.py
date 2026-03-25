@@ -2,9 +2,6 @@ from unittest.mock import AsyncMock
 
 import pytest
 from notionary.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
-from notionary.rich_text.rich_text_to_markdown.handlers.mention import (
-    create_mention_rich_text_handler,
-)
 from notionary.rich_text.schemas import RichText, TextContent
 
 from notionary.exceptions.properties import (
@@ -191,26 +188,14 @@ def sample_properties() -> dict[str, PageProperty]:
 def handler(
     sample_properties: dict[str, PageProperty],
     mock_http_client: AsyncMock,
-    mock_page_resolver,
-    mock_database_resolver,
-    mock_data_source_resolver,
-    mock_person_resolver,
 ) -> PagePropertyHandler:
-    mention_handler = create_mention_rich_text_handler(
-        page_resolver=mock_page_resolver,
-        database_resolver=mock_database_resolver,
-        data_source_resolver=mock_data_source_resolver,
-        person_resolver=mock_person_resolver,
-    )
-    converter = RichTextToMarkdownConverter(mention_handler=mention_handler)
-
     return PagePropertyHandler(
         properties=sample_properties,
         parent_type=ParentType.DATABASE_ID,
         page_url="https://notion.so/test-page",
         page_property_http_client=mock_http_client,
         parent_data_source="test_database_id",
-        rich_text_converter=converter,
+        rich_text_converter=RichTextToMarkdownConverter(),
     )
 
 
@@ -218,26 +203,14 @@ def handler(
 def handler_without_data_source(
     sample_properties: dict[str, PageProperty],
     mock_http_client: AsyncMock,
-    mock_page_resolver,
-    mock_database_resolver,
-    mock_data_source_resolver,
-    mock_person_resolver,
 ) -> PagePropertyHandler:
-    mention_handler = create_mention_rich_text_handler(
-        page_resolver=mock_page_resolver,
-        database_resolver=mock_database_resolver,
-        data_source_resolver=mock_data_source_resolver,
-        person_resolver=mock_person_resolver,
-    )
-    converter = RichTextToMarkdownConverter(mention_handler=mention_handler)
-
     return PagePropertyHandler(
         properties=sample_properties,
         parent_type=ParentType.PAGE_ID,
         page_url="https://notion.so/test-page",
         page_property_http_client=mock_http_client,
         parent_data_source="",
-        rich_text_converter=converter,
+        rich_text_converter=RichTextToMarkdownConverter(),
     )
 
 

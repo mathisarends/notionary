@@ -1,8 +1,5 @@
 import pytest
 from notionary.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
-from notionary.rich_text.rich_text_to_markdown.handlers.mention.factory import (
-    create_mention_rich_text_handler,
-)
 from notionary.rich_text.schemas import (
     DateMention,
     EquationObject,
@@ -20,19 +17,8 @@ from notionary.rich_text.schemas import (
 
 
 @pytest.fixture
-def converter(
-    mock_page_resolver,
-    mock_database_resolver,
-    mock_data_source_resolver,
-    mock_person_resolver,
-) -> RichTextToMarkdownConverter:
-    mention_handler = create_mention_rich_text_handler(
-        page_resolver=mock_page_resolver,
-        database_resolver=mock_database_resolver,
-        data_source_resolver=mock_data_source_resolver,
-        person_resolver=mock_person_resolver,
-    )
-    return RichTextToMarkdownConverter(mention_handler=mention_handler)
+def converter() -> RichTextToMarkdownConverter:
+    return RichTextToMarkdownConverter()
 
 
 @pytest.mark.asyncio

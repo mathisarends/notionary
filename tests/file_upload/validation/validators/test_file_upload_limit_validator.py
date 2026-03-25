@@ -2,9 +2,9 @@ from pathlib import Path
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-
-from notionary.exceptions.file_upload import FileSizeException
 from notionary.file_upload.validation.validators import FileUploadLimitValidator
+
+from notionary.shared.file_upload.exceptions import FileSizeException
 from notionary.user import BotUser
 
 
