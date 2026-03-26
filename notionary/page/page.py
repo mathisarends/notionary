@@ -29,9 +29,9 @@ class Page:
         self._cover = EntityCover(cover=cover, http_client=http, path=path)
         self._trash = EntityTrash(in_trash=in_trash, http_client=http, path=path)
 
+        property_http_client = PagePropertyHttpClient(page_id=id, http=http)
         self.properties = PagePropertyHandler(
-            properties=properties,
-            page_property_http_client=PagePropertyHttpClient(page_id=id, http=http),
+            properties=properties, page_property_http_client=property_http_client
         )
 
         self._content = PageContent(page_id=id, http=http)

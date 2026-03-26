@@ -162,20 +162,26 @@ def _styled_text(
 
 
 _UUID_RE = re.compile(
-    r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I
 )
-_HEX32_RE = re.compile(r"([0-9a-f]{32})", re.I)
+_HEX32_EXACT_RE = re.compile(r"^[0-9a-f]{32}$", re.I)
+_HEX32_END_RE = re.compile(r"(?<=[^0-9a-f])([0-9a-f]{32})$", re.I)
 
 
 def _extract_id(url: str) -> str:
     if _UUID_RE.match(url):
         return url
-    cleaned = url.split("?")[0].split("#")[0].replace("-", "")
-    m = _HEX32_RE.search(cleaned)
+    if _HEX32_EXACT_RE.match(url):
+        return _format_uuid(url)
+    last_segment = url.split("?")[0].split("#")[0].rstrip("/").rsplit("/", 1)[-1]
+    m = _HEX32_END_RE.search(last_segment)
     if m:
-        raw = m.group(1)
-        return f"{raw[:8]}-{raw[8:12]}-{raw[12:16]}-{raw[16:20]}-{raw[20:]}"
+        return _format_uuid(m.group(1))
     return url
+
+
+def _format_uuid(raw: str) -> str:
+    return f"{raw[:8]}-{raw[8:12]}-{raw[12:16]}-{raw[16:20]}-{raw[20:]}"
 
 
 def _page_mention(url: str, label: str) -> RichText:

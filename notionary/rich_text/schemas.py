@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, Discriminator, Field, Tag
 
@@ -103,7 +103,7 @@ class RichText(BaseModel):
     href: str | None = None
 
     @classmethod
-    def from_plain_text(cls, content: str) -> "RichText":
+    def from_plain_text(cls, content: str) -> Self:
         return cls(
             type=RichTextType.TEXT,
             plain_text=content,
