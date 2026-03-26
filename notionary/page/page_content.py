@@ -1,46 +1,54 @@
 import logging
 
+from pydantic import BaseModel
+
 from notionary.http import HttpClient
-from notionary.page.blocks.client import BlockClient
-from notionary.page.blocks.schemas import Block
-from notionary.shared.decorators import with_retry
 
 logger = logging.getLogger(__name__)
 
 
-# TODO: Get this to work:
+class PageMarkdownResponse(BaseModel):
+    object: str
+    id: str
+    markdown: str
+    truncated: bool
+    unknown_block_ids: list[str]
+
+
 class PageContent:
     def __init__(self, page_id: str, http: HttpClient) -> None:
         self._page_id = page_id
         self._http = http
-        self._client = BlockClient(client=http)
-        """ self._to_notion = MarkdownToNotionConverter()
-        self._to_markdown = NotionToMarkdownConverter() """
 
     async def get_markdown(self) -> str:
-        """blocks = await self._client.get_block_tree(block_id=self._page_id)
-        return await self._to_markdown.convert(blocks=blocks)"""
-        return ""
+        response = await self._http.get(f"pages/{self._page_id}/markdown")
+        dto = PageMarkdownResponse.model_validate(response)
+        return dto.markdown
 
     async def append(self, content: str) -> None:
-        """if not content:
+        if not content:
             logger.debug("No markdown content to append for page: %s", self._page_id)
             return
-        blocks = await self._to_notion.convert(content)
-        await self._client.append_block_children(
-            block_id=self._page_id, children=blocks
-        )"""
-        return
+        await self._http.patch(
+            f"pages/{self._page_id}/markdown",
+            data={
+                "type": "insert_content",
+                "insert_content": {
+                    "content": content,
+                },
+            },
+        )
+
+    async def replace(self, content: str) -> None:
+        await self._http.patch(
+            f"pages/{self._page_id}/markdown",
+            data={
+                "type": "replace_content",
+                "replace_content": {
+                    "new_str": content,
+                },
+            },
+        )
 
     async def clear(self) -> None:
-        """children = await self._client.get_block_children(block_id=self._page_id)
-        if not children or not children.results:
-            logger.debug("No blocks to delete for page: %s", self._page_id)
-            return
-        await asyncio.gather(*[self._delete_block(block) for block in children.results])"""
-        return
-
-    @with_retry(max_retries=10, initial_delay=0.2, backoff_factor=1.5)
-    async def _delete_block(self, block: Block) -> None:
-        """logger.debug("Deleting block: %s", block.id)
-        await self._client.delete_block(block.id)"""
+        await self.replace("")

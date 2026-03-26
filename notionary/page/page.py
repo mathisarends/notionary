@@ -72,8 +72,7 @@ class Page:
         await self._content.append(content=content)
 
     async def replace(self, content: str) -> None:
-        await self._content.clear()
-        await self._content.append(content=content)
+        await self._content.replace(content=content)
 
     async def clear(self) -> None:
         await self._content.clear()
