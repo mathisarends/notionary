@@ -3,6 +3,7 @@ from types import TracebackType
 from typing import Self
 
 from notionary.data_source import DataSourceNamespace
+from notionary.database import DatabaseNamespace
 from notionary.file_upload import FileUploads
 from notionary.http import HttpClient
 from notionary.page import PageNamespace
@@ -30,6 +31,7 @@ class Notionary:
         self.users = UsersNamespace(self._http)
         self.pages = PageNamespace(self._http)
         self.data_sources = DataSourceNamespace(self._http)
+        self.databases = DatabaseNamespace(self._http)
         self.file_uploads = FileUploads(self._http)
         self.workspace = WorkspaceNamespace(self._http)
 
