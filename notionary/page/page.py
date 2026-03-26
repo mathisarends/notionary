@@ -1,7 +1,8 @@
 from notionary.http.client import HttpClient
 from notionary.page.comments.service import PageComments
-from notionary.page.page_content import PageContent
-from notionary.page.properties.service import PagePropertyHandler
+from notionary.page.content import PageContent
+from notionary.page.properties import PagePropertyHandler, PagePropertyHttpClient
+from notionary.page.properties.schemas import AnyPageProperty
 from notionary.shared.entity import EntityCover, EntityIcon, EntityTrash
 from notionary.shared.models.file import File
 from notionary.shared.models.icon import Icon
@@ -16,8 +17,7 @@ class Page:
         icon: Icon | None,
         cover: File | None,
         in_trash: bool,
-        page_property_handler: PagePropertyHandler,
-        comments: PageComments,
+        properties: dict[str, AnyPageProperty],
         http: HttpClient,
     ) -> None:
         self.id = id
@@ -29,10 +29,13 @@ class Page:
         self._cover = EntityCover(cover=cover, http_client=http, path=path)
         self._trash = EntityTrash(in_trash=in_trash, http_client=http, path=path)
 
-        self.properties = page_property_handler
+        self.properties = PagePropertyHandler(
+            properties=properties,
+            page_property_http_client=PagePropertyHttpClient(page_id=id, http=http),
+        )
 
         self._content = PageContent(page_id=id, http=http)
-        self._comments = comments
+        self._comments = PageComments(page_id=id, http=http)
 
     @property
     def in_trash(self) -> bool:

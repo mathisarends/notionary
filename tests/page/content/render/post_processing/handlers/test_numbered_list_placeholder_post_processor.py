@@ -1,9 +1,9 @@
 import pytest
-
 from notionary.page.content.renderer.post_processing.handlers import (
     NumberedListPlaceholderReplacerPostProcessor,
 )
-from notionary.page.markdown.syntax.definition import MarkdownGrammar
+
+from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
 
 
 @pytest.fixture

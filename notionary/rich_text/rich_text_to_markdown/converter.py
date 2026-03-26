@@ -1,7 +1,6 @@
 import logging
 from typing import ClassVar
 
-from notionary.page.blocks.schemas import BlockColor
 from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
 from notionary.rich_text.rich_text_to_markdown.color_chunker import (
     ColorGroup,
@@ -15,7 +14,12 @@ from notionary.rich_text.rich_text_to_markdown.handlers.mention.handler import (
 )
 from notionary.rich_text.rich_text_to_markdown.handlers.port import RichTextHandler
 from notionary.rich_text.rich_text_to_markdown.handlers.text import TextHandler
-from notionary.rich_text.schemas import RichText, RichTextType, TextAnnotations
+from notionary.rich_text.schemas import (
+    BlockColor,
+    RichText,
+    RichTextType,
+    TextAnnotations,
+)
 
 logger = logging.getLogger(__name__)
 

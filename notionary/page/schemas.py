@@ -10,3 +10,21 @@ class PageDto(EntityResponseDto):
 
 class PgePropertiesUpdateDto(BaseModel):
     properties: dict[str, AnyPageProperty]
+
+
+class _InsertContentBody(BaseModel):
+    content: str
+
+
+class InsertContentRequest(BaseModel):
+    type: str = "insert_content"
+    insert_content: _InsertContentBody
+
+
+class _ReplaceContentBody(BaseModel):
+    new_str: str
+
+
+class ReplaceContentRequest(BaseModel):
+    type: str = "replace_content"
+    replace_content: _ReplaceContentBody
