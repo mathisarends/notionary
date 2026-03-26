@@ -2,17 +2,13 @@ import logging
 import re
 from typing import override
 
-from notionary.markdown.syntax.definition import (
-    MarkdownGrammar,
-    SyntaxDefinitionRegistry,
-)
-
-from notionary.page.content.exceptions import (
+from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
+from notionary.page.exceptions import (
     InsufficientColumnsError,
     InvalidColumnRatioSumError,
 )
-from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
-from notionary.shared.decorators import time_execution_sync
+from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
+from notionary.page.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +36,6 @@ class ColumnSyntaxPreProcessor(PreProcessor):
         self._column_pattern = self._syntax_registry.get_column_syntax().regex_pattern
 
     @override
-    @time_execution_sync()
     def process(self, markdown_text: str) -> str:
         if not self._contains_column_lists(markdown_text):
             return markdown_text

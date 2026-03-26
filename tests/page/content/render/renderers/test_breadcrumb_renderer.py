@@ -2,12 +2,12 @@ from typing import cast
 from unittest.mock import Mock
 
 import pytest
+from notionary.page.blocks.enums import BlockType
 
-from notionary.blocks.enums import BlockType
-from notionary.blocks.schemas import Block, BreadcrumbBlock
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.schemas import Block, BreadcrumbBlock
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.breadcrumb import BreadcrumbRenderer
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 def _create_breadcrumb_block() -> BreadcrumbBlock:

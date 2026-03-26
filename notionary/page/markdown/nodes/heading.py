@@ -1,8 +1,6 @@
-from typing import override
-
-from notionary.markdown.nodes.base import MarkdownNode
-from notionary.markdown.nodes.container import ContainerNode
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.markdown.nodes.base import MarkdownNode
+from notionary.page.markdown.nodes.container import ContainerNode
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 class HeadingMarkdownNode(ContainerNode):
@@ -21,7 +19,6 @@ class HeadingMarkdownNode(ContainerNode):
         self.level = self._validate_level(level)
         self.children = children or []
 
-    @override
     def to_markdown(self) -> str:
         heading_prefix = self._get_heading_prefix()
         result = f"{heading_prefix} {self.text}"

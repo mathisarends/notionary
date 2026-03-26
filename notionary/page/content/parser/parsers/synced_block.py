@@ -2,16 +2,16 @@ import logging
 import re
 from typing import override
 
-from notionary.blocks.schemas import (
+from notionary.page.blocks.schemas import (
     CreateSyncedBlockBlock,
     CreateSyncedBlockData,
     SyncedFromBlock,
 )
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 logger = logging.getLogger(__name__)
 

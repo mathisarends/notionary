@@ -2,11 +2,9 @@ import re
 from dataclasses import dataclass
 from typing import ClassVar
 
-from notionary.blocks.schemas import BlockColor
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
-
+from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
 from notionary.rich_text.markdown_to_rich_text.handlers.matcher import PatternMatcher
-from notionary.rich_text.schemas import RichText, RichTextType
+from notionary.rich_text.schemas import BlockColor, RichText, RichTextType
 
 
 @dataclass

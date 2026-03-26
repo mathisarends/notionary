@@ -2,14 +2,14 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from notionary.blocks.schemas import (
+from notionary.page.blocks.schemas import (
     CreateHeading1Block,
     CreateHeading2Block,
     CreateHeading3Block,
 )
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.heading import HeadingParser
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )

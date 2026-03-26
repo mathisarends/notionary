@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.schemas import CreateParagraphBlock
+from notionary.page.blocks.schemas import CreateParagraphBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.paragraph import ParagraphParser
 from notionary.rich_text.markdown_to_rich_text.converter import (

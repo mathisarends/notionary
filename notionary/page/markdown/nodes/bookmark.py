@@ -1,8 +1,6 @@
-from typing import override
-
-from notionary.markdown.nodes.base import MarkdownNode
-from notionary.markdown.nodes.mixins.caption import CaptionMarkdownNodeMixin
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.markdown.nodes.base import MarkdownNode
+from notionary.page.markdown.nodes.mixins import CaptionMarkdownNodeMixin
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 class BookmarkMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
@@ -18,7 +16,6 @@ class BookmarkMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
         self.title = title
         self.caption = caption
 
-    @override
     def to_markdown(self) -> str:
         bookmark_syntax = self._syntax_registry.get_bookmark_syntax()
         base_markdown = f"{bookmark_syntax.start_delimiter}{self.url}{bookmark_syntax.end_delimiter}"

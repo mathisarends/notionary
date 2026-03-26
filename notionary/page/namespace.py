@@ -3,9 +3,9 @@ from collections.abc import AsyncIterator
 from notionary.http.client import HttpClient
 from notionary.page.exceptions import PageNotFound
 from notionary.page.factory import PageFactory
+from notionary.page.page import Page
 from notionary.page.search import PageSearchClient
 from notionary.page.search.schemas import SortDirection, SortTimestamp
-from notionary.page.service import Page
 from notionary.shared.fuzzy import fuzzy_suggestions
 
 

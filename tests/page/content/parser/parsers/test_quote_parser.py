@@ -2,10 +2,10 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.schemas import BlockColor, CreateQuoteBlock
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.schemas import BlockColor, CreateQuoteBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.quote import QuoteParser
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )
@@ -229,7 +229,7 @@ async def test_quote_with_indented_children_should_parse_children(
 ) -> None:
     from unittest.mock import AsyncMock
 
-    from notionary.blocks.schemas import CreateQuoteBlock, CreateQuoteData
+    from notionary.page.blocks.schemas import CreateQuoteBlock, CreateQuoteData
 
     context.line = "> Quote text"
     context.get_remaining_lines = Mock(return_value=[])

@@ -2,10 +2,10 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.schemas import CreateEquationBlock
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.schemas import CreateEquationBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.equation import EquationParser
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture

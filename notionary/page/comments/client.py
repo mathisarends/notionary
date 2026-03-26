@@ -3,7 +3,7 @@ from collections.abc import AsyncGenerator
 
 from notionary.http.client import HttpClient
 from notionary.page.comments.schemas import CommentCreateRequest, CommentDto
-from notionary.shared.rich_text.schemas import RichText
+from notionary.rich_text.schemas import RichText
 
 logger = logging.getLogger(__name__)
 

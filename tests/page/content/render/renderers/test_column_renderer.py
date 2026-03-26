@@ -3,12 +3,12 @@ from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+from notionary.page.blocks.enums import BlockType
 
-from notionary.blocks.enums import BlockType
-from notionary.blocks.schemas import Block, ColumnBlock, ColumnData
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.schemas import Block, ColumnBlock, ColumnData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.column import ColumnRenderer
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 def _create_column_data(width_ratio: float | None = None) -> ColumnData:

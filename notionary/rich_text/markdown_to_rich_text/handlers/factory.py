@@ -1,11 +1,4 @@
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
-from notionary.shared.name_id_resolver import (
-    DatabaseNameIdResolver,
-    DataSourceNameIdResolver,
-    PageNameIdResolver,
-    PersonNameIdResolver,
-)
-
+from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
 from notionary.rich_text.markdown_to_rich_text.handlers.base import BasePatternHandler
 from notionary.rich_text.markdown_to_rich_text.handlers.equation import (
     EquationPatternHandler,
@@ -29,17 +22,8 @@ from notionary.rich_text.markdown_to_rich_text.handlers.mention import (
 )
 
 
-def create_pattern_matcher(
-    page_resolver: PageNameIdResolver | None = None,
-    database_resolver: DatabaseNameIdResolver | None = None,
-    data_source_resolver: DataSourceNameIdResolver | None = None,
-    person_resolver: PersonNameIdResolver | None = None,
-) -> PatternMatcher:
+def create_pattern_matcher() -> PatternMatcher:
     grammar = MarkdownGrammar()
-    page_resolver = page_resolver or PageNameIdResolver()
-    database_resolver = database_resolver or DatabaseNameIdResolver()
-    data_source_resolver = data_source_resolver or DataSourceNameIdResolver()
-    person_resolver = person_resolver or PersonNameIdResolver()
 
     handlers: list[BasePatternHandler] = [
         UnderlinePatternHandler(grammar),
@@ -50,10 +34,10 @@ def create_pattern_matcher(
         CodePatternHandler(grammar),
         LinkPatternHandler(grammar),
         EquationPatternHandler(grammar),
-        PageMentionPatternHandler(page_resolver, grammar),
-        DatabaseMentionPatternHandler(database_resolver, grammar),
-        DataSourceMentionPatternHandler(data_source_resolver, grammar),
-        UserMentionPatternHandler(person_resolver, grammar),
+        PageMentionPatternHandler(grammar),
+        DatabaseMentionPatternHandler(grammar),
+        DataSourceMentionPatternHandler(grammar),
+        UserMentionPatternHandler(grammar),
     ]
 
     return PatternMatcher(handlers)

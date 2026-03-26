@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from notionary.blocks.schemas import BlockCreatePayload
+from notionary.page.blocks.schemas import BlockCreatePayload
 
 
 class PostProcessor(ABC):

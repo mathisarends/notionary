@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 
-from notionary.blocks.schemas import BlockCreatePayload
-from notionary.markdown import MarkdownGrammar
+from notionary.page.blocks.schemas import BlockCreatePayload
+from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
 
 
 class ParentBlockContext:

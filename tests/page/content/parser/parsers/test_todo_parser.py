@@ -1,12 +1,12 @@
 from unittest.mock import Mock
 
 import pytest
+from notionary.page.blocks.enums import BlockColor
 
-from notionary.blocks.enums import BlockColor
-from notionary.blocks.schemas import CreateToDoBlock
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.schemas import CreateToDoBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.todo import TodoParser
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )
@@ -194,7 +194,7 @@ async def test_todo_with_indented_children_should_parse_children(
 ) -> None:
     from unittest.mock import AsyncMock
 
-    from notionary.blocks.schemas import CreateToDoBlock, CreateToDoData
+    from notionary.page.blocks.schemas import CreateToDoBlock, CreateToDoData
 
     context.line = "- [ ] Parent todo"
     context.get_line_indentation_level = Mock(return_value=0)

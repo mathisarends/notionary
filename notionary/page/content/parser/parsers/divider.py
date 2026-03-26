@@ -1,11 +1,11 @@
 from typing import override
 
-from notionary.blocks.schemas import CreateDividerBlock, DividerData
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.schemas import CreateDividerBlock, DividerData
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 class DividerParser(LineParser):

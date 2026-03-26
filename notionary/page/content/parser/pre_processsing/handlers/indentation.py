@@ -2,12 +2,9 @@ import logging
 import math
 from typing import override
 
-from notionary.markdown.syntax.definition import (
-    MarkdownGrammar,
-    SyntaxDefinitionRegistry,
-)
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
-from notionary.shared.decorators import time_execution_sync
+from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
+from notionary.page.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +25,6 @@ class IndentationNormalizer(PreProcessor):
         )
 
     @override
-    @time_execution_sync()
     def process(self, markdown_text: str) -> str:
         if self._is_empty(markdown_text):
             return ""

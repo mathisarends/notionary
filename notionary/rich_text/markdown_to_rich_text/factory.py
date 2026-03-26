@@ -1,5 +1,4 @@
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
-
+from notionary.page.markdown.syntax.definition import MarkdownGrammar
 from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )

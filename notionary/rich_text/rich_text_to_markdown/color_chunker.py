@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 
-from notionary.blocks.enums import BlockColor
-
-from notionary.rich_text.schemas import RichText
+from notionary.rich_text.schemas import BlockColor, RichText
 
 
 @dataclass

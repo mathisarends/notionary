@@ -1,8 +1,8 @@
 from typing import override
 
-from notionary.markdown.nodes.base import MarkdownNode
-from notionary.markdown.nodes.container import ContainerNode
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.markdown.nodes.base import MarkdownNode
+from notionary.page.markdown.nodes.container import ContainerNode
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 class CalloutMarkdownNode(ContainerNode):

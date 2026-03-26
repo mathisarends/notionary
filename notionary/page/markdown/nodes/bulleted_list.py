@@ -1,8 +1,6 @@
-from typing import override
-
-from notionary.markdown.nodes.base import MarkdownNode
-from notionary.markdown.nodes.container import ContainerNode
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.markdown.nodes.base import MarkdownNode
+from notionary.page.markdown.nodes.container import ContainerNode
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 class BulletedListMarkdownNode(ContainerNode):
@@ -16,7 +14,6 @@ class BulletedListMarkdownNode(ContainerNode):
         self.texts = texts
         self.children = children or []
 
-    @override
     def to_markdown(self) -> str:
         list_items = [
             self._render_list_item(index, text) for index, text in enumerate(self.texts)

@@ -1,12 +1,12 @@
 from unittest.mock import Mock
 
 import pytest
-
-from notionary.blocks.schemas import CreateVideoBlock
 from notionary.file_upload.service import NotionFileUpload
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+
+from notionary.page.blocks.schemas import CreateVideoBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.video import VideoParser
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 from notionary.shared.models.file import FileType
 
 

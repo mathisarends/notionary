@@ -2,13 +2,19 @@ from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+from notionary.page.blocks.enums import BlockType
 
-from notionary.blocks.enums import BlockType
-from notionary.blocks.schemas import Block, NumberedListItemBlock, NumberedListItemData
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.schemas import (
+    Block,
+    NumberedListItemBlock,
+    NumberedListItemData,
+)
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.numbered_list import NumberedListRenderer
+from notionary.page.markdown.syntax.definition import (
+    MarkdownGrammar,
+    SyntaxDefinitionRegistry,
+)
 from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )

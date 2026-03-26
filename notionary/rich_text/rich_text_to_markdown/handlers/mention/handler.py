@@ -1,9 +1,8 @@
 import logging
 
-from notionary.shared.rich_text.rich_text_to_markdown.handlers.port import (
-    RichTextHandler,
-)
-from notionary.shared.rich_text.schemas import (
+from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
+from notionary.rich_text.rich_text_to_markdown.handlers.port import RichTextHandler
+from notionary.rich_text.schemas import (
     DatabaseMention,
     DateMention,
     MentionDate,
@@ -12,8 +11,6 @@ from notionary.shared.rich_text.schemas import (
     RichText,
     UserMention,
 )
-
-from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
 
 logger = logging.getLogger(__name__)
 

@@ -3,10 +3,12 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from notionary.blocks.schemas import Block
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
+from notionary.page.markdown.syntax.definition import (
+    MarkdownGrammar,
+    SyntaxDefinitionRegistry,
+)
 from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
 )

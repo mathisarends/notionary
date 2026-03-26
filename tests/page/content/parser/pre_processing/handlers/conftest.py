@@ -1,7 +1,9 @@
 import pytest
 
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.markdown.syntax.definition import (
+    MarkdownGrammar,
+    SyntaxDefinitionRegistry,
+)
 
 
 @pytest.fixture

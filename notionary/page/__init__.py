@@ -1,5 +1,5 @@
 from .namespace import PageNamespace
-from .service import Page
+from .page import Page
 
 __all__ = [
     "Page",

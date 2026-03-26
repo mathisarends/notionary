@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from notionary.blocks.schemas import Block
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.schemas import Block
 from notionary.page.content.renderer.context import MarkdownRenderingContext
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 class BlockRenderer(ABC):

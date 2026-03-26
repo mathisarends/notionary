@@ -1,23 +1,14 @@
 import logging
 from abc import abstractmethod
-from pathlib import Path
 from typing import Generic, TypeVar, override
 
-from notionary.blocks.schemas import (
-    ExternalFileWithCaption,
-    FileUploadFileWithCaption,
-    FileWithCaption,
-)
-from notionary.file_upload.service import NotionFileUpload
-from notionary.markdown.syntax.definition.models import SyntaxDefinition
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
-from notionary.shared.file_upload.exceptions import (
-    UploadFailedError,
-    UploadTimeoutError,
-)
-
+from notionary.page.blocks.schemas import ExternalFileWithCaption
 from notionary.page.content.parser.parsers.base import BlockParsingContext, LineParser
-from notionary.shared.models.file import ExternalFileData, FileUploadedFileData
+from notionary.page.markdown.syntax.definition import (
+    SyntaxDefinition,
+    SyntaxDefinitionRegistry,
+)
+from notionary.shared.models.file import ExternalFileData
 
 logger = logging.getLogger(__name__)
 
@@ -28,11 +19,9 @@ class FileLikeBlockParser(LineParser, Generic[_TBlock]):
     def __init__(
         self,
         syntax_registry: SyntaxDefinitionRegistry,
-        file_upload_service: NotionFileUpload | None = None,
     ) -> None:
         super().__init__(syntax_registry)
         self._syntax = self._get_syntax(syntax_registry)
-        self._file_upload_service = file_upload_service or NotionFileUpload()
 
     @abstractmethod
     def _get_syntax(
@@ -41,7 +30,7 @@ class FileLikeBlockParser(LineParser, Generic[_TBlock]):
         pass
 
     @abstractmethod
-    def _create_block(self, file_data: FileWithCaption) -> _TBlock:
+    def _create_block(self, file_data: ExternalFileWithCaption) -> _TBlock:
         pass
 
     @override
@@ -52,64 +41,14 @@ class FileLikeBlockParser(LineParser, Generic[_TBlock]):
 
     @override
     async def _process(self, context: BlockParsingContext) -> None:
-        path_or_url = self._extract_path_or_url(context.line)
-        if not path_or_url:
+        url = self._extract_url(context.line)
+        if not url:
             return
 
-        try:
-            if self._is_external_url(path_or_url):
-                file_data = ExternalFileWithCaption(
-                    external=ExternalFileData(url=path_or_url)
-                )
-            else:
-                file_data = await self._upload_local_file(path_or_url)
+        file_data = ExternalFileWithCaption(external=ExternalFileData(url=url))
+        block = self._create_block(file_data)
+        context.result_blocks.append(block)
 
-            block = self._create_block(file_data)
-            context.result_blocks.append(block)
-
-        except FileNotFoundError:
-            logger.warning("File not found: '%s' - skipping block", path_or_url)
-        except PermissionError:
-            logger.warning(
-                "No permission to read file: '%s' - skipping block", path_or_url
-            )
-        except IsADirectoryError:
-            logger.warning(
-                "Path is a directory, not a file: '%s' - skipping block", path_or_url
-            )
-        except (UploadFailedError, UploadTimeoutError) as e:
-            logger.warning(
-                "Upload failed for '%s': %s - skipping block", path_or_url, e
-            )
-        except OSError as e:
-            logger.warning(
-                "IO error reading file '%s': %s - skipping block", path_or_url, e
-            )
-        except Exception as e:
-            logger.warning(
-                "Unexpected error processing file '%s': %s - skipping block",
-                path_or_url,
-                e,
-            )
-
-    def _extract_path_or_url(self, line: str) -> str | None:
+    def _extract_url(self, line: str) -> str | None:
         match = self._syntax.regex_pattern.search(line)
         return match.group(1).strip() if match else None
-
-    def _is_external_url(self, path_or_url: str) -> bool:
-        if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
-            return True
-
-        if path_or_url.startswith("data:"):
-            return True
-
-        return path_or_url.startswith("/")
-
-    async def _upload_local_file(self, file_path: str) -> FileUploadFileWithCaption:
-        path = Path(file_path)
-        logger.debug("Uploading local file: '%s'", path)
-        upload_response = await self._file_upload_service.upload_file(path)
-
-        return FileUploadFileWithCaption(
-            file_upload=FileUploadedFileData(id=upload_response.id),
-        )

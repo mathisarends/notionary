@@ -2,9 +2,15 @@ from textwrap import dedent
 from unittest.mock import AsyncMock
 
 import pytest
-
-from notionary.blocks.enums import BlockType
 from notionary.file_upload.service import NotionFileUpload
+from notionary.page.blocks.enums import BlockType
+from notionary.shared.name_id_resolver import (
+    DatabaseNameIdResolver,
+    DataSourceNameIdResolver,
+    PageNameIdResolver,
+    PersonNameIdResolver,
+)
+
 from notionary.page.content.parser.factory import create_markdown_to_notion_converter
 from notionary.page.content.parser.parsers.factory import create_line_parser
 from notionary.page.content.parser.service import MarkdownToNotionConverter
@@ -13,12 +19,6 @@ from notionary.rich_text.markdown_to_rich_text.factory import (
 )
 from notionary.rich_text.markdown_to_rich_text.handlers import (
     create_pattern_matcher,
-)
-from notionary.shared.name_id_resolver import (
-    DatabaseNameIdResolver,
-    DataSourceNameIdResolver,
-    PageNameIdResolver,
-    PersonNameIdResolver,
 )
 
 

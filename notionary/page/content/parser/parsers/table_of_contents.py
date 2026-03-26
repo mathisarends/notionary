@@ -1,15 +1,15 @@
 from typing import override
 
-from notionary.blocks.schemas import (
+from notionary.page.blocks.schemas import (
     BlockColor,
     CreateTableOfContentsBlock,
     TableOfContentsData,
 )
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 class TableOfContentsParser(LineParser):

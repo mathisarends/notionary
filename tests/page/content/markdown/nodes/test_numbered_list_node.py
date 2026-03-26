@@ -2,7 +2,8 @@ from notionary.markdown.nodes import (
     NumberedListMarkdownNode,
     ParagraphMarkdownNode,
 )
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 def test_simple_numbered_list(syntax_registry: SyntaxDefinitionRegistry) -> None:

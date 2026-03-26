@@ -1,13 +1,13 @@
 from typing import override
 
-from notionary.blocks.schemas import (
+from notionary.page.blocks.schemas import (
     CreateTableBlock,
     CreateTableData,
     CreateTableRowBlock,
     TableRowData,
 )
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.parsers import BlockParsingContext, LineParser
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )

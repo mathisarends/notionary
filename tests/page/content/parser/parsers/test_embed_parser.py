@@ -2,10 +2,10 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.schemas import CreateEmbedBlock
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.schemas import CreateEmbedBlock
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.embed import EmbedParser
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture

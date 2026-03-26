@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Self
 
-from notionary.blocks.enums import CodingLanguage
-from notionary.markdown.nodes import (
+from notionary.page.blocks.schemas import CodingLanguage
+from notionary.page.markdown.nodes import (
     AudioMarkdownNode,
     BookmarkMarkdownNode,
     BreadcrumbMarkdownNode,
@@ -31,7 +31,7 @@ from notionary.markdown.nodes import (
     ToggleMarkdownNode,
     VideoMarkdownNode,
 )
-from notionary.markdown.nodes.container import flatten_children
+from notionary.page.markdown.nodes.container import flatten_children
 
 
 class MarkdownBuilder:

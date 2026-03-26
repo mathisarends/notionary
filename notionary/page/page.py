@@ -1,6 +1,6 @@
 from notionary.http.client import HttpClient
 from notionary.page.comments.service import PageComments
-from notionary.page.content import PageContent
+from notionary.page.page_content import PageContent
 from notionary.page.properties.service import PagePropertyHandler
 from notionary.page.schemas import PageDto
 from notionary.shared.entity import EntityCover, EntityIcon, EntityTrash

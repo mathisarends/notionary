@@ -1,10 +1,10 @@
 import json
 from dataclasses import asdict
 
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
-from notionary.markdown.syntax.definition.models import SyntaxDefinitionRegistryKey
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
-from notionary.markdown.syntax.prompts.models import SyntaxPromptData
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
+from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
+from notionary.page.markdown.syntax.definition.models import SyntaxDefinitionRegistryKey
+from notionary.page.markdown.syntax.prompts.models import SyntaxPromptData
 
 
 class SyntaxPromptRegistry:

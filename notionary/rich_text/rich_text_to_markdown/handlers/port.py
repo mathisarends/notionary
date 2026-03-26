@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 
-from notionary.shared.rich_text.schemas import RichText
-
 from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
+from notionary.rich_text.schemas import RichText
 
 
 class RichTextHandler(ABC):

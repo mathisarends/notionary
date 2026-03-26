@@ -3,7 +3,8 @@ import logging
 
 from notionary.page.blocks.client import BlockClient
 from notionary.page.blocks.schemas import Block
-from notionary.page.content import MarkdownToNotionConverter, NotionToMarkdownConverter
+from notionary.page.content.parser.service import MarkdownToNotionConverter
+from notionary.page.content.renderer.service import NotionToMarkdownConverter
 from notionary.shared.decorators import with_retry
 
 logger = logging.getLogger(__name__)

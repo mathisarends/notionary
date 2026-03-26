@@ -1,9 +1,9 @@
 import pytest
-
-from notionary.blocks.enums import CodingLanguage
 from notionary.markdown.nodes import CodeMarkdownNode
 from notionary.markdown.syntax.definition.models import SyntaxDefinition
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.enums import CodingLanguage
+
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture

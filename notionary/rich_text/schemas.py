@@ -1,8 +1,37 @@
 from enum import StrEnum
 from typing import Annotated, Literal, Self
 
-from notionary.blocks.enums import BlockColor
 from pydantic import BaseModel, Field
+
+
+class BlockColor(StrEnum):
+    BLUE = "blue"
+    BROWN = "brown"
+    DEFAULT = "default"
+    GRAY = "gray"
+    GREEN = "green"
+    ORANGE = "orange"
+    YELLOW = "yellow"
+    PINK = "pink"
+    PURPLE = "purple"
+    RED = "red"
+
+    BLUE_BACKGROUND = "blue_background"
+    BROWN_BACKGROUND = "brown_background"
+    DEFAULT_BACKGROUND = "default_background"
+    GRAY_BACKGROUND = "gray_background"
+    GREEN_BACKGROUND = "green_background"
+    ORANGE_BACKGROUND = "orange_background"
+    YELLOW_BACKGROUND = "yellow_background"
+    PINK_BACKGROUND = "pink_background"
+    PURPLE_BACKGROUND = "purple_background"
+    RED_BACKGROUND = "red_background"
+
+    def is_background(self) -> bool:
+        return self.value.endswith("_background")
+
+    def get_base_color(self) -> str:
+        return self.value.replace("_background", "")
 
 
 class RichTextType(StrEnum):

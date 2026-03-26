@@ -9,7 +9,7 @@ from notionary.page.content.parser.parsers.base import (
     LineParser,
 )
 from notionary.page.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
-from notionary.shared.rich_text.markdown_to_rich_text.converter import (
+from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )
 

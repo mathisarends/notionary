@@ -1,6 +1,4 @@
 import pytest
-
-from notionary.blocks.enums import CodingLanguage
 from notionary.markdown import MarkdownBuilder
 from notionary.markdown.structured_output import (
     AudioSchema,
@@ -36,6 +34,7 @@ from notionary.markdown.structured_output import (
     ToggleSchema,
     VideoSchema,
 )
+from notionary.page.blocks.enums import CodingLanguage
 
 
 @pytest.fixture

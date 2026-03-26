@@ -11,7 +11,20 @@ from notionary.user import UsersNamespace
 
 
 class Notionary:
+    """Async client for the Notion API.
+
+    The API key is read from the ``NOTION_API_KEY`` environment variable
+    when ``api_key`` is omitted.
+    """
+
     def __init__(self, api_key: str | None = None) -> None:
+        """
+        Args:
+            api_key: Notion integration token. Falls back to ``NOTION_API_KEY``.
+
+        Raises:
+            ValueError: If no API key is provided and ``NOTION_API_KEY`` is not set.
+        """
         self._http = HttpClient(self._resolve_api_key(api_key))
 
         self.users = UsersNamespace(self._http)
@@ -29,6 +42,7 @@ class Notionary:
         return resolved
 
     async def close(self) -> None:
+        """Close the underlying HTTP session and release all resources."""
         await self._http.close()
 
     async def __aenter__(self) -> Self:

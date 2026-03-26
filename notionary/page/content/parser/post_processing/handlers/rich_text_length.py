@@ -5,7 +5,7 @@ Handles request limits for rich texts (see https://developers.notion.com/referen
 import logging
 from typing import Any, override
 
-from notionary.blocks.schemas import BlockCreatePayload
+from notionary.page.blocks.schemas import BlockCreatePayload
 from notionary.page.content.parser.post_processing.port import PostProcessor
 from notionary.rich_text.schemas import RichText, RichTextType
 

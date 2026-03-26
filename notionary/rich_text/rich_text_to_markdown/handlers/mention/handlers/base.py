@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
-
+from notionary.page.markdown.syntax.definition import MarkdownGrammar
 from notionary.rich_text.schemas import Mention
 
 

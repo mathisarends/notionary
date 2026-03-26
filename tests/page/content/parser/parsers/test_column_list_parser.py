@@ -1,18 +1,18 @@
 from unittest.mock import AsyncMock
 
 import pytest
+from notionary.markdown.syntax.definition import (
+    MarkdownGrammar,
+    SyntaxDefinitionRegistry,
+)
+from notionary.page.blocks.enums import BlockType
 
-from notionary.blocks.enums import BlockType
-from notionary.blocks.schemas import (
+from notionary.page.blocks.schemas import (
     CreateColumnBlock,
     CreateColumnData,
     CreateColumnListBlock,
     CreateParagraphBlock,
     CreateParagraphData,
-)
-from notionary.markdown.syntax.definition import (
-    MarkdownGrammar,
-    SyntaxDefinitionRegistry,
 )
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.column_list import ColumnListParser

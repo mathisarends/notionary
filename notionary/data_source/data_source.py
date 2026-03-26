@@ -1,5 +1,4 @@
 import logging
-from collections.abc import AsyncIterator
 
 from notionary.data_source.data_source_instance_client import (
     DataSourceInstanceClient,
@@ -19,11 +18,8 @@ from notionary.data_source.properties.schemas import (
 )
 from notionary.data_source.query import (
     DataSourceQueryBuilder,
-    DataSourceQueryParams,
-    QueryResolver,
 )
 from notionary.data_source.schemas import DataSourceDto
-from notionary.database import Database
 from notionary.http.client import HttpClient
 from notionary.page import Page
 from notionary.page.properties.schemas import PageTitleProperty
@@ -42,20 +38,17 @@ class DataSource:
         properties: dict[str, DataSourceProperty],
         data_source_instance_client: DataSourceInstanceClient,
         http: HttpClient,
-        query_resolver: QueryResolver | None = None,
     ) -> None:
         self.metadata: DataSourceDto = dto
 
         path = f"databases/{dto.id}"
-        self._icon = EntityIcon(dto, http, path)
-        self._cover = EntityCover(dto, http, path)
-        self._trash = EntityTrash(dto, http, path)
+        self._icon = EntityIcon(dto=dto, http_client=http, path=path)
+        self._cover = EntityCover(dto=dto, http_client=http, path=path)
+        self._trash = EntityTrash(dto=dto, http_client=http, path=path)
 
-        self._parent_database: Database | None = None
         self._archived = dto.archived
         self._properties = properties or {}
         self._data_source_client = data_source_instance_client
-        self.query_resolver = query_resolver or QueryResolver()
 
     @property
     def id(self) -> str:
@@ -136,39 +129,6 @@ class DataSource:
 
     async def create_blank_page(self, title: str | None = None) -> Page:
         return await self._data_source_client.create_blank_page(title=title)
-
-    async def get_pages(
-        self,
-        query_params: DataSourceQueryParams | None = None,
-    ) -> list[Page]:
-        from notionary import Page
-
-        resolved_params = await self._resolve_query_params_if_needed(query_params)
-        query_response = await self._data_source_client.query(
-            query_params=resolved_params
-        )
-        return [await Page.from_id(page.id) for page in query_response.results]
-
-    async def iter_pages(
-        self,
-        query_params: DataSourceQueryParams | None = None,
-    ) -> AsyncIterator[Page]:
-        from notionary import Page
-
-        resolved_params = await self._resolve_query_params_if_needed(query_params)
-
-        async for page in self._data_source_client.query_stream(
-            query_params=resolved_params
-        ):
-            yield await Page.from_id(page.id)
-
-    async def _resolve_query_params_if_needed(
-        self,
-        query_params: DataSourceQueryParams | None,
-    ) -> DataSourceQueryParams | None:
-        if query_params is None:
-            return None
-        return await self.query_resolver.resolve_params(query_params)
 
     # ── Properties ───────────────────────────────────────────────
     def get_query_builder(self) -> DataSourceQueryBuilder:

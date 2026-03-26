@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from notionary.blocks.schemas import (
+from notionary.page.blocks.schemas import (
     BlockCreatePayload,
     BlockType,
     CreateImageBlock,
@@ -10,9 +10,9 @@ from notionary.blocks.schemas import (
     CreateVideoBlock,
     ExternalFileWithCaption,
 )
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.parser.parsers.base import BlockParsingContext
 from notionary.page.content.parser.parsers.caption import CaptionParser
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )
@@ -49,7 +49,7 @@ def image_block_with_caption_support() -> CreateImageBlock:
 
 @pytest.fixture
 def paragraph_block_without_caption_support() -> CreateParagraphBlock:
-    from notionary.blocks.schemas import CreateParagraphData
+    from notionary.page.blocks.schemas import CreateParagraphData
 
     paragraph_data = CreateParagraphData(rich_text=[])
     block = CreateParagraphBlock(type=BlockType.PARAGRAPH, paragraph=paragraph_data)

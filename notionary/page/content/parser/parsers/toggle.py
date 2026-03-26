@@ -1,11 +1,15 @@
 from typing import override
 
-from notionary.blocks.schemas import BlockColor, CreateToggleBlock, CreateToggleData
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.schemas import (
+    BlockColor,
+    CreateToggleBlock,
+    CreateToggleData,
+)
 from notionary.page.content.parser.parsers import (
     BlockParsingContext,
     LineParser,
 )
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )

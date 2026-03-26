@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 
 
 class MarkdownNode(ABC):

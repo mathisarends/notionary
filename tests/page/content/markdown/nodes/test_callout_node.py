@@ -1,10 +1,10 @@
 import pytest
-
 from notionary.markdown.nodes import (
     CalloutMarkdownNode,
     ParagraphMarkdownNode,
 )
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture

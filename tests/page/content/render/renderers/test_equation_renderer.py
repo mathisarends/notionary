@@ -2,12 +2,12 @@ from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+from notionary.page.blocks.enums import BlockType
 
-from notionary.blocks.enums import BlockType
-from notionary.blocks.schemas import EquationBlock, EquationData
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.schemas import EquationBlock, EquationData
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.equation import EquationRenderer
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 def _create_equation_data(expression: str) -> EquationData:

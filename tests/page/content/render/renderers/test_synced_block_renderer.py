@@ -2,17 +2,17 @@ from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+from notionary.page.blocks.enums import BlockType
 
-from notionary.blocks.enums import BlockType
-from notionary.blocks.schemas import (
+from notionary.page.blocks.schemas import (
     Block,
     SyncedBlockBlock,
     SyncedBlockData,
     SyncedFromBlock,
 )
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
 from notionary.page.content.renderer.context import MarkdownRenderingContext
 from notionary.page.content.renderer.renderers.synced_block import SyncedBlockRenderer
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 def _create_synced_block_data(

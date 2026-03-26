@@ -1,9 +1,7 @@
-from typing import override
-
-from notionary.blocks.enums import CodingLanguage
-from notionary.markdown.nodes.base import MarkdownNode
-from notionary.markdown.nodes.mixins.caption import CaptionMarkdownNodeMixin
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+from notionary.page.blocks.schemas import CodingLanguage
+from notionary.page.markdown.nodes.base import MarkdownNode
+from notionary.page.markdown.nodes.mixins import CaptionMarkdownNodeMixin
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 class CodeMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
@@ -19,7 +17,6 @@ class CodeMarkdownNode(MarkdownNode, CaptionMarkdownNodeMixin):
         self.language = language
         self.caption = caption
 
-    @override
     def to_markdown(self) -> str:
         code_syntax = self._syntax_registry.get_code_syntax()
         lang = self.language or ""

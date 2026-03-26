@@ -1,7 +1,6 @@
 from typing import override
 
-from notionary.blocks.enums import BlockColor
-from notionary.blocks.schemas import CreateParagraphBlock, CreateParagraphData
+from notionary.page.blocks.schemas import CreateParagraphBlock, CreateParagraphData
 from notionary.page.content.parser.parsers.base import (
     BlockParsingContext,
     LineParser,
@@ -9,6 +8,7 @@ from notionary.page.content.parser.parsers.base import (
 from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )
+from notionary.rich_text.schemas import BlockColor
 
 
 class ParagraphParser(LineParser):

@@ -1,7 +1,7 @@
 import pytest
+from notionary.page.blocks.enums import BlockType
 
-from notionary.blocks.enums import BlockType
-from notionary.blocks.schemas import (
+from notionary.page.blocks.schemas import (
     CodeData,
     CreateCalloutBlock,
     CreateCalloutData,

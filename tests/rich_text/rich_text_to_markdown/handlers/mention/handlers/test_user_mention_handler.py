@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
+from notionary.page.markdown.syntax.definition import MarkdownGrammar
 from notionary.rich_text.rich_text_to_markdown.handlers.mention.handlers.user import (
     UserMentionHandler,
 )

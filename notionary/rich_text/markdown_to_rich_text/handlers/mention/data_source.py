@@ -1,8 +1,6 @@
 from re import Pattern
 
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
-from notionary.shared.name_id_resolver import NameIdResolver
-
+from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
 from notionary.rich_text.markdown_to_rich_text.handlers.mention.base import (
     MentionPatternHandler,
 )
@@ -10,8 +8,7 @@ from notionary.rich_text.schemas import MentionType, RichText
 
 
 class DataSourceMentionPatternHandler(MentionPatternHandler):
-    def __init__(self, resolver: NameIdResolver, grammar: MarkdownGrammar) -> None:
-        super().__init__(resolver)
+    def __init__(self, grammar: MarkdownGrammar) -> None:
         self._grammar = grammar
 
     @property

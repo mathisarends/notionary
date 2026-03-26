@@ -1,15 +1,15 @@
 from abc import abstractmethod
 from typing import override
 
-from notionary.blocks.schemas import (
+from notionary.page.blocks.schemas import (
     Block,
     ExternalFileWithCaption,
     NotionHostedFileWithCaption,
 )
-from notionary.markdown.syntax.definition.models import EnclosedSyntaxDefinition
 from notionary.page.content.renderer.renderers.captioned_block import (
     CaptionedBlockRenderer,
 )
+from notionary.page.markdown.syntax.definition.models import EnclosedSyntaxDefinition
 
 
 class FileLikeBlockRenderer(CaptionedBlockRenderer):

@@ -5,10 +5,12 @@ from notionary.http.client import HttpClient
 from notionary.page.comments.client import CommentClient
 from notionary.page.comments.models import Comment
 from notionary.page.comments.schemas import CommentDto
-from notionary.shared.rich_text.markdown_to_rich_text.factory import (
+from notionary.rich_text.markdown_to_rich_text.factory import (
     create_markdown_to_rich_text_converter,
 )
-from notionary.shared.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
+from notionary.rich_text.rich_text_to_markdown.converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.user import UserClient
 
 logger = logging.getLogger(__name__)

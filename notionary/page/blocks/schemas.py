@@ -5,45 +5,15 @@ from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from notionary.rich_text.schemas import BlockColor, RichText
 from notionary.shared.models.file import ExternalFile, FileUploadFile, NotionHostedFile
 from notionary.shared.models.icon import Icon
 from notionary.shared.models.parent import Parent
-from notionary.shared.rich_text.schemas import RichText
 from notionary.user.schemas import PartialUserDto
 
 # ============================================================================
 # Enums
 # ============================================================================
-
-
-class BlockColor(StrEnum):
-    BLUE = "blue"
-    BROWN = "brown"
-    DEFAULT = "default"
-    GRAY = "gray"
-    GREEN = "green"
-    ORANGE = "orange"
-    YELLOW = "yellow"
-    PINK = "pink"
-    PURPLE = "purple"
-    RED = "red"
-
-    BLUE_BACKGROUND = "blue_background"
-    BROWN_BACKGROUND = "brown_background"
-    DEFAULT_BACKGROUND = "default_background"
-    GRAY_BACKGROUND = "gray_background"
-    GREEN_BACKGROUND = "green_background"
-    ORANGE_BACKGROUND = "orange_background"
-    YELLOW_BACKGROUND = "yellow_background"
-    PINK_BACKGROUND = "pink_background"
-    PURPLE_BACKGROUND = "purple_background"
-    RED_BACKGROUND = "red_background"
-
-    def is_background(self) -> bool:
-        return self.value.endswith("_background")
-
-    def get_base_color(self) -> str:
-        return self.value.replace("_background", "")
 
 
 class BlockType(StrEnum):

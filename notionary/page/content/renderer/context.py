@@ -1,7 +1,7 @@
 from collections.abc import Awaitable, Callable
 
-from notionary.blocks.schemas import Block
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
+from notionary.page.blocks.schemas import Block
+from notionary.page.markdown.syntax.definition import MarkdownGrammar
 
 ConvertChildrenCallback = Callable[[list[Block], int], Awaitable[str]]
 

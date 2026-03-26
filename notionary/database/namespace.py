@@ -1,8 +1,8 @@
 from collections.abc import AsyncIterator
 
+from notionary.database.client import DatabaseHttpClient
 from notionary.database.database import Database
 from notionary.database.exceptions import DatabaseNotFound
-from notionary.database.factory import DatabaseFactory
 from notionary.database.schemas import (
     DatabaseDto,
     DatabaseQueryConfig,
@@ -16,7 +16,7 @@ from notionary.shared.fuzzy import fuzzy_suggestions
 class DatabaseNamespace:
     def __init__(self, http: HttpClient) -> None:
         self._http = http
-        self._factory = DatabaseFactory(http)
+        self._client = DatabaseHttpClient(http=http)
 
     async def list(
         self,
@@ -53,12 +53,12 @@ class DatabaseNamespace:
             total_results_limit=total_results_limit,
         )
         async for item in self._http.paginate_stream(
-            endpoint="search",
+            endpoint="/search",
             total_results_limit=config.total_results_limit,
             **config.model_dump(),
         ):
             dto = DatabaseDto.model_validate(item)
-            yield await self._factory.from_id(dto.id)
+            yield Database(dto=dto, http=self._http)
 
     async def search(self, query: str) -> list[Database]:
         return await self.list(query=query)
@@ -76,4 +76,5 @@ class DatabaseNamespace:
         raise DatabaseNotFound(title, suggestions)
 
     async def from_id(self, database_id: str) -> Database:
-        return await self._factory.from_id(database_id)
+        dto = await self._client.get_database(database_id)
+        return Database(dto=dto, http=self._http)

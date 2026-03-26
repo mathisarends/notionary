@@ -1,24 +1,21 @@
 import logging
 from typing import ClassVar
 
-from notionary.shared.rich_text.rich_text_to_markdown.color_chunker import (
+from notionary.page.blocks.schemas import BlockColor
+from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
+from notionary.rich_text.rich_text_to_markdown.color_chunker import (
     ColorGroup,
     chunk_by_color,
 )
-from notionary.shared.rich_text.rich_text_to_markdown.handlers.inline_equation import (
+from notionary.rich_text.rich_text_to_markdown.handlers.inline_equation import (
     EquationHandler,
 )
-from notionary.shared.rich_text.rich_text_to_markdown.handlers.mention import (
+from notionary.rich_text.rich_text_to_markdown.handlers.mention.handler import (
     MentionRichTextHandler,
 )
-from notionary.shared.rich_text.rich_text_to_markdown.handlers.port import (
-    RichTextHandler,
-)
-from notionary.shared.rich_text.rich_text_to_markdown.handlers.text import TextHandler
-from notionary.shared.rich_text.schemas import RichText, RichTextType, TextAnnotations
-
-from notionary.page.blocks.schemas import BlockColor
-from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
+from notionary.rich_text.rich_text_to_markdown.handlers.port import RichTextHandler
+from notionary.rich_text.rich_text_to_markdown.handlers.text import TextHandler
+from notionary.rich_text.schemas import RichText, RichTextType, TextAnnotations
 
 logger = logging.getLogger(__name__)
 

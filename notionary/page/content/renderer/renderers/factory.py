@@ -1,9 +1,3 @@
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
-from notionary.rich_text.rich_text_to_markdown import (
-    RichTextToMarkdownConverter,
-)
-
 from notionary.page.content.renderer.renderers import (
     AudioRenderer,
     BlockRenderer,
@@ -31,6 +25,13 @@ from notionary.page.content.renderer.renderers import (
     TodoRenderer,
     ToggleRenderer,
     VideoRenderer,
+)
+from notionary.page.markdown.syntax.definition import (
+    MarkdownGrammar,
+    SyntaxDefinitionRegistry,
+)
+from notionary.rich_text.rich_text_to_markdown import (
+    RichTextToMarkdownConverter,
 )
 
 

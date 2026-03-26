@@ -2,10 +2,10 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator, model_serializer
 
+from notionary.rich_text.schemas import RichText
 from notionary.shared.entity.schemas import EntityResponseDto
 from notionary.shared.models.file import File
 from notionary.shared.models.icon import Icon
-from notionary.shared.rich_text.schemas import RichText
 from notionary.shared.sorting import SortDirection, SortTimestamp
 
 

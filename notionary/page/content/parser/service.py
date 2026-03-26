@@ -1,5 +1,5 @@
 from notionary.page.blocks.schemas import BlockCreatePayload
-from notionary.page.content.parser.parsers import (
+from notionary.page.content.parser.context import (
     BlockParsingContext,
     ParentBlockContext,
 )

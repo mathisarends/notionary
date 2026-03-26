@@ -1,15 +1,15 @@
 from typing import override
 
-from notionary.blocks.schemas import (
+from notionary.page.blocks.schemas import (
     Block,
     BlockType,
     ExternalFileWithCaption,
     NotionHostedFileWithCaption,
 )
-from notionary.markdown.syntax.definition.models import SyntaxDefinition
 from notionary.page.content.renderer.renderers.file_like_block import (
     FileLikeBlockRenderer,
 )
+from notionary.page.markdown.syntax.definition.models import SyntaxDefinition
 
 
 class ImageRenderer(FileLikeBlockRenderer):

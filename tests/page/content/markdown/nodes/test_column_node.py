@@ -1,11 +1,11 @@
 import pytest
-
 from notionary.markdown.nodes import (
     ColumnMarkdownNode,
     ParagraphMarkdownNode,
 )
 from notionary.markdown.nodes.columns import ColumnListMarkdownNode
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
+
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 @pytest.fixture

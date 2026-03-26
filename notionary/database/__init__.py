@@ -1,7 +1,7 @@
+from .database import Database
 from .namespace import (
     DatabaseNamespace,
 )
-from .service import Database
 
 __all__ = [
     "Database",

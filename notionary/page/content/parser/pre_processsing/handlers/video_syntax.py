@@ -2,12 +2,10 @@ import re
 from typing import override
 from urllib.parse import urlparse
 
-from notionary.blocks.enums import VideoFileType
-from notionary.markdown.syntax.definition.registry import SyntaxDefinitionRegistry
-
-from notionary.page.content.exceptions import UnsupportedVideoFormatError
+from notionary.page.blocks.schemas import VideoFileType
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
-from notionary.shared.decorators import time_execution_sync
+from notionary.page.exceptions import UnsupportedVideoFormatError
+from notionary.page.markdown.syntax.definition import SyntaxDefinitionRegistry
 
 
 class VideoFormatPreProcessor(PreProcessor):
@@ -24,7 +22,6 @@ class VideoFormatPreProcessor(PreProcessor):
         self._video_syntax = self._syntax_registry.get_video_syntax()
 
     @override
-    @time_execution_sync()
     def process(self, markdown_text: str) -> str:
         lines = markdown_text.split("\n")
         validated_lines = [self._validate_or_reject_line(line) for line in lines]

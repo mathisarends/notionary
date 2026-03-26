@@ -1,10 +1,10 @@
 from unittest.mock import AsyncMock
 
 import pytest
-
-from notionary.blocks.enums import BlockType
 from notionary.file_upload.service import NotionFileUpload
 from notionary.markdown import SyntaxDefinitionRegistryKey, SyntaxPromptRegistry
+from notionary.page.blocks.enums import BlockType
+
 from notionary.page.content.parser.factory import create_markdown_to_notion_converter
 from notionary.page.content.parser.parsers.factory import create_line_parser
 from notionary.page.content.parser.service import MarkdownToNotionConverter

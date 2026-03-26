@@ -2,8 +2,14 @@ from typing import cast
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from notionary.shared.name_id_resolver import (
+    DatabaseNameIdResolver,
+    DataSourceNameIdResolver,
+    PageNameIdResolver,
+    PersonNameIdResolver,
+)
 
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
+from notionary.page.markdown.syntax.definition import MarkdownGrammar
 from notionary.rich_text.markdown_to_rich_text.converter import (
     MarkdownRichTextConverter,
 )
@@ -13,12 +19,6 @@ from notionary.rich_text.markdown_to_rich_text.handlers.factory import (
 from notionary.rich_text.schemas import (
     MentionType,
     RichTextType,
-)
-from notionary.shared.name_id_resolver import (
-    DatabaseNameIdResolver,
-    DataSourceNameIdResolver,
-    PageNameIdResolver,
-    PersonNameIdResolver,
 )
 
 

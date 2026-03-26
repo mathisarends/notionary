@@ -1,8 +1,8 @@
 from typing import override
 
-from notionary.markdown.syntax.definition.grammar import MarkdownGrammar
 from notionary.shared.name_id_resolver.port import NameIdResolver
 
+from notionary.page.markdown.syntax.definition import MarkdownGrammar
 from notionary.rich_text.rich_text_to_markdown.handlers.mention.handlers.base import (
     MentionHandler,
 )
