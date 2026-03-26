@@ -4,15 +4,6 @@ from typing import Any
 
 import httpx
 
-from notionary.http.exceptions import (
-    NotionAuthenticationError,
-    NotionError,
-    NotionNotFoundError,
-    NotionPermissionError,
-    NotionRateLimitError,
-    NotionServerError,
-    NotionValidationError,
-)
 from notionary.http.schemas import PaginatedResponse
 
 logger = logging.getLogger(__name__)
@@ -20,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class HttpClient:
     _BASE_URL = "https://api.notion.com/v1"
-    _NOTION_VERSION = "2025-09-03"
+    _NOTION_VERSION = "2026-03-11"
 
     def __init__(self, token: str, timeout: int = 30) -> None:
         self._client = httpx.AsyncClient(
@@ -46,19 +37,13 @@ class HttpClient:
         return await self._request("POST", endpoint, json=data)
 
     async def post_multipart(
-        self,
-        endpoint: str,
-        files: dict[str, Any],
-        data: dict[str, Any] | None = None,
+        self, endpoint: str, files: dict[str, Any], data: dict[str, Any] | None = None
     ) -> dict[str, Any]:
         url = f"{self._BASE_URL}/{endpoint.lstrip('/')}"
         logger.debug("POST multipart %s", url)
-        try:
-            response = await self._client.post(url, files=files, data=data)
-            response.raise_for_status()
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            raise self._map_error(e) from e
+        response = await self._client.post(url, files=files, data=data)
+        response.raise_for_status()
+        return response.json()
 
     async def patch(
         self, endpoint: str, data: dict[str, Any] | None = None
@@ -71,14 +56,10 @@ class HttpClient:
     async def _request(self, method: str, endpoint: str, **kwargs) -> dict[str, Any]:
         url = f"{self._BASE_URL}/{endpoint.lstrip('/')}"
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
-
         logger.debug("%s %s", method, url)
-        try:
-            response = await self._client.request(method, url, **kwargs)
-            response.raise_for_status()
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            raise self._map_error(e) from e
+        response = await self._client.request(method, url, **kwargs)
+        response.raise_for_status()
+        return response.json()
 
     async def paginate(
         self,
@@ -164,21 +145,3 @@ class HttpClient:
             has_more=has_more,
             next_cursor=original.next_cursor if has_more else None,
         )
-
-    @staticmethod
-    def _map_error(e: httpx.HTTPStatusError) -> NotionError:
-        match e.response.status_code:
-            case 400:
-                return NotionValidationError(e.response.text)
-            case 401:
-                return NotionAuthenticationError(e.response.text)
-            case 403:
-                return NotionPermissionError(e.response.text)
-            case 404:
-                return NotionNotFoundError(e.response.text)
-            case 429:
-                return NotionRateLimitError(e.response.text)
-            case c if 500 <= c < 600:
-                return NotionServerError(e.response.text)
-            case _:
-                return NotionError(e.response.text)

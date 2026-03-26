@@ -9,15 +9,6 @@
 #     NoFileExtensionException,
 #     UnsupportedFileTypeException,
 # )
-# from notionary.http.exceptions import (
-#     NotionAuthenticationError,
-#     NotionConnectionError,
-#     NotionError,
-#     NotionNotFoundError,
-#     NotionRateLimitError,
-#     NotionServerError,
-#     NotionValidationError,
-# )
 # from notionary.page.exceptions import (
 #     AccessPagePropertyWithoutDataSourceError,
 #     InsufficientColumnsError,
