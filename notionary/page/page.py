@@ -12,22 +12,21 @@ class Page:
         dto: PageDto,
         title: str,
         page_property_handler: PagePropertyHandler,
-        content: PageContent,
         comments: PageComments,
         http: HttpClient,
     ) -> None:
         self.metadata: PageDto = dto
 
         path = f"pages/{dto.id}"
-        self._icon = EntityIcon(dto=dto, http=http, path=path)
-        self._cover = EntityCover(dto=dto, http=http, path=path)
-        self._trash = EntityTrash(dto=dto, http=http, path=path)
+        self._icon = EntityIcon(dto=dto, http_client=http, path=path)
+        self._cover = EntityCover(dto=dto, http_client=http, path=path)
+        self._trash = EntityTrash(dto=dto, http_client=http, path=path)
 
         self.title = title
         self.archived = dto.archived
         self.properties = page_property_handler
 
-        self._content = content
+        self._content = PageContent(page_id=dto.id, http=http)
         self._comments = comments
 
     @property

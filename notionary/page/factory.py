@@ -1,7 +1,6 @@
 from notionary.http.client import HttpClient
 from notionary.page.comments.service import PageComments
 from notionary.page.page import Page
-from notionary.page.page_content import PageContent
 from notionary.page.properties.factory import PagePropertyHandlerFactory
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import PageDto
@@ -27,7 +26,6 @@ class PageFactory:
             page_property_handler=PagePropertyHandlerFactory().create_from_page_response(
                 dto, http=self._http
             ),
-            content=PageContent(page_id=dto.id),
             comments=PageComments(page_id=dto.id, http=self._http),
             http=self._http,
         )
@@ -43,4 +41,4 @@ async def _extract_page_title(dto: PageDto) -> str:
         None,
     )
     converter = RichTextToMarkdownConverter()
-    return await converter.convert(title_property.title if title_property else [])
+    return await converter.to_markdown(title_property.title if title_property else [])

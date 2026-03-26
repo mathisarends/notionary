@@ -3,13 +3,13 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
-from notionary.shared.models.file import (
-    File,
-)
+from notionary.shared.models.file import File
 
 
 class IconType(StrEnum):
     EMOJI = "emoji"
+    CUSTOM_EMOJI = "custom_emoji"
+    ICON = "icon"
     EXTERNAL = "external"
     FILE = "file"
     FILE_UPLOAD = "file_upload"
@@ -20,4 +20,41 @@ class EmojiIcon(BaseModel):
     emoji: str
 
 
-type Icon = Annotated[EmojiIcon | File, Field(discriminator="type")]
+class CustomEmojiData(BaseModel):
+    id: str
+    name: str | None = None
+    url: str | None = None
+
+
+class CustomEmojiIcon(BaseModel):
+    type: Literal[IconType.CUSTOM_EMOJI] = IconType.CUSTOM_EMOJI
+    custom_emoji: CustomEmojiData
+
+
+class BuiltinIconColor(StrEnum):
+    GRAY = "gray"
+    LIGHT_GRAY = "lightgray"
+    BROWN = "brown"
+    YELLOW = "yellow"
+    ORANGE = "orange"
+    GREEN = "green"
+    BLUE = "blue"
+    PURPLE = "purple"
+    PINK = "pink"
+    RED = "red"
+
+
+class BuiltinIconData(BaseModel):
+    name: str
+    color: BuiltinIconColor = BuiltinIconColor.GRAY
+
+
+class BuiltinIcon(BaseModel):
+    type: Literal[IconType.ICON] = IconType.ICON
+    icon: BuiltinIconData
+
+
+type Icon = Annotated[
+    EmojiIcon | CustomEmojiIcon | BuiltinIcon | File,
+    Field(discriminator="type"),
+]

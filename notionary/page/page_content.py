@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+from notionary.http import HttpClient
 from notionary.page.blocks.client import BlockClient
 from notionary.page.blocks.schemas import Block
 from notionary.page.content.parser.service import MarkdownToNotionConverter
@@ -10,16 +11,19 @@ from notionary.shared.decorators import with_retry
 logger = logging.getLogger(__name__)
 
 
+# TODO: Get this to work:
 class PageContent:
-    def __init__(self, page_id: str) -> None:
+    def __init__(self, page_id: str, http: HttpClient) -> None:
         self._page_id = page_id
-        self._client = BlockClient()
+        self._http = http
+        self._client = BlockClient(client=http)
         self._to_notion = MarkdownToNotionConverter()
         self._to_markdown = NotionToMarkdownConverter()
 
     async def get_markdown(self) -> str:
         blocks = await self._client.get_block_tree(block_id=self._page_id)
         return await self._to_markdown.convert(blocks=blocks)
+        return ""
 
     async def append(self, content: str) -> None:
         if not content:
@@ -29,6 +33,7 @@ class PageContent:
         await self._client.append_block_children(
             block_id=self._page_id, children=blocks
         )
+        return
 
     async def clear(self) -> None:
         children = await self._client.get_block_children(block_id=self._page_id)
@@ -36,6 +41,7 @@ class PageContent:
             logger.debug("No blocks to delete for page: %s", self._page_id)
             return
         await asyncio.gather(*[self._delete_block(block) for block in children.results])
+        return
 
     @with_retry(max_retries=10, initial_delay=0.2, backoff_factor=1.5)
     async def _delete_block(self, block: Block) -> None:

@@ -9,9 +9,9 @@ load_dotenv(override=True)
 
 async def main() -> None:
     async with Notionary() as notion:
-        databases = await notion.databases.list()
-        for db in databases:
-            print(f"{db.title} ({db.url})")
+        pages = await notion.pages.list()
+        for page in pages:
+            print(f"{page.title} ({page.url})")
 
 
 if __name__ == "__main__":
