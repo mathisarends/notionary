@@ -2,17 +2,22 @@ from collections.abc import AsyncIterator
 
 from notionary.http.client import HttpClient
 from notionary.page.exceptions import PageNotFound
-from notionary.page.factory import PageFactory
 from notionary.page.page import Page
+from notionary.page.properties import PageTitleProperty
+from notionary.page.schemas import PageDto
 from notionary.page.search import PageSearchClient
 from notionary.page.search.schemas import SortDirection, SortTimestamp
+from notionary.rich_text.rich_text_to_markdown.converter import (
+    RichTextToMarkdownConverter,
+)
 from notionary.shared.fuzzy import fuzzy_suggestions
 
 
 class PageNamespace:
     def __init__(self, http: HttpClient) -> None:
+        self._http = http
         self._search_client = PageSearchClient(http)
-        self._factory = PageFactory(http)
+        self._rich_text_converter = RichTextToMarkdownConverter()
 
     async def list(
         self,
@@ -48,7 +53,7 @@ class PageNamespace:
             page_size=page_size,
             total_results_limit=total_results_limit,
         ):
-            yield await self._factory.from_dto(dto)
+            yield self._page_from_dto(dto)
 
     async def from_title(self, title: str) -> Page:
         candidates = await self.list(query=title, page_size=100)
@@ -61,4 +66,28 @@ class PageNamespace:
         raise PageNotFound(title, suggestions)
 
     async def from_id(self, page_id: str) -> Page:
-        return await self._factory.from_id(page_id)
+        response = await self._http.get(f"pages/{page_id}")
+        dto = PageDto.model_validate(response)
+        return self._page_from_dto(dto)
+
+    def _page_from_dto(self, dto: PageDto) -> Page:
+        title = self._extract_page_title(dto)
+        return Page(
+            id=dto.id,
+            url=dto.url,
+            title=title,
+            icon=dto.icon,
+            cover=dto.cover,
+            in_trash=dto.in_trash,
+            properties=dto.properties,
+            http=self._http,
+        )
+
+    def _extract_page_title(self, dto: PageDto) -> str:
+        title_property = next(
+            (p for p in dto.properties.values() if isinstance(p, PageTitleProperty)),
+            None,
+        )
+        return self._rich_text_converter.convert(
+            title_property.title if title_property else []
+        )
