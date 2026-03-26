@@ -10,7 +10,6 @@ from notionary.shared.models.parent import Parent
 class UpdateDataSourceDto(NotionEntityUpdateDto):
     title: list[RichText]
     description: list[RichText]
-    archived: bool
 
 
 class QueryDataSourceResponse(BaseModel):
@@ -23,5 +22,4 @@ class DataSourceDto(EntityResponseDto):
     database_parent: Parent
     title: list[RichText]
     description: list[RichText]
-    archived: bool
     properties: dict[str, AnyDataSourceProperty]

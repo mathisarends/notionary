@@ -28,7 +28,6 @@ class PageFactory:
             id=dto.id,
             url=dto.url,
             title=title,
-            archived=dto.archived,
             icon=dto.icon,
             cover=dto.cover,
             in_trash=dto.in_trash,

@@ -5,7 +5,6 @@ from notionary.shared.entity.schemas import EntityResponseDto
 
 
 class PageDto(EntityResponseDto):
-    archived: bool
     properties: dict[str, AnyPageProperty]
 
 

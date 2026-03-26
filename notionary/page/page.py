@@ -13,7 +13,6 @@ class Page:
         id: str,
         url: str,
         title: str,
-        archived: bool,
         icon: Icon | None,
         cover: File | None,
         in_trash: bool,
@@ -24,7 +23,6 @@ class Page:
         self.id = id
         self.url = url
         self.title = title
-        self.archived = archived
 
         path = f"pages/{id}"
         self._icon = EntityIcon(icon=icon, http_client=http, path=path)

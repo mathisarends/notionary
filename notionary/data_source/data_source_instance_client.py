@@ -35,11 +35,11 @@ class DataSourceInstanceClient:
         return await self.patch_metadata(update_data_source_dto)
 
     async def archive(self) -> None:
-        update_data_source_dto = UpdateDataSourceDto(archived=True)
+        update_data_source_dto = UpdateDataSourceDto(in_trash=True)
         return await self.patch_metadata(update_data_source_dto)
 
     async def unarchive(self) -> None:
-        update_data_source_dto = UpdateDataSourceDto(archived=False)
+        update_data_source_dto = UpdateDataSourceDto(in_trash=False)
         await self.patch_metadata(update_data_source_dto)
 
     async def update_description(self, description: str) -> DataSourceDto:

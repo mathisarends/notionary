@@ -20,7 +20,7 @@ def _make_upload_response_dict(**overrides: Any) -> dict[str, Any]:
         "last_edited_time": "2024-01-01T00:00:00.000Z",
         "expiry_time": None,
         "upload_url": None,
-        "archived": False,
+        "in_trash": False,
         "status": FileUploadStatus.PENDING,
         "filename": "test.pdf",
         "content_type": "application/pdf",

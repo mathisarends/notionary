@@ -19,7 +19,7 @@ _UPLOAD_PENDING = FileUploadResponse(
     id="upload-123",
     created_time="2024-01-01T00:00:00.000Z",
     last_edited_time="2024-01-01T00:00:00.000Z",
-    archived=False,
+    in_trash=False,
     status=FileUploadStatus.PENDING,
     filename="test.pdf",
 )
@@ -28,7 +28,7 @@ _UPLOAD_UPLOADED = FileUploadResponse(
     id="upload-123",
     created_time="2024-01-01T00:00:00.000Z",
     last_edited_time="2024-01-01T00:00:00.000Z",
-    archived=False,
+    in_trash=False,
     status=FileUploadStatus.UPLOADED,
     filename="test.pdf",
 )
@@ -37,7 +37,7 @@ _UPLOAD_FAILED = FileUploadResponse(
     id="upload-123",
     created_time="2024-01-01T00:00:00.000Z",
     last_edited_time="2024-01-01T00:00:00.000Z",
-    archived=False,
+    in_trash=False,
     status=FileUploadStatus.FAILED,
     filename="test.pdf",
 )
@@ -214,13 +214,13 @@ class TestList:
         assert query.status == FileUploadStatus.UPLOADED
 
     @pytest.mark.asyncio
-    async def test_passes_archived_filter(
+    async def test_passes_in_trash_filter(
         self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
-        await file_uploads.list(archived=False)
+        await file_uploads.list(in_trash=False)
 
         query = mock_client.list_file_uploads.call_args.args[0]
-        assert query.archived is False
+        assert query.in_trash is False
 
     @pytest.mark.asyncio
     async def test_passes_page_size_limit(

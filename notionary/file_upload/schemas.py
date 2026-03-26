@@ -51,7 +51,7 @@ class FileUploadResponse(BaseModel):
     last_edited_time: str
     expiry_time: str | None = None
     upload_url: str | None = None
-    archived: bool
+    in_trash: bool
     status: FileUploadStatus
     filename: str | None = None
     content_type: str | None = None
@@ -61,7 +61,7 @@ class FileUploadResponse(BaseModel):
 
 class FileUploadFilter(BaseModel):
     status: FileUploadStatus | None = None
-    archived: bool | None = None
+    in_trash: bool | None = None
 
 
 class FileUploadListResponse(BaseModel):
@@ -112,7 +112,7 @@ class FileUploadAttachment(BaseModel):
 
 class FileUploadQuery(BaseModel):
     status: FileUploadStatus | None = None
-    archived: bool | None = None
+    in_trash: bool | None = None
 
     page_size_limit: int | None = None
     total_results_limit: int | None = None
@@ -138,7 +138,7 @@ class FileUploadQuery(BaseModel):
         if self.status is not None:
             result["status"] = self.status
 
-        if self.archived is not None:
-            result["archived"] = self.archived
+        if self.in_trash is not None:
+            result["in_trash"] = self.in_trash
 
         return result

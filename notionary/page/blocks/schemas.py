@@ -218,7 +218,6 @@ class BaseBlock(BaseModel):
     last_edited_time: str
     created_by: PartialUserDto
     last_edited_by: PartialUserDto
-    archived: bool = False
     in_trash: bool = False
     has_children: bool = False
     children: list[Block] | None = None

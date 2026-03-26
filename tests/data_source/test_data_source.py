@@ -89,7 +89,6 @@ def data_source(
         url="https://notion.so/ds-123",
         title="Test Data Source",
         description="Test description",
-        archived=False,
         icon=None,
         cover=None,
         in_trash=False,

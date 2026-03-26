@@ -3,8 +3,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
-
-from notionary.http.client import HttpClient
 from notionary.http.exceptions import (
     NotionAuthenticationError,
     NotionNotFoundError,
@@ -13,6 +11,8 @@ from notionary.http.exceptions import (
     NotionServerError,
     NotionValidationError,
 )
+
+from notionary.http.client import HttpClient
 
 
 def _make_client() -> HttpClient:
@@ -73,7 +73,7 @@ class TestHttpMethods:
             client._client, "request", new_callable=AsyncMock
         ) as mock_request:
             mock_request.return_value = _mock_response(200, {"updated": True})
-            result = await client.patch("/pages/abc", data={"archived": True})
+            result = await client.patch("/pages/abc", data={"in_trash": True})
         assert result == {"updated": True}
 
     @pytest.mark.asyncio

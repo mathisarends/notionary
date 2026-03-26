@@ -39,7 +39,6 @@ class DataSource:
         url: str,
         title: str,
         description: str | None,
-        archived: bool,
         icon: Icon | None,
         cover: File | None,
         in_trash: bool,
@@ -51,7 +50,6 @@ class DataSource:
         self.url = url
         self.title = title
         self.description = description
-        self.archived = archived
 
         path = f"databases/{id}"
         self._icon = EntityIcon(icon=icon, http_client=http, path=path)
@@ -102,18 +100,18 @@ class DataSource:
         self.title = "".join(rt.plain_text for rt in dto.title)
 
     async def archive(self) -> None:
-        if self.archived:
+        if self._trash.in_trash:
             logger.info("Data source is already archived.")
             return
         await self._data_source_client.archive()
-        self.archived = True
+        self._trash.in_trash = True
 
     async def unarchive(self) -> None:
-        if not self.archived:
+        if not self._trash.in_trash:
             logger.info("Data source is not archived.")
             return
         await self._data_source_client.unarchive()
-        self.archived = False
+        self._trash.in_trash = False
 
     async def update_description(self, description: str) -> None:
         dto = await self._data_source_client.update_description(description)

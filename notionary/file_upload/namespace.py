@@ -145,13 +145,13 @@ class FileUploads:
         self,
         *,
         status: FileUploadStatus | None = None,
-        archived: bool | None = None,
+        in_trash: bool | None = None,
         page_size_limit: int | None = None,
         total_results_limit: int | None = None,
     ) -> list[FileUploadResponse]:
         query = FileUploadQuery(
             status=status,
-            archived=archived,
+            in_trash=in_trash,
             page_size_limit=page_size_limit,
             total_results_limit=total_results_limit,
         )
@@ -161,13 +161,13 @@ class FileUploads:
         self,
         *,
         status: FileUploadStatus | None = None,
-        archived: bool | None = None,
+        in_trash: bool | None = None,
         page_size_limit: int | None = None,
         total_results_limit: int | None = None,
     ) -> AsyncIterator[FileUploadResponse]:
         query = FileUploadQuery(
             status=status,
-            archived=archived,
+            in_trash=in_trash,
             page_size_limit=page_size_limit,
             total_results_limit=total_results_limit,
         )
