@@ -3,6 +3,7 @@ from notionary.page.comments.service import PageComments
 from notionary.page.content import PageContent
 from notionary.page.properties import PagePropertyHandler
 from notionary.page.properties.schemas import AnyPageProperty
+from notionary.page.schemas import PageUpdateRequest, _DefaultTemplate, _TemplateById
 from notionary.shared.entity import EntityCover, EntityIcon, EntityTrash
 from notionary.shared.models.file import File
 from notionary.shared.models.icon import Icon
@@ -25,6 +26,8 @@ class Page:
         self.title = title
 
         path = f"pages/{id}"
+        self._http = http
+        self._path = path
         self._icon = EntityIcon(icon=icon, http_client=http, path=path)
         self._cover = EntityCover(cover=cover, http_client=http, path=path)
         self._trash = EntityTrash(in_trash=in_trash, http_client=http, path=path)
@@ -89,3 +92,43 @@ class Page:
     async def rename(self, title: str) -> None:
         await self.properties.set_title(title)
         self.title = title
+
+    async def lock(self) -> None:
+        await self._patch(PageUpdateRequest(is_locked=True))
+
+    async def unlock(self) -> None:
+        await self._patch(PageUpdateRequest(is_locked=False))
+
+    async def erase_content(self) -> None:
+        await self._patch(PageUpdateRequest(erase_content=True))
+
+    async def apply_default_template(
+        self,
+        timezone: str | None = None,
+        erase_content: bool = False,
+    ) -> None:
+        template = _DefaultTemplate(timezone=timezone)
+        await self._patch(
+            PageUpdateRequest(
+                template=template,
+                erase_content=erase_content or None,
+            )
+        )
+
+    async def apply_template(
+        self,
+        template_id: str,
+        timezone: str | None = None,
+        erase_content: bool = False,
+    ) -> None:
+        template = _TemplateById(template_id=template_id, timezone=timezone)
+        await self._patch(
+            PageUpdateRequest(
+                template=template,
+                erase_content=erase_content or None,
+            )
+        )
+
+    async def _patch(self, request: PageUpdateRequest) -> None:
+        data = request.model_dump(exclude_none=True)
+        await self._http.patch(self._path, data=data)
