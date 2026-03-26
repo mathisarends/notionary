@@ -168,7 +168,7 @@ class TestWithRetry:
             raise RuntimeError("fail")
 
         with patch(
-            "notionary.utils.decorators.asyncio.sleep", new_callable=AsyncMock
+            "notionary.shared.decorators.asyncio.sleep", new_callable=AsyncMock
         ) as mock_sleep:
             with pytest.raises(RuntimeError):
                 await func()
@@ -182,7 +182,7 @@ class TestWithRetry:
 
         with (
             patch(
-                "notionary.utils.decorators.asyncio.sleep", new_callable=AsyncMock
+                "notionary.shared.decorators.asyncio.sleep", new_callable=AsyncMock
             ) as mock_sleep,
             pytest.raises(RuntimeError),
         ):

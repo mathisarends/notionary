@@ -1,7 +1,10 @@
+from typing import Any
+
 from pydantic import BaseModel
 
 from notionary.http.client import HttpClient
 from notionary.page.properties.schemas import (
+    AnyPageProperty,
     DateValue,
     PageCheckboxProperty,
     PageDateProperty,
@@ -25,104 +28,68 @@ from notionary.rich_text.schemas import RichText
 
 
 class PagePropertyHttpClient:
-    def __init__(self, page_id: str, http: HttpClient) -> None:
+    def __init__(
+        self,
+        page_id: str,
+        http: HttpClient,
+        properties: dict[str, AnyPageProperty],
+    ) -> None:
         self._page_id = page_id
         self._http = http
+        self._properties = properties
 
     async def patch_page(self, data: BaseModel) -> PageDto:
         data_dict = data.model_dump(exclude_unset=True, exclude_none=True)
         result_dict = await self._http.patch(f"pages/{self._page_id}", data=data_dict)
         return PageDto.model_validate(result_dict)
 
-    def _build_update(
-        self, property_name: str, prop: PageProperty
-    ) -> PgePropertiesUpdateDto:
-        return PgePropertiesUpdateDto(properties={property_name: prop})
+    async def set_property(self, name: str, value: Any) -> PageDto:
+        prop = self._properties.get(name)
+        if prop is None:
+            raise KeyError(
+                f"Property '{name}' not found. Available: {list(self._properties)}"
+            )
 
-    async def patch_title(self, property_name: str, title: str) -> PageDto:
-        update = self._build_update(
-            property_name,
-            PageTitleProperty(title=[RichText(type="text", text={"content": title})]),
-        )
-        return await self.patch_page(update)
+        built = self._build_property(prop, value)
+        return await self.patch_page(PgePropertiesUpdateDto(properties={name: built}))
 
-    async def patch_rich_text_property(self, property_name: str, text: str) -> PageDto:
-        update = self._build_update(
-            property_name,
-            PageRichTextProperty(
-                rich_text=[RichText(type="text", text={"content": text})]
-            ),
-        )
-        return await self.patch_page(update)
-
-    async def patch_url_property(self, property_name: str, url: str) -> PageDto:
-        update = self._build_update(property_name, PageURLProperty(url=url))
-        return await self.patch_page(update)
-
-    async def patch_email_property(self, property_name: str, email: str) -> PageDto:
-        update = self._build_update(property_name, PageEmailProperty(email=email))
-        return await self.patch_page(update)
-
-    async def patch_phone_property(self, property_name: str, phone: str) -> PageDto:
-        update = self._build_update(
-            property_name, PagePhoneNumberProperty(phone_number=phone)
-        )
-        return await self.patch_page(update)
-
-    async def patch_number_property(
-        self, property_name: str, number: int | float
-    ) -> PageDto:
-        update = self._build_update(property_name, PageNumberProperty(number=number))
-        return await self.patch_page(update)
-
-    async def patch_checkbox_property(
-        self, property_name: str, checked: bool
-    ) -> PageDto:
-        update = self._build_update(
-            property_name, PageCheckboxProperty(checkbox=checked)
-        )
-        return await self.patch_page(update)
-
-    async def patch_select_property(self, property_name: str, value: str) -> PageDto:
-        update = self._build_update(
-            property_name, PageSelectProperty(select=SelectOption(name=value))
-        )
-        return await self.patch_page(update)
-
-    async def patch_multi_select_property(
-        self, property_name: str, values: list[str]
-    ) -> PageDto:
-        update = self._build_update(
-            property_name,
-            PageMultiSelectProperty(
-                multi_select=[SelectOption(name=v) for v in values]
-            ),
-        )
-        return await self.patch_page(update)
-
-    async def patch_date_property(
-        self, property_name: str, date_value: str | dict
-    ) -> PageDto:
-        date = (
-            DateValue(**date_value)
-            if isinstance(date_value, dict)
-            else DateValue(start=date_value)
-        )
-        update = self._build_update(property_name, PageDateProperty(date=date))
-        return await self.patch_page(update)
-
-    async def patch_status_property(self, property_name: str, status: str) -> PageDto:
-        update = self._build_update(
-            property_name, PageStatusProperty(status=StatusOption(id="", name=status))
-        )
-        return await self.patch_page(update)
-
-    async def patch_relation_property(
-        self, property_name: str, relation_ids: str | list[str]
-    ) -> PageDto:
-        ids = [relation_ids] if isinstance(relation_ids, str) else relation_ids
-        update = self._build_update(
-            property_name,
-            PageRelationProperty(relation=[RelationItem(id=i) for i in ids]),
-        )
-        return await self.patch_page(update)
+    def _build_property(self, prop: AnyPageProperty, value: Any) -> PageProperty:
+        match prop:
+            case PageTitleProperty():
+                return PageTitleProperty(
+                    title=[RichText(type="text", text={"content": value})]
+                )
+            case PageRichTextProperty():
+                return PageRichTextProperty(
+                    rich_text=[RichText(type="text", text={"content": value})]
+                )
+            case PageURLProperty():
+                return PageURLProperty(url=value)
+            case PageEmailProperty():
+                return PageEmailProperty(email=value)
+            case PagePhoneNumberProperty():
+                return PagePhoneNumberProperty(phone_number=value)
+            case PageNumberProperty():
+                return PageNumberProperty(number=value)
+            case PageCheckboxProperty():
+                return PageCheckboxProperty(checkbox=value)
+            case PageSelectProperty():
+                return PageSelectProperty(select=SelectOption(name=value))
+            case PageMultiSelectProperty():
+                return PageMultiSelectProperty(
+                    multi_select=[SelectOption(name=v) for v in value]
+                )
+            case PageDateProperty():
+                date = (
+                    DateValue(**value)
+                    if isinstance(value, dict)
+                    else DateValue(start=value)
+                )
+                return PageDateProperty(date=date)
+            case PageStatusProperty():
+                return PageStatusProperty(status=StatusOption(id="", name=value))
+            case PageRelationProperty():
+                ids = [value] if isinstance(value, str) else value
+                return PageRelationProperty(relation=[RelationItem(id=i) for i in ids])
+            case _:
+                raise TypeError(f"Unsupported property type: {type(prop).__name__}")

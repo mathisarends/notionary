@@ -25,12 +25,8 @@ class DataSourceClient:
         return DataSourceDto.model_validate(response)
 
     async def set_title(self, title: str) -> DataSourceDto:
-        update_data_source_dto = UpdateDataSourceDto(title=title)
-        return await self.patch_metadata(update_data_source_dto)
-
-    async def set_description(self, description: str) -> DataSourceDto:
-        rich_text_description = markdown_to_rich_text(description)
-        update_data_source_dto = UpdateDataSourceDto(description=rich_text_description)
+        rich_text_title = markdown_to_rich_text(title)
+        update_data_source_dto = UpdateDataSourceDto(title=rich_text_title)
         return await self.patch_metadata(update_data_source_dto)
 
     async def create_page(self, title: str | None = None) -> Page:

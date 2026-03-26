@@ -8,8 +8,7 @@ from notionary.shared.models.parent import Parent
 
 
 class UpdateDataSourceDto(NotionEntityUpdateDto):
-    title: list[RichText]
-    description: list[RichText]
+    title: list[RichText] | None = None
 
 
 class QueryDataSourceResponse(BaseModel):

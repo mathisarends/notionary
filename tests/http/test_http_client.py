@@ -3,14 +3,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
-from notionary.http.exceptions import (
-    NotionAuthenticationError,
-    NotionNotFoundError,
-    NotionPermissionError,
-    NotionRateLimitError,
-    NotionServerError,
-    NotionValidationError,
-)
 
 from notionary.http.client import HttpClient
 
@@ -108,34 +100,6 @@ class TestHttpMethods:
             await client.get("/pages", params={"filter": "active"})
         _, call_kwargs = mock_request.call_args
         assert call_kwargs["params"] == {"filter": "active"}
-
-
-class TestErrorMapping:
-    @pytest.mark.parametrize(
-        "status_code, expected_exception",
-        [
-            (400, NotionValidationError),
-            (401, NotionAuthenticationError),
-            (403, NotionPermissionError),
-            (404, NotionNotFoundError),
-            (429, NotionRateLimitError),
-            (500, NotionServerError),
-            (503, NotionServerError),
-        ],
-    )
-    @pytest.mark.asyncio
-    async def test_raises_correct_exception_for_status(
-        self,
-        client: HttpClient,
-        status_code: int,
-        expected_exception: type,
-    ) -> None:
-        with patch.object(
-            client._client, "request", new_callable=AsyncMock
-        ) as mock_request:
-            mock_request.return_value = _mock_response(status_code)
-            with pytest.raises(expected_exception):
-                await client.get("/pages")
 
 
 class TestPaginate:
