@@ -1,11 +1,7 @@
-from notionary.page.markdown.syntax.definition import MarkdownGrammar
 from notionary.rich_text.rich_text_to_markdown.handlers import (
     EquationHandler,
-    TextHandler,
-    create_mention_rich_text_handler,
-)
-from notionary.rich_text.rich_text_to_markdown.handlers.mention.handler import (
     MentionRichTextHandler,
+    TextHandler,
 )
 from notionary.rich_text.rich_text_to_markdown.registry.service import (
     RichTextHandlerRegistry,
@@ -13,29 +9,22 @@ from notionary.rich_text.rich_text_to_markdown.registry.service import (
 from notionary.rich_text.schemas import RichTextType
 
 
-def create_rich_text_handler_registry(
-    mention_rich_text_handler: MentionRichTextHandler | None = None,
-) -> RichTextHandlerRegistry:
-    markdown_grammar = MarkdownGrammar()
+def create_rich_text_handler_registry() -> RichTextHandlerRegistry:
     registry = RichTextHandlerRegistry()
 
     registry.register(
         RichTextType.TEXT,
-        TextHandler(markdown_grammar),
+        TextHandler(),
     )
 
     registry.register(
         RichTextType.EQUATION,
-        EquationHandler(markdown_grammar),
-    )
-
-    mention_rich_text_handler = (
-        mention_rich_text_handler or create_mention_rich_text_handler()
+        EquationHandler(),
     )
 
     registry.register(
         RichTextType.MENTION,
-        mention_rich_text_handler,
+        MentionRichTextHandler(),
     )
 
     return registry

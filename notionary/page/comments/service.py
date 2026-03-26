@@ -45,10 +45,8 @@ class PageComments:
         return await self._comment_from_dto(dto)
 
     async def _comment_from_dto(self, dto: CommentDto) -> Comment:
-        author, content = await asyncio.gather(
-            self._resolve_author(dto.created_by.id),
-            self._to_markdown.to_markdown(dto.rich_text),
-        )
+        content = self._to_markdown.convert(dto.rich_text)
+        author = await self._resolve_author(dto.created_by.id)
         return Comment(author_name=author, content=content)
 
     async def _resolve_author(self, user_id: str) -> str:

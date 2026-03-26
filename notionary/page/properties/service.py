@@ -49,9 +49,9 @@ class PagePropertyHandler:
         prop = self._get_typed_property_or_raise(name, PageSelectProperty)
         return prop.select.name if prop.select else None
 
-    async def get_title(self, name: str) -> str:
+    def get_title(self, name: str) -> str:
         prop = self._get_typed_property_or_raise(name, PageTitleProperty)
-        return await self._rich_text_converter.to_markdown(prop.title)
+        return self._rich_text_converter.convert(prop.title)
 
     def get_people(self, property_name: str) -> list[str]:
         prop = self._get_typed_property_or_raise(property_name, PagePeopleProperty)
@@ -83,9 +83,9 @@ class PagePropertyHandler:
         prop = self._get_typed_property_or_raise(name, PageDateProperty)
         return prop.date.start if prop.date else None
 
-    async def get_rich_text(self, name: str) -> str:
+    def get_rich_text(self, name: str) -> str:
         prop = self._get_typed_property_or_raise(name, PageRichTextProperty)
-        return await self._rich_text_converter.to_markdown(prop.rich_text)
+        return self._rich_text_converter.convert(prop.rich_text)
 
     def get_email(self, name: str) -> str | None:
         return self._get_typed_property_or_raise(name, PageEmailProperty).email

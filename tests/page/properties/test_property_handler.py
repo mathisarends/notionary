@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -236,14 +236,13 @@ def test_get_select_property_when_none(handler: PagePropertyHandler) -> None:
     assert priority is None
 
 
-@pytest.mark.asyncio
-async def test_get_title_property_value(handler: PagePropertyHandler) -> None:
+def test_get_title_property_value(handler: PagePropertyHandler) -> None:
     handler._rich_text_converter = AsyncMock()
-    handler._rich_text_converter.to_markdown = AsyncMock(return_value="Test Title")
+    handler._rich_text_converter.convert = MagicMock(return_value="Test Title")
 
-    title = await handler.get_title("Title")
+    title = handler.get_title("Title")
     assert title == "Test Title"
-    handler._rich_text_converter.to_markdown.assert_called_once()
+    handler._rich_text_converter.convert.assert_called_once()
 
 
 def test_get_multiselect_property_values(handler: PagePropertyHandler) -> None:
@@ -277,16 +276,13 @@ def test_get_date_property_when_none(handler: PagePropertyHandler) -> None:
     assert date is None
 
 
-@pytest.mark.asyncio
-async def test_get_rich_text_property_value(handler: PagePropertyHandler) -> None:
+def test_get_rich_text_property_value(handler: PagePropertyHandler) -> None:
     handler._rich_text_converter = AsyncMock()
-    handler._rich_text_converter.to_markdown = AsyncMock(
-        return_value="Rich text content"
-    )
+    handler._rich_text_converter.convert = MagicMock(return_value="Rich text content")
 
-    text = await handler.get_rich_text("Description")
+    text = handler.get_rich_text("Description")
     assert text == "Rich text content"
-    handler._rich_text_converter.to_markdown.assert_called_once()
+    handler._rich_text_converter.convert.assert_called_once()
 
 
 def test_get_email_property_value(handler: PagePropertyHandler) -> None:

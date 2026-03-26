@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from notionary.page.blocks.enums import BlockType
@@ -79,7 +79,7 @@ async def test_numbered_list_item_without_children_should_render_with_placeholde
     numbered_list_placeholder: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("First item")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="First item")
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="First item")
 
     list_item_data = _create_numbered_list_item_data(rich_text)
     block = _create_numbered_list_item_block(list_item_data)
@@ -101,9 +101,7 @@ async def test_numbered_list_item_with_indentation_should_include_indent(
     numbered_list_placeholder: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("Nested item")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Nested item"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Nested item")
 
     list_item_data = _create_numbered_list_item_data(rich_text)
     block = _create_numbered_list_item_block(list_item_data)
@@ -128,9 +126,7 @@ async def test_numbered_list_item_with_children_should_render_with_newline_separ
     numbered_list_placeholder: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("Parent item")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Parent item"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Parent item")
     render_context.render_children_with_additional_indent = AsyncMock(
         return_value="    Child content"
     )
@@ -156,7 +152,7 @@ async def test_numbered_list_item_with_empty_text_should_render_placeholder_only
     numbered_list_placeholder: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="")
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="")
 
     list_item_data = _create_numbered_list_item_data(rich_text)
     block = _create_numbered_list_item_block(list_item_data)
@@ -175,7 +171,7 @@ async def test_numbered_list_item_without_data_should_render_placeholder_only(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
     numbered_list_placeholder: str,
 ) -> None:
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="")
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="")
 
     block = _create_numbered_list_item_block(None)
     render_context.block = block

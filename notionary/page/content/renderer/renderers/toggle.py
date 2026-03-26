@@ -50,4 +50,4 @@ class ToggleRenderer(BlockRenderer):
             return ""
 
         rich_text_title = block.toggle.rich_text
-        return await self._rich_text_markdown_converter.to_markdown(rich_text_title)
+        return self._rich_text_markdown_converter.convert(rich_text_title)

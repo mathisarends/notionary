@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from notionary.page.blocks.enums import BlockType
@@ -69,9 +69,7 @@ async def test_callout_with_text_should_render_markdown_callout(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Important note")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Important note"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Important note")
 
     callout_data = _create_callout_data(rich_text)
     block = _create_callout_block(callout_data)
@@ -91,7 +89,7 @@ async def test_callout_with_emoji_should_include_emoji_in_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Warning message")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="Warning message"
     )
     emoji_icon = _create_emoji_icon("⚠️")
@@ -111,7 +109,7 @@ async def test_callout_with_empty_content_should_render_empty_string(
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="")
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="")
 
     callout_data = _create_callout_data([])
     block = _create_callout_block(callout_data)
@@ -143,9 +141,7 @@ async def test_callout_with_children_should_render_children(
 ) -> None:
     # Callout is now a single-line block, so it should NOT render children
     rich_text = [RichText.from_plain_text("Parent content")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Parent content"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Parent content")
 
     callout_data = _create_callout_data(rich_text)
     block = _create_callout_block(callout_data)
@@ -192,9 +188,7 @@ async def test_extract_callout_content_with_valid_data_should_return_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Test content")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Test content"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Test content")
 
     callout_data = _create_callout_data(rich_text)
     block = _create_callout_block(callout_data)

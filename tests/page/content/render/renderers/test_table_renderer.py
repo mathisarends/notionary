@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from notionary.page.blocks.enums import BlockType
@@ -95,9 +95,7 @@ async def test_table_with_simple_data_should_render_markdown_table(
             return rich_text[0].plain_text
         return ""
 
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        side_effect=mock_to_markdown
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(side_effect=mock_to_markdown)
 
     # Create table with 2x2 cells
     row1_cells = [
@@ -165,9 +163,7 @@ async def test_table_with_indentation_should_indent_output(
             return rich_text[0].plain_text
         return ""
 
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        side_effect=mock_to_markdown
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(side_effect=mock_to_markdown)
 
     row_cells = [[RichText.from_plain_text("Cell")]]
     row = _create_table_row_block(row_cells)
@@ -194,9 +190,7 @@ async def test_table_with_children_blocks_should_render_children_with_indent(
             return rich_text[0].plain_text
         return ""
 
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        side_effect=mock_to_markdown
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(side_effect=mock_to_markdown)
     render_context.render_children_with_additional_indent = AsyncMock(
         return_value="    Child content"
     )
@@ -335,9 +329,7 @@ async def test_extract_row_cells_should_convert_cells_to_markdown(
             return rich_text[0].plain_text
         return ""
 
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        side_effect=mock_to_markdown
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(side_effect=mock_to_markdown)
 
     cells = [
         [RichText.from_plain_text("Cell 1")],

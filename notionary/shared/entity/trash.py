@@ -9,13 +9,13 @@ logger = logging.getLogger(__name__)
 class EntityTrash:
     def __init__(
         self,
-        dto: EntityResponseDto,
+        in_trash: bool,
         http_client: HttpClient,
         path: str,
     ) -> None:
         self._http = http_client
         self._path = path
-        self.in_trash = dto.in_trash
+        self.in_trash = in_trash
 
     async def trash(self) -> None:
         if self.in_trash:

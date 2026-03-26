@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from notionary.page.blocks.enums import BlockType
@@ -134,9 +134,7 @@ async def test_file_with_caption_should_include_caption_in_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     caption_rich_text = [RichText.from_plain_text("Important file")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Important file"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Important file")
 
     file_data = _create_file_data_with_caption(
         "https://example.com/file.zip", caption_rich_text, "data.zip"

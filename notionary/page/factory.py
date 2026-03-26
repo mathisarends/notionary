@@ -1,8 +1,11 @@
 from notionary.http.client import HttpClient
 from notionary.page.comments.service import PageComments
 from notionary.page.page import Page
-from notionary.page.properties.factory import PagePropertyHandlerFactory
-from notionary.page.properties.schemas import PageTitleProperty
+from notionary.page.properties import (
+    PagePropertyHandler,
+    PagePropertyHttpClient,
+    PageTitleProperty,
+)
 from notionary.page.schemas import PageDto
 from notionary.rich_text.rich_text_to_markdown.converter import (
     RichTextToMarkdownConverter,
@@ -14,31 +17,36 @@ class PageFactory:
         self._http = http
 
     async def from_id(self, page_id: str) -> Page:
-        dto = await self._fetch_dto(page_id)
+        response = await self._http.get(f"pages/{page_id}")
+        dto = PageDto.model_validate(response)
         return await self.from_dto(dto)
 
     async def from_dto(self, dto: PageDto) -> Page:
-        title = await _extract_page_title(dto)
+        title = self._extract_page_title(dto)
 
         return Page(
-            dto=dto,
+            id=dto.id,
+            url=dto.url,
             title=title,
-            page_property_handler=PagePropertyHandlerFactory().create_from_page_response(
-                dto, http=self._http
+            archived=dto.archived,
+            icon=dto.icon,
+            cover=dto.cover,
+            in_trash=dto.in_trash,
+            page_property_handler=PagePropertyHandler(
+                properties=dto.properties,
+                page_property_http_client=PagePropertyHttpClient(
+                    page_id=dto.id, http=self._http
+                ),
             ),
             comments=PageComments(page_id=dto.id, http=self._http),
             http=self._http,
         )
 
-    async def _fetch_dto(self, page_id: str) -> PageDto:
-        response = await self._http.get(f"pages/{page_id}")
-        return PageDto.model_validate(response)
-
-
-async def _extract_page_title(dto: PageDto) -> str:
-    title_property = next(
-        (p for p in dto.properties.values() if isinstance(p, PageTitleProperty)),
-        None,
-    )
-    converter = RichTextToMarkdownConverter()
-    return await converter.to_markdown(title_property.title if title_property else [])
+    @staticmethod
+    def _extract_page_title(dto: PageDto) -> str:
+        title_property = next(
+            (p for p in dto.properties.values() if isinstance(p, PageTitleProperty)),
+            None,
+        )
+        converter = RichTextToMarkdownConverter()
+        return converter.convert(title_property.title if title_property else [])

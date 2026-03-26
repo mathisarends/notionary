@@ -11,7 +11,7 @@ class LineParser(ABC):
         self._next_handler: LineParser | None = None
         self._syntax_registry = syntax_registry
 
-    def set_next(self, handler: LineParser) -> LineParser:
+    def next(self, handler: LineParser) -> LineParser:
         self._next_handler = handler
         return handler
 

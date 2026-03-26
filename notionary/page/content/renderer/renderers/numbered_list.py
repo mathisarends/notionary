@@ -26,7 +26,7 @@ class NumberedListRenderer(BlockRenderer):
     async def _process(self, context: MarkdownRenderingContext) -> None:
         list_item_data = context.block.numbered_list_item
         rich_text = list_item_data.rich_text if list_item_data else []
-        content = await self._rich_text_markdown_converter.to_markdown(rich_text)
+        content = self._rich_text_markdown_converter.convert(rich_text)
 
         item_line = context.indent_text(f"{self._numbered_list_placeholder}. {content}")
 

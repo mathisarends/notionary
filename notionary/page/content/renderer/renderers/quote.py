@@ -50,6 +50,4 @@ class QuoteRenderer(BlockRenderer):
         if not block.quote or not block.quote.rich_text:
             return None
 
-        return await self._rich_text_markdown_converter.to_markdown(
-            block.quote.rich_text
-        )
+        return self._rich_text_markdown_converter.convert(block.quote.rich_text)

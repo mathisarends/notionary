@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from notionary.page.blocks.enums import BlockType
@@ -62,9 +62,7 @@ async def test_toggle_with_title_should_render_markdown_toggle(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Toggle Title")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Toggle Title"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Toggle Title")
 
     toggle_data = _create_toggle_data(rich_text)
     block = _create_toggle_block(toggle_data)
@@ -84,7 +82,7 @@ async def test_toggle_with_children_should_render_children_between_delimiters(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Toggle with content")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="Toggle with content"
     )
 
@@ -108,7 +106,7 @@ async def test_toggle_with_empty_title_should_not_render(
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="")
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="")
 
     toggle_data = _create_toggle_data([])
     block = _create_toggle_block(toggle_data)
@@ -141,7 +139,7 @@ async def test_toggle_with_indent_level_should_indent_delimiters(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Indented toggle")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="Indented toggle"
     )
 
@@ -162,7 +160,7 @@ async def test_extract_toggle_title_with_valid_data_should_return_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Test title")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Test title")
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Test title")
 
     toggle_data = _create_toggle_data(rich_text)
     block = _create_toggle_block(toggle_data)

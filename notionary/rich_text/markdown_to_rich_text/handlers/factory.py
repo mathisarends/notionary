@@ -15,11 +15,9 @@ from notionary.rich_text.markdown_to_rich_text.handlers.matcher import (
     PatternMatcher,
 )
 from notionary.rich_text.markdown_to_rich_text.handlers.mention import (
-    DatabaseMentionPatternHandler,
-    DataSourceMentionPatternHandler,
-    PageMentionPatternHandler,
-    UserMentionPatternHandler,
+    MentionPatternHandler,
 )
+from notionary.rich_text.schemas import MentionType
 
 
 def create_pattern_matcher() -> PatternMatcher:
@@ -34,10 +32,10 @@ def create_pattern_matcher() -> PatternMatcher:
         CodePatternHandler(grammar),
         LinkPatternHandler(grammar),
         EquationPatternHandler(grammar),
-        PageMentionPatternHandler(grammar),
-        DatabaseMentionPatternHandler(grammar),
-        DataSourceMentionPatternHandler(grammar),
-        UserMentionPatternHandler(grammar),
+        MentionPatternHandler(MentionType.PAGE, grammar),
+        MentionPatternHandler(MentionType.DATABASE, grammar),
+        MentionPatternHandler(MentionType.DATASOURCE, grammar),
+        MentionPatternHandler(MentionType.USER, grammar),
     ]
 
     return PatternMatcher(handlers)

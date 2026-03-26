@@ -1,13 +1,9 @@
-from notionary.page.markdown.syntax.definition.grammar import MarkdownGrammar
 from notionary.rich_text.rich_text_to_markdown.handlers.port import RichTextHandler
 from notionary.rich_text.schemas import RichText, TextAnnotations
 
 
 class TextHandler(RichTextHandler):
-    def __init__(self, markdown_grammar: MarkdownGrammar):
-        super().__init__(markdown_grammar)
-
-    async def handle(self, rich_text: RichText) -> str:
+    def handle(self, rich_text: RichText) -> str:
         content = self._extract_plain_content(rich_text)
         return self._apply_text_formatting_to_content(rich_text, content)
 

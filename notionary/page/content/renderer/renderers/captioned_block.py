@@ -55,8 +55,6 @@ class CaptionedBlockRenderer(BlockRenderer):
         if not caption_rich_text:
             return ""
 
-        caption_markdown = await self._rich_text_markdown_converter.to_markdown(
-            caption_rich_text
-        )
+        caption_markdown = self._rich_text_markdown_converter.convert(caption_rich_text)
 
         return f"\n[caption] {caption_markdown}"

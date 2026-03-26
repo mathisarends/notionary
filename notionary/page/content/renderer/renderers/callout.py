@@ -55,6 +55,4 @@ class CalloutRenderer(BlockRenderer):
     async def _extract_callout_content(self, block: Block) -> str:
         if not block.callout or not block.callout.rich_text:
             return ""
-        return await self._rich_text_markdown_converter.to_markdown(
-            block.callout.rich_text
-        )
+        return self._rich_text_markdown_converter.convert(block.callout.rich_text)

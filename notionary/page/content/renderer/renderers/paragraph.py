@@ -44,6 +44,4 @@ class ParagraphRenderer(BlockRenderer):
         if not block.paragraph or not block.paragraph.rich_text:
             return None
 
-        return await self._rich_text_markdown_converter.to_markdown(
-            block.paragraph.rich_text
-        )
+        return self._rich_text_markdown_converter.convert(block.paragraph.rich_text)

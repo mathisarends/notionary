@@ -1,5 +1,3 @@
-from notionary.file_upload.service import NotionFileUpload
-
 from notionary.page.content.parser.parsers import (
     AudioParser,
     BookmarkParser,
@@ -38,10 +36,8 @@ from notionary.rich_text.markdown_to_rich_text.factory import (
 
 
 def create_line_parser(
-    file_upload_service: NotionFileUpload | None = None,
     rich_text_converter: MarkdownRichTextConverter | None = None,
 ) -> LineParser:
-    file_upload_service = file_upload_service or NotionFileUpload()
     rich_text_converter = (
         rich_text_converter or create_markdown_to_rich_text_converter()
     )
@@ -96,23 +92,18 @@ def create_line_parser(
     embed_parser = EmbedParser(syntax_registry=syntax_registry)
     image_parser = ImageParser(
         syntax_registry=syntax_registry,
-        file_upload_service=file_upload_service,
     )
     video_parser = VideoParser(
         syntax_registry=syntax_registry,
-        file_upload_service=file_upload_service,
     )
     audio_parser = AudioParser(
         syntax_registry=syntax_registry,
-        file_upload_service=file_upload_service,
     )
     file_parser = FileParser(
         syntax_registry=syntax_registry,
-        file_upload_service=file_upload_service,
     )
     pdf_parser = PdfParser(
         syntax_registry=syntax_registry,
-        file_upload_service=file_upload_service,
     )
 
     caption_parser = CaptionParser(
@@ -122,30 +113,30 @@ def create_line_parser(
     paragraph_parser = ParagraphParser(rich_text_converter=rich_text_converter)
 
     (
-        code_parser.set_next(equation_parser)
-        .set_next(table_parser)
-        .set_next(column_parser)
-        .set_next(column_list_parser)
-        .set_next(toggle_parser)
-        .set_next(divider_parser)
-        .set_next(breadcrumb_parser)
-        .set_next(table_of_contents_parser)
-        .set_next(space_parser)
-        .set_next(heading_parser)
-        .set_next(quote_parser)
-        .set_next(callout_parser)
-        .set_next(todo_parser)
-        .set_next(bulleted_list_parser)
-        .set_next(numbered_list_parser)
-        .set_next(bookmark_parser)
-        .set_next(embed_parser)
-        .set_next(image_parser)
-        .set_next(video_parser)
-        .set_next(audio_parser)
-        .set_next(file_parser)
-        .set_next(pdf_parser)
-        .set_next(caption_parser)
-        .set_next(paragraph_parser)
+        code_parser.next(equation_parser)
+        .next(table_parser)
+        .next(column_parser)
+        .next(column_list_parser)
+        .next(toggle_parser)
+        .next(divider_parser)
+        .next(breadcrumb_parser)
+        .next(table_of_contents_parser)
+        .next(space_parser)
+        .next(heading_parser)
+        .next(quote_parser)
+        .next(callout_parser)
+        .next(todo_parser)
+        .next(bulleted_list_parser)
+        .next(numbered_list_parser)
+        .next(bookmark_parser)
+        .next(embed_parser)
+        .next(image_parser)
+        .next(video_parser)
+        .next(audio_parser)
+        .next(file_parser)
+        .next(pdf_parser)
+        .next(caption_parser)
+        .next(paragraph_parser)
     )
 
     return code_parser

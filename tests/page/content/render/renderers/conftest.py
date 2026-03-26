@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 
@@ -33,7 +33,7 @@ def indent(markdown_grammar: MarkdownGrammar) -> str:
 def mock_rich_text_markdown_converter() -> RichTextToMarkdownConverter:
     mock_obj: RichTextToMarkdownConverter = AsyncMock(spec=RichTextToMarkdownConverter)
     converter = cast(RichTextToMarkdownConverter, mock_obj)
-    converter.to_markdown = AsyncMock(return_value="converted markdown")
+    converter.convert = MagicMock(return_value="converted markdown")
     return converter
 
 

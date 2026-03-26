@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from notionary.page.blocks.enums import BlockType
@@ -110,9 +110,7 @@ async def test_heading1_with_text_should_render_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Main Heading")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Main Heading"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Main Heading")
 
     heading_data = _create_heading_data(rich_text)
     block = _create_heading_block(BlockType.HEADING_1, heading_data)
@@ -130,7 +128,7 @@ async def test_heading2_with_text_should_render_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Subheading")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Subheading")
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Subheading")
 
     heading_data = _create_heading_data(rich_text)
     block = _create_heading_block(BlockType.HEADING_2, heading_data)
@@ -148,9 +146,7 @@ async def test_heading3_with_text_should_render_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Sub-subheading")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Sub-subheading"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Sub-subheading")
 
     heading_data = _create_heading_data(rich_text)
     block = _create_heading_block(BlockType.HEADING_3, heading_data)
@@ -167,7 +163,7 @@ async def test_heading_with_empty_rich_text_should_render_empty_string(
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value=None)
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value=None)
 
     heading_data = _create_heading_data([])
     block = _create_heading_block(BlockType.HEADING_1, heading_data)
@@ -198,7 +194,7 @@ async def test_heading_with_indent_level_should_indent_output(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Indented Heading")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="Indented Heading"
     )
 
@@ -270,7 +266,7 @@ async def test_get_heading_title_for_heading1_should_return_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Heading 1 Title")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="Heading 1 Title"
     )
 
@@ -288,7 +284,7 @@ async def test_get_heading_title_for_heading2_should_return_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Heading 2 Title")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="Heading 2 Title"
     )
 
@@ -306,7 +302,7 @@ async def test_get_heading_title_for_heading3_should_return_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Heading 3 Title")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="Heading 3 Title"
     )
 
@@ -361,7 +357,7 @@ async def test_toggleable_heading_with_children_should_render_with_indentation(
     indent: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("Toggleable Heading")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="Toggleable Heading"
     )
 
@@ -388,7 +384,7 @@ async def test_toggleable_heading_without_children_should_render_heading_only(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Toggleable No Children")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="Toggleable No Children"
     )
 
@@ -411,9 +407,7 @@ async def test_toggleable_heading_with_nested_indent_should_handle_multiple_leve
     indent: str,
 ) -> None:
     rich_text = [RichText.from_plain_text("Nested Heading")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Nested Heading"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Nested Heading")
 
     heading_data = _create_heading_data(rich_text, is_toggleable=True)
     block = _create_heading_block(BlockType.HEADING_3, heading_data)

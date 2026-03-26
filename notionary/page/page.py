@@ -2,40 +2,39 @@ from notionary.http.client import HttpClient
 from notionary.page.comments.service import PageComments
 from notionary.page.page_content import PageContent
 from notionary.page.properties.service import PagePropertyHandler
-from notionary.page.schemas import PageDto
 from notionary.shared.entity import EntityCover, EntityIcon, EntityTrash
+from notionary.shared.models.file import File
+from notionary.shared.models.icon import Icon
 
 
 class Page:
     def __init__(
         self,
-        dto: PageDto,
+        id: str,
+        url: str,
         title: str,
+        archived: bool,
+        icon: Icon | None,
+        cover: File | None,
+        in_trash: bool,
         page_property_handler: PagePropertyHandler,
         comments: PageComments,
         http: HttpClient,
     ) -> None:
-        self.metadata: PageDto = dto
-
-        path = f"pages/{dto.id}"
-        self._icon = EntityIcon(dto=dto, http_client=http, path=path)
-        self._cover = EntityCover(dto=dto, http_client=http, path=path)
-        self._trash = EntityTrash(dto=dto, http_client=http, path=path)
-
+        self.id = id
+        self.url = url
         self.title = title
-        self.archived = dto.archived
+        self.archived = archived
+
+        path = f"pages/{id}"
+        self._icon = EntityIcon(icon=icon, http_client=http, path=path)
+        self._cover = EntityCover(cover=cover, http_client=http, path=path)
+        self._trash = EntityTrash(in_trash=in_trash, http_client=http, path=path)
+
         self.properties = page_property_handler
 
-        self._content = PageContent(page_id=dto.id, http=http)
+        self._content = PageContent(page_id=id, http=http)
         self._comments = comments
-
-    @property
-    def id(self) -> str:
-        return self.metadata.id
-
-    @property
-    def url(self) -> str:
-        return self.metadata.url
 
     @property
     def in_trash(self) -> bool:

@@ -93,9 +93,7 @@ class HeadingRenderer(BlockRenderer):
         if not heading_data or not heading_data.rich_text:
             return ""
 
-        return await self._rich_text_markdown_converter.to_markdown(
-            heading_data.rich_text
-        )
+        return self._rich_text_markdown_converter.convert(heading_data.rich_text)
 
     def _get_heading_data(self, block: Block) -> HeadingData | None:
         if block.type == BlockType.HEADING_1:

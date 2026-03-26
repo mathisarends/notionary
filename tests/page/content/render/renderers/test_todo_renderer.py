@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from notionary.page.blocks.enums import BlockType
@@ -62,7 +62,7 @@ async def test_unchecked_todo_should_render_with_empty_checkbox(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Task to do")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Task to do")
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Task to do")
 
     todo_data = _create_todo_data(rich_text, checked=False)
     block = _create_todo_block(todo_data)
@@ -80,9 +80,7 @@ async def test_checked_todo_should_render_with_checked_checkbox(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Completed task")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Completed task"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Completed task")
 
     todo_data = _create_todo_data(rich_text, checked=True)
     block = _create_todo_block(todo_data)
@@ -99,7 +97,7 @@ async def test_todo_with_empty_content_should_render_empty_string(
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="")
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="")
 
     todo_data = _create_todo_data([])
     block = _create_todo_block(todo_data)
@@ -130,9 +128,7 @@ async def test_todo_with_indent_level_should_indent_output(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Indented task")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Indented task"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Indented task")
 
     todo_data = _create_todo_data(rich_text)
     block = _create_todo_block(todo_data)
@@ -152,9 +148,7 @@ async def test_todo_with_children_should_render_children_with_indent(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Parent task")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Parent task"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Parent task")
 
     todo_data = _create_todo_data(rich_text)
     block = _create_todo_block(todo_data)
@@ -176,7 +170,7 @@ async def test_extract_todo_info_with_checked_todo_should_return_true_and_conten
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Test task")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Test task")
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Test task")
 
     todo_data = _create_todo_data(rich_text, checked=True)
     block = _create_todo_block(todo_data)
@@ -193,7 +187,7 @@ async def test_extract_todo_info_with_unchecked_todo_should_return_false_and_con
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Test task")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Test task")
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Test task")
 
     todo_data = _create_todo_data(rich_text, checked=False)
     block = _create_todo_block(todo_data)

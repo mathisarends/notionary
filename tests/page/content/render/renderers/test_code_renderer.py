@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from notionary.page.blocks.enums import BlockType, CodingLanguage
@@ -72,7 +72,7 @@ async def test_code_with_python_language_should_render_markdown_code_block(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("print('Hello World')")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="print('Hello World')"
     )
 
@@ -95,7 +95,7 @@ async def test_code_with_caption_should_include_caption_in_markdown(
 ) -> None:
     rich_text = [RichText.from_plain_text("const x = 42;")]
     caption_rich_text = [RichText.from_plain_text("Example code")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         side_effect=["const x = 42;", "Example code"]
     )
 
@@ -118,7 +118,7 @@ async def test_code_with_empty_content_should_render_empty_string(
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="")
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="")
 
     code_data = _create_code_data([])
     block = _create_code_block(code_data)
@@ -173,7 +173,7 @@ async def test_extract_code_content_with_valid_data_should_return_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("test code")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="test code")
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="test code")
 
     code_data = _create_code_data(rich_text)
     block = _create_code_block(code_data)

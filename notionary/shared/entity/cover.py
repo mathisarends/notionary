@@ -3,7 +3,7 @@ from collections.abc import Sequence
 
 from notionary.http.client import HttpClient
 from notionary.shared.entity.schemas import EntityResponseDto, NotionEntityUpdateDto
-from notionary.shared.models.file import ExternalFile
+from notionary.shared.models.file import ExternalFile, File
 
 
 class EntityCover:
@@ -14,19 +14,19 @@ class EntityCover:
 
     def __init__(
         self,
-        dto: EntityResponseDto,
+        cover: File | None,
         http_client: HttpClient,
         path: str,
     ) -> None:
         self._http = http_client
         self._path = path
-        self.url: str | None = self._extract_url(dto)
+        self.url: str | None = self._extract_url(cover)
 
     async def set_from_url(self, image_url: str) -> None:
         response = await self._patch(
             NotionEntityUpdateDto(cover=ExternalFile.from_url(image_url))
         )
-        self.url = self._extract_url(response)
+        self.url = self._extract_url(response.cover)
 
     async def set_random_gradient(self) -> None:
         await self.set_from_url(random.choice(self._GRADIENT_COVERS))
@@ -41,7 +41,7 @@ class EntityCover:
         return EntityResponseDto.model_validate(response)
 
     @staticmethod
-    def _extract_url(dto: EntityResponseDto) -> str | None:
-        if dto.cover is None:
+    def _extract_url(cover: File | None) -> str | None:
+        if cover is None:
             return None
-        return dto.cover.get_url()
+        return cover.get_url()

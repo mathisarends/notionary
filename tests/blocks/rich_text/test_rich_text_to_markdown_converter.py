@@ -1,4 +1,5 @@
 import pytest
+
 from notionary.rich_text.rich_text_to_markdown import RichTextToMarkdownConverter
 from notionary.rich_text.schemas import (
     DateMention,
@@ -23,7 +24,7 @@ def converter() -> RichTextToMarkdownConverter:
 
 @pytest.mark.asyncio
 async def test_empty_list(converter: RichTextToMarkdownConverter) -> None:
-    result = await converter.to_markdown([])
+    result = converter.convert([])
     assert result == ""
 
 
@@ -37,7 +38,7 @@ async def test_plain_text(converter: RichTextToMarkdownConverter) -> None:
             annotations=TextAnnotations(),
         )
     ]
-    result = await converter.to_markdown(rich_text)
+    result = converter.convert(rich_text)
     assert result == "Hello world"
 
 
@@ -51,7 +52,7 @@ async def test_bold_text(converter: RichTextToMarkdownConverter) -> None:
             annotations=TextAnnotations(bold=True),
         )
     ]
-    result = await converter.to_markdown(rich_text)
+    result = converter.convert(rich_text)
     assert result == "**Bold**"
 
 
@@ -65,7 +66,7 @@ async def test_italic_text(converter: RichTextToMarkdownConverter) -> None:
             annotations=TextAnnotations(italic=True),
         )
     ]
-    result = await converter.to_markdown(rich_text)
+    result = converter.convert(rich_text)
     assert result == "*Italic*"
 
 
@@ -79,7 +80,7 @@ async def test_code_text(converter: RichTextToMarkdownConverter) -> None:
             annotations=TextAnnotations(code=True),
         )
     ]
-    result = await converter.to_markdown(rich_text)
+    result = converter.convert(rich_text)
     assert result == "`code`"
 
 
@@ -95,7 +96,7 @@ async def test_link(converter: RichTextToMarkdownConverter) -> None:
             annotations=TextAnnotations(),
         )
     ]
-    result = await converter.to_markdown(rich_text)
+    result = converter.convert(rich_text)
     assert result == "[Google](https://google.com)"
 
 
@@ -108,7 +109,7 @@ async def test_equation(converter: RichTextToMarkdownConverter) -> None:
             equation=EquationObject(expression="E=mc^2"),
         )
     ]
-    result = await converter.to_markdown(rich_text)
+    result = converter.convert(rich_text)
     assert result == "$E=mc^2$"
 
 
@@ -121,7 +122,7 @@ async def test_page_mention(converter: RichTextToMarkdownConverter) -> None:
             mention=PageMention(page=MentionPageRef(id="page-123")),
         )
     ]
-    result = await converter.to_markdown(rich_text)
+    result = converter.convert(rich_text)
     assert result == "@page[page-123]"
 
 
@@ -134,7 +135,7 @@ async def test_user_mention(converter: RichTextToMarkdownConverter) -> None:
             mention=UserMention(user=MentionUserRef(id="user-123")),
         )
     ]
-    result = await converter.to_markdown(rich_text)
+    result = converter.convert(rich_text)
     # Falls back to ID since no resolver is mocked
     assert result == "@user[user-123]"
 
@@ -148,7 +149,7 @@ async def test_date_mention(converter: RichTextToMarkdownConverter) -> None:
             mention=DateMention(date=MentionDate(start="2024-01-15", end="2024-01-20")),
         )
     ]
-    result = await converter.to_markdown(rich_text)
+    result = converter.convert(rich_text)
     assert result == "@date[2024-01-15–2024-01-20]"
 
 
@@ -168,5 +169,5 @@ async def test_mixed_content(converter: RichTextToMarkdownConverter) -> None:
             annotations=TextAnnotations(bold=True),
         ),
     ]
-    result = await converter.to_markdown(rich_text)
+    result = converter.convert(rich_text)
     assert result == "Hello **world**"

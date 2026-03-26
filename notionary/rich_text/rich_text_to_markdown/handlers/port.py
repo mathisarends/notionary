@@ -5,9 +5,9 @@ from notionary.rich_text.schemas import RichText
 
 
 class RichTextHandler(ABC):
-    def __init__(self, markdown_grammar: MarkdownGrammar):
-        self._markdown_grammar = markdown_grammar
+    def __init__(self) -> None:
+        self._markdown_grammar = MarkdownGrammar()
 
     @abstractmethod
-    async def handle(self, rich_text: RichText) -> str:
+    def handle(self, rich_text: RichText) -> str:
         pass

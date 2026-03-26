@@ -120,7 +120,7 @@ class TableRenderer(BlockRenderer):
 
         cells = []
         for cell in row_block.table_row.cells:
-            cell_text = await self._rich_text_markdown_converter.to_markdown(cell)
+            cell_text = self._rich_text_markdown_converter.convert(cell)
             cells.append(cell_text or "")
 
         return cells

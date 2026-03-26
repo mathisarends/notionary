@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from notionary.page.blocks.enums import BlockType
@@ -62,7 +62,7 @@ async def test_paragraph_with_text_should_render_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("This is a paragraph")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="This is a paragraph"
     )
 
@@ -81,7 +81,7 @@ async def test_paragraph_with_empty_rich_text_should_render_empty_string(
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value=None)
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value=None)
 
     paragraph_data = _create_paragraph_data([])
     block = _create_paragraph_block(paragraph_data)
@@ -112,7 +112,7 @@ async def test_paragraph_with_indent_level_should_indent_output(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Indented paragraph")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="Indented paragraph"
     )
 
@@ -135,7 +135,7 @@ async def test_paragraph_with_children_should_render_children_with_indent(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Parent paragraph")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="Parent paragraph"
     )
     render_context.render_children_with_additional_indent = AsyncMock(
@@ -158,9 +158,7 @@ async def test_convert_paragraph_with_valid_data_should_return_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Test paragraph")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Test paragraph"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Test paragraph")
 
     paragraph_data = _create_paragraph_data(rich_text)
     block = _create_paragraph_block(paragraph_data)

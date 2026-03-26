@@ -1,8 +1,6 @@
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import Mock
 
 import pytest
-from notionary.shared.name_id_resolver.page import PageNameIdResolver
-from notionary.shared.name_id_resolver.person import PersonNameIdResolver
 
 from notionary.data_source.data_source import DataSource
 from notionary.data_source.data_source_instance_client import (
@@ -20,48 +18,7 @@ from notionary.data_source.properties.schemas import (
     DataSourceSelectProperty,
     DataSourceStatusProperty,
 )
-from notionary.data_source.query.resolver import QueryResolver
-from notionary.data_source.schemas import DataSourceDto
-from notionary.shared.models.parent import PageParent, ParentType, WorkspaceParent
 from notionary.shared.properties.type import PropertyType
-from notionary.user.schemas import PartialUserDto
-
-
-@pytest.fixture
-def mock_user() -> PartialUserDto:
-    return PartialUserDto(id="user-123", object="user")
-
-
-@pytest.fixture
-def base_dto(mock_user: PartialUserDto) -> DataSourceDto:
-    return DataSourceDto(
-        object="database",
-        id="ds-123",
-        created_time="2024-01-01T00:00:00.000Z",
-        created_by=mock_user,
-        last_edited_time="2024-01-01T00:00:00.000Z",
-        last_edited_by=mock_user,
-        cover=None,
-        icon=None,
-        parent=PageParent(type=ParentType.PAGE_ID, page_id="parent-page-123"),
-        url="https://notion.so/ds-123",
-        public_url=None,
-        database_parent=WorkspaceParent(type=ParentType.WORKSPACE, workspace=True),
-        title=[],
-        description=[],
-        archived=False,
-        properties={},
-        is_inline=False,
-        in_trash=False,
-    )
-
-
-@pytest.fixture
-def mock_query_resolver() -> QueryResolver:
-    return QueryResolver(
-        user_resolver=AsyncMock(spec=PersonNameIdResolver),
-        page_resolver=AsyncMock(spec=PageNameIdResolver),
-    )
 
 
 @pytest.fixture
@@ -123,20 +80,22 @@ def test_properties() -> dict:
 
 @pytest.fixture
 def data_source(
-    base_dto: DataSourceDto,
     test_properties: dict,
-    mock_query_resolver: QueryResolver,
 ) -> DataSource:
     mock_http = Mock()
 
     return DataSource(
-        dto=base_dto,
+        id="ds-123",
+        url="https://notion.so/ds-123",
         title="Test Data Source",
         description="Test description",
+        archived=False,
+        icon=None,
+        cover=None,
+        in_trash=False,
         properties=test_properties,
         data_source_instance_client=Mock(spec=DataSourceInstanceClient),
         http=mock_http,
-        query_resolver=mock_query_resolver,
     )
 
 

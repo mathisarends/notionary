@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from notionary.page.blocks.enums import BlockType
@@ -93,7 +93,7 @@ async def test_bookmark_with_caption_should_include_caption_in_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     caption_rich_text = [RichText.from_plain_text("Useful resource")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="Useful resource"
     )
 

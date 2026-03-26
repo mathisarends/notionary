@@ -47,6 +47,6 @@ class BulletedListRenderer(BlockRenderer):
         if not block.bulleted_list_item or not block.bulleted_list_item.rich_text:
             return None
 
-        return await self._rich_text_markdown_converter.to_markdown(
+        return self._rich_text_markdown_converter.convert(
             block.bulleted_list_item.rich_text
         )

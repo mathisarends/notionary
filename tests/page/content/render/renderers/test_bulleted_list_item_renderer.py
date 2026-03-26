@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from notionary.page.blocks.enums import BlockType
@@ -68,9 +68,7 @@ async def test_bulleted_list_with_text_should_render_markdown_list(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("List item text")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="List item text"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="List item text")
 
     list_data = _create_bulleted_list_data(rich_text)
     block = _create_bulleted_list_block(list_data)
@@ -87,7 +85,7 @@ async def test_bulleted_list_with_empty_rich_text_should_render_empty_string(
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value=None)
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value=None)
 
     list_data = _create_bulleted_list_data([])
     block = _create_bulleted_list_block(list_data)
@@ -118,9 +116,7 @@ async def test_bulleted_list_with_indent_level_should_indent_output(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Indented item")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Indented item"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Indented item")
 
     list_data = _create_bulleted_list_data(rich_text)
     block = _create_bulleted_list_block(list_data)
@@ -140,9 +136,7 @@ async def test_bulleted_list_with_children_should_render_children_with_indent(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Parent item")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Parent item"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Parent item")
 
     list_data = _create_bulleted_list_data(rich_text)
     block = _create_bulleted_list_block(list_data)
@@ -164,9 +158,7 @@ async def test_convert_bulleted_list_with_valid_data_should_return_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Test content")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Test content"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Test content")
 
     list_data = _create_bulleted_list_data(rich_text)
     block = _create_bulleted_list_block(list_data)
@@ -212,7 +204,7 @@ async def test_bulleted_list_with_nested_bulleted_list_child_should_indent_corre
             return "Child item"
         return ""
 
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         side_effect=mock_converter_side_effect
     )
 

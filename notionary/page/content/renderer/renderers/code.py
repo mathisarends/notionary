@@ -32,6 +32,4 @@ class CodeRenderer(CaptionedBlockRenderer):
     async def _extract_code_content(self, block: Block) -> str:
         if not block.code or not block.code.rich_text:
             return ""
-        return await self._rich_text_markdown_converter.to_markdown(
-            block.code.rich_text
-        )
+        return self._rich_text_markdown_converter.convert(block.code.rich_text)

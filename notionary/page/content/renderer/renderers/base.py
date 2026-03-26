@@ -12,7 +12,7 @@ class BlockRenderer(ABC):
         self._syntax_registry = syntax_registry
         self._next_handler: BlockRenderer | None = None
 
-    def set_next(self, handler: BlockRenderer) -> BlockRenderer:
+    def next(self, handler: BlockRenderer) -> BlockRenderer:
         self._next_handler = handler
         return handler
 

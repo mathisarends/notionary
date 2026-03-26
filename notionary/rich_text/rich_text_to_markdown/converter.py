@@ -23,68 +23,59 @@ logger = logging.getLogger(__name__)
 class RichTextToMarkdownConverter:
     _VALID_COLORS: ClassVar[set[str]] = {color.value for color in BlockColor}
 
-    def __init__(
-        self,
-        mention_handler: MentionRichTextHandler | None = None,
-    ) -> None:
+    def __init__(self) -> None:
         self._markdown_grammar = MarkdownGrammar()
         self._handlers: dict[RichTextType, RichTextHandler] = {
-            RichTextType.TEXT: TextHandler(self._markdown_grammar),
-            RichTextType.EQUATION: EquationHandler(self._markdown_grammar),
-            RichTextType.MENTION: mention_handler
-            or MentionRichTextHandler(self._markdown_grammar),
+            RichTextType.TEXT: TextHandler(),
+            RichTextType.EQUATION: EquationHandler(),
+            RichTextType.MENTION: MentionRichTextHandler(),
         }
 
-    async def to_markdown(self, rich_text: list[RichText]) -> str:
+    def convert(self, rich_text: list[RichText]) -> str:
         if not rich_text:
             return ""
 
         color_groups = chunk_by_color(rich_text)
-        markdown_parts = await self._convert_groups_to_markdown(color_groups)
+        markdown_parts = self._convert_groups_to_markdown(color_groups)
 
         return "".join(markdown_parts)
 
-    async def _convert_groups_to_markdown(self, groups: list[ColorGroup]) -> list[str]:
-        return [await self._convert_group_to_markdown(group) for group in groups]
+    def _convert_groups_to_markdown(self, groups: list[ColorGroup]) -> list[str]:
+        return [self._convert_group_to_markdown(group) for group in groups]
 
-    async def _convert_group_to_markdown(self, group: ColorGroup) -> str:
+    def _convert_group_to_markdown(self, group: ColorGroup) -> str:
         if self._should_apply_color(group.color):
-            return await self._convert_colored_group(group)
-        return await self._convert_uncolored_group(group)
+            return self._convert_colored_group(group)
+        return self._convert_uncolored_group(group)
 
     def _should_apply_color(self, color: BlockColor) -> bool:
         return color != BlockColor.DEFAULT and color.value in self._VALID_COLORS
 
-    async def _convert_colored_group(self, group: ColorGroup) -> str:
-        inner_parts = await self._convert_rich_texts_without_color(group.objects)
+    def _convert_colored_group(self, group: ColorGroup) -> str:
+        inner_parts = self._convert_rich_texts_without_color(group.objects)
         combined_content = "".join(inner_parts)
         return self._wrap_with_color(combined_content, group.color)
 
-    async def _convert_uncolored_group(self, group: ColorGroup) -> str:
-        parts = await self._convert_rich_texts_with_color(group.objects)
+    def _convert_uncolored_group(self, group: ColorGroup) -> str:
+        parts = self._convert_rich_texts_with_color(group.objects)
         return "".join(parts)
 
-    async def _convert_rich_texts_without_color(
-        self, objects: list[RichText]
-    ) -> list[str]:
+    def _convert_rich_texts_without_color(self, objects: list[RichText]) -> list[str]:
         return [
-            await self._convert_rich_text_to_markdown(obj, skip_color=True)
-            for obj in objects
+            self._convert_rich_text_to_markdown(obj, skip_color=True) for obj in objects
         ]
 
-    async def _convert_rich_texts_with_color(
-        self, objects: list[RichText]
-    ) -> list[str]:
-        return [await self._convert_rich_text_to_markdown(obj) for obj in objects]
+    def _convert_rich_texts_with_color(self, objects: list[RichText]) -> list[str]:
+        return [self._convert_rich_text_to_markdown(obj) for obj in objects]
 
-    async def _convert_rich_text_to_markdown(
+    def _convert_rich_text_to_markdown(
         self, obj: RichText, skip_color: bool = False
     ) -> str:
         handler = self._get_handler_for(obj)
         if not handler:
             return ""
 
-        result = await handler.handle(obj)
+        result = handler.handle(obj)
 
         if self._should_apply_color_to_result(obj, skip_color):
             result = self._apply_color_formatting(obj.annotations, result)

@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from notionary.page.blocks.enums import BlockType
@@ -62,7 +62,7 @@ async def test_quote_with_single_line_should_render_blockquote(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("This is a quote")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="This is a quote"
     )
 
@@ -82,7 +82,7 @@ async def test_quote_with_multiple_lines_should_prefix_each_line(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Line one\nLine two\nLine three")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
+    mock_rich_text_markdown_converter.convert = MagicMock(
         return_value="Line one\nLine two\nLine three"
     )
 
@@ -103,7 +103,7 @@ async def test_quote_with_empty_rich_text_should_render_empty_string(
     render_context: MarkdownRenderingContext,
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value=None)
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value=None)
 
     quote_data = _create_quote_data([])
     block = _create_quote_block(quote_data)
@@ -134,9 +134,7 @@ async def test_quote_with_indent_level_should_indent_output(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Indented quote")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Indented quote"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Indented quote")
 
     quote_data = _create_quote_data(rich_text)
     block = _create_quote_block(quote_data)
@@ -155,9 +153,7 @@ async def test_quote_with_children_should_render_children_with_indent(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Parent quote")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Parent quote"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Parent quote")
 
     quote_data = _create_quote_data(rich_text)
     block = _create_quote_block(quote_data)
@@ -179,7 +175,7 @@ async def test_convert_quote_with_valid_data_should_return_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     rich_text = [RichText.from_plain_text("Test quote")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(return_value="Test quote")
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Test quote")
 
     quote_data = _create_quote_data(rich_text)
     block = _create_quote_block(quote_data)

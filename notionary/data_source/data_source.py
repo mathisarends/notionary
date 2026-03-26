@@ -19,7 +19,6 @@ from notionary.data_source.properties.schemas import (
 from notionary.data_source.query import (
     DataSourceQueryBuilder,
 )
-from notionary.data_source.schemas import DataSourceDto
 from notionary.http.client import HttpClient
 from notionary.page import Page
 from notionary.page.properties.schemas import PageTitleProperty
@@ -27,6 +26,8 @@ from notionary.page.schemas import PageDto
 from notionary.shared.entity.cover import EntityCover
 from notionary.shared.entity.icon import EntityIcon
 from notionary.shared.entity.trash import EntityTrash
+from notionary.shared.models.file import File
+from notionary.shared.models.icon import Icon
 
 logger = logging.getLogger(__name__)
 
@@ -34,29 +35,31 @@ logger = logging.getLogger(__name__)
 class DataSource:
     def __init__(
         self,
-        dto: DataSourceDto,
+        id: str,
+        url: str,
+        title: str,
+        description: str | None,
+        archived: bool,
+        icon: Icon | None,
+        cover: File | None,
+        in_trash: bool,
         properties: dict[str, DataSourceProperty],
         data_source_instance_client: DataSourceInstanceClient,
         http: HttpClient,
     ) -> None:
-        self.metadata: DataSourceDto = dto
+        self.id = id
+        self.url = url
+        self.title = title
+        self.description = description
+        self.archived = archived
 
-        path = f"databases/{dto.id}"
-        self._icon = EntityIcon(dto=dto, http_client=http, path=path)
-        self._cover = EntityCover(dto=dto, http_client=http, path=path)
-        self._trash = EntityTrash(dto=dto, http_client=http, path=path)
+        path = f"databases/{id}"
+        self._icon = EntityIcon(icon=icon, http_client=http, path=path)
+        self._cover = EntityCover(cover=cover, http_client=http, path=path)
+        self._trash = EntityTrash(in_trash=in_trash, http_client=http, path=path)
 
-        self._archived = dto.archived
         self._properties = properties or {}
         self._data_source_client = data_source_instance_client
-
-    @property
-    def id(self) -> str:
-        return self.metadata.id
-
-    @property
-    def url(self) -> str:
-        return self.metadata.url
 
     @property
     def in_trash(self) -> bool:
@@ -87,19 +90,6 @@ class DataSource:
         await self._cover.remove()
 
     @property
-    def title(self) -> str:
-        return "".join(rt.plain_text for rt in self.metadata.title)
-
-    @property
-    def archived(self) -> bool:
-        return self._archived
-
-    @property
-    def description(self) -> str | None:
-        text = "".join(rt.plain_text for rt in self.metadata.description)
-        return text if text else None
-
-    @property
     def properties(self) -> dict[str, DataSourceProperty]:
         return self._properties
 
@@ -108,24 +98,27 @@ class DataSource:
         return DataSourceQueryBuilder(properties=self._properties)
 
     async def set_title(self, title: str) -> None:
-        self.metadata = await self._data_source_client.update_title(title)
+        dto = await self._data_source_client.update_title(title)
+        self.title = "".join(rt.plain_text for rt in dto.title)
 
     async def archive(self) -> None:
-        if self._archived:
+        if self.archived:
             logger.info("Data source is already archived.")
             return
         await self._data_source_client.archive()
-        self._archived = True
+        self.archived = True
 
     async def unarchive(self) -> None:
-        if not self._archived:
+        if not self.archived:
             logger.info("Data source is not archived.")
             return
         await self._data_source_client.unarchive()
-        self._archived = False
+        self.archived = False
 
     async def update_description(self, description: str) -> None:
-        self.metadata = await self._data_source_client.update_description(description)
+        dto = await self._data_source_client.update_description(description)
+        text = "".join(rt.plain_text for rt in dto.description)
+        self.description = text if text else None
 
     async def create_blank_page(self, title: str | None = None) -> Page:
         return await self._data_source_client.create_blank_page(title=title)

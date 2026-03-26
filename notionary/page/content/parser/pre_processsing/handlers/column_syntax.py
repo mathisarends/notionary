@@ -1,6 +1,5 @@
 import logging
 import re
-from typing import override
 
 from notionary.page.content.parser.pre_processsing.handlers.port import PreProcessor
 from notionary.page.exceptions import (
@@ -35,7 +34,6 @@ class ColumnSyntaxPreProcessor(PreProcessor):
         )
         self._column_pattern = self._syntax_registry.get_column_syntax().regex_pattern
 
-    @override
     def process(self, markdown_text: str) -> str:
         if not self._contains_column_lists(markdown_text):
             return markdown_text

@@ -56,8 +56,6 @@ class TodoRenderer(BlockRenderer):
 
         content = ""
         if block.to_do.rich_text:
-            content = await self._rich_text_markdown_converter.to_markdown(
-                block.to_do.rich_text
-            )
+            content = self._rich_text_markdown_converter.convert(block.to_do.rich_text)
 
         return is_checked, content

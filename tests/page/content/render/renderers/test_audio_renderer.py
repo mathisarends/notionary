@@ -1,5 +1,5 @@
 from typing import cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from notionary.page.blocks.enums import BlockType
@@ -160,9 +160,7 @@ async def test_audio_with_caption_should_include_caption_in_markdown(
     mock_rich_text_markdown_converter: RichTextToMarkdownConverter,
 ) -> None:
     caption_rich_text = [RichText.from_plain_text("Audio caption")]
-    mock_rich_text_markdown_converter.to_markdown = AsyncMock(
-        return_value="Audio caption"
-    )
+    mock_rich_text_markdown_converter.convert = MagicMock(return_value="Audio caption")
 
     block = _create_audio_block_with_caption(
         "https://example.com/audio.mp3", caption_rich_text
