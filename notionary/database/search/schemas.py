@@ -10,4 +10,4 @@ __all__ = ["DatabaseQueryConfig", "SortDirection", "SortTimestamp"]
 
 
 class DatabaseQueryConfig(SearchQueryConfig):
-    _object_filter: ClassVar[str] = "database"
+    _object_filter: ClassVar[str] = "data_source"

@@ -39,8 +39,11 @@ class SearchQueryConfig(BaseModel):
             },
             "page_size": self.page_size,
         }
-        if self._object_filter:
-            params["filter"] = {"property": "object", "value": self._object_filter}
+        if type(self)._object_filter:
+            params["filter"] = {
+                "property": "object",
+                "value": type(self)._object_filter,
+            }
         if self.query:
             params["query"] = self.query
         return params
