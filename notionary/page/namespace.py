@@ -7,9 +7,7 @@ from notionary.page.properties import PageTitleProperty
 from notionary.page.schemas import PageDto
 from notionary.page.search import PageSearchClient
 from notionary.page.search.schemas import SortDirection, SortTimestamp
-from notionary.rich_text.rich_text_to_markdown.converter import (
-    RichTextToMarkdownConverter,
-)
+from notionary.rich_text import rich_text_to_markdown
 from notionary.shared.fuzzy import fuzzy_suggestions
 
 
@@ -17,7 +15,6 @@ class PageNamespace:
     def __init__(self, http: HttpClient) -> None:
         self._http = http
         self._search_client = PageSearchClient(http)
-        self._rich_text_converter = RichTextToMarkdownConverter()
 
     async def list(
         self,
@@ -88,6 +85,4 @@ class PageNamespace:
             (p for p in dto.properties.values() if isinstance(p, PageTitleProperty)),
             None,
         )
-        return self._rich_text_converter.convert(
-            title_property.title if title_property else []
-        )
+        return rich_text_to_markdown(title_property.title if title_property else [])

@@ -9,9 +9,7 @@ from notionary.data_source.schemas import (
 from notionary.http.client import HttpClient
 from notionary.page import Page
 from notionary.page.schemas import PageDto
-from notionary.rich_text.markdown_to_rich_text.factory import (
-    create_markdown_to_rich_text_converter,
-)
+from notionary.rich_text import markdown_to_rich_text
 
 
 class DataSourceInstanceClient:
@@ -43,10 +41,7 @@ class DataSourceInstanceClient:
         await self.patch_metadata(update_data_source_dto)
 
     async def update_description(self, description: str) -> DataSourceDto:
-        markdown_rich_text_converter = create_markdown_to_rich_text_converter()
-        rich_text_description = await markdown_rich_text_converter.to_rich_text(
-            description
-        )
+        rich_text_description = markdown_to_rich_text(description)
         update_data_source_dto = UpdateDataSourceDto(description=rich_text_description)
         return await self.patch_metadata(update_data_source_dto)
 

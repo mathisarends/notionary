@@ -25,9 +25,7 @@ from notionary.page.properties.schemas import (
     PageURLProperty,
 )
 from notionary.page.schemas import PageDto
-from notionary.rich_text.rich_text_to_markdown.converter import (
-    RichTextToMarkdownConverter,
-)
+from notionary.rich_text import rich_text_to_markdown
 
 
 class PagePropertyHandler:
@@ -39,7 +37,6 @@ class PagePropertyHandler:
         self._properties = properties
         self._property_http_client = page_property_http_client
         self._data_source_loaded = False
-        self._rich_text_converter = RichTextToMarkdownConverter()
 
     def get_status(self, name: str) -> str | None:
         prop = self._get_typed_property_or_raise(name, PageStatusProperty)
@@ -51,7 +48,7 @@ class PagePropertyHandler:
 
     def get_title(self, name: str) -> str:
         prop = self._get_typed_property_or_raise(name, PageTitleProperty)
-        return self._rich_text_converter.convert(prop.title)
+        return rich_text_to_markdown(prop.title)
 
     def get_people(self, property_name: str) -> list[str]:
         prop = self._get_typed_property_or_raise(property_name, PagePeopleProperty)
@@ -85,7 +82,7 @@ class PagePropertyHandler:
 
     def get_rich_text(self, name: str) -> str:
         prop = self._get_typed_property_or_raise(name, PageRichTextProperty)
-        return self._rich_text_converter.convert(prop.rich_text)
+        return rich_text_to_markdown(prop.rich_text)
 
     def get_email(self, name: str) -> str | None:
         return self._get_typed_property_or_raise(name, PageEmailProperty).email
