@@ -1,4 +1,4 @@
-from notionary.rich_text.schemas import (
+from .schemas import (
     AnyMention,
     DatabaseMention,
     DateMention,
@@ -17,8 +17,8 @@ from notionary.rich_text.schemas import (
     TextContent,
     UserMention,
 )
-from notionary.rich_text.to_markdown import rich_text_to_markdown
-from notionary.rich_text.to_rich_text import markdown_to_rich_text
+from .to_markdown import rich_text_to_markdown
+from .to_rich_text import markdown_to_rich_text
 
 __all__ = [
     "AnyMention",

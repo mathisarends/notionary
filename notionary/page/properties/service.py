@@ -1,6 +1,7 @@
 from collections.abc import Coroutine
 from typing import Any
 
+from notionary.http import HttpClient
 from notionary.page.exceptions import (
     PagePropertyNotFoundError,
     PagePropertyTypeError,
@@ -32,10 +33,11 @@ class PagePropertyHandler:
     def __init__(
         self,
         properties: dict[str, AnyPageProperty],
-        page_property_http_client: PagePropertyHttpClient,
+        id: str,
+        http: HttpClient,
     ) -> None:
         self._properties = properties
-        self._property_http_client = page_property_http_client
+        self._property_http_client = PagePropertyHttpClient(page_id=id, http=http)
         self._data_source_loaded = False
 
     def get_status(self, name: str) -> str | None:

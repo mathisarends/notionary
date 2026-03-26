@@ -4,17 +4,20 @@ from collections.abc import AsyncIterator
 
 from notionary.data_source.data_source import DataSource
 from notionary.data_source.exceptions import DataSourceNotFound
+from notionary.data_source.schemas import DataSourceDto
 from notionary.data_source.search import (
     DataSourceSearchClient,
     SortDirection,
     SortTimestamp,
 )
 from notionary.http.client import HttpClient
+from notionary.rich_text import rich_text_to_markdown
 from notionary.shared.fuzzy import fuzzy_suggestions
 
 
 class DataSourceNamespace:
     def __init__(self, http: HttpClient) -> None:
+        self._http = http
         self._search_client = DataSourceSearchClient(http)
 
     async def list(
@@ -51,7 +54,7 @@ class DataSourceNamespace:
             page_size=page_size,
             total_results_limit=total_results_limit,
         ):
-            yield await DataSource.from_id(dto.id)
+            yield self._data_source_from_dto(dto)
 
     async def search(self, query: str) -> list[DataSource]:
         return await self.list(query=query)
@@ -69,4 +72,21 @@ class DataSourceNamespace:
         raise DataSourceNotFound(title, suggestions)
 
     async def from_id(self, data_source_id: str) -> DataSource:
-        return await DataSource.from_id(data_source_id)
+        response = await self._http.get(f"databases/{data_source_id}")
+        dto = DataSourceDto.model_validate(response)
+        return self._data_source_from_dto(dto)
+
+    def _data_source_from_dto(self, dto: DataSourceDto) -> DataSource:
+        title = rich_text_to_markdown(dto.title)
+        description_text = rich_text_to_markdown(dto.description)
+        return DataSource(
+            id=dto.id,
+            url=dto.url,
+            title=title,
+            description=description_text if description_text else None,
+            icon=dto.icon,
+            cover=dto.cover,
+            in_trash=dto.in_trash,
+            properties=dto.properties,
+            http=self._http,
+        )

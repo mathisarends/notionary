@@ -1,7 +1,7 @@
 import logging
 
-from notionary.data_source.data_source_instance_client import (
-    DataSourceInstanceClient,
+from notionary.data_source.client import (
+    DataSourceClient,
 )
 from notionary.data_source.exceptions import (
     DataSourcePropertyNotFound,
@@ -15,9 +15,6 @@ from notionary.data_source.properties.schemas import (
     DataSourceRelationProperty,
     DataSourceSelectProperty,
     DataSourceStatusProperty,
-)
-from notionary.data_source.query import (
-    DataSourceQueryBuilder,
 )
 from notionary.http.client import HttpClient
 from notionary.page import Page
@@ -43,7 +40,6 @@ class DataSource:
         cover: File | None,
         in_trash: bool,
         properties: dict[str, DataSourceProperty],
-        data_source_instance_client: DataSourceInstanceClient,
         http: HttpClient,
     ) -> None:
         self.id = id
@@ -56,8 +52,8 @@ class DataSource:
         self._cover = EntityCover(cover=cover, http_client=http, path=path)
         self._trash = EntityTrash(in_trash=in_trash, http_client=http, path=path)
 
-        self._properties = properties or {}
-        self._data_source_client = data_source_instance_client
+        self.properties = properties or {}
+        self._client = DataSourceClient(http=http, data_source_id=id)
 
     @property
     def in_trash(self) -> bool:
@@ -87,46 +83,20 @@ class DataSource:
     async def remove_cover(self) -> None:
         await self._cover.remove()
 
-    @property
-    def properties(self) -> dict[str, DataSourceProperty]:
-        return self._properties
-
-    @property
-    def data_source_query_builder(self) -> DataSourceQueryBuilder:
-        return DataSourceQueryBuilder(properties=self._properties)
-
     async def set_title(self, title: str) -> None:
-        dto = await self._data_source_client.update_title(title)
+        dto = await self._client.set_title(title)
         self.title = "".join(rt.plain_text for rt in dto.title)
 
-    async def archive(self) -> None:
-        if self._trash.in_trash:
-            logger.info("Data source is already archived.")
-            return
-        await self._data_source_client.archive()
-        self._trash.in_trash = True
-
-    async def unarchive(self) -> None:
-        if not self._trash.in_trash:
-            logger.info("Data source is not archived.")
-            return
-        await self._data_source_client.unarchive()
-        self._trash.in_trash = False
-
-    async def update_description(self, description: str) -> None:
-        dto = await self._data_source_client.update_description(description)
+    async def set_description(self, description: str) -> None:
+        dto = await self._client.set_description(description)
         text = "".join(rt.plain_text for rt in dto.description)
         self.description = text if text else None
 
-    async def create_blank_page(self, title: str | None = None) -> Page:
-        return await self._data_source_client.create_blank_page(title=title)
-
-    # ── Properties ───────────────────────────────────────────────
-    def get_query_builder(self) -> DataSourceQueryBuilder:
-        return DataSourceQueryBuilder(properties=self._properties)
+    async def create_page(self, title: str | None = None) -> Page:
+        return await self._client.create_page(title=title)
 
     async def get_options_for_property_by_name(self, property_name: str) -> list[str]:
-        prop = self._properties.get(property_name)
+        prop = self.properties.get(property_name)
 
         if prop is None:
             return []
@@ -180,16 +150,10 @@ class DataSource:
         if not related_data_source_id:
             return []
 
-        async with DataSourceInstanceClient(related_data_source_id) as related_client:
+        async with DataSourceClient(related_data_source_id) as related_client:
             search_results = await related_client.query()
 
-        page_titles = []
-        for page_response in search_results.results:
-            title = self._extract_title_from_notion_page_dto(page_response)
-            if title:
-                page_titles.append(title)
-
-        return page_titles
+        return [page.id for page in search_results.results]
 
     def _extract_title_from_notion_page_dto(self, page: PageDto) -> str | None:
         if not page.properties:

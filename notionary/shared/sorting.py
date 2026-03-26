@@ -1,11 +1,3 @@
-from enum import StrEnum
+from notionary.shared.search.schemas import SortDirection, SortTimestamp
 
-
-class SortDirection(StrEnum):
-    ASCENDING = "ascending"
-    DESCENDING = "descending"
-
-
-class SortTimestamp(StrEnum):
-    LAST_EDITED_TIME = "last_edited_time"
-    CREATED_TIME = "created_time"
+__all__ = ["SortDirection", "SortTimestamp"]

@@ -7,6 +7,7 @@ from notionary.file_upload import FileUploads
 from notionary.http import HttpClient
 from notionary.page import PageNamespace
 from notionary.user import UsersNamespace
+from notionary.workspace import WorkspaceNamespace
 
 
 class Notionary:
@@ -30,6 +31,7 @@ class Notionary:
         self.pages = PageNamespace(self._http)
         self.data_sources = DataSourceNamespace(self._http)
         self.file_uploads = FileUploads(self._http)
+        self.workspace = WorkspaceNamespace(self._http)
 
     def _resolve_api_key(self, api_key: str | None) -> str:
         resolved = api_key or os.getenv("NOTION_API_KEY")
