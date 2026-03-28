@@ -1,6 +1,37 @@
 from enum import StrEnum
+from pathlib import Path
+from uuid import UUID
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
+
+
+class FileUploadConfig(BaseModel):
+    _MB = 1024 * 1024
+
+    _SINGLE_PART_MAX_SIZE: int = 20 * _MB
+    _MAX_FILENAME_BYTES: int = 900
+    _CHUNK_SIZE_MIN: int = 5 * _MB
+    _CHUNK_SIZE_MAX: int = 20 * _MB
+    _CHUNK_SIZE_DEFAULT: int = 10 * _MB
+
+    model_config = ConfigDict(frozen=True)
+
+    multi_part_chunk_size: int = Field(
+        default=_CHUNK_SIZE_DEFAULT,
+        ge=_CHUNK_SIZE_MIN,
+        le=_CHUNK_SIZE_MAX,
+        description="Part size (in bytes) for multi-part uploads. Notion allows 5MB–20MB.",
+    )
+    max_upload_timeout: int = Field(default=300, gt=0)
+    poll_interval: int = Field(default=2, gt=0)
+    base_upload_path: Path | None = Field(default=None)
 
 
 class UploadMode(StrEnum):
@@ -16,22 +47,22 @@ class FileUploadStatus(StrEnum):
 
 
 class FileUploadResponse(BaseModel):
-    id: str
+    id: UUID
     created_time: str
     last_edited_time: str
     expiry_time: str | None = None
     upload_url: str | None = None
-    archived: bool
+    in_trash: bool
     status: FileUploadStatus
     filename: str | None = None
     content_type: str | None = None
     content_length: int | None = None
-    request_id: str | None = None
+    request_id: UUID | None = None
 
 
 class FileUploadFilter(BaseModel):
     status: FileUploadStatus | None = None
-    archived: bool | None = None
+    in_trash: bool | None = None
 
 
 class FileUploadListResponse(BaseModel):
@@ -58,6 +89,7 @@ class FileUploadCreateRequest(BaseModel):
         return self
 
     def model_dump(self, **kwargs):
+        kwargs.setdefault("mode", "json")
         data = super().model_dump(**kwargs)
         return {k: v for k, v in data.items() if v is not None}
 
@@ -76,5 +108,39 @@ class FileUploadAttachment(BaseModel):
     name: str | None = None
 
     @classmethod
-    def from_id(cls, file_upload_id: str, name: str | None = None):
+    def from_id(cls, file_upload_id: UUID, name: str | None = None):
         return cls(type="file_upload", file_upload={"id": file_upload_id}, name=name)
+
+
+class FileUploadQuery(BaseModel):
+    status: FileUploadStatus | None = None
+    in_trash: bool | None = None
+
+    page_size_limit: int | None = None
+    total_results_limit: int | None = None
+
+    @field_validator("page_size_limit")
+    @classmethod
+    def validate_page_size(cls, value: int | None) -> int | None:
+        if value is None:
+            return None
+        return max(1, min(value, 100))
+
+    @field_validator("total_results_limit")
+    @classmethod
+    def validate_total_results(cls, value: int | None) -> int:
+        if value is None:
+            return 100
+        return max(1, value)
+
+    @model_serializer
+    def serialize_model(self) -> dict[str, str | bool | None]:
+        result = {}
+
+        if self.status is not None:
+            result["status"] = self.status
+
+        if self.in_trash is not None:
+            result["in_trash"] = self.in_trash
+
+        return result

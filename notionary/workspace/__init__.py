@@ -1,8 +1,7 @@
-from .query import NotionWorkspaceQueryConfigBuilder, WorkspaceQueryConfig
-from .service import NotionWorkspace
+from .exceptions import ResourceNotFound
+from .namespace import WorkspaceNamespace
 
 __all__ = [
-    "NotionWorkspace",
-    "NotionWorkspaceQueryConfigBuilder",
-    "WorkspaceQueryConfig",
+    "ResourceNotFound",
+    "WorkspaceNamespace",
 ]

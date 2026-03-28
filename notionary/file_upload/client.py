@@ -1,97 +1,83 @@
 from collections.abc import AsyncGenerator
+from uuid import UUID
 
-import httpx
-
-from notionary.file_upload.query.models import FileUploadQuery
 from notionary.file_upload.schemas import (
     FileUploadCompleteRequest,
     FileUploadCreateRequest,
-    FileUploadListResponse,
+    FileUploadQuery,
     FileUploadResponse,
     UploadMode,
 )
-from notionary.http.client import NotionHttpClient
-from notionary.utils.pagination import (
-    PaginatedResponse,
-    paginate_notion_api,
-    paginate_notion_api_generator,
-)
+from notionary.http import HttpClient
 
 
-class FileUploadHttpClient(NotionHttpClient):
+class FileUploadHttpClient:
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
+
     async def create_single_part_upload(
-        self,
-        filename: str,
-        content_type: str | None = None,
+        self, filename: str, content_type: str | None = None
     ) -> FileUploadResponse:
         return await self._create_upload(
-            filename=filename,
-            content_type=content_type,
-            mode=UploadMode.SINGLE_PART,
-            number_of_parts=None,
+            filename, UploadMode.SINGLE_PART, content_type, None
         )
 
     async def create_multi_part_upload(
-        self,
-        filename: str,
-        number_of_parts: int,
-        content_type: str | None = None,
+        self, filename: str, number_of_parts: int, content_type: str | None = None
     ) -> FileUploadResponse:
         return await self._create_upload(
-            filename=filename,
-            content_type=content_type,
-            mode=UploadMode.MULTI_PART,
-            number_of_parts=number_of_parts,
+            filename, UploadMode.MULTI_PART, content_type, number_of_parts
         )
 
     async def send_file_content(
         self,
-        file_upload_id: str,
+        file_upload_id: UUID,
         file_content: bytes,
         filename: str,
         part_number: int | None = None,
     ) -> FileUploadResponse:
-        await self._ensure_initialized()
-
-        url = self._build_send_url(file_upload_id)
-        files = {"file": (filename, file_content)}
-        data = self._build_part_number_data(part_number)
-
-        response = await self._send_multipart_request(url, files=files, data=data)
-        return FileUploadResponse.model_validate(response.json())
-
-    async def complete_upload(self, file_upload_id: str) -> FileUploadResponse:
-        request = FileUploadCompleteRequest()
-        response = await self.post(
-            f"file_uploads/{file_upload_id}/complete",
-            data=request.model_dump(),
+        data = {"part_number": str(part_number)} if part_number is not None else None
+        response = await self._http.post_multipart(
+            f"file_uploads/{file_upload_id}/send",
+            files={"file": (filename, file_content)},
+            data=data,
         )
         return FileUploadResponse.model_validate(response)
 
-    async def get_file_upload(self, file_upload_id: str) -> FileUploadResponse:
-        response = await self.get(f"file_uploads/{file_upload_id}")
+    async def complete_upload(self, file_upload_id: UUID) -> FileUploadResponse:
+        response = await self._http.post(
+            f"file_uploads/{file_upload_id}/complete",
+            data=FileUploadCompleteRequest(),
+        )
+        return FileUploadResponse.model_validate(response)
+
+    async def get_file_upload(self, file_upload_id: UUID) -> FileUploadResponse:
+        response = await self._http.get(f"file_uploads/{file_upload_id}")
         return FileUploadResponse.model_validate(response)
 
     async def list_file_uploads(
-        self,
-        query: FileUploadQuery | None = None,
+        self, query: FileUploadQuery | None = None
     ) -> list[FileUploadResponse]:
-        query = query or FileUploadQuery()
-        return await paginate_notion_api(
-            lambda **kwargs: self._fetch_file_uploads_page(query=query, **kwargs),
-            total_results_limit=query.total_results_limit,
+        q = query or FileUploadQuery()
+        raw = await self._http.paginate(
+            "file_uploads",
+            total_results_limit=q.total_results_limit,
+            method="GET",
+            **q.model_dump(exclude_none=True, mode="json"),
         )
+        return [FileUploadResponse.model_validate(r) for r in raw]
 
     async def list_file_uploads_stream(
-        self,
-        query: FileUploadQuery | None = None,
+        self, query: FileUploadQuery | None = None
     ) -> AsyncGenerator[FileUploadResponse]:
-        query = query or FileUploadQuery()
-        async for upload in paginate_notion_api_generator(
-            lambda **kwargs: self._fetch_file_uploads_page(query=query, **kwargs),
-            total_results_limit=query.total_results_limit,
+        q = query or FileUploadQuery()
+        async for item in self._http.paginate_stream(
+            "file_uploads",
+            total_results_limit=q.total_results_limit,
+            method="GET",
+            **q.model_dump(exclude_none=True, mode="json"),
         ):
-            yield upload
+            yield FileUploadResponse.model_validate(item)
 
     async def _create_upload(
         self,
@@ -106,54 +92,5 @@ class FileUploadHttpClient(NotionHttpClient):
             mode=mode,
             number_of_parts=number_of_parts,
         )
-        response = await self.post("file_uploads", data=request.model_dump())
+        response = await self._http.post("file_uploads", data=request)
         return FileUploadResponse.model_validate(response)
-
-    async def _send_multipart_request(
-        self,
-        url: str,
-        files: dict,
-        data: dict | None = None,
-    ) -> httpx.Response:
-        headers = self._build_multipart_headers()
-
-        async with httpx.AsyncClient(headers=headers, timeout=self.timeout) as client:
-            response = await client.post(url, files=files, data=data)
-
-        response.raise_for_status()
-        return response
-
-    async def _fetch_file_uploads_page(
-        self,
-        query: FileUploadQuery,
-        start_cursor: str | None = None,
-        **kwargs,
-    ) -> PaginatedResponse:
-        params = query.model_dump(exclude_none=True)
-        params["page_size"] = min(query.page_size_limit or 100, 100)
-
-        if start_cursor:
-            params["start_cursor"] = start_cursor
-
-        response = await self.get("file_uploads", params=params)
-        parsed = FileUploadListResponse.model_validate(response)
-
-        return PaginatedResponse(
-            results=parsed.results,
-            has_more=parsed.has_more,
-            next_cursor=parsed.next_cursor,
-        )
-
-    def _build_send_url(self, file_upload_id: str) -> str:
-        return f"{self.BASE_URL}/file_uploads/{file_upload_id}/send"
-
-    def _build_part_number_data(self, part_number: int | None) -> dict | None:
-        if part_number is not None:
-            return {"part_number": str(part_number)}
-        return None
-
-    def _build_multipart_headers(self) -> dict:
-        return {
-            "Authorization": f"Bearer {self.token}",
-            "Notion-Version": self.NOTION_VERSION,
-        }

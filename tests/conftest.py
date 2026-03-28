@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import pytest
 
 
@@ -5,7 +7,7 @@ class MockNameIdResolver:
     async def resolve_name_to_id(self, name: str | None) -> str | None:
         return None
 
-    async def resolve_id_to_name(self, id: str | None) -> str | None:
+    async def resolve_id_to_name(self, id: UUID | None) -> str | None:
         return None
 
 

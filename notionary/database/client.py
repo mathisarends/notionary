@@ -1,61 +1,64 @@
+from typing import Any
+from uuid import UUID
+
 from notionary.database.schemas import (
-    NotionDatabaseDto,
-    NotionDatabaseUpdateDto,
+    CreateDatabaseRequest,
+    DatabaseDto,
+    UpdateDatabaseRequest,
 )
-from notionary.http.client import NotionHttpClient
-from notionary.rich_text.rich_text_to_markdown.converter import (
-    RichTextToMarkdownConverter,
-)
+from notionary.http.client import HttpClient
+from notionary.rich_text import markdown_to_rich_text
+from notionary.shared.object.icon.schemas import EmojiIcon
+from notionary.shared.object.schemas import ExternalFile
 
 
-class NotionDatabaseHttpClient(NotionHttpClient):
-    def __init__(self, database_id: str, timeout: int = 30) -> None:
-        super().__init__(timeout)
-        self._database_id = database_id
+class DatabaseHttpClient:
+    _ENDPOINT = "databases"
 
-    async def get_database(self) -> NotionDatabaseDto:
-        response = await self.get(f"databases/{self._database_id}")
-        return NotionDatabaseDto.model_validate(response)
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
-    async def patch_database(
-        self, update_database_dto: NotionDatabaseUpdateDto
-    ) -> NotionDatabaseDto:
-        update_database_dto_dict = update_database_dto.model_dump(exclude_none=True)
+    async def retrieve(self, database_id: UUID) -> DatabaseDto:
+        response = await self._http.get(f"{self._ENDPOINT}/{database_id}")
+        return DatabaseDto.model_validate(response)
 
-        response = await self.patch(
-            f"databases/{self._database_id}", data=update_database_dto_dict
+    async def create(
+        self,
+        parent_page_id: UUID | None = None,
+        title: str | None = None,
+        description: str | None = None,
+        is_inline: bool | None = None,
+        initial_properties: dict[str, Any] | None = None,
+        icon_emoji: str | None = None,
+        cover_url: str | None = None,
+    ) -> DatabaseDto:
+        if parent_page_id:
+            parent = {"type": "page_id", "page_id": parent_page_id}
+        else:
+            parent = {"type": "workspace", "workspace": True}
+
+        request = CreateDatabaseRequest(parent=parent)
+
+        if title:
+            request.title = markdown_to_rich_text(title)
+        if description:
+            request.description = markdown_to_rich_text(description)
+        if is_inline is not None:
+            request.is_inline = is_inline
+        if initial_properties:
+            request.initial_data_source = {"properties": initial_properties}
+        if icon_emoji:
+            request.icon = EmojiIcon(emoji=icon_emoji).model_dump(mode="json")
+        if cover_url:
+            request.cover = ExternalFile.from_url(cover_url).model_dump(mode="json")
+
+        response = await self._http.post(self._ENDPOINT, data=request)
+        return DatabaseDto.model_validate(response)
+
+    async def update(
+        self, database_id: UUID, update: UpdateDatabaseRequest
+    ) -> DatabaseDto:
+        response = await self._http.patch(
+            f"{self._ENDPOINT}/{database_id}", data=update
         )
-        return NotionDatabaseDto.model_validate(response)
-
-    async def update_database_title(self, title: str) -> NotionDatabaseDto:
-        from notionary.rich_text.markdown_to_rich_text import (
-            create_markdown_rich_text_converter,
-        )
-
-        markdown_rich_text_formatter = create_markdown_rich_text_converter()
-        database_rich_text = await markdown_rich_text_formatter.to_rich_text(title)
-
-        database_title_update_dto = NotionDatabaseUpdateDto(title=database_rich_text)
-        return await self.patch_database(database_title_update_dto)
-
-    async def update_database_description(self, description: str) -> str:
-        from notionary.rich_text.markdown_to_rich_text import (
-            create_markdown_rich_text_converter,
-        )
-
-        markdown_to_rich_text_converter = create_markdown_rich_text_converter()
-        rich_text_description = await markdown_to_rich_text_converter.to_rich_text(
-            description
-        )
-
-        database_description_update_dto = NotionDatabaseUpdateDto(
-            description=rich_text_description
-        )
-        update_database_response = await self.patch_database(
-            database_description_update_dto
-        )
-
-        rich_text_to_markdown_converter = RichTextToMarkdownConverter()
-        return await rich_text_to_markdown_converter.to_markdown(
-            update_database_response.description
-        )
+        return DatabaseDto.model_validate(response)

@@ -1,43 +1,22 @@
-from .blocks.service import NotionBlock
-from .data_source.service import NotionDataSource
-from .database.service import NotionDatabase
-from .file_upload import (
-    FileCategory,
-    FileInfo,
-    FilePathResolver,
-    FileUploadQuery,
-    FileUploadQueryBuilder,
-    NotionFileUpload,
-)
-from .markdown import (
-    MarkdownBuilder,
-    MarkdownDocumentSchema,
-    StructuredOutputMarkdownConverter,
-    SyntaxPromptRegistry,
-)
-from .page.service import NotionPage
-from .workspace import (
-    NotionWorkspace,
-    NotionWorkspaceQueryConfigBuilder,
-    WorkspaceQueryConfig,
-)
+from .data_source import DataSource, DataSourceNamespace
+from .database import Database, DatabaseNamespace
+from .file_upload import FileUploads
+from .page import Page, PageNamespace
+from .service import Notionary
+from .user import Bot, Person, UsersNamespace
+from .workspace import WorkspaceNamespace
 
 __all__ = [
-    "FileCategory",
-    "FileInfo",
-    "FilePathResolver",
-    "FileUploadQuery",
-    "FileUploadQueryBuilder",
-    "MarkdownBuilder",
-    "MarkdownDocumentSchema",
-    "NotionBlock",
-    "NotionDataSource",
-    "NotionDatabase",
-    "NotionFileUpload",
-    "NotionPage",
-    "NotionWorkspace",
-    "NotionWorkspaceQueryConfigBuilder",
-    "StructuredOutputMarkdownConverter",
-    "SyntaxPromptRegistry",
-    "WorkspaceQueryConfig",
+    "Bot",
+    "DataSource",
+    "DataSourceNamespace",
+    "Database",
+    "DatabaseNamespace",
+    "FileUploads",
+    "Notionary",
+    "Page",
+    "PageNamespace",
+    "Person",
+    "UsersNamespace",
+    "WorkspaceNamespace",
 ]

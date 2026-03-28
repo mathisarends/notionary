@@ -1,13 +1,12 @@
 from enum import StrEnum
-from typing import Any, Literal, TypeVar
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from notionary.rich_text.schemas import RichText
-from notionary.shared.models.file import File
+from notionary.shared.object.schemas import File
 from notionary.shared.properties.type import PropertyType
-from notionary.shared.typings import JsonDict
-from notionary.user.schemas import PersonUserResponseDto, UserResponseDto
+from notionary.user.schemas import PersonResponseDto, UserResponseDto
 
 # ============================================================================
 # Base Models
@@ -15,7 +14,7 @@ from notionary.user.schemas import PersonUserResponseDto, UserResponseDto
 
 
 class PageProperty(BaseModel):
-    id: str
+    id: str | None = None
     type: str
 
 
@@ -183,7 +182,7 @@ class PagePhoneNumberProperty(PageProperty):
 
 class PagePeopleProperty(PageProperty):
     type: Literal[PropertyType.PEOPLE] = PropertyType.PEOPLE
-    people: list[PersonUserResponseDto] = Field(default_factory=list)
+    people: list[PersonResponseDto] = Field(default_factory=list)
 
 
 class PageCreatedByProperty(PageProperty):
@@ -234,17 +233,17 @@ class PageRelationProperty(PageProperty):
 
 class PageButtonProperty(PageProperty):
     type: Literal[PropertyType.BUTTON] = PropertyType.BUTTON
-    button: JsonDict = Field(default_factory=dict)
+    button: dict[str, Any] = Field(default_factory=dict)
 
 
 class PageLocationProperty(PageProperty):
     type: Literal[PropertyType.LOCATION] = PropertyType.LOCATION
-    location: JsonDict | None = None
+    location: dict[str, Any] | None = None
 
 
 class PagePlaceProperty(PageProperty):
     type: Literal[PropertyType.PLACE] = PropertyType.PLACE
-    place: JsonDict | None = None
+    place: dict[str, Any] | None = None
 
 
 class PageVerificationProperty(PageProperty):
@@ -290,5 +289,3 @@ type AnyPageProperty = (
     | PageUniqueIdProperty
     | PageUnknownProperty
 )
-
-PagePropertyT = TypeVar("PagePropertyT", bound=PageProperty)

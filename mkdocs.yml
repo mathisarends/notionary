@@ -25,49 +25,43 @@ extra_css:
 extra_javascript:
   - https://unpkg.com/mermaid/dist/mermaid.min.js
 
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: false
+            heading_level: 2
+            members_order: source
+            show_signature_annotations: true
+            separate_signature: true
+            docstring_style: google
+            merge_init_into_class: true
+            show_if_no_docstring: false
+
 nav:
-  - Intro: intro.md
+  - Home: index.md
   - Quickstart: quickstart.md
 
-  - Documentation:
+  - Guides:
       - Page: page.md
-      - Data Source:
-        - data_source/index.md
-      - Workspace:
-        - workspace/index.md
       - Database: database.md
-      - File Upload:
-        - Overview: file_upload/index.md
-        - Integration: file_upload/integration.md
-        - Query: file_upload/query.md
-        - Resolver: file_upload/resolver.md
+      - Data Source: data_source/index.md
+      - File Upload: file_upload/index.md
+      - Workspace: workspace/index.md
 
-      - Blocks:
-          - Overview: blocks/blocks.md
-          - Markdown Lookup:  blocks/markdown_lookup.md
-          - Breadcrumb: blocks/breadcrumb.md
-          - Bulleted List: blocks/bulleted_list.md
-          - Callout: blocks/callout.md
-          - Code: blocks/code.md
-          - Columns: blocks/column.md
-          - Divider: blocks/divider.md
-          - Embed: blocks/embed.md
-          - Equation: blocks/equation.md
-          - File: blocks/file.md
-          - Heading: blocks/heading.md
-          - Image: blocks/image.md
-          - Numbered List: blocks/numbered_list.md
-          - Paragraph: blocks/paragraph.md
-          - PDF: blocks/pdf.md
-          - Quote: blocks/quote.md
-          - Rich Text: blocks/rich_text.md
-          - Space: blocks/space.md
-          - Synced Block: blocks/synced_block.md
-          - Table: blocks/table.md
-          - Table of Contents: blocks/table_of_contents.md
-          - Todo: blocks/todo.md
-          - Toggle: blocks/toggle.md
-          - Video: blocks/video.md
+  - API Reference:
+      - Notionary: api/notionary.md
+      - Page: api/page.md
+      - Database: api/database.md
+      - Data Source: api/data_source.md
+      - File Uploads: api/file_uploads.md
+      - Users: api/users.md
+      - Workspace: api/workspace.md
+      - Exceptions: api/exceptions.md
 
   - Contributing: contributing.md
 

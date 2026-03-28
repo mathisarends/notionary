@@ -1,5 +1,6 @@
 from enum import StrEnum
 from typing import Annotated, Literal
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -14,10 +15,6 @@ class WorkspaceOwnerType(StrEnum):
     WORKSPACE = "workspace"
 
 
-class PersonUserDto(BaseModel):
-    email: str | None = None
-
-
 class BotOwnerDto(BaseModel):
     type: WorkspaceOwnerType
     workspace: bool | None = None
@@ -27,38 +24,35 @@ class WorkspaceLimits(BaseModel):
     max_file_upload_size_in_bytes: int
 
 
-class BotUserDto(BaseModel):
+class BotDto(BaseModel):
     owner: BotOwnerDto | None = None
     workspace_name: str | None = None
     workspace_limits: WorkspaceLimits | None = None
 
 
-class NotionUserBase(BaseModel):
-    object: Literal["user"] = "user"
-    id: str
-
+class _UserBase(BaseModel):
+    id: UUID
     type: UserType
-
     name: str | None = None
     avatar_url: str | None = None
 
 
-class PersonUserResponseDto(NotionUserBase):
+class PersonResponseDto(_UserBase):
     type: Literal[UserType.PERSON] = UserType.PERSON
-    person: PersonUserDto
+    email: str | None = None
 
 
-class BotUserResponseDto(NotionUserBase):
+class BotResponseDto(_UserBase):
     type: Literal[UserType.BOT] = UserType.BOT
-    bot: BotUserDto
+    bot: BotDto
 
 
 UserResponseDto = Annotated[
-    PersonUserResponseDto | BotUserResponseDto, Field(discriminator="type")
+    PersonResponseDto | BotResponseDto, Field(discriminator="type")
 ]
 
 
-class NotionUsersListResponse(BaseModel):
+class UsersListResponseDto(BaseModel):
     results: list[UserResponseDto]
     next_cursor: str | None = None
     has_more: bool
@@ -66,4 +60,4 @@ class NotionUsersListResponse(BaseModel):
 
 class PartialUserDto(BaseModel):
     object: Literal["user"] = "user"
-    id: str
+    id: UUID

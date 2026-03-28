@@ -1,7 +1,5 @@
-from .bot import BotUser
-from .person import PersonUser
+from .client import UserClient
+from .models import Bot, Person
+from .namespace import UsersNamespace
 
-__all__ = [
-    "BotUser",
-    "PersonUser",
-]
+__all__ = ["Bot", "Person", "UserClient", "UsersNamespace"]
