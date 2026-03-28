@@ -1,14 +1,11 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel
 
-if TYPE_CHECKING:
-    from notionary.shared.object.icon.schemas import AnyIcon
-    from notionary.shared.object.schemas import File, Parent
-    from notionary.user.schemas import PartialUserDto
+from notionary.shared.object.icon.schemas import AnyIcon
+from notionary.shared.object.schemas import File, Parent
+from notionary.user.schemas import PartialUserDto
 
 
 class NotionObjectResponseDto(BaseModel):

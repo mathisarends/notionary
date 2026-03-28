@@ -3,8 +3,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from notionary.rich_text.schemas import RichText
-from notionary.shared.object.icon.schemas import AnyIcon
-from notionary.shared.object.schemas import File, Parent
+from notionary.shared.object.dtos import NotionObjectResponseDto, NotionObjectUpdateDto
 
 
 class DataSourceReference(BaseModel):
@@ -12,21 +11,12 @@ class DataSourceReference(BaseModel):
     name: str
 
 
-class DatabaseDto(BaseModel):
-    object: str
-    id: UUID
+class DatabaseDto(NotionObjectResponseDto):
     title: list[RichText] = Field(default_factory=list)
     description: list[RichText] = Field(default_factory=list)
-    parent: Parent | None = None
     is_inline: bool = False
-    in_trash: bool = False
     is_locked: bool = False
-    created_time: str | None = None
-    last_edited_time: str | None = None
     data_sources: list[DataSourceReference] = Field(default_factory=list)
-    icon: AnyIcon | None = None
-    cover: File | None = None
-    url: str = ""
     public_url: str | None = None
 
 
@@ -40,11 +30,8 @@ class CreateDatabaseRequest(BaseModel):
     cover: dict | None = None
 
 
-class UpdateDatabaseRequest(BaseModel):
+class UpdateDatabaseRequest(NotionObjectUpdateDto):
     title: list[RichText] | None = None
     description: list[RichText] | None = None
     is_inline: bool | None = None
-    icon: AnyIcon | None = None
-    cover: File | None = None
-    in_trash: bool | None = None
     is_locked: bool | None = None

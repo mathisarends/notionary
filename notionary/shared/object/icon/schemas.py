@@ -55,7 +55,7 @@ class BuiltinIcon(BaseModel):
     icon: BuiltinIconData
 
 
-type AnyIcon = Annotated[
+AnyIcon = Annotated[
     EmojiIcon | CustomEmojiIcon | BuiltinIcon | File,
     Field(discriminator="type"),
 ]

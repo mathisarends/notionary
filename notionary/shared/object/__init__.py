@@ -1,5 +1,5 @@
 from .cover import Cover
-from .icon import Icon
+from .icon.icon import Icon
 from .trash import Trash
 
 __all__ = [
