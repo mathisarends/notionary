@@ -1,3 +1,5 @@
+"""Read a page's content as markdown."""
+
 import asyncio
 
 from dotenv import load_dotenv
@@ -9,8 +11,10 @@ load_dotenv(override=True)
 
 async def main() -> None:
     async with Notionary() as notion:
-        data_source = await notion.data_sources.from_title("Projekte")
-        print("data_source.properties", data_source.properties)
+        page = await notion.pages.from_title("Meeting Notes")
+
+        markdown = await page.get_markdown()
+        print(markdown)
 
 
 if __name__ == "__main__":

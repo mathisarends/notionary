@@ -1,4 +1,7 @@
+"""Upload a file from disk to Notion."""
+
 import asyncio
+from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -9,9 +12,8 @@ load_dotenv(override=True)
 
 async def main() -> None:
     async with Notionary() as notion:
-        files = await notion.file_uploads.list()
-        for file in files:
-            print(f"{file.filename} {file.in_trash})")
+        result = await notion.file_uploads.upload_file(Path("report.pdf"))
+        print(f"Uploaded: {result.filename}  status={result.status}")
 
 
 if __name__ == "__main__":
