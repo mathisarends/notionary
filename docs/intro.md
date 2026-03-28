@@ -4,36 +4,37 @@ Transform complex Notion API interactions into simple, Pythonic code. Whether yo
 
 ## Why use Notionary?
 
-- **Object-Oriented Wrapper** – Instead of handling deeply nested JSON and dictionaries, Notionary offers clean Python classes for working with entities such as Datasources, Pages, and Databases. This makes it easy and intuitive to interact with your Notion content.
-- **Direct Access to Objects** – Methods and attributes are available out-of-the-box, so you can work with your data without manual parsing or mapping.
-- **Less Boilerplate, More Productivity** – Write less code and focus on your application logic.
-- **Markdown & Block Support** – Extended Markdown is automatically converted to Notion blocks.
-- **Async-First Architecture** – Modern Python with full async/await support for fast and scalable workflows.
+- **Object-Oriented Wrapper** – Clean Python classes for pages, databases, data sources, and file uploads instead of raw JSON.
+- **Smart Discovery** – Find pages and databases by title with fuzzy matching. No UUIDs needed.
+- **Markdown Content** – Read and write page content as Markdown via the [Notion Markdown API](https://developers.notion.com/reference/retrieve-page-markdown).
+- **Async-First** – Modern Python with full `async`/`await` support.
+- **Type Safety** – Pydantic models and type hints throughout.
 
-### Installation
+## Installation
 
 ```bash
 pip install notionary
 ```
 
-### Hello World Example
+## Hello World
 
 ```python
-# Find a page and update it with rich content
-page = await Page.from_title("My Project")
-await page.replace_content("""
-# 🚀 Project Overview
+import asyncio
+from notionary import Notionary
 
-!> [💡] This page was created programmatically!
+async def main():
+    async with Notionary() as notion:
+        page = await notion.pages.from_title("My Project")
+        md = await page.get_markdown()
+        print(md)
 
-+++ Implementation Details
-| Built with Notionary's intuitive Python API
-| Rich Markdown support with custom extensions
-""")
+        await page.append("## Updated by Notionary!")
+
+asyncio.run(main())
 ```
 
-(_If running this_, ensure you set the NOTION_SECRET environment variable)
+Set the `NOTION_API_KEY` environment variable before running:
 
 ```bash
-export NOTION_SECRET=ntn_...
+export NOTION_API_KEY=ntn_...
 ```

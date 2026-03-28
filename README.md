@@ -11,7 +11,6 @@
 [![PyPI version](https://badge.fury.io/py/notionary.svg)](https://badge.fury.io/py/notionary)
 [![Python Version](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/mathisarends/fc0568b66a20fbbaa5018205861c0da9/raw/notionary-coverage.json)](https://github.com/mathisarends/notionary)
 [![Downloads](https://img.shields.io/pypi/dm/notionary?color=blue)](https://pypi.org/project/notionary/)
 [![Documentation](https://img.shields.io/badge/docs-notionary-blue?style=flat&logo=readthedocs)](https://mathisarends.github.io/notionary/)
 [![Notion API](https://img.shields.io/badge/Notion%20API-Official-000000?logo=notion&logoColor=white)](https://developers.notion.com/)
@@ -27,10 +26,10 @@ Perfect for developers building AI agents, automation workflows, and dynamic con
 
 - **AI-friendly** – Composable APIs that drop cleanly into agent workflows
 - **Smart discovery** – Find pages/databases by title with fuzzy matching (no ID spelunking)
-- **Extended Markdown** – Toggles, columns, callouts, media, equations, tables, TOC
+- **Markdown content** – Read & write page content as Markdown via the [Notion Markdown API](https://developers.notion.com/reference/retrieve-page-markdown)
 - **Async-first** – Modern Python with full `async` / `await`
-- **Round‑trip content** – Read a page as Markdown, transform, write back
-- **Full coverage** – All Notion block types with sensible defaults and type safety
+- **Round-trip content** – Read a page as Markdown, transform, write back
+- **Full coverage** – Pages, databases, data sources, file uploads, users, workspace search
 
 ---
 
@@ -43,71 +42,37 @@ pip install notionary
 Set up your [Notion integration](https://www.notion.so/profile/integrations) and configure your token:
 
 ```bash
-export NOTION_SECRET=your_integration_key
+export NOTION_API_KEY=your_integration_key
 ```
-
----
-
-## See It in Action
-
-https://github.com/user-attachments/assets/da8b4691-bee4-4b0f-801e-dccacb630398
-
-_Create rich database entries with properties, content, and beautiful formatting_
 
 ---
 
 ## Quick Start
 
-### Find → Create → Update Flow
+All access goes through the `Notionary` client:
 
 ```python
-from notionary import Page
+import asyncio
+from notionary import Notionary
 
-# Find pages by name with fuzzy matching
-page = await Page.from_title("Meeting Notes")
+async def main():
+    async with Notionary() as notion:
+        # Find a page by title (fuzzy matching)
+        page = await notion.pages.from_title("Meeting Notes")
+        print(page.title, page.url)
 
-# Define rich content with extended markdown
-content = """
-## Action Items
-- [x] Review proposal
-- [ ] Schedule meeting
+        # Read content as Markdown
+        md = await page.get_markdown()
+        print(md)
 
-[callout](Key decision made! "💡")
+        # Append content
+        await page.append("## Action Items\n- [ ] Review proposal")
 
-| Task | Owner | Deadline |
-|------|-------|----------|
-| Design Review | Alice | 2024-03-15 |
-| Implementation | Bob | 2024-03-22 |
+        # Replace all content
+        await page.replace("# Fresh Start\nThis page was rewritten.")
 
-+++ Budget Details
-  See attached spreadsheet...
-"""
-
-await page.append_markdown(content)
+asyncio.run(main())
 ```
-
-Read or replace content:
-
-```python
-existing = await page.get_markdown_content()
-print(existing)
-
-await page.replace_content("# Fresh Start\nThis page was rewritten.")
-```
-
-### Complete Block Support
-
-Every Notion block type with extended syntax:
-
-| Block Type    | Markdown Syntax                              | Use Case                  |
-| ------------- | -------------------------------------------- | ------------------------- |
-| **Toggles**   | `+++ Title\nContent\n+++`                    | Collapsible sections      |
-| **Columns**   | `::: columns\n::: column\nContent\n:::\n:::` | Side-by-side layouts      |
-| **Tables**    | Standard markdown tables                     | Structured data           |
-| **Media**     | `[video](https://example.com/file.mp4)`      | External media URLs       |
-| **Code**      | Standard code fences with captions           | Code snippets             |
-| **Equations** | `$LaTeX$`                                    | Mathematical expressions  |
-| **TOC**       | `[toc]`                                      | Auto-generated navigation |
 
 ---
 
@@ -115,14 +80,138 @@ Every Notion block type with extended syntax:
 
 ```mermaid
 flowchart TD
-  WS[Workspace] --> DB[(Database)]
-  WS --> PG[Page]
-  DB --> DS[(Data Source)]
-  DS --> PG
-  WS --> USR[Users]
-  PG --> BLK[Blocks]
-  PG --> CM[Comments]
-  PG --> PROP[Properties]
+  N[Notionary] --> PG[pages]
+  N --> DB[databases]
+  N --> DS[data_sources]
+  N --> FU[file_uploads]
+  N --> USR[users]
+  N --> WS[workspace]
+
+  PG --> P[Page]
+  DB --> D[Database]
+  DS --> S[DataSource]
+  S --> P
+```
+
+The `Notionary` client exposes **namespace** objects – each mapping to a Notion API area.
+Content operations use the [Notion Markdown API](https://developers.notion.com/reference/retrieve-page-markdown) directly.
+
+---
+
+## Core Concepts
+
+### Pages
+
+```python
+async with Notionary() as notion:
+    # Lookup
+    page = await notion.pages.from_title("Sprint Board")
+    page = await notion.pages.from_id(page_uuid)
+
+    # List & search
+    pages = await notion.pages.list(query="roadmap")
+
+    # Content (Markdown API)
+    md = await page.get_markdown()
+    await page.append("## New Section")
+    await page.replace("# Replaced content")
+    await page.clear()
+
+    # Metadata
+    await page.rename("New Title")
+    await page.set_icon_emoji("🚀")
+    await page.set_cover("https://example.com/cover.png")
+    await page.random_cover()
+
+    # Properties
+    await page.properties.set_property("Status", "Done")
+
+    # Comments
+    await page.comment("Review completed")
+
+    # Lifecycle
+    await page.lock()
+    await page.trash()
+```
+
+> **Notion API Reference:** [Pages](https://developers.notion.com/reference/page) · [Markdown](https://developers.notion.com/reference/retrieve-page-markdown)
+
+### Databases
+
+```python
+async with Notionary() as notion:
+    db = await notion.databases.from_title("Tasks")
+    db = await notion.databases.from_id(db_uuid)
+
+    # Create
+    db = await notion.databases.create(
+        parent_page_id=page_uuid,
+        title="New Database",
+        icon_emoji="📊",
+    )
+
+    # Metadata
+    await db.set_title("Project Tracker")
+    await db.set_description("All current projects")
+    await db.set_icon_emoji("📊")
+    await db.lock()
+```
+
+> **Notion API Reference:** [Databases](https://developers.notion.com/reference/database)
+
+### Data Sources
+
+```python
+async with Notionary() as notion:
+    ds = await notion.data_sources.from_title("Engineering Backlog")
+
+    # Create a page inside the data source
+    page = await ds.create_page(title="New Feature")
+
+    # Metadata
+    await ds.set_title("Sprint Board")
+    await ds.set_icon_emoji("🧭")
+```
+
+> **Notion API Reference:** [Data Sources](https://developers.notion.com/reference/data-source)
+
+### File Uploads
+
+```python
+from pathlib import Path
+
+async with Notionary() as notion:
+    # Upload from disk
+    result = await notion.file_uploads.upload(Path("./report.pdf"))
+
+    # Upload from bytes
+    result = await notion.file_uploads.upload_from_bytes(
+        content=image_bytes,
+        filename="chart.png",
+    )
+
+    # List uploads
+    uploads = await notion.file_uploads.list()
+```
+
+### Users
+
+```python
+async with Notionary() as notion:
+    people = await notion.users.list_users()
+    bots = await notion.users.list_bots()
+    me = await notion.users.me()
+
+    matches = await notion.users.search("alex")
+```
+
+### Workspace Search
+
+```python
+async with Notionary() as notion:
+    results = await notion.workspace.search(query="roadmap")
+    for r in results:
+        print(type(r).__name__, r.title)
 ```
 
 ---
@@ -139,38 +228,38 @@ flowchart TD
 - Fuzzy matching for approximate searches
 - No more hunting for IDs or URLs
 
-### Extended Markdown
+### Markdown Content API
 
-- Rich syntax beyond vanilla Markdown
-- Callouts, toggles, columns, media embeds & uploads
-- Fine-grained indentation + custom delimiters
+- Read page content as Markdown
+- Append, replace, or clear content
+- Powered by the official Notion Markdown API
 
 ### Modern Python
 
 - Full async/await support
 - Type hints throughout
-- High-performance batch operations
+- Pydantic models for API responses
 
 </td>
 <td width="50%">
 
 ### Round-Trip Editing
 
-- Read existing content as markdown
-- Edit and modify preserving formatting
+- Read existing content as Markdown
+- Edit and modify
 - Write back to Notion seamlessly
 
 ### AI-Ready Architecture
 
 - Predictable models enable prompt chaining
 - Ideal for autonomous content generation
-- Handles complex nested block structures
+- Clean namespace-based API
 
 ### Complete Coverage
 
-- Every Notion block type supported
+- Pages, databases, data sources
 - File uploads with automatic handling
-- Database operations and properties
+- Users and workspace search
 
 </td>
 </tr>
@@ -178,87 +267,9 @@ flowchart TD
 
 ---
 
-## More Examples
-
 ### Full Documentation
 
-### Build Markdown programmatically (4-space indentation for nesting)
-
-```python
-from notionary import MarkdownBuilder
-
-markdown = (
-  MarkdownBuilder()
-  .h2("Setup Guide")
-  .paragraph("Basic steps.")
-  .toggle("Advanced Options", lambda b:
-        b.paragraph("Power user settings.")
-         .bulleted_list(["Debug mode", "Custom timeouts"]))
-  .columns(
-    lambda c: c.paragraph("Left column"),
-    lambda c: c.paragraph("Right column")
-  )
-  .build()
-)
-
-page = await Page.from_title("Playground")
-await page.append_markdown(markdown)
-```
-
-### Workspace discovery
-
-```python
-from notionary import NotionWorkspace, NotionWorkspaceQueryConfigBuilder
-
-workspace = await NotionWorkspace.from_current_integration()
-builder = NotionWorkspaceQueryConfigBuilder()
-config = (
-    builder
-    .with_pages_only()
-    .with_query("roadmap")
-    .with_page_size(5)
-    .build()
-)
-pages = await workspace.get_pages(config)
-for p in pages:
-    print(p.title)
-```
-
-### Data Source queries & options
-
-```python
-from notionary import DataSource
-
-ds = await DataSource.from_title("Engineering Backlog")
-status_labels = ds.get_status_options_by_property_name("Status")
-print(status_labels)
-
-builder = ds.get_query_builder()
-params = (
-    builder
-    .where("Status")
-    .equals("In Progress")
-    .order_by_last_edited_time()
-    .build()
-)
-pages = await ds.get_pages(query_params=params)
-```
-
-### Page property writes
-
-```python
-page = await Page.from_title("Sprint Board")
-
-await page.properties.set_select_property_by_option_name("Phase", "Design")
-await page.properties.set_multi_select_property_by_option_names("Tags", ["Backend", "API"])
-await page.properties.set_status_property_by_option_name("Status", "In Progress")
-```
-
----
-
-### Full Documentation
-
-[**mathisarends.github.io/notionary**](https://mathisarends.github.io/notionary/) – Complete API reference, guides, and tutorials
+[**mathisarends.github.io/notionary**](https://mathisarends.github.io/notionary/) – Complete API reference with auto-generated docs from source code
 
 ---
 
@@ -279,12 +290,8 @@ Check our [**Contributing Guide**](https://mathisarends.github.io/notionary/cont
 
 **Ready to revolutionize your Notion workflows?**
 
-[📖 **Read the Docs**](https://mathisarends.github.io/notionary/) • [🚀 **Getting Started**](https://mathisarends.github.io/notionary/get-started/) • [💻 **Browse Examples**](examples/)
+[📖 **Read the Docs**](https://mathisarends.github.io/notionary/) · [💻 **Browse Examples**](examples/)
 
 _Built with ❤️ for Python developers and AI agents_
-
----
-
-**Transform complex Notion API interactions into simple, powerful code.**
 
 </div>

@@ -2,7 +2,7 @@ import asyncio
 import logging
 import mimetypes
 import os
-from collections.abc import AsyncGenerator, AsyncIterator, Generator
+from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
 from uuid import UUID
 
@@ -99,7 +99,7 @@ class FileUploads:
         self._client = FileUploadHttpClient(http)
         self._config = FileUploadConfig()
 
-    async def upload(
+    async def upload_file(
         self,
         file_path: Path,
         filename: str | None = None,
@@ -326,7 +326,7 @@ class FileUploads:
             while chunk := await f.read(self._config.multi_part_chunk_size):
                 yield chunk
 
-    def _iter_byte_chunks(self, content: bytes) -> Generator[bytes]:
+    async def _iter_byte_chunks(self, content: bytes) -> AsyncGenerator[bytes]:
         size = self._config.multi_part_chunk_size
         for i in range(0, len(content), size):
             yield content[i : i + size]

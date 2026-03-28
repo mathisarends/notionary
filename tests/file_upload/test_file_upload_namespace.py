@@ -1,6 +1,7 @@
 import asyncio
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
+from uuid import UUID
 
 import pytest
 
@@ -15,8 +16,11 @@ from notionary.file_upload.exceptions import (
 from notionary.file_upload.namespace import FileUploads
 from notionary.file_upload.schemas import FileUploadResponse, FileUploadStatus
 
+_UPLOAD_ID = UUID("00000000-0000-0000-0000-000000000001")
+_UPLOAD_ID_FAIL = UUID("00000000-0000-0000-0000-000000000999")
+
 _UPLOAD_PENDING = FileUploadResponse(
-    id="upload-123",
+    id=_UPLOAD_ID,
     created_time="2024-01-01T00:00:00.000Z",
     last_edited_time="2024-01-01T00:00:00.000Z",
     in_trash=False,
@@ -25,7 +29,7 @@ _UPLOAD_PENDING = FileUploadResponse(
 )
 
 _UPLOAD_UPLOADED = FileUploadResponse(
-    id="upload-123",
+    id=_UPLOAD_ID,
     created_time="2024-01-01T00:00:00.000Z",
     last_edited_time="2024-01-01T00:00:00.000Z",
     in_trash=False,
@@ -34,7 +38,7 @@ _UPLOAD_UPLOADED = FileUploadResponse(
 )
 
 _UPLOAD_FAILED = FileUploadResponse(
-    id="upload-123",
+    id=_UPLOAD_ID,
     created_time="2024-01-01T00:00:00.000Z",
     last_edited_time="2024-01-01T00:00:00.000Z",
     in_trash=False,
@@ -187,9 +191,9 @@ class TestGet:
     async def test_delegates_to_client_get_file_upload(
         self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
-        result = await file_uploads.get("upload-123")
+        result = await file_uploads.get(_UPLOAD_ID)
 
-        mock_client.get_file_upload.assert_called_once_with("upload-123")
+        mock_client.get_file_upload.assert_called_once_with(_UPLOAD_ID)
         assert isinstance(result, FileUploadResponse)
 
 
@@ -302,7 +306,7 @@ class TestPollingAndCompletion:
     ) -> None:
         mock_client.get_file_upload = AsyncMock(return_value=_UPLOAD_UPLOADED)
 
-        result = await file_uploads._poll_until_complete("upload-123")
+        result = await file_uploads._poll_until_complete(_UPLOAD_ID)
 
         assert result.status == FileUploadStatus.UPLOADED
 
@@ -312,8 +316,8 @@ class TestPollingAndCompletion:
     ) -> None:
         mock_client.get_file_upload = AsyncMock(return_value=_UPLOAD_FAILED)
 
-        with pytest.raises(UploadFailedError, match="upload-123"):
-            await file_uploads._poll_until_complete("upload-123")
+        with pytest.raises(UploadFailedError, match=str(_UPLOAD_ID)):
+            await file_uploads._poll_until_complete(_UPLOAD_ID)
 
     @pytest.mark.asyncio
     async def test_poll_keeps_polling_through_pending_status(
@@ -324,7 +328,7 @@ class TestPollingAndCompletion:
         )
 
         with patch("asyncio.sleep", new_callable=AsyncMock):
-            result = await file_uploads._poll_until_complete("upload-123")
+            result = await file_uploads._poll_until_complete(_UPLOAD_ID)
 
         assert result.status == FileUploadStatus.UPLOADED
         assert mock_client.get_file_upload.call_count == 3
@@ -338,9 +342,9 @@ class TestPollingAndCompletion:
                 "notionary.file_upload.namespace.asyncio.wait_for",
                 side_effect=asyncio.TimeoutError,
             ),
-            pytest.raises(UploadTimeoutError, match="upload-999"),
+            pytest.raises(UploadTimeoutError, match=str(_UPLOAD_ID_FAIL)),
         ):
-            await file_uploads._wait_for_completion("upload-999")
+            await file_uploads._wait_for_completion(_UPLOAD_ID_FAIL)
 
 
 class TestIsSinglePart:

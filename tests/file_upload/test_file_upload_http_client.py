@@ -1,6 +1,7 @@
 from collections.abc import AsyncGenerator
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock
+from uuid import UUID
 
 import pytest
 
@@ -12,10 +13,13 @@ from notionary.file_upload.schemas import (
     UploadMode,
 )
 
+_UPLOAD_ID = UUID("00000000-0000-0000-0000-000000000001")
+_UPLOAD_ID_2 = UUID("00000000-0000-0000-0000-000000000002")
+
 
 def _make_upload_response_dict(**overrides: Any) -> dict[str, Any]:
     return {
-        "id": "upload-123",
+        "id": str(_UPLOAD_ID),
         "created_time": "2024-01-01T00:00:00.000Z",
         "last_edited_time": "2024-01-01T00:00:00.000Z",
         "expiry_time": None,
@@ -53,7 +57,7 @@ class TestCreateSinglePartUpload:
         result = await client.create_single_part_upload("test.pdf", "application/pdf")
 
         assert isinstance(result, FileUploadResponse)
-        assert result.id == "upload-123"
+        assert result.id == _UPLOAD_ID
 
     @pytest.mark.asyncio
     async def test_posts_to_file_uploads_endpoint(
@@ -100,7 +104,7 @@ class TestCreateMultiPartUpload:
         result = await client.create_multi_part_upload("big.pdf", 3, "application/pdf")
 
         assert isinstance(result, FileUploadResponse)
-        assert result.id == "upload-123"
+        assert result.id == _UPLOAD_ID
 
     @pytest.mark.asyncio
     async def test_sends_multi_part_mode(
@@ -126,17 +130,18 @@ class TestSendFileContent:
     async def test_posts_to_send_endpoint(
         self, client: FileUploadHttpClient, mock_http: MagicMock
     ) -> None:
-        await client.send_file_content("upload-abc", b"content", "test.pdf")
+        await client.send_file_content(_UPLOAD_ID, b"content", "test.pdf")
 
         assert (
-            mock_http.post_multipart.call_args.args[0] == "file_uploads/upload-abc/send"
+            mock_http.post_multipart.call_args.args[0]
+            == f"file_uploads/{_UPLOAD_ID}/send"
         )
 
     @pytest.mark.asyncio
     async def test_sends_file_bytes_in_files_param(
         self, client: FileUploadHttpClient, mock_http: MagicMock
     ) -> None:
-        await client.send_file_content("upload-123", b"hello", "test.pdf")
+        await client.send_file_content(_UPLOAD_ID, b"hello", "test.pdf")
 
         files = mock_http.post_multipart.call_args.kwargs["files"]
         assert files == {"file": ("test.pdf", b"hello")}
@@ -145,7 +150,7 @@ class TestSendFileContent:
     async def test_without_part_number_passes_none_data(
         self, client: FileUploadHttpClient, mock_http: MagicMock
     ) -> None:
-        await client.send_file_content("upload-123", b"content", "test.pdf")
+        await client.send_file_content(_UPLOAD_ID, b"content", "test.pdf")
 
         data = mock_http.post_multipart.call_args.kwargs["data"]
         assert data is None
@@ -155,7 +160,7 @@ class TestSendFileContent:
         self, client: FileUploadHttpClient, mock_http: MagicMock
     ) -> None:
         await client.send_file_content(
-            "upload-123", b"content", "test.pdf", part_number=2
+            _UPLOAD_ID, b"content", "test.pdf", part_number=2
         )
 
         data = mock_http.post_multipart.call_args.kwargs["data"]
@@ -165,7 +170,7 @@ class TestSendFileContent:
     async def test_returns_file_upload_response(
         self, client: FileUploadHttpClient, mock_http: MagicMock
     ) -> None:
-        result = await client.send_file_content("upload-123", b"data", "test.pdf")
+        result = await client.send_file_content(_UPLOAD_ID, b"data", "test.pdf")
 
         assert isinstance(result, FileUploadResponse)
 
@@ -175,15 +180,15 @@ class TestCompleteUpload:
     async def test_posts_to_complete_endpoint(
         self, client: FileUploadHttpClient, mock_http: MagicMock
     ) -> None:
-        await client.complete_upload("upload-123")
+        await client.complete_upload(_UPLOAD_ID)
 
-        assert mock_http.post.call_args.args[0] == "file_uploads/upload-123/complete"
+        assert mock_http.post.call_args.args[0] == f"file_uploads/{_UPLOAD_ID}/complete"
 
     @pytest.mark.asyncio
     async def test_returns_file_upload_response(
         self, client: FileUploadHttpClient, mock_http: MagicMock
     ) -> None:
-        result = await client.complete_upload("upload-123")
+        result = await client.complete_upload(_UPLOAD_ID)
 
         assert isinstance(result, FileUploadResponse)
 
@@ -193,18 +198,18 @@ class TestGetFileUpload:
     async def test_gets_from_correct_endpoint(
         self, client: FileUploadHttpClient, mock_http: MagicMock
     ) -> None:
-        await client.get_file_upload("upload-xyz")
+        await client.get_file_upload(_UPLOAD_ID)
 
-        mock_http.get.assert_called_once_with("file_uploads/upload-xyz")
+        mock_http.get.assert_called_once_with(f"file_uploads/{_UPLOAD_ID}")
 
     @pytest.mark.asyncio
     async def test_returns_file_upload_response(
         self, client: FileUploadHttpClient, mock_http: MagicMock
     ) -> None:
-        result = await client.get_file_upload("upload-xyz")
+        result = await client.get_file_upload(_UPLOAD_ID)
 
         assert isinstance(result, FileUploadResponse)
-        assert result.id == "upload-123"
+        assert result.id == _UPLOAD_ID
 
 
 class TestListFiles:
@@ -263,7 +268,7 @@ class TestListFilesStream:
     ) -> None:
         async def _fake_stream(*args: Any, **kwargs: Any) -> AsyncGenerator[dict]:
             yield _make_upload_response_dict()
-            yield _make_upload_response_dict(id="upload-456")
+            yield _make_upload_response_dict(id=str(_UPLOAD_ID_2))
 
         mock_http.paginate_stream = _fake_stream
 
@@ -272,8 +277,8 @@ class TestListFilesStream:
             results.append(upload)
 
         assert len(results) == 2
-        assert results[0].id == "upload-123"
-        assert results[1].id == "upload-456"
+        assert results[0].id == _UPLOAD_ID
+        assert results[1].id == _UPLOAD_ID_2
 
     @pytest.mark.asyncio
     async def test_yields_file_upload_response_instances(

@@ -1,6 +1,5 @@
 from enum import StrEnum
 from typing import Annotated, Literal, Self
-from uuid import UUID
 
 from pydantic import BaseModel, Discriminator, Field, Tag
 
@@ -42,15 +41,15 @@ class TextAnnotations(BaseModel):
 
 
 class MentionPageRef(BaseModel):
-    id: UUID
+    id: str
 
 
 class MentionUserRef(BaseModel):
-    id: UUID
+    id: str
 
 
 class MentionDatabaseRef(BaseModel):
-    id: UUID
+    id: str
 
 
 class MentionDate(BaseModel):
