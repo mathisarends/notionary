@@ -12,7 +12,7 @@ from notionary.file_upload.exceptions import (
     UploadFailedError,
     UploadTimeoutError,
 )
-from notionary.file_upload.namespace import Files
+from notionary.file_upload.namespace import FileUploads
 from notionary.file_upload.schemas import FileUploadResponse, FileUploadStatus
 
 _UPLOAD_PENDING = FileUploadResponse(
@@ -56,8 +56,8 @@ def mock_client() -> MagicMock:
 
 
 @pytest.fixture
-def file_uploads(mock_client: MagicMock) -> Files:
-    namespace = Files(MagicMock())
+def file_uploads(mock_client: MagicMock) -> FileUploads:
+    namespace = FileUploads(MagicMock())
     namespace._client = mock_client
     return namespace
 
@@ -65,7 +65,7 @@ def file_uploads(mock_client: MagicMock) -> Files:
 class TestUploadFile:
     @pytest.mark.asyncio
     async def test_small_file_uses_single_part(
-        self, file_uploads: Files, mock_client: MagicMock, tmp_path: Path
+        self, file_uploads: FileUploads, mock_client: MagicMock, tmp_path: Path
     ) -> None:
         file = tmp_path / "test.pdf"
         file.write_bytes(b"small content")
@@ -80,7 +80,7 @@ class TestUploadFile:
 
     @pytest.mark.asyncio
     async def test_large_file_uses_multi_part(
-        self, file_uploads: Files, mock_client: MagicMock, tmp_path: Path
+        self, file_uploads: FileUploads, mock_client: MagicMock, tmp_path: Path
     ) -> None:
         file = tmp_path / "big.pdf"
         file.write_bytes(b"content")
@@ -94,7 +94,7 @@ class TestUploadFile:
 
     @pytest.mark.asyncio
     async def test_uses_custom_filename_when_provided(
-        self, file_uploads: Files, mock_client: MagicMock, tmp_path: Path
+        self, file_uploads: FileUploads, mock_client: MagicMock, tmp_path: Path
     ) -> None:
         file = tmp_path / "original.pdf"
         file.write_bytes(b"content")
@@ -107,7 +107,7 @@ class TestUploadFile:
 
     @pytest.mark.asyncio
     async def test_no_wait_skips_polling(
-        self, file_uploads: Files, mock_client: MagicMock, tmp_path: Path
+        self, file_uploads: FileUploads, mock_client: MagicMock, tmp_path: Path
     ) -> None:
         file = tmp_path / "test.pdf"
         file.write_bytes(b"content")
@@ -119,7 +119,7 @@ class TestUploadFile:
 
     @pytest.mark.asyncio
     async def test_nonexistent_file_raises_file_not_found(
-        self, file_uploads: Files
+        self, file_uploads: FileUploads
     ) -> None:
         with pytest.raises(FileNotFoundError, match="does not exist"):
             await file_uploads.upload_file(Path("/nonexistent/path/test.pdf"))
@@ -128,7 +128,7 @@ class TestUploadFile:
 class TestUploadFromBytes:
     @pytest.mark.asyncio
     async def test_small_content_uses_single_part(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         result = await file_uploads.upload_from_bytes(b"hello", "test.pdf")
 
@@ -137,7 +137,7 @@ class TestUploadFromBytes:
 
     @pytest.mark.asyncio
     async def test_large_content_uses_multi_part(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         with patch.object(file_uploads, "_is_single_part", return_value=False):
             result = await file_uploads.upload_from_bytes(
@@ -150,7 +150,7 @@ class TestUploadFromBytes:
 
     @pytest.mark.asyncio
     async def test_no_wait_skips_polling(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         await file_uploads.upload_from_bytes(b"data", "test.pdf", wait=False)
 
@@ -158,7 +158,7 @@ class TestUploadFromBytes:
 
     @pytest.mark.asyncio
     async def test_infers_content_type_from_filename(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         await file_uploads.upload_from_bytes(b"data", "image.png", wait=False)
 
@@ -168,7 +168,7 @@ class TestUploadFromBytes:
 
     @pytest.mark.asyncio
     async def test_explicit_content_type_overrides_inferred(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         await file_uploads.upload_from_bytes(
             b"data",
@@ -185,7 +185,7 @@ class TestUploadFromBytes:
 class TestGet:
     @pytest.mark.asyncio
     async def test_delegates_to_client_get_file_upload(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         result = await file_uploads.get("upload-123")
 
@@ -196,7 +196,7 @@ class TestGet:
 class TestList:
     @pytest.mark.asyncio
     async def test_returns_list_of_responses(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         result = await file_uploads.list()
 
@@ -206,7 +206,7 @@ class TestList:
 
     @pytest.mark.asyncio
     async def test_passes_status_filter(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         await file_uploads.list(status=FileUploadStatus.UPLOADED)
 
@@ -215,7 +215,7 @@ class TestList:
 
     @pytest.mark.asyncio
     async def test_passes_in_trash_filter(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         await file_uploads.list(in_trash=False)
 
@@ -224,7 +224,7 @@ class TestList:
 
     @pytest.mark.asyncio
     async def test_passes_page_size_limit(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         await file_uploads.list(page_size_limit=25)
 
@@ -235,7 +235,7 @@ class TestList:
 class TestIter:
     @pytest.mark.asyncio
     async def test_yields_responses_from_stream(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         async def _fake_stream(query):  # type: ignore[no-untyped-def]
             yield _UPLOAD_UPLOADED
@@ -252,7 +252,7 @@ class TestIter:
 
     @pytest.mark.asyncio
     async def test_passes_status_filter_to_stream(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         received_queries: list = []
 
@@ -269,26 +269,28 @@ class TestIter:
 
 
 class TestValidateFilename:
-    def test_valid_pdf_filename_passes(self, file_uploads: Files) -> None:
+    def test_valid_pdf_filename_passes(self, file_uploads: FileUploads) -> None:
         file_uploads._validate_filename("document.pdf")
 
-    def test_valid_image_filename_passes(self, file_uploads: Files) -> None:
+    def test_valid_image_filename_passes(self, file_uploads: FileUploads) -> None:
         file_uploads._validate_filename("photo.jpg")
 
-    def test_no_extension_raises(self, file_uploads: Files) -> None:
+    def test_no_extension_raises(self, file_uploads: FileUploads) -> None:
         with pytest.raises(NoFileExtensionException, match="no extension"):
             file_uploads._validate_filename("noextension")
 
-    def test_unsupported_extension_raises(self, file_uploads: Files) -> None:
+    def test_unsupported_extension_raises(self, file_uploads: FileUploads) -> None:
         with pytest.raises(UnsupportedFileTypeException, match="unsupported extension"):
             file_uploads._validate_filename("script.exe")
 
-    def test_too_long_filename_raises(self, file_uploads: Files) -> None:
+    def test_too_long_filename_raises(self, file_uploads: FileUploads) -> None:
         long_name = "a" * 900 + ".pdf"
         with pytest.raises(FilenameTooLongError, match="too long"):
             file_uploads._validate_filename(long_name)
 
-    def test_extension_check_is_case_insensitive(self, file_uploads: Files) -> None:
+    def test_extension_check_is_case_insensitive(
+        self, file_uploads: FileUploads
+    ) -> None:
         file_uploads._validate_filename("IMAGE.PNG")
         file_uploads._validate_filename("document.PDF")
 
@@ -296,7 +298,7 @@ class TestValidateFilename:
 class TestPollingAndCompletion:
     @pytest.mark.asyncio
     async def test_poll_returns_when_status_is_uploaded(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         mock_client.get_file_upload = AsyncMock(return_value=_UPLOAD_UPLOADED)
 
@@ -306,7 +308,7 @@ class TestPollingAndCompletion:
 
     @pytest.mark.asyncio
     async def test_poll_raises_on_failed_status(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         mock_client.get_file_upload = AsyncMock(return_value=_UPLOAD_FAILED)
 
@@ -315,7 +317,7 @@ class TestPollingAndCompletion:
 
     @pytest.mark.asyncio
     async def test_poll_keeps_polling_through_pending_status(
-        self, file_uploads: Files, mock_client: MagicMock
+        self, file_uploads: FileUploads, mock_client: MagicMock
     ) -> None:
         mock_client.get_file_upload = AsyncMock(
             side_effect=[_UPLOAD_PENDING, _UPLOAD_PENDING, _UPLOAD_UPLOADED]
@@ -329,7 +331,7 @@ class TestPollingAndCompletion:
 
     @pytest.mark.asyncio
     async def test_wait_for_completion_raises_upload_timeout_error(
-        self, file_uploads: Files
+        self, file_uploads: FileUploads
     ) -> None:
         with (
             patch(
@@ -342,37 +344,39 @@ class TestPollingAndCompletion:
 
 
 class TestIsSinglePart:
-    def test_small_file_is_single_part(self, file_uploads: Files) -> None:
+    def test_small_file_is_single_part(self, file_uploads: FileUploads) -> None:
         assert file_uploads._is_single_part(1024) is True
 
-    def test_exactly_at_limit_is_single_part(self, file_uploads: Files) -> None:
+    def test_exactly_at_limit_is_single_part(self, file_uploads: FileUploads) -> None:
         limit = file_uploads._config._SINGLE_PART_MAX_SIZE
         assert file_uploads._is_single_part(limit) is True
 
-    def test_above_limit_is_not_single_part(self, file_uploads: Files) -> None:
+    def test_above_limit_is_not_single_part(self, file_uploads: FileUploads) -> None:
         limit = file_uploads._config._SINGLE_PART_MAX_SIZE
         assert file_uploads._is_single_part(limit + 1) is False
 
 
 class TestCalculatePartCount:
     def test_content_smaller_than_chunk_size_gives_one_part(
-        self, file_uploads: Files
+        self, file_uploads: FileUploads
     ) -> None:
         chunk_size = file_uploads._config.multi_part_chunk_size
         assert file_uploads._calculate_part_count(chunk_size - 1) == 1
 
     def test_content_equal_to_chunk_size_gives_one_part(
-        self, file_uploads: Files
+        self, file_uploads: FileUploads
     ) -> None:
         chunk_size = file_uploads._config.multi_part_chunk_size
         assert file_uploads._calculate_part_count(chunk_size) == 1
 
     def test_content_one_byte_over_chunk_size_gives_two_parts(
-        self, file_uploads: Files
+        self, file_uploads: FileUploads
     ) -> None:
         chunk_size = file_uploads._config.multi_part_chunk_size
         assert file_uploads._calculate_part_count(chunk_size + 1) == 2
 
-    def test_content_three_chunks_gives_three_parts(self, file_uploads: Files) -> None:
+    def test_content_three_chunks_gives_three_parts(
+        self, file_uploads: FileUploads
+    ) -> None:
         chunk_size = file_uploads._config.multi_part_chunk_size
         assert file_uploads._calculate_part_count(chunk_size * 3) == 3

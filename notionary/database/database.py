@@ -7,7 +7,7 @@ from notionary.database.schemas import (
     DataSourceReference,
     UpdateDatabaseRequest,
 )
-from notionary.file_upload import Files
+from notionary.file_upload import FileUploads
 from notionary.http.client import HttpClient
 from notionary.rich_text import markdown_to_rich_text, rich_text_to_markdown
 from notionary.shared.object import Cover, Icon, Trash
@@ -41,7 +41,7 @@ class Database:
         self.data_sources = data_sources
 
         path = f"databases/{id}"
-        file_uploads = Files(http)
+        file_uploads = FileUploads(http)
         self._icon = Icon(
             icon=icon, http_client=http, path=path, file_uploads=file_uploads
         )

@@ -8,7 +8,7 @@ from notionary.data_source.client import (
 from notionary.data_source.properties.schemas import (
     AnyDataSourceProperty,
 )
-from notionary.file_upload import Files
+from notionary.file_upload import FileUploads
 from notionary.http.client import HttpClient
 from notionary.page import Page
 from notionary.rich_text import rich_text_to_markdown
@@ -38,7 +38,7 @@ class DataSource:
         self.description = description
 
         path = f"data_sources/{id}"
-        file_uploads = Files(http)
+        file_uploads = FileUploads(http)
         self._icon = Icon(
             icon=icon, http_client=http, path=path, file_uploads=file_uploads
         )

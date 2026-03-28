@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from notionary.file_upload import Files
+from notionary.file_upload import FileUploads
 from notionary.http.client import HttpClient
 from notionary.shared.object.dtos import NotionObjectResponseDto, NotionObjectUpdateDto
 from notionary.shared.object.icon.schemas import AnyIcon, EmojiIcon
@@ -18,7 +18,7 @@ class Icon:
         icon: AnyIcon | None,
         http_client: HttpClient,
         path: str,
-        file_uploads: Files,
+        file_uploads: FileUploads,
     ) -> None:
         self._http = http_client
         self._path = path

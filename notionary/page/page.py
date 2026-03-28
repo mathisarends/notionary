@@ -1,7 +1,7 @@
 from pathlib import Path
 from uuid import UUID
 
-from notionary.file_upload import Files
+from notionary.file_upload import FileUploads
 from notionary.http import HttpClient
 from notionary.page.comments.service import PageComments
 from notionary.page.content import PageContent
@@ -31,7 +31,7 @@ class Page:
         path = f"pages/{id}"
         self._http = http
         self._path = path
-        file_uploads = Files(http)
+        file_uploads = FileUploads(http)
         self._icon = Icon(
             icon=icon, http_client=http, path=path, file_uploads=file_uploads
         )
