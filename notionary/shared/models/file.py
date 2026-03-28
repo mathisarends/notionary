@@ -1,5 +1,6 @@
 from enum import StrEnum
 from typing import Annotated, Literal, Self
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -40,7 +41,7 @@ class NotionHostedFile(BaseModel):
 
 
 class FileUploadedFileData(BaseModel):
-    id: str
+    id: UUID
 
 
 class FileUploadFile(BaseModel):

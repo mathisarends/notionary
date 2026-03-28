@@ -1,4 +1,5 @@
 from typing import Any
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -30,7 +31,7 @@ from notionary.rich_text.schemas import RichText
 class PagePropertyHttpClient:
     def __init__(
         self,
-        page_id: str,
+        page_id: UUID,
         http: HttpClient,
         properties: dict[str, AnyPageProperty],
     ) -> None:

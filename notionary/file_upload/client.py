@@ -1,4 +1,5 @@
 from collections.abc import AsyncGenerator
+from uuid import UUID
 
 from notionary.file_upload.schemas import (
     FileUploadCompleteRequest,
@@ -30,7 +31,7 @@ class FileUploadHttpClient:
 
     async def send_file_content(
         self,
-        file_upload_id: str,
+        file_upload_id: UUID,
         file_content: bytes,
         filename: str,
         part_number: int | None = None,
@@ -43,14 +44,14 @@ class FileUploadHttpClient:
         )
         return FileUploadResponse.model_validate(response)
 
-    async def complete_upload(self, file_upload_id: str) -> FileUploadResponse:
+    async def complete_upload(self, file_upload_id: UUID) -> FileUploadResponse:
         response = await self._http.post(
             f"file_uploads/{file_upload_id}/complete",
             data=FileUploadCompleteRequest().model_dump(),
         )
         return FileUploadResponse.model_validate(response)
 
-    async def get_file_upload(self, file_upload_id: str) -> FileUploadResponse:
+    async def get_file_upload(self, file_upload_id: UUID) -> FileUploadResponse:
         response = await self._http.get(f"file_uploads/{file_upload_id}")
         return FileUploadResponse.model_validate(response)
 

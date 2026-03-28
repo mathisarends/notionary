@@ -1,4 +1,5 @@
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -10,7 +11,7 @@ from notionary.user.schemas import PartialUserDto
 
 class EntityResponseDto(BaseModel):
     object: Literal["page", "database", "data_source"]
-    id: str
+    id: UUID
     created_time: str
     created_by: PartialUserDto
     last_edited_time: str

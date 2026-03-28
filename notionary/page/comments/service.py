@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from uuid import UUID
 
 from notionary.http.client import HttpClient
 from notionary.page.comments.client import CommentClient
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class PageComments:
-    def __init__(self, page_id: str, http: HttpClient) -> None:
+    def __init__(self, page_id: UUID, http: HttpClient) -> None:
         self._page_id = page_id
         self._client = CommentClient(http)
         self._user_client = UserClient(http)
@@ -30,7 +31,7 @@ class PageComments:
         )
         return await self._comment_from_dto(dto)
 
-    async def reply_to(self, discussion_id: str, text: str) -> Comment:
+    async def reply_to(self, discussion_id: UUID, text: str) -> Comment:
         dto = await self._client.create_comment_for_discussion(
             rich_text=markdown_to_rich_text(text),
             discussion_id=discussion_id,
@@ -42,7 +43,7 @@ class PageComments:
         author = await self._resolve_author(dto.created_by.id)
         return Comment(author_name=author, content=content)
 
-    async def _resolve_author(self, user_id: str) -> str:
+    async def _resolve_author(self, user_id: UUID) -> str:
         try:
             dto = await self._user_client.get(user_id)
             return dto.name or "Unknown Author"

@@ -1,4 +1,5 @@
 from typing import Any
+from uuid import UUID
 
 from notionary.http import HttpClient
 from notionary.page.properties.client import PagePropertyHttpClient
@@ -9,7 +10,7 @@ class PagePropertyHandler:
     def __init__(
         self,
         properties: dict[str, AnyPageProperty],
-        id: str,
+        id: UUID,
         http: HttpClient,
     ) -> None:
         self.properties = properties

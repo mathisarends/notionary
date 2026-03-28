@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from notionary.http import HttpClient
 from notionary.page.schemas import PageDto
 
@@ -5,7 +7,7 @@ from notionary.page.schemas import PageDto
 class PageHttpClient(HttpClient):
     def __init__(
         self,
-        page_id: str,
+        page_id: UUID,
         token: str | None = None,
     ):
         super().__init__(token=token)

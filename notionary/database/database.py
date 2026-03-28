@@ -1,4 +1,5 @@
 import logging
+from uuid import UUID
 
 from notionary.database.client import DatabaseHttpClient
 from notionary.database.schemas import (
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 class Database:
     def __init__(
         self,
-        id: str,
+        id: UUID,
         url: str,
         title: str,
         description: str | None,

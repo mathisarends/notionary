@@ -1,5 +1,6 @@
 from enum import StrEnum
 from typing import Annotated, Literal
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -21,7 +22,7 @@ class EmojiIcon(BaseModel):
 
 
 class CustomEmojiData(BaseModel):
-    id: str
+    id: UUID
     name: str | None = None
     url: str | None = None
 

@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+from uuid import UUID
 
 from notionary.http.client import HttpClient
 from notionary.page.exceptions import PageNotFound
@@ -62,7 +63,7 @@ class PageNamespace:
         suggestions = fuzzy_suggestions(title, candidates)
         raise PageNotFound(title, suggestions)
 
-    async def from_id(self, page_id: str) -> Page:
+    async def from_id(self, page_id: UUID) -> Page:
         response = await self._http.get(f"pages/{page_id}")
         dto = PageDto.model_validate(response)
         return self._page_from_dto(dto)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from typing import Any
+from uuid import UUID
 
 from notionary.database.client import DatabaseHttpClient
 from notionary.database.database import Database
@@ -74,13 +75,13 @@ class DatabaseNamespace:
         suggestions = fuzzy_suggestions(title, candidates)
         raise DatabaseNotFound(title, suggestions)
 
-    async def from_id(self, database_id: str) -> Database:
+    async def from_id(self, database_id: UUID) -> Database:
         dto = await self._client.retrieve(database_id)
         return self._database_from_dto(dto)
 
     async def create(
         self,
-        parent_page_id: str | None = None,
+        parent_page_id: UUID | None = None,
         title: str | None = None,
         description: str | None = None,
         is_inline: bool | None = None,

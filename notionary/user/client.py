@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import TypeAdapter
 
 from notionary.http.client import HttpClient
@@ -11,7 +13,7 @@ class UserClient:
     def __init__(self, http: HttpClient) -> None:
         self._http = http
 
-    async def get(self, user_id: str) -> UserResponseDto:
+    async def get(self, user_id: UUID) -> UserResponseDto:
         response = await self._http.get(f"users/{user_id}")
         return TypeAdapter(UserResponseDto).validate_python(response)
 

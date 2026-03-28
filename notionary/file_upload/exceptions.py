@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from notionary.exceptions.base import NotionaryException
 
 
@@ -33,7 +35,7 @@ class FilenameTooLongError(NotionaryException):
 
 
 class UploadFailedError(NotionaryException):
-    def __init__(self, file_upload_id: str, reason: str | None = None):
+    def __init__(self, file_upload_id: UUID, reason: str | None = None):
         message = f"Upload failed for file_upload_id: {file_upload_id}"
         if reason:
             message += f". Reason: {reason}"
@@ -43,7 +45,7 @@ class UploadFailedError(NotionaryException):
 
 
 class UploadTimeoutError(NotionaryException):
-    def __init__(self, file_upload_id: str, timeout_seconds: int):
+    def __init__(self, file_upload_id: UUID, timeout_seconds: int):
         super().__init__(
             f"Upload timeout after {timeout_seconds}s for file_upload_id: {file_upload_id}"
         )

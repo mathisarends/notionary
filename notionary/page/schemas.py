@@ -1,4 +1,5 @@
 from typing import Annotated, Literal
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -39,7 +40,7 @@ class _DefaultTemplate(BaseModel):
 
 class _TemplateById(BaseModel):
     type: Literal["template_id"] = "template_id"
-    template_id: str
+    template_id: UUID
     timezone: str | None = None
 
 

@@ -1,5 +1,6 @@
 from enum import StrEnum
 from typing import Any, Literal, TypeVar
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -11,7 +12,7 @@ from notionary.shared.properties.type import PropertyType
 
 
 class DataSourceProperty(BaseModel):
-    id: str
+    id: UUID
     name: str
     description: str | None = None
     type: PropertyType
@@ -112,14 +113,14 @@ class RollupFunction(StrEnum):
 
 
 class DataSourcePropertyOption(BaseModel):
-    id: str
+    id: UUID
     name: str
     color: PropertyColor
     description: str | None = None
 
 
 class DataSourceStatusGroup(BaseModel):
-    id: str
+    id: UUID
     name: str
     color: PropertyColor
     option_ids: list[str]
@@ -173,7 +174,7 @@ class DataSourceMultiSelectProperty(DataSourceProperty):
 
 # https://developers.notion.com/reference/property-object
 class DataSourceRelationConfig(BaseModel):
-    data_source_id: str | None = None
+    data_source_id: UUID | None = None
     type: RelationType = RelationType.SINGLE_PROPERTY
     single_property: dict[str, Any] = Field(default_factory=dict)
 
@@ -341,9 +342,9 @@ class DataSourceFormulaProperty(DataSourceProperty):
 
 class DataSourceRollupConfig(BaseModel):
     function: RollupFunction
-    relation_property_id: str
+    relation_property_id: UUID
     relation_property_name: str
-    rollup_property_id: str
+    rollup_property_id: UUID
     rollup_property_name: str
 
 

@@ -1,5 +1,6 @@
 from enum import StrEnum
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -14,18 +15,18 @@ class ParentType(StrEnum):
 
 class DataSourceParent(BaseModel):
     type: Literal[ParentType.DATA_SOURCE_ID]
-    data_source_id: str
-    database_id: str
+    data_source_id: UUID
+    database_id: UUID
 
 
 class PageParent(BaseModel):
     type: Literal[ParentType.PAGE_ID]
-    page_id: str
+    page_id: UUID
 
 
 class BlockParent(BaseModel):
     type: Literal[ParentType.BLOCK_ID]
-    block_id: str
+    block_id: UUID
 
 
 class WorkspaceParent(BaseModel):
@@ -35,7 +36,7 @@ class WorkspaceParent(BaseModel):
 
 class DatabaseParent(BaseModel):
     type: Literal[ParentType.DATABASE_ID]
-    database_id: str
+    database_id: UUID
 
 
 type Parent = (

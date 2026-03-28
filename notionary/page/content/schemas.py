@@ -1,5 +1,6 @@
 from enum import StrEnum
 from typing import Self
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -13,7 +14,7 @@ class MarkdownCommandType(StrEnum):
 
 class PageMarkdownResponse(BaseModel):
     object: str
-    id: str
+    id: UUID
     markdown: str
     truncated: bool
     unknown_block_ids: list[str]

@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from notionary.data_source.schemas import (
     DataSourceDto,
     UpdateDataSourceDto,
@@ -9,7 +11,7 @@ from notionary.rich_text import markdown_to_rich_text
 
 
 class DataSourceClient:
-    def __init__(self, http: HttpClient, data_source_id: str) -> None:
+    def __init__(self, http: HttpClient, data_source_id: UUID) -> None:
         self._http = http
         self._data_source_id = data_source_id
 

@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from notionary.http.client import HttpClient
 from notionary.page.comments.service import PageComments
 from notionary.page.content import PageContent
@@ -12,7 +14,7 @@ from notionary.shared.models.icon import Icon
 class Page:
     def __init__(
         self,
-        id: str,
+        id: UUID,
         url: str,
         title: str,
         icon: Icon | None,
@@ -86,7 +88,7 @@ class Page:
     async def comment(self, text: str) -> None:
         await self._comments.create(text)
 
-    async def reply_to(self, discussion_id: str, text: str) -> None:
+    async def reply_to(self, discussion_id: UUID, text: str) -> None:
         await self._comments.reply_to(discussion_id, text)
 
     async def rename(self, title: str) -> None:
@@ -117,7 +119,7 @@ class Page:
 
     async def apply_template(
         self,
-        template_id: str,
+        template_id: UUID,
         timezone: str | None = None,
         erase_content: bool = False,
     ) -> None:

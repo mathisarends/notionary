@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import StrEnum
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -16,12 +17,12 @@ class CommentParentType(StrEnum):
 
 class PageCommentParent(BaseModel):
     type: Literal[CommentParentType.PAGE_ID] = CommentParentType.PAGE_ID
-    page_id: str
+    page_id: UUID
 
 
 class BlockCommentParent(BaseModel):
     type: Literal[CommentParentType.BLOCK_ID] = CommentParentType.BLOCK_ID
-    block_id: str
+    block_id: UUID
 
 
 type CommentParent = PageCommentParent | BlockCommentParent
@@ -60,7 +61,7 @@ class CommentAttachmentFileUploadType(StrEnum):
 
 
 class CommentAttachmentInput(BaseModel):
-    file_upload_id: str
+    file_upload_id: UUID
     type: Literal[CommentAttachmentFileUploadType.FILE_UPLOAD] = (
         CommentAttachmentFileUploadType.FILE_UPLOAD
     )
@@ -114,14 +115,14 @@ class CommentDisplayNameDto(BaseModel):
 class CommentCreateRequest(BaseModel):
     rich_text: list[RichText]
     parent: CommentParent | None = None
-    discussion_id: str | None = None
+    discussion_id: UUID | None = None
     display_name: CommentDisplayNameInput | None = None
     attachments: list[CommentAttachmentInput] | None = None
 
     @classmethod
     def for_page(
         cls,
-        page_id: str,
+        page_id: UUID,
         rich_text: list[RichText],
         display_name: CommentDisplayNameInput | None = None,
         attachments: list[CommentAttachmentInput] | None = None,
@@ -136,7 +137,7 @@ class CommentCreateRequest(BaseModel):
     @classmethod
     def for_block(
         cls,
-        block_id: str,
+        block_id: UUID,
         rich_text: list[RichText],
         display_name: CommentDisplayNameInput | None = None,
         attachments: list[CommentAttachmentInput] | None = None,
@@ -151,7 +152,7 @@ class CommentCreateRequest(BaseModel):
     @classmethod
     def for_discussion(
         cls,
-        discussion_id: str,
+        discussion_id: UUID,
         rich_text: list[RichText],
         display_name: CommentDisplayNameInput | None = None,
         attachments: list[CommentAttachmentInput] | None = None,
@@ -170,7 +171,7 @@ class CommentCreateRequest(BaseModel):
 
 
 class CommentListRequest(BaseModel):
-    block_id: str
+    block_id: UUID
     start_cursor: str | None = None
     page_size: int | None = None
 
@@ -182,7 +183,7 @@ class CommentListRequest(BaseModel):
 
 class UserRef(BaseModel):
     object: Literal["user"] = "user"
-    id: str
+    id: UUID
 
 
 # ---------------------------
@@ -192,10 +193,10 @@ class UserRef(BaseModel):
 
 class CommentDto(BaseModel):
     object: Literal["comment"] = "comment"
-    id: str
+    id: UUID
 
     parent: CommentParent
-    discussion_id: str
+    discussion_id: UUID
 
     created_time: datetime
     last_edited_time: datetime

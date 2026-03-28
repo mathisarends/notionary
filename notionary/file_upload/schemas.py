@@ -1,5 +1,6 @@
 from enum import StrEnum
 from pathlib import Path
+from uuid import UUID
 
 from pydantic import (
     BaseModel,
@@ -46,7 +47,7 @@ class FileUploadStatus(StrEnum):
 
 
 class FileUploadResponse(BaseModel):
-    id: str
+    id: UUID
     created_time: str
     last_edited_time: str
     expiry_time: str | None = None
@@ -56,7 +57,7 @@ class FileUploadResponse(BaseModel):
     filename: str | None = None
     content_type: str | None = None
     content_length: int | None = None
-    request_id: str | None = None
+    request_id: UUID | None = None
 
 
 class FileUploadFilter(BaseModel):
@@ -106,7 +107,7 @@ class FileUploadAttachment(BaseModel):
     name: str | None = None
 
     @classmethod
-    def from_id(cls, file_upload_id: str, name: str | None = None):
+    def from_id(cls, file_upload_id: UUID, name: str | None = None):
         return cls(type="file_upload", file_upload={"id": file_upload_id}, name=name)
 
 

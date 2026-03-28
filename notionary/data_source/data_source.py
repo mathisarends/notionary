@@ -1,4 +1,5 @@
 import logging
+from uuid import UUID
 
 from notionary.data_source.client import (
     DataSourceClient,
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 class DataSource:
     def __init__(
         self,
-        id: str,
+        id: UUID,
         url: str,
         title: str,
         description: str | None,

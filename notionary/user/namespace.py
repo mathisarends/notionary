@@ -1,4 +1,5 @@
 from typing import cast
+from uuid import UUID
 
 from notionary.http import HttpClient
 from notionary.user.client import UserClient
@@ -18,7 +19,7 @@ class UsersNamespace:
         users = await self._client.list()
         return [self._to_bot(u) for u in users if u.type == UserType.BOT]
 
-    async def get(self, user_id: str) -> PersonUser | BotUser:
+    async def get(self, user_id: UUID) -> PersonUser | BotUser:
         dto = await self._client.get(user_id)
         if dto.type == UserType.PERSON:
             return self._to_person(dto)

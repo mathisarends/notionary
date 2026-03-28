@@ -1,5 +1,6 @@
 from enum import StrEnum
 from typing import Any, Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -14,22 +15,22 @@ from notionary.user.schemas import PersonUserResponseDto, UserResponseDto
 
 
 class PageProperty(BaseModel):
-    id: str
+    id: UUID
     type: str
 
 
 class StatusOption(BaseModel):
-    id: str
+    id: UUID
     name: str
 
 
 class SelectOption(BaseModel):
-    id: str | None = None
+    id: UUID | None = None
     name: str
 
 
 class RelationItem(BaseModel):
-    id: str
+    id: UUID
 
 
 class DateValue(BaseModel):

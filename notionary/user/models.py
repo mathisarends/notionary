@@ -1,9 +1,10 @@
 from dataclasses import dataclass
+from uuid import UUID
 
 
 @dataclass
 class PersonUser:
-    id: str
+    id: UUID
     name: str
     email: str
     avatar_url: str | None = None
@@ -11,7 +12,7 @@ class PersonUser:
 
 @dataclass
 class BotUser:
-    id: str
+    id: UUID
     name: str | None
     workspace_name: str | None
     workspace_file_upload_limit_in_bytes: int

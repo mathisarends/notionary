@@ -1,5 +1,6 @@
 from enum import StrEnum
 from typing import Annotated, Literal
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -30,7 +31,7 @@ class BotUserDto(BaseModel):
 
 
 class _UserBase(BaseModel):
-    id: str
+    id: UUID
     type: UserType
     name: str | None = None
     avatar_url: str | None = None
@@ -59,4 +60,4 @@ class UsersListResponseDto(BaseModel):
 
 class PartialUserDto(BaseModel):
     object: Literal["user"] = "user"
-    id: str
+    id: UUID

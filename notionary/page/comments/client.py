@@ -1,5 +1,6 @@
 import logging
 from collections.abc import AsyncGenerator
+from uuid import UUID
 
 from notionary.http.client import HttpClient
 from notionary.page.comments.schemas import CommentCreateRequest, CommentDto
@@ -14,7 +15,7 @@ class CommentClient:
 
     async def iter_comments(
         self,
-        block_id: str,
+        block_id: UUID,
         total_results_limit: int | None = None,
     ) -> AsyncGenerator[CommentDto]:
         async for item in self._http.paginate_stream(
@@ -27,7 +28,7 @@ class CommentClient:
 
     async def get_all_comments(
         self,
-        block_id: str,
+        block_id: UUID,
         *,
         total_results_limit: int | None = None,
     ) -> list[CommentDto]:
@@ -46,7 +47,7 @@ class CommentClient:
     async def create_comment_for_page(
         self,
         rich_text: list[RichText],
-        page_id: str,
+        page_id: UUID,
     ) -> CommentDto:
         body = CommentCreateRequest.for_page(
             page_id=page_id, rich_text=rich_text
@@ -56,7 +57,7 @@ class CommentClient:
     async def create_comment_for_discussion(
         self,
         rich_text: list[RichText],
-        discussion_id: str,
+        discussion_id: UUID,
     ) -> CommentDto:
         body = CommentCreateRequest.for_discussion(
             discussion_id=discussion_id, rich_text=rich_text

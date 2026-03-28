@@ -4,6 +4,7 @@ import mimetypes
 import os
 from collections.abc import AsyncGenerator, AsyncIterator, Generator
 from pathlib import Path
+from uuid import UUID
 
 import aiofiles
 
@@ -138,7 +139,7 @@ class FileUploads:
             filename, content_type, file_size, self._iter_byte_chunks(content), wait
         )
 
-    async def get(self, file_upload_id: str) -> FileUploadResponse:
+    async def get(self, file_upload_id: UUID) -> FileUploadResponse:
         return await self._client.get_file_upload(file_upload_id)
 
     async def list(
@@ -224,7 +225,7 @@ class FileUploads:
         )
         return await self._wait_for_completion(upload.id)
 
-    async def _wait_for_completion(self, file_upload_id: str) -> FileUploadResponse:
+    async def _wait_for_completion(self, file_upload_id: UUID) -> FileUploadResponse:
         try:
             return await asyncio.wait_for(
                 self._poll_until_complete(file_upload_id),
@@ -235,7 +236,7 @@ class FileUploads:
                 file_upload_id, self._config.max_upload_timeout
             ) from e
 
-    async def _poll_until_complete(self, file_upload_id: str) -> FileUploadResponse:
+    async def _poll_until_complete(self, file_upload_id: UUID) -> FileUploadResponse:
         while True:
             upload = await self._client.get_file_upload(file_upload_id)
             if upload.status == FileUploadStatus.UPLOADED:

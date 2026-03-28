@@ -1,4 +1,5 @@
 import logging
+from uuid import UUID
 
 from notionary.http import HttpClient
 from notionary.page.content.schemas import (
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class PageContent:
-    def __init__(self, page_id: str, http: HttpClient) -> None:
+    def __init__(self, page_id: UUID, http: HttpClient) -> None:
         self._page_id = page_id
         self._http = http
 

@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel, Field
 
 from notionary.rich_text.schemas import RichText
@@ -7,13 +9,13 @@ from notionary.shared.models.parent import Parent
 
 
 class DataSourceReference(BaseModel):
-    id: str
+    id: UUID
     name: str
 
 
 class DatabaseDto(BaseModel):
     object: str
-    id: str
+    id: UUID
     title: list[RichText] = Field(default_factory=list)
     description: list[RichText] = Field(default_factory=list)
     parent: Parent | None = None

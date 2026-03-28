@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
+from uuid import UUID
 
 from notionary.data_source.data_source import DataSource
 from notionary.data_source.exceptions import DataSourceNotFound
@@ -71,7 +72,7 @@ class DataSourceNamespace:
         suggestions = fuzzy_suggestions(title, candidates)
         raise DataSourceNotFound(title, suggestions)
 
-    async def from_id(self, data_source_id: str) -> DataSource:
+    async def from_id(self, data_source_id: UUID) -> DataSource:
         response = await self._http.get(f"databases/{data_source_id}")
         dto = DataSourceDto.model_validate(response)
         return self._data_source_from_dto(dto)

@@ -1,4 +1,5 @@
 from typing import Any
+from uuid import UUID
 
 from notionary.database.schemas import (
     CreateDatabaseRequest,
@@ -17,13 +18,13 @@ class DatabaseHttpClient:
     def __init__(self, http: HttpClient) -> None:
         self._http = http
 
-    async def retrieve(self, database_id: str) -> DatabaseDto:
+    async def retrieve(self, database_id: UUID) -> DatabaseDto:
         response = await self._http.get(f"{self._ENDPOINT}/{database_id}")
         return DatabaseDto.model_validate(response)
 
     async def create(
         self,
-        parent_page_id: str | None = None,
+        parent_page_id: UUID | None = None,
         title: str | None = None,
         description: str | None = None,
         is_inline: bool | None = None,
@@ -56,7 +57,7 @@ class DatabaseHttpClient:
         return DatabaseDto.model_validate(response)
 
     async def update(
-        self, database_id: str, update: UpdateDatabaseRequest
+        self, database_id: UUID, update: UpdateDatabaseRequest
     ) -> DatabaseDto:
         data = update.model_dump(exclude_none=True)
         response = await self._http.patch(f"{self._ENDPOINT}/{database_id}", data=data)
