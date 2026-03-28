@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from notionary.rich_text.schemas import RichText
 from notionary.shared.object.schemas import File
 from notionary.shared.properties.type import PropertyType
-from notionary.user.schemas import PersonUserResponseDto, UserResponseDto
+from notionary.user.schemas import PersonResponseDto, UserResponseDto
 
 # ============================================================================
 # Base Models
@@ -183,7 +183,7 @@ class PagePhoneNumberProperty(PageProperty):
 
 class PagePeopleProperty(PageProperty):
     type: Literal[PropertyType.PEOPLE] = PropertyType.PEOPLE
-    people: list[PersonUserResponseDto] = Field(default_factory=list)
+    people: list[PersonResponseDto] = Field(default_factory=list)
 
 
 class PageCreatedByProperty(PageProperty):

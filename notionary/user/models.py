@@ -3,7 +3,7 @@ from uuid import UUID
 
 
 @dataclass
-class PersonUser:
+class Person:
     id: UUID
     name: str
     email: str
@@ -11,7 +11,7 @@ class PersonUser:
 
 
 @dataclass
-class BotUser:
+class Bot:
     id: UUID
     name: str | None
     workspace_name: str | None

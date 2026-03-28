@@ -29,6 +29,13 @@ logger = logging.getLogger(__name__)
 
 
 class FileUploads:
+    """Scoped access to the Notion File Uploads API.
+
+    Handles single-part and multi-part uploads transparently based on file size.
+    All uploads are validated against Notion's supported file types before
+    any network request is made.
+    """
+
     _SUPPORTED_EXTENSIONS: frozenset[str] = frozenset(
         {
             ".aac",
@@ -99,6 +106,28 @@ class FileUploads:
         *,
         wait: bool = True,
     ) -> FileUploadResponse:
+        """Upload a file from disk.
+
+        Automatically selects single-part or multi-part upload based on file size.
+
+        Args:
+            file_path: Absolute or relative path to the file.
+            filename: Override the filename sent to Notion. Defaults to the file's name.
+            wait: If ``True``, poll until the upload reaches ``uploaded`` status
+                before returning. Set to ``False`` to return immediately after
+                sending all bytes.
+
+        Returns:
+            The completed (or in-progress) :class:`~notionary.file_upload.schemas.FileUploadResponse`.
+
+        Raises:
+            FileNotFoundError: If ``file_path`` does not exist.
+            FilenameTooLongError: If the filename exceeds the byte limit.
+            NoFileExtensionException: If the filename has no extension.
+            UnsupportedFileTypeException: If the extension is not supported by Notion.
+            UploadFailedError: If Notion reports the upload as failed.
+            UploadTimeoutError: If the upload does not complete within the configured timeout.
+        """
         file_path = Path(file_path).resolve()
 
         if not file_path.exists():
@@ -127,6 +156,25 @@ class FileUploads:
         *,
         wait: bool = True,
     ) -> FileUploadResponse:
+        """Upload a file from an in-memory byte string.
+
+        Args:
+            content: Raw file bytes.
+            filename: Filename including extension, used for validation and
+                MIME type detection.
+            content_type: Explicit MIME type. Inferred from ``filename`` if omitted.
+            wait: See :meth:`upload`.
+
+        Returns:
+            The completed (or in-progress) :class:`~notionary.file_upload.schemas.FileUploadResponse`.
+
+        Raises:
+            FilenameTooLongError: If the filename exceeds the byte limit.
+            NoFileExtensionException: If the filename has no extension.
+            UnsupportedFileTypeException: If the extension is not supported by Notion.
+            UploadFailedError: If Notion reports the upload as failed.
+            UploadTimeoutError: If the upload does not complete within the configured timeout.
+        """
         self._validate_filename(filename)
 
         content_type = content_type or self._guess_content_type(filename)
@@ -140,6 +188,14 @@ class FileUploads:
         )
 
     async def get(self, file_upload_id: UUID) -> FileUploadResponse:
+        """Fetch the current state of a file upload by ID.
+
+        Args:
+            file_upload_id: UUID of the file upload object.
+
+        Returns:
+            The :class:`~notionary.file_upload.schemas.FileUploadResponse` for the given ID.
+        """
         return await self._client.get_file_upload(file_upload_id)
 
     async def list(
@@ -150,6 +206,17 @@ class FileUploads:
         page_size_limit: int | None = None,
         total_results_limit: int | None = None,
     ) -> list[FileUploadResponse]:
+        """Return all file uploads, eagerly collected into a list.
+
+        Args:
+            status: Filter by upload status (e.g. ``uploaded``, ``failed``).
+            in_trash: ``True`` to include only trashed uploads, ``False`` to exclude them.
+            page_size_limit: Items per API page request.
+            total_results_limit: Cap the total number of returned results.
+
+        Returns:
+            List of matching :class:`~notionary.file_upload.schemas.FileUploadResponse` objects.
+        """
         query = FileUploadQuery(
             status=status,
             in_trash=in_trash,
@@ -166,6 +233,14 @@ class FileUploads:
         page_size_limit: int | None = None,
         total_results_limit: int | None = None,
     ) -> AsyncIterator[FileUploadResponse]:
+        """Stream file uploads one by one without loading all pages into memory.
+
+        Accepts the same filter arguments as :meth:`list`.
+
+        Yields:
+            :class:`~notionary.file_upload.schemas.FileUploadResponse` objects
+            in API-returned order.
+        """
         query = FileUploadQuery(
             status=status,
             in_trash=in_trash,

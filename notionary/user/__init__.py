@@ -1,5 +1,5 @@
 from .client import UserClient
-from .models import BotUser, PersonUser
+from .models import Bot, Person
 from .namespace import UsersNamespace
 
-__all__ = ["BotUser", "PersonUser", "UserClient", "UsersNamespace"]
+__all__ = ["Bot", "Person", "UserClient", "UsersNamespace"]

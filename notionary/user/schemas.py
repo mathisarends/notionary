@@ -24,7 +24,7 @@ class WorkspaceLimits(BaseModel):
     max_file_upload_size_in_bytes: int
 
 
-class BotUserDto(BaseModel):
+class BotDto(BaseModel):
     owner: BotOwnerDto | None = None
     workspace_name: str | None = None
     workspace_limits: WorkspaceLimits | None = None
@@ -37,18 +37,18 @@ class _UserBase(BaseModel):
     avatar_url: str | None = None
 
 
-class PersonUserResponseDto(_UserBase):
+class PersonResponseDto(_UserBase):
     type: Literal[UserType.PERSON] = UserType.PERSON
     email: str | None = None
 
 
-class BotUserResponseDto(_UserBase):
+class BotResponseDto(_UserBase):
     type: Literal[UserType.BOT] = UserType.BOT
-    bot: BotUserDto
+    bot: BotDto
 
 
 UserResponseDto = Annotated[
-    PersonUserResponseDto | BotUserResponseDto, Field(discriminator="type")
+    PersonResponseDto | BotResponseDto, Field(discriminator="type")
 ]
 
 

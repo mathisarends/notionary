@@ -4,7 +4,7 @@ from pydantic import TypeAdapter
 
 from notionary.http.client import HttpClient
 from notionary.user.schemas import (
-    BotUserResponseDto,
+    BotResponseDto,
     UserResponseDto,
 )
 
@@ -22,6 +22,6 @@ class UserClient:
         adapter = TypeAdapter(UserResponseDto)
         return [adapter.validate_python(item) for item in raw]
 
-    async def me(self) -> BotUserResponseDto:
+    async def me(self) -> BotResponseDto:
         response = await self._http.get("users/me")
-        return BotUserResponseDto.model_validate(response)
+        return BotResponseDto.model_validate(response)
