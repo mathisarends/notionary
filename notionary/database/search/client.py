@@ -31,6 +31,6 @@ class DatabaseSearchClient:
         async for item in self._http.paginate_stream(
             endpoint="search",
             total_results_limit=config.total_results_limit,
-            **config.model_dump(),
+            **config.model_dump(mode="json"),
         ):
             yield DatabaseDto.model_validate(item)

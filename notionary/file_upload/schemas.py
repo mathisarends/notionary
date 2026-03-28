@@ -89,6 +89,7 @@ class FileUploadCreateRequest(BaseModel):
         return self
 
     def model_dump(self, **kwargs):
+        kwargs.setdefault("mode", "json")
         data = super().model_dump(**kwargs)
         return {k: v for k, v in data.items() if v is not None}
 

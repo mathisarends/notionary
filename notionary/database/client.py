@@ -48,17 +48,17 @@ class DatabaseHttpClient:
         if initial_properties:
             request.initial_data_source = {"properties": initial_properties}
         if icon_emoji:
-            request.icon = EmojiIcon(emoji=icon_emoji).model_dump()
+            request.icon = EmojiIcon(emoji=icon_emoji).model_dump(mode="json")
         if cover_url:
-            request.cover = ExternalFile.from_url(cover_url).model_dump()
+            request.cover = ExternalFile.from_url(cover_url).model_dump(mode="json")
 
-        data = request.model_dump(exclude_none=True)
-        response = await self._http.post(self._ENDPOINT, data=data)
+        response = await self._http.post(self._ENDPOINT, data=request)
         return DatabaseDto.model_validate(response)
 
     async def update(
         self, database_id: UUID, update: UpdateDatabaseRequest
     ) -> DatabaseDto:
-        data = update.model_dump(exclude_none=True)
-        response = await self._http.patch(f"{self._ENDPOINT}/{database_id}", data=data)
+        response = await self._http.patch(
+            f"{self._ENDPOINT}/{database_id}", data=update
+        )
         return DatabaseDto.model_validate(response)

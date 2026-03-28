@@ -3,6 +3,7 @@ from collections.abc import AsyncGenerator
 from typing import Any
 
 import httpx
+from pydantic import BaseModel
 
 from notionary.http.schemas import PaginatedResponse
 
@@ -32,9 +33,15 @@ class HttpClient:
         return await self._request("GET", endpoint, params=params)
 
     async def post(
-        self, endpoint: str, data: dict[str, Any] | None = None
+        self,
+        endpoint: str,
+        data: BaseModel | dict[str, Any] | None = None,
+        *,
+        exclude_unset: bool = False,
     ) -> dict[str, Any]:
-        return await self._request("POST", endpoint, json=data)
+        return await self._request(
+            "POST", endpoint, json=self._serialize(data, exclude_unset)
+        )
 
     async def post_multipart(
         self, endpoint: str, files: dict[str, Any], data: dict[str, Any] | None = None
@@ -46,12 +53,30 @@ class HttpClient:
         return response.json()
 
     async def patch(
-        self, endpoint: str, data: dict[str, Any] | None = None
+        self,
+        endpoint: str,
+        data: BaseModel | dict[str, Any] | None = None,
+        *,
+        exclude_unset: bool = False,
     ) -> dict[str, Any]:
-        return await self._request("PATCH", endpoint, json=data)
+        return await self._request(
+            "PATCH", endpoint, json=self._serialize(data, exclude_unset)
+        )
 
     async def delete(self, endpoint: str) -> dict[str, Any]:
         return await self._request("DELETE", endpoint)
+
+    @staticmethod
+    def _serialize(
+        data: BaseModel | dict[str, Any] | None, exclude_unset: bool
+    ) -> dict[str, Any] | None:
+        if data is None:
+            return None
+        if isinstance(data, BaseModel):
+            return data.model_dump(
+                exclude_none=True, exclude_unset=exclude_unset, mode="json"
+            )
+        return data
 
     async def _request(self, method: str, endpoint: str, **kwargs) -> dict[str, Any]:
         url = f"{self._BASE_URL}/{endpoint.lstrip('/')}"

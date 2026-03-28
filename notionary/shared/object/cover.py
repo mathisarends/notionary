@@ -66,8 +66,7 @@ class Cover:
         self.url = None
 
     async def _patch(self, dto: NotionObjectUpdateDto) -> NotionObjectResponseDto:
-        data = dto.model_dump(exclude_unset=True, exclude_none=True)
-        response = await self._http.patch(self._path, data=data)
+        response = await self._http.patch(self._path, data=dto, exclude_unset=True)
         return NotionObjectResponseDto.model_validate(response)
 
     @staticmethod

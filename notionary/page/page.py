@@ -234,5 +234,4 @@ class Page:
         )
 
     async def _patch(self, request: PageUpdateRequest) -> None:
-        data = request.model_dump(exclude_none=True)
-        await self._http.patch(self._path, data=data)
+        await self._http.patch(self._path, data=request)

@@ -49,10 +49,10 @@ class CommentClient:
         rich_text: list[RichText],
         page_id: UUID,
     ) -> CommentDto:
-        body = CommentCreateRequest.for_page(
-            page_id=page_id, rich_text=rich_text
-        ).model_dump(exclude_unset=True, exclude_none=True)
-        return CommentDto.model_validate(await self._http.post("comments", data=body))
+        body = CommentCreateRequest.for_page(page_id=page_id, rich_text=rich_text)
+        return CommentDto.model_validate(
+            await self._http.post("comments", data=body, exclude_unset=True)
+        )
 
     async def create_comment_for_discussion(
         self,
@@ -61,5 +61,7 @@ class CommentClient:
     ) -> CommentDto:
         body = CommentCreateRequest.for_discussion(
             discussion_id=discussion_id, rich_text=rich_text
-        ).model_dump(exclude_unset=True, exclude_none=True)
-        return CommentDto.model_validate(await self._http.post("comments", data=body))
+        )
+        return CommentDto.model_validate(
+            await self._http.post("comments", data=body, exclude_unset=True)
+        )

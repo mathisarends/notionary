@@ -47,7 +47,7 @@ class FileUploadHttpClient:
     async def complete_upload(self, file_upload_id: UUID) -> FileUploadResponse:
         response = await self._http.post(
             f"file_uploads/{file_upload_id}/complete",
-            data=FileUploadCompleteRequest().model_dump(),
+            data=FileUploadCompleteRequest(),
         )
         return FileUploadResponse.model_validate(response)
 
@@ -63,7 +63,7 @@ class FileUploadHttpClient:
             "file_uploads",
             total_results_limit=q.total_results_limit,
             method="GET",
-            **q.model_dump(exclude_none=True),
+            **q.model_dump(exclude_none=True, mode="json"),
         )
         return [FileUploadResponse.model_validate(r) for r in raw]
 
@@ -75,7 +75,7 @@ class FileUploadHttpClient:
             "file_uploads",
             total_results_limit=q.total_results_limit,
             method="GET",
-            **q.model_dump(exclude_none=True),
+            **q.model_dump(exclude_none=True, mode="json"),
         ):
             yield FileUploadResponse.model_validate(item)
 
@@ -92,7 +92,5 @@ class FileUploadHttpClient:
             mode=mode,
             number_of_parts=number_of_parts,
         )
-        response = await self._http.post(
-            "file_uploads", data=request.model_dump(exclude_none=True)
-        )
+        response = await self._http.post("file_uploads", data=request)
         return FileUploadResponse.model_validate(response)

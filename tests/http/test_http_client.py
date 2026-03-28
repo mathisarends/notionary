@@ -1,8 +1,10 @@
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
+from uuid import UUID
 
 import httpx
 import pytest
+from pydantic import BaseModel
 
 from notionary.http.client import HttpClient
 
@@ -58,6 +60,45 @@ class TestHttpMethods:
         assert result == {"created": True}
         _, call_kwargs = mock_request.call_args
         assert call_kwargs["json"] == {"title": "hello"}
+
+    @pytest.mark.asyncio
+    async def test_post_serializes_base_model(self, client: HttpClient) -> None:
+        class _Item(BaseModel):
+            name: str
+            tag: str | None = None
+            id: UUID
+
+        model = _Item(
+            name="test", tag=None, id=UUID("12345678-1234-1234-1234-123456789abc")
+        )
+        with patch.object(
+            client._client, "request", new_callable=AsyncMock
+        ) as mock_request:
+            mock_request.return_value = _mock_response(200, {"ok": True})
+            await client.post("/items", data=model)
+        _, call_kwargs = mock_request.call_args
+        sent = call_kwargs["json"]
+        assert sent == {"name": "test", "id": "12345678-1234-1234-1234-123456789abc"}
+        assert "tag" not in sent
+
+    @pytest.mark.asyncio
+    async def test_patch_serializes_base_model_with_exclude_unset(
+        self, client: HttpClient
+    ) -> None:
+        class _Update(BaseModel):
+            name: str | None = None
+            count: int = 0
+
+        model = _Update(name="updated")
+        with patch.object(
+            client._client, "request", new_callable=AsyncMock
+        ) as mock_request:
+            mock_request.return_value = _mock_response(200, {"ok": True})
+            await client.patch("/items/1", data=model, exclude_unset=True)
+        _, call_kwargs = mock_request.call_args
+        sent = call_kwargs["json"]
+        assert sent == {"name": "updated"}
+        assert "count" not in sent
 
     @pytest.mark.asyncio
     async def test_patch_sends_json_body(self, client: HttpClient) -> None:

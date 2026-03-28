@@ -75,7 +75,7 @@ class TestCreateSinglePartUpload:
         await client.create_single_part_upload("test.pdf")
 
         data = mock_http.post.call_args.kwargs["data"]
-        assert data["mode"] == UploadMode.SINGLE_PART
+        assert data.mode == UploadMode.SINGLE_PART
 
     @pytest.mark.asyncio
     async def test_excludes_number_of_parts_from_payload(
@@ -84,7 +84,7 @@ class TestCreateSinglePartUpload:
         await client.create_single_part_upload("test.pdf")
 
         data = mock_http.post.call_args.kwargs["data"]
-        assert "number_of_parts" not in data
+        assert data.number_of_parts is None
 
     @pytest.mark.asyncio
     async def test_without_content_type_omits_field(
@@ -93,7 +93,7 @@ class TestCreateSinglePartUpload:
         await client.create_single_part_upload("test.pdf")
 
         data = mock_http.post.call_args.kwargs["data"]
-        assert "content_type" not in data
+        assert data.content_type is None
 
 
 class TestCreateMultiPartUpload:
@@ -113,7 +113,7 @@ class TestCreateMultiPartUpload:
         await client.create_multi_part_upload("big.pdf", 3)
 
         data = mock_http.post.call_args.kwargs["data"]
-        assert data["mode"] == UploadMode.MULTI_PART
+        assert data.mode == UploadMode.MULTI_PART
 
     @pytest.mark.asyncio
     async def test_includes_number_of_parts_in_payload(
@@ -122,7 +122,7 @@ class TestCreateMultiPartUpload:
         await client.create_multi_part_upload("big.pdf", 3)
 
         data = mock_http.post.call_args.kwargs["data"]
-        assert data["number_of_parts"] == 3
+        assert data.number_of_parts == 3
 
 
 class TestSendFileContent:

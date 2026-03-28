@@ -27,6 +27,6 @@ class PageSearchClient:
         async for item in self._http.paginate_stream(
             endpoint="search",
             total_results_limit=config.total_results_limit,
-            **config.model_dump(),
+            **config.model_dump(mode="json"),
         ):
             yield PageDto.model_validate(item)

@@ -11,7 +11,7 @@ load_dotenv(override=True)
 
 async def main() -> None:
     async with Notionary() as notion:
-        page = await notion.pages.from_title("Meeting Notes")
+        page = await notion.pages.from_title("Old Draft")
 
         await page.append("## Action Items\n\n- Follow up with design team")
 

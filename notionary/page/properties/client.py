@@ -40,8 +40,9 @@ class PagePropertyHttpClient:
         self._properties = properties
 
     async def patch_page(self, data: BaseModel) -> PageDto:
-        data_dict = data.model_dump(exclude_unset=True, exclude_none=True)
-        result_dict = await self._http.patch(f"pages/{self._page_id}", data=data_dict)
+        result_dict = await self._http.patch(
+            f"pages/{self._page_id}", data=data, exclude_unset=True
+        )
         return PageDto.model_validate(result_dict)
 
     async def set_property(self, name: str, value: Any) -> PageDto:

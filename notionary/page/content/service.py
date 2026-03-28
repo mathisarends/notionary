@@ -33,9 +33,7 @@ class PageContent:
             logger.debug("No markdown content to append for page: %s", self._page_id)
             return
         request = InsertContentRequest.from_markdown(content)
-        await self._http.patch(
-            f"pages/{self._page_id}/markdown", data=request.model_dump()
-        )
+        await self._http.patch(f"pages/{self._page_id}/markdown", data=request)
 
     async def replace(self, content: str) -> None:
         """Replace the entire page body with new markdown content.
@@ -44,9 +42,7 @@ class PageContent:
             content: Markdown string that replaces existing content.
         """
         request = ReplaceContentRequest.from_markdown(content)
-        await self._http.patch(
-            f"pages/{self._page_id}/markdown", data=request.model_dump()
-        )
+        await self._http.patch(f"pages/{self._page_id}/markdown", data=request)
 
     async def clear(self) -> None:
         """Remove all content from the page."""
