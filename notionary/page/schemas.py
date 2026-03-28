@@ -4,10 +4,10 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from notionary.page.properties.schemas import AnyPageProperty
-from notionary.shared.entity.schemas import EntityResponseDto
+from notionary.shared.object.dtos import NotionObjectResponseDto
 
 
-class PageDto(EntityResponseDto):
+class PageDto(NotionObjectResponseDto):
     properties: dict[str, AnyPageProperty]
 
 

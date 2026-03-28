@@ -5,7 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from notionary.rich_text.schemas import RichText
-from notionary.shared.models.file import File
+from notionary.shared.object.schemas import File
 from notionary.shared.properties.type import PropertyType
 from notionary.user.schemas import PersonUserResponseDto, UserResponseDto
 

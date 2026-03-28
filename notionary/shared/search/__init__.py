@@ -1,4 +1,5 @@
 from .client import SearchClient
+from .fuzzy import fuzzy_suggestions
 from .schemas import SearchQueryConfig, SortDirection, SortTimestamp
 
 __all__ = [
@@ -6,4 +7,5 @@ __all__ = [
     "SearchQueryConfig",
     "SortDirection",
     "SortTimestamp",
+    "fuzzy_suggestions",
 ]

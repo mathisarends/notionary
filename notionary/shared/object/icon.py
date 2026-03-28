@@ -3,20 +3,20 @@ from typing import cast
 
 from notionary.file_upload import Files
 from notionary.http.client import HttpClient
-from notionary.shared.entity.schemas import EntityResponseDto, NotionEntityUpdateDto
-from notionary.shared.models.file import (
+from notionary.shared.object.dtos import NotionObjectResponseDto, NotionObjectUpdateDto
+from notionary.shared.object.icon.schemas import AnyIcon, EmojiIcon, IconType
+from notionary.shared.object.schemas import (
     ExternalFile,
     FileUploadedFileData,
     FileUploadFile,
     NotionHostedFile,
 )
-from notionary.shared.models.icon import EmojiIcon, Icon, IconType
 
 
-class EntityIcon:
+class Icon:
     def __init__(
         self,
-        icon: Icon | None,
+        icon: AnyIcon | None,
         http_client: HttpClient,
         path: str,
         file_uploads: Files,
@@ -28,13 +28,13 @@ class EntityIcon:
         self.external_url: str | None = self._extract_external_url(icon)
 
     async def set_emoji(self, emoji: str) -> None:
-        response = await self._patch(NotionEntityUpdateDto(icon=EmojiIcon(emoji=emoji)))
+        response = await self._patch(NotionObjectUpdateDto(icon=EmojiIcon(emoji=emoji)))
         self.emoji = self._extract_emoji(response.icon)
         self.external_url = None
 
     async def set_from_url(self, url: str) -> None:
         response = await self._patch(
-            NotionEntityUpdateDto(icon=ExternalFile.from_url(url))
+            NotionObjectUpdateDto(icon=ExternalFile.from_url(url))
         )
         self.emoji = None
         self.external_url = self._extract_external_url(response.icon)
@@ -42,7 +42,7 @@ class EntityIcon:
     async def set_from_file(self, file_path: Path | str) -> None:
         upload = await self._file_uploads.upload(Path(file_path), wait=True)
         icon = FileUploadFile(file_upload=FileUploadedFileData(id=upload.id))
-        await self._patch(NotionEntityUpdateDto(icon=icon))
+        await self._patch(NotionObjectUpdateDto(icon=icon))
         self.emoji = None
         self.external_url = None
 
@@ -51,28 +51,28 @@ class EntityIcon:
             content, filename, wait=True
         )
         icon = FileUploadFile(file_upload=FileUploadedFileData(id=upload.id))
-        await self._patch(NotionEntityUpdateDto(icon=icon))
+        await self._patch(NotionObjectUpdateDto(icon=icon))
         self.emoji = None
         self.external_url = None
 
     async def remove(self) -> None:
-        await self._patch(NotionEntityUpdateDto(icon=None))
+        await self._patch(NotionObjectUpdateDto(icon=None))
         self.emoji = None
         self.external_url = None
 
-    async def _patch(self, dto: NotionEntityUpdateDto) -> EntityResponseDto:
+    async def _patch(self, dto: NotionObjectUpdateDto) -> NotionObjectResponseDto:
         data = dto.model_dump(exclude_unset=True, exclude_none=True)
         response = await self._http.patch(self._path, data=data)
-        return EntityResponseDto.model_validate(response)
+        return NotionObjectResponseDto.model_validate(response)
 
     @staticmethod
-    def _extract_emoji(icon: Icon | None) -> str | None:
+    def _extract_emoji(icon: AnyIcon | None) -> str | None:
         if icon is None or icon.type is not IconType.EMOJI:
             return None
         return cast(EmojiIcon, icon).emoji
 
     @staticmethod
-    def _extract_external_url(icon: Icon | None) -> str | None:
+    def _extract_external_url(icon: AnyIcon | None) -> str | None:
         if icon is None:
             return None
         if icon.type == IconType.EXTERNAL:

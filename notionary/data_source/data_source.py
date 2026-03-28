@@ -12,11 +12,9 @@ from notionary.file_upload import Files
 from notionary.http.client import HttpClient
 from notionary.page import Page
 from notionary.rich_text import rich_text_to_markdown
-from notionary.shared.entity.cover import EntityCover
-from notionary.shared.entity.icon import EntityIcon
-from notionary.shared.entity.trash import EntityTrash
-from notionary.shared.models.file import File
-from notionary.shared.models.icon import Icon
+from notionary.shared.object import Cover, Icon, Trash
+from notionary.shared.object.icon.schemas import AnyIcon
+from notionary.shared.object.schemas import File
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +26,7 @@ class DataSource:
         url: str,
         title: str,
         description: str | None,
-        icon: Icon | None,
+        icon: AnyIcon | None,
         cover: File | None,
         in_trash: bool,
         properties: dict[str, AnyDataSourceProperty],
@@ -41,13 +39,13 @@ class DataSource:
 
         path = f"data_sources/{id}"
         file_uploads = Files(http)
-        self._icon = EntityIcon(
+        self._icon = Icon(
             icon=icon, http_client=http, path=path, file_uploads=file_uploads
         )
-        self._cover = EntityCover(
+        self._cover = Cover(
             cover=cover, http_client=http, path=path, file_uploads=file_uploads
         )
-        self._trash = EntityTrash(in_trash=in_trash, http_client=http, path=path)
+        self._trash = Trash(in_trash=in_trash, http_client=http, path=path)
 
         self.properties = properties or {}
         self._client = DataSourceClient(http=http, data_source_id=id)

@@ -1,12 +1,12 @@
 import logging
 
 from notionary.http.client import HttpClient
-from notionary.shared.entity.schemas import EntityResponseDto, NotionEntityUpdateDto
+from notionary.shared.object.dtos import NotionObjectResponseDto, NotionObjectUpdateDto
 
 logger = logging.getLogger(__name__)
 
 
-class EntityTrash:
+class Trash:
     def __init__(
         self,
         in_trash: bool,
@@ -21,17 +21,17 @@ class EntityTrash:
         if self.in_trash:
             logger.warning("Entity is already in trash.")
             return
-        response = await self._patch(NotionEntityUpdateDto(in_trash=True))
+        response = await self._patch(NotionObjectUpdateDto(in_trash=True))
         self.in_trash = response.in_trash
 
     async def restore(self) -> None:
         if not self.in_trash:
             logger.warning("Entity is not in trash.")
             return
-        response = await self._patch(NotionEntityUpdateDto(in_trash=False))
+        response = await self._patch(NotionObjectUpdateDto(in_trash=False))
         self.in_trash = response.in_trash
 
-    async def _patch(self, dto: NotionEntityUpdateDto) -> EntityResponseDto:
+    async def _patch(self, dto: NotionObjectUpdateDto) -> NotionObjectResponseDto:
         data = dto.model_dump(exclude_unset=True, exclude_none=True)
         response = await self._http.patch(self._path, data=data)
-        return EntityResponseDto.model_validate(response)
+        return NotionObjectResponseDto.model_validate(response)

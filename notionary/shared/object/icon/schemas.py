@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from notionary.shared.models.file import File
+from notionary.shared.object.schemas import File
 
 
 class IconType(StrEnum):
@@ -55,7 +55,7 @@ class BuiltinIcon(BaseModel):
     icon: BuiltinIconData
 
 
-type Icon = Annotated[
+type AnyIcon = Annotated[
     EmojiIcon | CustomEmojiIcon | BuiltinIcon | File,
     Field(discriminator="type"),
 ]

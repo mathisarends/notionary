@@ -10,11 +10,9 @@ from notionary.database.schemas import (
 from notionary.file_upload import Files
 from notionary.http.client import HttpClient
 from notionary.rich_text import markdown_to_rich_text, rich_text_to_markdown
-from notionary.shared.entity.cover import EntityCover
-from notionary.shared.entity.icon import EntityIcon
-from notionary.shared.entity.trash import EntityTrash
-from notionary.shared.models.file import File
-from notionary.shared.models.icon import Icon
+from notionary.shared.object import Cover, Icon, Trash
+from notionary.shared.object.icon.schemas import AnyIcon
+from notionary.shared.object.schemas import File
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +27,7 @@ class Database:
         is_inline: bool,
         is_locked: bool,
         data_sources: list[DataSourceReference],
-        icon: Icon | None,
+        icon: AnyIcon | None,
         cover: File | None,
         in_trash: bool,
         http: HttpClient,
@@ -44,13 +42,13 @@ class Database:
 
         path = f"databases/{id}"
         file_uploads = Files(http)
-        self._icon = EntityIcon(
+        self._icon = Icon(
             icon=icon, http_client=http, path=path, file_uploads=file_uploads
         )
-        self._cover = EntityCover(
+        self._cover = Cover(
             cover=cover, http_client=http, path=path, file_uploads=file_uploads
         )
-        self._trash = EntityTrash(in_trash=in_trash, http_client=http, path=path)
+        self._trash = Trash(in_trash=in_trash, http_client=http, path=path)
 
         self._client = DatabaseHttpClient(http)
 

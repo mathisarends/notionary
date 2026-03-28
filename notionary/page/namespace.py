@@ -9,7 +9,7 @@ from notionary.page.schemas import PageDto
 from notionary.page.search import PageSearchClient
 from notionary.page.search.schemas import SortDirection, SortTimestamp
 from notionary.rich_text import rich_text_to_markdown
-from notionary.shared.fuzzy import fuzzy_suggestions
+from notionary.shared.search import fuzzy_suggestions
 
 
 class PageNamespace:

@@ -8,8 +8,8 @@ from notionary.database.schemas import (
 )
 from notionary.http.client import HttpClient
 from notionary.rich_text import markdown_to_rich_text
-from notionary.shared.models.file import ExternalFile
-from notionary.shared.models.icon import EmojiIcon
+from notionary.shared.object.icon.schemas import EmojiIcon
+from notionary.shared.object.schemas import ExternalFile
 
 
 class DatabaseHttpClient:

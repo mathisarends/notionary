@@ -11,9 +11,9 @@ from notionary.data_source.search import (
     SortDirection,
     SortTimestamp,
 )
-from notionary.http.client import HttpClient
+from notionary.http import HttpClient
 from notionary.rich_text import rich_text_to_markdown
-from notionary.shared.fuzzy import fuzzy_suggestions
+from notionary.shared.search import fuzzy_suggestions
 
 
 class DataSourceNamespace:

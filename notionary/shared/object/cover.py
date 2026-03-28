@@ -4,8 +4,8 @@ from pathlib import Path
 
 from notionary.file_upload import Files
 from notionary.http.client import HttpClient
-from notionary.shared.entity.schemas import EntityResponseDto, NotionEntityUpdateDto
-from notionary.shared.models.file import (
+from notionary.shared.object.dtos import NotionObjectResponseDto, NotionObjectUpdateDto
+from notionary.shared.object.schemas import (
     ExternalFile,
     File,
     FileUploadedFileData,
@@ -13,7 +13,7 @@ from notionary.shared.models.file import (
 )
 
 
-class EntityCover:
+class Cover:
     _GRADIENT_COVERS: Sequence[str] = [
         f"https://www.notion.so/images/page-cover/gradients_{i}.png"
         for i in range(1, 10)
@@ -37,7 +37,7 @@ class EntityCover:
     ) -> None:
         upload = await self._file_uploads.upload(Path(file_path), wait=True)
         cover = FileUploadFile(file_upload=FileUploadedFileData(id=upload.id))
-        await self._patch(NotionEntityUpdateDto(cover=cover))
+        await self._patch(NotionObjectUpdateDto(cover=cover))
         self.url = None
 
     async def set_from_bytes(
@@ -49,12 +49,12 @@ class EntityCover:
             content, filename, wait=True
         )
         cover = FileUploadFile(file_upload=FileUploadedFileData(id=upload.id))
-        await self._patch(NotionEntityUpdateDto(cover=cover))
+        await self._patch(NotionObjectUpdateDto(cover=cover))
         self.url = None
 
     async def set_from_url(self, image_url: str) -> None:
         response = await self._patch(
-            NotionEntityUpdateDto(cover=ExternalFile.from_url(image_url))
+            NotionObjectUpdateDto(cover=ExternalFile.from_url(image_url))
         )
         self.url = self._extract_url(response.cover)
 
@@ -62,13 +62,13 @@ class EntityCover:
         await self.set_from_url(random.choice(self._GRADIENT_COVERS))
 
     async def remove(self) -> None:
-        await self._patch(NotionEntityUpdateDto(cover=None))
+        await self._patch(NotionObjectUpdateDto(cover=None))
         self.url = None
 
-    async def _patch(self, dto: NotionEntityUpdateDto) -> EntityResponseDto:
+    async def _patch(self, dto: NotionObjectUpdateDto) -> NotionObjectResponseDto:
         data = dto.model_dump(exclude_unset=True, exclude_none=True)
         response = await self._http.patch(self._path, data=data)
-        return EntityResponseDto.model_validate(response)
+        return NotionObjectResponseDto.model_validate(response)
 
     @staticmethod
     def _extract_url(cover: File | None) -> str | None:

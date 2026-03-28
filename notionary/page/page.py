@@ -8,9 +8,8 @@ from notionary.page.content import PageContent
 from notionary.page.properties import PageProperties
 from notionary.page.properties.schemas import AnyPageProperty
 from notionary.page.schemas import PageUpdateRequest, _DefaultTemplate, _TemplateById
-from notionary.shared.entity import EntityCover, EntityIcon, EntityTrash
-from notionary.shared.models.file import File
-from notionary.shared.models.icon import Icon
+from notionary.shared.object import Cover, Icon, Trash
+from notionary.shared.object.schemas import File
 
 
 class Page:
@@ -33,13 +32,13 @@ class Page:
         self._http = http
         self._path = path
         file_uploads = Files(http)
-        self._icon = EntityIcon(
+        self._icon = Icon(
             icon=icon, http_client=http, path=path, file_uploads=file_uploads
         )
-        self._cover = EntityCover(
+        self._cover = Cover(
             cover=cover, http_client=http, path=path, file_uploads=file_uploads
         )
-        self._trash = EntityTrash(in_trash=in_trash, http_client=http, path=path)
+        self._trash = Trash(in_trash=in_trash, http_client=http, path=path)
 
         self.properties = PageProperties(id=id, properties=properties, http=http)
 
