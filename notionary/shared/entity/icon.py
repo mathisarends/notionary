@@ -1,8 +1,15 @@
+from pathlib import Path
 from typing import cast
 
+from notionary.file_upload import Files
 from notionary.http.client import HttpClient
 from notionary.shared.entity.schemas import EntityResponseDto, NotionEntityUpdateDto
-from notionary.shared.models.file import ExternalFile, NotionHostedFile
+from notionary.shared.models.file import (
+    ExternalFile,
+    FileUploadedFileData,
+    FileUploadFile,
+    NotionHostedFile,
+)
 from notionary.shared.models.icon import EmojiIcon, Icon, IconType
 
 
@@ -12,9 +19,11 @@ class EntityIcon:
         icon: Icon | None,
         http_client: HttpClient,
         path: str,
+        file_uploads: Files,
     ) -> None:
         self._http = http_client
         self._path = path
+        self._file_uploads = file_uploads
         self.emoji: str | None = self._extract_emoji(icon)
         self.external_url: str | None = self._extract_external_url(icon)
 
@@ -29,6 +38,22 @@ class EntityIcon:
         )
         self.emoji = None
         self.external_url = self._extract_external_url(response.icon)
+
+    async def set_from_file(self, file_path: Path | str) -> None:
+        upload = await self._file_uploads.upload(Path(file_path), wait=True)
+        icon = FileUploadFile(file_upload=FileUploadedFileData(id=upload.id))
+        await self._patch(NotionEntityUpdateDto(icon=icon))
+        self.emoji = None
+        self.external_url = None
+
+    async def set_from_bytes(self, content: bytes, filename: str) -> None:
+        upload = await self._file_uploads.upload_from_bytes(
+            content, filename, wait=True
+        )
+        icon = FileUploadFile(file_upload=FileUploadedFileData(id=upload.id))
+        await self._patch(NotionEntityUpdateDto(icon=icon))
+        self.emoji = None
+        self.external_url = None
 
     async def remove(self) -> None:
         await self._patch(NotionEntityUpdateDto(icon=None))

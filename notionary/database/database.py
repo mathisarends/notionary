@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from uuid import UUID
 
 from notionary.database.client import DatabaseHttpClient
@@ -6,6 +7,7 @@ from notionary.database.schemas import (
     DataSourceReference,
     UpdateDatabaseRequest,
 )
+from notionary.file_upload import Files
 from notionary.http.client import HttpClient
 from notionary.rich_text import markdown_to_rich_text, rich_text_to_markdown
 from notionary.shared.entity.cover import EntityCover
@@ -41,8 +43,13 @@ class Database:
         self.data_sources = data_sources
 
         path = f"databases/{id}"
-        self._icon = EntityIcon(icon=icon, http_client=http, path=path)
-        self._cover = EntityCover(cover=cover, http_client=http, path=path)
+        file_uploads = Files(http)
+        self._icon = EntityIcon(
+            icon=icon, http_client=http, path=path, file_uploads=file_uploads
+        )
+        self._cover = EntityCover(
+            cover=cover, http_client=http, path=path, file_uploads=file_uploads
+        )
         self._trash = EntityTrash(in_trash=in_trash, http_client=http, path=path)
 
         self._client = DatabaseHttpClient(http)
@@ -63,6 +70,12 @@ class Database:
     async def set_icon_url(self, url: str) -> None:
         await self._icon.set_from_url(url)
 
+    async def set_icon_from_file(self, file_path: Path | str) -> None:
+        await self._icon.set_from_file(file_path)
+
+    async def set_icon_from_bytes(self, content: bytes, filename: str) -> None:
+        await self._icon.set_from_bytes(content, filename)
+
     async def remove_icon(self) -> None:
         await self._icon.remove()
 
@@ -71,6 +84,12 @@ class Database:
 
     async def random_cover(self) -> None:
         await self._cover.set_random_gradient()
+
+    async def set_cover_from_file(self, file_path: Path | str) -> None:
+        await self._cover.set_from_file(file_path)
+
+    async def set_cover_from_bytes(self, content: bytes, filename: str) -> None:
+        await self._cover.set_from_bytes(content, filename)
 
     async def remove_cover(self) -> None:
         await self._cover.remove()

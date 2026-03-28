@@ -207,7 +207,7 @@ class TestGetFileUpload:
         assert result.id == "upload-123"
 
 
-class TestListFileUploads:
+class TestListFiles:
     @pytest.mark.asyncio
     async def test_returns_list_of_responses(
         self, client: FileUploadHttpClient, mock_http: MagicMock
@@ -256,7 +256,7 @@ class TestListFileUploads:
         mock_http.paginate.assert_called_once()
 
 
-class TestListFileUploadsStream:
+class TestListFilesStream:
     @pytest.mark.asyncio
     async def test_yields_file_upload_responses(
         self, client: FileUploadHttpClient, mock_http: MagicMock

@@ -28,7 +28,7 @@ from notionary.http import HttpClient
 logger = logging.getLogger(__name__)
 
 
-class FileUploads:
+class Files:
     _SUPPORTED_EXTENSIONS: frozenset[str] = frozenset(
         {
             ".aac",
@@ -92,7 +92,7 @@ class FileUploads:
         self._client = FileUploadHttpClient(http)
         self._config = FileUploadConfig()
 
-    async def upload_file(
+    async def upload(
         self,
         file_path: Path,
         filename: str | None = None,

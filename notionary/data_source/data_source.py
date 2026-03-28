@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from uuid import UUID
 
 from notionary.data_source.client import (
@@ -7,6 +8,7 @@ from notionary.data_source.client import (
 from notionary.data_source.properties.schemas import (
     AnyDataSourceProperty,
 )
+from notionary.file_upload import Files
 from notionary.http.client import HttpClient
 from notionary.page import Page
 from notionary.rich_text import rich_text_to_markdown
@@ -38,8 +40,13 @@ class DataSource:
         self.description = description
 
         path = f"data_sources/{id}"
-        self._icon = EntityIcon(icon=icon, http_client=http, path=path)
-        self._cover = EntityCover(cover=cover, http_client=http, path=path)
+        file_uploads = Files(http)
+        self._icon = EntityIcon(
+            icon=icon, http_client=http, path=path, file_uploads=file_uploads
+        )
+        self._cover = EntityCover(
+            cover=cover, http_client=http, path=path, file_uploads=file_uploads
+        )
         self._trash = EntityTrash(in_trash=in_trash, http_client=http, path=path)
 
         self.properties = properties or {}
@@ -61,6 +68,12 @@ class DataSource:
     async def set_icon_url(self, url: str) -> None:
         await self._icon.set_from_url(url)
 
+    async def set_icon_from_file(self, file_path: Path | str) -> None:
+        await self._icon.set_from_file(file_path)
+
+    async def set_icon_from_bytes(self, content: bytes, filename: str) -> None:
+        await self._icon.set_from_bytes(content, filename)
+
     async def remove_icon(self) -> None:
         await self._icon.remove()
 
@@ -69,6 +82,12 @@ class DataSource:
 
     async def random_cover(self) -> None:
         await self._cover.set_random_gradient()
+
+    async def set_cover_from_file(self, file_path: Path | str) -> None:
+        await self._cover.set_from_file(file_path)
+
+    async def set_cover_from_bytes(self, content: bytes, filename: str) -> None:
+        await self._cover.set_from_bytes(content, filename)
 
     async def remove_cover(self) -> None:
         await self._cover.remove()

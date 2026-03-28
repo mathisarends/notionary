@@ -1,7 +1,7 @@
 from .schemas import PageTitleProperty
-from .service import PagePropertyHandler
+from .service import PageProperties
 
 __all__ = [
-    "PagePropertyHandler",
+    "PageProperties",
     "PageTitleProperty",
 ]

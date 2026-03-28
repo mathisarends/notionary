@@ -1,5 +1,5 @@
-from .namespace import FileUploads
+from .namespace import Files
 
 __all__ = [
-    "FileUploads",
+    "Files",
 ]

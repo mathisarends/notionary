@@ -1,9 +1,11 @@
+from pathlib import Path
 from uuid import UUID
 
-from notionary.http.client import HttpClient
+from notionary.file_upload import Files
+from notionary.http import HttpClient
 from notionary.page.comments.service import PageComments
 from notionary.page.content import PageContent
-from notionary.page.properties import PagePropertyHandler
+from notionary.page.properties import PageProperties
 from notionary.page.properties.schemas import AnyPageProperty
 from notionary.page.schemas import PageUpdateRequest, _DefaultTemplate, _TemplateById
 from notionary.shared.entity import EntityCover, EntityIcon, EntityTrash
@@ -30,11 +32,16 @@ class Page:
         path = f"pages/{id}"
         self._http = http
         self._path = path
-        self._icon = EntityIcon(icon=icon, http_client=http, path=path)
-        self._cover = EntityCover(cover=cover, http_client=http, path=path)
+        file_uploads = Files(http)
+        self._icon = EntityIcon(
+            icon=icon, http_client=http, path=path, file_uploads=file_uploads
+        )
+        self._cover = EntityCover(
+            cover=cover, http_client=http, path=path, file_uploads=file_uploads
+        )
         self._trash = EntityTrash(in_trash=in_trash, http_client=http, path=path)
 
-        self.properties = PagePropertyHandler(properties=properties, id=id, http=http)
+        self.properties = PageProperties(id=id, properties=properties, http=http)
 
         self._content = PageContent(page_id=id, http=http)
         self._comments = PageComments(page_id=id, http=http)
@@ -57,6 +64,12 @@ class Page:
         if self._icon:
             await self._icon.set_from_url(url)
 
+    async def set_icon_from_file(self, file_path: Path | str) -> None:
+        await self._icon.set_from_file(file_path)
+
+    async def set_icon_from_bytes(self, content: bytes, filename: str) -> None:
+        await self._icon.set_from_bytes(content, filename)
+
     async def remove_icon(self) -> None:
         if self._icon:
             await self._icon.remove()
@@ -68,6 +81,12 @@ class Page:
     async def random_cover(self) -> None:
         if self._cover:
             await self._cover.set_random_gradient()
+
+    async def set_cover_from_file(self, file_path: Path | str) -> None:
+        await self._cover.set_from_file(file_path)
+
+    async def set_cover_from_bytes(self, content: bytes, filename: str) -> None:
+        await self._cover.set_from_bytes(content, filename)
 
     async def remove_cover(self) -> None:
         if self._cover:

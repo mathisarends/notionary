@@ -6,11 +6,11 @@ from notionary.page.properties.client import PagePropertyHttpClient
 from notionary.page.properties.schemas import AnyPageProperty, PageTitleProperty
 
 
-class PagePropertyHandler:
+class PageProperties:
     def __init__(
         self,
-        properties: dict[str, AnyPageProperty],
         id: UUID,
+        properties: dict[str, AnyPageProperty],
         http: HttpClient,
     ) -> None:
         self.properties = properties

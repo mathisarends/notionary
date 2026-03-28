@@ -1,9 +1,16 @@
 import random
 from collections.abc import Sequence
+from pathlib import Path
 
+from notionary.file_upload import Files
 from notionary.http.client import HttpClient
 from notionary.shared.entity.schemas import EntityResponseDto, NotionEntityUpdateDto
-from notionary.shared.models.file import ExternalFile, File
+from notionary.shared.models.file import (
+    ExternalFile,
+    File,
+    FileUploadedFileData,
+    FileUploadFile,
+)
 
 
 class EntityCover:
@@ -17,10 +24,33 @@ class EntityCover:
         cover: File | None,
         http_client: HttpClient,
         path: str,
+        file_uploads: Files,
     ) -> None:
         self._http = http_client
         self._path = path
         self.url: str | None = self._extract_url(cover)
+        self._file_uploads = file_uploads
+
+    async def set_from_file(
+        self,
+        file_path: Path | str,
+    ) -> None:
+        upload = await self._file_uploads.upload(Path(file_path), wait=True)
+        cover = FileUploadFile(file_upload=FileUploadedFileData(id=upload.id))
+        await self._patch(NotionEntityUpdateDto(cover=cover))
+        self.url = None
+
+    async def set_from_bytes(
+        self,
+        content: bytes,
+        filename: str,
+    ) -> None:
+        upload = await self._file_uploads.upload_from_bytes(
+            content, filename, wait=True
+        )
+        cover = FileUploadFile(file_upload=FileUploadedFileData(id=upload.id))
+        await self._patch(NotionEntityUpdateDto(cover=cover))
+        self.url = None
 
     async def set_from_url(self, image_url: str) -> None:
         response = await self._patch(
