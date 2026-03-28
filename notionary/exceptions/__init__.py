@@ -1,43 +1,40 @@
-from notionary.data_source.exceptions import (
-    DataSourceNotFound,
-    DataSourcePropertyNotFound,
-    DataSourcePropertyTypeError,
-)
-from notionary.database.exceptions import DatabaseNotFound
 from notionary.exceptions.base import NotionaryException
-from notionary.file_upload.exceptions import (
-    NoFileExtensionException,
-    UnsupportedFileTypeException,
-)
-from notionary.page.exceptions import (
-    PageNotFound,
-)
-from notionary.shared.exceptions import EntityNotFound
-from notionary.user.exceptions import NoUsersInWorkspace, UserNotFound
 
 __all__ = [
-    "AccessPagePropertyWithoutDataSourceError",
     "DataSourceNotFound",
-    "DataSourcePropertyNotFound",
-    "DataSourcePropertyTypeError",
     "DatabaseNotFound",
     "EntityNotFound",
-    "InsufficientColumnsError",
-    "InvalidColumnRatioSumError",
     "NoFileExtensionException",
-    "NoUsersInWorkspace",
-    "NotionAuthenticationError",
-    "NotionConnectionError",
-    "NotionError",
-    "NotionNotFoundError",
-    "NotionRateLimitError",
-    "NotionServerError",
-    "NotionValidationError",
     "NotionaryException",
     "PageNotFound",
-    "PagePropertyNotFoundError",
-    "PagePropertyTypeError",
     "UnsupportedFileTypeException",
-    "UnsupportedVideoFormatError",
-    "UserNotFound",
 ]
+
+
+def __getattr__(name: str):
+    match name:
+        case "DataSourceNotFound":
+            from notionary.data_source.exceptions import DataSourceNotFound
+
+            return DataSourceNotFound
+        case "DatabaseNotFound":
+            from notionary.database.exceptions import DatabaseNotFound
+
+            return DatabaseNotFound
+        case "EntityNotFound":
+            from notionary.shared.exceptions import EntityNotFound
+
+            return EntityNotFound
+        case "NoFileExtensionException":
+            from notionary.file_upload.exceptions import NoFileExtensionException
+
+            return NoFileExtensionException
+        case "PageNotFound":
+            from notionary.page.exceptions import PageNotFound
+
+            return PageNotFound
+        case "UnsupportedFileTypeException":
+            from notionary.file_upload.exceptions import UnsupportedFileTypeException
+
+            return UnsupportedFileTypeException
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
