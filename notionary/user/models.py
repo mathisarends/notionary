@@ -4,6 +4,8 @@ from uuid import UUID
 
 @dataclass
 class Person:
+    """A human workspace member."""
+
     id: UUID
     name: str
     email: str
@@ -12,6 +14,8 @@ class Person:
 
 @dataclass
 class Bot:
+    """A bot integration in the workspace."""
+
     id: UUID
     name: str | None
     workspace_name: str | None

@@ -13,6 +13,12 @@ type WorkspaceResource = Page | DataSource
 
 
 class WorkspaceNamespace:
+    """Cross-resource search across the entire Notion workspace.
+
+    Returns a mixed list of :class:`~notionary.page.page.Page` and
+    :class:`~notionary.data_source.data_source.DataSource` objects.
+    """
+
     def __init__(self, http: HttpClient) -> None:
         self._http = http
         self._search_client = SearchClient(http)
@@ -25,6 +31,19 @@ class WorkspaceNamespace:
         page_size: int = 100,
         total_results_limit: int | None = None,
     ) -> list[WorkspaceResource]:
+        """Search the entire workspace for pages and data sources.
+
+        Args:
+            query: Optional text query to filter results by title.
+            sort_direction: Sort order (ascending or descending).
+            sort_timestamp: Sort by ``last_edited_time`` or ``created_time``.
+            page_size: Number of results per API request.
+            total_results_limit: Maximum total number of results to return.
+
+        Returns:
+            A mixed list of :class:`~notionary.page.page.Page` and
+            :class:`~notionary.data_source.data_source.DataSource` objects.
+        """
         results = []
         async for item in self._search_client.stream(
             query=query,

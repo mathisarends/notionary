@@ -13,28 +13,37 @@ logger = logging.getLogger(__name__)
 
 
 class PageComments:
+    """Scoped access to comments on a single Notion page."""
+
     def __init__(self, page_id: UUID, http: HttpClient) -> None:
         self._page_id = page_id
         self._client = CommentClient(http)
         self._user_client = UserClient(http)
 
     async def list_all(self) -> list[Comment]:
+        """Return all comments on this page.
+
+        Returns:
+            A list of :class:`~notionary.page.comments.models.Comment` objects
+            with resolved author names.
+        """
         dtos = [dto async for dto in self._client.iter_comments(self._page_id)]
         return list(
             await asyncio.gather(*(self._comment_from_dto(dto) for dto in dtos))
         )
 
     async def create(self, text: str) -> Comment:
+        """Add a top-level comment to the page.
+
+        Args:
+            text: Markdown text of the comment.
+
+        Returns:
+            The created :class:`~notionary.page.comments.models.Comment`.
+        """
         dto = await self._client.create_comment_for_page(
             rich_text=markdown_to_rich_text(text),
             page_id=self._page_id,
-        )
-        return await self._comment_from_dto(dto)
-
-    async def reply_to(self, discussion_id: UUID, text: str) -> Comment:
-        dto = await self._client.create_comment_for_discussion(
-            rich_text=markdown_to_rich_text(text),
-            discussion_id=discussion_id,
         )
         return await self._comment_from_dto(dto)
 

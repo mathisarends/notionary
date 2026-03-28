@@ -19,6 +19,12 @@ from notionary.shared.search import fuzzy_suggestions
 
 
 class DatabaseNamespace:
+    """Scoped access to Notion databases.
+
+    Provides listing, searching, creation, and retrieval of
+    :class:`~notionary.database.database.Database` objects.
+    """
+
     def __init__(self, http: HttpClient) -> None:
         self._http = http
         self._client = DatabaseHttpClient(http)
@@ -32,6 +38,18 @@ class DatabaseNamespace:
         page_size: int = 100,
         total_results_limit: int | None = None,
     ) -> list[Database]:
+        """Return databases as a list, optionally filtered by a search query.
+
+        Args:
+            query: Optional text query to filter databases by title.
+            sort_direction: Sort order (ascending or descending).
+            sort_timestamp: Sort by ``last_edited_time`` or ``created_time``.
+            page_size: Number of results per API request.
+            total_results_limit: Maximum total number of databases to return.
+
+        Returns:
+            A list of matching :class:`~notionary.database.database.Database` objects.
+        """
         return [
             db
             async for db in self.iter(
@@ -51,6 +69,10 @@ class DatabaseNamespace:
         page_size: int = 100,
         total_results_limit: int | None = None,
     ) -> AsyncIterator[Database]:
+        """Yield databases one by one without loading all results into memory.
+
+        Accepts the same arguments as :meth:`list`.
+        """
         async for dto in self._search_client.stream(
             query=query,
             sort_direction=sort_direction,
@@ -61,9 +83,28 @@ class DatabaseNamespace:
             yield self._database_from_dto(dto)
 
     async def search(self, query: str) -> list[Database]:
+        """Search databases by title.
+
+        Convenience alias for ``list(query=query)``.
+
+        Args:
+            query: Text query to match against database titles.
+        """
         return await self.list(query=query)
 
     async def from_title(self, title: str) -> Database:
+        """Find a database by its exact title (case-insensitive).
+
+        Args:
+            title: The database title to search for.
+
+        Returns:
+            The matching :class:`~notionary.database.database.Database`.
+
+        Raises:
+            DatabaseNotFound: If no exact match is found. The exception
+                includes fuzzy suggestions when available.
+        """
         candidates = await self.list(query=title, page_size=100)
 
         exact = next(
@@ -76,6 +117,14 @@ class DatabaseNamespace:
         raise DatabaseNotFound(title, suggestions)
 
     async def from_id(self, database_id: UUID) -> Database:
+        """Retrieve a database by its UUID.
+
+        Args:
+            database_id: The Notion database UUID.
+
+        Returns:
+            The :class:`~notionary.database.database.Database` for the given ID.
+        """
         dto = await self._client.retrieve(database_id)
         return self._database_from_dto(dto)
 
@@ -89,6 +138,22 @@ class DatabaseNamespace:
         icon_emoji: str | None = None,
         cover_url: str | None = None,
     ) -> Database:
+        """Create a new database.
+
+        Args:
+            parent_page_id: UUID of the parent page. ``None`` for a
+                top-level workspace database.
+            title: Database title.
+            description: Database description.
+            is_inline: ``True`` to create as an inline database.
+            initial_properties: Property schema definitions to include
+                at creation time.
+            icon_emoji: Emoji character to use as the icon.
+            cover_url: External URL for the cover image.
+
+        Returns:
+            The newly created :class:`~notionary.database.database.Database`.
+        """
         dto = await self._client.create(
             parent_page_id=parent_page_id,
             title=title,

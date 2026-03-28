@@ -7,6 +7,8 @@ from notionary.page.properties.schemas import AnyPageProperty, PageTitleProperty
 
 
 class PageProperties:
+    """Scoped access to the properties of a single Notion page."""
+
     def __init__(
         self,
         id: UUID,
@@ -19,10 +21,24 @@ class PageProperties:
         )
 
     async def set_property(self, name: str, value: Any) -> None:
+        """Set a page property by name.
+
+        Args:
+            name: Property name as it appears in Notion.
+            value: New value for the property.
+        """
         dto = await self._property_http_client.set_property(name, value)
         self.properties = dto.properties
 
     async def set_title(self, title: str) -> None:
+        """Set the page title.
+
+        Args:
+            title: New title text.
+
+        Raises:
+            KeyError: If the page has no title property.
+        """
         name = next(
             (k for k, p in self.properties.items() if isinstance(p, PageTitleProperty)),
             None,
