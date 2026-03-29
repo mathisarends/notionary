@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 from uuid import UUID
@@ -20,14 +22,14 @@ class PageComments:
         self._client = CommentClient(http)
         self._user_client = UserClient(http)
 
-    async def list_all(self) -> list[Comment]:
+    async def list(self) -> list[Comment]:
         """Return all comments on this page.
 
         Returns:
             A list of :class:`~notionary.page.comments.models.Comment` objects
             with resolved author names.
         """
-        dtos = [dto async for dto in self._client.iter_comments(self._page_id)]
+        dtos = [dto async for dto in self._client.iter(self._page_id)]
         return list(
             await asyncio.gather(*(self._comment_from_dto(dto) for dto in dtos))
         )
@@ -41,7 +43,7 @@ class PageComments:
         Returns:
             The created :class:`~notionary.page.comments.models.Comment`.
         """
-        dto = await self._client.create_comment_for_page(
+        dto = await self._client.create(
             rich_text=markdown_to_rich_text(text),
             page_id=self._page_id,
         )

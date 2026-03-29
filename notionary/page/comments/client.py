@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from collections.abc import AsyncGenerator
 from uuid import UUID
@@ -13,7 +15,7 @@ class CommentClient:
     def __init__(self, http: HttpClient) -> None:
         self._http = http
 
-    async def iter_comments(
+    async def iter(
         self,
         block_id: UUID,
         total_results_limit: int | None = None,
@@ -26,7 +28,7 @@ class CommentClient:
         ):
             yield CommentDto.model_validate(item)
 
-    async def get_all_comments(
+    async def list(
         self,
         block_id: UUID,
         *,
@@ -44,7 +46,7 @@ class CommentClient:
         )
         return comments
 
-    async def create_comment_for_page(
+    async def create(
         self,
         rich_text: list[RichText],
         page_id: UUID,
@@ -54,7 +56,7 @@ class CommentClient:
             await self._http.post("comments", data=body, exclude_unset=True)
         )
 
-    async def create_comment_for_discussion(
+    async def create_for_discussion(
         self,
         rich_text: list[RichText],
         discussion_id: UUID,

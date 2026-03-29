@@ -169,6 +169,15 @@ class Page:
         """Return the full page content as a markdown string."""
         return await self._content.get_markdown()
 
+    async def get_comments(self) -> list:
+        """Return all comments on this page.
+
+        Returns:
+            A list of :class:`~notionary.page.comments.models.Comment` objects
+            with resolved author names.
+        """
+        return await self._comments.list()
+
     async def comment(self, text: str) -> None:
         """Add a top-level comment to the page.
 
