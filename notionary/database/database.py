@@ -2,6 +2,9 @@ import logging
 from pathlib import Path
 from uuid import UUID
 
+from notionary.data_source import DataSource
+from notionary.data_source.mapper import to_data_source
+from notionary.data_source.schemas import CreateDataSourceRequest, DataSourceDto
 from notionary.database.client import DatabaseHttpClient
 from notionary.database.schemas import (
     DataSourceReference,
@@ -55,6 +58,7 @@ class Database:
         self.last_edited_time = last_edited_time
         self.last_edited_by = last_edited_by
 
+        self._http = http
         path = f"databases/{id}"
         file_uploads = FileUploads(http)
         self._object = NotionObject(
@@ -193,6 +197,32 @@ class Database:
             self.id, UpdateDatabaseRequest(is_inline=is_inline)
         )
         self.is_inline = dto.is_inline
+
+    async def create_data_source(
+        self,
+        properties: dict,
+        *,
+        title: str | None = None,
+    ) -> DataSource:
+        """Create a new data source in this database.
+
+        Args:
+            properties: Property schema for the new data source.
+            title: Optional title for the data source.
+            icon_emoji: Optional emoji to set as the data source icon.
+
+        Returns:
+            The created :class:`~notionary.data_source.data_source.DataSource`.
+        """
+        parent = {"type": "database_id", "database_id": str(self.id)}
+        request = CreateDataSourceRequest(parent=parent, properties=properties)
+
+        if title:
+            request.title = markdown_to_rich_text(title)
+
+        response = await self._http.post("/data_sources", data=request)
+        dto = DataSourceDto.model_validate(response)
+        return to_data_source(dto, self._http)
 
     async def update(
         self,

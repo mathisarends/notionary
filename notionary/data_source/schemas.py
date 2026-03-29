@@ -11,6 +11,12 @@ class UpdateDataSourceDto(NotionObjectUpdateDto):
     title: list[RichText] | None = None
 
 
+class CreateDataSourceRequest(BaseModel):
+    parent: dict
+    properties: dict
+    title: list[RichText] | None = None
+
+
 class QueryDataSourceResponse(BaseModel):
     results: list[PageDto]
     next_cursor: str | None = None
