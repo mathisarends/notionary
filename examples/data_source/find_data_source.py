@@ -11,7 +11,7 @@ load_dotenv(override=True)
 
 async def main() -> None:
     async with Notionary() as notion:
-        ds = await notion.data_sources.from_title("Projekte")
+        ds = await notion.data_sources.find("Projekte")
 
         print(f"Title: {ds.title}")
         print(f"URL:   {ds.url}")

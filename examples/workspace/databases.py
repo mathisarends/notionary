@@ -15,7 +15,7 @@ async def main() -> None:
         for db in databases:
             print(f"{db.title} ({db.url})")
 
-        db = await notion.databases.from_title("Tasks")
+        db = await notion.databases.find("Tasks")
         await db.set_description("Tracks all current tasks and their status.")
         await db.set_icon("✅")
         print(f"Updated: {db.title}")

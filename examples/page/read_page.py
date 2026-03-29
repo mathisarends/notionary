@@ -11,7 +11,7 @@ load_dotenv(override=True)
 
 async def main() -> None:
     async with Notionary() as notion:
-        page = await notion.pages.from_title("Old draft")
+        page = await notion.pages.find("Old draft")
 
         markdown = await page.get_markdown()
         print(markdown)

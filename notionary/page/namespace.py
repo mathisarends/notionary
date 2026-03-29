@@ -74,7 +74,7 @@ class PageNamespace:
         ):
             yield mapper.to_page(dto, self._http)
 
-    async def from_title(self, title: str) -> Page:
+    async def find(self, title: str) -> Page:
         """Find a page by its exact title (case-insensitive).
 
         Args:

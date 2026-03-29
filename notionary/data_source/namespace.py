@@ -89,7 +89,7 @@ class DataSourceNamespace:
         """
         return await self.list(query=query)
 
-    async def from_title(self, title: str) -> DataSource:
+    async def find(self, title: str) -> DataSource:
         """Find a data source by its exact title (case-insensitive).
 
         Args:

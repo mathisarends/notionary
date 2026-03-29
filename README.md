@@ -58,7 +58,7 @@ from notionary import Notionary
 async def main():
     async with Notionary() as notion:
         # Find a page by title (fuzzy matching)
-        page = await notion.pages.from_title("Meeting Notes")
+        page = await notion.pages.find("Meeting Notes")
         print(page.title, page.url)
 
         # Read content as Markdown
@@ -105,7 +105,7 @@ Content operations use the [Notion Markdown API](https://developers.notion.com/r
 ```python
 async with Notionary() as notion:
     # Lookup
-    page = await notion.pages.from_title("Sprint Board")
+    page = await notion.pages.find("Sprint Board")
     page = await notion.pages.from_id(page_uuid)
 
     # List & search
@@ -140,7 +140,7 @@ async with Notionary() as notion:
 
 ```python
 async with Notionary() as notion:
-    db = await notion.databases.from_title("Tasks")
+    db = await notion.databases.find("Tasks")
     db = await notion.databases.from_id(db_uuid)
 
     # Create
@@ -163,7 +163,7 @@ async with Notionary() as notion:
 
 ```python
 async with Notionary() as notion:
-    ds = await notion.data_sources.from_title("Engineering Backlog")
+    ds = await notion.data_sources.find("Engineering Backlog")
 
     # Create a page inside the data source
     page = await ds.create_page(title="New Feature")
