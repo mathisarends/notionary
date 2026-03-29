@@ -8,6 +8,7 @@ from notionary.data_source.client import (
 from notionary.data_source.properties.schemas import (
     AnyDataSourceProperty,
 )
+from notionary.data_source.schemas import DataSourceTemplate
 from notionary.file_upload import FileUploads
 from notionary.http.client import HttpClient
 from notionary.page import Page
@@ -169,6 +170,22 @@ class DataSource:
             The newly created :class:`~notionary.page.page.Page`.
         """
         return await self._client.create_page(title=title)
+
+    async def list_templates(
+        self,
+        name: str | None = None,
+        page_size: int = 100,
+    ) -> list[DataSourceTemplate]:
+        """List all page templates available in this data source.
+
+        Args:
+            name: Optional case-insensitive substring filter on template name.
+            page_size: Number of results per API request (max 100).
+
+        Returns:
+            A list of :class:`~notionary.data_source.schemas.DataSourceTemplate` objects.
+        """
+        return await self._client.list_templates(name=name, page_size=page_size)
 
     async def update(
         self,
