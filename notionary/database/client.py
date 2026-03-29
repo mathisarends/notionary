@@ -30,6 +30,7 @@ class DatabaseHttpClient:
         is_inline: bool | None = None,
         initial_properties: dict[str, Any] | None = None,
         icon_emoji: str | None = None,
+        icon_url: str | None = None,
         cover_url: str | None = None,
     ) -> DatabaseDto:
         if parent_page_id:
@@ -49,6 +50,8 @@ class DatabaseHttpClient:
             request.initial_data_source = {"properties": initial_properties}
         if icon_emoji:
             request.icon = EmojiIcon(emoji=icon_emoji).model_dump(mode="json")
+        elif icon_url:
+            request.icon = ExternalFile.from_url(icon_url).model_dump(mode="json")
         if cover_url:
             request.cover = ExternalFile.from_url(cover_url).model_dump(mode="json")
 

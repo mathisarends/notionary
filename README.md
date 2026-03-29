@@ -198,8 +198,9 @@ async with Notionary() as notion:
 
 ```python
 async with Notionary() as notion:
-    people = await notion.users.list_users()
-    bots = await notion.users.list_bots()
+    all_users = await notion.users.list()
+    people = await notion.users.list(filter="person")
+    bots = await notion.users.list(filter="bot")
     me = await notion.users.me()
 
     matches = await notion.users.search("alex")
