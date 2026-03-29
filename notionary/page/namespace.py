@@ -2,13 +2,12 @@ from collections.abc import AsyncIterator
 from uuid import UUID
 
 from notionary.http.client import HttpClient
+from notionary.page import mapper
 from notionary.page.exceptions import PageNotFound
 from notionary.page.page import Page
-from notionary.page.properties import PageTitleProperty
 from notionary.page.schemas import PageDto
 from notionary.page.search import PageSearchClient
 from notionary.page.search.schemas import SortDirection, SortTimestamp
-from notionary.rich_text import rich_text_to_markdown
 from notionary.shared.search import fuzzy_suggestions
 
 
@@ -73,7 +72,7 @@ class PageNamespace:
             page_size=page_size,
             total_results_limit=total_results_limit,
         ):
-            yield self._page_from_dto(dto)
+            yield mapper.to_page(dto, self._http)
 
     async def from_title(self, title: str) -> Page:
         """Find a page by its exact title (case-insensitive).
@@ -88,7 +87,7 @@ class PageNamespace:
             PageNotFound: If no exact match is found. The exception
                 includes fuzzy suggestions when available.
         """
-        candidates = await self.list(query=title, page_size=100)
+        candidates = await self.list(query=title, page_size=10, total_results_limit=10)
 
         exact = next((p for p in candidates if p.title.lower() == title.lower()), None)
         if exact:
@@ -108,28 +107,4 @@ class PageNamespace:
         """
         response = await self._http.get(f"pages/{page_id}")
         dto = PageDto.model_validate(response)
-        return self._page_from_dto(dto)
-
-    def _page_from_dto(self, dto: PageDto) -> Page:
-        title = self._extract_page_title(dto)
-        return Page(
-            id=dto.id,
-            url=dto.url,
-            title=title,
-            icon=dto.icon,
-            cover=dto.cover,
-            in_trash=dto.in_trash,
-            properties=dto.properties,
-            http=self._http,
-            created_time=dto.created_time,
-            created_by=dto.created_by,
-            last_edited_time=dto.last_edited_time,
-            last_edited_by=dto.last_edited_by,
-        )
-
-    def _extract_page_title(self, dto: PageDto) -> str:
-        title_property = next(
-            (p for p in dto.properties.values() if isinstance(p, PageTitleProperty)),
-            None,
-        )
-        return rich_text_to_markdown(title_property.title if title_property else [])
+        return mapper.to_page(dto, self._http)

@@ -4,6 +4,7 @@ from collections.abc import AsyncIterator
 from typing import Any
 from uuid import UUID
 
+from notionary.database import mapper
 from notionary.database.client import DatabaseHttpClient
 from notionary.database.database import Database
 from notionary.database.exceptions import DatabaseNotFound
@@ -14,7 +15,6 @@ from notionary.database.search import (
     SortTimestamp,
 )
 from notionary.http.client import HttpClient
-from notionary.rich_text import rich_text_to_markdown
 from notionary.shared.search import fuzzy_suggestions
 
 
@@ -105,7 +105,7 @@ class DatabaseNamespace:
             DatabaseNotFound: If no exact match is found. The exception
                 includes fuzzy suggestions when available.
         """
-        candidates = await self.list(query=title, page_size=100)
+        candidates = await self.list(query=title, page_size=25, total_results_limit=25)
 
         exact = next(
             (db for db in candidates if db.title.lower() == title.lower()), None
@@ -166,22 +166,4 @@ class DatabaseNamespace:
         return self._database_from_dto(dto)
 
     def _database_from_dto(self, dto: DatabaseDto) -> Database:
-        title = rich_text_to_markdown(dto.title)
-        description_text = rich_text_to_markdown(dto.description)
-        return Database(
-            id=dto.id,
-            url=dto.url,
-            title=title,
-            description=description_text if description_text else None,
-            is_inline=dto.is_inline,
-            is_locked=dto.is_locked,
-            data_sources=dto.data_sources,
-            icon=dto.icon,
-            cover=dto.cover,
-            in_trash=dto.in_trash,
-            http=self._http,
-            created_time=dto.created_time,
-            created_by=dto.created_by,
-            last_edited_time=dto.last_edited_time,
-            last_edited_by=dto.last_edited_by,
-        )
+        return mapper.to_database(dto, self._http)
