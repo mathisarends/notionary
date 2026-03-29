@@ -159,3 +159,36 @@ class DataSource:
             The newly created :class:`~notionary.page.page.Page`.
         """
         return await self._client.create_page(title=title)
+
+    async def update(
+        self,
+        *,
+        title: str | None = None,
+        icon_emoji: str | None = None,
+        icon_url: str | None = None,
+        cover_url: str | None = None,
+    ) -> None:
+        """Update multiple data source attributes in a single agent-friendly call.
+
+        All parameters are optional — only provided values are applied.
+
+        Args:
+            title: New data source title.
+            icon_emoji: Emoji to set as the data source icon.
+            icon_url: External URL to set as the data source icon.
+            cover_url: External URL to set as the data source cover.
+        """
+        if title is not None:
+            await self.set_title(title)
+        if icon_emoji is not None:
+            await self.set_icon_emoji(icon_emoji)
+        if icon_url is not None:
+            await self.set_icon_url(icon_url)
+        if cover_url is not None:
+            await self.set_cover(cover_url)
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.url})"
+
+    def __repr__(self) -> str:
+        return f"DataSource(id={self.id!r}, title={self.title!r})"

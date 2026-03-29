@@ -184,5 +184,47 @@ class Database:
         )
         self.is_inline = dto.is_inline
 
+    async def update(
+        self,
+        *,
+        title: str | None = None,
+        description: str | None = None,
+        icon_emoji: str | None = None,
+        icon_url: str | None = None,
+        cover_url: str | None = None,
+        is_locked: bool | None = None,
+        is_inline: bool | None = None,
+    ) -> None:
+        """Update multiple database attributes in a single agent-friendly call.
+
+        All parameters are optional — only provided values are applied.
+
+        Args:
+            title: New database title (supports inline markdown formatting).
+            description: New database description (supports inline markdown formatting).
+            icon_emoji: Emoji to set as the database icon.
+            icon_url: External URL to set as the database icon.
+            cover_url: External URL to set as the database cover.
+            is_locked: If provided, lock or unlock the database.
+            is_inline: If provided, toggle inline display mode.
+        """
+        if title is not None:
+            await self.set_title(title)
+        if description is not None:
+            await self.set_description(description)
+        if icon_emoji is not None:
+            await self.set_icon_emoji(icon_emoji)
+        if icon_url is not None:
+            await self.set_icon_url(icon_url)
+        if cover_url is not None:
+            await self.set_cover(cover_url)
+        if is_locked is not None:
+            await self.lock() if is_locked else await self.unlock()
+        if is_inline is not None:
+            await self.set_inline(is_inline)
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.url})"
+
     def __repr__(self) -> str:
         return f"Database(id={self.id!r}, title={self.title!r})"

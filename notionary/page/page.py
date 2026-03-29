@@ -235,3 +235,48 @@ class Page:
 
     async def _patch(self, request: PageUpdateRequest) -> None:
         await self._http.patch(self._path, data=request)
+
+    async def update(
+        self,
+        *,
+        title: str | None = None,
+        icon_emoji: str | None = None,
+        icon_url: str | None = None,
+        cover_url: str | None = None,
+        content: str | None = None,
+        append_content: str | None = None,
+        properties: dict[str, AnyPageProperty] | None = None,
+    ) -> None:
+        """Update multiple page attributes in a single agent-friendly call.
+
+        All parameters are optional — only provided values are applied.
+
+        Args:
+            title: New page title.
+            icon_emoji: Emoji to set as the page icon.
+            icon_url: External URL to set as the page icon.
+            cover_url: External URL to set as the page cover.
+            content: Markdown that replaces the entire page body.
+            append_content: Markdown to append to the existing page body.
+            properties: Property key/value pairs to update.
+        """
+        if title is not None:
+            await self.rename(title)
+        if icon_emoji is not None:
+            await self.set_icon_emoji(icon_emoji)
+        if icon_url is not None:
+            await self.set_icon_url(icon_url)
+        if cover_url is not None:
+            await self.set_cover(cover_url)
+        if properties is not None:
+            await self.properties.update(properties)
+        if content is not None:
+            await self.replace(content)
+        elif append_content is not None:
+            await self.append(append_content)
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.url})"
+
+    def __repr__(self) -> str:
+        return f"Page(id={self.id!r}, title={self.title!r})"
