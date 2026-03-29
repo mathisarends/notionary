@@ -30,15 +30,15 @@ async with Notionary() as notion:
 await page.rename("Sprint 42 Planning")
 
 # Icon
-await page.set_icon_emoji("🗂️")
-await page.set_icon_url("https://example.com/icon.png")
-await page.set_icon_from_file("./icon.png")
+await page.set_icon("🗂️")
+await page.set_icon("https://example.com/icon.png")
+await page.set_icon(Path("./icon.png"))
 await page.remove_icon()
 
 # Cover
 await page.set_cover("https://example.com/cover.png")
 await page.random_cover()          # built-in Notion gradient
-await page.set_cover_from_file("./cover.png")
+await page.set_cover(Path("./cover.png"))
 await page.remove_cover()
 
 # Trash

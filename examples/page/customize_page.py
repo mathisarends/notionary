@@ -13,7 +13,7 @@ async def main() -> None:
     async with Notionary() as notion:
         page = await notion.pages.from_title("Old Draft")
 
-        await page.set_icon_emoji("📝")
+        await page.set_icon("📝")
         await page.random_cover()
         await page.rename("Weekly Sync Notes")
 

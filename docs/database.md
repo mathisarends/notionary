@@ -57,15 +57,15 @@ await db.set_title("Project Tracker")
 await db.set_description("All active projects")
 
 # Icon
-await db.set_icon_emoji("📊")
-await db.set_icon_url("https://example.com/icon.png")
-await db.set_icon_from_file("./icon.png")
+await db.set_icon("📊")
+await db.set_icon("https://example.com/icon.png")
+await db.set_icon(Path("./icon.png"))
 await db.remove_icon()
 
 # Cover
 await db.set_cover("https://example.com/cover.png")
 await db.random_cover()
-await db.set_cover_from_file("./cover.png")
+await db.set_cover(Path("./cover.png"))
 await db.remove_cover()
 
 # Inline display

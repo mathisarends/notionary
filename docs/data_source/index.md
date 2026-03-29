@@ -45,15 +45,15 @@ async with Notionary() as notion:
 await ds.set_title("Sprint Board")
 
 # Icon
-await ds.set_icon_emoji("🧭")
-await ds.set_icon_url("https://example.com/icon.png")
-await ds.set_icon_from_file("./icon.png")
+await ds.set_icon("🧭")
+await ds.set_icon("https://example.com/icon.png")
+await ds.set_icon(Path("./icon.png"))
 await ds.remove_icon()
 
 # Cover
 await ds.set_cover("https://example.com/cover.png")
 await ds.random_cover()
-await ds.set_cover_from_file("./cover.png")
+await ds.set_cover(Path("./cover.png"))
 await ds.remove_cover()
 
 # Trash

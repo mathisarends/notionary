@@ -119,7 +119,7 @@ async with Notionary() as notion:
 
     # Metadata
     await page.rename("New Title")
-    await page.set_icon_emoji("🚀")
+    await page.set_icon("🚀")
     await page.set_cover("https://example.com/cover.png")
     await page.random_cover()
 
@@ -153,7 +153,7 @@ async with Notionary() as notion:
     # Metadata
     await db.set_title("Project Tracker")
     await db.set_description("All current projects")
-    await db.set_icon_emoji("📊")
+    await db.set_icon("📊")
     await db.lock()
 ```
 
@@ -170,7 +170,7 @@ async with Notionary() as notion:
 
     # Metadata
     await ds.set_title("Sprint Board")
-    await ds.set_icon_emoji("🧭")
+    await ds.set_icon("🧭")
 ```
 
 > **Notion API Reference:** [Data Sources](https://developers.notion.com/reference/data-source)
