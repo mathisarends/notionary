@@ -92,7 +92,7 @@ class DatabaseNamespace:
         """
         return await self.list(query=query)
 
-    async def from_title(self, title: str) -> Database:
+    async def find(self, title: str) -> Database:
         """Find a database by its exact title (case-insensitive).
 
         Args:

@@ -11,7 +11,7 @@ load_dotenv(override=True)
 
 async def main() -> None:
     async with Notionary() as notion:
-        page = await notion.pages.from_title("Old Draft")
+        page = await notion.pages.find("Old Draft")
 
         await page.lock()
         print(f"Page locked: {page.title}")

@@ -91,7 +91,7 @@ class TestDatabaseNamespaceFromTitle:
         dtos = [_dto(DB_ID_1, "Sales"), _dto(DB_ID_2, "Marketing")]
         ns = _namespace_with_stream(dtos)
 
-        result = await ns.from_title("sales")
+        result = await ns.find("sales")
 
         assert result.id == DB_ID_1
 
@@ -101,7 +101,7 @@ class TestDatabaseNamespaceFromTitle:
         ns = _namespace_with_stream(dtos)
 
         with pytest.raises(DatabaseNotFound, match=r"No.*database.*found.*Nonexistent"):
-            await ns.from_title("Nonexistent")
+            await ns.find("Nonexistent")
 
     @pytest.mark.asyncio
     async def test_raises_not_found_with_suggestions_for_close_match(self) -> None:
@@ -109,7 +109,7 @@ class TestDatabaseNamespaceFromTitle:
         ns = _namespace_with_stream(dtos)
 
         with pytest.raises(DatabaseNotFound) as exc_info:
-            await ns.from_title("Sales Pipelin")
+            await ns.find("Sales Pipelin")
 
         assert "Sales Pipeline" in str(exc_info.value)
 
@@ -118,14 +118,14 @@ class TestDatabaseNamespaceFromTitle:
         ns = _namespace_with_stream([])
 
         with pytest.raises(DatabaseNotFound):
-            await ns.from_title("Anything")
+            await ns.find("Anything")
 
     @pytest.mark.asyncio
     async def test_returns_first_exact_match_when_multiple(self) -> None:
         dtos = [_dto(DB_ID_1, "Tasks"), _dto(DB_ID_2, "Tasks")]
         ns = _namespace_with_stream(dtos)
 
-        result = await ns.from_title("Tasks")
+        result = await ns.find("Tasks")
 
         assert result.id == DB_ID_1
 

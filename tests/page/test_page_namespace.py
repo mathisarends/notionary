@@ -78,7 +78,7 @@ class TestPageNamespaceFromTitle:
         dtos = [_page_dto(PAGE_ID_1, "Meeting Notes"), _page_dto(PAGE_ID_2, "Tasks")]
         ns = _namespace_with_stream(dtos)
 
-        result = await ns.from_title("meeting notes")
+        result = await ns.find("meeting notes")
 
         assert result.id == PAGE_ID_1
 
@@ -88,7 +88,7 @@ class TestPageNamespaceFromTitle:
         ns = _namespace_with_stream(dtos)
 
         with pytest.raises(PageNotFound, match=r"No.*page.*found.*Nonexistent"):
-            await ns.from_title("Nonexistent")
+            await ns.find("Nonexistent")
 
     @pytest.mark.asyncio
     async def test_raises_not_found_with_suggestions_for_close_match(self) -> None:
@@ -96,7 +96,7 @@ class TestPageNamespaceFromTitle:
         ns = _namespace_with_stream(dtos)
 
         with pytest.raises(PageNotFound) as exc_info:
-            await ns.from_title("Meeting Note")
+            await ns.find("Meeting Note")
 
         assert "Meeting Notes" in str(exc_info.value)
 
@@ -105,14 +105,14 @@ class TestPageNamespaceFromTitle:
         ns = _namespace_with_stream([])
 
         with pytest.raises(PageNotFound):
-            await ns.from_title("Anything")
+            await ns.find("Anything")
 
     @pytest.mark.asyncio
     async def test_returns_first_exact_match_when_multiple(self) -> None:
         dtos = [_page_dto(PAGE_ID_1, "Tasks"), _page_dto(PAGE_ID_2, "Tasks")]
         ns = _namespace_with_stream(dtos)
 
-        result = await ns.from_title("Tasks")
+        result = await ns.find("Tasks")
 
         assert result.id == PAGE_ID_1
 
