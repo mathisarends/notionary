@@ -10,9 +10,10 @@ from notionary.database.schemas import (
 from notionary.file_upload import FileUploads
 from notionary.http.client import HttpClient
 from notionary.rich_text import markdown_to_rich_text, rich_text_to_markdown
-from notionary.shared.object import Cover, Icon, Trash
+from notionary.shared.object import NotionObject
 from notionary.shared.object.icon.schemas import AnyIcon
 from notionary.shared.object.schemas import File
+from notionary.user.schemas import PartialUserDto
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,10 @@ class Database:
         cover: File | None,
         in_trash: bool,
         http: HttpClient,
+        created_time: str,
+        created_by: PartialUserDto,
+        last_edited_time: str,
+        last_edited_by: PartialUserDto,
     ) -> None:
         self.id = id
         self.url = url
@@ -45,31 +50,36 @@ class Database:
         self.is_inline = is_inline
         self.is_locked = is_locked
         self.data_sources = data_sources
+        self.created_time = created_time
+        self.created_by = created_by
+        self.last_edited_time = last_edited_time
+        self.last_edited_by = last_edited_by
 
         path = f"databases/{id}"
         file_uploads = FileUploads(http)
-        self._icon = Icon(
-            icon=icon, http_client=http, path=path, file_uploads=file_uploads
+        self._object = NotionObject(
+            icon=icon,
+            cover=cover,
+            in_trash=in_trash,
+            http_client=http,
+            path=path,
+            file_uploads=file_uploads,
         )
-        self._cover = Cover(
-            cover=cover, http_client=http, path=path, file_uploads=file_uploads
-        )
-        self._trash = Trash(in_trash=in_trash, http_client=http, path=path)
 
         self._client = DatabaseHttpClient(http)
 
     @property
     def in_trash(self) -> bool:
         """Whether this database is in the trash."""
-        return self._trash.in_trash
+        return self._object.in_trash
 
     async def trash(self) -> None:
         """Move the database to the trash."""
-        await self._trash.trash()
+        await self._object.trash()
 
     async def restore(self) -> None:
         """Restore the database from the trash."""
-        await self._trash.restore()
+        await self._object.restore()
 
     async def set_icon_emoji(self, emoji: str) -> None:
         """Set the database icon to an emoji.
@@ -77,7 +87,7 @@ class Database:
         Args:
             emoji: A single emoji character.
         """
-        await self._icon.set_emoji(emoji)
+        await self._object.set_icon_emoji(emoji)
 
     async def set_icon_url(self, url: str) -> None:
         """Set the database icon to an external image URL.
@@ -85,7 +95,7 @@ class Database:
         Args:
             url: Public URL of the image.
         """
-        await self._icon.set_from_url(url)
+        await self._object.set_icon_url(url)
 
     async def set_icon_from_file(self, file_path: Path | str) -> None:
         """Upload a local file and set it as the database icon.
@@ -93,7 +103,7 @@ class Database:
         Args:
             file_path: Path to the image file.
         """
-        await self._icon.set_from_file(file_path)
+        await self._object.set_icon_from_file(file_path)
 
     async def set_icon_from_bytes(self, content: bytes, filename: str) -> None:
         """Upload raw bytes and set them as the database icon.
@@ -102,11 +112,11 @@ class Database:
             content: Raw image bytes.
             filename: Filename with extension for MIME detection.
         """
-        await self._icon.set_from_bytes(content, filename)
+        await self._object.set_icon_from_bytes(content, filename)
 
     async def remove_icon(self) -> None:
         """Remove the database icon."""
-        await self._icon.remove()
+        await self._object.remove_icon()
 
     async def set_cover(self, url: str) -> None:
         """Set the database cover to an external image URL.
@@ -114,11 +124,11 @@ class Database:
         Args:
             url: Public URL of the cover image.
         """
-        await self._cover.set_from_url(url)
+        await self._object.set_cover_url(url)
 
     async def random_cover(self) -> None:
         """Set the database cover to a random Notion gradient."""
-        await self._cover.set_random_gradient()
+        await self._object.set_random_cover()
 
     async def set_cover_from_file(self, file_path: Path | str) -> None:
         """Upload a local file and set it as the database cover.
@@ -126,7 +136,7 @@ class Database:
         Args:
             file_path: Path to the image file.
         """
-        await self._cover.set_from_file(file_path)
+        await self._object.set_cover_from_file(file_path)
 
     async def set_cover_from_bytes(self, content: bytes, filename: str) -> None:
         """Upload raw bytes and set them as the database cover.
@@ -135,11 +145,11 @@ class Database:
             content: Raw image bytes.
             filename: Filename with extension for MIME detection.
         """
-        await self._cover.set_from_bytes(content, filename)
+        await self._object.set_cover_from_bytes(content, filename)
 
     async def remove_cover(self) -> None:
         """Remove the database cover image."""
-        await self._cover.remove()
+        await self._object.remove_cover()
 
     async def set_title(self, title: str) -> None:
         """Update the database title.
@@ -212,12 +222,11 @@ class Database:
             await self.set_title(title)
         if description is not None:
             await self.set_description(description)
-        if icon_emoji is not None:
-            await self.set_icon_emoji(icon_emoji)
-        if icon_url is not None:
-            await self.set_icon_url(icon_url)
-        if cover_url is not None:
-            await self.set_cover(cover_url)
+        await self._object.update(
+            icon_emoji=icon_emoji,
+            icon_url=icon_url,
+            cover_url=cover_url,
+        )
         if is_locked is not None:
             await self.lock() if is_locked else await self.unlock()
         if is_inline is not None:

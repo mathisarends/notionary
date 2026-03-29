@@ -121,6 +121,10 @@ class PageNamespace:
             in_trash=dto.in_trash,
             properties=dto.properties,
             http=self._http,
+            created_time=dto.created_time,
+            created_by=dto.created_by,
+            last_edited_time=dto.last_edited_time,
+            last_edited_by=dto.last_edited_by,
         )
 
     def _extract_page_title(self, dto: PageDto) -> str:

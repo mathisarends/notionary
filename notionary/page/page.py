@@ -8,8 +8,10 @@ from notionary.page.content import PageContent
 from notionary.page.properties import PageProperties
 from notionary.page.properties.schemas import AnyPageProperty
 from notionary.page.schemas import PageUpdateRequest, _DefaultTemplate, _TemplateById
-from notionary.shared.object import Cover, Icon, Trash
+from notionary.shared.object import NotionObject
+from notionary.shared.object.icon.schemas import AnyIcon
 from notionary.shared.object.schemas import File
+from notionary.user.schemas import PartialUserDto
 
 
 class Page:
@@ -24,27 +26,36 @@ class Page:
         id: UUID,
         url: str,
         title: str,
-        icon: Icon | None,
+        icon: AnyIcon | None,
         cover: File | None,
         in_trash: bool,
         properties: dict[str, AnyPageProperty],
         http: HttpClient,
+        created_time: str,
+        created_by: PartialUserDto,
+        last_edited_time: str,
+        last_edited_by: PartialUserDto,
     ) -> None:
         self.id = id
         self.url = url
         self.title = title
+        self.created_time = created_time
+        self.created_by = created_by
+        self.last_edited_time = last_edited_time
+        self.last_edited_by = last_edited_by
 
         path = f"pages/{id}"
         self._http = http
         self._path = path
         file_uploads = FileUploads(http)
-        self._icon = Icon(
-            icon=icon, http_client=http, path=path, file_uploads=file_uploads
+        self._object = NotionObject(
+            icon=icon,
+            cover=cover,
+            in_trash=in_trash,
+            http_client=http,
+            path=path,
+            file_uploads=file_uploads,
         )
-        self._cover = Cover(
-            cover=cover, http_client=http, path=path, file_uploads=file_uploads
-        )
-        self._trash = Trash(in_trash=in_trash, http_client=http, path=path)
 
         self.properties = PageProperties(id=id, properties=properties, http=http)
 
@@ -54,15 +65,15 @@ class Page:
     @property
     def in_trash(self) -> bool:
         """Whether this page is in the trash."""
-        return self._trash.in_trash
+        return self._object.in_trash
 
     async def trash(self) -> None:
         """Move the page to the trash."""
-        await self._trash.trash()
+        await self._object.trash()
 
     async def restore(self) -> None:
         """Restore the page from the trash."""
-        await self._trash.restore()
+        await self._object.restore()
 
     async def set_icon_emoji(self, emoji: str) -> None:
         """Set the page icon to an emoji.
@@ -70,8 +81,7 @@ class Page:
         Args:
             emoji: A single emoji character.
         """
-        if self._icon:
-            await self._icon.set_emoji(emoji)
+        await self._object.set_icon_emoji(emoji)
 
     async def set_icon_url(self, url: str) -> None:
         """Set the page icon to an external image URL.
@@ -79,8 +89,7 @@ class Page:
         Args:
             url: Public URL of the image.
         """
-        if self._icon:
-            await self._icon.set_from_url(url)
+        await self._object.set_icon_url(url)
 
     async def set_icon_from_file(self, file_path: Path | str) -> None:
         """Upload a local file and set it as the page icon.
@@ -88,7 +97,7 @@ class Page:
         Args:
             file_path: Path to the image file.
         """
-        await self._icon.set_from_file(file_path)
+        await self._object.set_icon_from_file(file_path)
 
     async def set_icon_from_bytes(self, content: bytes, filename: str) -> None:
         """Upload raw bytes and set them as the page icon.
@@ -97,12 +106,11 @@ class Page:
             content: Raw image bytes.
             filename: Filename with extension for MIME detection.
         """
-        await self._icon.set_from_bytes(content, filename)
+        await self._object.set_icon_from_bytes(content, filename)
 
     async def remove_icon(self) -> None:
         """Remove the page icon."""
-        if self._icon:
-            await self._icon.remove()
+        await self._object.remove_icon()
 
     async def set_cover(self, url: str) -> None:
         """Set the page cover to an external image URL.
@@ -110,13 +118,11 @@ class Page:
         Args:
             url: Public URL of the cover image.
         """
-        if self._cover:
-            await self._cover.set_from_url(url)
+        await self._object.set_cover_url(url)
 
     async def random_cover(self) -> None:
         """Set the page cover to a random Notion gradient."""
-        if self._cover:
-            await self._cover.set_random_gradient()
+        await self._object.set_random_cover()
 
     async def set_cover_from_file(self, file_path: Path | str) -> None:
         """Upload a local file and set it as the page cover.
@@ -124,7 +130,7 @@ class Page:
         Args:
             file_path: Path to the image file.
         """
-        await self._cover.set_from_file(file_path)
+        await self._object.set_cover_from_file(file_path)
 
     async def set_cover_from_bytes(self, content: bytes, filename: str) -> None:
         """Upload raw bytes and set them as the page cover.
@@ -133,12 +139,11 @@ class Page:
             content: Raw image bytes.
             filename: Filename with extension for MIME detection.
         """
-        await self._cover.set_from_bytes(content, filename)
+        await self._object.set_cover_from_bytes(content, filename)
 
     async def remove_cover(self) -> None:
         """Remove the page cover image."""
-        if self._cover:
-            await self._cover.remove()
+        await self._object.remove_cover()
 
     async def append(self, content: str) -> None:
         """Append markdown content to the end of the page.
@@ -262,12 +267,11 @@ class Page:
         """
         if title is not None:
             await self.rename(title)
-        if icon_emoji is not None:
-            await self.set_icon_emoji(icon_emoji)
-        if icon_url is not None:
-            await self.set_icon_url(icon_url)
-        if cover_url is not None:
-            await self.set_cover(cover_url)
+        await self._object.update(
+            icon_emoji=icon_emoji,
+            icon_url=icon_url,
+            cover_url=cover_url,
+        )
         if properties is not None:
             await self.properties.update(properties)
         if content is not None:

@@ -1,10 +1,12 @@
-from typing import cast
-from uuid import UUID
+from __future__ import annotations
+
+from typing import Literal, overload
 
 from notionary.http import HttpClient
+from notionary.user import mapper
 from notionary.user.client import UserClient
-from notionary.user.models import Bot, Person
-from notionary.user.schemas import BotResponseDto, PersonResponseDto, UserType
+from notionary.user.models import Bot, Person, User
+from notionary.user.schemas import UserType
 
 
 class UsersNamespace:
@@ -18,38 +20,32 @@ class UsersNamespace:
     def __init__(self, http: HttpClient) -> None:
         self._client = UserClient(http)
 
-    async def list_users(self) -> list[Person]:
-        """Return all human workspace members.
+    @overload
+    async def list(self, *, filter: Literal["person"]) -> list[Person]: ...
+    @overload
+    async def list(self, *, filter: Literal["bot"]) -> list[Bot]: ...
+    @overload
+    async def list(self, *, filter: None = None) -> list[User]: ...
 
-        Returns:
-            All users whose account type is ``person``.
-        """
-        users = await self._client.list()
-        return [self._to_person(u) for u in users if u.type == UserType.PERSON]
-
-    async def list_bots(self) -> list[Bot]:
-        """Return all bot integrations in the workspace.
-
-        Returns:
-            All users whose account type is ``bot``.
-        """
-        users = await self._client.list()
-        return [self._to_bot(u) for u in users if u.type == UserType.BOT]
-
-    async def get(self, user_id: UUID) -> Person | Bot:
-        """Fetch a single user by ID.
+    async def list(
+        self, *, filter: Literal["person", "bot"] | None = None
+    ) -> list[Person] | list[Bot] | list[User]:
+        """Return workspace members, optionally filtered by type.
 
         Args:
-            user_id: The Notion user UUID.
+            filter: ``"person"`` for humans only, ``"bot"`` for integrations only,
+                    ``None`` (default) for all members.
 
         Returns:
-            :class:`~notionary.user.models.Person` or
-            :class:`~notionary.user.models.Bot` depending on the account type.
+            A list of :class:`~notionary.user.models.Person`,
+            :class:`~notionary.user.models.Bot`, or both.
         """
-        dto = await self._client.get(user_id)
-        if dto.type == UserType.PERSON:
-            return self._to_person(dto)
-        return self._to_bot(dto)
+        users = await self._client.list()
+        match filter:
+            case "person":
+                return [mapper.to_person(u) for u in users if u.type == UserType.PERSON]
+            case "bot":
+                return [mapper.to_bot(u) for u in users if u.type == UserType.BOT]
 
     async def me(self) -> Bot:
         """Return the bot user associated with the current API token.
@@ -78,29 +74,3 @@ class UsersNamespace:
             for u in await self.list_users()
             if query_lower in u.name.lower() or query_lower in u.email.lower()
         ]
-
-    @staticmethod
-    def _to_person(dto) -> Person:
-        dto = cast(PersonResponseDto, dto)
-        return Person(
-            id=dto.id,
-            name=dto.name or "",
-            email=dto.email or "",
-            avatar_url=dto.avatar_url,
-        )
-
-    @staticmethod
-    def _to_bot(dto) -> Bot:
-        dto = cast(BotResponseDto, dto)
-        limit = (
-            dto.bot.workspace_limits.max_file_upload_size_in_bytes
-            if dto.bot.workspace_limits
-            else 0
-        )
-        return Bot(
-            id=dto.id,
-            name=dto.name,
-            workspace_name=dto.bot.workspace_name if dto.bot else None,
-            workspace_file_upload_limit_in_bytes=limit,
-            avatar_url=dto.avatar_url,
-        )
