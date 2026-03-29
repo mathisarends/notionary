@@ -52,6 +52,7 @@ nav:
       - Data Source: data_source/index.md
       - File Upload: file_upload/index.md
       - Workspace: workspace/index.md
+      - MCP Server: mcp.md
 
   - API Reference:
       - Notionary: api/notionary.md

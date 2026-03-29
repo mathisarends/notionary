@@ -5,7 +5,10 @@
       "Bash(uv run:*)",
       "mcp__notion__notion-fetch",
       "mcp__notion__notion-update-page",
-      "mcp__notion__notion-search"
+      "mcp__notion__notion-search",
+      "mcp__claude_ai_Context7__resolve-library-id",
+      "mcp__claude_ai_Context7__query-docs",
+      "Bash(uv sync:*)"
     ]
   }
 }
