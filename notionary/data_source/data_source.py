@@ -13,7 +13,7 @@ from notionary.http.client import HttpClient
 from notionary.page import Page
 from notionary.rich_text import rich_text_to_markdown
 from notionary.shared.object import NotionObject
-from notionary.shared.object.icon.schemas import AnyIcon
+from notionary.shared.object.icon.schemas import Icon
 from notionary.shared.object.schemas import File
 from notionary.user.schemas import PartialUserDto
 
@@ -33,7 +33,7 @@ class DataSource:
         url: str,
         title: str,
         description: str | None,
-        icon: AnyIcon | None,
+        icon: Icon | None,
         cover: File | None,
         in_trash: bool,
         properties: dict[str, AnyDataSourceProperty],

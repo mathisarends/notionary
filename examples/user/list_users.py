@@ -11,7 +11,7 @@ load_dotenv(override=True)
 
 async def main() -> None:
     async with Notionary() as notion:
-        users = await notion.users.list_users()
+        users = await notion.users.list(filter="person")
         for user in users:
             print(f"{user.name} – {user.email}")
 

@@ -1,8 +1,8 @@
 from enum import StrEnum
-from typing import Annotated, Literal, Self
+from typing import Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 # ---------------------------------------------------------------------------
 # File
@@ -56,10 +56,7 @@ class FileUploadFile(BaseModel):
         return None
 
 
-File = Annotated[
-    ExternalFile | NotionHostedFile | FileUploadFile, Field(discriminator="type")
-]
-
+type File = ExternalFile | NotionHostedFile | FileUploadFile
 
 # ---------------------------------------------------------------------------
 # Parent

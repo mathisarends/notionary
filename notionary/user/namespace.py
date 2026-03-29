@@ -46,6 +46,34 @@ class UsersNamespace:
                 return [mapper.to_person(u) for u in users if u.type == UserType.PERSON]
             case "bot":
                 return [mapper.to_bot(u) for u in users if u.type == UserType.BOT]
+            case None:
+                return [
+                    mapper.to_person(u)
+                    if u.type == UserType.PERSON
+                    else mapper.to_bot(u)
+                    for u in users
+                ]
+
+    @overload
+    async def search(
+        self, query: str, *, filter: Literal["person"]
+    ) -> list[Person]: ...
+    @overload
+    async def search(self, query: str, *, filter: Literal["bot"]) -> list[Bot]: ...
+    @overload
+    async def search(self, query: str, *, filter: None = None) -> list[User]: ...
+
+    async def search(
+        self, query: str, *, filter: Literal["person", "bot"] | None = None
+    ) -> list[Person] | list[Bot] | list[User]:
+        query_lower = query.lower()
+        users = await self.list(filter=filter)
+        return [
+            u
+            for u in users
+            if query_lower in (u.name or "").lower()
+            or (isinstance(u, Person) and query_lower in u.email.lower())
+        ]
 
     async def me(self) -> Bot:
         """Return the bot user associated with the current API token.
@@ -54,23 +82,4 @@ class UsersNamespace:
             The authenticated integration bot, including workspace metadata.
         """
         dto = await self._client.me()
-        return self._to_bot(dto)
-
-    async def search(self, query: str) -> list[Person]:
-        """Filter workspace members by name or email.
-
-        Matching is case-insensitive and checks both fields.
-
-        Args:
-            query: Substring to match against name and email.
-
-        Returns:
-            All :class:`~notionary.user.models.Person` objects where
-            ``query`` appears in ``name`` or ``email``.
-        """
-        query_lower = query.lower()
-        return [
-            u
-            for u in await self.list_users()
-            if query_lower in u.name.lower() or query_lower in u.email.lower()
-        ]
+        return mapper.to_bot(dto)

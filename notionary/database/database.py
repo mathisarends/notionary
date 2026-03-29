@@ -11,7 +11,7 @@ from notionary.file_upload import FileUploads
 from notionary.http.client import HttpClient
 from notionary.rich_text import markdown_to_rich_text, rich_text_to_markdown
 from notionary.shared.object import NotionObject
-from notionary.shared.object.icon.schemas import AnyIcon
+from notionary.shared.object.icon.schemas import Icon
 from notionary.shared.object.schemas import File
 from notionary.user.schemas import PartialUserDto
 
@@ -34,7 +34,7 @@ class Database:
         is_inline: bool,
         is_locked: bool,
         data_sources: list[DataSourceReference],
-        icon: AnyIcon | None,
+        icon: Icon | None,
         cover: File | None,
         in_trash: bool,
         http: HttpClient,

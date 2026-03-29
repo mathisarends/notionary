@@ -6,7 +6,7 @@ from pathlib import Path
 from notionary.file_upload import FileUploads
 from notionary.http.client import HttpClient
 from notionary.shared.object.dtos import NotionObjectResponseDto, NotionObjectUpdateDto
-from notionary.shared.object.icon.schemas import AnyIcon, EmojiIcon
+from notionary.shared.object.icon.schemas import EmojiIcon, Icon
 from notionary.shared.object.schemas import (
     ExternalFile,
     File,
@@ -33,7 +33,7 @@ class NotionObject:
 
     def __init__(
         self,
-        icon: AnyIcon | None,
+        icon: Icon | None,
         cover: File | None,
         in_trash: bool,
         http_client: HttpClient,
@@ -161,11 +161,11 @@ class NotionObject:
         return NotionObjectResponseDto.model_validate(response)
 
     @staticmethod
-    def _extract_icon_emoji(icon: AnyIcon | None) -> str | None:
+    def _extract_icon_emoji(icon: Icon | None) -> str | None:
         return icon.emoji if isinstance(icon, EmojiIcon) else None
 
     @staticmethod
-    def _extract_icon_url(icon: AnyIcon | None) -> str | None:
+    def _extract_icon_url(icon: Icon | None) -> str | None:
         if isinstance(icon, ExternalFile):
             return icon.external.url
         if isinstance(icon, NotionHostedFile):

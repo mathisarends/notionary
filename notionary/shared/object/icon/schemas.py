@@ -1,8 +1,8 @@
 from enum import StrEnum
-from typing import Annotated, Literal
+from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from notionary.shared.object.schemas import File
 
@@ -55,7 +55,4 @@ class BuiltinIcon(BaseModel):
     icon: BuiltinIconData
 
 
-AnyIcon = Annotated[
-    EmojiIcon | CustomEmojiIcon | BuiltinIcon | File,
-    Field(discriminator="type"),
-]
+type Icon = EmojiIcon | CustomEmojiIcon | BuiltinIcon | File

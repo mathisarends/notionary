@@ -9,7 +9,7 @@ from notionary.page.properties import PageProperties
 from notionary.page.properties.schemas import AnyPageProperty
 from notionary.page.schemas import PageUpdateRequest, _DefaultTemplate, _TemplateById
 from notionary.shared.object import NotionObject
-from notionary.shared.object.icon.schemas import AnyIcon
+from notionary.shared.object.icon.schemas import Icon
 from notionary.shared.object.schemas import File
 from notionary.user.schemas import PartialUserDto
 
@@ -26,7 +26,7 @@ class Page:
         id: UUID,
         url: str,
         title: str,
-        icon: AnyIcon | None,
+        icon: Icon | None,
         cover: File | None,
         in_trash: bool,
         properties: dict[str, AnyPageProperty],
