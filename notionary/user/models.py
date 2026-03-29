@@ -21,3 +21,6 @@ class Bot:
     workspace_name: str | None
     workspace_file_upload_limit_in_bytes: int
     avatar_url: str | None = None
+
+
+type User = Person | Bot

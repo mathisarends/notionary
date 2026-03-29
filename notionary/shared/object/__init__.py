@@ -1,9 +1,5 @@
-from .cover import Cover
-from .icon.icon import Icon
-from .trash import Trash
+from .object import NotionObject
 
 __all__ = [
-    "Cover",
-    "Icon",
-    "Trash",
+    "NotionObject",
 ]

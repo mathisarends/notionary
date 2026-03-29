@@ -102,7 +102,7 @@ class DataSourceNamespace:
             DataSourceNotFound: If no exact match is found. The exception
                 includes fuzzy suggestions when available.
         """
-        candidates = await self.list(query=title, page_size=100)
+        candidates = await self.list(query=title, page_size=10, total_results_limit=10)
 
         exact = next(
             (ds for ds in candidates if ds.title.lower() == title.lower()), None

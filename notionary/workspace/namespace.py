@@ -1,12 +1,12 @@
 from typing import Any
 
+from notionary.data_source import mapper as data_source_mapper
 from notionary.data_source.data_source import DataSource
 from notionary.data_source.schemas import DataSourceDto
 from notionary.http.client import HttpClient
+from notionary.page import mapper as page_mapper
 from notionary.page.page import Page
-from notionary.page.properties import PageTitleProperty
 from notionary.page.schemas import PageDto
-from notionary.rich_text import rich_text_to_markdown
 from notionary.shared.search import SearchClient, SortDirection, SortTimestamp
 
 type WorkspaceResource = Page | DataSource
@@ -66,33 +66,7 @@ class WorkspaceNamespace:
         return None
 
     def _page_from_dto(self, dto: PageDto) -> Page:
-        title_property = next(
-            (p for p in dto.properties.values() if isinstance(p, PageTitleProperty)),
-            None,
-        )
-        title = rich_text_to_markdown(title_property.title if title_property else [])
-        return Page(
-            id=dto.id,
-            url=dto.url,
-            title=title,
-            icon=dto.icon,
-            cover=dto.cover,
-            in_trash=dto.in_trash,
-            properties=dto.properties,
-            http=self._http,
-        )
+        return page_mapper.to_page(dto, self._http)
 
     def _data_source_from_dto(self, dto: DataSourceDto) -> DataSource:
-        title = rich_text_to_markdown(dto.title)
-        description_text = rich_text_to_markdown(dto.description)
-        return DataSource(
-            id=dto.id,
-            url=dto.url,
-            title=title,
-            description=description_text if description_text else None,
-            icon=dto.icon,
-            cover=dto.cover,
-            in_trash=dto.in_trash,
-            properties=dto.properties,
-            http=self._http,
-        )
+        return data_source_mapper.to_data_source(dto, self._http)

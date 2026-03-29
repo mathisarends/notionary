@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from notionary.shared.object.icon.schemas import AnyIcon
+from notionary.shared.object.icon.schemas import Icon
 from notionary.shared.object.schemas import File, Parent
 from notionary.user.schemas import PartialUserDto
 
@@ -16,13 +16,13 @@ class NotionObjectResponseDto(BaseModel):
     last_edited_time: str
     last_edited_by: PartialUserDto
     cover: File | None = None
-    icon: AnyIcon | None = None
+    icon: Icon | None = None
     parent: Parent
     in_trash: bool
     url: str
 
 
 class NotionObjectUpdateDto(BaseModel):
-    icon: AnyIcon | None = None
+    icon: Icon | None = None
     cover: File | None = None
     in_trash: bool | None = None

@@ -6,9 +6,9 @@ from notionary.data_source.schemas import (
 )
 from notionary.http.client import HttpClient
 from notionary.page import Page
-from notionary.page.properties import PageTitleProperty
+from notionary.page import mapper as page_mapper
 from notionary.page.schemas import PageDto
-from notionary.rich_text import markdown_to_rich_text, rich_text_to_markdown
+from notionary.rich_text import markdown_to_rich_text
 
 
 class DataSourceClient:
@@ -43,22 +43,4 @@ class DataSourceClient:
 
         response = await self._http.post("pages", data=data)
         dto = PageDto.model_validate(response)
-
-        title_property = next(
-            (p for p in dto.properties.values() if isinstance(p, PageTitleProperty)),
-            None,
-        )
-        page_title = rich_text_to_markdown(
-            title_property.title if title_property else []
-        )
-
-        return Page(
-            id=dto.id,
-            url=dto.url,
-            title=page_title,
-            icon=dto.icon,
-            cover=dto.cover,
-            in_trash=dto.in_trash,
-            properties=dto.properties,
-            http=self._http,
-        )
+        return page_mapper.to_page(dto, self._http)
