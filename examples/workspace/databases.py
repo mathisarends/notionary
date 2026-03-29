@@ -17,7 +17,7 @@ async def main() -> None:
 
         db = await notion.databases.from_title("Tasks")
         await db.set_description("Tracks all current tasks and their status.")
-        await db.set_icon_emoji("✅")
+        await db.set_icon("✅")
         print(f"Updated: {db.title}")
 
 

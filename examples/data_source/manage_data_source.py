@@ -16,7 +16,7 @@ async def main() -> None:
         page = await ds.create_page(title="New Project")
         print(f"Created: {page.title} ({page.url})")
 
-        # await ds.set_icon_emoji("📁")
+        # await ds.set_icon("📁")
         # await ds.set_title("Projects (updated)")
 
 

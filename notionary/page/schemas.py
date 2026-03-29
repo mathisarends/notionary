@@ -47,6 +47,23 @@ class _TemplateById(BaseModel):
 PageTemplate = Annotated[_DefaultTemplate | _TemplateById, Field(discriminator="type")]
 
 
+class PageParent(BaseModel):
+    type: Literal["page_id"] = "page_id"
+    page_id: UUID
+
+
+class DataSourceParent(BaseModel):
+    type: Literal["data_source_id"] = "data_source_id"
+    data_source_id: UUID
+
+
+MoveParent = Annotated[PageParent | DataSourceParent, Field(discriminator="type")]
+
+
+class MovePageRequest(BaseModel):
+    parent: MoveParent
+
+
 class PageUpdateRequest(BaseModel):
     erase_content: bool | None = None
     is_locked: bool | None = None

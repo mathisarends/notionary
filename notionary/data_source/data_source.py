@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import overload
 from uuid import UUID
 
 from notionary.data_source.client import (
@@ -8,6 +9,7 @@ from notionary.data_source.client import (
 from notionary.data_source.properties.schemas import (
     AnyDataSourceProperty,
 )
+from notionary.data_source.schemas import DataSourceTemplate
 from notionary.file_upload import FileUploads
 from notionary.http.client import HttpClient
 from notionary.page import Page
@@ -79,71 +81,56 @@ class DataSource:
         """Restore the data source from the trash."""
         await self._object.restore()
 
-    async def set_icon_emoji(self, emoji: str) -> None:
-        """Set the data source icon to an emoji.
+    @overload
+    async def set_icon(self, source: str) -> None: ...
+    @overload
+    async def set_icon(self, source: Path) -> None: ...
+    @overload
+    async def set_icon(self, source: bytes, filename: str) -> None: ...
+
+    async def set_icon(
+        self,
+        source: str | Path | bytes,
+        filename: str | None = None,
+    ) -> None:
+        """Set the data source icon from an emoji, URL, local file, or raw bytes.
+
+        A string starting with ``http`` is treated as an external URL;
+        any other string is treated as an emoji character.
 
         Args:
-            emoji: A single emoji character.
+            source: An emoji, a public image URL, a local file path, or raw bytes.
+            filename: Required when *source* is bytes — used for MIME detection.
         """
-        await self._object.set_icon_emoji(emoji)
-
-    async def set_icon_url(self, url: str) -> None:
-        """Set the data source icon to an external image URL.
-
-        Args:
-            url: Public URL of the image.
-        """
-        await self._object.set_icon_url(url)
-
-    async def set_icon_from_file(self, file_path: Path | str) -> None:
-        """Upload a local file and set it as the data source icon.
-
-        Args:
-            file_path: Path to the image file.
-        """
-        await self._object.set_icon_from_file(file_path)
-
-    async def set_icon_from_bytes(self, content: bytes, filename: str) -> None:
-        """Upload raw bytes and set them as the data source icon.
-
-        Args:
-            content: Raw image bytes.
-            filename: Filename with extension for MIME detection.
-        """
-        await self._object.set_icon_from_bytes(content, filename)
+        await self._object.set_icon(source, filename)
 
     async def remove_icon(self) -> None:
         """Remove the data source icon."""
         await self._object.remove_icon()
 
-    async def set_cover(self, url: str) -> None:
-        """Set the data source cover to an external image URL.
+    @overload
+    async def set_cover(self, source: str) -> None: ...
+    @overload
+    async def set_cover(self, source: Path) -> None: ...
+    @overload
+    async def set_cover(self, source: bytes, filename: str) -> None: ...
+
+    async def set_cover(
+        self,
+        source: str | Path | bytes,
+        filename: str | None = None,
+    ) -> None:
+        """Set the data source cover from a URL, local file, or raw bytes.
 
         Args:
-            url: Public URL of the cover image.
+            source: A public image URL, a local file path, or raw image bytes.
+            filename: Required when *source* is bytes — used for MIME detection.
         """
-        await self._object.set_cover_url(url)
+        await self._object.set_cover(source, filename)
 
     async def random_cover(self) -> None:
         """Set the data source cover to a random Notion gradient."""
         await self._object.set_random_cover()
-
-    async def set_cover_from_file(self, file_path: Path | str) -> None:
-        """Upload a local file and set it as the data source cover.
-
-        Args:
-            file_path: Path to the image file.
-        """
-        await self._object.set_cover_from_file(file_path)
-
-    async def set_cover_from_bytes(self, content: bytes, filename: str) -> None:
-        """Upload raw bytes and set them as the data source cover.
-
-        Args:
-            content: Raw image bytes.
-            filename: Filename with extension for MIME detection.
-        """
-        await self._object.set_cover_from_bytes(content, filename)
 
     async def remove_cover(self) -> None:
         """Remove the data source cover image."""
@@ -169,6 +156,22 @@ class DataSource:
             The newly created :class:`~notionary.page.page.Page`.
         """
         return await self._client.create_page(title=title)
+
+    async def list_templates(
+        self,
+        name: str | None = None,
+        page_size: int = 100,
+    ) -> list[DataSourceTemplate]:
+        """List all page templates available in this data source.
+
+        Args:
+            name: Optional case-insensitive substring filter on template name.
+            page_size: Number of results per API request (max 100).
+
+        Returns:
+            A list of :class:`~notionary.data_source.schemas.DataSourceTemplate` objects.
+        """
+        return await self._client.list_templates(name=name, page_size=page_size)
 
     async def update(
         self,

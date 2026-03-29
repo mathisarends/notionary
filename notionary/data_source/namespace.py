@@ -5,6 +5,7 @@ from uuid import UUID
 
 from notionary.data_source.data_source import DataSource
 from notionary.data_source.exceptions import DataSourceNotFound
+from notionary.data_source.mapper import to_data_source
 from notionary.data_source.schemas import DataSourceDto
 from notionary.data_source.search import (
     DataSourceSearchClient,
@@ -12,7 +13,6 @@ from notionary.data_source.search import (
     SortTimestamp,
 )
 from notionary.http import HttpClient
-from notionary.rich_text import rich_text_to_markdown
 from notionary.shared.search import fuzzy_suggestions
 
 
@@ -127,16 +127,4 @@ class DataSourceNamespace:
         return self._data_source_from_dto(dto)
 
     def _data_source_from_dto(self, dto: DataSourceDto) -> DataSource:
-        title = rich_text_to_markdown(dto.title)
-        description_text = rich_text_to_markdown(dto.description)
-        return DataSource(
-            id=dto.id,
-            url=dto.url,
-            title=title,
-            description=description_text if description_text else None,
-            icon=dto.icon,
-            cover=dto.cover,
-            in_trash=dto.in_trash,
-            properties=dto.properties,
-            http=self._http,
-        )
+        return to_data_source(dto, self._http)

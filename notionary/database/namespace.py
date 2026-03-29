@@ -136,6 +136,7 @@ class DatabaseNamespace:
         is_inline: bool | None = None,
         initial_properties: dict[str, Any] | None = None,
         icon_emoji: str | None = None,
+        icon_url: str | None = None,
         cover_url: str | None = None,
     ) -> Database:
         """Create a new database.
@@ -149,6 +150,7 @@ class DatabaseNamespace:
             initial_properties: Property schema definitions to include
                 at creation time.
             icon_emoji: Emoji character to use as the icon.
+            icon_url: External URL to use as the icon.
             cover_url: External URL for the cover image.
 
         Returns:
@@ -161,6 +163,7 @@ class DatabaseNamespace:
             is_inline=is_inline,
             initial_properties=initial_properties,
             icon_emoji=icon_emoji,
+            icon_url=icon_url,
             cover_url=cover_url,
         )
         return self._database_from_dto(dto)

@@ -2,6 +2,7 @@ import logging
 import random
 from collections.abc import Sequence
 from pathlib import Path
+from typing import overload
 
 from notionary.file_upload import FileUploads
 from notionary.http.client import HttpClient
@@ -51,6 +52,38 @@ class NotionObject:
 
     # --- Icon -----------------------------------------------------------------
 
+    @overload
+    async def set_icon(self, source: str) -> None: ...
+    @overload
+    async def set_icon(self, source: Path) -> None: ...
+    @overload
+    async def set_icon(self, source: bytes, filename: str) -> None: ...
+
+    async def set_icon(
+        self,
+        source: str | Path | bytes,
+        filename: str | None = None,
+    ) -> None:
+        """Set the icon from an emoji, URL, local file, or raw bytes.
+
+        A string starting with ``http`` is treated as an external URL;
+        any other string is treated as an emoji character.
+
+        Args:
+            source: An emoji, a public image URL, a local file path, or raw bytes.
+            filename: Required when *source* is bytes — used for MIME detection.
+        """
+        if isinstance(source, bytes):
+            if filename is None:
+                raise ValueError("filename is required when source is bytes")
+            await self.set_icon_from_bytes(source, filename)
+        elif isinstance(source, Path):
+            await self.set_icon_from_file(source)
+        elif source.startswith("http"):
+            await self.set_icon_url(source)
+        else:
+            await self.set_icon_emoji(source)
+
     async def set_icon_emoji(self, emoji: str) -> None:
         response = await self._patch(NotionObjectUpdateDto(icon=EmojiIcon(emoji=emoji)))
         self.icon_emoji = self._extract_icon_emoji(response.icon)
@@ -85,6 +118,33 @@ class NotionObject:
         self.icon_url = None
 
     # --- Cover ----------------------------------------------------------------
+
+    @overload
+    async def set_cover(self, source: str) -> None: ...
+    @overload
+    async def set_cover(self, source: Path) -> None: ...
+    @overload
+    async def set_cover(self, source: bytes, filename: str) -> None: ...
+
+    async def set_cover(
+        self,
+        source: str | Path | bytes,
+        filename: str | None = None,
+    ) -> None:
+        """Set the cover from a URL, local file, or raw bytes.
+
+        Args:
+            source: A public image URL, a local file path, or raw image bytes.
+            filename: Required when *source* is bytes — used for MIME detection.
+        """
+        if isinstance(source, bytes):
+            if filename is None:
+                raise ValueError("filename is required when source is bytes")
+            await self.set_cover_from_bytes(source, filename)
+        elif isinstance(source, Path):
+            await self.set_cover_from_file(source)
+        else:
+            await self.set_cover_url(source)
 
     async def set_cover_url(self, url: str) -> None:
         response = await self._patch(

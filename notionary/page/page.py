@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import overload
 from uuid import UUID
 
 from notionary.file_upload import FileUploads
@@ -7,7 +8,14 @@ from notionary.page.comments.service import PageComments
 from notionary.page.content import PageContent
 from notionary.page.properties import PageProperties
 from notionary.page.properties.schemas import AnyPageProperty
-from notionary.page.schemas import PageUpdateRequest, _DefaultTemplate, _TemplateById
+from notionary.page.schemas import (
+    DataSourceParent,
+    MovePageRequest,
+    PageParent,
+    PageUpdateRequest,
+    _DefaultTemplate,
+    _TemplateById,
+)
 from notionary.shared.object import NotionObject
 from notionary.shared.object.icon.schemas import Icon
 from notionary.shared.object.schemas import File
@@ -75,71 +83,56 @@ class Page:
         """Restore the page from the trash."""
         await self._object.restore()
 
-    async def set_icon_emoji(self, emoji: str) -> None:
-        """Set the page icon to an emoji.
+    @overload
+    async def set_icon(self, source: str) -> None: ...
+    @overload
+    async def set_icon(self, source: Path) -> None: ...
+    @overload
+    async def set_icon(self, source: bytes, filename: str) -> None: ...
+
+    async def set_icon(
+        self,
+        source: str | Path | bytes,
+        filename: str | None = None,
+    ) -> None:
+        """Set the page icon from an emoji, URL, local file, or raw bytes.
+
+        A string starting with ``http`` is treated as an external URL;
+        any other string is treated as an emoji character.
 
         Args:
-            emoji: A single emoji character.
+            source: An emoji, a public image URL, a local file path, or raw bytes.
+            filename: Required when *source* is bytes — used for MIME detection.
         """
-        await self._object.set_icon_emoji(emoji)
-
-    async def set_icon_url(self, url: str) -> None:
-        """Set the page icon to an external image URL.
-
-        Args:
-            url: Public URL of the image.
-        """
-        await self._object.set_icon_url(url)
-
-    async def set_icon_from_file(self, file_path: Path | str) -> None:
-        """Upload a local file and set it as the page icon.
-
-        Args:
-            file_path: Path to the image file.
-        """
-        await self._object.set_icon_from_file(file_path)
-
-    async def set_icon_from_bytes(self, content: bytes, filename: str) -> None:
-        """Upload raw bytes and set them as the page icon.
-
-        Args:
-            content: Raw image bytes.
-            filename: Filename with extension for MIME detection.
-        """
-        await self._object.set_icon_from_bytes(content, filename)
+        await self._object.set_icon(source, filename)
 
     async def remove_icon(self) -> None:
         """Remove the page icon."""
         await self._object.remove_icon()
 
-    async def set_cover(self, url: str) -> None:
-        """Set the page cover to an external image URL.
+    @overload
+    async def set_cover(self, source: str) -> None: ...
+    @overload
+    async def set_cover(self, source: Path) -> None: ...
+    @overload
+    async def set_cover(self, source: bytes, filename: str) -> None: ...
+
+    async def set_cover(
+        self,
+        source: str | Path | bytes,
+        filename: str | None = None,
+    ) -> None:
+        """Set the page cover from a URL, local file, or raw bytes.
 
         Args:
-            url: Public URL of the cover image.
+            source: A public image URL, a local file path, or raw image bytes.
+            filename: Required when *source* is bytes — used for MIME detection.
         """
-        await self._object.set_cover_url(url)
+        await self._object.set_cover(source, filename)
 
     async def random_cover(self) -> None:
         """Set the page cover to a random Notion gradient."""
         await self._object.set_random_cover()
-
-    async def set_cover_from_file(self, file_path: Path | str) -> None:
-        """Upload a local file and set it as the page cover.
-
-        Args:
-            file_path: Path to the image file.
-        """
-        await self._object.set_cover_from_file(file_path)
-
-    async def set_cover_from_bytes(self, content: bytes, filename: str) -> None:
-        """Upload raw bytes and set them as the page cover.
-
-        Args:
-            content: Raw image bytes.
-            filename: Filename with extension for MIME detection.
-        """
-        await self._object.set_cover_from_bytes(content, filename)
 
     async def remove_cover(self) -> None:
         """Remove the page cover image."""
@@ -168,6 +161,15 @@ class Page:
     async def get_markdown(self) -> str:
         """Return the full page content as a markdown string."""
         return await self._content.get_markdown()
+
+    async def get_comments(self) -> list:
+        """Return all comments on this page.
+
+        Returns:
+            A list of :class:`~notionary.page.comments.models.Comment` objects
+            with resolved author names.
+        """
+        return await self._comments.list()
 
     async def comment(self, text: str) -> None:
         """Add a top-level comment to the page.
@@ -237,6 +239,26 @@ class Page:
                 erase_content=erase_content or None,
             )
         )
+
+    async def move_to_page(self, parent_page_id: UUID) -> None:
+        """Move this page under another page.
+
+        Args:
+            parent_page_id: UUID of the new parent page.
+        """
+        request = MovePageRequest(parent=PageParent(page_id=parent_page_id))
+        await self._http.post(f"{self._path}/move", data=request)
+
+    async def move_to_data_source(self, data_source_id: UUID) -> None:
+        """Move this page into a database via its data source.
+
+        Args:
+            data_source_id: UUID of the target database's data source.
+        """
+        request = MovePageRequest(
+            parent=DataSourceParent(data_source_id=data_source_id)
+        )
+        await self._http.post(f"{self._path}/move", data=request)
 
     async def _patch(self, request: PageUpdateRequest) -> None:
         await self._http.patch(self._path, data=request)

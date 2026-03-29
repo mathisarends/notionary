@@ -2,6 +2,8 @@ from uuid import UUID
 
 from notionary.data_source.schemas import (
     DataSourceDto,
+    DataSourceTemplate,
+    ListTemplatesResponse,
     UpdateDataSourceDto,
 )
 from notionary.http.client import HttpClient
@@ -44,3 +46,31 @@ class DataSourceClient:
         response = await self._http.post("pages", data=data)
         dto = PageDto.model_validate(response)
         return page_mapper.to_page(dto, self._http)
+
+    async def list_templates(
+        self,
+        name: str | None = None,
+        page_size: int = 100,
+    ) -> list[DataSourceTemplate]:
+        templates: list[DataSourceTemplate] = []
+        start_cursor: str | None = None
+
+        while True:
+            params: dict = {"page_size": page_size}
+            if name is not None:
+                params["name"] = name
+            if start_cursor is not None:
+                params["start_cursor"] = start_cursor
+
+            response = await self._http.get(
+                f"data_sources/{self._data_source_id}/templates",
+                params=params,
+            )
+            page = ListTemplatesResponse.model_validate(response)
+            templates.extend(page.templates)
+
+            if not page.has_more or page.next_cursor is None:
+                break
+            start_cursor = page.next_cursor
+
+        return templates
