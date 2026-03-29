@@ -14,6 +14,7 @@ dependencies = [
 
 [project.scripts]
 notionary = "notionary.cli:main"
+notionary-mcp = "notionary.mcp.server:main"
 
 [project.urls]
 Homepage = "https://github.com/mathisarends/notionary"
@@ -21,6 +22,10 @@ Homepage = "https://github.com/mathisarends/notionary"
 [project.optional-dependencies]
 cli = [
     "typer>=0.24.1",
+]
+mcp = [
+    "fastmcp>=3.1.1",
+    "openai-agents>=0.7.0",
 ]
 
 [build-system]
