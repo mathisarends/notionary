@@ -7,7 +7,14 @@ from notionary.page.comments.service import PageComments
 from notionary.page.content import PageContent
 from notionary.page.properties import PageProperties
 from notionary.page.properties.schemas import AnyPageProperty
-from notionary.page.schemas import PageUpdateRequest, _DefaultTemplate, _TemplateById
+from notionary.page.schemas import (
+    DataSourceParent,
+    MovePageRequest,
+    PageParent,
+    PageUpdateRequest,
+    _DefaultTemplate,
+    _TemplateById,
+)
 from notionary.shared.object import NotionObject
 from notionary.shared.object.icon.schemas import Icon
 from notionary.shared.object.schemas import File
@@ -246,6 +253,26 @@ class Page:
                 erase_content=erase_content or None,
             )
         )
+
+    async def move_to_page(self, parent_page_id: UUID) -> None:
+        """Move this page under another page.
+
+        Args:
+            parent_page_id: UUID of the new parent page.
+        """
+        request = MovePageRequest(parent=PageParent(page_id=parent_page_id))
+        await self._http.post(f"{self._path}/move", data=request)
+
+    async def move_to_data_source(self, data_source_id: UUID) -> None:
+        """Move this page into a database via its data source.
+
+        Args:
+            data_source_id: UUID of the target database's data source.
+        """
+        request = MovePageRequest(
+            parent=DataSourceParent(data_source_id=data_source_id)
+        )
+        await self._http.post(f"{self._path}/move", data=request)
 
     async def _patch(self, request: PageUpdateRequest) -> None:
         await self._http.patch(self._path, data=request)
