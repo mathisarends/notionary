@@ -146,16 +146,30 @@ class DataSource:
         title_markdown = rich_text_to_markdown(dto.title)
         self.title = title_markdown
 
-    async def create_page(self, title: str | None = None) -> Page:
+    async def create_page(
+        self,
+        title: str | None = None,
+        *,
+        template_id: str | None = None,
+        use_default_template: bool = False,
+    ) -> Page:
         """Create a new page inside this data source.
 
         Args:
             title: Optional page title.
+            template_id: ID of the template to apply. Takes precedence over
+                *use_default_template* when both are supplied.
+            use_default_template: If ``True`` and no *template_id* is given,
+                apply the data source's default template.
 
         Returns:
             The newly created :class:`~notionary.page.page.Page`.
         """
-        return await self._client.create_page(title=title)
+        return await self._client.create_page(
+            title=title,
+            template_id=template_id,
+            use_default_template=use_default_template,
+        )
 
     async def list_templates(
         self,

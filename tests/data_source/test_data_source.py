@@ -145,3 +145,50 @@ class TestDataSourceUpdate:
         await ds.update()
 
         assert ds.title == "Original"
+
+
+class TestDataSourceCreatePage:
+    @pytest.mark.asyncio
+    async def test_create_page_no_template(self) -> None:
+        ds = _make_data_source()
+        mock_page = object()
+        ds._client.create_page = AsyncMock(return_value=mock_page)
+
+        result = await ds.create_page(title="My Page")
+
+        ds._client.create_page.assert_called_once_with(
+            title="My Page",
+            template_id=None,
+            use_default_template=False,
+        )
+        assert result is mock_page
+
+    @pytest.mark.asyncio
+    async def test_create_page_with_specific_template_id(self) -> None:
+        ds = _make_data_source()
+        mock_page = object()
+        ds._client.create_page = AsyncMock(return_value=mock_page)
+
+        result = await ds.create_page(title="My Page", template_id="tmpl-123")
+
+        ds._client.create_page.assert_called_once_with(
+            title="My Page",
+            template_id="tmpl-123",
+            use_default_template=False,
+        )
+        assert result is mock_page
+
+    @pytest.mark.asyncio
+    async def test_create_page_with_default_template(self) -> None:
+        ds = _make_data_source()
+        mock_page = object()
+        ds._client.create_page = AsyncMock(return_value=mock_page)
+
+        result = await ds.create_page(use_default_template=True)
+
+        ds._client.create_page.assert_called_once_with(
+            title=None,
+            template_id=None,
+            use_default_template=True,
+        )
+        assert result is mock_page
