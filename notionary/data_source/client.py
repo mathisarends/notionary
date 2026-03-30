@@ -31,7 +31,20 @@ class DataSourceClient:
         update_data_source_dto = UpdateDataSourceDto(title=rich_text_title)
         return await self.patch_metadata(update_data_source_dto)
 
-    async def create_page(self, title: str | None = None) -> Page:
+    async def create_page(
+        self,
+        title: str | None = None,
+        *,
+        template_id: str | None = None,
+        use_default_template: bool = False,
+    ) -> Page:
+        if template_id is not None:
+            template = {"type": "template_id", "template_id": template_id}
+        elif use_default_template:
+            template = {"type": "default"}
+        else:
+            template = None
+
         data = {
             "parent": {
                 "type": "data_source_id",
@@ -42,6 +55,9 @@ class DataSourceClient:
 
         if title:
             data["properties"]["Name"] = {"title": [{"text": {"content": title}}]}
+
+        if template:
+            data["template"] = template
 
         response = await self._http.post("pages", data=data)
         dto = PageDto.model_validate(response)
