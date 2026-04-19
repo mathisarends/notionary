@@ -1,9 +1,9 @@
-from dataclasses import dataclass
 from uuid import UUID
 
+from pydantic import BaseModel
 
-@dataclass
-class Person:
+
+class Person(BaseModel):
     """A human workspace member."""
 
     id: UUID
@@ -12,8 +12,7 @@ class Person:
     avatar_url: str | None = None
 
 
-@dataclass
-class Bot:
+class Bot(BaseModel):
     """A bot integration in the workspace."""
 
     id: UUID

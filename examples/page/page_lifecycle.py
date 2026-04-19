@@ -1,5 +1,3 @@
-"""Manage page lifecycle: trash, restore, lock, and unlock."""
-
 import asyncio
 
 from dotenv import load_dotenv

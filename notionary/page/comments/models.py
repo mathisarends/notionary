@@ -1,8 +1,7 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class Comment:
+class Comment(BaseModel):
     """A resolved comment with author name and markdown content."""
 
     author_name: str
