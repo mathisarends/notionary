@@ -47,6 +47,32 @@ class TestPagePropertiesSetProperty:
 
         assert service.properties == new_props
 
+    @pytest.mark.asyncio
+    async def test_set_properties_delegates_to_http_client(self) -> None:
+        service, _ = _make_service()
+        updated_props = {"Name": _title_property()}
+        service._property_http_client.set_properties = AsyncMock(
+            return_value=type("Dto", (), {"properties": updated_props})()
+        )
+
+        await service.set_properties({"Name": "New Title"})
+
+        service._property_http_client.set_properties.assert_called_once_with(
+            {"Name": "New Title"}
+        )
+
+    @pytest.mark.asyncio
+    async def test_set_properties_updates_local_properties(self) -> None:
+        service, _ = _make_service()
+        new_props = {"Name": _title_property(), "Status": _title_property()}
+        service._property_http_client.set_properties = AsyncMock(
+            return_value=type("Dto", (), {"properties": new_props})()
+        )
+
+        await service.set_properties({"Name": "Updated", "Status": "Done"})
+
+        assert service.properties == new_props
+
 
 class TestPagePropertiesSetTitle:
     @pytest.mark.asyncio

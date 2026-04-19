@@ -9,6 +9,7 @@ from notionary.page.properties.schemas import (
     PageDateProperty,
     PageMultiSelectProperty,
     PageNumberProperty,
+    PageRelationProperty,
     PageRichTextProperty,
     PageSelectProperty,
     PageStatusProperty,
@@ -16,34 +17,48 @@ from notionary.page.properties.schemas import (
 )
 from notionary.rich_text import rich_text_to_markdown
 
-# Property types that an agent can write via set()
-_SETTABLE_TYPES = frozenset(
-    {
-        "status",
-        "select",
-        "multi_select",
-        "number",
-        "checkbox",
-        "date",
-        "title",
-        "rich_text",
-        "url",
-        "email",
-        "phone_number",
-    }
-)
-
-
-def _validate_option(property_name: str, value: str, valid_names: list[str]) -> None:
-    if value not in valid_names:
-        raise ValueError(
-            f"Property {property_name!r}: {value!r} is not a valid option. "
-            f"Valid options: {valid_names}"
-        )
-
 
 class PageProperties:
     """Scoped access to the properties of a single Notion page."""
+
+    # Property types that an agent can write via set()
+    _SETTABLE_TYPES = frozenset(
+        {
+            "status",
+            "select",
+            "multi_select",
+            "number",
+            "checkbox",
+            "date",
+            "title",
+            "rich_text",
+            "url",
+            "email",
+            "phone_number",
+        }
+    )
+
+    @staticmethod
+    def _validate_option(
+        property_name: str, value: str, valid_names: list[str]
+    ) -> None:
+        if value not in valid_names:
+            raise ValueError(
+                f"Property {property_name!r}: {value!r} is not a valid option. "
+                f"Valid options: {valid_names}"
+            )
+
+    @staticmethod
+    def _relation_ids(prop: PageRelationProperty) -> list[str]:
+        return [item.id for item in prop.relation]
+
+    @staticmethod
+    def _is_uuid_like(value: str) -> bool:
+        try:
+            UUID(value)
+        except (ValueError, TypeError, AttributeError):
+            return False
+        return True
 
     def __init__(
         self,
@@ -66,6 +81,15 @@ class PageProperties:
         dto = await self._property_http_client.set_property(name, value)
         self.properties = dto.properties
 
+    async def set_properties(self, values: dict[str, Any]) -> None:
+        """Set multiple page properties in a single API request.
+
+        Args:
+            values: Mapping of property names to values.
+        """
+        dto = await self._property_http_client.set_properties(values)
+        self.properties = dto.properties
+
     async def set_title(self, title: str) -> None:
         """Set the page title.
 
@@ -84,7 +108,9 @@ class PageProperties:
         await self.set_property(name, title)
 
     async def set(
-        self, name: str, value: str | int | float | bool | list[str] | None
+        self,
+        name: str,
+        value: str | int | float | bool | list[str] | None,
     ) -> None:
         """Agent-friendly property setter. Resolves type and validates automatically.
 
@@ -109,7 +135,7 @@ class PageProperties:
                     raise TypeError(
                         f"Property {name!r} expects a string, got {type(value).__name__}"
                     )
-                _validate_option(name, value, prop.option_names)
+                self._validate_option(name, value, prop.option_names)
                 await self.set_property(name, value)
 
             case PageSelectProperty():
@@ -117,7 +143,7 @@ class PageProperties:
                     raise TypeError(
                         f"Property {name!r} expects a string, got {type(value).__name__}"
                     )
-                _validate_option(name, value, prop.option_names)
+                self._validate_option(name, value, prop.option_names)
                 await self.set_property(name, value)
 
             case PageMultiSelectProperty():
@@ -127,7 +153,7 @@ class PageProperties:
                         raise TypeError(
                             f"Property {name!r} expects strings, got {type(v).__name__}"
                         )
-                    _validate_option(name, v, prop.option_names)
+                    self._validate_option(name, v, prop.option_names)
                 await self.set_property(name, names)
 
             case PageNumberProperty():
@@ -162,8 +188,47 @@ class PageProperties:
                     )
                 await self.set_property(name, value)
 
+            case PageRelationProperty():
+                available_ids = self._relation_ids(prop)
+                if isinstance(value, str):
+                    relation_ids = [value]
+                elif isinstance(value, list):
+                    relation_ids = value
+                else:
+                    raise TypeError(
+                        f"Property {name!r} expects a relation page id string "
+                        f"or list[str], got {type(value).__name__}. "
+                        f"Available relation ids: {available_ids}"
+                    )
+
+                for relation_id in relation_ids:
+                    if not isinstance(relation_id, str):
+                        raise TypeError(
+                            f"Property {name!r} expects relation page ids as strings, "
+                            f"got {type(relation_id).__name__}. "
+                            f"Available relation ids: {available_ids}"
+                        )
+
+                    if not relation_id.strip():
+                        raise ValueError(
+                            f"Property {name!r}: relation page id cannot be empty. "
+                            f"Available relation ids: {available_ids}"
+                        )
+
+                    if (
+                        not self._is_uuid_like(relation_id)
+                        and relation_id not in available_ids
+                    ):
+                        raise ValueError(
+                            f"Property {name!r}: {relation_id!r} is not a valid "
+                            f"relation page id. Use a UUID-like id. "
+                            f"Available relation ids: {available_ids}"
+                        )
+
+                await self.set_property(name, relation_ids)
+
             case _:
-                if prop.type in _SETTABLE_TYPES:
+                if prop.type in self._SETTABLE_TYPES:
                     await self.set_property(name, value)
                 else:
                     raise ValueError(
@@ -209,6 +274,11 @@ class PageProperties:
 
                 case PageRichTextProperty():
                     entry["current"] = rich_text_to_markdown(prop.rich_text) or None
+
+                case PageRelationProperty():
+                    relation_ids = self._relation_ids(prop)
+                    entry["current"] = relation_ids
+                    entry["options"] = relation_ids
 
                 case _:
                     pass

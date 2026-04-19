@@ -55,6 +55,23 @@ class PagePropertyHttpClient:
         built = self._build_property(prop, value)
         return await self.patch_page(PgePropertiesUpdateDto(properties={name: built}))
 
+    async def set_properties(self, values: dict[str, Any]) -> PageDto:
+        if not values:
+            raise ValueError("At least one property must be provided.")
+
+        built_properties: dict[str, PageProperty] = {}
+        for name, value in values.items():
+            prop = self._properties.get(name)
+            if prop is None:
+                raise KeyError(
+                    f"Property '{name}' not found. Available: {list(self._properties)}"
+                )
+            built_properties[name] = self._build_property(prop, value)
+
+        return await self.patch_page(
+            PgePropertiesUpdateDto(properties=built_properties)
+        )
+
     def _build_property(self, prop: AnyPageProperty, value: Any) -> PageProperty:
         match prop:
             case PageTitleProperty():

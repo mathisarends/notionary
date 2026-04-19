@@ -10,10 +10,12 @@ from notionary.page.properties.schemas import (
     PageDateProperty,
     PageMultiSelectProperty,
     PageNumberProperty,
+    PageRelationProperty,
     PageRichTextProperty,
     PageSelectProperty,
     PageStatusProperty,
     PageTitleProperty,
+    RelationItem,
     SelectOption,
     StatusOption,
 )
@@ -150,6 +152,28 @@ class TestDescribe:
         assert result["Notes"]["type"] == "rich_text"
         assert result["Notes"]["current"] == "Notes here"
 
+    def test_relation_property_includes_current_ids_as_options(self) -> None:
+        props = {
+            "Module": PageRelationProperty(
+                id="rel",
+                relation=[
+                    RelationItem(id="11111111-1111-1111-1111-111111111111"),
+                    RelationItem(id="22222222-2222-2222-2222-222222222222"),
+                ],
+            )
+        }
+        result = _make_service(props).describe()
+
+        assert result["Module"]["type"] == "relation"
+        assert result["Module"]["current"] == [
+            "11111111-1111-1111-1111-111111111111",
+            "22222222-2222-2222-2222-222222222222",
+        ]
+        assert result["Module"]["options"] == [
+            "11111111-1111-1111-1111-111111111111",
+            "22222222-2222-2222-2222-222222222222",
+        ]
+
     def test_empty_properties(self) -> None:
         result = _make_service({}).describe()
         assert result == {}
@@ -257,6 +281,48 @@ class TestSetHappyPath:
 
         mock.assert_called_once_with("Name", "New Title")
 
+    @pytest.mark.asyncio
+    async def test_set_relation_single_id(self) -> None:
+        props = {
+            "Module": PageRelationProperty(
+                id="rel",
+                relation=[],
+            )
+        }
+        service = _make_service(props)
+        mock = _stub_set_property(service)
+
+        await service.set("Module", "11111111-1111-1111-1111-111111111111")
+
+        mock.assert_called_once_with("Module", ["11111111-1111-1111-1111-111111111111"])
+
+    @pytest.mark.asyncio
+    async def test_set_relation_list_of_ids(self) -> None:
+        props = {
+            "Module": PageRelationProperty(
+                id="rel",
+                relation=[],
+            )
+        }
+        service = _make_service(props)
+        mock = _stub_set_property(service)
+
+        await service.set(
+            "Module",
+            [
+                "11111111-1111-1111-1111-111111111111",
+                "22222222-2222-2222-2222-222222222222",
+            ],
+        )
+
+        mock.assert_called_once_with(
+            "Module",
+            [
+                "11111111-1111-1111-1111-111111111111",
+                "22222222-2222-2222-2222-222222222222",
+            ],
+        )
+
 
 # ============================================================================
 # set() — validation errors
@@ -356,3 +422,45 @@ class TestSetValidationErrors:
 
         with pytest.raises(ValueError, match=r"Not started.*In progress.*Done"):
             await service.set("Status", "Invalid")
+
+    @pytest.mark.asyncio
+    async def test_relation_wrong_container_type_includes_available_ids(self) -> None:
+        props = {
+            "Module": PageRelationProperty(
+                id="rel",
+                relation=[RelationItem(id="11111111-1111-1111-1111-111111111111")],
+            )
+        }
+        service = _make_service(props)
+
+        with pytest.raises(TypeError, match=r"Available relation ids: .*11111111"):
+            await service.set("Module", 123)
+
+    @pytest.mark.asyncio
+    async def test_relation_non_string_item_includes_available_ids(self) -> None:
+        props = {
+            "Module": PageRelationProperty(
+                id="rel",
+                relation=[RelationItem(id="11111111-1111-1111-1111-111111111111")],
+            )
+        }
+        service = _make_service(props)
+
+        with pytest.raises(TypeError, match=r"Available relation ids: .*11111111"):
+            await service.set("Module", ["11111111-1111-1111-1111-111111111111", 7])
+
+    @pytest.mark.asyncio
+    async def test_relation_invalid_id_includes_available_ids(self) -> None:
+        props = {
+            "Module": PageRelationProperty(
+                id="rel",
+                relation=[RelationItem(id="11111111-1111-1111-1111-111111111111")],
+            )
+        }
+        service = _make_service(props)
+
+        with pytest.raises(
+            ValueError,
+            match=r"not a valid relation page id.*Available relation ids: .*11111111",
+        ):
+            await service.set("Module", "not-a-page-id")
