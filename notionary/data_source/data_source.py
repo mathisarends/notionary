@@ -1,18 +1,20 @@
 import logging
 from collections.abc import AsyncGenerator
 from pathlib import Path
-from typing import Any, overload
+from typing import overload
 from uuid import UUID
 
 from notionary.data_source.client import (
     DataSourceClient,
 )
+from notionary.data_source.properties.properties import (
+    DataSourceProperties,
+)
 from notionary.data_source.properties.schemas import (
     AnyDataSourceProperty,
-    DataSourceMultiSelectProperty,
-    DataSourceNumberProperty,
-    DataSourceSelectProperty,
-    DataSourceStatusProperty,
+)
+from notionary.data_source.properties.views import (
+    DataSourcePropertyDescription,
 )
 from notionary.data_source.query.filters import QueryFilter
 from notionary.data_source.query.sorts import QuerySort
@@ -73,6 +75,7 @@ class DataSource:
         )
 
         self.properties = properties or {}
+        self._properties = DataSourceProperties(properties=self.properties)
         self._client = DataSourceClient(http=http, data_source_id=id)
 
     @property
@@ -302,101 +305,13 @@ class DataSource:
             cover_url=cover_url,
         )
 
-    def describe_properties(self) -> dict[str, dict[str, Any]]:
+    def describe_properties(self) -> dict[str, DataSourcePropertyDescription]:
         """Return a structured schema description of all data source properties.
 
-        Designed for LLM context injection — each entry contains the property
-        type and, for constrained types like status/select, the valid options.
+        Designed for LLM context injection — each entry is a typed
+        :class:`~notionary.data_source.properties.views.DataSourcePropertyDescription`.
         """
-        result: dict[str, dict[str, Any]] = {}
-        for name, prop in self.properties.items():
-            entry: dict[str, Any] = {"type": prop.type}
-
-            match prop:
-                case DataSourceStatusProperty():
-                    entry["options"] = prop.option_names
-                    entry["groups"] = prop.group_names
-
-                case DataSourceSelectProperty():
-                    entry["options"] = prop.option_names
-
-                case DataSourceMultiSelectProperty():
-                    entry["options"] = prop.option_names
-
-                case DataSourceNumberProperty():
-                    entry["format"] = prop.number_format
-
-                case _:
-                    raw = self._to_property_dict(prop)
-                    raw_type = raw.get("type")
-                    if raw_type is not None:
-                        entry["type"] = raw_type
-
-                    if raw_type == "status":
-                        status = raw.get("status")
-                        if isinstance(status, dict):
-                            options = self._extract_option_names(status)
-                            groups = self._extract_group_names(status)
-                            if options:
-                                entry["options"] = options
-                            if groups:
-                                entry["groups"] = groups
-
-                    elif raw_type == "select":
-                        select = raw.get("select")
-                        if isinstance(select, dict):
-                            options = self._extract_option_names(select)
-                            if options:
-                                entry["options"] = options
-
-                    elif raw_type == "multi_select":
-                        multi_select = raw.get("multi_select")
-                        if isinstance(multi_select, dict):
-                            options = self._extract_option_names(multi_select)
-                            if options:
-                                entry["options"] = options
-
-                    elif raw_type == "number":
-                        number = raw.get("number")
-                        if isinstance(number, dict) and "format" in number:
-                            entry["format"] = number["format"]
-
-            result[name] = entry
-        return result
-
-    @staticmethod
-    def _to_property_dict(prop: AnyDataSourceProperty) -> dict[str, Any]:
-        if hasattr(prop, "model_dump"):
-            return prop.model_dump(mode="python")
-        if isinstance(prop, dict):
-            return prop
-        return {}
-
-    @staticmethod
-    def _extract_option_names(config: dict[str, Any]) -> list[str]:
-        options = config.get("options")
-        if not isinstance(options, list):
-            return []
-        names: list[str] = []
-        for option in options:
-            if isinstance(option, dict):
-                name = option.get("name")
-                if isinstance(name, str):
-                    names.append(name)
-        return names
-
-    @staticmethod
-    def _extract_group_names(config: dict[str, Any]) -> list[str]:
-        groups = config.get("groups")
-        if not isinstance(groups, list):
-            return []
-        names: list[str] = []
-        for group in groups:
-            if isinstance(group, dict):
-                name = group.get("name")
-                if isinstance(name, str):
-                    names.append(name)
-        return names
+        return self._properties.describe()
 
     def __str__(self) -> str:
         return f"{self.title} ({self.url})"

@@ -19,18 +19,25 @@ async def main() -> None:
         schema = data_source.describe_properties()
         print("Properties:")
         for name, info in schema.items():
-            line = f"  - {name} [{info['type']}]"
+            line = f"  - {name} [{info.type}]"
 
-            if "options" in info:
-                options = ", ".join(info["options"])
+            if info.options:
+                options = ", ".join(info.options)
                 line += f" (options: {options})"
 
-            if "groups" in info:
-                groups = ", ".join(info["groups"])
+            if info.groups:
+                groups = ", ".join(info.groups)
                 line += f" (groups: {groups})"
 
-            if "format" in info:
-                line += f" (format: {info['format']})"
+            if info.format is not None:
+                line += f" (format: {info.format})"
+
+            if info.relation_options:
+                relation_options = ", ".join(
+                    f"{opt.title} [{opt.id}]" if opt.title else f"[{opt.id}]"
+                    for opt in info.relation_options
+                )
+                line += f" (relation_options: {relation_options})"
 
             print(line)
 

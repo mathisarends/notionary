@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 from uuid import UUID
 
 from notionary.data_source.data_source import DataSource
@@ -9,6 +9,8 @@ from notionary.data_source.properties.schemas import (
     DataSourceNumberConfig,
     DataSourceNumberProperty,
     DataSourcePropertyOption,
+    DataSourceRelationConfig,
+    DataSourceRelationProperty,
     DataSourceSelectConfig,
     DataSourceSelectProperty,
     DataSourceStatusConfig,
@@ -18,6 +20,10 @@ from notionary.data_source.properties.schemas import (
     DataSourceUnknownProperty,
     NumberFormat,
     PropertyColor,
+)
+from notionary.data_source.properties.views import (
+    DataSourcePropertyDescription,
+    DataSourceRelationOption,
 )
 from notionary.user.schemas import PartialUserDto
 
@@ -74,9 +80,9 @@ class TestDescribeProperties:
         }
         result = _make_data_source(props).describe_properties()
 
-        assert result["Status"]["type"] == "status"
-        assert result["Status"]["options"] == ["Not started", "Done"]
-        assert result["Status"]["groups"] == ["To-do"]
+        assert result["Status"].type == "status"
+        assert result["Status"].options == ["Not started", "Done"]
+        assert result["Status"].groups == ["To-do"]
 
     def test_select_property_shows_options(self) -> None:
         props = {
@@ -90,8 +96,8 @@ class TestDescribeProperties:
         }
         result = _make_data_source(props).describe_properties()
 
-        assert result["Priority"]["type"] == "select"
-        assert result["Priority"]["options"] == ["High", "Low"]
+        assert result["Priority"].type == "select"
+        assert result["Priority"].options == ["High", "Low"]
 
     def test_multi_select_property_shows_options(self) -> None:
         props = {
@@ -105,8 +111,29 @@ class TestDescribeProperties:
         }
         result = _make_data_source(props).describe_properties()
 
-        assert result["Tags"]["type"] == "multi_select"
-        assert result["Tags"]["options"] == ["A", "B", "C"]
+        assert result["Tags"].type == "multi_select"
+        assert result["Tags"].options == ["A", "B", "C"]
+
+    def test_relation_property_shows_relation_option_with_id_and_title(self) -> None:
+        related_data_source_id = UUID("11111111-1111-1111-1111-111111111111")
+        props = {
+            "Module": DataSourceRelationProperty(
+                id=OPT_ID,
+                name="Module",
+                relation=DataSourceRelationConfig(
+                    data_source_id=related_data_source_id
+                ),
+            )
+        }
+        result = _make_data_source(props).describe_properties()
+
+        assert result["Module"].type == "relation"
+        assert result["Module"].relation_options == [
+            DataSourceRelationOption(
+                id=str(related_data_source_id),
+                title="Module",
+            )
+        ]
 
     def test_number_property_shows_format(self) -> None:
         props = {
@@ -118,8 +145,8 @@ class TestDescribeProperties:
         }
         result = _make_data_source(props).describe_properties()
 
-        assert result["Price"]["type"] == "number"
-        assert result["Price"]["format"] == NumberFormat.EURO
+        assert result["Price"].type == "number"
+        assert result["Price"].format == NumberFormat.EURO
 
     def test_plain_type_only_for_other_properties(self) -> None:
         props = {
@@ -128,12 +155,22 @@ class TestDescribeProperties:
         }
         result = _make_data_source(props).describe_properties()
 
-        assert result["Name"] == {"type": "title"}
-        assert result["Due"] == {"type": "date"}
+        assert result["Name"] == DataSourcePropertyDescription(type="title")
+        assert result["Due"] == DataSourcePropertyDescription(type="date")
 
     def test_empty_properties(self) -> None:
         result = _make_data_source({}).describe_properties()
         assert result == {}
+
+    def test_describe_properties_delegates_to_properties_service(self) -> None:
+        data_source = _make_data_source({})
+        expected = {"Status": DataSourcePropertyDescription(type="status")}
+        data_source._properties.describe = Mock(return_value=expected)
+
+        result = data_source.describe_properties()
+
+        data_source._properties.describe.assert_called_once_with()
+        assert result == expected
 
     def test_unknown_status_property_extracts_options_and_groups(self) -> None:
         props = {
@@ -160,14 +197,14 @@ class TestDescribeProperties:
 
         result = _make_data_source(props).describe_properties()
 
-        assert result["Status"]["type"] == "status"
-        assert result["Status"]["options"] == [
+        assert result["Status"].type == "status"
+        assert result["Status"].options == [
             "Nicht begonnen",
             "Pausiert",
             "In Bearbeitung",
             "Erledigt",
         ]
-        assert result["Status"]["groups"] == [
+        assert result["Status"].groups == [
             "To-Do",
             "In Bearbeitung",
             "Abgeschlossen",
@@ -192,5 +229,29 @@ class TestDescribeProperties:
 
         result = _make_data_source(props).describe_properties()
 
-        assert result["Priorität"]["type"] == "select"
-        assert result["Priorität"]["options"] == ["Hoch", "Mittel", "Niedrig"]
+        assert result["Priorität"].type == "select"
+        assert result["Priorität"].options == ["Hoch", "Mittel", "Niedrig"]
+
+    def test_unknown_relation_property_extracts_relation_option(self) -> None:
+        props = {
+            "Module": DataSourceUnknownProperty.model_validate(
+                {
+                    "id": "module-id",
+                    "type": "relation",
+                    "relation": {
+                        "data_source_id": "291389d57bd3800f90faf2ef07f120e4",
+                        "data_source_name": "Module",
+                    },
+                }
+            )
+        }
+
+        result = _make_data_source(props).describe_properties()
+
+        assert result["Module"].type == "relation"
+        assert result["Module"].relation_options == [
+            DataSourceRelationOption(
+                id="291389d57bd3800f90faf2ef07f120e4",
+                title="Module",
+            )
+        ]
