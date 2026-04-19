@@ -25,26 +25,27 @@ class DataSourceProperties:
     def __init__(self, properties: dict[str, AnyDataSourceProperty]) -> None:
         self._properties = properties
 
-    def describe(self) -> dict[str, DataSourcePropertyDescription]:
-        """Return normalized descriptions for all data source properties."""
-        return {
-            name: self._describe_property(name, prop)
-            for name, prop in self._properties.items()
-        }
-
-    async def describe_with_relation_options(
+    async def describe(
         self,
         relation_options_resolver: Callable[
             [str],
             Awaitable[list[DataSourceRelationOption]],
-        ],
+        ]
+        | None = None,
     ) -> dict[str, DataSourcePropertyDescription]:
-        """Describe properties and resolve relation options via a callback.
+        """Return normalized property descriptions, with optional relation resolution.
 
-        The resolver receives a relation data source id and should return the
-        natural-language options (e.g. page titles + ids) for that relation.
+        When provided, ``relation_options_resolver`` receives a relation data source
+        id and should return natural-language options (e.g. page titles + ids).
         """
-        descriptions = self.describe()
+        descriptions = {
+            name: self._describe_property(name, prop)
+            for name, prop in self._properties.items()
+        }
+
+        if relation_options_resolver is None:
+            return descriptions
+
         for description in descriptions.values():
             if str(description.type) != PropertyType.RELATION:
                 continue

@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, patch
 from uuid import UUID
 
 import pytest
@@ -44,7 +44,7 @@ def _option(name: str) -> DataSourcePropertyOption:
 
 def _make_data_source(properties: dict) -> DataSource:
     http = AsyncMock()
-    return DataSource(
+    data_source = DataSource(
         id=DS_ID,
         url="https://notion.so/ds",
         title="Test DS",
@@ -59,10 +59,13 @@ def _make_data_source(properties: dict) -> DataSource:
         last_edited_time="2025-06-01T00:00:00.000Z",
         last_edited_by=_user(),
     )
+    data_source._fetch_relation_page_options = AsyncMock(return_value=[])
+    return data_source
 
 
 class TestDescribeProperties:
-    def test_status_property_shows_options_and_groups(self) -> None:
+    @pytest.mark.asyncio
+    async def test_status_property_shows_options_and_groups(self) -> None:
         props = {
             "Status": DataSourceStatusProperty(
                 id=OPT_ID,
@@ -80,13 +83,14 @@ class TestDescribeProperties:
                 ),
             )
         }
-        result = _make_data_source(props).describe_properties()
+        result = await _make_data_source(props).describe_properties()
 
         assert result["Status"].type == "status"
         assert result["Status"].options == ["Not started", "Done"]
         assert result["Status"].groups == ["To-do"]
 
-    def test_select_property_shows_options(self) -> None:
+    @pytest.mark.asyncio
+    async def test_select_property_shows_options(self) -> None:
         props = {
             "Priority": DataSourceSelectProperty(
                 id=OPT_ID,
@@ -96,12 +100,13 @@ class TestDescribeProperties:
                 ),
             )
         }
-        result = _make_data_source(props).describe_properties()
+        result = await _make_data_source(props).describe_properties()
 
         assert result["Priority"].type == "select"
         assert result["Priority"].options == ["High", "Low"]
 
-    def test_multi_select_property_shows_options(self) -> None:
+    @pytest.mark.asyncio
+    async def test_multi_select_property_shows_options(self) -> None:
         props = {
             "Tags": DataSourceMultiSelectProperty(
                 id=OPT_ID,
@@ -111,12 +116,15 @@ class TestDescribeProperties:
                 ),
             )
         }
-        result = _make_data_source(props).describe_properties()
+        result = await _make_data_source(props).describe_properties()
 
         assert result["Tags"].type == "multi_select"
         assert result["Tags"].options == ["A", "B", "C"]
 
-    def test_relation_property_shows_relation_option_with_id_and_title(self) -> None:
+    @pytest.mark.asyncio
+    async def test_relation_property_shows_relation_option_with_id_and_title(
+        self,
+    ) -> None:
         related_data_source_id = UUID("11111111-1111-1111-1111-111111111111")
         props = {
             "Module": DataSourceRelationProperty(
@@ -127,7 +135,7 @@ class TestDescribeProperties:
                 ),
             )
         }
-        result = _make_data_source(props).describe_properties()
+        result = await _make_data_source(props).describe_properties()
 
         assert result["Module"].type == "relation"
         assert result["Module"].relation_options == [
@@ -137,7 +145,8 @@ class TestDescribeProperties:
             )
         ]
 
-    def test_number_property_shows_format(self) -> None:
+    @pytest.mark.asyncio
+    async def test_number_property_shows_format(self) -> None:
         props = {
             "Price": DataSourceNumberProperty(
                 id=OPT_ID,
@@ -145,36 +154,73 @@ class TestDescribeProperties:
                 number=DataSourceNumberConfig(format=NumberFormat.EURO),
             )
         }
-        result = _make_data_source(props).describe_properties()
+        result = await _make_data_source(props).describe_properties()
 
         assert result["Price"].type == "number"
         assert result["Price"].format == NumberFormat.EURO
 
-    def test_plain_type_only_for_other_properties(self) -> None:
+    @pytest.mark.asyncio
+    async def test_plain_type_only_for_other_properties(self) -> None:
         props = {
             "Name": DataSourceTitleProperty(id=OPT_ID, name="Name"),
             "Due": DataSourceDateProperty(id=OPT_ID, name="Due"),
         }
-        result = _make_data_source(props).describe_properties()
+        result = await _make_data_source(props).describe_properties()
 
         assert result["Name"] == DataSourcePropertyDescription(type="title")
         assert result["Due"] == DataSourcePropertyDescription(type="date")
 
-    def test_empty_properties(self) -> None:
-        result = _make_data_source({}).describe_properties()
+    @pytest.mark.asyncio
+    async def test_empty_properties(self) -> None:
+        result = await _make_data_source({}).describe_properties()
         assert result == {}
 
-    def test_describe_properties_delegates_to_properties_service(self) -> None:
+    @pytest.mark.asyncio
+    async def test_describe_properties_delegates_to_properties_service(self) -> None:
         data_source = _make_data_source({})
         expected = {"Status": DataSourcePropertyDescription(type="status")}
-        data_source._properties.describe = Mock(return_value=expected)
+        data_source._properties.describe = AsyncMock(return_value=expected)
 
-        result = data_source.describe_properties()
+        result = await data_source.describe_properties()
 
-        data_source._properties.describe.assert_called_once_with()
+        data_source._properties.describe.assert_called_once()
         assert result == expected
 
-    def test_unknown_status_property_extracts_options_and_groups(self) -> None:
+    @pytest.mark.asyncio
+    async def test_describe_properties_resolves_relation_pages_by_default(self) -> None:
+        related_data_source_id = UUID("11111111-1111-1111-1111-111111111111")
+        props = {
+            "Module": DataSourceRelationProperty(
+                id=OPT_ID,
+                name="Module",
+                relation=DataSourceRelationConfig(
+                    data_source_id=related_data_source_id
+                ),
+            )
+        }
+        data_source = _make_data_source(props)
+        data_source._fetch_relation_page_options = AsyncMock(
+            return_value=[
+                DataSourceRelationOption(
+                    id="page-1",
+                    title="Module Alpha",
+                )
+            ]
+        )
+
+        result = await data_source.describe_properties()
+
+        assert result["Module"].relation_options == [
+            DataSourceRelationOption(id="page-1", title="Module Alpha")
+        ]
+        data_source._fetch_relation_page_options.assert_called_once_with(
+            str(related_data_source_id),
+            page_size=100,
+            limit=100,
+        )
+
+    @pytest.mark.asyncio
+    async def test_unknown_status_property_extracts_options_and_groups(self) -> None:
         props = {
             "Status": DataSourceUnknownProperty.model_validate(
                 {
@@ -197,7 +243,7 @@ class TestDescribeProperties:
             )
         }
 
-        result = _make_data_source(props).describe_properties()
+        result = await _make_data_source(props).describe_properties()
 
         assert result["Status"].type == "status"
         assert result["Status"].options == [
@@ -212,7 +258,8 @@ class TestDescribeProperties:
             "Abgeschlossen",
         ]
 
-    def test_unknown_select_property_extracts_options(self) -> None:
+    @pytest.mark.asyncio
+    async def test_unknown_select_property_extracts_options(self) -> None:
         props = {
             "Priorität": DataSourceUnknownProperty.model_validate(
                 {
@@ -229,12 +276,13 @@ class TestDescribeProperties:
             )
         }
 
-        result = _make_data_source(props).describe_properties()
+        result = await _make_data_source(props).describe_properties()
 
         assert result["Priorität"].type == "select"
         assert result["Priorität"].options == ["Hoch", "Mittel", "Niedrig"]
 
-    def test_unknown_relation_property_extracts_relation_option(self) -> None:
+    @pytest.mark.asyncio
+    async def test_unknown_relation_property_extracts_relation_option(self) -> None:
         props = {
             "Module": DataSourceUnknownProperty.model_validate(
                 {
@@ -248,7 +296,7 @@ class TestDescribeProperties:
             )
         }
 
-        result = _make_data_source(props).describe_properties()
+        result = await _make_data_source(props).describe_properties()
 
         assert result["Module"].type == "relation"
         assert result["Module"].relation_options == [
@@ -259,23 +307,39 @@ class TestDescribeProperties:
         ]
 
 
-class TestDescribePropertiesWithRelationPages:
+class TestDescribePropertiesRelationPages:
     @pytest.mark.asyncio
-    async def test_describe_properties_with_relation_pages_delegates(self) -> None:
-        data_source = _make_data_source({})
-        expected = {"Module": DataSourcePropertyDescription(type="relation")}
-        data_source._properties.describe_with_relation_options = AsyncMock(
-            return_value=expected
+    async def test_describe_properties_forwards_custom_pagination(self) -> None:
+        related_data_source_id = UUID("11111111-1111-1111-1111-111111111111")
+        props = {
+            "Module": DataSourceRelationProperty(
+                id=OPT_ID,
+                name="Module",
+                relation=DataSourceRelationConfig(
+                    data_source_id=related_data_source_id
+                ),
+            )
+        }
+        data_source = _make_data_source(props)
+        data_source._fetch_relation_page_options = AsyncMock(return_value=[])
+
+        await data_source.describe_properties(page_size=25, limit=10)
+
+        data_source._fetch_relation_page_options.assert_called_once_with(
+            str(related_data_source_id),
+            page_size=25,
+            limit=10,
         )
-
-        result = await data_source.describe_properties_with_relation_pages(limit=25)
-
-        data_source._properties.describe_with_relation_options.assert_called_once()
-        assert result == expected
 
     @pytest.mark.asyncio
     async def test_fetch_relation_page_options_returns_page_title_and_id(self) -> None:
         data_source = _make_data_source({})
+        data_source._fetch_relation_page_options = (
+            DataSource._fetch_relation_page_options.__get__(
+                data_source,
+                DataSource,
+            )
+        )
         page_a_id = UUID("11111111-1111-1111-1111-111111111111")
         page_b_id = UUID("22222222-2222-2222-2222-222222222222")
         fake_pages = [
@@ -301,6 +365,12 @@ class TestDescribePropertiesWithRelationPages:
     @pytest.mark.asyncio
     async def test_fetch_relation_page_options_invalid_uuid_returns_empty(self) -> None:
         data_source = _make_data_source({})
+        data_source._fetch_relation_page_options = (
+            DataSource._fetch_relation_page_options.__get__(
+                data_source,
+                DataSource,
+            )
+        )
 
         with patch(
             "notionary.data_source.data_source.DataSourceClient.query",

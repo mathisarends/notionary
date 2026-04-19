@@ -16,7 +16,7 @@ async def main() -> None:
         print(f"Data source: {data_source.title}")
         print(f"URL: {data_source.url}\n")
 
-        schema = await data_source.describe_properties_with_relation_pages(limit=50)
+        schema = await data_source.describe_properties(limit=50)
         print("Properties:")
         for name, info in schema.items():
             line = f"  - {name} [{info.type}]"

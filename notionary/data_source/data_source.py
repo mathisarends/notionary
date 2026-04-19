@@ -307,30 +307,22 @@ class DataSource:
             cover_url=cover_url,
         )
 
-    def describe_properties(self) -> dict[str, DataSourcePropertyDescription]:
-        """Return a structured schema description of all data source properties.
-
-        Designed for LLM context injection — each entry is a typed
-        :class:`~notionary.data_source.properties.views.DataSourcePropertyDescription`.
-        """
-        return self._properties.describe()
-
-    async def describe_properties_with_relation_pages(
+    async def describe_properties(
         self,
         *,
         page_size: int = 100,
         limit: int | None = 100,
     ) -> dict[str, DataSourcePropertyDescription]:
-        """Describe properties and resolve relation options to related pages.
+        """Return a schema description with relation options resolved to pages.
 
         For relation properties, this method queries the related data source and
-        returns page-level options as ``title + id`` pairs.
+        returns page-level options as ``title + id`` pairs by default.
 
         Args:
             page_size: Number of pages per API request when resolving relation options.
             limit: Maximum total pages to include per relation.
         """
-        return await self._properties.describe_with_relation_options(
+        return await self._properties.describe(
             lambda relation_data_source_id: self._fetch_relation_page_options(
                 relation_data_source_id,
                 page_size=page_size,
