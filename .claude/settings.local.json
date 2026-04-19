@@ -10,7 +10,9 @@
       "mcp__claude_ai_Context7__query-docs",
       "Bash(uv sync:*)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(grep -E \"\\\\.py$|^d\")",
+      "Bash(python3 -c \"import pytest; print\\(pytest.__version__\\)\")"
     ]
   }
 }
