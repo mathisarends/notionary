@@ -1,3 +1,4 @@
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from pydantic import ValidationError
@@ -30,6 +31,37 @@ class DataSourceProperties:
             name: self._describe_property(name, prop)
             for name, prop in self._properties.items()
         }
+
+    async def describe_with_relation_options(
+        self,
+        relation_options_resolver: Callable[
+            [str],
+            Awaitable[list[DataSourceRelationOption]],
+        ],
+    ) -> dict[str, DataSourcePropertyDescription]:
+        """Describe properties and resolve relation options via a callback.
+
+        The resolver receives a relation data source id and should return the
+        natural-language options (e.g. page titles + ids) for that relation.
+        """
+        descriptions = self.describe()
+        for description in descriptions.values():
+            if str(description.type) != PropertyType.RELATION:
+                continue
+
+            if not description.relation_options:
+                continue
+
+            resolved_options: list[DataSourceRelationOption] = []
+            for relation_option in description.relation_options:
+                resolved_options.extend(
+                    await relation_options_resolver(relation_option.id)
+                )
+
+            if resolved_options:
+                description.relation_options = resolved_options
+
+        return descriptions
 
     def _describe_property(
         self,

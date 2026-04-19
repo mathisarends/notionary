@@ -1,5 +1,7 @@
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 from uuid import UUID
+
+import pytest
 
 from notionary.data_source.data_source import DataSource
 from notionary.data_source.properties.schemas import (
@@ -255,3 +257,60 @@ class TestDescribeProperties:
                 title="Module",
             )
         ]
+
+
+class TestDescribePropertiesWithRelationPages:
+    @pytest.mark.asyncio
+    async def test_describe_properties_with_relation_pages_delegates(self) -> None:
+        data_source = _make_data_source({})
+        expected = {"Module": DataSourcePropertyDescription(type="relation")}
+        data_source._properties.describe_with_relation_options = AsyncMock(
+            return_value=expected
+        )
+
+        result = await data_source.describe_properties_with_relation_pages(limit=25)
+
+        data_source._properties.describe_with_relation_options.assert_called_once()
+        assert result == expected
+
+    @pytest.mark.asyncio
+    async def test_fetch_relation_page_options_returns_page_title_and_id(self) -> None:
+        data_source = _make_data_source({})
+        page_a_id = UUID("11111111-1111-1111-1111-111111111111")
+        page_b_id = UUID("22222222-2222-2222-2222-222222222222")
+        fake_pages = [
+            type("Page", (), {"id": page_a_id, "title": "Alpha"})(),
+            type("Page", (), {"id": page_b_id, "title": "Beta"})(),
+        ]
+
+        with patch(
+            "notionary.data_source.data_source.DataSourceClient.query",
+            new=AsyncMock(return_value=fake_pages),
+        ):
+            options = await data_source._fetch_relation_page_options(
+                "33333333-3333-3333-3333-333333333333",
+                page_size=50,
+                limit=25,
+            )
+
+        assert options == [
+            DataSourceRelationOption(id=str(page_a_id), title="Alpha"),
+            DataSourceRelationOption(id=str(page_b_id), title="Beta"),
+        ]
+
+    @pytest.mark.asyncio
+    async def test_fetch_relation_page_options_invalid_uuid_returns_empty(self) -> None:
+        data_source = _make_data_source({})
+
+        with patch(
+            "notionary.data_source.data_source.DataSourceClient.query",
+            new=AsyncMock(),
+        ) as query_mock:
+            options = await data_source._fetch_relation_page_options(
+                "not-a-uuid",
+                page_size=50,
+                limit=25,
+            )
+
+        assert options == []
+        query_mock.assert_not_called()

@@ -15,6 +15,7 @@ from notionary.data_source.properties.schemas import (
 )
 from notionary.data_source.properties.views import (
     DataSourcePropertyDescription,
+    DataSourceRelationOption,
 )
 from notionary.data_source.query.filters import QueryFilter
 from notionary.data_source.query.sorts import QuerySort
@@ -62,6 +63,7 @@ class DataSource:
         self.created_by = created_by
         self.last_edited_time = last_edited_time
         self.last_edited_by = last_edited_by
+        self._http = http
 
         path = f"data_sources/{id}"
         file_uploads = FileUploads(http)
@@ -312,6 +314,49 @@ class DataSource:
         :class:`~notionary.data_source.properties.views.DataSourcePropertyDescription`.
         """
         return self._properties.describe()
+
+    async def describe_properties_with_relation_pages(
+        self,
+        *,
+        page_size: int = 100,
+        limit: int | None = 100,
+    ) -> dict[str, DataSourcePropertyDescription]:
+        """Describe properties and resolve relation options to related pages.
+
+        For relation properties, this method queries the related data source and
+        returns page-level options as ``title + id`` pairs.
+
+        Args:
+            page_size: Number of pages per API request when resolving relation options.
+            limit: Maximum total pages to include per relation.
+        """
+        return await self._properties.describe_with_relation_options(
+            lambda relation_data_source_id: self._fetch_relation_page_options(
+                relation_data_source_id,
+                page_size=page_size,
+                limit=limit,
+            )
+        )
+
+    async def _fetch_relation_page_options(
+        self,
+        relation_data_source_id: str,
+        *,
+        page_size: int,
+        limit: int | None,
+    ) -> list[DataSourceRelationOption]:
+        """Fetch relation options as pages from a related data source."""
+        try:
+            related_id = UUID(relation_data_source_id)
+        except ValueError:
+            return []
+
+        relation_client = DataSourceClient(http=self._http, data_source_id=related_id)
+        pages = await relation_client.query(page_size=page_size, limit=limit)
+        return [
+            DataSourceRelationOption(id=str(page.id), title=page.title)
+            for page in pages
+        ]
 
     def __str__(self) -> str:
         return f"{self.title} ({self.url})"
