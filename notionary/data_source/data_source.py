@@ -327,10 +327,76 @@ class DataSource:
                     entry["format"] = prop.number_format
 
                 case _:
-                    pass
+                    raw = self._to_property_dict(prop)
+                    raw_type = raw.get("type")
+                    if raw_type is not None:
+                        entry["type"] = raw_type
+
+                    if raw_type == "status":
+                        status = raw.get("status")
+                        if isinstance(status, dict):
+                            options = self._extract_option_names(status)
+                            groups = self._extract_group_names(status)
+                            if options:
+                                entry["options"] = options
+                            if groups:
+                                entry["groups"] = groups
+
+                    elif raw_type == "select":
+                        select = raw.get("select")
+                        if isinstance(select, dict):
+                            options = self._extract_option_names(select)
+                            if options:
+                                entry["options"] = options
+
+                    elif raw_type == "multi_select":
+                        multi_select = raw.get("multi_select")
+                        if isinstance(multi_select, dict):
+                            options = self._extract_option_names(multi_select)
+                            if options:
+                                entry["options"] = options
+
+                    elif raw_type == "number":
+                        number = raw.get("number")
+                        if isinstance(number, dict) and "format" in number:
+                            entry["format"] = number["format"]
 
             result[name] = entry
         return result
+
+    @staticmethod
+    def _to_property_dict(prop: AnyDataSourceProperty) -> dict[str, Any]:
+        if hasattr(prop, "model_dump"):
+            return prop.model_dump(mode="python")
+        if isinstance(prop, dict):
+            return prop
+        return {}
+
+    @staticmethod
+    def _extract_option_names(config: dict[str, Any]) -> list[str]:
+        options = config.get("options")
+        if not isinstance(options, list):
+            return []
+        names: list[str] = []
+        for option in options:
+            if isinstance(option, dict):
+                name = option.get("name")
+                if isinstance(name, str):
+                    names.append(name)
+        return names
+
+    @staticmethod
+    def _extract_group_names(config: dict[str, Any]) -> list[str]:
+        groups = config.get("groups")
+        if not isinstance(groups, list):
+            return []
+        names: list[str] = []
+        for group in groups:
+            if isinstance(group, dict):
+                name = group.get("name")
+                if isinstance(name, str):
+                    names.append(name)
+        return names
 
     def __str__(self) -> str:
         return f"{self.title} ({self.url})"

@@ -15,6 +15,7 @@ from notionary.data_source.properties.schemas import (
     DataSourceStatusGroup,
     DataSourceStatusProperty,
     DataSourceTitleProperty,
+    DataSourceUnknownProperty,
     NumberFormat,
     PropertyColor,
 )
@@ -133,3 +134,63 @@ class TestDescribeProperties:
     def test_empty_properties(self) -> None:
         result = _make_data_source({}).describe_properties()
         assert result == {}
+
+    def test_unknown_status_property_extracts_options_and_groups(self) -> None:
+        props = {
+            "Status": DataSourceUnknownProperty.model_validate(
+                {
+                    "id": "status-id",
+                    "type": "status",
+                    "status": {
+                        "options": [
+                            {"id": "1", "name": "Nicht begonnen", "color": "gray"},
+                            {"id": "2", "name": "Pausiert", "color": "blue"},
+                            {"id": "3", "name": "In Bearbeitung", "color": "blue"},
+                            {"id": "4", "name": "Erledigt", "color": "green"},
+                        ],
+                        "groups": [
+                            {"id": "g1", "name": "To-Do", "color": "gray"},
+                            {"id": "g2", "name": "In Bearbeitung", "color": "blue"},
+                            {"id": "g3", "name": "Abgeschlossen", "color": "green"},
+                        ],
+                    },
+                }
+            )
+        }
+
+        result = _make_data_source(props).describe_properties()
+
+        assert result["Status"]["type"] == "status"
+        assert result["Status"]["options"] == [
+            "Nicht begonnen",
+            "Pausiert",
+            "In Bearbeitung",
+            "Erledigt",
+        ]
+        assert result["Status"]["groups"] == [
+            "To-Do",
+            "In Bearbeitung",
+            "Abgeschlossen",
+        ]
+
+    def test_unknown_select_property_extracts_options(self) -> None:
+        props = {
+            "Priorität": DataSourceUnknownProperty.model_validate(
+                {
+                    "id": "priority-id",
+                    "type": "select",
+                    "select": {
+                        "options": [
+                            {"id": "p1", "name": "Hoch", "color": "green"},
+                            {"id": "p2", "name": "Mittel", "color": "pink"},
+                            {"id": "p3", "name": "Niedrig", "color": "brown"},
+                        ]
+                    },
+                }
+            )
+        }
+
+        result = _make_data_source(props).describe_properties()
+
+        assert result["Priorität"]["type"] == "select"
+        assert result["Priorität"]["options"] == ["Hoch", "Mittel", "Niedrig"]
