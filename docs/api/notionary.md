@@ -9,7 +9,7 @@ async with Notionary() as notion:
     page = await notion.pages.from_title("My Page")
 ```
 
-::: notionary.service.Notionary
+::: notionary.notionary.Notionary
 
 !!! info "Notion API Reference"
 [developers.notion.com](https://developers.notion.com/)
