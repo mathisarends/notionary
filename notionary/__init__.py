@@ -1,8 +1,8 @@
 from .data_source import DataSource, DataSourceNamespace
 from .database import Database, DatabaseNamespace
 from .file_upload import FileUploads
+from .notionary import Notionary
 from .page import Page, PageNamespace
-from .service import Notionary
 from .user import Bot, Person, UsersNamespace
 from .workspace import WorkspaceNamespace
 
