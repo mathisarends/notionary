@@ -1,39 +1,32 @@
-from .data_source import DataSource
-from .exceptions import DataSourceNotFound
-from .namespace import DataSourceNamespace
-from .query import (
+from notionary.data_source.schemas import QueryResultType
+
+from .filter_builder import Filter
+from .filters import (
     CheckboxFilter,
     CompoundFilter,
     DateFilter,
     FilesFilter,
-    Filter,
     FormulaFilter,
     MultiSelectFilter,
     NumberFilter,
     PeopleFilter,
     PhoneNumberFilter,
     PropertyFilter,
-    PropertySort,
-    QueryResultType,
     RelationFilter,
     RichTextFilter,
     SelectFilter,
-    SortDirection,
     StatusFilter,
     TimestampFilter,
-    TimestampSort,
     TimestampType,
     UniqueIdFilter,
     VerificationFilter,
     VerificationStatus,
 )
+from .sorts import PropertySort, SortDirection, TimestampSort
 
 __all__ = [
     "CheckboxFilter",
     "CompoundFilter",
-    "DataSource",
-    "DataSourceNamespace",
-    "DataSourceNotFound",
     "DateFilter",
     "FilesFilter",
     "Filter",

@@ -1,4 +1,5 @@
 import logging
+from collections.abc import AsyncGenerator
 from pathlib import Path
 from typing import overload
 from uuid import UUID
@@ -9,6 +10,8 @@ from notionary.data_source.client import (
 from notionary.data_source.properties.schemas import (
     AnyDataSourceProperty,
 )
+from notionary.data_source.query.filters import QueryFilter
+from notionary.data_source.query.sorts import QuerySort
 from notionary.data_source.schemas import DataSourceTemplate
 from notionary.file_upload import FileUploads
 from notionary.http.client import HttpClient
@@ -186,6 +189,73 @@ class DataSource:
             A list of :class:`~notionary.data_source.schemas.DataSourceTemplate` objects.
         """
         return await self._client.list_templates(name=name, page_size=page_size)
+
+    async def query(
+        self,
+        *,
+        filter: QueryFilter | None = None,
+        sorts: list[QuerySort] | None = None,
+        page_size: int | None = None,
+        filter_properties: list[str] | None = None,
+        in_trash: bool | None = None,
+        limit: int | None = None,
+    ) -> list[Page]:
+        """Query pages in this data source with optional filters and sorts.
+
+        Args:
+            filter: A property, timestamp, or compound filter.
+            sorts: Ordering criteria (property or timestamp sorts).
+            page_size: Number of results per API request (max 100).
+            filter_properties: Property names/IDs to include in results.
+            in_trash: If ``True``, return only trashed pages.
+            limit: Maximum total number of pages to return.
+
+        Returns:
+            A list of :class:`~notionary.page.page.Page` objects.
+        """
+        return await self._client.query(
+            filter=filter,
+            sorts=sorts,
+            page_size=page_size,
+            filter_properties=filter_properties,
+            in_trash=in_trash,
+            limit=limit,
+        )
+
+    async def iter_query(
+        self,
+        *,
+        filter: QueryFilter | None = None,
+        sorts: list[QuerySort] | None = None,
+        page_size: int | None = None,
+        filter_properties: list[str] | None = None,
+        in_trash: bool | None = None,
+        limit: int | None = None,
+    ) -> AsyncGenerator[Page]:
+        """Stream pages from this data source with optional filters and sorts.
+
+        Yields pages one by one without loading the full result set into memory.
+
+        Args:
+            filter: A property, timestamp, or compound filter.
+            sorts: Ordering criteria (property or timestamp sorts).
+            page_size: Number of results per API request (max 100).
+            filter_properties: Property names/IDs to include in results.
+            in_trash: If ``True``, return only trashed pages.
+            limit: Maximum total number of pages to return.
+
+        Yields:
+            :class:`~notionary.page.page.Page` objects one at a time.
+        """
+        async for page in self._client.iter_query(
+            filter=filter,
+            sorts=sorts,
+            page_size=page_size,
+            filter_properties=filter_properties,
+            in_trash=in_trash,
+            limit=limit,
+        ):
+            yield page
 
     async def update(
         self,

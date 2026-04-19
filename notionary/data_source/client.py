@@ -1,9 +1,14 @@
+from collections.abc import AsyncGenerator
 from uuid import UUID
 
+from notionary.data_source.query.filters import QueryFilter
+from notionary.data_source.query.sorts import QuerySort
 from notionary.data_source.schemas import (
     DataSourceDto,
     DataSourceTemplate,
     ListTemplatesResponse,
+    QueryDataSourceRequest,
+    QueryResultType,
     UpdateDataSourceDto,
 )
 from notionary.http.client import HttpClient
@@ -90,3 +95,58 @@ class DataSourceClient:
             start_cursor = page.next_cursor
 
         return templates
+
+    async def query(
+        self,
+        *,
+        filter: QueryFilter | None = None,
+        sorts: list[QuerySort] | None = None,
+        page_size: int | None = None,
+        filter_properties: list[str] | None = None,
+        in_trash: bool | None = None,
+        limit: int | None = None,
+    ) -> list[Page]:
+        request = QueryDataSourceRequest(
+            filter=filter,
+            sorts=sorts,
+            page_size=page_size,
+            filter_properties=filter_properties,
+            in_trash=in_trash,
+            result_type=QueryResultType.PAGE,
+        )
+        payload = request.to_api_payload()
+        endpoint = f"data_sources/{self._data_source_id}/query"
+
+        raw_results = await self._http.paginate(
+            endpoint, total_results_limit=limit, **payload
+        )
+        return [
+            page_mapper.to_page(PageDto.model_validate(r), self._http)
+            for r in raw_results
+        ]
+
+    async def iter_query(
+        self,
+        *,
+        filter: QueryFilter | None = None,
+        sorts: list[QuerySort] | None = None,
+        page_size: int | None = None,
+        filter_properties: list[str] | None = None,
+        in_trash: bool | None = None,
+        limit: int | None = None,
+    ) -> AsyncGenerator[Page]:
+        request = QueryDataSourceRequest(
+            filter=filter,
+            sorts=sorts,
+            page_size=page_size,
+            filter_properties=filter_properties,
+            in_trash=in_trash,
+            result_type=QueryResultType.PAGE,
+        )
+        payload = request.to_api_payload()
+        endpoint = f"data_sources/{self._data_source_id}/query"
+
+        async for raw in self._http.paginate_stream(
+            endpoint, total_results_limit=limit, **payload
+        ):
+            yield page_mapper.to_page(PageDto.model_validate(raw), self._http)

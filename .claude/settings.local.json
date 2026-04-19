@@ -8,7 +8,9 @@
       "mcp__notion__notion-search",
       "mcp__claude_ai_Context7__resolve-library-id",
       "mcp__claude_ai_Context7__query-docs",
-      "Bash(uv sync:*)"
+      "Bash(uv sync:*)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
