@@ -16,36 +16,34 @@ from notionary.page.properties.schemas import (
 )
 from notionary.rich_text import rich_text_to_markdown
 
+# Property types that an agent can write via set()
+_SETTABLE_TYPES = frozenset(
+    {
+        "status",
+        "select",
+        "multi_select",
+        "number",
+        "checkbox",
+        "date",
+        "title",
+        "rich_text",
+        "url",
+        "email",
+        "phone_number",
+    }
+)
+
+
+def _validate_option(property_name: str, value: str, valid_names: list[str]) -> None:
+    if value not in valid_names:
+        raise ValueError(
+            f"Property {property_name!r}: {value!r} is not a valid option. "
+            f"Valid options: {valid_names}"
+        )
+
 
 class PageProperties:
     """Scoped access to the properties of a single Notion page."""
-
-    # Property types that an agent can write via set()
-    _SETTABLE_TYPES = frozenset(
-        {
-            "status",
-            "select",
-            "multi_select",
-            "number",
-            "checkbox",
-            "date",
-            "title",
-            "rich_text",
-            "url",
-            "email",
-            "phone_number",
-        }
-    )
-
-    @staticmethod
-    def _validate_option(
-        property_name: str, value: str, valid_names: list[str]
-    ) -> None:
-        if value not in valid_names:
-            raise ValueError(
-                f"Property {property_name!r}: {value!r} is not a valid option. "
-                f"Valid options: {valid_names}"
-            )
 
     def __init__(
         self,
@@ -111,7 +109,7 @@ class PageProperties:
                     raise TypeError(
                         f"Property {name!r} expects a string, got {type(value).__name__}"
                     )
-                self._validate_option(name, value, prop.option_names)
+                _validate_option(name, value, prop.option_names)
                 await self.set_property(name, value)
 
             case PageSelectProperty():
@@ -119,7 +117,7 @@ class PageProperties:
                     raise TypeError(
                         f"Property {name!r} expects a string, got {type(value).__name__}"
                     )
-                self._validate_option(name, value, prop.option_names)
+                _validate_option(name, value, prop.option_names)
                 await self.set_property(name, value)
 
             case PageMultiSelectProperty():
@@ -129,7 +127,7 @@ class PageProperties:
                         raise TypeError(
                             f"Property {name!r} expects strings, got {type(v).__name__}"
                         )
-                    self._validate_option(name, v, prop.option_names)
+                    _validate_option(name, v, prop.option_names)
                 await self.set_property(name, names)
 
             case PageNumberProperty():
@@ -165,7 +163,7 @@ class PageProperties:
                 await self.set_property(name, value)
 
             case _:
-                if prop.type in self._SETTABLE_TYPES:
+                if prop.type in _SETTABLE_TYPES:
                     await self.set_property(name, value)
                 else:
                     raise ValueError(

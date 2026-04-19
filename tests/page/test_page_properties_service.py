@@ -3,8 +3,8 @@ from uuid import UUID
 
 import pytest
 
+from notionary.page.properties.properties import PageProperties
 from notionary.page.properties.schemas import PageTitleProperty
-from notionary.page.properties.service import PageProperties
 
 PAGE_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 

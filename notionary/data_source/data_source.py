@@ -1,7 +1,7 @@
 import logging
 from collections.abc import AsyncGenerator
 from pathlib import Path
-from typing import overload
+from typing import Any, overload
 from uuid import UUID
 
 from notionary.data_source.client import (
@@ -9,6 +9,10 @@ from notionary.data_source.client import (
 )
 from notionary.data_source.properties.schemas import (
     AnyDataSourceProperty,
+    DataSourceMultiSelectProperty,
+    DataSourceNumberProperty,
+    DataSourceSelectProperty,
+    DataSourceStatusProperty,
 )
 from notionary.data_source.query.filters import QueryFilter
 from notionary.data_source.query.sorts import QuerySort
@@ -297,6 +301,36 @@ class DataSource:
             icon_url=icon_url,
             cover_url=cover_url,
         )
+
+    def describe_properties(self) -> dict[str, dict[str, Any]]:
+        """Return a structured schema description of all data source properties.
+
+        Designed for LLM context injection — each entry contains the property
+        type and, for constrained types like status/select, the valid options.
+        """
+        result: dict[str, dict[str, Any]] = {}
+        for name, prop in self.properties.items():
+            entry: dict[str, Any] = {"type": prop.type}
+
+            match prop:
+                case DataSourceStatusProperty():
+                    entry["options"] = prop.option_names
+                    entry["groups"] = prop.group_names
+
+                case DataSourceSelectProperty():
+                    entry["options"] = prop.option_names
+
+                case DataSourceMultiSelectProperty():
+                    entry["options"] = prop.option_names
+
+                case DataSourceNumberProperty():
+                    entry["format"] = prop.number_format
+
+                case _:
+                    pass
+
+            result[name] = entry
+        return result
 
     def __str__(self) -> str:
         return f"{self.title} ({self.url})"

@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 from uuid import UUID
 
 import pytest
@@ -51,6 +51,16 @@ class TestPageProperties:
         page = _make_page(title="My Page")
         assert "My Page" in repr(page)
         assert str(PAGE_ID) in repr(page)
+
+    def test_describe_properties_delegates_to_properties_service(self) -> None:
+        page = _make_page()
+        expected = {"Status": {"type": "status", "options": ["Done"]}}
+        page.properties.describe = Mock(return_value=expected)
+
+        result = page.describe_properties()
+
+        page.properties.describe.assert_called_once()
+        assert result == expected
 
 
 class TestPageTrash:

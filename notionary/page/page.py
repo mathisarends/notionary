@@ -316,6 +316,14 @@ class Page:
         elif append_content is not None:
             await self.append(append_content)
 
+    def describe_properties(self) -> dict[str, dict[str, object]]:
+        """Return a structured property schema for this page.
+
+        This is a convenience wrapper around ``self.properties.describe()``
+        so agent integrations can call a page-level API directly.
+        """
+        return self.properties.describe()
+
     def __str__(self) -> str:
         return f"{self.title} ({self.url})"
 
