@@ -75,6 +75,21 @@ class Page:
         """Whether this page is in the trash."""
         return self._object.in_trash
 
+    @property
+    def icon_emoji(self) -> str | None:
+        """The current icon emoji, or ``None`` if no emoji icon is set."""
+        return self._object.icon_emoji
+
+    @property
+    def icon_url(self) -> str | None:
+        """The current icon URL, or ``None`` if no URL icon is set."""
+        return self._object.icon_url
+
+    @property
+    def cover_url(self) -> str | None:
+        """The current cover URL, or ``None`` if no cover is set."""
+        return self._object.cover_url
+
     async def trash(self) -> None:
         """Move the page to the trash."""
         await self._object.trash()
