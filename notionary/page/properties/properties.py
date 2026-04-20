@@ -59,6 +59,7 @@ class PageProperties:
         self._http = http
         self._data_source_id = data_source_id
         self._data_source_option_names: dict[str, list[str]] | None = None
+        self._relation_data_source_ids: dict[str, UUID] | None = None
         self._property_http_client = PagePropertyHttpClient(page_id=id, http=http)
 
     async def set(
@@ -185,7 +186,7 @@ class PageProperties:
             case PageTitleProperty() | PageRichTextProperty():
                 return self._normalize_text(name, value)
             case PageRelationProperty():
-                return self._normalize_relation(name, prop, value)
+                return await self._normalize_relation(name, prop, value)
             case _:
                 if prop.type in self._SETTABLE_TYPES:
                     return value
@@ -252,38 +253,63 @@ class PageProperties:
             )
         return value
 
-    def _normalize_relation(
+    async def _normalize_relation(
         self, name: str, prop: PageRelationProperty, value: Any
     ) -> list[str]:
-        available_ids = self._relation_ids(prop)
-
         if isinstance(value, str):
-            relation_ids = [value]
+            raw_ids = [value]
         elif isinstance(value, list):
-            relation_ids = value
+            raw_ids = value
         else:
             raise TypeError(
                 f"Property {name!r} expects a relation page id string or list[str], "
-                f"got {type(value).__name__}. Available ids: {available_ids}"
+                f"got {type(value).__name__}"
             )
 
-        for rid in relation_ids:
+        resolved: list[str] = []
+        for rid in raw_ids:
             if not isinstance(rid, str):
                 raise TypeError(
                     f"Property {name!r} expects relation ids as strings, "
-                    f"got {type(rid).__name__}. Available ids: {available_ids}"
+                    f"got {type(rid).__name__}"
                 )
             if not rid.strip():
                 raise ValueError(
-                    f"Property {name!r}: relation page id cannot be empty. "
-                    f"Available ids: {available_ids}"
+                    f"Property {name!r}: relation page id cannot be empty."
                 )
-            if not self._is_uuid_like(rid) and rid not in available_ids:
-                raise ValueError(
-                    f"Property {name!r}: {rid!r} is not a valid relation page id. "
-                    f"Use a UUID-like id. Available ids: {available_ids}"
-                )
-        return relation_ids
+            if self._is_uuid_like(rid):
+                resolved.append(rid)
+            else:
+                page_id = await self._resolve_relation_title(name, rid)
+                resolved.append(page_id)
+        return resolved
+
+    async def _resolve_relation_title(self, property_name: str, title: str) -> str:
+        """Resolve a page title to its UUID via the related data source."""
+        await self._ensure_data_source_option_names()
+        related_ds_id = (self._relation_data_source_ids or {}).get(property_name)
+        if related_ds_id is None:
+            raise ValueError(
+                f"Property {property_name!r}: cannot resolve title {title!r} to a page id "
+                f"— no related data source found for this relation."
+            )
+
+        from notionary.page import mapper as page_mapper
+        from notionary.page.schemas import PageDto
+
+        raw_results = await self._http.paginate(
+            f"data_sources/{related_ds_id}/query",
+            total_results_limit=None,
+        )
+        for raw in raw_results:
+            page = page_mapper.to_page(PageDto.model_validate(raw), self._http)
+            if page.title.lower() == title.lower():
+                return str(page.id)
+
+        raise ValueError(
+            f"Property {property_name!r}: no page with title {title!r} found "
+            f"in the related data source."
+        )
 
     @staticmethod
     def _build_property(prop: AnyPageProperty, value: Any) -> PageProperty:
@@ -362,6 +388,20 @@ class PageProperties:
             dto = DataSourceDto.model_validate(response)
         except Exception:
             return
+
+        from notionary.data_source.properties.schemas import (
+            DataSourceRelationProperty,
+        )
+
+        self._relation_data_source_ids = {}
+        for prop_name, ds_prop in dto.properties.items():
+            if (
+                isinstance(ds_prop, DataSourceRelationProperty)
+                and ds_prop.relation.data_source_id is not None
+            ):
+                self._relation_data_source_ids[prop_name] = (
+                    ds_prop.relation.data_source_id
+                )
 
         descriptions = await DataSourceProperties(dto.properties).describe()
         for name, description in descriptions.items():

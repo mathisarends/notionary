@@ -16,8 +16,9 @@ async def main() -> None:
         await batch_page.set_properties(
             {
                 "Status": "Nicht begonnen",
-                "Priorität": True,
+                "Priorität": "Hoch",
                 "Fortschritt": 100,
+                "Aufgaben": ["Task 1", "Task 2"],
             }
         )
 
