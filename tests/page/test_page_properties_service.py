@@ -182,10 +182,26 @@ class TestPagePropertiesSetWithDataSourceOptions:
 
     @pytest.mark.asyncio
     async def test_set_property_raises_with_resolved_options(self) -> None:
-        service, _ = _make_service(properties={"Status": _status_property()})
-        service._data_source_option_names = {
-            "Status": ["Nicht begonnen", "In Bearbeitung", "Erledigt"]
-        }
+        service, http = _make_service(
+            properties={"Status": _status_property()},
+            data_source_id=DATA_SOURCE_ID,
+        )
+        http.get = AsyncMock(
+            return_value={
+                "properties": {
+                    "Status": {
+                        "type": "status",
+                        "status": {
+                            "options": [
+                                {"name": "Nicht begonnen"},
+                                {"name": "In Bearbeitung"},
+                                {"name": "Erledigt"},
+                            ]
+                        },
+                    }
+                }
+            }
+        )
 
         with pytest.raises(
             ValueError,

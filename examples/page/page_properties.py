@@ -18,7 +18,10 @@ async def main() -> None:
                 "Status": "Nicht begonnen",
                 "Priorität": "Hoch",
                 "Fortschritt": 100,
-                "Aufgaben": ["Task 1", "Task 2"],
+                "Aufgaben": [
+                    "Selected Topics on AI nacharbeiten",
+                    "Mathe Fallstudie 1",
+                ],
             }
         )
 

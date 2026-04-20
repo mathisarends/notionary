@@ -25,14 +25,23 @@ from notionary.page.properties.schemas import (
 from notionary.rich_text.schemas import RichText
 
 PAGE_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+DATA_SOURCE_ID = UUID("dddddddd-dddd-dddd-dddd-dddddddddddd")
 
 _STATUS_OPTION_NAMES = ["Not started", "In progress", "Done"]
 _SELECT_OPTION_NAMES = ["High", "Medium", "Low"]
 
 
-def _make_service(properties: dict) -> PageProperties:
+def _make_service(
+    properties: dict,
+    data_source_id: UUID | None = None,
+) -> PageProperties:
     http = AsyncMock()
-    service = PageProperties(id=PAGE_ID, properties=properties, http=http)
+    service = PageProperties(
+        id=PAGE_ID,
+        properties=properties,
+        http=http,
+        data_source_id=data_source_id,
+    )
     return service
 
 
@@ -517,3 +526,99 @@ class TestSetValidationErrors:
             ValueError, match=r"cannot resolve title.*no related data source"
         ):
             await service.set("Module", "not-a-uuid")
+
+    @pytest.mark.asyncio
+    async def test_relation_title_resolves_to_page_id(self) -> None:
+        props = {"Aufgaben": PageRelationProperty(id="rel", relation=[])}
+        service = _make_service(props, data_source_id=DATA_SOURCE_ID)
+        mock = _stub_set_property(service)
+
+        service._http.get = AsyncMock(
+            return_value={
+                "properties": {
+                    "Aufgaben": {
+                        "type": "relation",
+                        "relation": {
+                            "data_source_id": "22222222-2222-2222-2222-222222222222"
+                        },
+                    }
+                }
+            }
+        )
+        service._http.paginate = AsyncMock(
+            return_value=[
+                {
+                    "id": "11111111-1111-1111-1111-111111111111",
+                    "properties": {
+                        "Name": {
+                            "type": "title",
+                            "title": [{"plain_text": "Task 1"}],
+                        }
+                    },
+                },
+                {
+                    "id": "33333333-3333-3333-3333-333333333333",
+                    "properties": {
+                        "Name": {
+                            "type": "title",
+                            "title": [{"plain_text": "Task 2"}],
+                        }
+                    },
+                },
+            ]
+        )
+
+        await service.set("Aufgaben", ["Task 1", "Task 2"])
+
+        sent = mock.call_args.args[1]
+        assert isinstance(sent, PageRelationProperty)
+        assert [item.id for item in sent.relation] == [
+            "11111111-1111-1111-1111-111111111111",
+            "33333333-3333-3333-3333-333333333333",
+        ]
+
+    @pytest.mark.asyncio
+    async def test_relation_title_not_found_lists_available_options(self) -> None:
+        props = {"Aufgaben": PageRelationProperty(id="rel", relation=[])}
+        service = _make_service(props, data_source_id=DATA_SOURCE_ID)
+
+        service._http.get = AsyncMock(
+            return_value={
+                "properties": {
+                    "Aufgaben": {
+                        "type": "relation",
+                        "relation": {
+                            "data_source_id": "22222222-2222-2222-2222-222222222222"
+                        },
+                    }
+                }
+            }
+        )
+        service._http.paginate = AsyncMock(
+            return_value=[
+                {
+                    "id": "11111111-1111-1111-1111-111111111111",
+                    "properties": {
+                        "Name": {
+                            "type": "title",
+                            "title": [{"plain_text": "Task 1"}],
+                        }
+                    },
+                },
+                {
+                    "id": "33333333-3333-3333-3333-333333333333",
+                    "properties": {
+                        "Name": {
+                            "type": "title",
+                            "title": [{"plain_text": "Task 2"}],
+                        }
+                    },
+                },
+            ]
+        )
+
+        with pytest.raises(
+            ValueError,
+            match=r"Valid options: \['Task 1', 'Task 2'\]",
+        ):
+            await service.set("Aufgaben", ["Task 1", "Task X"])

@@ -59,7 +59,8 @@ class PageProperties:
         self._http = http
         self._data_source_id = data_source_id
         self._data_source_option_names: dict[str, list[str]] | None = None
-        self._relation_data_source_ids: dict[str, UUID] | None = None
+        self._relation_data_source_ids: dict[str, str] | None = None
+        self._relation_title_options: dict[str, list[tuple[str, str]]] = {}
         self._property_http_client = PagePropertyHttpClient(page_id=id, http=http)
 
     async def set(
@@ -256,60 +257,42 @@ class PageProperties:
     async def _normalize_relation(
         self, name: str, prop: PageRelationProperty, value: Any
     ) -> list[str]:
+        available_ids = self._relation_ids(prop)
+
         if isinstance(value, str):
-            raw_ids = [value]
+            relation_ids = [value]
         elif isinstance(value, list):
-            raw_ids = value
+            relation_ids = value
         else:
             raise TypeError(
                 f"Property {name!r} expects a relation page id string or list[str], "
-                f"got {type(value).__name__}"
+                f"got {type(value).__name__}. Available ids: {available_ids}"
             )
 
-        resolved: list[str] = []
-        for rid in raw_ids:
+        for rid in relation_ids:
             if not isinstance(rid, str):
                 raise TypeError(
                     f"Property {name!r} expects relation ids as strings, "
-                    f"got {type(rid).__name__}"
+                    f"got {type(rid).__name__}. Available ids: {available_ids}"
                 )
             if not rid.strip():
                 raise ValueError(
-                    f"Property {name!r}: relation page id cannot be empty."
+                    f"Property {name!r}: relation page id cannot be empty. "
+                    f"Available ids: {available_ids}"
                 )
+        resolved_ids: list[str] = []
+        for rid in relation_ids:
             if self._is_uuid_like(rid):
-                resolved.append(rid)
-            else:
-                page_id = await self._resolve_relation_title(name, rid)
-                resolved.append(page_id)
-        return resolved
+                resolved_ids.append(rid)
+                continue
 
-    async def _resolve_relation_title(self, property_name: str, title: str) -> str:
-        """Resolve a page title to its UUID via the related data source."""
-        await self._ensure_data_source_option_names()
-        related_ds_id = (self._relation_data_source_ids or {}).get(property_name)
-        if related_ds_id is None:
-            raise ValueError(
-                f"Property {property_name!r}: cannot resolve title {title!r} to a page id "
-                f"— no related data source found for this relation."
-            )
+            if rid in available_ids:
+                resolved_ids.append(rid)
+                continue
 
-        from notionary.page import mapper as page_mapper
-        from notionary.page.schemas import PageDto
+            resolved_ids.append(await self._resolve_relation_title(name, rid))
 
-        raw_results = await self._http.paginate(
-            f"data_sources/{related_ds_id}/query",
-            total_results_limit=None,
-        )
-        for raw in raw_results:
-            page = page_mapper.to_page(PageDto.model_validate(raw), self._http)
-            if page.title.lower() == title.lower():
-                return str(page.id)
-
-        raise ValueError(
-            f"Property {property_name!r}: no page with title {title!r} found "
-            f"in the related data source."
-        )
+        return resolved_ids
 
     @staticmethod
     def _build_property(prop: AnyPageProperty, value: Any) -> PageProperty:
@@ -374,6 +357,7 @@ class PageProperties:
             return
 
         self._data_source_option_names = {}
+        self._relation_data_source_ids = {}
 
         if self._data_source_id is None:
             return
@@ -381,32 +365,33 @@ class PageProperties:
         from notionary.data_source.properties.properties import (
             DataSourceProperties,
         )
-        from notionary.data_source.schemas import DataSourceDto
 
         try:
             response = await self._http.get(f"data_sources/{self._data_source_id}")
-            dto = DataSourceDto.model_validate(response)
         except Exception:
             return
 
-        from notionary.data_source.properties.schemas import (
-            DataSourceRelationProperty,
+        properties = (
+            response.get("properties", {}) if isinstance(response, dict) else {}
         )
+        if not isinstance(properties, dict):
+            return
 
-        self._relation_data_source_ids = {}
-        for prop_name, ds_prop in dto.properties.items():
-            if (
-                isinstance(ds_prop, DataSourceRelationProperty)
-                and ds_prop.relation.data_source_id is not None
-            ):
-                self._relation_data_source_ids[prop_name] = (
-                    ds_prop.relation.data_source_id
-                )
-
-        descriptions = await DataSourceProperties(dto.properties).describe()
+        descriptions = await DataSourceProperties(properties).describe()
         for name, description in descriptions.items():
             if description.options:
                 self._data_source_option_names[name] = description.options
+            if description.relation_options:
+                relation_data_source_id = next(
+                    (
+                        option.id
+                        for option in description.relation_options
+                        if option.id and option.id.strip()
+                    ),
+                    None,
+                )
+                if relation_data_source_id is not None:
+                    self._relation_data_source_ids[name] = relation_data_source_id
 
     # ------------------------------------------------------------------ #
     # Helpers                                                              #
@@ -419,6 +404,114 @@ class PageProperties:
                 f"Unknown property: {name!r}. Available: {list(self.properties)}"
             )
         return prop
+
+    async def _resolve_relation_title(self, property_name: str, title: str) -> str:
+        options = await self._relation_options_for(property_name)
+        if not options:
+            raise ValueError(
+                f"Property {property_name!r}: cannot resolve title {title!r} to a page id "
+                "- no related data source found for this relation."
+            )
+
+        normalized = title.lower()
+        matching = [
+            page_id
+            for option_title, page_id in options
+            if option_title.lower() == normalized
+        ]
+
+        if len(matching) == 1:
+            return matching[0]
+
+        valid_titles = [option_title for option_title, _ in options]
+        if len(matching) > 1:
+            raise ValueError(
+                f"Property {property_name!r}: relation title {title!r} is ambiguous. "
+                f"Valid options: {valid_titles}"
+            )
+
+        raise ValueError(
+            f"Property {property_name!r}: cannot resolve relation title {title!r}. "
+            f"Valid options: {valid_titles}"
+        )
+
+    async def _relation_options_for(self, property_name: str) -> list[tuple[str, str]]:
+        cached = self._relation_title_options.get(property_name)
+        if cached is not None:
+            return cached
+
+        await self._ensure_data_source_option_names()
+
+        relation_data_source_id = None
+        if self._relation_data_source_ids is not None:
+            relation_data_source_id = self._relation_data_source_ids.get(property_name)
+
+        if relation_data_source_id is None:
+            self._relation_title_options[property_name] = []
+            return []
+
+        try:
+            raw_pages = await self._http.paginate(
+                f"data_sources/{relation_data_source_id}/query"
+            )
+        except Exception:
+            self._relation_title_options[property_name] = []
+            return []
+
+        options: list[tuple[str, str]] = []
+        for raw_page in raw_pages:
+            if not isinstance(raw_page, dict):
+                continue
+
+            page_id = raw_page.get("id")
+            if not isinstance(page_id, str) or not page_id.strip():
+                continue
+
+            page_title = self._extract_page_title(raw_page)
+            if not page_title:
+                continue
+
+            options.append((page_title, page_id))
+
+        self._relation_title_options[property_name] = options
+        return options
+
+    @staticmethod
+    def _extract_page_title(raw_page: dict[str, Any]) -> str | None:
+        properties = raw_page.get("properties")
+        if not isinstance(properties, dict):
+            return None
+
+        for raw_property in properties.values():
+            if not isinstance(raw_property, dict):
+                continue
+            if raw_property.get("type") != "title":
+                continue
+
+            raw_title = raw_property.get("title")
+            if not isinstance(raw_title, list):
+                return None
+
+            parts: list[str] = []
+            for item in raw_title:
+                if not isinstance(item, dict):
+                    continue
+                plain_text = item.get("plain_text")
+                if isinstance(plain_text, str):
+                    parts.append(plain_text)
+                    continue
+
+                text = item.get("text")
+                if isinstance(text, dict):
+                    content = text.get("content")
+                    if isinstance(content, str):
+                        parts.append(content)
+
+            title = "".join(parts).strip()
+            if title:
+                return title
+
+        return None
 
     def _sync_properties(self, properties: dict[str, AnyPageProperty]) -> None:
         self.properties = properties
