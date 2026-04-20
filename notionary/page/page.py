@@ -43,6 +43,7 @@ class Page:
         created_by: PartialUserDto,
         last_edited_time: str,
         last_edited_by: PartialUserDto,
+        data_source_id: UUID | None = None,
     ) -> None:
         self.id = id
         self.url = url
@@ -51,6 +52,7 @@ class Page:
         self.created_by = created_by
         self.last_edited_time = last_edited_time
         self.last_edited_by = last_edited_by
+        self.data_source_id = data_source_id
 
         path = f"pages/{id}"
         self._http = http
@@ -65,7 +67,12 @@ class Page:
             file_uploads=file_uploads,
         )
 
-        self.properties = PageProperties(id=id, properties=properties, http=http)
+        self.properties = PageProperties(
+            id=id,
+            properties=properties,
+            http=http,
+            data_source_id=data_source_id,
+        )
 
         self._content = PageContent(page_id=id, http=http)
         self._comments = PageComments(page_id=id, http=http)

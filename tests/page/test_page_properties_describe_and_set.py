@@ -195,7 +195,13 @@ class TestSetHappyPath:
 
         await service.set("Status", "Done")
 
-        mock.assert_called_once_with("Status", "Done")
+        call_args = mock.call_args
+        assert call_args is not None
+        assert call_args.args[0] == "Status"
+        sent_property = call_args.args[1]
+        assert isinstance(sent_property, PageStatusProperty)
+        assert sent_property.status is not None
+        assert sent_property.status.name == "Done"
 
     @pytest.mark.asyncio
     async def test_set_select(self) -> None:
@@ -207,7 +213,13 @@ class TestSetHappyPath:
 
         await service.set("Priority", "High")
 
-        mock.assert_called_once_with("Priority", "High")
+        call_args = mock.call_args
+        assert call_args is not None
+        assert call_args.args[0] == "Priority"
+        sent_property = call_args.args[1]
+        assert isinstance(sent_property, PageSelectProperty)
+        assert sent_property.select is not None
+        assert sent_property.select.name == "High"
 
     @pytest.mark.asyncio
     async def test_set_multi_select_single_string(self) -> None:
@@ -223,7 +235,12 @@ class TestSetHappyPath:
 
         await service.set("Tags", "A")
 
-        mock.assert_called_once_with("Tags", ["A"])
+        call_args = mock.call_args
+        assert call_args is not None
+        assert call_args.args[0] == "Tags"
+        sent_property = call_args.args[1]
+        assert isinstance(sent_property, PageMultiSelectProperty)
+        assert [opt.name for opt in sent_property.multi_select] == ["A"]
 
     @pytest.mark.asyncio
     async def test_set_multi_select_list(self) -> None:
@@ -239,7 +256,12 @@ class TestSetHappyPath:
 
         await service.set("Tags", ["A", "B"])
 
-        mock.assert_called_once_with("Tags", ["A", "B"])
+        call_args = mock.call_args
+        assert call_args is not None
+        assert call_args.args[0] == "Tags"
+        sent_property = call_args.args[1]
+        assert isinstance(sent_property, PageMultiSelectProperty)
+        assert [opt.name for opt in sent_property.multi_select] == ["A", "B"]
 
     @pytest.mark.asyncio
     async def test_set_number(self) -> None:
@@ -249,7 +271,12 @@ class TestSetHappyPath:
 
         await service.set("Score", 75)
 
-        mock.assert_called_once_with("Score", 75)
+        call_args = mock.call_args
+        assert call_args is not None
+        assert call_args.args[0] == "Score"
+        sent_property = call_args.args[1]
+        assert isinstance(sent_property, PageNumberProperty)
+        assert sent_property.number == 75
 
     @pytest.mark.asyncio
     async def test_set_checkbox(self) -> None:
@@ -259,7 +286,12 @@ class TestSetHappyPath:
 
         await service.set("Done", True)
 
-        mock.assert_called_once_with("Done", True)
+        call_args = mock.call_args
+        assert call_args is not None
+        assert call_args.args[0] == "Done"
+        sent_property = call_args.args[1]
+        assert isinstance(sent_property, PageCheckboxProperty)
+        assert sent_property.checkbox is True
 
     @pytest.mark.asyncio
     async def test_set_date(self) -> None:
@@ -269,7 +301,13 @@ class TestSetHappyPath:
 
         await service.set("Due", "2025-12-31")
 
-        mock.assert_called_once_with("Due", "2025-12-31")
+        call_args = mock.call_args
+        assert call_args is not None
+        assert call_args.args[0] == "Due"
+        sent_property = call_args.args[1]
+        assert isinstance(sent_property, PageDateProperty)
+        assert sent_property.date is not None
+        assert sent_property.date.start == "2025-12-31"
 
     @pytest.mark.asyncio
     async def test_set_title(self) -> None:
@@ -279,7 +317,14 @@ class TestSetHappyPath:
 
         await service.set("Name", "New Title")
 
-        mock.assert_called_once_with("Name", "New Title")
+        call_args = mock.call_args
+        assert call_args is not None
+        assert call_args.args[0] == "Name"
+        sent_property = call_args.args[1]
+        assert isinstance(sent_property, PageTitleProperty)
+        assert len(sent_property.title) == 1
+        assert sent_property.title[0].text is not None
+        assert sent_property.title[0].text.content == "New Title"
 
     @pytest.mark.asyncio
     async def test_set_relation_single_id(self) -> None:
@@ -294,7 +339,14 @@ class TestSetHappyPath:
 
         await service.set("Module", "11111111-1111-1111-1111-111111111111")
 
-        mock.assert_called_once_with("Module", ["11111111-1111-1111-1111-111111111111"])
+        call_args = mock.call_args
+        assert call_args is not None
+        assert call_args.args[0] == "Module"
+        sent_property = call_args.args[1]
+        assert isinstance(sent_property, PageRelationProperty)
+        assert [item.id for item in sent_property.relation] == [
+            "11111111-1111-1111-1111-111111111111"
+        ]
 
     @pytest.mark.asyncio
     async def test_set_relation_list_of_ids(self) -> None:
@@ -315,13 +367,15 @@ class TestSetHappyPath:
             ],
         )
 
-        mock.assert_called_once_with(
-            "Module",
-            [
-                "11111111-1111-1111-1111-111111111111",
-                "22222222-2222-2222-2222-222222222222",
-            ],
-        )
+        call_args = mock.call_args
+        assert call_args is not None
+        assert call_args.args[0] == "Module"
+        sent_property = call_args.args[1]
+        assert isinstance(sent_property, PageRelationProperty)
+        assert [item.id for item in sent_property.relation] == [
+            "11111111-1111-1111-1111-111111111111",
+            "22222222-2222-2222-2222-222222222222",
+        ]
 
 
 # ============================================================================

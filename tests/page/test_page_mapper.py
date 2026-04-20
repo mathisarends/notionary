@@ -5,7 +5,11 @@ from notionary.page.mapper import to_page
 from notionary.page.properties.schemas import PageTitleProperty
 from notionary.page.schemas import PageDto
 from notionary.rich_text.schemas import RichText
-from notionary.shared.object.schemas import WorkspaceParent
+from notionary.shared.object.schemas import (
+    DatabaseParent,
+    DataSourceParent,
+    WorkspaceParent,
+)
 from notionary.user.schemas import PartialUserDto
 
 PAGE_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
@@ -79,3 +83,28 @@ class TestToPage:
         page = to_page(dto, http)
 
         assert "Name" in page.properties.properties
+
+    def test_data_source_parent_is_forwarded(self) -> None:
+        http = AsyncMock()
+        dto = _dto()
+        dto.parent = DataSourceParent(
+            type="data_source_id",
+            data_source_id=UUID("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+            database_id=UUID("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
+        )
+
+        page = to_page(dto, http)
+
+        assert page.data_source_id == UUID("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee")
+
+    def test_database_parent_is_forwarded_for_option_resolution(self) -> None:
+        http = AsyncMock()
+        dto = _dto()
+        dto.parent = DatabaseParent(
+            type="database_id",
+            database_id=UUID("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+        )
+
+        page = to_page(dto, http)
+
+        assert page.data_source_id == UUID("ffffffff-ffff-ffff-ffff-ffffffffffff")
