@@ -20,7 +20,7 @@ async def main() -> None:
                 "Fortschritt": 100,
                 "Aufgaben": [
                     "Selected Topics on AI nacharbeiten",
-                    "Mathe Fallstudie 1",
+                    "Mathe Fallstudie 12",
                 ],
             }
         )

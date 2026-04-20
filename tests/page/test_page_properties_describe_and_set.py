@@ -26,6 +26,7 @@ from notionary.rich_text.schemas import RichText
 
 PAGE_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 DATA_SOURCE_ID = UUID("dddddddd-dddd-dddd-dddd-dddddddddddd")
+USER_ID = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
 
 _STATUS_OPTION_NAMES = ["Not started", "In progress", "Done"]
 _SELECT_OPTION_NAMES = ["High", "Medium", "Low"]
@@ -59,6 +60,39 @@ def _stub_set_property(service: PageProperties) -> AsyncMock:
     mock = AsyncMock(return_value=type("Dto", (), {"properties": service.properties})())
     service._property_http_client.set_property = mock
     return mock
+
+
+def _page_dto_payload(page_id: str, title: str) -> dict:
+    return {
+        "object": "page",
+        "id": page_id,
+        "created_time": "2025-01-01T00:00:00.000Z",
+        "created_by": {"object": "user", "id": str(USER_ID)},
+        "last_edited_time": "2025-01-01T00:00:00.000Z",
+        "last_edited_by": {"object": "user", "id": str(USER_ID)},
+        "cover": None,
+        "icon": None,
+        "parent": {
+            "type": "data_source_id",
+            "data_source_id": "22222222-2222-2222-2222-222222222222",
+            "database_id": "33333333-3333-3333-3333-333333333333",
+        },
+        "in_trash": False,
+        "url": f"https://notion.so/{page_id}",
+        "properties": {
+            "Name": {
+                "id": "title",
+                "type": "title",
+                "title": [
+                    {
+                        "type": "text",
+                        "plain_text": title,
+                        "text": {"content": title},
+                    }
+                ],
+            }
+        },
+    }
 
 
 # ============================================================================
@@ -547,24 +581,14 @@ class TestSetValidationErrors:
         )
         service._http.paginate = AsyncMock(
             return_value=[
-                {
-                    "id": "11111111-1111-1111-1111-111111111111",
-                    "properties": {
-                        "Name": {
-                            "type": "title",
-                            "title": [{"plain_text": "Task 1"}],
-                        }
-                    },
-                },
-                {
-                    "id": "33333333-3333-3333-3333-333333333333",
-                    "properties": {
-                        "Name": {
-                            "type": "title",
-                            "title": [{"plain_text": "Task 2"}],
-                        }
-                    },
-                },
+                _page_dto_payload(
+                    page_id="11111111-1111-1111-1111-111111111111",
+                    title="Task 1",
+                ),
+                _page_dto_payload(
+                    page_id="33333333-3333-3333-3333-333333333333",
+                    title="Task 2",
+                ),
             ]
         )
 
@@ -575,6 +599,41 @@ class TestSetValidationErrors:
         assert [item.id for item in sent.relation] == [
             "11111111-1111-1111-1111-111111111111",
             "33333333-3333-3333-3333-333333333333",
+        ]
+
+    @pytest.mark.asyncio
+    async def test_relation_title_resolves_from_page_dto_payload(self) -> None:
+        props = {"Aufgaben": PageRelationProperty(id="rel", relation=[])}
+        service = _make_service(props, data_source_id=DATA_SOURCE_ID)
+        mock = _stub_set_property(service)
+
+        service._http.get = AsyncMock(
+            return_value={
+                "properties": {
+                    "Aufgaben": {
+                        "type": "relation",
+                        "relation": {
+                            "data_source_id": "22222222-2222-2222-2222-222222222222"
+                        },
+                    }
+                }
+            }
+        )
+        service._http.paginate = AsyncMock(
+            return_value=[
+                _page_dto_payload(
+                    page_id="11111111-1111-1111-1111-111111111111",
+                    title="Task 1",
+                )
+            ]
+        )
+
+        await service.set("Aufgaben", "Task 1")
+
+        sent = mock.call_args.args[1]
+        assert isinstance(sent, PageRelationProperty)
+        assert [item.id for item in sent.relation] == [
+            "11111111-1111-1111-1111-111111111111"
         ]
 
     @pytest.mark.asyncio
@@ -596,24 +655,14 @@ class TestSetValidationErrors:
         )
         service._http.paginate = AsyncMock(
             return_value=[
-                {
-                    "id": "11111111-1111-1111-1111-111111111111",
-                    "properties": {
-                        "Name": {
-                            "type": "title",
-                            "title": [{"plain_text": "Task 1"}],
-                        }
-                    },
-                },
-                {
-                    "id": "33333333-3333-3333-3333-333333333333",
-                    "properties": {
-                        "Name": {
-                            "type": "title",
-                            "title": [{"plain_text": "Task 2"}],
-                        }
-                    },
-                },
+                _page_dto_payload(
+                    page_id="11111111-1111-1111-1111-111111111111",
+                    title="Task 1",
+                ),
+                _page_dto_payload(
+                    page_id="33333333-3333-3333-3333-333333333333",
+                    title="Task 2",
+                ),
             ]
         )
 

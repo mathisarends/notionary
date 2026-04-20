@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from notionary.http import HttpClient
@@ -27,6 +27,9 @@ from notionary.page.properties.schemas import (
     StatusOption,
 )
 from notionary.rich_text import RichText, rich_text_to_markdown
+
+if TYPE_CHECKING:
+    from notionary.data_source.client import DataSourceClient
 
 
 class PageProperties:
@@ -60,6 +63,7 @@ class PageProperties:
         self._data_source_id = data_source_id
         self._data_source_option_names: dict[str, list[str]] | None = None
         self._relation_data_source_ids: dict[str, str] | None = None
+        self._relation_data_source_clients: dict[str, DataSourceClient] = {}
         self._relation_title_options: dict[str, list[tuple[str, str]]] = {}
         self._property_http_client = PagePropertyHttpClient(page_id=id, http=http)
 
@@ -365,15 +369,20 @@ class PageProperties:
         from notionary.data_source.properties.properties import (
             DataSourceProperties,
         )
+        from notionary.data_source.schemas import DataSourceDto
 
         try:
             response = await self._http.get(f"data_sources/{self._data_source_id}")
         except Exception:
             return
 
-        properties = (
-            response.get("properties", {}) if isinstance(response, dict) else {}
-        )
+        try:
+            dto = DataSourceDto.model_validate(response)
+            properties = dto.properties
+        except Exception:
+            properties = (
+                response.get("properties", {}) if isinstance(response, dict) else {}
+            )
         if not isinstance(properties, dict):
             return
 
@@ -451,67 +460,34 @@ class PageProperties:
             return []
 
         try:
-            raw_pages = await self._http.paginate(
-                f"data_sources/{relation_data_source_id}/query"
-            )
+            client = self._relation_client_for(relation_data_source_id)
+            pages = await client.query()
         except Exception:
             self._relation_title_options[property_name] = []
             return []
 
-        options: list[tuple[str, str]] = []
-        for raw_page in raw_pages:
-            if not isinstance(raw_page, dict):
-                continue
-
-            page_id = raw_page.get("id")
-            if not isinstance(page_id, str) or not page_id.strip():
-                continue
-
-            page_title = self._extract_page_title(raw_page)
-            if not page_title:
-                continue
-
-            options.append((page_title, page_id))
+        options = [(page.title, str(page.id)) for page in pages if page.title]
 
         self._relation_title_options[property_name] = options
         return options
 
-    @staticmethod
-    def _extract_page_title(raw_page: dict[str, Any]) -> str | None:
-        properties = raw_page.get("properties")
-        if not isinstance(properties, dict):
-            return None
+    def _relation_client_for(self, data_source_id: str) -> DataSourceClient:
+        client = self._relation_data_source_clients.get(data_source_id)
+        if client is not None:
+            return client
 
-        for raw_property in properties.values():
-            if not isinstance(raw_property, dict):
-                continue
-            if raw_property.get("type") != "title":
-                continue
+        from notionary.data_source.client import DataSourceClient
 
-            raw_title = raw_property.get("title")
-            if not isinstance(raw_title, list):
-                return None
+        try:
+            parsed_data_source_id = UUID(data_source_id)
+        except (ValueError, TypeError, AttributeError) as exc:
+            raise ValueError(
+                f"Invalid related data source id: {data_source_id!r}"
+            ) from exc
 
-            parts: list[str] = []
-            for item in raw_title:
-                if not isinstance(item, dict):
-                    continue
-                plain_text = item.get("plain_text")
-                if isinstance(plain_text, str):
-                    parts.append(plain_text)
-                    continue
-
-                text = item.get("text")
-                if isinstance(text, dict):
-                    content = text.get("content")
-                    if isinstance(content, str):
-                        parts.append(content)
-
-            title = "".join(parts).strip()
-            if title:
-                return title
-
-        return None
+        client = DataSourceClient(http=self._http, data_source_id=parsed_data_source_id)
+        self._relation_data_source_clients[data_source_id] = client
+        return client
 
     def _sync_properties(self, properties: dict[str, AnyPageProperty]) -> None:
         self.properties = properties
