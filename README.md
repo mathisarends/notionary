@@ -115,8 +115,34 @@ async with Notionary() as notion:
 #### Properties
 
 ```python
-    await page.properties.set_property("Status", "Done")
-    await page.properties.set_property("Due Date", "2025-12-31")
+    # Set a single property (type-validated against the schema)
+    await page.set_property("Status", "Done")
+    await page.set_property("Due Date", "2025-12-31")
+    await page.set_property("Priority", 3)
+    await page.set_property("Archived", True)
+    await page.set_property("Tags", ["backend", "urgent"])
+
+    # Set multiple properties in one API call
+    await page.set_properties({
+        "Status": "In Progress",
+        "Due Date": "2025-12-31",
+        "Priority": 2,
+    })
+
+    # Inspect the property schema (types, current values, valid options)
+    schema = await page.describe_properties()
+    # schema["Status"] → PagePropertyDescription(type="status", current="Todo", options=["Todo", "In Progress", "Done"])
+```
+
+Supported property types: `checkbox`, `date`, `email`, `multi_select`, `number`, `phone_number`, `rich_text`, `select`, `status`, `title`, `url`, `relation`.
+
+For **relation** properties on data-source pages, you can pass a page ID (UUID string) or a page title — the title is automatically resolved to an ID:
+
+```python
+    # By page ID
+    await page.set_property("Project", "abc123...")
+    # By title (auto-resolved via the related data source)
+    await page.set_property("Project", "Quarterly Review")
 ```
 
 #### Comments & Lifecycle
@@ -165,8 +191,10 @@ Data sources represent queryable Notion databases with schema awareness — usef
 async with Notionary() as notion:
     ds = await notion.data_sources.find("Engineering Backlog")
 
-    # Schema introspection
-    schema = await ds.get_schema()
+    # Schema introspection — property types, current options, and relation pages
+    schema = await ds.describe_properties()
+    # schema["Status"] → DataSourcePropertyDescription(type="status", options=["Todo", "In Progress", "Done"])
+    # schema["Assignee"] → DataSourcePropertyDescription(type="relation", relation_options=[...])
 
     # Create a page inside the data source
     page = await ds.create_page(title="New Feature")
