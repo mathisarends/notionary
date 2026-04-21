@@ -7,13 +7,9 @@ from uuid import UUID
 from notionary.data_source.client import (
     DataSourceClient,
 )
-from notionary.data_source.properties.properties import (
-    DataSourceProperties,
-)
-from notionary.data_source.properties.schemas import (
+from notionary.data_source.properties import (
     AnyDataSourceProperty,
-)
-from notionary.data_source.properties.views import (
+    DataSourceProperties,
     DataSourcePropertyDescription,
     DataSourceRelationOption,
 )
@@ -21,7 +17,7 @@ from notionary.data_source.query.filters import QueryFilter
 from notionary.data_source.query.sorts import QuerySort
 from notionary.data_source.schemas import DataSourceTemplate
 from notionary.file_upload import FileUploads
-from notionary.http.client import HttpClient
+from notionary.http import HttpClient
 from notionary.page import Page
 from notionary.rich_text import rich_text_to_markdown
 from notionary.shared.object import NotionObject

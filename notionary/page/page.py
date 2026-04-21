@@ -8,6 +8,7 @@ from notionary.page.comments.service import PageComments
 from notionary.page.content import PageContent
 from notionary.page.properties import PageProperties
 from notionary.page.properties.schemas import AnyPageProperty
+from notionary.page.properties.views import PagePropertyDescription
 from notionary.page.schemas import (
     DataSourceParent,
     MovePageRequest,
@@ -210,7 +211,7 @@ class Page:
         await self.properties.set_title(title)
         self.title = title
 
-    async def set(
+    async def set_property(
         self,
         name: str,
         value: str | int | float | bool | list[str] | None,
@@ -223,7 +224,7 @@ class Page:
         """
         await self.properties.set(name, value)
 
-    async def set_many(self, values: dict[str, object]) -> None:
+    async def set_properties(self, values: dict[str, object]) -> None:
         """Set multiple page properties in a single API request.
 
         Args:
@@ -344,13 +345,13 @@ class Page:
         elif append_content is not None:
             await self.append(append_content)
 
-    def describe_properties(self) -> dict[str, dict[str, object]]:
+    async def describe_properties(self) -> dict[str, PagePropertyDescription]:
         """Return a structured property schema for this page.
 
         This is a convenience wrapper around ``self.properties.describe()``
         so agent integrations can call a page-level API directly.
         """
-        return self.properties.describe()
+        return await self.properties.describe()
 
     def __str__(self) -> str:
         return f"{self.title} ({self.url})"

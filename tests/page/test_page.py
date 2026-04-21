@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock
 from uuid import UUID
 
 import pytest
@@ -52,12 +52,13 @@ class TestPageProperties:
         assert "My Page" in repr(page)
         assert str(PAGE_ID) in repr(page)
 
-    def test_describe_properties_delegates_to_properties_service(self) -> None:
+    @pytest.mark.asyncio
+    async def test_describe_properties_delegates_to_properties_service(self) -> None:
         page = _make_page()
         expected = {"Status": {"type": "status", "options": ["Done"]}}
-        page.properties.describe = Mock(return_value=expected)
+        page.properties.describe = AsyncMock(return_value=expected)
 
-        result = page.describe_properties()
+        result = await page.describe_properties()
 
         page.properties.describe.assert_called_once()
         assert result == expected

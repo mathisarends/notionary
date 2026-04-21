@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
@@ -26,6 +26,7 @@ from notionary.page.properties.schemas import (
     SelectOption,
     StatusOption,
 )
+from notionary.page.properties.views import PagePropertyDescription
 from notionary.rich_text import RichText, rich_text_to_markdown
 
 if TYPE_CHECKING:
@@ -118,52 +119,121 @@ class PageProperties:
             raise KeyError("No title property found on this page.")
         await self.set(name, title)
 
-    def describe(self) -> dict[str, dict[str, Any]]:
-        """Return a structured schema description of all properties.
+    async def describe(
+        self,
+        relation_options_resolver: Callable[
+            [str],
+            Awaitable[list[tuple[str, str]]],
+        ]
+        | None = None,
+    ) -> dict[str, PagePropertyDescription]:
+        """Return normalized property descriptions with resolved relation names.
 
-        Designed for LLM context injection — each entry contains the property
-        type, its current value (when available), and valid options for
-        constrained types like status/select.
+        When provided, ``relation_options_resolver`` receives a relation data
+        source id and should return natural-language options
+        as ``(title, id)`` pairs.
         """
-        result: dict[str, dict[str, Any]] = {}
+        await self._ensure_data_source_option_names()
+
+        descriptions: dict[str, PagePropertyDescription] = {}
+        relation_current_ids_by_name: dict[str, list[str]] = {}
         for name, prop in self.properties.items():
-            entry: dict[str, Any] = {"type": prop.type}
+            descriptions[name] = self._describe_property(name, prop)
+            if isinstance(prop, PageRelationProperty):
+                relation_current_ids_by_name[name] = self._relation_ids(prop)
 
-            match prop:
-                case PageTitleProperty():
-                    entry["current"] = rich_text_to_markdown(prop.title) or None
+        for name, description in descriptions.items():
+            if str(description.type) != "relation":
+                continue
 
-                case PageRichTextProperty():
-                    entry["current"] = rich_text_to_markdown(prop.rich_text) or None
+            relation_options = await self._relation_description_options_for(
+                name,
+                relation_options_resolver,
+            )
 
-                case PageNumberProperty():
-                    entry["current"] = prop.number
+            relation_current_ids = relation_current_ids_by_name.get(name, [])
+            if not relation_options:
+                description.current = relation_current_ids
+                description.options = relation_current_ids
+                continue
 
-                case PageCheckboxProperty():
-                    entry["current"] = prop.checkbox
+            id_to_title = {
+                relation_id: title for title, relation_id in relation_options if title
+            }
 
-                case PageDateProperty():
-                    entry["current"] = prop.date.start if prop.date else None
+            description.relation_options = [
+                title if title else relation_id
+                for title, relation_id in relation_options
+            ]
+            description.current = [
+                id_to_title.get(relation_id, relation_id)
+                for relation_id in relation_current_ids
+            ]
+            description.options = description.relation_options
 
-                case PageSelectProperty():
-                    entry["current"] = prop.select.name if prop.select else None
-                    entry["options"] = self._known_option_names(name)
+        return descriptions
 
-                case PageMultiSelectProperty():
-                    entry["current"] = [o.name for o in prop.multi_select]
-                    entry["options"] = self._known_option_names(name)
+    def _describe_property(
+        self,
+        name: str,
+        prop: AnyPageProperty,
+    ) -> PagePropertyDescription:
+        match prop:
+            case PageTitleProperty():
+                return PagePropertyDescription(
+                    type=prop.type,
+                    current=rich_text_to_markdown(prop.title) or None,
+                )
 
-                case PageStatusProperty():
-                    entry["current"] = prop.status.name if prop.status else None
-                    entry["options"] = self._known_option_names(name)
+            case PageRichTextProperty():
+                return PagePropertyDescription(
+                    type=prop.type,
+                    current=rich_text_to_markdown(prop.rich_text) or None,
+                )
 
-                case PageRelationProperty():
-                    ids = self._relation_ids(prop)
-                    entry["current"] = ids
-                    entry["options"] = ids
+            case PageNumberProperty():
+                return PagePropertyDescription(type=prop.type, current=prop.number)
 
-            result[name] = entry
-        return result
+            case PageCheckboxProperty():
+                return PagePropertyDescription(type=prop.type, current=prop.checkbox)
+
+            case PageDateProperty():
+                return PagePropertyDescription(
+                    type=prop.type,
+                    current=prop.date.start if prop.date else None,
+                )
+
+            case PageSelectProperty():
+                return PagePropertyDescription(
+                    type=prop.type,
+                    current=prop.select.name if prop.select else None,
+                    options=self._known_option_names(name),
+                )
+
+            case PageMultiSelectProperty():
+                return PagePropertyDescription(
+                    type=prop.type,
+                    current=[option.name for option in prop.multi_select],
+                    options=self._known_option_names(name),
+                )
+
+            case PageStatusProperty():
+                return PagePropertyDescription(
+                    type=prop.type,
+                    current=prop.status.name if prop.status else None,
+                    options=self._known_option_names(name),
+                )
+
+            case PageRelationProperty():
+                relation_ids = self._relation_ids(prop)
+                return PagePropertyDescription(
+                    type=prop.type,
+                    current=relation_ids,
+                    options=relation_ids,
+                )
+
+            case _:
+                return PagePropertyDescription(type=prop.type)
 
     async def _normalize_value(
         self, name: str, prop: AnyPageProperty, value: Any
@@ -461,6 +531,30 @@ class PageProperties:
 
         self._relation_title_options[property_name] = options
         return options
+
+    async def _relation_description_options_for(
+        self,
+        property_name: str,
+        relation_options_resolver: Callable[
+            [str],
+            Awaitable[list[tuple[str, str]]],
+        ]
+        | None,
+    ) -> list[tuple[str, str]]:
+        if relation_options_resolver is None:
+            return await self._relation_options_for(property_name)
+
+        relation_data_source_id = None
+        if self._relation_data_source_ids is not None:
+            relation_data_source_id = self._relation_data_source_ids.get(property_name)
+
+        if relation_data_source_id is None:
+            return []
+
+        try:
+            return await relation_options_resolver(relation_data_source_id)
+        except Exception:
+            return []
 
     def _relation_client_for(self, data_source_id: str) -> DataSourceClient:
         client = self._relation_data_source_clients.get(data_source_id)

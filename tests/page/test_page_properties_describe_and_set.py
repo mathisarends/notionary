@@ -101,7 +101,8 @@ def _page_dto_payload(page_id: str, title: str) -> dict:
 
 
 class TestDescribe:
-    def test_status_property_with_current_value(self) -> None:
+    @pytest.mark.asyncio
+    async def test_status_property_with_current_value(self) -> None:
         props = {
             "Status": PageStatusProperty(
                 id="s", status=StatusOption(id="2", name="In progress")
@@ -109,28 +110,31 @@ class TestDescribe:
         }
         service = _make_service_with_options(props, {"Status": _STATUS_OPTION_NAMES})
 
-        result = service.describe()
+        result = await service.describe()
 
-        assert result["Status"]["type"] == "status"
-        assert result["Status"]["current"] == "In progress"
-        assert result["Status"]["options"] == _STATUS_OPTION_NAMES
+        assert result["Status"].type == "status"
+        assert result["Status"].current == "In progress"
+        assert result["Status"].options == _STATUS_OPTION_NAMES
 
-    def test_status_property_without_current_value(self) -> None:
+    @pytest.mark.asyncio
+    async def test_status_property_without_current_value(self) -> None:
         props = {"Status": PageStatusProperty(id="s", status=None)}
         service = _make_service_with_options(props, {"Status": _STATUS_OPTION_NAMES})
 
-        result = service.describe()
+        result = await service.describe()
 
-        assert result["Status"]["current"] is None
-        assert result["Status"]["options"] == _STATUS_OPTION_NAMES
+        assert result["Status"].current is None
+        assert result["Status"].options == _STATUS_OPTION_NAMES
 
-    def test_status_property_no_options_returns_empty_list(self) -> None:
+    @pytest.mark.asyncio
+    async def test_status_property_no_options_returns_empty_list(self) -> None:
         props = {"Status": PageStatusProperty(id="s", status=StatusOption(name="Done"))}
-        result = _make_service(props).describe()
+        result = await _make_service(props).describe()
 
-        assert result["Status"]["options"] == []
+        assert result["Status"].options == []
 
-    def test_select_property(self) -> None:
+    @pytest.mark.asyncio
+    async def test_select_property(self) -> None:
         props = {
             "Priority": PageSelectProperty(
                 id="p", select=SelectOption(id="1", name="High")
@@ -138,13 +142,14 @@ class TestDescribe:
         }
         service = _make_service_with_options(props, {"Priority": _SELECT_OPTION_NAMES})
 
-        result = service.describe()
+        result = await service.describe()
 
-        assert result["Priority"]["type"] == "select"
-        assert result["Priority"]["current"] == "High"
-        assert result["Priority"]["options"] == _SELECT_OPTION_NAMES
+        assert result["Priority"].type == "select"
+        assert result["Priority"].current == "High"
+        assert result["Priority"].options == _SELECT_OPTION_NAMES
 
-    def test_multi_select_property(self) -> None:
+    @pytest.mark.asyncio
+    async def test_multi_select_property(self) -> None:
         props = {
             "Tags": PageMultiSelectProperty(
                 id="t",
@@ -153,64 +158,72 @@ class TestDescribe:
         }
         service = _make_service_with_options(props, {"Tags": ["A", "B", "C"]})
 
-        result = service.describe()
+        result = await service.describe()
 
-        assert result["Tags"]["type"] == "multi_select"
-        assert result["Tags"]["current"] == ["A", "B"]
-        assert result["Tags"]["options"] == ["A", "B", "C"]
+        assert result["Tags"].type == "multi_select"
+        assert result["Tags"].current == ["A", "B"]
+        assert result["Tags"].options == ["A", "B", "C"]
 
-    def test_number_property(self) -> None:
+    @pytest.mark.asyncio
+    async def test_number_property(self) -> None:
         props = {"Score": PageNumberProperty(id="n", number=42.0)}
-        result = _make_service(props).describe()
+        result = await _make_service(props).describe()
 
-        assert result["Score"]["type"] == "number"
-        assert result["Score"]["current"] == 42.0
+        assert result["Score"].type == "number"
+        assert result["Score"].current == 42.0
 
-    def test_checkbox_property(self) -> None:
+    @pytest.mark.asyncio
+    async def test_checkbox_property(self) -> None:
         props = {"Done": PageCheckboxProperty(id="c", checkbox=True)}
-        result = _make_service(props).describe()
+        result = await _make_service(props).describe()
 
-        assert result["Done"]["type"] == "checkbox"
-        assert result["Done"]["current"] is True
+        assert result["Done"].type == "checkbox"
+        assert result["Done"].current is True
 
-    def test_date_property(self) -> None:
+    @pytest.mark.asyncio
+    async def test_date_property(self) -> None:
         props = {"Due": PageDateProperty(id="d", date=DateValue(start="2025-06-01"))}
-        result = _make_service(props).describe()
+        result = await _make_service(props).describe()
 
-        assert result["Due"]["type"] == "date"
-        assert result["Due"]["current"] == "2025-06-01"
+        assert result["Due"].type == "date"
+        assert result["Due"].current == "2025-06-01"
 
-    def test_date_property_no_value(self) -> None:
+    @pytest.mark.asyncio
+    async def test_date_property_no_value(self) -> None:
         props = {"Due": PageDateProperty(id="d", date=None)}
-        result = _make_service(props).describe()
+        result = await _make_service(props).describe()
 
-        assert result["Due"]["current"] is None
+        assert result["Due"].current is None
 
-    def test_title_property(self) -> None:
+    @pytest.mark.asyncio
+    async def test_title_property(self) -> None:
         rt = RichText(type="text", plain_text="My Page", text={"content": "My Page"})
         props = {"Name": PageTitleProperty(id="t", title=[rt])}
-        result = _make_service(props).describe()
+        result = await _make_service(props).describe()
 
-        assert result["Name"]["type"] == "title"
-        assert result["Name"]["current"] == "My Page"
+        assert result["Name"].type == "title"
+        assert result["Name"].current == "My Page"
 
-    def test_title_property_empty(self) -> None:
+    @pytest.mark.asyncio
+    async def test_title_property_empty(self) -> None:
         props = {"Name": PageTitleProperty(id="t", title=[])}
-        result = _make_service(props).describe()
+        result = await _make_service(props).describe()
 
-        assert result["Name"]["current"] is None
+        assert result["Name"].current is None
 
-    def test_rich_text_property(self) -> None:
+    @pytest.mark.asyncio
+    async def test_rich_text_property(self) -> None:
         rt = RichText(
             type="text", plain_text="Notes here", text={"content": "Notes here"}
         )
         props = {"Notes": PageRichTextProperty(id="r", rich_text=[rt])}
-        result = _make_service(props).describe()
+        result = await _make_service(props).describe()
 
-        assert result["Notes"]["type"] == "rich_text"
-        assert result["Notes"]["current"] == "Notes here"
+        assert result["Notes"].type == "rich_text"
+        assert result["Notes"].current == "Notes here"
 
-    def test_relation_property_includes_current_ids_as_options(self) -> None:
+    @pytest.mark.asyncio
+    async def test_relation_property_includes_current_ids_as_options(self) -> None:
         props = {
             "Module": PageRelationProperty(
                 id="rel",
@@ -220,20 +233,65 @@ class TestDescribe:
                 ],
             )
         }
-        result = _make_service(props).describe()
+        result = await _make_service(props).describe()
 
-        assert result["Module"]["type"] == "relation"
-        assert result["Module"]["current"] == [
+        assert result["Module"].type == "relation"
+        assert result["Module"].current == [
             "11111111-1111-1111-1111-111111111111",
             "22222222-2222-2222-2222-222222222222",
         ]
-        assert result["Module"]["options"] == [
+        assert result["Module"].options == [
             "11111111-1111-1111-1111-111111111111",
             "22222222-2222-2222-2222-222222222222",
         ]
 
-    def test_empty_properties(self) -> None:
-        result = _make_service({}).describe()
+    @pytest.mark.asyncio
+    async def test_relation_property_resolves_current_values_to_titles(self) -> None:
+        props = {
+            "Aufgaben": PageRelationProperty(
+                id="rel",
+                relation=[
+                    RelationItem(id="11111111-1111-1111-1111-111111111111"),
+                    RelationItem(id="33333333-3333-3333-3333-333333333333"),
+                ],
+            )
+        }
+        service = _make_service(props, data_source_id=DATA_SOURCE_ID)
+
+        service._http.get = AsyncMock(
+            return_value={
+                "properties": {
+                    "Aufgaben": {
+                        "type": "relation",
+                        "relation": {
+                            "data_source_id": "22222222-2222-2222-2222-222222222222"
+                        },
+                    }
+                }
+            }
+        )
+        service._http.paginate = AsyncMock(
+            return_value=[
+                _page_dto_payload(
+                    page_id="11111111-1111-1111-1111-111111111111",
+                    title="Task 1",
+                ),
+                _page_dto_payload(
+                    page_id="33333333-3333-3333-3333-333333333333",
+                    title="Task 2",
+                ),
+            ]
+        )
+
+        result = await service.describe()
+
+        assert result["Aufgaben"].current == ["Task 1", "Task 2"]
+        assert result["Aufgaben"].options == ["Task 1", "Task 2"]
+        assert result["Aufgaben"].relation_options == ["Task 1", "Task 2"]
+
+    @pytest.mark.asyncio
+    async def test_empty_properties(self) -> None:
+        result = await _make_service({}).describe()
         assert result == {}
 
 

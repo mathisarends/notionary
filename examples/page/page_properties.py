@@ -13,7 +13,7 @@ async def main() -> None:
         await single_page.set_property("Status", "In Bearbeitung")
 
         batch_page = await notion.pages.find("RTVoice")
-        property_descriton = batch_page.describe_properties()
+        property_descriton = await batch_page.describe_properties()
         print(property_descriton)
 
         await batch_page.set_properties(
