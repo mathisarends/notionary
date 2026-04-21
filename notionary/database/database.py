@@ -210,7 +210,6 @@ class Database:
         Args:
             properties: Property schema for the new data source.
             title: Optional title for the data source.
-            icon_emoji: Optional emoji to set as the data source icon.
 
         Returns:
             The created :class:`~notionary.data_source.data_source.DataSource`.

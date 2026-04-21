@@ -34,7 +34,7 @@ await page.clear()
 
 ## PageProperties
 
-::: notionary.page.properties.service.PageProperties
+::: notionary.page.properties.properties.PageProperties
 
 ---
 
