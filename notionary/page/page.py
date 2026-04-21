@@ -210,35 +210,26 @@ class Page:
         await self.properties.set_title(title)
         self.title = title
 
-    async def set_property(self, name: str, value: object) -> None:
-        """Set a page property by its exact property name.
-
-        Args:
-            name: Property name as it appears in Notion.
-            value: Raw value forwarded to the page property client.
-        """
-        await self.properties.set_property(name, value)
-
-    async def set_properties(self, values: dict[str, object]) -> None:
-        """Set multiple page properties in a single API request.
-
-        Args:
-            values: Mapping of property names to raw values.
-        """
-        await self.properties.set_properties(values)
-
     async def set(
         self,
         name: str,
         value: str | int | float | bool | list[str] | None,
     ) -> None:
-        """Agent-friendly property setter exposed at page level.
+        """Set a page property by its exact property name.
 
         Args:
             name: Property name as it appears in Notion.
             value: Plain value validated against the property schema.
         """
         await self.properties.set(name, value)
+
+    async def set_many(self, values: dict[str, object]) -> None:
+        """Set multiple page properties in a single API request.
+
+        Args:
+            values: Mapping of property names to raw values.
+        """
+        await self.properties.set_many(values)
 
     async def lock(self) -> None:
         """Lock the page to prevent editing."""
@@ -347,7 +338,7 @@ class Page:
             cover_url=cover_url,
         )
         if properties is not None:
-            await self.set_properties(properties)
+            await self.set_many(properties)
         if content is not None:
             await self.replace(content)
         elif append_content is not None:

@@ -72,25 +72,16 @@ class PageProperties:
         name: str,
         value: str | int | float | bool | list[str] | None,
     ) -> None:
-        """Agent-friendly property setter — resolves type and validates automatically.
+        """Set a single page property by name.
 
         Args:
             name: Property name as it appears in Notion.
-            value: The plain value to set. Type is validated against the schema.
+            value: New value for the property. Type is validated against the schema.
 
         Raises:
             ValueError: If *name* is unknown, the value is an invalid option,
                 or the property type is not supported.
             TypeError: If *value* has the wrong Python type for the property.
-        """
-        await self.set_property(name, value)
-
-    async def set_property(self, name: str, value: Any) -> None:
-        """Set a single page property by name.
-
-        Args:
-            name: Property name as it appears in Notion.
-            value: New value for the property.
         """
         prop = self._require_property(name)
         normalized = await self._normalize_value(name, prop, value)
@@ -98,7 +89,7 @@ class PageProperties:
         dto = await self._property_http_client.set_property(name, built)
         self._sync_properties(dto.properties)
 
-    async def set_properties(self, values: dict[str, Any]) -> None:
+    async def set_many(self, values: dict[str, Any]) -> None:
         """Set multiple page properties in a single API request.
 
         Args:
@@ -125,7 +116,7 @@ class PageProperties:
         )
         if name is None:
             raise KeyError("No title property found on this page.")
-        await self.set_property(name, title)
+        await self.set(name, title)
 
     def describe(self) -> dict[str, dict[str, Any]]:
         """Return a structured schema description of all properties.

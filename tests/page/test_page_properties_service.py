@@ -46,14 +46,14 @@ def _make_service(
 
 class TestPagePropertiesSetProperty:
     @pytest.mark.asyncio
-    async def test_set_property_delegates_to_http_client(self) -> None:
+    async def test_set_delegates_to_http_client(self) -> None:
         service, _ = _make_service()
         updated_props = {"Name": _title_property()}
         service._property_http_client.set_property = AsyncMock(
             return_value=type("Dto", (), {"properties": updated_props})()
         )
 
-        await service.set_property("Name", "New Title")
+        await service.set("Name", "New Title")
 
         call_args = service._property_http_client.set_property.call_args
         assert call_args is not None
@@ -65,26 +65,26 @@ class TestPagePropertiesSetProperty:
         ]
 
     @pytest.mark.asyncio
-    async def test_set_property_updates_local_properties(self) -> None:
+    async def test_set_updates_local_properties(self) -> None:
         service, _ = _make_service()
         new_props = {"Name": _title_property(), "Status": _title_property()}
         service._property_http_client.set_property = AsyncMock(
             return_value=type("Dto", (), {"properties": new_props})()
         )
 
-        await service.set_property("Name", "Updated")
+        await service.set("Name", "Updated")
 
         assert service.properties == new_props
 
     @pytest.mark.asyncio
-    async def test_set_properties_delegates_to_http_client(self) -> None:
+    async def test_set_many_delegates_to_http_client(self) -> None:
         service, _ = _make_service()
         updated_props = {"Name": _title_property()}
         service._property_http_client.set_properties = AsyncMock(
             return_value=type("Dto", (), {"properties": updated_props})()
         )
 
-        await service.set_properties({"Name": "New Title"})
+        await service.set_many({"Name": "New Title"})
 
         call_args = service._property_http_client.set_properties.call_args
         assert call_args is not None
@@ -94,7 +94,7 @@ class TestPagePropertiesSetProperty:
         assert sent_name.title == [RichText(type="text", text={"content": "New Title"})]
 
     @pytest.mark.asyncio
-    async def test_set_properties_updates_local_properties(self) -> None:
+    async def test_set_many_updates_local_properties(self) -> None:
         service, _ = _make_service(
             {
                 "Name": _title_property(),
@@ -111,7 +111,7 @@ class TestPagePropertiesSetProperty:
             return_value=type("Dto", (), {"properties": new_props})()
         )
 
-        await service.set_properties({"Name": "Updated", "Status": "Done"})
+        await service.set_many({"Name": "Updated", "Status": "Done"})
 
         assert service.properties == new_props
 
@@ -145,7 +145,7 @@ class TestPagePropertiesSetTitle:
 
 class TestPagePropertiesSetWithDataSourceOptions:
     @pytest.mark.asyncio
-    async def test_set_property_uses_data_source_options_for_status(self) -> None:
+    async def test_set_uses_data_source_options_for_status(self) -> None:
         service, http = _make_service(
             properties={"Status": _status_property()},
             data_source_id=DATA_SOURCE_ID,
@@ -170,7 +170,7 @@ class TestPagePropertiesSetWithDataSourceOptions:
             }
         )
 
-        await service.set_property("Status", "In Bearbeitung")
+        await service.set("Status", "In Bearbeitung")
 
         call_args = service._property_http_client.set_property.call_args
         assert call_args is not None
@@ -181,7 +181,7 @@ class TestPagePropertiesSetWithDataSourceOptions:
         assert sent_property.status.name == "In Bearbeitung"
 
     @pytest.mark.asyncio
-    async def test_set_property_raises_with_resolved_options(self) -> None:
+    async def test_set_raises_with_resolved_options(self) -> None:
         service, http = _make_service(
             properties={"Status": _status_property()},
             data_source_id=DATA_SOURCE_ID,
@@ -207,10 +207,10 @@ class TestPagePropertiesSetWithDataSourceOptions:
             ValueError,
             match=r"Valid options: \['Nicht begonnen', 'In Bearbeitung', 'Erledigt'\]",
         ):
-            await service.set_property("Status", "Fertig")
+            await service.set("Status", "Fertig")
 
     @pytest.mark.asyncio
-    async def test_set_properties_validates_select_and_status_from_data_source(
+    async def test_set_many_validates_select_and_status_from_data_source(
         self,
     ) -> None:
         service, http = _make_service(
@@ -250,7 +250,7 @@ class TestPagePropertiesSetWithDataSourceOptions:
             }
         )
 
-        await service.set_properties(
+        await service.set_many(
             {
                 "Status": "In Bearbeitung",
                 "Priorität": "Hoch",
