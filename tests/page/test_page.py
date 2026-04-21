@@ -52,6 +52,17 @@ class TestPageProperties:
         assert "My Page" in repr(page)
         assert str(PAGE_ID) in repr(page)
 
+    @pytest.mark.asyncio
+    async def test_describe_properties_delegates_to_properties_service(self) -> None:
+        page = _make_page()
+        expected = {"Status": {"type": "status", "options": ["Done"]}}
+        page.properties.describe = AsyncMock(return_value=expected)
+
+        result = await page.describe_properties()
+
+        page.properties.describe.assert_called_once()
+        assert result == expected
+
 
 class TestPageTrash:
     @pytest.mark.asyncio
@@ -83,6 +94,28 @@ class TestPageRename:
 
         page.properties.set_title.assert_called_once_with("New Title")
         assert page.title == "New Title"
+
+
+class TestPageSetters:
+    @pytest.mark.asyncio
+    async def test_set_delegates_to_properties_service(self) -> None:
+        page = _make_page()
+        page.properties.set = AsyncMock()
+
+        await page.set_property("Status", "Done")
+
+        page.properties.set.assert_called_once_with("Status", "Done")
+
+    @pytest.mark.asyncio
+    async def test_set_many_delegates_to_properties_service(self) -> None:
+        page = _make_page()
+        page.properties.set_many = AsyncMock()
+
+        await page.set_properties({"Status": "Done", "Priority": "High"})
+
+        page.properties.set_many.assert_called_once_with(
+            {"Status": "Done", "Priority": "High"}
+        )
 
 
 class TestPageLocking:
@@ -188,3 +221,15 @@ class TestPageUpdate:
 
         page._content.replace.assert_called_once()
         page._content.append.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_update_with_properties_calls_set_many(self) -> None:
+        page = _make_page()
+        page.properties.set_many = AsyncMock()
+        page._object.update = AsyncMock()
+
+        await page.update(properties={"Status": "Done", "Priority": "High"})
+
+        page.properties.set_many.assert_called_once_with(
+            {"Status": "Done", "Priority": "High"}
+        )

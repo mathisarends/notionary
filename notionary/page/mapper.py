@@ -3,6 +3,7 @@ from notionary.page.page import Page
 from notionary.page.properties import PageTitleProperty
 from notionary.page.schemas import PageDto
 from notionary.rich_text import rich_text_to_markdown
+from notionary.shared.object.schemas import DatabaseParent, DataSourceParent
 
 
 def to_page(dto: PageDto, http: HttpClient) -> Page:
@@ -11,6 +12,11 @@ def to_page(dto: PageDto, http: HttpClient) -> Page:
         None,
     )
     title = rich_text_to_markdown(title_property.title if title_property else [])
+    data_source_id = None
+    if isinstance(dto.parent, DataSourceParent):
+        data_source_id = dto.parent.data_source_id
+    elif isinstance(dto.parent, DatabaseParent):
+        data_source_id = dto.parent.database_id
     return Page(
         id=dto.id,
         url=dto.url,
@@ -24,4 +30,5 @@ def to_page(dto: PageDto, http: HttpClient) -> Page:
         created_by=dto.created_by,
         last_edited_time=dto.last_edited_time,
         last_edited_by=dto.last_edited_by,
+        data_source_id=data_source_id,
     )

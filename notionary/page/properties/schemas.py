@@ -19,7 +19,7 @@ class PageProperty(BaseModel):
 
 
 class StatusOption(BaseModel):
-    id: str
+    id: str | None = None
     name: str
 
 
@@ -123,31 +123,16 @@ class PageRichTextProperty(PageProperty):
 class PageSelectProperty(PageProperty):
     type: Literal[PropertyType.SELECT] = PropertyType.SELECT
     select: SelectOption | None = None
-    options: list[SelectOption] = Field(default_factory=list)
-
-    @property
-    def option_names(self) -> list[str]:
-        return [option.name for option in self.options]
 
 
 class PageMultiSelectProperty(PageProperty):
     type: Literal[PropertyType.MULTI_SELECT] = PropertyType.MULTI_SELECT
     multi_select: list[SelectOption] = Field(default_factory=list)
-    options: list[SelectOption] = Field(default_factory=list)
-
-    @property
-    def option_names(self) -> list[str]:
-        return [option.name for option in self.options]
 
 
 class PageStatusProperty(PageProperty):
     type: Literal[PropertyType.STATUS] = PropertyType.STATUS
     status: StatusOption | None = None
-    options: list[StatusOption] = Field(default_factory=list)
-
-    @property
-    def option_names(self) -> list[str]:
-        return [option.name for option in self.options]
 
 
 class PageNumberProperty(PageProperty):

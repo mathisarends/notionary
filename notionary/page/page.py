@@ -8,6 +8,7 @@ from notionary.page.comments.service import PageComments
 from notionary.page.content import PageContent
 from notionary.page.properties import PageProperties
 from notionary.page.properties.schemas import AnyPageProperty
+from notionary.page.properties.views import PagePropertyDescription
 from notionary.page.schemas import (
     DataSourceParent,
     MovePageRequest,
@@ -43,6 +44,7 @@ class Page:
         created_by: PartialUserDto,
         last_edited_time: str,
         last_edited_by: PartialUserDto,
+        data_source_id: UUID | None = None,
     ) -> None:
         self.id = id
         self.url = url
@@ -51,6 +53,7 @@ class Page:
         self.created_by = created_by
         self.last_edited_time = last_edited_time
         self.last_edited_by = last_edited_by
+        self.data_source_id = data_source_id
 
         path = f"pages/{id}"
         self._http = http
@@ -65,7 +68,12 @@ class Page:
             file_uploads=file_uploads,
         )
 
-        self.properties = PageProperties(id=id, properties=properties, http=http)
+        self.properties = PageProperties(
+            id=id,
+            properties=properties,
+            http=http,
+            data_source_id=data_source_id,
+        )
 
         self._content = PageContent(page_id=id, http=http)
         self._comments = PageComments(page_id=id, http=http)
@@ -203,6 +211,27 @@ class Page:
         await self.properties.set_title(title)
         self.title = title
 
+    async def set_property(
+        self,
+        name: str,
+        value: str | int | float | bool | list[str] | None,
+    ) -> None:
+        """Set a page property by its exact property name.
+
+        Args:
+            name: Property name as it appears in Notion.
+            value: Plain value validated against the property schema.
+        """
+        await self.properties.set(name, value)
+
+    async def set_properties(self, values: dict[str, object]) -> None:
+        """Set multiple page properties in a single API request.
+
+        Args:
+            values: Mapping of property names to raw values.
+        """
+        await self.properties.set_many(values)
+
     async def lock(self) -> None:
         """Lock the page to prevent editing."""
         await self._patch(PageUpdateRequest(is_locked=True))
@@ -287,7 +316,7 @@ class Page:
         cover_url: str | None = None,
         content: str | None = None,
         append_content: str | None = None,
-        properties: dict[str, AnyPageProperty] | None = None,
+        properties: dict[str, object] | None = None,
     ) -> None:
         """Update multiple page attributes in a single agent-friendly call.
 
@@ -310,11 +339,19 @@ class Page:
             cover_url=cover_url,
         )
         if properties is not None:
-            await self.properties.update(properties)
+            await self.set_properties(properties)
         if content is not None:
             await self.replace(content)
         elif append_content is not None:
             await self.append(append_content)
+
+    async def describe_properties(self) -> dict[str, PagePropertyDescription]:
+        """Return a structured property schema for this page.
+
+        This is a convenience wrapper around ``self.properties.describe()``
+        so agent integrations can call a page-level API directly.
+        """
+        return await self.properties.describe()
 
     def __str__(self) -> str:
         return f"{self.title} ({self.url})"
