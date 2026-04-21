@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import Annotated, Any
+from typing import Annotated, Any, Union
 
 from pydantic import BaseModel, Field, model_serializer
 
@@ -236,10 +236,10 @@ class TimestampFilter(BaseModel):
 
 
 class CompoundFilter(BaseModel):
-    and_: list[PropertyFilter | TimestampFilter | "CompoundFilter"] | None = Field(
+    and_: list[Union[PropertyFilter, TimestampFilter, "CompoundFilter"]] | None = Field(
         default=None, alias="and"
     )
-    or_: list[PropertyFilter | TimestampFilter | "CompoundFilter"] | None = Field(
+    or_: list[Union[PropertyFilter, TimestampFilter, "CompoundFilter"]] | None = Field(
         default=None, alias="or"
     )
 

@@ -7,14 +7,16 @@ from uuid import UUID
 from notionary.data_source.client import (
     DataSourceClient,
 )
-from notionary.data_source.properties.schemas import (
+from notionary.data_source.properties import (
     AnyDataSourceProperty,
+    DataSourceProperties,
+    DataSourcePropertyDescription,
 )
 from notionary.data_source.query.filters import QueryFilter
 from notionary.data_source.query.sorts import QuerySort
 from notionary.data_source.schemas import DataSourceTemplate
 from notionary.file_upload import FileUploads
-from notionary.http.client import HttpClient
+from notionary.http import HttpClient
 from notionary.page import Page
 from notionary.rich_text import rich_text_to_markdown
 from notionary.shared.object import NotionObject
@@ -56,6 +58,7 @@ class DataSource:
         self.created_by = created_by
         self.last_edited_time = last_edited_time
         self.last_edited_by = last_edited_by
+        self._http = http
 
         path = f"data_sources/{id}"
         file_uploads = FileUploads(http)
@@ -69,6 +72,7 @@ class DataSource:
         )
 
         self.properties = properties or {}
+        self._properties = DataSourceProperties(properties=self.properties, http=http)
         self._client = DataSourceClient(http=http, data_source_id=id)
 
     @property
@@ -297,6 +301,23 @@ class DataSource:
             icon_url=icon_url,
             cover_url=cover_url,
         )
+
+    async def describe_properties(
+        self,
+        *,
+        page_size: int = 100,
+        limit: int | None = 100,
+    ) -> dict[str, DataSourcePropertyDescription]:
+        """Return a schema description with relation options resolved to pages.
+
+        For relation properties, this method queries the related data source and
+        returns page-level options as ``title + id`` pairs by default.
+
+        Args:
+            page_size: Number of pages per API request when resolving relation options.
+            limit: Maximum total pages to include per relation.
+        """
+        return await self._properties.describe(page_size=page_size, limit=limit)
 
     def __str__(self) -> str:
         return f"{self.title} ({self.url})"
