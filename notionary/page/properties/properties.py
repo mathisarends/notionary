@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
@@ -119,20 +119,8 @@ class PageProperties:
             raise KeyError("No title property found on this page.")
         await self.set(name, title)
 
-    async def describe(
-        self,
-        relation_options_resolver: Callable[
-            [str],
-            Awaitable[list[tuple[str, str]]],
-        ]
-        | None = None,
-    ) -> dict[str, PagePropertyDescription]:
-        """Return normalized property descriptions with resolved relation names.
-
-        When provided, ``relation_options_resolver`` receives a relation data
-        source id and should return natural-language options
-        as ``(title, id)`` pairs.
-        """
+    async def describe(self) -> dict[str, PagePropertyDescription]:
+        """Return normalized property descriptions with resolved relation names."""
         await self._ensure_data_source_option_names()
 
         descriptions: dict[str, PagePropertyDescription] = {}
@@ -146,10 +134,7 @@ class PageProperties:
             if str(description.type) != "relation":
                 continue
 
-            relation_options = await self._relation_description_options_for(
-                name,
-                relation_options_resolver,
-            )
+            relation_options = await self._relation_options_for(name)
 
             relation_current_ids = relation_current_ids_by_name.get(name, [])
             if not relation_options:
@@ -531,30 +516,6 @@ class PageProperties:
 
         self._relation_title_options[property_name] = options
         return options
-
-    async def _relation_description_options_for(
-        self,
-        property_name: str,
-        relation_options_resolver: Callable[
-            [str],
-            Awaitable[list[tuple[str, str]]],
-        ]
-        | None,
-    ) -> list[tuple[str, str]]:
-        if relation_options_resolver is None:
-            return await self._relation_options_for(property_name)
-
-        relation_data_source_id = None
-        if self._relation_data_source_ids is not None:
-            relation_data_source_id = self._relation_data_source_ids.get(property_name)
-
-        if relation_data_source_id is None:
-            return []
-
-        try:
-            return await relation_options_resolver(relation_data_source_id)
-        except Exception:
-            return []
 
     def _relation_client_for(self, data_source_id: str) -> DataSourceClient:
         client = self._relation_data_source_clients.get(data_source_id)
