@@ -11,7 +11,6 @@ from notionary.data_source.properties import (
     AnyDataSourceProperty,
     DataSourceProperties,
     DataSourcePropertyDescription,
-    DataSourceRelationOption,
 )
 from notionary.data_source.query.filters import QueryFilter
 from notionary.data_source.query.sorts import QuerySort
@@ -73,7 +72,7 @@ class DataSource:
         )
 
         self.properties = properties or {}
-        self._properties = DataSourceProperties(properties=self.properties)
+        self._properties = DataSourceProperties(properties=self.properties, http=http)
         self._client = DataSourceClient(http=http, data_source_id=id)
 
     @property
@@ -318,33 +317,7 @@ class DataSource:
             page_size: Number of pages per API request when resolving relation options.
             limit: Maximum total pages to include per relation.
         """
-        return await self._properties.describe(
-            lambda relation_data_source_id: self._fetch_relation_page_options(
-                relation_data_source_id,
-                page_size=page_size,
-                limit=limit,
-            )
-        )
-
-    async def _fetch_relation_page_options(
-        self,
-        relation_data_source_id: str,
-        *,
-        page_size: int,
-        limit: int | None,
-    ) -> list[DataSourceRelationOption]:
-        """Fetch relation options as pages from a related data source."""
-        try:
-            related_id = UUID(relation_data_source_id)
-        except ValueError:
-            return []
-
-        relation_client = DataSourceClient(http=self._http, data_source_id=related_id)
-        pages = await relation_client.query(page_size=page_size, limit=limit)
-        return [
-            DataSourceRelationOption(id=str(page.id), title=page.title)
-            for page in pages
-        ]
+        return await self._properties.describe(page_size=page_size, limit=limit)
 
     def __str__(self) -> str:
         return f"{self.title} ({self.url})"

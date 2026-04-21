@@ -339,7 +339,7 @@ class Page:
             cover_url=cover_url,
         )
         if properties is not None:
-            await self.set_many(properties)
+            await self.set_properties(properties)
         if content is not None:
             await self.replace(content)
         elif append_content is not None:

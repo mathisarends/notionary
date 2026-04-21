@@ -1,5 +1,7 @@
-from collections.abc import Awaitable, Callable
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+from uuid import UUID
 
 from pydantic import ValidationError
 
@@ -18,32 +20,33 @@ from notionary.data_source.properties.views import (
 )
 from notionary.shared.properties.type import PropertyType
 
+if TYPE_CHECKING:
+    from notionary.http import HttpClient
+
 
 class DataSourceProperties:
     """Provides schema-aware operations for data source properties."""
 
-    def __init__(self, properties: dict[str, AnyDataSourceProperty]) -> None:
+    def __init__(
+        self,
+        properties: dict[str, AnyDataSourceProperty],
+        http: HttpClient | None = None,
+    ) -> None:
         self._properties = properties
+        self._http = http
 
     async def describe(
         self,
-        relation_options_resolver: Callable[
-            [str],
-            Awaitable[list[DataSourceRelationOption]],
-        ]
-        | None = None,
+        *,
+        page_size: int = 100,
+        limit: int | None = 100,
     ) -> dict[str, DataSourcePropertyDescription]:
-        """Return normalized property descriptions, with optional relation resolution.
-
-        When provided, ``relation_options_resolver`` receives a relation data source
-        id and should return natural-language options (e.g. page titles + ids).
-        """
         descriptions = {
             name: self._describe_property(name, prop)
             for name, prop in self._properties.items()
         }
 
-        if relation_options_resolver is None:
+        if self._http is None:
             return descriptions
 
         for description in descriptions.values():
@@ -56,13 +59,38 @@ class DataSourceProperties:
             resolved_options: list[DataSourceRelationOption] = []
             for relation_option in description.relation_options:
                 resolved_options.extend(
-                    await relation_options_resolver(relation_option.id)
+                    await self._fetch_relation_page_options(
+                        relation_option.id,
+                        page_size=page_size,
+                        limit=limit,
+                    )
                 )
 
             if resolved_options:
                 description.relation_options = resolved_options
 
         return descriptions
+
+    async def _fetch_relation_page_options(
+        self,
+        relation_data_source_id: str,
+        *,
+        page_size: int,
+        limit: int | None,
+    ) -> list[DataSourceRelationOption]:
+        from notionary.data_source.client import DataSourceClient
+
+        try:
+            related_id = UUID(relation_data_source_id)
+        except ValueError:
+            return []
+
+        relation_client = DataSourceClient(http=self._http, data_source_id=related_id)
+        pages = await relation_client.query(page_size=page_size, limit=limit)
+        return [
+            DataSourceRelationOption(id=str(page.id), title=page.title)
+            for page in pages
+        ]
 
     def _describe_property(
         self,

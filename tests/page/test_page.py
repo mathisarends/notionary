@@ -102,7 +102,7 @@ class TestPageSetters:
         page = _make_page()
         page.properties.set = AsyncMock()
 
-        await page.set("Status", "Done")
+        await page.set_property("Status", "Done")
 
         page.properties.set.assert_called_once_with("Status", "Done")
 
@@ -111,7 +111,7 @@ class TestPageSetters:
         page = _make_page()
         page.properties.set_many = AsyncMock()
 
-        await page.set_many({"Status": "Done", "Priority": "High"})
+        await page.set_properties({"Status": "Done", "Priority": "High"})
 
         page.properties.set_many.assert_called_once_with(
             {"Status": "Done", "Priority": "High"}
